@@ -72,9 +72,9 @@ void TestMetricsServiceClient::CollectFinalMetricsForLog(
   done_callback.Run();
 }
 
-scoped_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
+std::unique_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
     const base::Callback<void(int)>& on_upload_complete) {
-  return scoped_ptr<MetricsLogUploader>();
+  return std::unique_ptr<MetricsLogUploader>();
 }
 
 base::TimeDelta TestMetricsServiceClient::GetStandardUploadInterval() {

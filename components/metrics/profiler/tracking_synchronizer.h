@@ -6,6 +6,7 @@
 #define COMPONENTS_METRICS_PROFILER_TRACKING_SYNCHRONIZER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
@@ -41,8 +41,9 @@ namespace metrics {
 
 class TrackingSynchronizerObserver;
 
-typedef base::Callback<scoped_ptr<TrackingSynchronizerDelegate>(
-    TrackingSynchronizer*)> TrackingSynchronizerDelegateFactory;
+typedef base::Callback<std::unique_ptr<TrackingSynchronizerDelegate>(
+    TrackingSynchronizer*)>
+    TrackingSynchronizerDelegateFactory;
 
 class TrackingSynchronizer
     : public base::RefCountedThreadSafe<TrackingSynchronizer> {
@@ -54,7 +55,7 @@ class TrackingSynchronizer
   // |clock| is a clock used for durations of profiling phases.
   // |delegate| is used to abstract platform-specific profiling functionality.
   TrackingSynchronizer(
-      scoped_ptr<base::TickClock> clock,
+      std::unique_ptr<base::TickClock> clock,
       const TrackingSynchronizerDelegateFactory& delegate_factory);
 
   // Contact all processes, and get them to upload to the browser any/all
@@ -148,7 +149,7 @@ class TrackingSynchronizer
       phase_completion_events_sequence_;
 
   // Clock for profiling phase durations.
-  const scoped_ptr<base::TickClock> clock_;
+  const std::unique_ptr<base::TickClock> clock_;
 
   // Times of starts of all profiling phases, including the current phase. The
   // index in the vector is the phase number.
@@ -157,7 +158,7 @@ class TrackingSynchronizer
   // This object's delegate.
   // NOTE: Leave this ivar last so that the delegate is torn down first at
   // destruction, as it has a reference to this object.
-  scoped_ptr<TrackingSynchronizerDelegate> delegate_;
+  std::unique_ptr<TrackingSynchronizerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackingSynchronizer);
 };

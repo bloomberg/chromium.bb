@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -110,7 +110,7 @@ class LeakDetector {
 
   // Handles leak detection logic. Must be called under lock as LeakDetectorImpl
   // uses shared resources.
-  scoped_ptr<leak_detector::LeakDetectorImpl> impl_;
+  std::unique_ptr<leak_detector::LeakDetectorImpl> impl_;
 
   // For thread safety.
   base::ThreadChecker thread_checker_;

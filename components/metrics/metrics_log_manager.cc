@@ -53,7 +53,7 @@ MetricsLogManager::MetricsLogManager(PrefService* local_state,
 
 MetricsLogManager::~MetricsLogManager() {}
 
-void MetricsLogManager::BeginLoggingWithLog(scoped_ptr<MetricsLog> log) {
+void MetricsLogManager::BeginLoggingWithLog(std::unique_ptr<MetricsLog> log) {
   DCHECK(!current_log_);
   current_log_ = std::move(log);
 }

@@ -11,12 +11,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
@@ -131,7 +131,8 @@ class MetricsService : public base::HistogramFlattener {
   // that has a high source of entropy, partially based on the client ID.
   // Otherwise, it returns an entropy provider that is based on a low entropy
   // source.
-  scoped_ptr<const base::FieldTrial::EntropyProvider> CreateEntropyProvider();
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateEntropyProvider();
 
   // At startup, prefs needs to be called with a list of all the pref names and
   // types we'll be using.
@@ -201,7 +202,7 @@ class MetricsService : public base::HistogramFlattener {
 
   // Register the specified |provider| to provide additional metrics into the
   // UMA log. Should be called during MetricsService initialization only.
-  void RegisterMetricsProvider(scoped_ptr<MetricsProvider> provider);
+  void RegisterMetricsProvider(std::unique_ptr<MetricsProvider> provider);
 
   // Check if this install was cloned or imaged from another machine. If a
   // clone is detected, reset the client id and low entropy source. This
@@ -382,7 +383,7 @@ class MetricsService : public base::HistogramFlattener {
       std::vector<variations::ActiveGroupId>* synthetic_trials);
 
   // Creates a new MetricsLog instance with the given |log_type|.
-  scoped_ptr<MetricsLog> CreateLog(MetricsLog::LogType log_type);
+  std::unique_ptr<MetricsLog> CreateLog(MetricsLog::LogType log_type);
 
   // Records the current environment (system profile) in |log|.
   void RecordCurrentEnvironment(MetricsLog* log);
@@ -439,10 +440,10 @@ class MetricsService : public base::HistogramFlattener {
   // The initial metrics log, used to record startup metrics (histograms and
   // profiler data). Note that if a crash occurred in the previous session, an
   // initial stability log may be sent before this.
-  scoped_ptr<MetricsLog> initial_metrics_log_;
+  std::unique_ptr<MetricsLog> initial_metrics_log_;
 
   // Instance of the helper class for uploading logs.
-  scoped_ptr<MetricsLogUploader> log_uploader_;
+  std::unique_ptr<MetricsLogUploader> log_uploader_;
 
   // Whether there is a current log upload in progress.
   bool log_upload_in_progress_;
@@ -455,7 +456,7 @@ class MetricsService : public base::HistogramFlattener {
   int session_id_;
 
   // The scheduler for determining when uploads should happen.
-  scoped_ptr<MetricsReportingScheduler> scheduler_;
+  std::unique_ptr<MetricsReportingScheduler> scheduler_;
 
   // Stores the time of the first call to |GetUptimes()|.
   base::TimeTicks first_updated_time_;
@@ -483,7 +484,7 @@ class MetricsService : public base::HistogramFlattener {
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
 
   // Pointer used for obtaining data use pref updater callback on above layers.
-  scoped_ptr<DataUseTracker> data_use_tracker_;
+  std::unique_ptr<DataUseTracker> data_use_tracker_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.

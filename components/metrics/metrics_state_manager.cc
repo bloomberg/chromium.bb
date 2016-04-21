@@ -88,7 +88,7 @@ void MetricsStateManager::ForceClientIdCreation() {
     return;
   }
 
-  const scoped_ptr<ClientInfo> client_info_backup =
+  const std::unique_ptr<ClientInfo> client_info_backup =
       LoadClientInfoAndMaybeMigrate();
   if (client_info_backup) {
     client_id_ = client_info_backup->client_id;
@@ -146,7 +146,7 @@ void MetricsStateManager::CheckForClonedInstall(
   cloned_install_detector_->CheckForClonedInstall(local_state_, task_runner);
 }
 
-scoped_ptr<const base::FieldTrial::EntropyProvider>
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsStateManager::CreateEntropyProvider() {
   // For metrics reporting-enabled users, we combine the client ID and low
   // entropy source to get the final entropy source. Otherwise, only use the low
@@ -162,30 +162,29 @@ MetricsStateManager::CreateEntropyProvider() {
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_HIGH);
     const std::string high_entropy_source =
         client_id_ + base::IntToString(low_entropy_source_value);
-    return scoped_ptr<const base::FieldTrial::EntropyProvider>(
+    return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
         new SHA1EntropyProvider(high_entropy_source));
   }
 
   UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_LOW);
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  return scoped_ptr<const base::FieldTrial::EntropyProvider>(
-      new CachingPermutedEntropyProvider(local_state_,
-                                         low_entropy_source_value,
+  return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
+      new CachingPermutedEntropyProvider(local_state_, low_entropy_source_value,
                                          kMaxLowEntropySize));
 #else
-  return scoped_ptr<const base::FieldTrial::EntropyProvider>(
+  return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
       new PermutedEntropyProvider(low_entropy_source_value,
                                   kMaxLowEntropySize));
 #endif
 }
 
 // static
-scoped_ptr<MetricsStateManager> MetricsStateManager::Create(
+std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     PrefService* local_state,
     const base::Callback<bool(void)>& is_reporting_enabled_callback,
     const StoreClientInfoCallback& store_client_info,
     const LoadClientInfoCallback& retrieve_client_info) {
-  scoped_ptr<MetricsStateManager> result;
+  std::unique_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
   if (!instance_exists_) {
     result.reset(new MetricsStateManager(local_state,
@@ -219,8 +218,9 @@ void MetricsStateManager::BackUpCurrentClientInfo() {
   store_client_info_.Run(client_info);
 }
 
-scoped_ptr<ClientInfo> MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
-  scoped_ptr<ClientInfo> client_info = load_client_info_.Run();
+std::unique_ptr<ClientInfo>
+MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
+  std::unique_ptr<ClientInfo> client_info = load_client_info_.Run();
 
   // Prior to 2014-07, the client ID was stripped of its dashes before being
   // saved. Migrate back to a proper GUID if this is the case. This migration

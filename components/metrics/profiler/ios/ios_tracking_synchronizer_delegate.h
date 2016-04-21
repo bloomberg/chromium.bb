@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_METRICS_PROFILER_IOS_IOS_TRACKING_SYNCHRONIZER_DELEGATE_H_
 #define COMPONENTS_METRICS_PROFILER_IOS_IOS_TRACKING_SYNCHRONIZER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/profiler/tracking_synchronizer_delegate.h"
 
 namespace metrics {
@@ -19,7 +20,7 @@ class IOSTrackingSynchronizerDelegate : public TrackingSynchronizerDelegate {
 
   // Creates an IOSTrackingSynchronizerDelegate that is associated with
   // |synchronizer_|.
-  static scoped_ptr<TrackingSynchronizerDelegate> Create(
+  static std::unique_ptr<TrackingSynchronizerDelegate> Create(
       TrackingSynchronizer* synchronizer);
 
  private:

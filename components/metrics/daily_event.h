@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_METRICS_DAILY_EVENT_H_
 #define COMPONENTS_METRICS_DAILY_EVENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 
@@ -53,7 +54,7 @@ class DailyEvent {
 
   // Adds a observer to be notified when a day elapses. All observers should
   // be registered before the the DailyEvent starts checking time.
-  void AddObserver(scoped_ptr<Observer> observer);
+  void AddObserver(std::unique_ptr<Observer> observer);
 
   // Checks if a day has elapsed. If it has, OnDailyEvent will be called on
   // all observers.

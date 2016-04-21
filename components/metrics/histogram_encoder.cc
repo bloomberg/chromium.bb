@@ -4,9 +4,9 @@
 
 #include "components/metrics/histogram_encoder.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
@@ -28,8 +28,8 @@ void EncodeHistogramDelta(const std::string& histogram_name,
   if (snapshot.sum() != 0)
     histogram_proto->set_sum(snapshot.sum());
 
-  for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator(); !it->Done();
-       it->Next()) {
+  for (std::unique_ptr<SampleCountIterator> it = snapshot.Iterator();
+       !it->Done(); it->Next()) {
     base::Histogram::Sample min;
     base::Histogram::Sample max;
     base::Histogram::Count count;

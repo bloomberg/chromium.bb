@@ -56,7 +56,7 @@ void DailyEvent::RegisterPref(PrefRegistrySimple* registry,
   registry->RegisterInt64Pref(pref_name, base::Time().ToInternalValue());
 }
 
-void DailyEvent::AddObserver(scoped_ptr<DailyEvent::Observer> observer) {
+void DailyEvent::AddObserver(std::unique_ptr<DailyEvent::Observer> observer) {
   DVLOG(2) << "DailyEvent observer added.";
   DCHECK(last_fired_.is_null());
   observers_.push_back(std::move(observer));

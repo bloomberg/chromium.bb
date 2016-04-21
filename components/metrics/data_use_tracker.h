@@ -33,7 +33,7 @@ class DataUseTracker {
 
   // Returns an instance of |DataUseTracker| with provided |local_state| if
   // users data use should be tracked and null pointer otherwise.
-  static scoped_ptr<DataUseTracker> Create(PrefService* local_state);
+  static std::unique_ptr<DataUseTracker> Create(PrefService* local_state);
 
   // Registers data use prefs using provided |registry|.
   static void RegisterPrefs(PrefRegistrySimple* registry);

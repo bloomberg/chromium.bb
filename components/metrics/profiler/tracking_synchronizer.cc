@@ -180,7 +180,7 @@ base::LazyInstance
 // TrackingSynchronizer methods and members.
 
 TrackingSynchronizer::TrackingSynchronizer(
-    scoped_ptr<base::TickClock> clock,
+    std::unique_ptr<base::TickClock> clock,
     const TrackingSynchronizerDelegateFactory& delegate_factory)
     : last_used_sequence_number_(kNeverUsableSequenceNumber),
       clock_(std::move(clock)) {

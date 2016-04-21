@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/persisted_logs.h"
 
@@ -30,7 +30,7 @@ class MetricsLogManager {
 
   // Makes |log| the current_log. This should only be called if there is not a
   // current log.
-  void BeginLoggingWithLog(scoped_ptr<MetricsLog> log);
+  void BeginLoggingWithLog(std::unique_ptr<MetricsLog> log);
 
   // Returns the in-progress log.
   MetricsLog* current_log() { return current_log_.get(); }
@@ -101,10 +101,10 @@ class MetricsLogManager {
   bool unsent_logs_loaded_;
 
   // The log that we are still appending to.
-  scoped_ptr<MetricsLog> current_log_;
+  std::unique_ptr<MetricsLog> current_log_;
 
   // A paused, previously-current log.
-  scoped_ptr<MetricsLog> paused_log_;
+  std::unique_ptr<MetricsLog> paused_log_;
 
   // Logs that have not yet been sent.
   PersistedLogs initial_log_queue_;

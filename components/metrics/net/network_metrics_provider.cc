@@ -249,7 +249,8 @@ void NetworkMetricsProvider::LogAggregatedMetrics() {
   base::HistogramBase* error_codes = base::SparseHistogram::FactoryGet(
       "Net.ErrorCodesForMainFrame3",
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  scoped_ptr<base::HistogramSamples> samples = error_codes->SnapshotSamples();
+  std::unique_ptr<base::HistogramSamples> samples =
+      error_codes->SnapshotSamples();
   base::HistogramBase::Count new_aborts =
       samples->GetCount(-net::ERR_ABORTED) - total_aborts_;
   base::HistogramBase::Count new_codes = samples->TotalCount() - total_codes_;

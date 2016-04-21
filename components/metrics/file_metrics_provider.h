@@ -6,12 +6,12 @@
 #define COMPONENTS_METRICS_FILE_METRICS_PROVIDER_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -101,7 +101,7 @@ class FileMetricsProvider : public metrics::MetricsProvider {
   // Information about files being monitored; defined and used exclusively
   // inside the .cc file.
   struct FileInfo;
-  using FileInfoList = std::list<scoped_ptr<FileInfo>>;
+  using FileInfoList = std::list<std::unique_ptr<FileInfo>>;
 
   // Checks a list of files (on a task-runner allowed to do I/O) to see if
   // any should be processed during the next histogram collection.

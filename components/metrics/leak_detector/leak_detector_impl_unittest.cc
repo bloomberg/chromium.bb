@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <complex>
+#include <memory>
 #include <new>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -230,7 +230,7 @@ class LeakDetectorImplTest : public ::testing::Test {
   void JuliaSet(bool enable_leaks);
 
   // Instance of the class being tested.
-  scoped_ptr<LeakDetectorImpl> detector_;
+  std::unique_ptr<LeakDetectorImpl> detector_;
 
   // Number of pointers allocated and freed so far.
   size_t total_num_allocs_;

@@ -4,10 +4,10 @@
 
 #include "components/metrics/leak_detector/call_stack_table.h"
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/leak_detector/call_stack_manager.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,7 +104,7 @@ class CallStackTableTest : public ::testing::Test {
   const CallStack* stack3_;
 
  private:
-  scoped_ptr<CallStackManager> manager_;
+  std::unique_ptr<CallStackManager> manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackTableTest);
 };

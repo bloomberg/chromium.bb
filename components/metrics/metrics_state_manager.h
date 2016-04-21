@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_METRICS_METRICS_STATE_MANAGER_H_
 #define COMPONENTS_METRICS_METRICS_STATE_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "components/metrics/client_info.h"
 
@@ -33,7 +33,8 @@ class MetricsStateManager {
 
   // A callback that can be invoked to load client info stored through the
   // StoreClientInfoCallback.
-  typedef base::Callback<scoped_ptr<ClientInfo>(void)> LoadClientInfoCallback;
+  typedef base::Callback<std::unique_ptr<ClientInfo>(void)>
+      LoadClientInfoCallback;
 
   virtual ~MetricsStateManager();
 
@@ -61,11 +62,12 @@ class MetricsStateManager {
   // that has a high source of entropy, partially based on the client ID.
   // Otherwise, it returns an entropy provider that is based on a low entropy
   // source.
-  scoped_ptr<const base::FieldTrial::EntropyProvider> CreateEntropyProvider();
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateEntropyProvider();
 
   // Creates the MetricsStateManager, enforcing that only a single instance
   // of the class exists at a time. Returns NULL if an instance exists already.
-  static scoped_ptr<MetricsStateManager> Create(
+  static std::unique_ptr<MetricsStateManager> Create(
       PrefService* local_state,
       const base::Callback<bool(void)>& is_reporting_enabled_callback,
       const StoreClientInfoCallback& store_client_info,
@@ -109,7 +111,7 @@ class MetricsStateManager {
 
   // Loads the client info via |load_client_info_| and potentially migrates it
   // before returning it if it comes back in its old form.
-  scoped_ptr<ClientInfo> LoadClientInfoAndMaybeMigrate();
+  std::unique_ptr<ClientInfo> LoadClientInfoAndMaybeMigrate();
 
   // Returns the low entropy source for this client. This is a random value
   // that is non-identifying amongst browser clients. This method will
@@ -163,7 +165,7 @@ class MetricsStateManager {
   // The last entropy source returned by this service, used for testing.
   EntropySourceType entropy_source_returned_;
 
-  scoped_ptr<ClonedInstallDetector> cloned_install_detector_;
+  std::unique_ptr<ClonedInstallDetector> cloned_install_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsStateManager);
 };

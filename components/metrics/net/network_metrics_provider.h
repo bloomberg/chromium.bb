@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_METRICS_NET_NETWORK_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_NET_NETWORK_METRICS_PROVIDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "components/metrics/metrics_provider.h"
@@ -71,7 +72,7 @@ class NetworkMetricsProvider
   net::WifiPHYLayerProtocol wifi_phy_layer_protocol_;
 
   // Helper object for retrieving connected wifi access point information.
-  scoped_ptr<WifiAccessPointInfoProvider> wifi_access_point_info_provider_;
+  std::unique_ptr<WifiAccessPointInfoProvider> wifi_access_point_info_provider_;
 
   // These metrics track histogram totals for the Net.ErrorCodesForMainFrame3
   // histogram. They are used to compute deltas at upload time.

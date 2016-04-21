@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_METRICS_NET_NET_METRICS_LOG_UPLOADER_H_
 #define COMPONENTS_METRICS_NET_NET_METRICS_LOG_UPLOADER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -45,7 +45,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   net::URLRequestContextGetter* const request_context_getter_;
 
   // The outstanding transmission appears as a URL Fetch operation.
-  scoped_ptr<net::URLFetcher> current_fetch_;
+  std::unique_ptr<net::URLFetcher> current_fetch_;
 
   DISALLOW_COPY_AND_ASSIGN(NetMetricsLogUploader);
 };

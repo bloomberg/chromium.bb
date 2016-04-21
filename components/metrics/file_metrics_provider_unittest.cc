@@ -91,8 +91,8 @@ class FileMetricsProviderTest : public testing::Test {
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
-  scoped_ptr<FileMetricsProvider> provider_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
+  std::unique_ptr<FileMetricsProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FileMetricsProviderTest);
 };
@@ -114,7 +114,7 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
     foo->Add(42);
     bar->Add(84);
 
-    scoped_ptr<base::PersistentHistogramAllocator> histogram_allocator =
+    std::unique_ptr<base::PersistentHistogramAllocator> histogram_allocator =
         base::GlobalHistogramAllocator::ReleaseForTesting();
     base::PersistentMemoryAllocator* allocator =
         histogram_allocator->memory_allocator();

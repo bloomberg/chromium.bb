@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -49,8 +50,8 @@ struct FileMetricsProvider::FileInfo {
   // will be copied to |data| and the mapped file released. If the file is
   // "active", it remains mapped and nothing is copied to local memory.
   std::vector<uint8_t> data;
-  scoped_ptr<base::MemoryMappedFile> mapped;
-  scoped_ptr<base::PersistentHistogramAllocator> allocator;
+  std::unique_ptr<base::MemoryMappedFile> mapped;
+  std::unique_ptr<base::PersistentHistogramAllocator> allocator;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileInfo);
@@ -71,7 +72,7 @@ void FileMetricsProvider::RegisterFile(const base::FilePath& path,
                                        const base::StringPiece prefs_key) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<FileInfo> file(new FileInfo(type));
+  std::unique_ptr<FileInfo> file(new FileInfo(type));
   file->path = path;
   file->prefs_key = prefs_key.as_string();
 
@@ -98,7 +99,7 @@ void FileMetricsProvider::CheckAndMapNewMetricFilesOnTaskRunner(
     FileMetricsProvider::FileInfoList* files) {
   // This method has all state information passed in |files| and is intended
   // to run on a worker thread rather than the UI thread.
-  for (scoped_ptr<FileInfo>& file : *files) {
+  for (std::unique_ptr<FileInfo>& file : *files) {
     AccessResult result = CheckAndMapNewMetrics(file.get());
     // Some results are not reported in order to keep the dashboard clean.
     if (result != ACCESS_RESULT_DOESNT_EXIST &&
@@ -182,7 +183,7 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromFile(
 
   int histogram_count = 0;
   while (true) {
-    scoped_ptr<base::HistogramBase> histogram = histogram_iter.GetNext();
+    std::unique_ptr<base::HistogramBase> histogram = histogram_iter.GetNext();
     if (!histogram)
       break;
     if (file->type == FILE_HISTOGRAMS_ATOMIC)
@@ -207,12 +208,12 @@ void FileMetricsProvider::CreateAllocatorForFile(FileInfo* file) {
     DCHECK(file->data.empty());
     // TODO(bcwhite): Make this do read/write when supported for "active".
     file->allocator.reset(new base::PersistentHistogramAllocator(
-        make_scoped_ptr(new base::FilePersistentMemoryAllocator(
+        base::WrapUnique(new base::FilePersistentMemoryAllocator(
             std::move(file->mapped), 0, ""))));
   } else {
     DCHECK(!file->mapped);
     file->allocator.reset(new base::PersistentHistogramAllocator(
-        make_scoped_ptr(new base::PersistentMemoryAllocator(
+        base::WrapUnique(new base::PersistentMemoryAllocator(
             &file->data[0], file->data.size(), 0, 0, "", true))));
   }
 }
@@ -273,7 +274,7 @@ void FileMetricsProvider::RecordHistogramSnapshots(
     base::HistogramSnapshotManager* snapshot_manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (scoped_ptr<FileInfo>& file : files_to_read_) {
+  for (std::unique_ptr<FileInfo>& file : files_to_read_) {
     // Skip this file if the data has already been read.
     if (file->read_complete)
       continue;

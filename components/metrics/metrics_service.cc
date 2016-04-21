@@ -125,12 +125,14 @@
 #include "components/metrics/metrics_service.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
@@ -377,7 +379,7 @@ bool MetricsService::WasLastShutdownClean() const {
   return clean_exit_beacon_.exited_cleanly();
 }
 
-scoped_ptr<const base::FieldTrial::EntropyProvider>
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsService::CreateEntropyProvider() {
   // TODO(asvitkine): Refactor the code so that MetricsService does not expose
   // this method.
@@ -911,7 +913,7 @@ bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
 bool MetricsService::PrepareInitialStabilityLog() {
   DCHECK_EQ(INITIALIZED, state_);
 
-  scoped_ptr<MetricsLog> initial_stability_log(
+  std::unique_ptr<MetricsLog> initial_stability_log(
       CreateLog(MetricsLog::INITIAL_STABILITY_LOG));
 
   // Do not call NotifyOnDidCreateMetricsLog here because the stability
@@ -1095,7 +1097,7 @@ void MetricsService::GetCurrentSyntheticFieldTrialsForTesting(
 }
 
 void MetricsService::RegisterMetricsProvider(
-    scoped_ptr<MetricsProvider> provider) {
+    std::unique_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
   metrics_providers_.push_back(std::move(provider));
 }
@@ -1122,12 +1124,11 @@ void MetricsService::GetSyntheticFieldTrialsOlderThan(
   }
 }
 
-scoped_ptr<MetricsLog> MetricsService::CreateLog(MetricsLog::LogType log_type) {
-  return make_scoped_ptr(new MetricsLog(state_manager_->client_id(),
-                                        session_id_,
-                                        log_type,
-                                        client_,
-                                        local_state_));
+std::unique_ptr<MetricsLog> MetricsService::CreateLog(
+    MetricsLog::LogType log_type) {
+  return base::WrapUnique(new MetricsLog(state_manager_->client_id(),
+                                         session_id_, log_type, client_,
+                                         local_state_));
 }
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {

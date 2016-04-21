@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,8 +52,8 @@ const void* kRawStack3[] = {
 
 // Creates a copy of a call stack as a scoped_ptr to a raw stack. The depth is
 // the same as the original stack, but it is not stored in the result.
-scoped_ptr<const void* []> CopyStack(const CallStack* stack) {
-  scoped_ptr<const void* []> stack_copy(new const void*[stack->depth]);
+std::unique_ptr<const void* []> CopyStack(const CallStack* stack) {
+  std::unique_ptr<const void* []> stack_copy(new const void*[stack->depth]);
   std::copy(stack->stack, stack->stack + stack->depth, stack_copy.get());
   return stack_copy;
 }
@@ -201,7 +201,7 @@ TEST_F(CallStackManagerTest, DuplicateStacks) {
   const CallStack* stack0 =
       manager.GetCallStack(arraysize(kRawStack0), kRawStack0);
 
-  scoped_ptr<const void* []> rawstack0_duplicate0 = CopyStack(stack0);
+  std::unique_ptr<const void* []> rawstack0_duplicate0 = CopyStack(stack0);
   const CallStack* stack0_duplicate0 =
       manager.GetCallStack(arraysize(kRawStack0), rawstack0_duplicate0.get());
   EXPECT_EQ(1U, manager.size());
@@ -212,13 +212,13 @@ TEST_F(CallStackManagerTest, DuplicateStacks) {
       manager.GetCallStack(arraysize(kRawStack1), kRawStack1);
   EXPECT_EQ(2U, manager.size());
 
-  scoped_ptr<const void* []> rawstack0_duplicate1 = CopyStack(stack0);
+  std::unique_ptr<const void* []> rawstack0_duplicate1 = CopyStack(stack0);
   const CallStack* stack0_duplicate1 =
       manager.GetCallStack(arraysize(kRawStack0), rawstack0_duplicate1.get());
   EXPECT_EQ(2U, manager.size());
   EXPECT_EQ(stack0, stack0_duplicate1);
 
-  scoped_ptr<const void* []> rawstack1_duplicate0 = CopyStack(stack1);
+  std::unique_ptr<const void* []> rawstack1_duplicate0 = CopyStack(stack1);
   const CallStack* stack1_duplicate0 =
       manager.GetCallStack(arraysize(kRawStack1), rawstack1_duplicate0.get());
   EXPECT_EQ(2U, manager.size());
@@ -231,25 +231,25 @@ TEST_F(CallStackManagerTest, DuplicateStacks) {
       manager.GetCallStack(arraysize(kRawStack3), kRawStack3);
   EXPECT_EQ(4U, manager.size());
 
-  scoped_ptr<const void* []> rawstack1_duplicate1 = CopyStack(stack1);
+  std::unique_ptr<const void* []> rawstack1_duplicate1 = CopyStack(stack1);
   const CallStack* stack1_duplicate1 =
       manager.GetCallStack(arraysize(kRawStack1), rawstack1_duplicate1.get());
   EXPECT_EQ(4U, manager.size());
   EXPECT_EQ(stack1, stack1_duplicate1);
 
-  scoped_ptr<const void* []> rawstack0_duplicate2 = CopyStack(stack0);
+  std::unique_ptr<const void* []> rawstack0_duplicate2 = CopyStack(stack0);
   const CallStack* stack0_duplicate2 =
       manager.GetCallStack(arraysize(kRawStack0), rawstack0_duplicate2.get());
   EXPECT_EQ(4U, manager.size());
   EXPECT_EQ(stack0, stack0_duplicate2);
 
-  scoped_ptr<const void* []> rawstack3_duplicate0 = CopyStack(stack3);
+  std::unique_ptr<const void* []> rawstack3_duplicate0 = CopyStack(stack3);
   const CallStack* stack3_duplicate0 =
       manager.GetCallStack(arraysize(kRawStack3), rawstack3_duplicate0.get());
   EXPECT_EQ(4U, manager.size());
   EXPECT_EQ(stack3, stack3_duplicate0);
 
-  scoped_ptr<const void* []> rawstack2_duplicate0 = CopyStack(stack2);
+  std::unique_ptr<const void* []> rawstack2_duplicate0 = CopyStack(stack2);
   const CallStack* stack2_duplicate0 =
       manager.GetCallStack(arraysize(kRawStack2), rawstack2_duplicate0.get());
   EXPECT_EQ(4U, manager.size());

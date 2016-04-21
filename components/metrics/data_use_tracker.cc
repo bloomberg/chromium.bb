@@ -38,8 +38,9 @@ DataUseTracker::DataUseTracker(PrefService* local_state)
 DataUseTracker::~DataUseTracker() {}
 
 // static
-scoped_ptr<DataUseTracker> DataUseTracker::Create(PrefService* local_state) {
-  scoped_ptr<DataUseTracker> data_use_tracker;
+std::unique_ptr<DataUseTracker> DataUseTracker::Create(
+    PrefService* local_state) {
+  std::unique_ptr<DataUseTracker> data_use_tracker;
   if (variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
                                          "Uma_Quota") != "" &&
       variations::GetVariationParamValue("UMA_EnableCellularLogUpload",

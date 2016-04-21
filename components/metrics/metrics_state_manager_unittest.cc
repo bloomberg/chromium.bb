@@ -30,7 +30,7 @@ class MetricsStateManagerTest : public testing::Test {
     MetricsService::RegisterPrefs(prefs_.registry());
   }
 
-  scoped_ptr<MetricsStateManager> CreateStateManager() {
+  std::unique_ptr<MetricsStateManager> CreateStateManager() {
     return MetricsStateManager::Create(
         &prefs_,
         base::Bind(&MetricsStateManagerTest::is_metrics_reporting_enabled,
@@ -51,11 +51,11 @@ class MetricsStateManagerTest : public testing::Test {
 
   // Last ClientInfo stored by the MetricsStateManager via
   // MockStoreClientInfoBackup.
-  scoped_ptr<ClientInfo> stored_client_info_backup_;
+  std::unique_ptr<ClientInfo> stored_client_info_backup_;
 
   // If set, will be returned via LoadFakeClientInfoBackup if requested by the
   // MetricsStateManager.
-  scoped_ptr<ClientInfo> fake_client_info_backup_;
+  std::unique_ptr<ClientInfo> fake_client_info_backup_;
 
  private:
   bool is_metrics_reporting_enabled() const {
@@ -80,11 +80,11 @@ class MetricsStateManagerTest : public testing::Test {
   }
 
   // Hands out a copy of |fake_client_info_backup_| if it is set.
-  scoped_ptr<ClientInfo> LoadFakeClientInfoBackup() {
+  std::unique_ptr<ClientInfo> LoadFakeClientInfoBackup() {
     if (!fake_client_info_backup_)
-      return scoped_ptr<ClientInfo>();
+      return std::unique_ptr<ClientInfo>();
 
-    scoped_ptr<ClientInfo> backup_copy(new ClientInfo);
+    std::unique_ptr<ClientInfo> backup_copy(new ClientInfo);
     backup_copy->client_id = fake_client_info_backup_->client_id;
     backup_copy->installation_date =
         fake_client_info_backup_->installation_date;
@@ -100,7 +100,7 @@ class MetricsStateManagerTest : public testing::Test {
 
 // Ensure the ClientId is formatted as expected.
 TEST_F(MetricsStateManagerTest, ClientIdCorrectlyFormatted) {
-  scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
   state_manager->ForceClientIdCreation();
 
   const std::string client_id = state_manager->client_id();
@@ -116,7 +116,7 @@ TEST_F(MetricsStateManagerTest, ClientIdCorrectlyFormatted) {
 }
 
 TEST_F(MetricsStateManagerTest, EntropySourceUsed_Low) {
-  scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
   state_manager->CreateEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_LOW,
             state_manager->entropy_source_returned());
@@ -124,14 +124,14 @@ TEST_F(MetricsStateManagerTest, EntropySourceUsed_Low) {
 
 TEST_F(MetricsStateManagerTest, EntropySourceUsed_High) {
   EnableMetricsReporting();
-  scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
   state_manager->CreateEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_HIGH,
             state_manager->entropy_source_returned());
 }
 
 TEST_F(MetricsStateManagerTest, LowEntropySource0NotReset) {
-  scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
   // Get the low entropy source once, to initialize it.
   state_manager->GetLowEntropySource();
@@ -155,7 +155,7 @@ TEST_F(MetricsStateManagerTest,
   {
     EXPECT_TRUE(low_entropy_pref->IsDefaultValue());
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->GetLowEntropySource();
 
     EXPECT_FALSE(low_entropy_pref->IsDefaultValue());
@@ -168,7 +168,7 @@ TEST_F(MetricsStateManagerTest,
   {
     prefs_.SetString(kCachePrefName, "test");
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->GetLowEntropySource();
 
     EXPECT_EQ("test", prefs_.GetString(kCachePrefName));
@@ -181,7 +181,7 @@ TEST_F(MetricsStateManagerTest,
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kResetVariationState);
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->GetLowEntropySource();
 
     EXPECT_TRUE(prefs_.GetString(kCachePrefName).empty());
@@ -199,7 +199,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
 
   // Make sure the initial client id isn't reset by the metrics state manager.
   {
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->ForceClientIdCreation();
     EXPECT_EQ(kInitialClientId, state_manager->client_id());
   }
@@ -209,7 +209,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
 
   // Cause the actual reset to happen.
   {
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->ForceClientIdCreation();
     EXPECT_NE(kInitialClientId, state_manager->client_id());
 
@@ -228,10 +228,10 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
   const int64_t test_begin_time = base::Time::Now().ToTimeT();
 
   // Holds ClientInfo from previous scoped test for extra checks.
-  scoped_ptr<ClientInfo> previous_client_info;
+  std::unique_ptr<ClientInfo> previous_client_info;
 
   {
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
     // client_id shouldn't be auto-generated if metrics reporting is not
     // enabled.
@@ -262,7 +262,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
   {
     EXPECT_FALSE(stored_client_info_backup_);
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
     // client_id should be auto-obtained from the constructor when metrics
     // reporting is enabled.
@@ -300,7 +300,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
 
     EXPECT_FALSE(stored_client_info_backup_);
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     EXPECT_EQ(previous_client_info->client_id, state_manager->client_id());
 
     // The backup should also be refreshed when the client id re-initialized.
@@ -323,7 +323,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
 
     EXPECT_FALSE(stored_client_info_backup_);
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     EXPECT_EQ(kBackupClientId, state_manager->client_id());
     EXPECT_EQ(kBackupInstallationDate, prefs_.GetInt64(prefs::kInstallDate));
     EXPECT_EQ(kBackupReportingEnabledDate,
@@ -347,7 +347,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
 
     EXPECT_FALSE(stored_client_info_backup_);
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     EXPECT_EQ(kBackupClientId, state_manager->client_id());
     EXPECT_GE(prefs_.GetInt64(prefs::kInstallDate), test_begin_time);
     EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
@@ -365,7 +365,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
 
     EXPECT_FALSE(stored_client_info_backup_);
 
-    scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());
+    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
     // A brand new client id should have been generated.
     EXPECT_NE(std::string(), state_manager->client_id());

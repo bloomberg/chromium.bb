@@ -35,7 +35,7 @@ class NetMetricsLogUploaderTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<NetMetricsLogUploader> uploader_;
+  std::unique_ptr<NetMetricsLogUploader> uploader_;
   int on_upload_complete_count_;
 
   DISALLOW_COPY_AND_ASSIGN(NetMetricsLogUploaderTest);

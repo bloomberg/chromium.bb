@@ -98,93 +98,93 @@ int MetricSample::bucket_count() const {
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::CrashSample(
+std::unique_ptr<MetricSample> MetricSample::CrashSample(
     const std::string& crash_name) {
-  return scoped_ptr<MetricSample>(
+  return std::unique_ptr<MetricSample>(
       new MetricSample(CRASH, crash_name, 0, 0, 0, 0));
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::HistogramSample(
+std::unique_ptr<MetricSample> MetricSample::HistogramSample(
     const std::string& histogram_name,
     int sample,
     int min,
     int max,
     int bucket_count) {
-  return scoped_ptr<MetricSample>(new MetricSample(
+  return std::unique_ptr<MetricSample>(new MetricSample(
       HISTOGRAM, histogram_name, sample, min, max, bucket_count));
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::ParseHistogram(
+std::unique_ptr<MetricSample> MetricSample::ParseHistogram(
     const std::string& serialized_histogram) {
   std::vector<base::StringPiece> parts = base::SplitStringPiece(
       serialized_histogram, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   if (parts.size() != 5)
-    return scoped_ptr<MetricSample>();
+    return std::unique_ptr<MetricSample>();
   int sample, min, max, bucket_count;
   if (parts[0].empty() || !base::StringToInt(parts[1], &sample) ||
       !base::StringToInt(parts[2], &min) ||
       !base::StringToInt(parts[3], &max) ||
       !base::StringToInt(parts[4], &bucket_count)) {
-    return scoped_ptr<MetricSample>();
+    return std::unique_ptr<MetricSample>();
   }
 
   return HistogramSample(parts[0].as_string(), sample, min, max, bucket_count);
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::SparseHistogramSample(
+std::unique_ptr<MetricSample> MetricSample::SparseHistogramSample(
     const std::string& histogram_name,
     int sample) {
-  return scoped_ptr<MetricSample>(
+  return std::unique_ptr<MetricSample>(
       new MetricSample(SPARSE_HISTOGRAM, histogram_name, sample, 0, 0, 0));
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::ParseSparseHistogram(
+std::unique_ptr<MetricSample> MetricSample::ParseSparseHistogram(
     const std::string& serialized_histogram) {
   std::vector<base::StringPiece> parts = base::SplitStringPiece(
       serialized_histogram, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 2)
-    return scoped_ptr<MetricSample>();
+    return std::unique_ptr<MetricSample>();
   int sample;
   if (parts[0].empty() || !base::StringToInt(parts[1], &sample))
-    return scoped_ptr<MetricSample>();
+    return std::unique_ptr<MetricSample>();
 
   return SparseHistogramSample(parts[0].as_string(), sample);
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::LinearHistogramSample(
+std::unique_ptr<MetricSample> MetricSample::LinearHistogramSample(
     const std::string& histogram_name,
     int sample,
     int max) {
-  return scoped_ptr<MetricSample>(
+  return std::unique_ptr<MetricSample>(
       new MetricSample(LINEAR_HISTOGRAM, histogram_name, sample, 0, max, 0));
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::ParseLinearHistogram(
+std::unique_ptr<MetricSample> MetricSample::ParseLinearHistogram(
     const std::string& serialized_histogram) {
   std::vector<base::StringPiece> parts = base::SplitStringPiece(
       serialized_histogram, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   int sample, max;
   if (parts.size() != 3)
-    return scoped_ptr<MetricSample>();
+    return std::unique_ptr<MetricSample>();
   if (parts[0].empty() || !base::StringToInt(parts[1], &sample) ||
       !base::StringToInt(parts[2], &max)) {
-    return scoped_ptr<MetricSample>();
+    return std::unique_ptr<MetricSample>();
   }
 
   return LinearHistogramSample(parts[0].as_string(), sample, max);
 }
 
 // static
-scoped_ptr<MetricSample> MetricSample::UserActionSample(
+std::unique_ptr<MetricSample> MetricSample::UserActionSample(
     const std::string& action_name) {
-  return scoped_ptr<MetricSample>(
+  return std::unique_ptr<MetricSample>(
       new MetricSample(USER_ACTION, action_name, 0, 0, 0, 0));
 }
 

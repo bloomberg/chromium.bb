@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "components/metrics/profiler/ios/ios_tracking_synchronizer_delegate.h"
+
+#include "base/memory/ptr_util.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 
 namespace metrics {
 
 // static
-scoped_ptr<TrackingSynchronizerDelegate>
+std::unique_ptr<TrackingSynchronizerDelegate>
 IOSTrackingSynchronizerDelegate::Create(TrackingSynchronizer* synchronizer) {
-  return make_scoped_ptr(new IOSTrackingSynchronizerDelegate(synchronizer));
+  return base::WrapUnique(new IOSTrackingSynchronizerDelegate(synchronizer));
 }
 
 IOSTrackingSynchronizerDelegate::IOSTrackingSynchronizerDelegate(

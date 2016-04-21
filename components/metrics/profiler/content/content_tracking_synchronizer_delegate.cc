@@ -4,6 +4,7 @@
 
 #include "components/metrics/profiler/content/content_tracking_synchronizer_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/profiler_controller.h"
@@ -45,10 +46,11 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
 }  // namespace
 
 // static
-scoped_ptr<TrackingSynchronizerDelegate>
+std::unique_ptr<TrackingSynchronizerDelegate>
 ContentTrackingSynchronizerDelegate::Create(
     TrackingSynchronizer* synchronizer) {
-  return make_scoped_ptr(new ContentTrackingSynchronizerDelegate(synchronizer));
+  return base::WrapUnique(
+      new ContentTrackingSynchronizerDelegate(synchronizer));
 }
 
 ContentTrackingSynchronizerDelegate::ContentTrackingSynchronizerDelegate(

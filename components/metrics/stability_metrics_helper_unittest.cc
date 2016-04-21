@@ -24,7 +24,7 @@ class StabilityMetricsHelperTest : public testing::Test {
   TestingPrefServiceSimple* prefs() { return prefs_.get(); }
 
  private:
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(StabilityMetricsHelperTest);
 };
