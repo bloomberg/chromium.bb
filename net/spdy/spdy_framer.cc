@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <ios>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -23,6 +24,7 @@
 #include "third_party/zlib/zlib.h"
 
 using base::StringPiece;
+using std::hex;
 using std::string;
 using std::vector;
 
@@ -932,7 +934,9 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
            protocol_version_ == HTTP2)) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for RST_STREAM frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ = 0;
       }
       break;
     case SETTINGS:
@@ -953,21 +957,31 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
                      ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       } else if (protocol_version_ == HTTP2 &&
-                 current_frame_flags_ & ~SETTINGS_FLAG_ACK) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
-      } else if (protocol_version_ == HTTP2 &&
                  current_frame_flags_ & SETTINGS_FLAG_ACK &&
                  current_frame_length_ > GetSettingsMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
+      } else if (protocol_version_ == HTTP2 &&
+                 current_frame_flags_ & ~SETTINGS_FLAG_ACK) {
+        VLOG(1) << "Undefined frame flags for SETTINGS frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ &= SETTINGS_FLAG_ACK;
       }
       break;
     }
     case PING:
       if (current_frame_length_ != GetPingSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
-      } else if ((protocol_version_ == SPDY3 && current_frame_flags_ != 0) ||
-                 (current_frame_flags_ & ~PING_FLAG_ACK)) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      } else {
+        if (protocol_version_ == SPDY3 && current_frame_flags_ != 0) {
+          VLOG(1) << "Undefined frame flags for PING frame: " << hex
+                  << static_cast<int>(current_frame_flags_);
+          current_frame_flags_ = 0;
+        } else if (protocol_version_ == HTTP2 &&
+                   current_frame_flags_ & ~PING_FLAG_ACK) {
+          VLOG(1) << "Undefined frame flags for PING frame: " << hex
+                  << static_cast<int>(current_frame_flags_);
+          current_frame_flags_ &= PING_FLAG_ACK;
+        }
       }
       break;
     case GOAWAY:
@@ -981,7 +995,9 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
              current_frame_length_ < GetGoAwayMinimumSize())) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_frame_flags_ != 0) {
-          set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+          VLOG(1) << "Undefined frame flags for GOAWAY frame: " << hex
+                  << static_cast<int>(current_frame_flags_);
+          current_frame_flags_ = 0;
         }
         break;
       }
@@ -998,12 +1014,18 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (protocol_version_ == SPDY3 &&
                    current_frame_flags_ & ~CONTROL_FLAG_FIN) {
-          set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+          VLOG(1) << "Undefined frame flags for HEADERS frame: " << hex
+                  << static_cast<int>(current_frame_flags_);
+          current_frame_flags_ &= CONTROL_FLAG_FIN;
         } else if (protocol_version_ == HTTP2 &&
                    current_frame_flags_ &
                        ~(CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
                          HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_PADDED)) {
-          set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+          VLOG(1) << "Undefined frame flags for HEADERS frame: " << hex
+                  << static_cast<int>(current_frame_flags_);
+          current_frame_flags_ &=
+              (CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
+               HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_PADDED);
         }
       }
       break;
@@ -1011,7 +1033,9 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       if (current_frame_length_ != GetWindowUpdateSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for WINDOW_UPDATE frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ = 0;
       }
       break;
     case BLOCKED:
@@ -1019,19 +1043,26 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
           current_frame_length_ != GetBlockedSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for BLOCKED frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ = 0;
       }
       break;
     case PUSH_PROMISE:
       if (current_frame_length_ < GetPushPromiseMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (protocol_version_ == SPDY3 && current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for PUSH_PROMISE frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ = 0;
       } else if (protocol_version_ == HTTP2 &&
                  current_frame_flags_ &
                      ~(PUSH_PROMISE_FLAG_END_PUSH_PROMISE |
                        HEADERS_FLAG_PADDED)) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for PUSH_PROMISE frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ &=
+            (PUSH_PROMISE_FLAG_END_PUSH_PROMISE | HEADERS_FLAG_PADDED);
       }
       break;
     case CONTINUATION:
@@ -1039,14 +1070,18 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
           current_frame_length_ < GetContinuationMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ & ~HEADERS_FLAG_END_HEADERS) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for CONTINUATION frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ &= HEADERS_FLAG_END_HEADERS;
       }
       break;
     case ALTSVC:
       if (current_frame_length_ <= GetAltSvcMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for ALTSVC frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ = 0;
       }
       break;
     case PRIORITY:
@@ -1054,7 +1089,9 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
           current_frame_length_ != GetPrioritySize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        VLOG(1) << "Undefined frame flags for PRIORITY frame: " << hex
+                << static_cast<int>(current_frame_flags_);
+        current_frame_flags_ = 0;
       }
       break;
     default:
