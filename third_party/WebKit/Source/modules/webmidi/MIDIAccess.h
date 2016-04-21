@@ -89,7 +89,7 @@ public:
     {
         // This method is for MIDIAccess initialization: MIDIAccessInitializer
         // has the implementation.
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
 

@@ -47,11 +47,11 @@ PassOwnPtr<MIDIAccessor> MIDIAccessor::create(MIDIAccessorClient* client)
 MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client)
     : m_client(client)
 {
-    ASSERT(client);
+    DCHECK(client);
 
     m_accessor = adoptPtr(Platform::current()->createMIDIAccessor(this));
 
-    ASSERT(m_accessor);
+    DCHECK(m_accessor);
 }
 
 void MIDIAccessor::startSession()

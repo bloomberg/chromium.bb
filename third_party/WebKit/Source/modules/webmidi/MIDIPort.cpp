@@ -50,9 +50,9 @@ MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufactu
     , m_access(access)
     , m_connection(ConnectionStateClosed)
 {
-    ASSERT(access);
-    ASSERT(type == TypeInput || type == TypeOutput);
-    ASSERT(state == PortState::MIDIPortStateDisconnected
+    DCHECK(access);
+    DCHECK(type == TypeInput || type == TypeOutput);
+    DCHECK(state == PortState::MIDIPortStateDisconnected
         || state == PortState::MIDIPortStateConnected);
     m_state = state;
 }
@@ -126,7 +126,7 @@ void MIDIPort::setState(PortState state)
     case PortState::MIDIPortStateConnected:
         switch (m_connection) {
         case ConnectionStateOpen:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         case ConnectionStatePending:
             // We do not use |setStates| in order not to dispatch events twice.
@@ -193,7 +193,7 @@ ScriptPromise MIDIPort::reject(ScriptState* scriptState, ExceptionCode ec, const
 
 void MIDIPort::setStates(PortState state, ConnectionState connection)
 {
-    ASSERT(state != PortState::MIDIPortStateDisconnected || connection != ConnectionStateOpen);
+    DCHECK(state != PortState::MIDIPortStateDisconnected || connection != ConnectionStateOpen);
     if (m_state == state && m_connection == connection)
         return;
     m_state = state;

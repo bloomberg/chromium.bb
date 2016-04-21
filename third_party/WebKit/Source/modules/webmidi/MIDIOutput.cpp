@@ -125,7 +125,7 @@ private:
 
     bool acceptCurrentSysex()
     {
-        ASSERT(isSysex());
+        DCHECK(isSysex());
         for (m_offset++; !isEndOfData(); m_offset++) {
             if (isReservedStatusByte())
                 return false;
@@ -143,10 +143,10 @@ private:
 
     bool acceptCurrentMessage()
     {
-        ASSERT(isStatusByte());
-        ASSERT(!isSysex());
-        ASSERT(!isReservedStatusByte());
-        ASSERT(!isRealTimeMessage());
+        DCHECK(isStatusByte());
+        DCHECK(!isSysex());
+        DCHECK(!isReservedStatusByte());
+        DCHECK(!isRealTimeMessage());
         static const int channelMessageLength[7] = { 3, 3, 3, 3, 2, 2, 3 }; // for 0x8*, 0x9*, ..., 0xe*
         static const int systemMessageLength[7] = { 2, 3, 2, 0, 0, 1, 0 }; // for 0xf1, 0xf2, ..., 0xf7
         size_t length = isSystemMessage() ? systemMessageLength[m_data[m_offset] - 0xf1] : channelMessageLength[(m_data[m_offset] >> 4) - 8];
@@ -177,7 +177,7 @@ private:
 
 MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
-    ASSERT(access);
+    DCHECK(access);
     MIDIOutput* output = new MIDIOutput(access, portIndex, id, manufacturer, name, version, state);
     output->suspendIfNeeded();
     return output;
@@ -195,7 +195,7 @@ MIDIOutput::~MIDIOutput()
 
 void MIDIOutput::send(DOMUint8Array* array, double timestamp, ExceptionState& exceptionState)
 {
-    ASSERT(array);
+    DCHECK(array);
 
     if (timestamp == 0.0)
         timestamp = now(getExecutionContext());
@@ -231,7 +231,7 @@ void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, Exception
 
 void MIDIOutput::send(DOMUint8Array* data, ExceptionState& exceptionState)
 {
-    ASSERT(data);
+    DCHECK(data);
     send(data, 0.0, exceptionState);
 }
 

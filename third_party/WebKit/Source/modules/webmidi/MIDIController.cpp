@@ -43,7 +43,7 @@ const char* MIDIController::supplementName()
 MIDIController::MIDIController(PassOwnPtr<MIDIClient> client)
     : m_client(client)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
 }
 
 MIDIController::~MIDIController()

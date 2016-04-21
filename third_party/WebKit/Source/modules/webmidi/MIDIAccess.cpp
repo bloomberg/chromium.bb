@@ -129,7 +129,7 @@ MIDIOutputMap* MIDIAccess::outputs() const
 
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     MIDIInput* port = MIDIInput::create(this, id, manufacturer, name, version, state);
     m_inputs.append(port);
     dispatchEvent(MIDIConnectionEvent::create(port));
@@ -137,7 +137,7 @@ void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, c
 
 void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     unsigned portIndex = m_outputs.size();
     MIDIOutput* port = MIDIOutput::create(this, portIndex, id, manufacturer, name, version, state);
     m_outputs.append(port);
@@ -146,7 +146,7 @@ void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, 
 
 void MIDIAccess::didSetInputPortState(unsigned portIndex, PortState state)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (portIndex >= m_inputs.size())
         return;
 
@@ -155,7 +155,7 @@ void MIDIAccess::didSetInputPortState(unsigned portIndex, PortState state)
 
 void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (portIndex >= m_outputs.size())
         return;
 
@@ -164,7 +164,7 @@ void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state)
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (portIndex >= m_inputs.size())
         return;
 
@@ -172,7 +172,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
     // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
     // This is how timestamps are defined in the Web MIDI spec.
     Document* document = toDocument(getExecutionContext());
-    ASSERT(document);
+    DCHECK(document);
 
     double timeStampInMilliseconds = 1000 * document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(timeStamp);
 
@@ -193,7 +193,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
         timeStamp = 0;
     } else {
         Document* document = toDocument(getExecutionContext());
-        ASSERT(document);
+        DCHECK(document);
         double documentStartTime = document->loader()->timing().referenceMonotonicTime();
         timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
     }

@@ -40,7 +40,7 @@ using PortState = MIDIAccessor::MIDIPortState;
 
 MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
-    ASSERT(access);
+    DCHECK(access);
     MIDIInput* input = new MIDIInput(access, id, manufacturer, name, version, state);
     input->suspendIfNeeded();
     return input;
@@ -76,7 +76,7 @@ bool MIDIInput::addEventListenerInternal(const AtomicString& eventType, EventLis
 
 void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 
     if (!length)
         return;
