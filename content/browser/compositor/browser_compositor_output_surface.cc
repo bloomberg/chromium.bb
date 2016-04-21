@@ -56,9 +56,13 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    base::SingleThreadTaskRunner* task_runner)
     : OutputSurface(nullptr, nullptr, vulkan_context_provider, nullptr),
       vsync_manager_(vsync_manager),
+      synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
+          task_runner,
+          cc::BeginFrameArgs::DefaultInterval())),
       reflector_(nullptr) {
   Initialize();
 }

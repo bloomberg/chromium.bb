@@ -13,7 +13,7 @@ namespace cc {
 
 class TextureMailboxDeleter;
 
-class VulkanRenderer : public DirectRenderer {
+class CC_EXPORT VulkanRenderer : public DirectRenderer {
  public:
   static std::unique_ptr<VulkanRenderer> Create(
       RendererClient* client,

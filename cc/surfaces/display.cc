@@ -24,6 +24,10 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/buffer_types.h"
 
+#if defined(ENABLE_VULKAN)
+#include "cc/output/vulkan_renderer.h"
+#endif
+
 namespace {
 
 class EmptyBeginFrameSource : public cc::BeginFrameSource {
@@ -167,6 +171,17 @@ void Display::InitializeRenderer() {
     if (!renderer)
       return;
     renderer_ = std::move(renderer);
+  } else if (output_surface_->vulkan_context_provider()) {
+#if defined(ENABLE_VULKAN)
+    std::unique_ptr<VulkanRenderer> renderer = VulkanRenderer::Create(
+        this, &settings_, output_surface_.get(), resource_provider.get(),
+        texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
+    if (!renderer)
+      return;
+    renderer_ = std::move(renderer);
+#else
+    NOTREACHED();
+#endif
   } else {
     std::unique_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get());
