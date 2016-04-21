@@ -33,6 +33,7 @@ class ScriptWrappable;
     V(condition) \
     V(data) \
     V(detail) \
+    V(document) \
     V(error) \
     V(event) \
     V(idbCursorRequest) \
