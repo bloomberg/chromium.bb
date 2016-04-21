@@ -77,6 +77,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'])
 
     # Nexus 5
+    self.Fail('WebglExtension.EXT_disjoint_timer_query',
+        ['android', ('qualcomm', 'Adreno (TM) 330')])
     self.Fail('WebglExtension.OES_texture_float_linear',
         ['android', ('qualcomm', 'Adreno (TM) 330')])
 
