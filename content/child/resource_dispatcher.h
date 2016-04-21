@@ -87,7 +87,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   virtual void Cancel(int request_id);
 
   // Toggles the is_deferred attribute for the specified request.
-  void SetDefersLoading(int request_id, bool value);
+  virtual void SetDefersLoading(int request_id, bool value);
 
   // Indicates the priority of the specified request changed.
   void DidChangePriority(int request_id,

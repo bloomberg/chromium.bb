@@ -59,7 +59,8 @@ class TestResourceDispatcher : public ResourceDispatcher {
  public:
   TestResourceDispatcher() :
       ResourceDispatcher(nullptr, nullptr),
-      canceled_(false) {
+      canceled_(false),
+      defers_loading_(false) {
   }
 
   ~TestResourceDispatcher() override {}
@@ -88,9 +89,15 @@ class TestResourceDispatcher : public ResourceDispatcher {
   const GURL& url() { return url_; }
   const GURL& stream_url() { return stream_url_; }
 
+  void SetDefersLoading(int request_id, bool value) override {
+    defers_loading_ = value;
+  }
+  bool defers_loading() const { return defers_loading_; }
+
  private:
   std::unique_ptr<RequestPeer> peer_;
   bool canceled_;
+  bool defers_loading_;
   GURL url_;
   GURL stream_url_;
 
@@ -498,6 +505,13 @@ TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_EQ(net::OK, client()->error().reason);
   EXPECT_EQ("", client()->error().domain.utf8());
+}
+
+TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
+  client()->loader()->setDefersLoading(true);
+  EXPECT_FALSE(dispatcher()->defers_loading());
+  DoStartAsyncRequest();
+  EXPECT_TRUE(dispatcher()->defers_loading());
 }
 
 // FTP integration tests.  These are focused more on safe deletion than correct

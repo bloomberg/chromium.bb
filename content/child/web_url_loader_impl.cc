@@ -557,6 +557,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   }
 
   if (sync_load_response) {
+    DCHECK(defers_loading_ == NOT_DEFERRING);
     resource_dispatcher_->StartSync(
         request_info, request_body.get(), sync_load_response);
     return;
@@ -565,6 +566,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_id_ = resource_dispatcher_->StartAsync(
       request_info, request_body.get(),
       base::WrapUnique(new WebURLLoaderImpl::RequestPeerImpl(this)));
+
+  if (defers_loading_ != NOT_DEFERRING)
+    resource_dispatcher_->SetDefersLoading(request_id_, true);
 }
 
 void WebURLLoaderImpl::Context::SetWebTaskRunner(
