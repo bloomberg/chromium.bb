@@ -177,10 +177,8 @@ void GLHelperHolder::Initialize() {
   limits.max_transfer_buffer_size = std::min(
       3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
 
-  bool share_resources = true;
-  // TODO(danakj): This should be false probably, it is for the main thread
-  // context which is used for GLHelper.
-  bool automatic_flushes = true;
+  bool share_resources = false;
+  bool automatic_flushes = false;
   GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
 
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context(
