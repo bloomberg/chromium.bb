@@ -10,6 +10,10 @@ for more details on the presubmit API built into depot_tools.
 import json
 import sys
 
+VALID_GROUP_KEYS = ['group_name',
+                    'params',
+                    'enable_features',
+                    'disable_features']
 
 def PrettyPrint(contents):
   """Pretty prints a fieldtrial configuration.
@@ -73,6 +77,13 @@ def ValidateData(json_data, file_path, message_type):
                 'Malformed config file %s: Invalid params for Group[%s]'
                 ' in Study[%s]' % (file_path, group['group_name'],
                 study))]
+      for key in group.keys():
+        if key not in VALID_GROUP_KEYS:
+          return [message_type(
+              'Malformed config file %s: Key[%s] in Group[%s] in Study[%s] '
+              'is not a valid key.' % (
+                  file_path, key, group['group_name'], study))]
+
   return []
 
 def CheckPretty(contents, file_path, message_type):
