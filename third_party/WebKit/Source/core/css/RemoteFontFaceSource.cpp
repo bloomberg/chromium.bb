@@ -29,14 +29,11 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* 
     ThreadState::current()->registerPreFinalizer(this);
     m_font->addClient(this);
 
-    if (RuntimeEnabledFeatures::webFontsInterventionEnabled()) {
-        // TODO(crbug.com/515343): Consider to use better signals.
-        if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled()
-            || (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto)) {
-
-            m_isInterventionTriggered = true;
-            m_period = SwapPeriod;
-        }
+    // TODO(crbug.com/578029): Connect NQE signal for V2 mode.
+    if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled()
+        || (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto)) {
+        m_isInterventionTriggered = true;
+        m_period = SwapPeriod;
     }
 }
 
@@ -280,8 +277,6 @@ void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(const Fon
 
 void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool triggered)
 {
-    if (!RuntimeEnabledFeatures::webFontsInterventionEnabled())
-        return;
     // interventionResult takes 0-3 values.
     int interventionResult = 0;
     if (m_isLongLimitExceeded)
