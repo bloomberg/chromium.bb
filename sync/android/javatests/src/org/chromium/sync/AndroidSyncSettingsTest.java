@@ -22,6 +22,7 @@ import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 /**
  * Tests for AndroidSyncSettings.
  */
+@DisabledTest(message = "https://crbug.com/605567")
 public class AndroidSyncSettingsTest extends InstrumentationTestCase {
 
     private static class CountingMockSyncContentResolverDelegate
@@ -262,7 +263,6 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
                 AndroidSyncSettings.isSyncEnabled(mContext));
     }
 
-    @DisabledTest(message = "https://crbug.com/605567")
     @SmallTest
     @Feature({"Sync"})
     public void testSyncSettingsCaching() throws InterruptedException {
