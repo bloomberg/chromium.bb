@@ -289,6 +289,26 @@ TEST_F(PriorityWriteSchedulerTest, ShouldYield) {
   EXPECT_TRUE(scheduler_.ShouldYield(5));
 }
 
+TEST_F(PriorityWriteSchedulerTest, GetLatestEventWithPrecedence) {
+  EXPECT_SPDY_BUG(scheduler_.RecordStreamEventTime(3, 5),
+                  "Stream 3 not registered");
+  EXPECT_SPDY_BUG(EXPECT_EQ(0, scheduler_.GetLatestEventWithPrecedence(4)),
+                  "Stream 4 not registered");
+
+  for (int i = 1; i < 5; ++i) {
+    scheduler_.RegisterStream(i, i);
+  }
+  for (int i = 1; i < 5; ++i) {
+    EXPECT_EQ(0, scheduler_.GetLatestEventWithPrecedence(i));
+  }
+  for (int i = 1; i < 5; ++i) {
+    scheduler_.RecordStreamEventTime(i, i * 100);
+  }
+  for (int i = 1; i < 5; ++i) {
+    EXPECT_EQ((i - 1) * 100, scheduler_.GetLatestEventWithPrecedence(i));
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net
