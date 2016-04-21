@@ -220,6 +220,14 @@ static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
              : layer->Is3dSorted();
 }
 
+static inline gfx::Point3F TransformOrigin(Layer* layer) {
+  return layer->transform_origin();
+}
+
+static inline gfx::Point3F TransformOrigin(LayerImpl* layer) {
+  return layer->test_properties()->transform_origin;
+}
+
 template <typename LayerType>
 bool AddTransformNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
@@ -401,7 +409,7 @@ bool AddTransformNodeIfNeeded(
   } else {
     node->data.source_offset = source_offset;
     node->data.update_post_local_transform(layer->position(),
-                                           layer->transform_origin());
+                                           TransformOrigin(layer));
   }
 
   if (is_overscroll_elasticity_layer) {
@@ -437,7 +445,7 @@ bool AddTransformNodeIfNeeded(
   }
 
   node->data.local = layer->transform();
-  node->data.update_pre_local_transform(layer->transform_origin());
+  node->data.update_pre_local_transform(TransformOrigin(layer));
 
   node->data.needs_local_transform_update = true;
   data_from_ancestor.transform_tree->UpdateTransforms(node->id);

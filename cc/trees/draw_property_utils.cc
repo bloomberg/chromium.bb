@@ -1027,6 +1027,16 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                      property_trees->transform_tree, render_surface);
 }
 
+#if DCHECK_IS_ON()
+static void ValidatePageScaleLayer(const Layer* page_scale_layer) {
+  DCHECK_EQ(page_scale_layer->position().ToString(), gfx::PointF().ToString());
+  DCHECK_EQ(page_scale_layer->transform_origin().ToString(),
+            gfx::Point3F().ToString());
+}
+
+static void ValidatePageScaleLayer(const LayerImpl* page_scale_layer) {}
+#endif
+
 template <typename LayerType>
 static void UpdatePageScaleFactorInternal(PropertyTrees* property_trees,
                                           const LayerType* page_scale_layer,
@@ -1043,9 +1053,9 @@ static void UpdatePageScaleFactorInternal(PropertyTrees* property_trees,
       page_scale_layer->transform_tree_index());
   // TODO(enne): property trees can't ask the layer these things, but
   // the page scale layer should *just* be the page scale.
-  DCHECK_EQ(page_scale_layer->position().ToString(), gfx::PointF().ToString());
-  DCHECK_EQ(page_scale_layer->transform_origin().ToString(),
-            gfx::Point3F().ToString());
+#if DCHECK_IS_ON()
+  ValidatePageScaleLayer(page_scale_layer);
+#endif
 
   if (IsRootLayer(page_scale_layer)) {
     // When the page scale layer is also the root layer, the node should also

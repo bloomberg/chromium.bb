@@ -5365,8 +5365,8 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
   // The rotation depends on the layer's transform origin, and the child layer
   // is a different size than the clip, so make sure the clip layer's origin
   // lines up over the child.
-  clip_layer->SetTransformOrigin(gfx::Point3F(
-      clip_layer->bounds().width() * 0.5f, clip_layer->bounds().height(), 0.f));
+  clip_layer->test_properties()->transform_origin = gfx::Point3F(
+      clip_layer->bounds().width() * 0.5f, clip_layer->bounds().height(), 0.f);
   LayerImpl* child_ptr = child.get();
   clip_layer->AddChild(std::move(child));
   scroll_layer->AddChild(std::move(clip_layer));
@@ -5451,8 +5451,8 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
   // The transform depends on the layer's transform origin, and the child layer
   // is a different size than the clip, so make sure the clip layer's origin
   // lines up over the child.
-  clip_layer->SetTransformOrigin(gfx::Point3F(
-      clip_layer->bounds().width(), clip_layer->bounds().height(), 0.f));
+  clip_layer->test_properties()->transform_origin = gfx::Point3F(
+      clip_layer->bounds().width(), clip_layer->bounds().height(), 0.f);
   clip_layer->AddChild(std::move(child));
   scroll_layer->AddChild(std::move(clip_layer));
 

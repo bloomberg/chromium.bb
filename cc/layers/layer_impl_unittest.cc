@@ -244,8 +244,6 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetTransformOrigin(arbitrary_point_3f));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetMasksToBounds(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetPosition(arbitrary_point_f));

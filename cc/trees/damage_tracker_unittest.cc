@@ -434,8 +434,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   rotation.Rotate(45.0);
 
   ClearDamageForAllSurfaces(root);
-  child->SetTransformOrigin(gfx::Point3F(
-      child->bounds().width() * 0.5f, child->bounds().height() * 0.5f, 0.f));
+  child->test_properties()->transform_origin = gfx::Point3F(
+      child->bounds().width() * 0.5f, child->bounds().height() * 0.5f, 0.f);
   child->SetPosition(gfx::PointF(85.f, 85.f));
   child->NoteLayerPropertyChanged();
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -1378,8 +1378,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
   // This is not actually the transform origin point being tested, but by
   // convention its
   // expected to be the same as the replica's anchor point.
-  grand_child1->SetTransformOrigin(
-      gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f));
+  grand_child1->test_properties()->transform_origin =
+      gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f);
 
   {
     std::unique_ptr<LayerImpl> grand_child1_replica =
@@ -1387,8 +1387,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplicaMaskWithTransformOrigin) {
     grand_child1_replica->SetPosition(gfx::PointF());
 
     // This is the anchor being tested.
-    grand_child1_replica->SetTransformOrigin(
-        gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f));
+    grand_child1_replica->test_properties()->transform_origin =
+        gfx::Point3F(grand_child1->bounds().width(), 0.f, 0.f);
     gfx::Transform reflection;
     reflection.Scale3d(-1.0, 1.0, 1.0);
     grand_child1_replica->SetTransform(reflection);

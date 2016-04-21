@@ -8631,7 +8631,7 @@ TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
 
-  child->SetTransformOrigin(gfx::Point3F(10.f, 10.f, 10.f));
+  child->test_properties()->transform_origin = gfx::Point3F(10.f, 10.f, 10.f);
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);

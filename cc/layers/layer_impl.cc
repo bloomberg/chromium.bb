@@ -53,6 +53,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       replica_layer_(nullptr),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
+      test_properties_(nullptr),
       scroll_clip_layer_id_(Layer::INVALID_ID),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
@@ -484,7 +485,6 @@ void LayerImpl::set_main_thread_scrolling_reasons(
 }
 
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
-  layer->SetTransformOrigin(transform_origin_);
   layer->SetBackgroundColor(background_color_);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(bounds_);
@@ -1050,12 +1050,6 @@ void LayerImpl::SetHideLayerAndSubtree(bool hide) {
   hide_layer_and_subtree_ = hide;
 }
 
-void LayerImpl::SetTransformOrigin(const gfx::Point3F& transform_origin) {
-  if (transform_origin_ == transform_origin)
-    return;
-  transform_origin_ = transform_origin;
-}
-
 void LayerImpl::SetBackgroundColor(SkColor background_color) {
   if (background_color_ == background_color)
     return;
@@ -1392,8 +1386,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   }
 
   MathUtil::AddToTracedValue("scroll_offset", CurrentScrollOffset(), state);
-
-  MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 
   if (!transform().IsIdentity())
     MathUtil::AddToTracedValue("transform", transform(), state);
