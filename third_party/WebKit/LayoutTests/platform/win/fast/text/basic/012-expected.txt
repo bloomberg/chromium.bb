@@ -10,11 +10,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 781x35
           text run at (0,0) width 654: "Apart from whitespace (tab and linefeed characters), the two lists below (in red) use identical HTML. "
           text run at (653,0) width 128: "Both lists should be"
-          text run at (0,18) width 595: "rendered on a single line. In Safari, however, the first list shows each item on a separate line."
+          text run at (0,18) width 594: "rendered on a single line. In Safari, however, the first list shows each item on a separate line."
       LayoutBlockFlow {P} at (0,98.91) size 784x36
         LayoutText {#text} at (0,0) size 764x35
           text run at (0,0) width 764: "This bug only seems to occur if the bullet character is non-ASCII (has a Unicode value higher than 127). Non-breaking"
-          text run at (0,18) width 286: "spaces (&#160;), however, are an exception."
+          text run at (0,18) width 285: "spaces (&#160;), however, are an exception."
       LayoutBlockFlow (anonymous) at (0,150.91) size 784x72
         LayoutBR {BR} at (0,0) size 0x17
         LayoutInline {FONT} at (0,0) size 338x53 [color=#CC0000]

@@ -19,7 +19,7 @@ layer at (0,0) size 785x1187 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 286: "If a nested container element is preceded by "
           text run at (285,18) width 449: "uncontained text and a blank line, and there are \"too many\" characters"
           text run at (0,36) width 419: "contained in the nested element, the PRE width will be too wide. "
-          text run at (418,36) width 342: "In the examples below, the nested element is a SPAN"
+          text run at (418,36) width 341: "In the examples below, the nested element is a SPAN"
           text run at (0,54) width 96: "whose content "
           text run at (95,54) width 233: "is the days-of-week line, as follows:"
       LayoutBlockFlow {PRE} at (0,143.44) size 769x15

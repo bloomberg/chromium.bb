@@ -9,8 +9,8 @@ layer at (0,0) size 800x391
         LayoutBR {BR} at (339,0) size 1x17
         LayoutText {#text} at (0,18) size 743x35
           text run at (0,18) width 743: "On systems that the locales have different font preferences, the following divs should be displayed in corresponding"
-          text run at (0,36) width 180: "preferred fonts respectively."
-        LayoutBR {BR} at (179,36) size 1x17
+          text run at (0,36) width 179: "preferred fonts respectively."
+        LayoutBR {BR} at (178,36) size 1x17
       LayoutBlockFlow {DIV} at (0,54) size 784x107
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 130x17

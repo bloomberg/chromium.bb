@@ -4,8 +4,8 @@ layer at (0,0) size 785x714 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x714
     LayoutBlockFlow {BODY} at (8,8) size 769x690
       LayoutBlockFlow {P} at (0,0) size 769x54
-        LayoutText {#text} at (0,0) size 749x35
-          text run at (0,0) width 749: "This tests that complex text that requires font fallback wraps correctly. The text is Tamil, which is not covered by the"
+        LayoutText {#text} at (0,0) size 748x35
+          text run at (0,0) width 748: "This tests that complex text that requires font fallback wraps correctly. The text is Tamil, which is not covered by the"
           text run at (0,18) width 479: "default font, so fallback occurs. Note that the exclamation point in the end "
         LayoutInline {I} at (0,0) size 12x17
           LayoutText {#text} at (478,18) size 12x17

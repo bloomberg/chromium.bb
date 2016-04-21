@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 279: "This test covers Hebrew vowel positioning."
       LayoutBlockFlow {HR} at (0,34) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 468x17
-          text run at (0,0) width 468: "The vowel (two vertical dots) should be centered beneath the main letter."
+        LayoutText {#text} at (0,0) size 467x17
+          text run at (0,0) width 467: "The vowel (two vertical dots) should be centered beneath the main letter."
       LayoutBlockFlow {DIV} at (0,86) size 784x91
         LayoutText {#text} at (48,1) size 59x88
           text run at (48,1) width 59 RTL: "\x{5E1}\x{5B0} "

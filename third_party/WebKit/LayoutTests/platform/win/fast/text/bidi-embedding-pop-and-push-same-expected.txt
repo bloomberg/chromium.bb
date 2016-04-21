@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 521x17
-          text run at (0,0) width 521: "In each box below, the words or letters should be in the same order on every line."
+        LayoutText {#text} at (0,0) size 520x17
+          text run at (0,0) width 520: "In each box below, the words or letters should be in the same order on every line."
       LayoutBlockFlow {DIV} at (8,34) size 768x64 [border: (1px solid #ADD8E6)]
         LayoutBlockFlow {DIV} at (5,5) size 758x18
           LayoutText {#text} at (0,0) size 47x17

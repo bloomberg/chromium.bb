@@ -5,8 +5,8 @@ layer at (0,0) size 800x300
     LayoutBlockFlow {BODY} at (8,8) size 784x284
       LayoutBlockFlow {DIV} at (0,0) size 784x284
         LayoutBlockFlow (anonymous) at (0,0) size 784x36
-          LayoutText {#text} at (0,0) size 778x36
-            text run at (0,0) width 778: "In all four cases below, the exclamation mark should be on the left side of the first line and on the right side of the second"
+          LayoutText {#text} at (0,0) size 777x36
+            text run at (0,0) width 777: "In all four cases below, the exclamation mark should be on the left side of the first line and on the right side of the second"
             text run at (0,18) width 28: "line."
         LayoutBlockFlow {DIV} at (0,36) size 784x248
           LayoutBR {BR} at (321,44) size 0x18

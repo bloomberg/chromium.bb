@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (55,20) size 4x19
           text run at (55,20) width 4: "."
       LayoutBlockFlow {P} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 510x19
-          text run at (0,0) width 510: "All text should be aligned with the right edge of its container and should not overflow."
+        LayoutText {#text} at (0,0) size 509x19
+          text run at (0,0) width 509: "All text should be aligned with the right edge of its container and should not overflow."
       LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,102) size 191x28 [bgcolor=#FFFF00]
         LayoutText {#text} at (1,0) size 190x27

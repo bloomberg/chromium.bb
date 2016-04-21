@@ -4,8 +4,8 @@ layer at (0,0) size 800x344
   LayoutBlockFlow {HTML} at (0,0) size 800x344
     LayoutBlockFlow {BODY} at (8,16) size 784x320
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 317x18
-          text run at (0,0) width 317: "All rows should be identical to the reference row."
+        LayoutText {#text} at (0,0) size 316x18
+          text run at (0,0) width 316: "All rows should be identical to the reference row."
       LayoutTable {TABLE} at (0,34) size 583x113 [border: none]
         LayoutTableSection {TBODY} at (0,0) size 582x112
           LayoutTableRow {TR} at (0,0) size 582x28

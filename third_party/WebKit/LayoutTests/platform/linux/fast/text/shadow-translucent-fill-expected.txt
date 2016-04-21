@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 567x19
+        LayoutText {#text} at (0,0) size 566x19
           text run at (0,0) width 451: "Test that the intensity of text-shadow does not depend on the transparency "
-          text run at (450,0) width 117: "of the text fill color."
+          text run at (450,0) width 116: "of the text fill color."
       LayoutBlockFlow {DIV} at (0,36) size 784x72
         LayoutText {#text} at (0,0) size 48x24
           text run at (0,0) width 48: "A "

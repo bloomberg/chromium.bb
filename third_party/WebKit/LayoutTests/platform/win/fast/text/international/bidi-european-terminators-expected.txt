@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
           text run at (105,0) width 32: " and "
           text run at (136,0) width 8 RTL: "\x{5D1}"
           text run at (143,0) width 625: " are of type R; ^ and @ are of type ON; $ and % are of type ET; a is of type L; 1 is of type EN. In"
-          text run at (0,18) width 477: "each of the following pairs, the two lines should be identical to each other."
+          text run at (0,18) width 476: "each of the following pairs, the two lines should be identical to each other."
       LayoutBlockFlow {HR} at (0,104) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,122) size 784x18
         LayoutText {#text} at (0,0) size 75x17

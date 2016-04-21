@@ -9,8 +9,8 @@ layer at (0,0) size 800x104
             text run at (0,1) width 528: "Ahem_font_required_for_this_test."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 461x17
-          text run at (0,0) width 461: "There should be no red below, only a lime line with a green square in it."
+        LayoutText {#text} at (0,0) size 460x17
+          text run at (0,0) width 460: "There should be no red below, only a lime line with a green square in it."
       LayoutBlockFlow {DIV} at (0,68) size 784x20
         LayoutBlockFlow {DIV} at (0,0) size 200x20 [bgcolor=#FF0000]
           LayoutBlockFlow {DIV} at (0,0) size 140x20 [color=#00FF00] [bgcolor=#008000]

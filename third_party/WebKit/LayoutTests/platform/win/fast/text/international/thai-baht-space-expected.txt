@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
             text run at (53,0) width 69: "bug 25464"
         LayoutText {#text} at (121,0) size 726x35
           text run at (121,0) width 605: ". Characters belonging to 'Common' script followed / preceeded by a space should be rendered"
-          text run at (0,18) width 647: "correctly. Two lines below have 4 Thai currency signs (U+0E3F) and all of them should be rendered."
+          text run at (0,18) width 646: "correctly. Two lines below have 4 Thai currency signs (U+0E3F) and all of them should be rendered."
       LayoutBlockFlow {P} at (0,52) size 784x40
         LayoutText {#text} at (0,2) size 285x17
           text run at (0,2) width 285: "abc \x{E25}\x{E07}\x{E17}\x{E38}\x{E19}4000\x{E3F} \x{E23}\x{E31}\x{E1A}\x{E1B}\x{E23}\x{E30}\x{E01}\x{E31}\x{E19}\x{E23}\x{E32}\x{E22}\x{E44}\x{E14}\x{E49} 50000\x{E3F}/M"

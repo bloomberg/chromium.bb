@@ -109,8 +109,8 @@ layer at (0,0) size 800x788 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (1,37) width 171: "cccccccccccccccccccccccc"
             LayoutTableCell {TD} at (194,28) size 590x0 [r=0 c=1 rs=1 cs=1]
       LayoutBlockFlow {P} at (0,716) size 784x18
-        LayoutText {#text} at (0,0) size 444x17
-          text run at (0,0) width 444: "Spaces both before and after <wbr> to check for collapsing behavior."
+        LayoutText {#text} at (0,0) size 443x17
+          text run at (0,0) width 443: "Spaces both before and after <wbr> to check for collapsing behavior."
       LayoutBlockFlow {DIV} at (0,750) size 302x20 [border: (1px solid #0000FF)]
         LayoutText {#text} at (1,1) size 26x17
           text run at (1,1) width 26: "aaa "

@@ -6,11 +6,11 @@ layer at (0,0) size 800x142
       LayoutBlockFlow {DIV} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 103x17
           text run at (0,0) width 103: "Select this text. "
-        LayoutInline {FONT} at (0,0) size 768x29
-          LayoutText {#text} at (102,5) size 768x29
-            text run at (102,5) width 85: "I am teeny and tiny. "
-            text run at (186,5) width 298: "I am going to have lots of text but each line should retain the big height. "
-            text run at (483,5) width 285: "If the lines shrink, it means that the root line box's height is not being"
+        LayoutInline {FONT} at (0,0) size 767x29
+          LayoutText {#text} at (102,5) size 767x29
+            text run at (102,5) width 84: "I am teeny and tiny. "
+            text run at (185,5) width 298: "I am going to have lots of text but each line should retain the big height. "
+            text run at (482,5) width 285: "If the lines shrink, it means that the root line box's height is not being"
             text run at (0,23) width 114: "considered and that's wrong."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,52) size 784x0

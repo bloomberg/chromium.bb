@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (451,0) size 5x17
           text run at (451,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 325x17
-          text run at (0,0) width 325: "The boxes below should be identical to each other."
+        LayoutText {#text} at (0,0) size 324x17
+          text run at (0,0) width 324: "The boxes below should be identical to each other."
       LayoutBlockFlow {DIV} at (0,68) size 90x46 [border: (1px solid #0000FF)]
         LayoutText {#text} at (5,5) size 60x35
           text run at (5,5) width 56 RTL: "\x{627}\x{644}\x{645}\x{627}\x{626}\x{629} \x{645}\x{644}\x{64A}\x{627}\x{631}"

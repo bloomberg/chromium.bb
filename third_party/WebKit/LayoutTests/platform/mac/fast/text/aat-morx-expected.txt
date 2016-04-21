@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 759x36
           text run at (0,0) width 759: "You should see a black and white Chromium logo. This test requires the ChromiumAATTest font to be available in the"
-          text run at (0,18) width 484: "test runner, the test only works on Mac in order to verify AAT font support."
+          text run at (0,18) width 483: "test runner, the test only works on Mac in order to verify AAT font support."
       LayoutBlockFlow {DIV} at (0,36) size 784x202
         LayoutText {#text} at (0,11) size 200x179
           text run at (0,11) width 200: "abcd"

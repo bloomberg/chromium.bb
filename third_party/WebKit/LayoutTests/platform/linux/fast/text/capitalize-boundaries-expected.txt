@@ -10,13 +10,13 @@ layer at (0,0) size 785x1349 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (334,0) size 46x19
             text run at (334,0) width 46: "Bugzilla"
         LayoutText {#text} at (380,0) size 767x79
-          text run at (380,0) width 379: ". Currently, the \"Browser rendering\" results are not expected to"
+          text run at (380,0) width 378: ". Currently, the \"Browser rendering\" results are not expected to"
           text run at (0,20) width 634: "match the \"Correct output sample\" results. In fact, I do not entirely agree with all of the given test cases in "
           text run at (634,20) width 79: "terms of their"
           text run at (0,40) width 767: "expected results, nor do I think that the browser should yet be expected to match all of the cases in the different languages, but I"
           text run at (0,60) width 22: "am "
-          text run at (22,60) width 273: "(at least temporarily) adding the test anyway. "
-        LayoutBR {BR} at (295,75) size 0x0
+          text run at (22,60) width 272: "(at least temporarily) adding the test anyway. "
+        LayoutBR {BR} at (293,75) size 1x0
         LayoutBR {BR} at (0,80) size 0x19
       LayoutTable {TABLE} at (0,100) size 769x411
         LayoutBlockFlow {CAPTION} at (0,0) size 769x20

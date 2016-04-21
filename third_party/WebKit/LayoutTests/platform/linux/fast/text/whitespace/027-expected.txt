@@ -42,15 +42,15 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,460) size 784x72 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 780x68
           LayoutTableRow {TR} at (0,2) size 780x64
-            LayoutTableCell {TD} at (2,2) size 541x64 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 540x64 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 125x19
                 text run at (2,2) width 125: "This is a test to see if"
-              LayoutInline {SPAN} at (0,0) size 537x59
-                LayoutText {#text} at (127,2) size 537x59
+              LayoutInline {SPAN} at (0,0) size 536x59
+                LayoutText {#text} at (127,2) size 536x59
                   text run at (127,2) width 97: "this is computed"
                   text run at (224,2) width 0: " "
-                  text run at (2,22) width 537: "correctly.  In particular, we have a really long line here that could throw off the min-width."
-                  text run at (538,22) width 1: " "
+                  text run at (2,22) width 536: "correctly.  In particular, we have a really long line here that could throw off the min-width."
+                  text run at (537,22) width 1: " "
                   text run at (2,42) width 29: "Is it?"
               LayoutText {#text} at (0,0) size 0x0
-            LayoutTableCell {TD} at (545,32) size 233x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (544,32) size 234x4 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]

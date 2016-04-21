@@ -13,8 +13,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (28,18) size 5x18
           text run at (28,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 721x18
-          text run at (0,0) width 721: "The word \x{201C}dolor\x{201D} below should be highlighted in its entirety. The highlight should not extend beyond that word."
+        LayoutText {#text} at (0,0) size 720x18
+          text run at (0,0) width 720: "The word \x{201C}dolor\x{201D} below should be highlighted in its entirety. The highlight should not extend beyond that word."
       LayoutBlockFlow {DIV} at (0,86) size 784x42
         LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow (anonymous) at (0,14) size 784x28
