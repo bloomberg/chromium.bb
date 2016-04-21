@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
-#include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/channel_info.h"
@@ -80,6 +79,7 @@
 #if defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
+#include "chrome/app/chrome_crash_reporter_client.h"
 #endif
 
 #if !defined(DISABLE_NACL) && defined(OS_LINUX)

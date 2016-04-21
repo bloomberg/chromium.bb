@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/chrome_elf_util.h"
-
 #include <tuple>
 
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

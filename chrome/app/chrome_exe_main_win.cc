@@ -23,7 +23,7 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/app/main_dll_loader_win.h"
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"

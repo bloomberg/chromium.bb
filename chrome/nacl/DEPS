@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/app/chrome_crash_reporter_client.h",
+  "+chrome/app/chrome_crash_reporter_client_win.h",
   "+components/crash",
   "+components/nacl",
   "+content/public/app/sandbox_helper_win.h",

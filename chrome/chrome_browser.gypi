@@ -3655,8 +3655,8 @@
         }],
         ['OS == "win" and kasko_failed_rdv_reports == 1', {
           'sources': [
-            'app/chrome_crash_reporter_client.cc',
-            'app/chrome_crash_reporter_client.h',
+            'app/chrome_crash_reporter_client_win.cc',
+            'app/chrome_crash_reporter_client_win.h',
           ],
           'dependencies': [
             '../components/components.gyp:crash_component_lib',

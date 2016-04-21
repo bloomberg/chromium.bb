@@ -2078,7 +2078,7 @@
             '../win8/win8.gyp:test_support_win8',
           ],
           'sources': [
-            'app/chrome_crash_reporter_client.cc',
+            'app/chrome_crash_reporter_client_win.cc',
           ],
         }],
         ['OS=="win" or OS=="mac"', {

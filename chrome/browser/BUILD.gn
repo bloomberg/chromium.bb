@@ -646,8 +646,8 @@ source_set("browser") {
   }
   if (is_win && enable_kasko_failed_rdv_reports) {
     sources += [
-      "//chrome/app/chrome_crash_reporter_client.cc",
-      "//chrome/app/chrome_crash_reporter_client.h",
+      "//chrome/app/chrome_crash_reporter_client_win.cc",
+      "//chrome/app/chrome_crash_reporter_client_win.h",
     ]
     deps += [ "//components/crash/content/app:lib" ]
   }

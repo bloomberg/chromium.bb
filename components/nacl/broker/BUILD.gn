@@ -140,7 +140,7 @@ if (current_cpu == "x86") {
 
   source_set("nacl64_crash_reporter_client") {
     sources = [
-      "//chrome/app/chrome_crash_reporter_client.cc",
+      "//chrome/app/chrome_crash_reporter_client_win.cc",
       "//chrome/common/crash_keys.cc",
     ]
 

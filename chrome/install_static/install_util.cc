@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome_elf/chrome_elf_util.h"
+#include "chrome/install_static/install_util.h"
 
 #include <assert.h>
 #include <windows.h>
@@ -26,7 +26,7 @@ const wchar_t kRegPathChromePolicy[] = L"SOFTWARE\\Policies\\Chromium";
 
 const wchar_t kRegValueUsageStats[] = L"usagestats";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
-const wchar_t kMetricsReportingEnabled[] =L"MetricsReportingEnabled";
+const wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
 const wchar_t kAppGuidCanary[] =
     L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";

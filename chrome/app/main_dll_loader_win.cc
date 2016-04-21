@@ -27,7 +27,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
 #include "chrome/app/file_pre_reader_win.h"

@@ -1,9 +1,13 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// This file contains helper functions which provide information about the
+// current version of Chrome. This includes channel information, version
+// information etc. This functionality is provided by using functions in
+// kernel32 and advapi32. No other dependencies are allowed in this file.
 
-#ifndef CHROME_ELF_CHROME_ELF_UTIL_H_
-#define CHROME_ELF_CHROME_ELF_UTIL_H_
+#ifndef CHROME_INSTALL_STATIC_INSTALL_UTIL_H_
+#define CHROME_INSTALL_STATIC_INSTALL_UTIL_H_
 
 #include "base/strings/string16.h"
 
@@ -41,4 +45,4 @@ bool IsNonBrowserProcess();
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;
 
-#endif  // CHROME_ELF_CHROME_ELF_UTIL_H_
+#endif  // CHROME_INSTALL_STATIC_INSTALL_UTIL_H_

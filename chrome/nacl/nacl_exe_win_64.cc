@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "components/crash/content/app/breakpad_win.h"
 #include "components/nacl/loader/nacl_helper_win_64.h"
 #include "content/public/common/content_switches.h"

@@ -189,7 +189,7 @@ source_set("test_support") {
     ]
   }
   if (is_win) {
-    sources += [ "//chrome/app/chrome_crash_reporter_client.cc" ]
+    sources += [ "//chrome/app/chrome_crash_reporter_client_win.cc" ]
     public_deps += [
       "//components/crash/content/app",
       "//third_party/wtl",

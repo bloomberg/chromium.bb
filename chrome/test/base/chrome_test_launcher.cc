@@ -44,8 +44,12 @@
 #include "ash/test/ui_controls_factory_ash.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "chrome/app/chrome_crash_reporter_client.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/app/chrome_crash_reporter_client_win.h"
 #endif
 
 ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}

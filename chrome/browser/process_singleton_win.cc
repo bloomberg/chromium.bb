@@ -45,7 +45,7 @@
 #include "ui/gfx/win/hwnd_util.h"
 
 #if BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
-#include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/chrome_watcher/kasko_util.h"
 #endif  // BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
 

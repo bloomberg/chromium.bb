@@ -102,6 +102,7 @@
     'chrome_browser.gypi',
     'chrome_browser_ui.gypi',
     'chrome_common.gypi',
+    'chrome_installer_static.gypi',
     'chrome_installer_util.gypi',
     'chrome_features.gypi',
   ],

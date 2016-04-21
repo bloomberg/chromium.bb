@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_version.h"
-#include "chrome_elf/chrome_elf_util.h"
+#include "chrome/install_static/install_util.h"
 
 google_breakpad::ExceptionHandler* g_elf_breakpad = NULL;
 
