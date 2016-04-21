@@ -397,6 +397,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA only.
     self.Fail('deqp/functional/gles3/fbostatequery.html',
         ['linux', 'nvidia'], bug=483282)
+    self.Flaky('deqp/functional/gles3/shaderswitch.html',
+        ['linux', 'nvidia'], bug=605646)
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'nvidia', 'debug'], bug=483282)
 
