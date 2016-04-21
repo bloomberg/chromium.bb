@@ -82,6 +82,18 @@ const char kDefaultRTTMsecObservationSuffix[] = ".DefaultMedianRTTMsec";
 // parameter for Wi-Fi would be "WiFi.DefaultMedianKbps".
 const char kDefaultKbpsObservationSuffix[] = ".DefaultMedianKbps";
 
+// Suffix of the name of the variation parameter that contains the threshold
+// RTTs (in milliseconds) for different effective connection types. Complete
+// name of the variation parameter would be
+// |EffectiveConnectionType|.|kThresholdURLRTTMsecSuffix|.
+const char kThresholdURLRTTMsecSuffix[] = ".ThresholdMedianURLRTTMsec";
+
+// Suffix of the name of the variation parameter that contains the threshold
+// downlink throughput (in kbps) for different effective connection types.
+// Complete name of the variation parameter would be
+// |EffectiveConnectionType|.|kThresholdKbpsSuffix|.
+const char kThresholdKbpsSuffix[] = ".ThresholdMedianKbps";
+
 // Computes and returns the weight multiplier per second.
 // |variation_params| is the map containing all field trial parameters
 // related to NetworkQualityEstimator field trial.
@@ -114,6 +126,15 @@ base::HistogramBase* GetHistogram(
   return base::Histogram::FactoryGet(
       prefix + statistic_name + GetNameForConnectionType(type), kLowerLimit,
       max_limit, kBucketCount, base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
+bool GetValueForVariationParam(
+    const std::map<std::string, std::string>& variation_params,
+    const std::string& parameter_name,
+    int32_t* variations_value) {
+  auto it = variation_params.find(parameter_name);
+  return it != variation_params.end() &&
+         base::StringToInt(it->second, variations_value);
 }
 
 }  // namespace
@@ -233,6 +254,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                 "Size of the network quality cache must <= 10");
 
   ObtainOperatingParams(variation_params);
+  ObtainEffectiveConnectionTypeModelParams(variation_params);
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   if (external_estimate_provider_) {
     RecordExternalEstimateProviderMetrics(
@@ -291,6 +313,57 @@ void NetworkQualityEstimator::ObtainOperatingParams(
         variations_value >= kMinimumThroughputVariationParameterKbps) {
       default_observations_[i] =
           NetworkQuality(default_observations_[i].rtt(), variations_value);
+    }
+  }
+}
+
+void NetworkQualityEstimator::ObtainEffectiveConnectionTypeModelParams(
+    const std::map<std::string, std::string>& variation_params) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (size_t i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    EffectiveConnectionType effective_connection_type =
+        static_cast<EffectiveConnectionType>(i);
+    DCHECK_EQ(InvalidRTT(), connection_thresholds_[i].rtt());
+    DCHECK_EQ(kInvalidThroughput,
+              connection_thresholds_[i].downstream_throughput_kbps());
+    if (effective_connection_type == EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
+      continue;
+
+    std::string connection_type_name = std::string(
+        GetNameForEffectiveConnectionType(effective_connection_type));
+
+    int32_t variations_value = kMinimumRTTVariationParameterMsec - 1;
+    if (GetValueForVariationParam(
+            variation_params, connection_type_name + kThresholdURLRTTMsecSuffix,
+            &variations_value) &&
+        variations_value >= kMinimumRTTVariationParameterMsec) {
+      base::TimeDelta rtt(base::TimeDelta::FromMilliseconds(variations_value));
+      connection_thresholds_[i] = NetworkQuality(
+          rtt, connection_thresholds_[i].downstream_throughput_kbps());
+
+      // Verify that the RTT values are in decreasing order as the network
+      // quality improves.
+      DCHECK(i == 0 || connection_thresholds_[i - 1].rtt() == InvalidRTT() ||
+             rtt <= connection_thresholds_[i - 1].rtt());
+    }
+
+    variations_value = kMinimumThroughputVariationParameterKbps - 1;
+    if (GetValueForVariationParam(variation_params,
+                                  connection_type_name + kThresholdKbpsSuffix,
+                                  &variations_value) &&
+        variations_value >= kMinimumThroughputVariationParameterKbps) {
+      int32_t throughput_kbps = variations_value;
+      connection_thresholds_[i] =
+          NetworkQuality(connection_thresholds_[i].rtt(), throughput_kbps);
+
+      // Verify that the throughput values are in increasing order as the
+      // network quality improves.
+      DCHECK(i == 0 ||
+             connection_thresholds_[i - 1].downstream_throughput_kbps() ==
+                 kMinimumThroughputVariationParameterKbps ||
+             throughput_kbps >=
+                 connection_thresholds_[i - 1].downstream_throughput_kbps());
     }
   }
 }
@@ -651,6 +724,52 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   estimated_median_network_quality_ = NetworkQuality();
 }
 
+NetworkQualityEstimator::EffectiveConnectionType
+NetworkQualityEstimator::GetEffectiveConnectionType() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::TimeDelta url_request_rtt = InvalidRTT();
+  if (!GetURLRequestRTTEstimate(&url_request_rtt))
+    url_request_rtt = InvalidRTT();
+
+  int32_t kbps = kInvalidThroughput;
+  if (!GetDownlinkThroughputKbpsEstimate(&kbps))
+    kbps = kInvalidThroughput;
+
+  if (url_request_rtt == InvalidRTT() && kbps == kInvalidThroughput) {
+    // Quality of the current network is unknown.
+    return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  }
+
+  // Search from the slowest connection type to the fastest to find the
+  // EffectiveConnectionType that best matches the current connection's
+  // performance. The match is done by comparing RTT and throughput.
+  for (size_t i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    EffectiveConnectionType type = static_cast<EffectiveConnectionType>(i);
+    if (i == EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
+      continue;
+    bool estimated_rtt_is_higher_than_threshold =
+        url_request_rtt != InvalidRTT() &&
+        connection_thresholds_[i].rtt() != InvalidRTT() &&
+        url_request_rtt >= connection_thresholds_[i].rtt();
+    bool estimated_throughput_is_lower_than_threshold =
+        kbps != kInvalidThroughput &&
+        connection_thresholds_[i].downstream_throughput_kbps() !=
+            kInvalidThroughput &&
+        kbps <= connection_thresholds_[i].downstream_throughput_kbps();
+    // Return |type| as the effective connection type if the current network's
+    // RTT is worse than the threshold RTT for |type|, or if the current
+    // network's throughput is lower than the threshold throughput for |type|.
+    if (estimated_rtt_is_higher_than_threshold ||
+        estimated_throughput_is_lower_than_threshold) {
+      return type;
+    }
+  }
+  // Return the fastest connection type.
+  return static_cast<EffectiveConnectionType>(EFFECTIVE_CONNECTION_TYPE_LAST -
+                                              1);
+}
+
 bool NetworkQualityEstimator::GetURLRequestRTTEstimate(
     base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -915,6 +1034,30 @@ void NetworkQualityEstimator::OnUpdatedEstimateAvailable() {
   RecordExternalEstimateProviderMetrics(
       EXTERNAL_ESTIMATE_PROVIDER_STATUS_CALLBACK);
   QueryExternalEstimateProvider();
+}
+
+const char* NetworkQualityEstimator::GetNameForEffectiveConnectionType(
+    EffectiveConnectionType type) const {
+  switch (type) {
+    case EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      return "Unknown";
+    case EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      return "Offline";
+    case EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      return "Slow2G";
+    case EFFECTIVE_CONNECTION_TYPE_2G:
+      return "2G";
+    case EFFECTIVE_CONNECTION_TYPE_3G:
+      return "3G";
+    case EFFECTIVE_CONNECTION_TYPE_4G:
+      return "4G";
+    case EFFECTIVE_CONNECTION_TYPE_BROADBAND:
+      return "Broadband";
+    default:
+      NOTREACHED();
+      break;
+  }
+  return "";
 }
 
 void NetworkQualityEstimator::QueryExternalEstimateProvider() {
