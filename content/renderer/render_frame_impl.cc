@@ -767,6 +767,10 @@ bool UseWebMediaPlayerImpl(const GURL& url) {
     return false;
   }
 
+  // Indicates if the Android MediaPlayer should be used instead of WMPI.
+  if (GetContentClient()->renderer()->ShouldUseMediaPlayerForURL(url))
+    return false;
+
   // Otherwise enable WMPI if indicated via experiment or command line.
   return media::IsUnifiedMediaPipelineEnabled();
 }
@@ -2444,7 +2448,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
 #if defined(OS_ANDROID)
-  if (!media_surface_manager_)
+  if (UseWebMediaPlayerImpl(url) && !media_surface_manager_)
     media_surface_manager_ = new RendererSurfaceViewManager(this);
 #endif
   media::WebMediaPlayerParams params(
@@ -2460,8 +2464,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       initial_cdm, media_surface_manager_, media_session);
 
 #if defined(OS_ANDROID)
-  if (GetContentClient()->renderer()->ShouldUseMediaPlayerForURL(url) ||
-      !UseWebMediaPlayerImpl(url)) {
+  if (!UseWebMediaPlayerImpl(url)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
   }
 #endif  // defined(OS_ANDROID)
