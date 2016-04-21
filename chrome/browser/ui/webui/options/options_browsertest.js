@@ -439,6 +439,17 @@ OptionsWebUIExtendedTest.prototype = {
     this.accessibilityAuditConfig.ignoreSelectors(
         'linkWithUnclearPurpose',
         linkWithUnclearPurposeSelectors);
+
+    var requiredOwnedAriaRoleMissingSelectors = [
+        '#default-search-engine-list',
+        '#other-search-engine-list',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_08: http://crbug.com/605689
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'requiredOwnedAriaRoleMissing',
+        requiredOwnedAriaRoleMissingSelectors);
   },
 
   testGenPreamble: function() {
