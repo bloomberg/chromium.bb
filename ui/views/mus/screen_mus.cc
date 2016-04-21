@@ -98,14 +98,8 @@ void ScreenMus::Init(shell::Connector* connector) {
   // from running on the calling thread. http://crbug.com/594852.
   display_manager_observer_binding_.WaitForIncomingMethodCall();
 
-  // The WaitForIncomingMethodCall() should have supplied the set of Displays,
-  // unless mus is going down, in which case encountered_error() is true.
-  if (displays_.empty()) {
-    DCHECK(display_manager_.encountered_error());
-    // In this case we install a default display and assume the process is
-    // going to exit shortly so that the real value doesn't matter.
-    displays_.push_back(gfx::Display(0xFFFFFFFF, gfx::Rect(0, 0, 801, 802)));
-  }
+  // The WaitForIncomingMethodCall() should have supplied the set of Displays.
+  DCHECK(displays_.size());
 }
 
 int ScreenMus::FindDisplayIndexById(int64_t id) const {
@@ -213,7 +207,6 @@ void ScreenMus::OnDisplays(mojo::Array<mus::mojom::DisplayPtr> displays) {
   // added.
   DCHECK(displays_.empty());
   displays_ = displays.To<std::vector<gfx::Display>>();
-  DCHECK(!displays_.empty());
   for (size_t i = 0; i < displays.size(); ++i) {
     if (displays[i]->is_primary) {
       primary_display_index_ = static_cast<int>(i);
