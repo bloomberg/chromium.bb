@@ -86,6 +86,11 @@ class NetworkStateListDetailedView
   // settings otherwise.
   void CreateSettingsEntry();
 
+  // Sets the visibility and focusability of Network Info Button and
+  // WiFi scanning indicator. This will hide Network info button and display
+  // the scanning indicator when |is_scanning| is true.
+  void SetScanningStateForThrobberView(bool is_scanning);
+
   // Create and manage the network info bubble.
   void ToggleInfoBubble();
   bool ResetInfoBubble();
