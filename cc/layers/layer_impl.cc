@@ -84,7 +84,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       effect_tree_index_(-1),
       clip_tree_index_(-1),
       scroll_tree_index_(-1),
-      draw_depth_(0.f),
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
       element_id_(0),

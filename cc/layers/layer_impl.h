@@ -701,10 +701,6 @@ class CC_EXPORT LayerImpl {
   int clip_tree_index_;
   int scroll_tree_index_;
 
-  // The global depth value of the center of the layer. This value is used
-  // to sort layers from back to front.
-  float draw_depth_;
-
   FilterOperations filters_;
   FilterOperations background_filters_;
 
