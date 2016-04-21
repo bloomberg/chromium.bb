@@ -75,4 +75,10 @@ void WebFontRendering::setLCDTextEnabled(bool enabled)
     FontCache::setLCDTextEnabled(enabled);
 }
 
+// static
+void WebFontRendering::setUseSkiaFontFallback(bool useSkiaFontFallback)
+{
+    FontCache::setUseSkiaFontFallback(useSkiaFontFallback);
+}
+
 } // namespace blink

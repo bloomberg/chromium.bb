@@ -25,6 +25,7 @@
 #ifndef FontDescription_h
 #define FontDescription_h
 
+#include "SkFontStyle.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
@@ -235,6 +236,8 @@ public:
     unsigned styleHashWithoutFamilyList() const;
     unsigned bitmapFields() const { return m_fieldsAsUnsigned[0]; }
     unsigned auxiliaryBitmapFields() const { return m_fieldsAsUnsigned[1]; }
+
+    SkFontStyle skiaFontStyle() const;
 
 private:
     FontFamily m_familyList; // The list of font families to be used.

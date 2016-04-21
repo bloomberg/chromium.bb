@@ -46,6 +46,12 @@ enum FontWeight {
     FontWeightBold = FontWeight700
 };
 
+// Converts a FontWeight to its corresponding numeric value
+inline int numericFontWeight(FontWeight weight)
+{
+    return (weight - FontWeight100 + 1) * 100;
+}
+
 // Numeric values matching OS/2 & Windows Metrics usWidthClass table.
 // https://www.microsoft.com/typography/otspec/os2.htm
 enum FontStretch {

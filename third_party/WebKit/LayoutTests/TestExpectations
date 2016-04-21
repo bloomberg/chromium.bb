@@ -1181,6 +1181,9 @@ crbug.com/532643 [ Mac ] virtual/pointerevent/fast/events/hit-test-cache-scrollb
 # The Win10 result for fast/text/emoji-font-fallback-win.html does not match the description
 crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ Failure ]
 
+# Win7 does not support the needed DirectWrite APIs for font fallback
+crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
+
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 
 crbug.com/240576 fullscreen/api/element-ready-check-containing-iframe.html [ Timeout Failure Pass ]

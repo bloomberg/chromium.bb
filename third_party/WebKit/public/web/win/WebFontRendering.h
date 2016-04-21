@@ -26,6 +26,7 @@ public:
     BLINK_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
     BLINK_EXPORT static void setAntialiasedTextEnabled(bool);
     BLINK_EXPORT static void setLCDTextEnabled(bool);
+    BLINK_EXPORT static void setUseSkiaFontFallback(bool);
 };
 
 } // namespace blink
