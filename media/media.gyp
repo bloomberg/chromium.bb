@@ -1102,6 +1102,7 @@
       'dependencies': [
         'audio_test_config',
         'media',
+        'media_features',
         'media_test_support',
         'shared_memory_support',
         '../base/base.gyp:base',
@@ -1378,6 +1379,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         'media',
+        'media_features',
         'media_test_support',
         'shared_memory_support',
       ],
@@ -1531,6 +1533,7 @@
       'type': 'static_library',
       'dependencies': [
         'media',
+        'media_features',
         'shared_memory_support',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
