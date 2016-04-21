@@ -34,6 +34,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLContentElement.h"
@@ -234,6 +235,9 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
+    UseCounter::count(*this, UseCounter::MediaDocument);
+    if (ownerElement())
+        UseCounter::count(*this, UseCounter::MediaDocumentInFrame);
 }
 
 DocumentParser* MediaDocument::createParser()

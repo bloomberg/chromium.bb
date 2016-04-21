@@ -104,7 +104,6 @@ private:
     ImageDocumentParser(ImageDocument* document)
         : RawDataDocumentParser(document)
     {
-        UseCounter::count(document, UseCounter::ImageDocument);
     }
 
     void appendBytes(const char*, size_t) override;
@@ -194,6 +193,9 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
+    UseCounter::count(*this, UseCounter::ImageDocument);
+    if (ownerElement())
+        UseCounter::count(*this, UseCounter::ImageDocumentInFrame);
 }
 
 DocumentParser* ImageDocument::createParser()

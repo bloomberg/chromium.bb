@@ -71094,6 +71094,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1307" label="V8Node_IsConnected_AttributeGetter"/>
   <int value="1308" label="ShadowRootDelegatesFocus"/>
   <int value="1309" label="MixedShadowRootV0AndV1"/>
+  <int value="1310" label="ImageDocumentInFrame"/>
+  <int value="1311" label="MediaDocument"/>
+  <int value="1312" label="MediaDocumentInFrame"/>
+  <int value="1313" label="PluginDocument"/>
+  <int value="1314" label="PluginDocumentInFrame"/>
+  <int value="1315" label="SinkDocument"/>
+  <int value="1316" label="SinkDocumentInFrame"/>
+  <int value="1317" label="TextDocument"/>
+  <int value="1318" label="TextDocumentInFrame"/>
+  <int value="1319" label="ViewSourceDocument"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

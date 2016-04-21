@@ -25,6 +25,7 @@
 #include "core/html/HTMLViewSourceDocument.h"
 
 #include "core/dom/Text.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLBaseElement.h"
@@ -58,6 +59,7 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, 
     // FIXME: Why do view-source pages need to load in quirks mode?
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
+    UseCounter::count(*this, UseCounter::ViewSourceDocument);
 }
 
 DocumentParser* HTMLViewSourceDocument::createParser()

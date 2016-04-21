@@ -33,6 +33,9 @@ TextDocument::TextDocument(const DocumentInit& initializer)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
+    UseCounter::count(*this, UseCounter::TextDocument);
+    if (ownerElement())
+        UseCounter::count(*this, UseCounter::TextDocumentInFrame);
 }
 
 DocumentParser* TextDocument::createParser()

@@ -29,6 +29,7 @@
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -166,6 +167,9 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
+    UseCounter::count(*this, UseCounter::PluginDocument);
+    if (ownerElement())
+        UseCounter::count(*this, UseCounter::PluginDocumentInFrame);
 }
 
 DocumentParser* PluginDocument::createParser()

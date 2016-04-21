@@ -26,6 +26,7 @@
 #include "core/loader/SinkDocument.h"
 
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -51,6 +52,9 @@ SinkDocument::SinkDocument(const DocumentInit& initializer)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
+    UseCounter::count(*this, UseCounter::SinkDocument);
+    if (ownerElement())
+        UseCounter::count(*this, UseCounter::SinkDocumentInFrame);
 }
 
 DocumentParser* SinkDocument::createParser()
