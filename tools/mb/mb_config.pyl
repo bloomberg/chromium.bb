@@ -90,14 +90,6 @@
       'Chromium Linux Goma Canary (clobber)': 'tbd',
       'Chromium Linux Precise Goma LinkTest': 'tbd',
       'Chromium Linux32 Goma Canary (clobber)': 'tbd',
-      'Chromium Mac 10.10 MacViews': 'tbd',
-      'Chromium Mac 10.11': 'tbd',
-      'Chromium Mac 10.11 Force Mac Toolchain': 'tbd',
-      'Chromium Mac 10.9 Goma Canary': 'tbd',
-      'Chromium Mac 10.9 Goma Canary (clobber)': 'tbd',
-      'Chromium Mac 10.9 Goma Canary (dbg)': 'tbd',
-      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'tbd',
-      'Chromium Win 10': 'tbd',
       'Chromium Win x64 Clobber': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
       'ClangToTAndroidASan':
@@ -117,32 +109,19 @@
       'ClangToTWin64(dll)': 'tbd',
       'ClangToTiOS': 'tbd',
       'Closure Compilation Linux': 'tbd',
-      'CrWin7Goma': 'tbd',
-      'CrWin7Goma(clbr)': 'tbd',
-      'CrWin7Goma(dbg)': 'tbd',
-      'CrWin7Goma(dll)': 'tbd',
-      'CrWinAsan': 'tbd',
-      'CrWinAsan(dll)': 'tbd',
-      'CrWinAsanCov': 'tbd',
       'CrWinClang64(dll)': 'tbd',
       'CrWinClangGoma': 'tbd',
       'CrWinClangLLD': 'tbd',
       'CrWinClangLLD64': 'tbd',
       'CrWinClngLLD64dbg': 'tbd',
       'CrWinClngLLDdbg': 'tbd',
-      'CrWinGoma': 'tbd',
-      'CrWinGoma(dll)': 'tbd',
       'Linux Trusty': 'tbd',
       'Linux Trusty (dbg)': 'tbd',
       'Linux V8 API Stability': 'tbd',
-      'MD Top Chrome ChromeOS material-hybrid': 'tbd',
-      'MD Top Chrome ChromeOS non-material': 'tbd',
       'MD Top Chrome Linux material': 'tbd',
-      'MD Top Chrome Win material': 'tbd',
       'Ozone ECS Linux': 'tbd',
       'Windows 8 App Certification': 'tbd',
       'Windows Builder (DrMemory)': 'tbd',
-      'Windows Tests (DrMemory)': 'tbd',
 
       'Android ChromeDriver Tests (dbg)': 'none',
       'Android Cloud Tests': 'android_gn_debug_static_bot_x86',
@@ -155,6 +134,14 @@
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux': 'gn_cfi_release_bot',
+      'Chromium Mac 10.10 MacViews': 'mac_views_browser_gyp_release_bot',
+      'Chromium Mac 10.11': 'gyp_release_bot',
+      'Chromium Mac 10.11 Force Mac Toolchain': 'gyp_release_bot',
+      'Chromium Mac 10.9 Goma Canary': 'gyp_release_bot',
+      'Chromium Mac 10.9 Goma Canary (clobber)': 'gyp_release_bot',
+      'Chromium Mac 10.9 Goma Canary (dbg)': 'gyp_debug_bot',
+      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gyp_debug_bot',
+      'Chromium Win 10': 'gyp_release_trybot',
       'Chromium Win MiniInstaller Tests': 'none',
       'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
@@ -162,12 +149,18 @@
       'Chromium_iOS_Device': 'ios_gyp',
       'Chromium_iOS_Device_(ninja)': 'ios_gyp',
       'Chromium_iOS_Simulator_(dbg)': 'ios_gyp',
+      'CrWin7Goma': 'gyp_release_bot_minimal_symbols_x86',
+      'CrWin7Goma(clbr)': 'gyp_shared_release_bot_minimal_symbols_x86',
+      'CrWin7Goma(dbg)': 'gyp_debug_bot_minimal_symbols_x86',
+      'CrWin7Goma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
       'CrWinClang':
         'swarming_gyp_clang_official_release_bot_minimal_symbols_x86',
       'CrWinClang(dbg)':
         'swarming_gyp_clang_debug_bot_minimal_symbols_x86',
       'CrWinClang64':
         'swarming_gyp_clang_official_release_bot_minimal_symbols_x64',
+      'CrWinGoma': 'gyp_release_bot_minimal_symbols_x86',
+      'CrWinGoma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
       'ClangToTAndroidASan tester': 'none',
       'ClangToTLinux tester': 'none',
       'ClangToTLinuxASan tester': 'none',
@@ -180,8 +173,15 @@
       'ClangToTWin64 tester': 'none',
       'ClangToTWin64(dbg) tester': 'none',
       'ClangToTWin64(dll) tester': 'none',
+      'CrWinAsan':
+       'swarming_gyp_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
       'CrWinAsan tester': 'none',
+      'CrWinAsan(dll)':
+       'swarming_gyp_asan_clang_fuzzer_shared_v8_heap_x86_full_symbols_release',
       'CrWinAsan(dll) tester': 'none',
+      'CrWinAsanCov':
+        ('swarming_gyp_asan_clang_edge_fuzzer'
+          '_static_v8_heap_x86_full_symbols_release'),
       'CrWinAsanCov tester': 'none',
       'CrWinClang tester': 'none',
       'CrWinClang(dbg) tester': 'none',
@@ -198,6 +198,12 @@
       'CrWinClngLLDdbg tester': 'none',
       'Headless Linux (dbg)':
         '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
+      'MD Top Chrome ChromeOS material-hybrid':
+        'gyp_chromeos_with_codecs_debug_bot',
+      'MD Top Chrome ChromeOS non-material':
+        'gyp_chromeos_with_codecs_debug_bot',
+      'MD Top Chrome Win material':
+        'gyp_debug_bot_minimal_symbols_x64',
       'LTO Linux Perf': 'gn_official_goma_lto',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
@@ -215,6 +221,7 @@
       'Win8 Tests (2)': 'none',
       'Windows Browser (DrMemory light) (1)': 'none',
       'Windows Browser (DrMemory light) (2)': 'none',
+      'Windows Tests (DrMemory)': 'none',
 
       'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
       'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
@@ -1208,6 +1215,14 @@
       'release_bot',
     ],
 
+    'gyp_chromeos_with_codecs_debug_bot': [
+      'gyp', 'chromeos_with_codecs', 'debug_bot',
+    ],
+
+    'gyp_debug_bot': [
+      'gyp', 'debug_bot',
+    ],
+
     'gyp_debug_trybot': [
       'gyp', 'debug_trybot',
     ],
@@ -1218,6 +1233,22 @@
 
     'gyp_msan_no_origins_edge_release_bot': [
       'gyp', 'msan_no_origins', 'edge', 'release_bot',
+    ],
+
+    'gyp_debug_bot_minimal_symbols_x86': [
+      'gyp', 'debug_bot_minimal_symbols', 'x86',
+    ],
+
+    'gyp_release_bot_minimal_symbols_x86': [
+      'gyp', 'release_bot_minimal_symbols', 'x86'
+    ],
+
+    'gyp_debug_bot_minimal_symbols_x64': [
+      'gyp', 'debug_bot_minimal_symbols', 'x64',
+    ],
+
+    'gyp_shared_release_bot_minimal_symbols_x86': [
+      'gyp', 'shared_release_bot', 'minimal_symbols', 'x86',
     ],
 
     'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot': [
@@ -1303,6 +1334,10 @@
       'gyp', 'official', 'x64',
     ],
 
+    'gyp_release_bot': [
+      'gyp', 'release_bot',
+    ],
+
     'gyp_release_trybot': [
       'gyp', 'release_trybot',
     ],
@@ -1361,6 +1396,10 @@
     'ios_gn': [ 'gn', 'error'],
 
     'ios_gyp': ['gyp', 'error'],
+
+    'mac_views_browser_gyp_release_bot': [
+      'mac_views_browser', 'gyp', 'release_bot',
+    ],
 
     # This is used to indicate that the bot runs the nacl annotator-based
     # configs and switching them is out of scope for MB.
@@ -1430,6 +1469,22 @@
 
     'swarming_android_gyp_release_trybot': [
       'swarming', 'android', 'gyp', 'release_trybot',
+    ],
+
+    ('swarming_gyp_asan_clang_edge_fuzzer'
+         '_static_v8_heap_x86_full_symbols_release'): [
+      'swarming', 'gyp', 'asan', 'clang', 'edge', 'fuzzer', 'static', 'v8_heap',
+      'full_symbols', 'release',
+    ],
+
+    'swarming_gyp_asan_clang_fuzzer_shared_v8_heap_x86_full_symbols_release': [
+      'swarming', 'gyp', 'asan', 'clang', 'fuzzer', 'shared', 'v8_heap',
+      'full_symbols', 'release',
+    ],
+
+    'swarming_gyp_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release': [
+      'swarming', 'gyp', 'asan', 'clang', 'fuzzer', 'static', 'v8_heap',
+      'full_symbols', 'release',
     ],
 
     'swarming_asan_dcheck_gyp_release_bot': [
@@ -1970,6 +2025,11 @@
       'gyp_defines': 'run_findbugs=1',
     },
 
+    'full_symbols': {
+      'gn_args': 'symbol_level=2',
+      'gyp_defines': 'fastbuild=0',
+    },
+
     'fuzzer': {
       'gn_args': 'error', # TODO(GYP): implement enable_ipc_fuzzer=true
       'gyp_defines': 'enable_ipc_fuzzer=1',
@@ -2037,6 +2097,11 @@
     'mac_strip': {
       'gn_args': 'error', # TODO(GYP): Port mac_strip_release
       'gyp_defines': 'mac_strip_release=1',
+    },
+
+    'mac_views_browser': {
+      'gn_args': 'mac_views_browser=true',
+      'gyp_defines': 'mac_views_browser=1',
     },
 
     'minimal_symbols': {
