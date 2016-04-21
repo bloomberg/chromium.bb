@@ -24,9 +24,6 @@ namespace {
 TEST_P(GLES2DecoderTest, BindBufferBaseValidArgs) {
   EXPECT_CALL(
       *gl_, BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kServiceBufferId));
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
-      .WillOnce(SetArgPointee<1>(4))
-      .RetiresOnSaturation();
   SpecializedSetup<cmds::BindBufferBase, 0>(true);
   cmds::BindBufferBase cmd;
   cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, client_buffer_id_);
@@ -40,9 +37,6 @@ TEST_P(GLES2DecoderTest, BindBufferBaseValidArgs) {
 TEST_P(GLES2DecoderTest, BindBufferBaseValidArgsNewId) {
   EXPECT_CALL(*gl_,
               BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewServiceId));
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
-      .WillOnce(SetArgPointee<1>(4))
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GenBuffersARB(1, _))
       .WillOnce(SetArgPointee<1>(kNewServiceId));
   SpecializedSetup<cmds::BindBufferBase, 0>(true);

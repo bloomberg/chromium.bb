@@ -63,6 +63,10 @@ class TestHelper {
   static const GLint kMaxProgramTexelOffset = 7;
   static const GLint kMinProgramTexelOffset = -8;
 
+  static const GLint kMaxTransformFeedbackSeparateAttribs = 4;
+  static const GLint kMaxUniformBufferBindings = 24;
+  static const GLint kUniformBufferOffsetAlignment = 1;
+
   struct AttribInfo {
     const char* name;
     GLint size;

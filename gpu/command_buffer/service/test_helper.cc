@@ -93,6 +93,9 @@ const GLint TestHelper::kMaxVertexOutputComponents;
 const GLint TestHelper::kMaxFragmentInputComponents;
 const GLint TestHelper::kMaxProgramTexelOffset;
 const GLint TestHelper::kMinProgramTexelOffset;
+const GLint TestHelper::kMaxTransformFeedbackSeparateAttribs;
+const GLint TestHelper::kMaxUniformBufferBindings;
+const GLint TestHelper::kUniformBufferOffsetAlignment;
 #endif
 
 std::vector<std::string> TestHelper::split_extensions_;
@@ -355,6 +358,18 @@ void TestHelper::SetupContextGroupInitExpectations(
       (gl_info.is_es && strstr(extensions, "GL_EXT_blend_func_extended"))) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT, _))
         .WillOnce(SetArgumentPointee<1>(8))
+        .RetiresOnSaturation();
+  }
+
+  if (gl_info.IsES3Capable()) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxTransformFeedbackSeparateAttribs))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxUniformBufferBindings))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, _))
+        .WillOnce(SetArgumentPointee<1>(kUniformBufferOffsetAlignment))
         .RetiresOnSaturation();
   }
 

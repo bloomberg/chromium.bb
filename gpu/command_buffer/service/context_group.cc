@@ -101,6 +101,9 @@ ContextGroup::ContextGroup(
       max_fragment_input_components_(0u),
       min_program_texel_offset_(0),
       max_program_texel_offset_(0),
+      max_transform_feedback_separate_attribs_(0u),
+      max_uniform_buffer_bindings_(0u),
+      uniform_buffer_offset_alignment_(1u),
       program_cache_(NULL),
       feature_info_(feature_info) {
   {
@@ -173,6 +176,34 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT,
                 &max_dual_source_draw_buffers_);
     DCHECK(max_dual_source_draw_buffers_ >= 1);
+  }
+
+  if (feature_info_->gl_version_info().IsES3Capable()) {
+    const GLint kMinTransformFeedbackSeparateAttribs = 4;
+    if (!QueryGLFeatureU(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
+                         kMinTransformFeedbackSeparateAttribs,
+                         &max_transform_feedback_separate_attribs_)) {
+      LOG(ERROR) << "ContextGroup::Initialize failed because maximum "
+                 << "transform feedback separate attribs is too small ("
+                 << max_transform_feedback_separate_attribs_ << ", should be "
+                 << kMinTransformFeedbackSeparateAttribs << ").";
+      return false;
+    }
+
+    const GLint kMinUniformBufferBindings = 24;
+    if (!QueryGLFeatureU(GL_MAX_UNIFORM_BUFFER_BINDINGS,
+                         kMinUniformBufferBindings,
+                         &max_uniform_buffer_bindings_)) {
+      LOG(ERROR) << "ContextGroup::Initialize failed because maximum "
+                 << "uniform buffer bindings is too small ("
+                 << max_uniform_buffer_bindings_ << ", should be "
+                 << kMinUniformBufferBindings << ").";
+      return false;
+    }
+
+    // TODO(zmo): Should we check max UNIFORM_BUFFER_OFFSET_ALIGNMENT is 256?
+    GetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
+                &uniform_buffer_offset_alignment_);
   }
 
   buffer_manager_.reset(
