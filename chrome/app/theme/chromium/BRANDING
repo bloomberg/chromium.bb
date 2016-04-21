@@ -4,4 +4,4 @@ PRODUCT_FULLNAME=Chromium
 PRODUCT_SHORTNAME=Chromium
 PRODUCT_INSTALLER_FULLNAME=Chromium Installer
 PRODUCT_INSTALLER_SHORTNAME=Chromium Installer
-COPYRIGHT=Copyright 2015 The Chromium Authors. All rights reserved.
+COPYRIGHT=Copyright 2016 The Chromium Authors. All rights reserved.
