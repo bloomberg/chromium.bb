@@ -239,6 +239,7 @@ source_set("unit_tests") {
     "export/csv_writer_unittest.cc",
     "facet_manager_unittest.cc",
     "import/csv_reader_unittest.cc",
+    "import/password_importer_unittest.cc",
     "log_manager_unittest.cc",
     "log_router_unittest.cc",
     "login_database_unittest.cc",
