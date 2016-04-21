@@ -14,12 +14,15 @@ extern int module_a_var;
  * Test zero-initialized (BSS) variables.  Test that they are placed at the
  * end of the TLS template even if they appear first in the IR or source.
  */
-static __thread int tls_bss_var1;
-static __thread int tls_bss_var_aligned __attribute__((aligned(256)));
+__thread int tls_bss_var1;
+__thread int tls_bss_var_aligned __attribute__((aligned(256)));
 
-static __thread int tls_var1 = 123;
-static __thread int *tls_var2 = &module_a_var;
-static __thread int tls_var_aligned __attribute__((aligned(256))) = 345;
+__thread int tls_var1 = 123;
+__thread int *tls_var2 = &module_a_var;
+__thread int tls_var_aligned __attribute__((aligned(256))) = 345;
+
+extern __thread int tls_var_exported1;
+extern __thread int tls_var_exported2;
 
 int *get_tls_bss_var1(void) {
   return &tls_bss_var1;
@@ -44,4 +47,12 @@ int **get_tls_var2(void) {
 
 int *get_tls_var_aligned(void) {
   return &tls_var_aligned;
+}
+
+int *get_tls_var_exported1(void) {
+  return &tls_var_exported1;
+}
+
+int *get_tls_var_exported2(void) {
+  return &tls_var_exported2;
 }

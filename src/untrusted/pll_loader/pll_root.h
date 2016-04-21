@@ -14,6 +14,15 @@ struct PLLTLSBlockGetter {
   void *arg;
 };
 
+struct PLLTLSVarGetter {
+  // Returns the address of the TLS variable in the current thread.
+  void *(*func)(struct PLLTLSVarGetter *var_getter);
+  // The dynamic linker can use "arg1" to store an ID for the module.
+  void *arg1;
+  // The dynamic linker can use "arg2" to store an offset for the variable.
+  void *arg2;
+};
+
 // This is the root data structure exported by a PLL (PNaCl/portable
 // loadable library).
 struct PLLRoot {
@@ -53,6 +62,11 @@ struct PLLRoot {
   // Null-separated list of library sonames.
   // For example, "libfoo.so\0libbar.so\0" would have dependencies_count = 2.
   const char *dependencies_list;
+
+  // TLS Imports.
+  PLLTLSVarGetter *imported_tls_ptrs;
+  const size_t *imported_tls_names;
+  size_t import_tls_count;
 };
 
 #endif

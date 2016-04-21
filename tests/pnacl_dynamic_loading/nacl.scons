@@ -100,7 +100,7 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 25:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 26:
   Return()
 
 test_pll_a_finalized = MakePll('test_pll_a', 'test_pll_a.c', [])
@@ -108,11 +108,17 @@ test_pll_a = TranslatePso('test_pll_a', test_pll_a_finalized)
 test_pll_b_finalized = MakePll('test_pll_b', 'test_pll_b.c',
                                [test_pll_a_finalized])
 test_pll_b = TranslatePso('test_pll_b', test_pll_b_finalized)
+test_pll_tls_dependency_finalized = MakePll(
+    'test_pll_tls_dependency', 'test_pll_tls_dependency.c',
+    [test_pll_a_finalized])
+test_pll_tls_dependency = TranslatePso(
+    'test_pll_tls_dependency', test_pll_tls_dependency_finalized)
 
 test_pll = MakeAndTranslatePll(
     'test_pll', 'test_pll.c',
     [test_pll_a_finalized, test_pll_b_finalized])
-test_pll_tls = MakeAndTranslatePll('test_pll_tls', 'test_pll_tls.c', [])
+test_pll_tls = MakeAndTranslatePll(
+    'test_pll_tls', 'test_pll_tls.c', [test_pll_tls_dependency_finalized])
 
 pll_symbols_test = env.ComponentProgram(
     'pll_symbols_test', ['pll_symbols_test.cc'],
@@ -136,7 +142,7 @@ node = env.CommandSelLdrTestNacl(
     [Dir('.').abspath, 'test_pll_a.so', 'test_pll_b.so', 'test_pll_tls.so'],
     # Add '-a' to enable filesystem access for opening DSOs.
     sel_ldr_flags=['-a'],
-    extra_deps=[test_pll_a, test_pll_b, test_pll_tls])
+    extra_deps=[test_pll_a, test_pll_b, test_pll_tls, test_pll_tls_dependency])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
     'run_pll_loader_test', is_broken=is_broken)
@@ -190,7 +196,7 @@ node = env.CommandSelLdrTestNacl(
     'pll_dependencies_test.out', pll_loader,
     [Dir('.').abspath, pll_dependencies_test],
     # Add '-a' to enable filesystem access for opening DSOs.
-    sel_ldr_flags=['-a'], stdout_golden=env.File('dependencies_test.stdout'),
+    sel_ldr_flags=['-a'],
     extra_deps=[pll_libc, test_pll_a, test_pll_b, test_pll_c,
                 pll_dependencies_test])
 env.AddNodeToTestSuite(

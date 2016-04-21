@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+#include "native_client/src/include/nacl_assert.h"
+
 /*
  * These functions would typically be declared in a shared header file, but for
  * testing convenience, they are defined here.
@@ -30,8 +32,8 @@ int get_module_c_var();
  */
 
 int main(int argc, char *argv[]) {
-  printf("%d\n", get_module_a_var());
-  printf("%d\n", get_module_b_var());
-  printf("%d\n", get_module_c_var());
+  ASSERT_EQ(get_module_a_var(), 2345);
+  ASSERT_EQ(get_module_b_var(), 1234);
+  ASSERT_EQ(get_module_c_var(), 1111);
   return 0;
 }

@@ -31,9 +31,7 @@ pthread_mutex_t g_modules_mutex = PTHREAD_MUTEX_INITIALIZER;
 __thread void **thread_modules_array = NULL;
 __thread uint32_t thread_modules_array_size = 0;
 
-void *TLSBlockGetter(PLLTLSBlockGetter *closure) {
-  uint32_t module_index = (uint32_t) closure->arg;
-
+void *TLSBlockBase(uint32_t module_index) {
   // Fast path: Handles the case when the TLS block has been instantiated
   // already for the module.
   size_t array_size = thread_modules_array_size;
@@ -76,6 +74,18 @@ void *TLSBlockGetter(PLLTLSBlockGetter *closure) {
   return tls_block;
 }
 
+void *TLSVarGetter(PLLTLSVarGetter *closure) {
+  uint32_t module_index = (uint32_t) closure->arg1;
+  uintptr_t var_offset = (uintptr_t) closure->arg2;
+  uintptr_t block_base = (uintptr_t) TLSBlockBase(module_index);
+  return (void *) (block_base + var_offset);
+}
+
+void *TLSBlockGetter(PLLTLSBlockGetter *closure) {
+  uint32_t module_index = (uint32_t) closure->arg;
+  return TLSBlockBase(module_index);
+}
+
 }  // namespace
 
 uint32_t PLLModule::HashString(const char *sp) {
@@ -96,33 +106,35 @@ bool PLLModule::IsMaybeExported(uint32_t hash1) {
   return (root_->bloom_filter_data[word_num] & bitmask) == bitmask;
 }
 
-void *PLLModule::GetExportedSym(const char *name) {
+bool PLLModule::GetExportedSym(const char *name, void **sym) {
   uint32_t hash = HashString(name);
 
   // Use the bloom filter to quickly reject symbols that aren't exported.
   if (!IsMaybeExported(hash))
-    return NULL;
+    return false;
 
   uint32_t bucket_index = hash % root_->bucket_count;
   int32_t chain_index = root_->hash_buckets[bucket_index];
   // Bucket empty -- value not found.
   if (chain_index == -1)
-    return NULL;
+    return false;
 
   for (; chain_index < root_->export_count; chain_index++) {
     uint32_t chain_value = root_->hash_chains[chain_index];
     if ((hash & ~1) == (chain_value & ~1) &&
-        strcmp(name, GetExportedSymbolName(chain_index)) == 0)
-      return root_->exported_ptrs[chain_index];
+        strcmp(name, GetExportedSymbolName(chain_index)) == 0) {
+      *sym = root_->exported_ptrs[chain_index];
+      return true;
+    }
 
     // End of chain -- value not found.
     if ((chain_value & 1) == 1)
-      return NULL;
+      return false;
   }
 
   NaClLog(LOG_FATAL, "GetExportedSym: "
           "Bad hash table in PLL: chain not terminated\n");
-  return NULL;
+  return false;
 }
 
 void *PLLModule::InstantiateTLSBlock() {
@@ -203,10 +215,24 @@ PLLRoot *ModuleSet::AddByFilename(const char *filename) {
 
 void *ModuleSet::GetSym(const char *name) {
   for (auto &module : modules_) {
-    if (void *sym = module.GetExportedSym(name))
+    void *sym;
+    if (module.GetExportedSym(name, &sym))
       return sym;
   }
   return NULL;
+}
+
+bool ModuleSet::GetTlsSym(const char *name, uint32_t *module_id,
+                          uintptr_t *offset) {
+  for (auto &module : modules_) {
+    void *sym;
+    if (module.GetExportedSym(name, &sym)) {
+      *module_id = module.module_index();
+      *offset = (uintptr_t) sym;
+      return true;
+    }
+  }
+  return false;
 }
 
 void ModuleSet::ResolveRefs() {
@@ -222,5 +248,24 @@ void ModuleSet::ResolveRefs() {
     }
 
     module.InitializeTLS();
+  }
+
+  // The resolution of imported TLS variables requires that each module has an
+  // assigned "module_index". For this to be the case, all modules must have
+  // called "InitializeTLS" prior to resolving imported TLS variables.
+  for (auto &module : modules_) {
+    for (size_t index = 0, count = module.root()->import_tls_count;
+         index < count; ++index) {
+      const char *sym_name = module.GetImportedTlsSymbolName(index);
+      uint32_t module_index;
+      uintptr_t offset;
+      if (!GetTlsSym(sym_name, &module_index, &offset)) {
+        NaClLog(LOG_FATAL, "Undefined TLS symbol: \"%s\"\n", sym_name);
+      }
+      PLLTLSVarGetter *var_getter = &module.root()->imported_tls_ptrs[index];
+      var_getter->func = TLSVarGetter;
+      var_getter->arg1 = (void *) module_index;
+      var_getter->arg2 = (void *) offset;
+    }
   }
 }

@@ -86,6 +86,8 @@ int main(int argc, char **argv) {
   CheckTlsVar<int>(&modset, "get_tls_var_aligned", 256, 345);
   CheckTlsVar<int>(&modset, "get_tls_bss_var1", sizeof(int), 0);
   CheckTlsVar<int>(&modset, "get_tls_bss_var_aligned", 256, 0);
+  CheckTlsVar<int>(&modset, "get_tls_var_exported1", sizeof(int), 1234);
+  CheckTlsVar<int>(&modset, "get_tls_var_exported2", sizeof(int), 5678);
 
   // Test that TLS variables are instantiated separately for each thread.
   ThreadArgs thread_args;

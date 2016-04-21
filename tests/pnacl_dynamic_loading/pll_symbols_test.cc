@@ -24,6 +24,10 @@ const char *GetImportedSymbolName(const PLLRoot *root, size_t i) {
   return root->string_table + root->imported_names[i];
 }
 
+const char *GetImportedTlsSymbolName(const PLLRoot *root, size_t i) {
+  return root->string_table + root->imported_tls_names[i];
+}
+
 void DumpExportedSymbols(const PLLRoot *root) {
   for (size_t i = 0; i < root->export_count; i++) {
     printf("exported symbol: %s\n", GetExportedSymbolName(root, i));
@@ -36,17 +40,20 @@ void DumpImportedSymbols(const PLLRoot *root) {
   }
 }
 
-void *GetExportedSymSlow(const PLLRoot *root, const char *name) {
-  for (size_t i = 0; i < root->export_count; i++) {
-    if (strcmp(GetExportedSymbolName(root, i), name) == 0) {
-      return root->exported_ptrs[i];
-    }
+void DumpImportedTlsSymbols(const PLLRoot *root) {
+  for (size_t i = 0; i < root->import_tls_count; i++) {
+    printf("imported TLS symbol: %s\n", GetImportedTlsSymbolName(root, i));
   }
-  return NULL;
 }
 
-void *GetExportedSymHash(const PLLRoot *root, const char *name) {
-  return PLLModule(root).GetExportedSym(name);
+bool GetExportedSymSlow(const PLLRoot *root, const char *name, void **sym) {
+  for (size_t i = 0; i < root->export_count; i++) {
+    if (strcmp(GetExportedSymbolName(root, i), name) == 0) {
+      *sym = root->exported_ptrs[i];
+      return true;
+    }
+  }
+  return false;
 }
 
 void VerifyHashTable(const PLLRoot *root) {
@@ -89,8 +96,11 @@ void *GetExportedSym(const PLLRoot *root, const char *name) {
   // There are two possible ways to get the exported symbol. First, by manually
   // scanning all exports, and secondly, by using the exported symbol hash
   // table. Use both methods, and assert that they provide an equivalent result.
-  void *sym_slow = GetExportedSymSlow(root, name);
-  void *sym_hash = GetExportedSymHash(root, name);
+  void *sym_slow = NULL;
+  void *sym_hash = NULL;
+  bool sym_slow_valid = GetExportedSymSlow(root, name, &sym_slow);
+  bool sym_hash_valid = PLLModule(root).GetExportedSym(name, &sym_hash);
+  ASSERT_EQ(sym_slow_valid, sym_hash_valid);
   ASSERT_EQ(sym_slow, sym_hash);
 
   // The bloom filter errs on the side of returning "true", and may return true
@@ -98,8 +108,9 @@ void *GetExportedSym(const PLLRoot *root, const char *name) {
   // assert a "false" result from the bloom filter, since an alternative (but
   // equally valid) bloom filter may return "true" for the same input.
   uint32_t hash = PLLModule::HashString(name);
-  if (sym_slow != NULL)
+  if (sym_slow_valid) {
     ASSERT(PLLModule(root).IsMaybeExported(hash));
+  }
   return sym_slow;
 }
 
@@ -287,6 +298,35 @@ void TestTLSVar(const PLLRoot *pll_root, const char *func_name, size_t offset) {
   ASSERT_EQ((uintptr_t) getter_func() - kTlsBase, offset);
 }
 
+PLLTLSVarGetter *g_tls_var_getter;
+
+void *TLSVarGetter(PLLTLSVarGetter *closure) {
+  // Realistically, this function would use more information from the dynamic
+  // linker to actually return a pointer to the corresponding export.
+  // For now, however, we're just going to return the TLS base.
+  ASSERT_EQ(closure, g_tls_var_getter);
+  return (void *) kTlsBase;
+}
+
+void TestImportedTLSVar(const PLLRoot *pll_root, const char *func_name,
+                        const char *var_name, size_t var_index) {
+  printf("Testing imported TLS var returned by \"%s\"\n", func_name);
+  ASSERT_NE(pll_root->imported_tls_ptrs, NULL);
+  PLLTLSVarGetter *var_getter = &pll_root->imported_tls_ptrs[var_index];
+  g_tls_var_getter = var_getter;
+  // The values of arg1 and arg2 don't matter at the moment, since we aren't
+  // actually importing these TLS variables from a corresponding exporting
+  // module.
+  var_getter->func = TLSVarGetter;
+
+  auto getter_func =
+    (void *(*)()) (uintptr_t) GetExportedSym(pll_root, func_name);
+  ASSERT_NE(getter_func, NULL);
+  ASSERT_EQ((uintptr_t) getter_func(), kTlsBase);
+
+  ASSERT_EQ(strcmp(GetImportedTlsSymbolName(pll_root, var_index), var_name), 0);
+}
+
 void TestTLS(const char *test_dso_file) {
   const PLLRoot *pll_root = LoadTranslatedPLL(test_dso_file);
 
@@ -317,6 +357,29 @@ void TestTLS(const char *test_dso_file) {
   ASSERT_EQ(*(int *) tls_template, 123);  // Value of tls_var1
   ASSERT_EQ(*(int *) (tls_template + 4), 0);  // Addend for tls_var2
   ASSERT_EQ(*(int *) (tls_template + 256), 345);  // Value of tls_var_aligned
+
+  // Test TLS imports
+  DumpImportedTlsSymbols(pll_root);
+  ASSERT_EQ(pll_root->import_tls_count, 2);
+  TestImportedTLSVar(pll_root, "get_tls_var_exported1", "tls_var_exported1", 0);
+  TestImportedTLSVar(pll_root, "get_tls_var_exported2", "tls_var_exported2", 1);
+
+  // Test TLS exports. Offsets of the TLS variables are exported, rather than
+  // the TLS variables themselves.
+  int exported_vars_count = 5;
+  int exported_funcs_count = 8;
+  ASSERT_EQ(pll_root->export_count, exported_vars_count + exported_funcs_count);
+  void *symbol;
+  ASSERT(PLLModule(pll_root).GetExportedSym("tls_var1", &symbol));
+  ASSERT_EQ((uintptr_t) symbol, 0);
+  ASSERT(PLLModule(pll_root).GetExportedSym("tls_var2", &symbol));
+  ASSERT_EQ((uintptr_t) symbol, 4);
+  ASSERT(PLLModule(pll_root).GetExportedSym("tls_var_aligned", &symbol));
+  ASSERT_EQ((uintptr_t) symbol, 256);
+  ASSERT(PLLModule(pll_root).GetExportedSym("tls_bss_var1", &symbol));
+  ASSERT_EQ((uintptr_t) symbol, 260);
+  ASSERT(PLLModule(pll_root).GetExportedSym("tls_bss_var_aligned", &symbol));
+  ASSERT_EQ((uintptr_t) symbol, 512);
 }
 
 }  // namespace
