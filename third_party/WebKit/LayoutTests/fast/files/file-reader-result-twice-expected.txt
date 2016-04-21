@@ -1,8 +1,0 @@
-Test that FileReader.result returns the same result regardless of whether it's from cache or not by getting it twice.
-
-This is a testharness.js-based test.
-PASS Read from a blob as a binary string 
-PASS Read from a blob as a text 
-PASS Read from a blob as a data URL 
-Harness: the test ran to completion.
-

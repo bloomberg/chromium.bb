@@ -1,8 +1,0 @@
-Description
-
-This tests validates that the (color-index) media query feature is supported.
-
-This is a testharness.js-based test.
-PASS ('color-index') sanity check 
-Harness: the test ran to completion.
-

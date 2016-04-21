@@ -1,5 +1,0 @@
-Tests caret position reporting using ranges.
-This is a testharness.js-based test.
-PASS Caret positions reported correctly. 
-Harness: the test ran to completion.
-

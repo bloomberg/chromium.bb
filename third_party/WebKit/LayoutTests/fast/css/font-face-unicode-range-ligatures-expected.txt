@@ -1,5 +1,0 @@
-fi fi
-This is a testharness.js-based test.
-PASS Ligature for fi formed for full font and subsetted font. 
-Harness: the test ran to completion.
-

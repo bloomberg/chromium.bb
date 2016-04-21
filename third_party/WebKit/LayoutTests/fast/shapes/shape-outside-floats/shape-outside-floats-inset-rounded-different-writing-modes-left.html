@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<title>The block squares should wrap around the bottom of the blue shape. They should not overlap the shape.</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../resources/subpixel-utils.js"></script>
@@ -20,10 +21,13 @@
     border-radius: 50px 40px 30px 20px / 20px 30px 40px 50px;
     shape-outside: inset(0px round 50px 40px 30px 20px / 20px 30px 40px 50px);
 }
+
+span {
+    visibility: hidden;
+}
 </style>
 
 <body>
-<p>The block squares should wrap around the bottom of the blue shape. They should not overlap the shape.</p>
 <div id="container">
 <span id="s1">X</span><br/>
     <div id="rounded-rect"></div>
