@@ -1019,7 +1019,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
     @Override
     public void logCurrentState() {
-        if (ContextualSearchFieldTrial.isEnabled(mActivity)) {
+        if (ContextualSearchFieldTrial.isEnabled()) {
             mPolicy.logCurrentState();
         }
     }

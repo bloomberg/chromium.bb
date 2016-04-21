@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
@@ -106,17 +105,16 @@ public class ContextualSearchFieldTrial {
     /**
      * Checks the current Variations parameters associated with the active group as well as the
      * Chrome preference to determine if the service is enabled.
-     * @param context Context used to determine whether the device is a tablet or a phone.
      * @return Whether Contextual Search is enabled or not.
      */
-    public static boolean isEnabled(Context context) {
+    public static boolean isEnabled() {
         if (sEnabled == null) {
-            sEnabled = detectEnabled(context);
+            sEnabled = detectEnabled();
         }
         return sEnabled.booleanValue();
     }
 
-    private static boolean detectEnabled(Context context) {
+    private static boolean detectEnabled() {
         if (SysUtils.isLowEndDevice()) {
             return false;
         }
