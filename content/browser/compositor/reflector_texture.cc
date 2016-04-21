@@ -4,7 +4,7 @@
 
 #include "content/browser/compositor/reflector_texture.h"
 
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -14,12 +14,13 @@ namespace content {
 
 ReflectorTexture::ReflectorTexture(cc::ContextProvider* context_provider)
     : texture_id_(0) {
-  GLHelper* shared_helper =
+  display_compositor::GLHelper* shared_helper =
       ImageTransportFactory::GetInstance()->GetGLHelper();
   mailbox_ = new OwnedMailbox(shared_helper);
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
 
-  gl_helper_.reset(new GLHelper(gl, context_provider->ContextSupport()));
+  gl_helper_.reset(
+      new display_compositor::GLHelper(gl, context_provider->ContextSupport()));
 
   texture_id_ = gl_helper_->ConsumeMailboxToTexture(mailbox_->mailbox(),
                                                     mailbox_->sync_token());

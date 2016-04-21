@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/buffer_queue.h"
+#include "components/display_compositor/buffer_queue.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,7 +14,7 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@ using ::testing::Expectation;
 using ::testing::Ne;
 using ::testing::Return;
 
-namespace content {
+namespace display_compositor {
 
 class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
@@ -262,7 +262,7 @@ TEST(BufferQueueStandaloneTest, FboInitialization) {
 }
 
 TEST(BufferQueueStandaloneTest, FboBinding) {
-  GLenum targets[] = { GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB };
+  GLenum targets[] = {GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB};
   for (size_t i = 0; i < 2; ++i) {
     GLenum target = targets[i];
     MockedContext* context;
@@ -281,10 +281,9 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
     Expectation bind_tex =
         EXPECT_CALL(*context, bindTexImage2DCHROMIUM(target, 1))
             .After(tex, image);
-    EXPECT_CALL(
-        *context,
-        framebufferTexture2D(
-            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, Ne(0U), _))
+    EXPECT_CALL(*context,
+                framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                     target, Ne(0U), _))
         .After(fb, bind_tex);
 
     output_surface->BindFramebuffer();
@@ -325,11 +324,14 @@ TEST_F(BufferQueueTest, PartialSwapReuse) {
   output_surface_->Reshape(screen_size, 1.0f);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, screen_rect)).Times(1);
+              CopyBufferDamage(_, _, small_damage, screen_rect))
+      .Times(1);
   EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, small_damage)).Times(1);
+              CopyBufferDamage(_, _, small_damage, small_damage))
+      .Times(1);
   EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, large_damage, small_damage)).Times(1);
+              CopyBufferDamage(_, _, large_damage, small_damage))
+      .Times(1);
   SendFullFrame();
   SendDamagedFrame(small_damage);
   SendDamagedFrame(small_damage);
@@ -342,7 +344,8 @@ TEST_F(BufferQueueTest, PartialSwapFullFrame) {
   output_surface_->Reshape(screen_size, 1.0f);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, screen_rect)).Times(1);
+              CopyBufferDamage(_, _, small_damage, screen_rect))
+      .Times(1);
   SendFullFrame();
   SendDamagedFrame(small_damage);
   SendFullFrame();
@@ -354,9 +357,11 @@ TEST_F(BufferQueueTest, PartialSwapOverlapping) {
   output_surface_->Reshape(screen_size, 1.0f);
   ASSERT_TRUE(doublebuffering_);
   EXPECT_CALL(*mock_output_surface_,
-              CopyBufferDamage(_, _, small_damage, screen_rect)).Times(1);
-  EXPECT_CALL(*mock_output_surface_, CopyBufferDamage(_, _, overlapping_damage,
-                                                      small_damage)).Times(1);
+              CopyBufferDamage(_, _, small_damage, screen_rect))
+      .Times(1);
+  EXPECT_CALL(*mock_output_surface_,
+              CopyBufferDamage(_, _, overlapping_damage, small_damage))
+      .Times(1);
 
   SendFullFrame();
   SendDamagedFrame(small_damage);
@@ -627,4 +632,4 @@ TEST_F(BufferQueueTest, AllocateFails) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace display_compositor

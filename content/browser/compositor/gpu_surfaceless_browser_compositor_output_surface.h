@@ -13,10 +13,12 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace content {
-
+namespace display_compositor {
 class BufferQueue;
 class GLHelper;
+}
+
+namespace content {
 
 class GpuSurfacelessBrowserCompositorOutputSurface
     : public GpuBrowserCompositorOutputSurface {
@@ -49,8 +51,8 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       gfx::SwapResult result) override;
 
   unsigned int internalformat_;
-  std::unique_ptr<GLHelper> gl_helper_;
-  std::unique_ptr<BufferQueue> output_surface_;
+  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
+  std::unique_ptr<display_compositor::BufferQueue> output_surface_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 };
 

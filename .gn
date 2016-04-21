@@ -43,7 +43,6 @@ check_targets = [
   #"//content/shell/*",  # Needs Android fix, bug 597020.
 
   #"//content/test/*",  # A couple of errors left.
-  "//content/test:content_gl_benchmark",
   "//content/test:content_gl_tests",
   "//content/test:content_perftests",
   "//content/test:content_site_isolation_browsertests",

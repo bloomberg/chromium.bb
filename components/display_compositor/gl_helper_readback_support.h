@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
-#define CONTENT_BROWSER_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#ifndef COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#define COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
 
 #include <stddef.h>
 
 #include <vector>
 
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/display_compositor_export.h"
+#include "components/display_compositor/gl_helper.h"
 
-namespace content {
+namespace display_compositor {
 
-class CONTENT_EXPORT GLHelperReadbackSupport {
+class DISPLAY_COMPOSITOR_EXPORT GLHelperReadbackSupport {
  public:
   enum FormatSupport { SUPPORTED, SWIZZLE, NOT_SUPPORTED };
 
@@ -70,6 +71,6 @@ class CONTENT_EXPORT GLHelperReadbackSupport {
   std::vector<struct FormatCacheEntry> format_cache_;
 };
 
-}  // namespace content
+}  // namespace display_compositor
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#endif  // COMPONENTS_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_

@@ -34,8 +34,11 @@ namespace blink {
 class WebGraphicsContext3D;
 }
 
-namespace content {
+namespace display_compositor {
 class GLHelper;
+}
+
+namespace content {
 
 // This class provides a way to get notified when surface handles get lost.
 class CONTENT_EXPORT ImageTransportFactoryObserver {
@@ -81,7 +84,7 @@ class CONTENT_EXPORT ImageTransportFactory {
   // Gets a GLHelper instance, associated with the shared context. This
   // GLHelper will get destroyed whenever the shared context is lost
   // (ImageTransportFactoryObserver::OnLostResources is called).
-  virtual GLHelper* GetGLHelper() = 0;
+  virtual display_compositor::GLHelper* GetGLHelper() = 0;
 
   virtual void AddObserver(ImageTransportFactoryObserver* observer) = 0;
   virtual void RemoveObserver(ImageTransportFactoryObserver* observer) = 0;

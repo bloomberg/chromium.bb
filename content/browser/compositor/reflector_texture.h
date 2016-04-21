@@ -23,8 +23,11 @@ class Rect;
 class Size;
 }
 
-namespace content {
+namespace display_compositor {
 class GLHelper;
+}
+
+namespace content {
 
 // Create and manages texture mailbox to be used by Reflector.
 class CONTENT_EXPORT ReflectorTexture {
@@ -40,7 +43,7 @@ class CONTENT_EXPORT ReflectorTexture {
 
  private:
   scoped_refptr<OwnedMailbox> mailbox_;
-  std::unique_ptr<GLHelper> gl_helper_;
+  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   uint32_t texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ReflectorTexture);

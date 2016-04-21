@@ -17,7 +17,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_device_client.h"
@@ -47,7 +47,8 @@ static const int kInfiniteRatio = 99999;
 
 class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
-  explicit SyncTokenClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
+  explicit SyncTokenClientImpl(display_compositor::GLHelper* gl_helper)
+      : gl_helper_(gl_helper) {}
   ~SyncTokenClientImpl() override {}
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
     gl_helper_->GenerateSyncToken(sync_token);
@@ -57,7 +58,7 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
   }
 
  private:
-  GLHelper* gl_helper_;
+  display_compositor::GLHelper* gl_helper_;
 };
 
 void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
@@ -66,7 +67,8 @@ void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+  display_compositor::GLHelper* gl_helper =
+      ImageTransportFactory::GetInstance()->GetGLHelper();
   // UpdateReleaseSyncToken() creates a new sync_token using |gl_helper|, so
   // wait the given |sync_token| using |gl_helper|.
   if (gl_helper) {

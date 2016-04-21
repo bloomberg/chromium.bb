@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/buffer_queue.h"
+#include "components/display_compositor/buffer_queue.h"
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "cc/output/context_provider.h"
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -18,7 +18,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/skia_util.h"
 
-namespace content {
+namespace display_compositor {
 
 BufferQueue::BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                          unsigned int texture_target,
@@ -65,10 +65,9 @@ void BufferQueue::CopyBufferDamage(int texture,
                                    int source_texture,
                                    const gfx::Rect& new_damage,
                                    const gfx::Rect& old_damage) {
-  gl_helper_->CopySubBufferDamage(
-      texture_target_, texture, source_texture,
-      SkRegion(gfx::RectToSkIRect(new_damage)),
-      SkRegion(gfx::RectToSkIRect(old_damage)));
+  gl_helper_->CopySubBufferDamage(texture_target_, texture, source_texture,
+                                  SkRegion(gfx::RectToSkIRect(new_damage)),
+                                  SkRegion(gfx::RectToSkIRect(old_damage)));
 }
 
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
@@ -115,10 +114,10 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
 void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
   if (size == size_)
     return;
+#if !defined(OS_MACOSX)
   // TODO(ccameron): This assert is being hit on Mac try jobs. Determine if that
   // is cause for concern or if it is benign.
   // http://crbug.com/524624
-#if !defined(OS_MACOSX)
   DCHECK(!current_surface_);
 #endif
   size_ = size;
@@ -230,9 +229,9 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
     return nullptr;
   }
 
-  unsigned int id = gl->CreateImageCHROMIUM(
-      buffer->AsClientBuffer(), size_.width(), size_.height(),
-      internal_format_);
+  unsigned int id =
+      gl->CreateImageCHROMIUM(buffer->AsClientBuffer(), size_.width(),
+                              size_.height(), internal_format_);
   if (!id) {
     LOG(ERROR) << "Failed to allocate backing image surface";
     gl->DeleteTextures(1, &texture);
@@ -262,4 +261,4 @@ BufferQueue::AllocatedSurface::~AllocatedSurface() {
   buffer_queue->FreeSurfaceResources(this);
 }
 
-}  // namespace content
+}  // namespace display_compositor

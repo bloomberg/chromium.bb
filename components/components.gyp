@@ -116,6 +116,7 @@
         'contextual_search.gypi',
         'devtools_discovery.gypi',
         'devtools_http_handler.gypi',
+        'display_compositor.gypi',
         'domain_reliability.gypi',
         'drive.gypi',
         'message_port.gypi',
