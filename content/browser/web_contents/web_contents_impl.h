@@ -772,6 +772,9 @@ private:
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            JavaScriptDialogsInMainAndSubframes);
 
+  // So |find_request_manager_| can be accessed for testing.
+  friend class FindRequestManagerTest;
+
   // So InterstitialPageImpl can access SetIsLoading.
   friend class InterstitialPageImpl;
 
