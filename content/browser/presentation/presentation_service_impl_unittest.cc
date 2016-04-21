@@ -199,8 +199,10 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
     auto request = mojo::GetProxy(&service_ptr_);
     EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);
+    TestRenderFrameHost* render_frame_host = contents()->GetMainFrame();
+    render_frame_host->InitializeRenderFrameIfNeeded();
     service_impl_.reset(new PresentationServiceImpl(
-        contents()->GetMainFrame(), contents(), &mock_delegate_));
+        render_frame_host, contents(), &mock_delegate_));
     service_impl_->Bind(std::move(request));
 
     mojom::PresentationServiceClientPtr client_ptr;

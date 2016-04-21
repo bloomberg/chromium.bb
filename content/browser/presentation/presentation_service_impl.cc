@@ -131,6 +131,7 @@ PresentationServiceImpl::PresentationServiceImpl(
       weak_factory_(this) {
   DCHECK(render_frame_host);
   DCHECK(web_contents);
+  CHECK(render_frame_host->IsRenderFrameLive());
 
   render_process_id_ = render_frame_host->GetProcess()->GetID();
   render_frame_id_ = render_frame_host->GetRoutingID();
@@ -505,6 +506,14 @@ void PresentationServiceImpl::RenderFrameDeleted(
 
   // RenderFrameDeleted means the associated RFH is going to be deleted soon.
   // This object should also be deleted.
+  Reset();
+  delete this;
+}
+
+void PresentationServiceImpl::WebContentsDestroyed() {
+  LOG(ERROR) << "PresentationServiceImpl is being deleted in "
+             << "WebContentsDestroyed()! This shouldn't happen since it "
+             << "should've been deleted during RenderFrameDeleted().";
   Reset();
   delete this;
 }
