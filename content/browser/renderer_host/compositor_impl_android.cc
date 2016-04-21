@@ -524,7 +524,7 @@ void CompositorImpl::CreateOutputSurface() {
   GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
   gpu::SurfaceHandle surface_handle =
       GpuSurfaceTracker::Get()->GetSurfaceHandle(surface_id_);
-  constexpr bool share_resources = true;
+  constexpr bool share_resources = false;
   constexpr bool automatic_flushes = false;
 
   gpu::SharedMemoryLimits limits;
