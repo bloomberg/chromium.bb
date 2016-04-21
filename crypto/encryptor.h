@@ -51,7 +51,7 @@ class CRYPTO_EXPORT Encryptor {
   };
 
   Encryptor();
-  virtual ~Encryptor();
+  ~Encryptor();
 
   // Initializes the encryptor using |key| and |iv|. Returns false if either the
   // key or the initialization vector cannot be used.

@@ -107,7 +107,7 @@
       'target_name': 'crypto_unittests',
       'type': 'executable',
       'sources': [
-        'aead_openssl_unittest.cc',
+        'aead_unittest.cc',
         'curve25519_unittest.cc',
         'ec_private_key_unittest.cc',
         'ec_signature_creator_unittest.cc',

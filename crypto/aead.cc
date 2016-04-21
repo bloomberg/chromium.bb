@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "crypto/aead_openssl.h"
+#include "crypto/aead.h"
 
 #include <openssl/aes.h>
 #include <openssl/evp.h>

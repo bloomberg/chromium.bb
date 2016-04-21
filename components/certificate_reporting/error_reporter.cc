@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
-#include "crypto/aead_openssl.h"
+#include "crypto/aead.h"
 #include "crypto/curve25519.h"
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
