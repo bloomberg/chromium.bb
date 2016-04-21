@@ -424,6 +424,7 @@
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/gl/gl.gyp:gl',
         '../ui/gl/gl.gyp:gl_test_support',
+        'cc.gyp:cc',
         'cc.gyp:cc_proto',
       ],
       'sources': [

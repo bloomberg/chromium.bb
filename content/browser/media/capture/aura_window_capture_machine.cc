@@ -11,7 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -252,7 +252,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     return false;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
+  display_compositor::GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
     return false;
 
@@ -268,13 +268,9 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
       yuv_readback_pipeline_->scaler()->SrcSize() != result_rect.size() ||
       yuv_readback_pipeline_->scaler()->SrcSubrect() != result_rect ||
       yuv_readback_pipeline_->scaler()->DstSize() != region_in_frame.size()) {
-    yuv_readback_pipeline_.reset(
-        gl_helper->CreateReadbackPipelineYUV(GLHelper::SCALER_QUALITY_FAST,
-                                             result_rect.size(),
-                                             result_rect,
-                                             region_in_frame.size(),
-                                             true,
-                                             true));
+    yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
+        display_compositor::GLHelper::SCALER_QUALITY_FAST, result_rect.size(),
+        result_rect, region_in_frame.size(), true, true));
   }
 
   cursor_renderer_->SnapshotCursorState(region_in_frame);

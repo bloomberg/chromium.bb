@@ -24,29 +24,34 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "content/browser/compositor/gl_helper.h"
-#include "content/browser/compositor/gl_helper_scaling.h"
+#include "components/display_compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper_scaling.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_surface.h"
 
-namespace content {
+namespace display_compositor {
 
-content::GLHelper::ScalerQuality kQualities[] = {
-    content::GLHelper::SCALER_QUALITY_BEST,
-    content::GLHelper::SCALER_QUALITY_GOOD,
-    content::GLHelper::SCALER_QUALITY_FAST,
+namespace {
+
+display_compositor::GLHelper::ScalerQuality kQualities[] = {
+    display_compositor::GLHelper::SCALER_QUALITY_BEST,
+    display_compositor::GLHelper::SCALER_QUALITY_GOOD,
+    display_compositor::GLHelper::SCALER_QUALITY_FAST,
 };
 
 const char* const kQualityNames[] = {
     "best", "good", "fast",
 };
 
-class GLHelperTest : public testing::Test {
+}  // namespace
+
+class GLHelperBenchmark : public testing::Test {
  protected:
   void SetUp() override {
     gpu::gles2::ContextCreationAttribHelper attributes;
@@ -67,15 +72,15 @@ class GLHelperTest : public testing::Test {
         gfx::kNullAcceleratedWidget, /* window */
         gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        attributes, gfx::PreferDiscreteGpu,
-        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        attributes, gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr /* image_factory */));
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_.reset(new content::GLHelper(gl_, support));
-    helper_scaling_.reset(new content::GLHelperScaling(gl_, helper_.get()));
+    helper_.reset(new display_compositor::GLHelper(gl_, support));
+    helper_scaling_.reset(
+        new display_compositor::GLHelperScaling(gl_, helper_.get()));
   }
 
   void TearDown() override {
@@ -112,12 +117,12 @@ class GLHelperTest : public testing::Test {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  std::unique_ptr<content::GLHelper> helper_;
-  std::unique_ptr<content::GLHelperScaling> helper_scaling_;
+  std::unique_ptr<display_compositor::GLHelper> helper_;
+  std::unique_ptr<display_compositor::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
-TEST_F(GLHelperTest, ScaleBenchmark) {
+TEST_F(GLHelperBenchmark, ScaleBenchmark) {
   int output_sizes[] = {1920, 1080, 1249, 720,  // Output size on pixel
                         256,  144};
   int input_sizes[] = {3200, 2040, 2560, 1476,  // Pixel tab size
@@ -151,7 +156,7 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
                         input.getPixels());
 
         gfx::Rect src_subrect(0, 0, src_size.width(), src_size.height());
-        std::unique_ptr<content::GLHelper::ScalerInterface> scaler(
+        std::unique_ptr<display_compositor::GLHelper::ScalerInterface> scaler(
             helper_->CreateScaler(kQualities[q], src_size, src_subrect,
                                   dst_size, false, false));
         // Scale once beforehand before we start measuring.
@@ -199,7 +204,7 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
 // create testoutput_Q_P.png, where Q is the scaling
 // mode and P is the scaling percentage taken from
 // the table below.
-TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
+TEST_F(GLHelperBenchmark, DISABLED_ScaleTestImage) {
   int percents[] = {
       230, 180, 150, 110, 90, 70, 50, 49, 40, 20, 10,
   };
@@ -244,4 +249,4 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
   gl_->DeleteFramebuffers(1, &framebuffer);
 }
 
-}  // namespace content
+}  // namespace display_compositor

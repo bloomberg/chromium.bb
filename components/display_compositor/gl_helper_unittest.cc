@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,22 +29,23 @@
 #include "base/test/test_suite.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/compositor/gl_helper.h"
-#include "content/browser/compositor/gl_helper_readback_support.h"
-#include "content/browser/compositor/gl_helper_scaling.h"
+#include "components/display_compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper_readback_support.h"
+#include "components/display_compositor/gl_helper_scaling.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace content {
+namespace display_compositor {
 
-content::GLHelper::ScalerQuality kQualities[] = {
-    content::GLHelper::SCALER_QUALITY_BEST,
-    content::GLHelper::SCALER_QUALITY_GOOD,
-    content::GLHelper::SCALER_QUALITY_FAST,
+display_compositor::GLHelper::ScalerQuality kQualities[] = {
+    display_compositor::GLHelper::SCALER_QUALITY_BEST,
+    display_compositor::GLHelper::SCALER_QUALITY_GOOD,
+    display_compositor::GLHelper::SCALER_QUALITY_FAST,
 };
 
 const char* kQualityNames[] = {
@@ -72,15 +73,15 @@ class GLHelperTest : public testing::Test {
         gfx::kNullAcceleratedWidget, /* window */
         gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        attributes, gfx::PreferDiscreteGpu,
-        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        attributes, gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr /* image_factory */));
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_.reset(new content::GLHelper(gl_, support));
-    helper_scaling_.reset(new content::GLHelperScaling(gl_, helper_.get()));
+    helper_.reset(new display_compositor::GLHelper(gl_, support));
+    helper_scaling_.reset(
+        new display_compositor::GLHelperScaling(gl_, helper_.get()));
   }
 
   void TearDown() override {
@@ -237,7 +238,7 @@ class GLHelperTest : public testing::Test {
 
   // Make sure that the stages of the scaler pipeline are sane.
   void ValidateScalerStages(
-      content::GLHelper::ScalerQuality quality,
+      display_compositor::GLHelper::ScalerQuality quality,
       const std::vector<GLHelperScaling::ScalerStage>& scaler_stages,
       const gfx::Size& dst_size,
       const std::string& message) {
@@ -289,7 +290,7 @@ class GLHelperTest : public testing::Test {
           break;
 
         case GLHelperScaling::SHADER_BILINEAR:
-          if (quality != content::GLHelper::SCALER_QUALITY_FAST) {
+          if (quality != display_compositor::GLHelper::SCALER_QUALITY_FAST) {
             x_samples = 1;
             y_samples = 1;
           }
@@ -459,7 +460,7 @@ class GLHelperTest : public testing::Test {
   // Very slow bicubic / bilinear scaler for reference.
   void ScaleSlow(SkBitmap* input,
                  SkBitmap* output,
-                 content::GLHelper::ScalerQuality quality) {
+                 display_compositor::GLHelper::ScalerQuality quality) {
     float xscale = static_cast<float>(input->width()) / output->width();
     float yscale = static_cast<float>(input->height()) / output->height();
     float clamped_xscale = xscale < 1.0 ? 1.0 : 1.0 / xscale;
@@ -473,7 +474,7 @@ class GLHelperTest : public testing::Test {
           float value = 0.0f;
           float sum = 0.0f;
           switch (quality) {
-            case content::GLHelper::SCALER_QUALITY_BEST:
+            case display_compositor::GLHelper::SCALER_QUALITY_BEST:
               for (int src_y = -10; src_y < input->height() + 10; ++src_y) {
                 float coeff_y =
                     Bicubic((src_y + 0.5f - dst_y_in_src) * clamped_yscale);
@@ -494,7 +495,7 @@ class GLHelperTest : public testing::Test {
               }
               break;
 
-            case content::GLHelper::SCALER_QUALITY_GOOD: {
+            case display_compositor::GLHelper::SCALER_QUALITY_GOOD: {
               int xshift = 0, yshift = 0;
               while ((output->width() << xshift) < input->width()) {
                 xshift++;
@@ -521,7 +522,7 @@ class GLHelperTest : public testing::Test {
               break;
             }
 
-            case content::GLHelper::SCALER_QUALITY_FAST:
+            case display_compositor::GLHelper::SCALER_QUALITY_FAST:
               value = Bilinear(input, dst_x_in_src, dst_y_in_src, channel);
               sum = 1.0;
           }
@@ -569,9 +570,9 @@ class GLHelperTest : public testing::Test {
   // in the reference implementation too.
   void ScaleSlowRecursive(SkBitmap* input,
                           SkBitmap* output,
-                          content::GLHelper::ScalerQuality quality) {
-    if (quality == content::GLHelper::SCALER_QUALITY_FAST ||
-        quality == content::GLHelper::SCALER_QUALITY_GOOD) {
+                          display_compositor::GLHelper::ScalerQuality quality) {
+    if (quality == display_compositor::GLHelper::SCALER_QUALITY_FAST ||
+        quality == display_compositor::GLHelper::SCALER_QUALITY_GOOD) {
       ScaleSlow(input, output, quality);
       return;
     }
@@ -771,17 +772,12 @@ class GLHelperTest : public testing::Test {
         kQualityNames[quality_index]);
 
     std::vector<GLHelperScaling::ScalerStage> stages;
-    helper_scaling_->ComputeScalerStages(kQualities[quality_index],
-                                         gfx::Size(xsize, ysize),
-                                         gfx::Rect(0, 0, xsize, ysize),
-                                         gfx::Size(scaled_xsize, scaled_ysize),
-                                         flip,
-                                         false,
-                                         &stages);
-    ValidateScalerStages(kQualities[quality_index],
-                         stages,
-                         gfx::Size(scaled_xsize, scaled_ysize),
-                         message);
+    helper_scaling_->ComputeScalerStages(
+        kQualities[quality_index], gfx::Size(xsize, ysize),
+        gfx::Rect(0, 0, xsize, ysize), gfx::Size(scaled_xsize, scaled_ysize),
+        flip, false, &stages);
+    ValidateScalerStages(kQualities[quality_index], stages,
+                         gfx::Size(scaled_xsize, scaled_ysize), message);
 
     GLuint dst_texture = helper_->CopyAndScaleTexture(
         src_texture, gfx::Size(xsize, ysize),
@@ -846,7 +842,7 @@ class GLHelperTest : public testing::Test {
 
   // Create a scaling pipeline and make sure that the steps
   // are exactly the steps we expect.
-  void CheckPipeline(content::GLHelper::ScalerQuality quality,
+  void CheckPipeline(display_compositor::GLHelper::ScalerQuality quality,
                      int xsize,
                      int ysize,
                      int dst_xsize,
@@ -856,8 +852,8 @@ class GLHelperTest : public testing::Test {
     helper_scaling_->ComputeScalerStages(
         quality, gfx::Size(xsize, ysize), gfx::Rect(0, 0, xsize, ysize),
         gfx::Size(dst_xsize, dst_ysize), false, false, &stages);
-    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD, stages,
-                         gfx::Size(dst_xsize, dst_ysize), "");
+    ValidateScalerStages(display_compositor::GLHelper::SCALER_QUALITY_GOOD,
+                         stages, gfx::Size(dst_xsize, dst_ysize), "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -1003,8 +999,8 @@ class GLHelperTest : public testing::Test {
       default:
         NOTREACHED();
     }
-    GLenum type = (color_type == kRGB_565_SkColorType) ?
-                  GL_UNSIGNED_SHORT_5_6_5 : GL_UNSIGNED_BYTE;
+    GLenum type = (color_type == kRGB_565_SkColorType) ? GL_UNSIGNED_SHORT_5_6_5
+                                                       : GL_UNSIGNED_BYTE;
     gl_->TexImage2D(GL_TEXTURE_2D, 0, format, src_size.width(),
                     src_size.height(), 0, format, type,
                     input_pixels.getPixels());
@@ -1134,13 +1130,14 @@ class GLHelperTest : public testing::Test {
                       const std::string& description) {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ConvertScalerOpsToScalerStages(
-        content::GLHelper::SCALER_QUALITY_GOOD, gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize), gfx::Size(dst_xsize, dst_ysize), false,
-        false, &x_ops_, &y_ops_, &stages);
+        display_compositor::GLHelper::SCALER_QUALITY_GOOD,
+        gfx::Size(xsize, ysize), gfx::Rect(0, 0, xsize, ysize),
+        gfx::Size(dst_xsize, dst_ysize), false, false, &x_ops_, &y_ops_,
+        &stages);
     EXPECT_EQ(x_ops_.size(), 0U);
     EXPECT_EQ(y_ops_.size(), 0U);
-    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD, stages,
-                         gfx::Size(dst_xsize, dst_ysize), "");
+    ValidateScalerStages(display_compositor::GLHelper::SCALER_QUALITY_GOOD,
+                         stages, gfx::Size(dst_xsize, dst_ysize), "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -1263,8 +1260,8 @@ class GLHelperTest : public testing::Test {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  std::unique_ptr<content::GLHelper> helper_;
-  std::unique_ptr<content::GLHelperScaling> helper_scaling_;
+  std::unique_ptr<display_compositor::GLHelper> helper_;
+  std::unique_ptr<display_compositor::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
@@ -1404,14 +1401,15 @@ TEST_F(GLHelperTest, ValidateScalerPipelines) {
 // for a few common use cases.
 TEST_F(GLHelperTest, CheckSpecificPipelines) {
   // Upscale should be single pass.
-  CheckPipeline(content::GLHelper::SCALER_QUALITY_GOOD, 1024, 700, 1280, 720,
-                "1024x700 -> 1280x720 bilinear\n");
+  CheckPipeline(display_compositor::GLHelper::SCALER_QUALITY_GOOD, 1024, 700,
+                1280, 720, "1024x700 -> 1280x720 bilinear\n");
   // Slight downscale should use BILINEAR2X2.
-  CheckPipeline(content::GLHelper::SCALER_QUALITY_GOOD, 1280, 720, 1024, 700,
-                "1280x720 -> 1024x700 bilinear2x2\n");
+  CheckPipeline(display_compositor::GLHelper::SCALER_QUALITY_GOOD, 1280, 720,
+                1024, 700, "1280x720 -> 1024x700 bilinear2x2\n");
   // Most common tab capture pipeline on the Pixel.
   // Should be using two BILINEAR3 passes.
-  CheckPipeline(content::GLHelper::SCALER_QUALITY_GOOD, 2560, 1476, 1249, 720,
+  CheckPipeline(display_compositor::GLHelper::SCALER_QUALITY_GOOD, 2560, 1476,
+                1249, 720,
                 "2560x1476 -> 2560x720 bilinear3 Y\n"
                 "2560x720 -> 1249x720 bilinear3 X\n");
 }
@@ -1436,4 +1434,4 @@ TEST_F(GLHelperTest, CheckOptimizations) {
   CheckOptimizationsTest();
 }
 
-}  // namespace content
+}  // namespace display_compositor

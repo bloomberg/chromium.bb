@@ -69,7 +69,7 @@ class GpuProcessTransportFactory
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  GLHelper* GetGLHelper() override;
+  display_compositor::GLHelper* GetGLHelper() override;
   void AddObserver(ImageTransportFactoryObserver* observer) override;
   void RemoveObserver(ImageTransportFactoryObserver* observer) override;
 #if defined(OS_MACOSX)
@@ -102,7 +102,7 @@ class GpuProcessTransportFactory
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
-  std::unique_ptr<GLHelper> gl_helper_;
+  std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   base::ObserverList<ImageTransportFactoryObserver> observer_list_;
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   uint32_t next_surface_id_namespace_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/gl_helper_scaling.h"
+#include "components/display_compositor/gl_helper_scaling.h"
 
 #include <stddef.h>
 
@@ -25,7 +25,7 @@
 
 using gpu::gles2::GLES2Interface;
 
-namespace content {
+namespace display_compositor {
 
 GLHelperScaling::GLHelperScaling(GLES2Interface* gl, GLHelper* helper)
     : gl_(gl), helper_(helper), vertex_attributes_buffer_(gl_) {
@@ -878,4 +878,4 @@ void ShaderProgram::UseProgram(const gfx::Size& src_size,
   gl_->Uniform4fv(color_weights_location_, 1, color_weights);
 }
 
-}  // namespace content
+}  // namespace display_compositor

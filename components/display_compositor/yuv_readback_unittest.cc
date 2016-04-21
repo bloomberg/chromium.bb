@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,19 +8,19 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "content/browser/compositor/gl_helper.h"
+#include "components/display_compositor/gl_helper.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace content {
+namespace display_compositor {
 
 namespace {
-
 int kYUVReadbackSizes[] = {2, 4, 14};
 }
 
@@ -45,14 +45,13 @@ class YUVReadbackTest : public testing::Test {
         gfx::kNullAcceleratedWidget, /* window */
         gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        attributes, gfx::PreferDiscreteGpu,
-        ::gpu::GLInProcessContextSharedMemoryLimits(),
+        attributes, gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr /* image_factory */));
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_.reset(new content::GLHelper(gl_, support));
+    helper_.reset(new display_compositor::GLHelper(gl_, support));
   }
 
   void TearDown() override {
@@ -314,7 +313,7 @@ class YUVReadbackTest : public testing::Test {
                        int test_pattern,
                        bool flip,
                        bool use_mrt,
-                       content::GLHelper::ScalerQuality quality) {
+                       display_compositor::GLHelper::ScalerQuality quality) {
     GLuint src_texture;
     gl_->GenTextures(1, &src_texture);
     SkBitmap input_pixels;
@@ -472,7 +471,7 @@ class YUVReadbackTest : public testing::Test {
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
-  std::unique_ptr<content::GLHelper> helper_;
+  std::unique_ptr<display_compositor::GLHelper> helper_;
   gfx::DisableNullDrawGLBindings enable_pixel_output_;
 };
 
@@ -483,7 +482,7 @@ TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
       "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
 
   TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, true,
-                  content::GLHelper::SCALER_QUALITY_FAST);
+                  display_compositor::GLHelper::SCALER_QUALITY_FAST);
 
   std::map<std::string, int> event_counts;
   EndTracing(&event_counts);
@@ -530,7 +529,8 @@ TEST_P(YUVReadbackPixelTest, Test) {
                 kYUVReadbackSizes[ox], kYUVReadbackSizes[oy],
                 compute_margin(kYUVReadbackSizes[x], kYUVReadbackSizes[ox], xm),
                 compute_margin(kYUVReadbackSizes[y], kYUVReadbackSizes[oy], ym),
-                pattern, flip, use_mrt, content::GLHelper::SCALER_QUALITY_GOOD);
+                pattern, flip, use_mrt,
+                display_compositor::GLHelper::SCALER_QUALITY_GOOD);
             if (HasFailure()) {
               return;
             }
@@ -551,4 +551,4 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Range<unsigned int>(0, arraysize(kYUVReadbackSizes)),
         ::testing::Range<unsigned int>(0, arraysize(kYUVReadbackSizes))));
 
-}  // namespace content
+}  // namespace display_compositor

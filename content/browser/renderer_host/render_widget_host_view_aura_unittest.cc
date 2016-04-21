@@ -24,8 +24,8 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/display_compositor/gl_helper.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/compositor/gl_helper.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -310,7 +310,8 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     last_copy_request_ = std::move(request);
     if (last_copy_request_->has_texture_mailbox()) {
       // Give the resulting texture a size.
-      GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+      display_compositor::GLHelper* gl_helper =
+          ImageTransportFactory::GetInstance()->GetGLHelper();
       GLuint texture = gl_helper->ConsumeMailboxToTexture(
           last_copy_request_->texture_mailbox().mailbox(),
           last_copy_request_->texture_mailbox().sync_token());
