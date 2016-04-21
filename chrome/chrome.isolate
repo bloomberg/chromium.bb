@@ -142,6 +142,7 @@
           '<(PRODUCT_DIR)/blink_platform.dll.pdb',
           '<(PRODUCT_DIR)/blink_web.dll.pdb',
           '<(PRODUCT_DIR)/content.dll.pdb',
+          '<(PRODUCT_DIR)/modules.dll.pdb',
         ],
       },
     }],
