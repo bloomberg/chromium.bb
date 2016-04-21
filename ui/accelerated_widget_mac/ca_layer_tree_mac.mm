@@ -48,22 +48,12 @@ namespace ui {
 
 namespace {
 
-// This will enqueue |io_surface| to be drawn by |av_layer| by wrapping
-// |io_surface| in a CVPixelBuffer. This will increase the in-use count
-// of and retain |io_surface| until it is no longer being displayed.
-bool AVSampleBufferDisplayLayerEnqueueIOSurface(
+// This will enqueue |io_surface| to be drawn by |av_layer|. This will
+// retain |cv_pixel_buffer| until it is no longer being displayed.
+bool AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(
     AVSampleBufferDisplayLayer* av_layer,
-    IOSurfaceRef io_surface) {
+    CVPixelBufferRef cv_pixel_buffer) {
   OSStatus os_status = noErr;
-  CVReturn cv_return = kCVReturnSuccess;
-
-  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  cv_return = CVPixelBufferCreateWithIOSurface(
-      nullptr, io_surface, nullptr, cv_pixel_buffer.InitializeInto());
-  if (cv_return != kCVReturnSuccess) {
-    LOG(ERROR) << "CVPixelBufferCreateWithIOSurface failed with " << cv_return;
-    return false;
-  }
 
   base::ScopedCFTypeRef<CMVideoFormatDescriptionRef> video_info;
   os_status = CMVideoFormatDescriptionCreateForImageBuffer(
@@ -115,6 +105,26 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
   return true;
 }
 
+// This will enqueue |io_surface| to be drawn by |av_layer| by wrapping
+// |io_surface| in a CVPixelBuffer. This will increase the in-use count
+// of and retain |io_surface| until it is no longer being displayed.
+bool AVSampleBufferDisplayLayerEnqueueIOSurface(
+    AVSampleBufferDisplayLayer* av_layer,
+    IOSurfaceRef io_surface) {
+  CVReturn cv_return = kCVReturnSuccess;
+
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+  cv_return = CVPixelBufferCreateWithIOSurface(
+      nullptr, io_surface, nullptr, cv_pixel_buffer.InitializeInto());
+  if (cv_return != kCVReturnSuccess) {
+    LOG(ERROR) << "CVPixelBufferCreateWithIOSurface failed with " << cv_return;
+    return false;
+  }
+
+  return AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(av_layer,
+                                                        cv_pixel_buffer);
+}
+
 }  // namespace
 
 CALayerTree::CALayerTree() {}
@@ -126,6 +136,7 @@ bool CALayerTree::ScheduleCALayer(
     unsigned sorting_context_id,
     const gfx::Transform& transform,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect,
     unsigned background_color,
@@ -138,8 +149,9 @@ bool CALayerTree::ScheduleCALayer(
     return false;
   }
   return root_layer_.AddContentLayer(is_clipped, clip_rect, sorting_context_id,
-                                     transform, io_surface, contents_rect, rect,
-                                     background_color, edge_aa_mask, opacity);
+                                     transform, io_surface, cv_pixel_buffer,
+                                     contents_rect, rect, background_color,
+                                     edge_aa_mask, opacity);
 }
 
 void CALayerTree::CommitScheduledCALayers(CALayer* superlayer,
@@ -215,12 +227,14 @@ CALayerTree::TransformLayer::~TransformLayer() {
 
 CALayerTree::ContentLayer::ContentLayer(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
     float opacity)
     : io_surface(io_surface),
+      cv_pixel_buffer(cv_pixel_buffer),
       contents_rect(contents_rect),
       rect(rect),
       background_color(background_color),
@@ -255,15 +269,17 @@ CALayerTree::ContentLayer::ContentLayer(
   if (IOSurfaceGetPixelFormat(io_surface) ==
           kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
       contents_rect == gfx::RectF(0, 0, 1, 1)) {
-    // Leave AVFoundation disabled for now while crashing and flashing bugs are
-    // being investigated.
-    // https://crbug.com/598243, https://crbug.com/598388
-    use_av_layer = false;
+    // Enable only for hardware decoded frames, to see if flashing bugs are
+    // particular to software IOSurfaces.
+    // https://crbug.com/598269
+    if (cv_pixel_buffer)
+      use_av_layer = true;
   }
 }
 
 CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
     : io_surface(layer.io_surface),
+      cv_pixel_buffer(layer.cv_pixel_buffer),
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
@@ -286,6 +302,7 @@ bool CALayerTree::RootLayer::AddContentLayer(
     unsigned sorting_context_id,
     const gfx::Transform& transform,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect,
     unsigned background_color,
@@ -327,14 +344,15 @@ bool CALayerTree::RootLayer::AddContentLayer(
                             is_singleton_sorting_context));
   }
   clip_and_sorting_layers.back().AddContentLayer(
-      transform, io_surface, contents_rect, rect, background_color,
-      edge_aa_mask, opacity);
+      transform, io_surface, cv_pixel_buffer, contents_rect, rect,
+      background_color, edge_aa_mask, opacity);
   return true;
 }
 
 void CALayerTree::ClipAndSortingLayer::AddContentLayer(
     const gfx::Transform& transform,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect,
     unsigned background_color,
@@ -348,20 +366,22 @@ void CALayerTree::ClipAndSortingLayer::AddContentLayer(
   }
   if (needs_new_transform_layer)
     transform_layers.push_back(TransformLayer(transform));
-  transform_layers.back().AddContentLayer(
-      io_surface, contents_rect, rect, background_color, edge_aa_mask, opacity);
+  transform_layers.back().AddContentLayer(io_surface, cv_pixel_buffer,
+                                          contents_rect, rect, background_color,
+                                          edge_aa_mask, opacity);
 }
 
 void CALayerTree::TransformLayer::AddContentLayer(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect,
     unsigned background_color,
     unsigned edge_aa_mask,
     float opacity) {
-  content_layers.push_back(ContentLayer(io_surface, contents_rect, rect,
-                                        background_color, edge_aa_mask,
-                                        opacity));
+  content_layers.push_back(ContentLayer(io_surface, cv_pixel_buffer,
+                                        contents_rect, rect, background_color,
+                                        edge_aa_mask, opacity));
 }
 
 void CALayerTree::RootLayer::CommitToCA(CALayer* superlayer,
@@ -492,7 +512,8 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
     std::swap(av_layer, old_layer->av_layer);
-    update_contents = old_layer->io_surface != io_surface;
+    update_contents = old_layer->io_surface != io_surface ||
+                      old_layer->cv_pixel_buffer != cv_pixel_buffer;
     update_contents_rect = old_layer->contents_rect != contents_rect;
     update_rect = old_layer->rect != rect;
     update_background_color = old_layer->background_color != background_color;
@@ -514,8 +535,14 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
                          update_rect || update_background_color ||
                          update_ca_edge_aa_mask || update_opacity;
   if (use_av_layer) {
-    if (update_contents)
-      AVSampleBufferDisplayLayerEnqueueIOSurface(av_layer, io_surface);
+    if (update_contents) {
+      if (cv_pixel_buffer) {
+        AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(av_layer,
+                                                       cv_pixel_buffer);
+      } else {
+        AVSampleBufferDisplayLayerEnqueueIOSurface(av_layer, io_surface);
+      }
+    }
   } else {
     if (update_contents) {
       [ca_layer setContents:static_cast<id>(io_surface.get())];

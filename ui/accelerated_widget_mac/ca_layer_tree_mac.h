@@ -42,6 +42,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
                        unsigned sorting_context_id,
                        const gfx::Transform& transform,
                        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+                       base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
                        const gfx::RectF& contents_rect,
                        const gfx::Rect& rect,
                        unsigned background_color,
@@ -72,16 +73,18 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
 
     // Append a new content layer, without modifying the actual CALayer
     // structure.
-    bool AddContentLayer(bool is_clipped,
-                         const gfx::Rect& clip_rect,
-                         unsigned sorting_context_id,
-                         const gfx::Transform& transform,
-                         base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                         const gfx::RectF& contents_rect,
-                         const gfx::Rect& rect,
-                         unsigned background_color,
-                         unsigned edge_aa_mask,
-                         float opacity);
+    bool AddContentLayer(
+        bool is_clipped,
+        const gfx::Rect& clip_rect,
+        unsigned sorting_context_id,
+        const gfx::Transform& transform,
+        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+        base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
+        const gfx::RectF& contents_rect,
+        const gfx::Rect& rect,
+        unsigned background_color,
+        unsigned edge_aa_mask,
+        float opacity);
 
     // Allocate CALayers for this layer and its children, and set their
     // properties appropriately. Re-use the CALayers from |old_layer| if
@@ -107,13 +110,15 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
     // See the behavior of RootLayer for the effects of these functions on the
     // |ca_layer| member and |old_layer| argument.
     ~ClipAndSortingLayer();
-    void AddContentLayer(const gfx::Transform& transform,
-                         base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                         const gfx::RectF& contents_rect,
-                         const gfx::Rect& rect,
-                         unsigned background_color,
-                         unsigned edge_aa_mask,
-                         float opacity);
+    void AddContentLayer(
+        const gfx::Transform& transform,
+        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+        base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
+        const gfx::RectF& contents_rect,
+        const gfx::Rect& rect,
+        unsigned background_color,
+        unsigned edge_aa_mask,
+        float opacity);
     void CommitToCA(CALayer* superlayer,
                     ClipAndSortingLayer* old_layer,
                     float scale_factor);
@@ -135,12 +140,14 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
     // See the behavior of RootLayer for the effects of these functions on the
     // |ca_layer| member and |old_layer| argument.
     ~TransformLayer();
-    void AddContentLayer(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                         const gfx::RectF& contents_rect,
-                         const gfx::Rect& rect,
-                         unsigned background_color,
-                         unsigned edge_aa_mask,
-                         float opacity);
+    void AddContentLayer(
+        base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+        base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
+        const gfx::RectF& contents_rect,
+        const gfx::Rect& rect,
+        unsigned background_color,
+        unsigned edge_aa_mask,
+        float opacity);
     void CommitToCA(CALayer* superlayer,
                     TransformLayer* old_layer,
                     float scale_factor);
@@ -154,6 +161,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
   };
   struct ContentLayer {
     ContentLayer(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+                 base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
                  const gfx::RectF& contents_rect,
                  const gfx::Rect& rect,
                  unsigned background_color,
@@ -172,6 +180,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
     // When they are committed to the window server, that will also increment
     // their use count.
     const gfx::ScopedInUseIOSurface io_surface;
+    const base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
     gfx::RectF contents_rect;
     gfx::Rect rect;
     unsigned background_color = 0;

@@ -55,6 +55,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -113,6 +114,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -154,6 +156,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -192,6 +195,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -228,6 +232,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -261,6 +266,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         clip_rect,
         sorting_context_id,
         transform,
+        nullptr,
         nullptr,
         contents_rect,
         rect,
@@ -298,6 +304,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         nullptr,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -333,6 +340,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         clip_rect,
         sorting_context_id,
         transform,
+        nullptr,
         nullptr,
         contents_rect,
         rect,
@@ -370,6 +378,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         nullptr,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -405,6 +414,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -441,6 +451,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -536,6 +547,7 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
         sorting_context_id,
         transforms[i],
         io_surfaces[i],
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -621,6 +633,7 @@ TEST_F(CALayerTreeTest, SortingContexts) {
         sorting_context_ids[i],
         transform,
         io_surfaces[i],
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -694,6 +707,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -711,6 +725,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -730,6 +745,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
         sorting_context_id,
         transform,
         io_surface,
+        nullptr,
         contents_rect,
         rect,
         background_color,
@@ -743,6 +759,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
 TEST_F(CALayerTreeTest, AVLayer) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(gfx::CreateIOSurface(
       gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
+
   bool is_clipped = true;
   gfx::Rect clip_rect(2, 4, 8, 16);
   int sorting_context_id = 0;
@@ -767,8 +784,16 @@ TEST_F(CALayerTreeTest, AVLayer) {
   {
     std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        contents_rect, rect, background_color, edge_aa_mask, opacity);
+        is_clipped,
+        clip_rect,
+        sorting_context_id,
+        transform,
+        io_surface,
+        nullptr,
+        contents_rect,
+        rect, background_color,
+        edge_aa_mask,
+        opacity);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -796,8 +821,17 @@ TEST_F(CALayerTreeTest, AVLayer) {
   {
     std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        contents_rect, rect, background_color, edge_aa_mask, opacity);
+        is_clipped,
+        clip_rect,
+        sorting_context_id,
+        transform,
+        io_surface,
+        nullptr,
+        contents_rect,
+        rect,
+        background_color,
+        edge_aa_mask,
+        opacity);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -821,14 +855,66 @@ TEST_F(CALayerTreeTest, AVLayer) {
 
   io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
                                         gfx::BufferFormat::YUV_420_BIPLANAR));
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+  CVPixelBufferCreateWithIOSurface(
+      nullptr, io_surface, nullptr, cv_pixel_buffer.InitializeInto());
+
+  // Pass a frame with a CVPixelBuffer
+  {
+    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    result = new_ca_layer_tree->ScheduleCALayer(
+        is_clipped,
+        clip_rect,
+        sorting_context_id,
+        transform,
+        io_surface,
+        cv_pixel_buffer,
+        contents_rect,
+        rect,
+        background_color,
+        edge_aa_mask,
+        opacity);
+    EXPECT_TRUE(result);
+    new_ca_layer_tree->CommitScheduledCALayers(
+        superlayer_, std::move(ca_layer_tree), scale_factor);
+    std::swap(new_ca_layer_tree, ca_layer_tree);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer2 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate the content layer.
+    EXPECT_TRUE([content_layer2
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+    EXPECT_NE(content_layer2, content_layer1);
+  }
+
+  io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
+                                        gfx::BufferFormat::YUV_420_BIPLANAR));
+  cv_pixel_buffer.reset();
 
   // Pass a frame that is clipped.
   contents_rect = gfx::RectF(0, 0, 1, 0.9);
   {
     std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
-        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
-        contents_rect, rect, background_color, edge_aa_mask, opacity);
+        is_clipped,
+        clip_rect,
+        sorting_context_id,
+        transform,
+        io_surface,
+        nullptr,
+        contents_rect,
+        rect,
+        background_color,
+        edge_aa_mask,
+        opacity);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
         superlayer_, std::move(ca_layer_tree), scale_factor);
@@ -847,7 +933,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
     // Validate the content layer.
     EXPECT_FALSE([content_layer3
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
-    EXPECT_EQ(content_layer3, content_layer2);
+    EXPECT_NE(content_layer3, content_layer2);
   }
 }
 

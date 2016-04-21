@@ -301,16 +301,19 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     int sorting_context_id,
     unsigned filter) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
   if (contents_image) {
-    io_surface =
-        static_cast<gl::GLImageIOSurface*>(contents_image)->io_surface();
+    gl::GLImageIOSurface* io_surface_image =
+        static_cast<gl::GLImageIOSurface*>(contents_image);
+    io_surface = io_surface_image->io_surface();
+    cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
   }
   if (!pending_ca_layer_tree_)
     pending_ca_layer_tree_.reset(new ui::CALayerTree);
   return pending_ca_layer_tree_->ScheduleCALayer(
       is_clipped, gfx::ToEnclosingRect(clip_rect), sorting_context_id,
-      transform, io_surface, contents_rect, gfx::ToEnclosingRect(rect),
-      background_color, edge_aa_mask, opacity);
+      transform, io_surface, cv_pixel_buffer, contents_rect,
+      gfx::ToEnclosingRect(rect), background_color, edge_aa_mask, opacity);
 }
 
 bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
