@@ -37,9 +37,13 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
   // Create a new browser tab which navigates to |initial_url|. |size| is in
   // physical pixels.
-  virtual std::unique_ptr<HeadlessWebContents> CreateWebContents(
-      const GURL& initial_url,
-      const gfx::Size& size) = 0;
+  // We require the user to pass an initial URL to ensure that the renderer
+  // gets initialized and eventually becomes ready to be inspected. See
+  // HeadlessWebContents::Observer::DevToolsTargetReady.
+  virtual HeadlessWebContents* CreateWebContents(const GURL& initial_url,
+                                                 const gfx::Size& size) = 0;
+
+  virtual std::vector<HeadlessWebContents*> GetAllWebContents() = 0;
 
   // Returns a task runner for submitting work to the browser main thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()

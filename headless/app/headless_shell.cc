@@ -89,7 +89,7 @@ class HeadlessShell : public HeadlessWebContents::Observer {
  private:
   HeadlessBrowser* browser_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
-  std::unique_ptr<HeadlessWebContents> web_contents_;
+  HeadlessWebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

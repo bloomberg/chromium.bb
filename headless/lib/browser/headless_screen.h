@@ -19,6 +19,7 @@ class Transform;
 
 namespace aura {
 class Window;
+class WindowTreeClient;
 class WindowTreeHost;
 }
 

@@ -29,6 +29,8 @@ class HEADLESS_EXPORT HeadlessWebContents {
 
     // Indicates that this HeadlessWebContents instance is now ready to be
     // inspected using a HeadlessDevToolsClient.
+    //
+    // TODO(altimin): Support this event for pages that aren't created by us.
     virtual void DevToolsTargetReady() {}
 
    protected:
@@ -48,6 +50,9 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // won't return a valid value until Observer::DevToolsTargetReady has been
   // signaled.
   virtual HeadlessDevToolsTarget* GetDevToolsTarget() = 0;
+
+  // Close this page. |HeadlessWebContents| object will be destroyed.
+  virtual void Close() = 0;
 
  private:
   friend class HeadlessWebContentsImpl;

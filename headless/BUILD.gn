@@ -222,6 +222,8 @@ static_library("headless_lib") {
     "lib/browser/headless_url_request_context_getter.h",
     "lib/browser/headless_web_contents_impl.cc",
     "lib/browser/headless_web_contents_impl.h",
+    "lib/browser/headless_window_tree_client.cc",
+    "lib/browser/headless_window_tree_client.h",
     "lib/headless_content_client.cc",
     "lib/headless_content_client.h",
     "lib/headless_content_main_delegate.cc",

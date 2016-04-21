@@ -49,10 +49,11 @@ class HeadlessDevToolsClientTest : public HeadlessBrowserTest,
 
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
     web_contents_->RemoveObserver(this);
+    web_contents_->Close();
     web_contents_ = nullptr;
   }
 
-  std::unique_ptr<HeadlessWebContents> web_contents_;
+  HeadlessWebContents* web_contents_;
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 };
 

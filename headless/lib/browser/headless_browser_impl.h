@@ -8,12 +8,17 @@
 #include "headless/public/headless_browser.h"
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/synchronization/lock.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
 namespace aura {
 class WindowTreeHost;
+
+namespace client {
+class WindowTreeClient;
+}
 }
 
 namespace headless {
@@ -29,13 +34,14 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   ~HeadlessBrowserImpl() override;
 
   // HeadlessBrowser implementation:
-  std::unique_ptr<HeadlessWebContents> CreateWebContents(
-      const GURL& initial_url,
-      const gfx::Size& size) override;
+  HeadlessWebContents* CreateWebContents(const GURL& initial_url,
+                                         const gfx::Size& size) override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const override;
 
   void Shutdown() override;
+
+  std::vector<HeadlessWebContents*> GetAllWebContents() override;
 
   void set_browser_main_parts(HeadlessBrowserMainParts* browser_main_parts);
   HeadlessBrowserMainParts* browser_main_parts() const;
@@ -45,6 +51,12 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   void RunOnStartCallback();
 
   const HeadlessBrowser::Options& options() const { return options_; }
+
+  HeadlessWebContentsImpl* RegisterWebContents(
+      std::unique_ptr<HeadlessWebContentsImpl> web_contents);
+
+  // Close given |web_contents| and delete it.
+  void DestroyWebContents(HeadlessWebContentsImpl* web_contents);
 
   // Customize the options used by this headless browser instance. Note that
   // options which take effect before the message loop has been started (e.g.,
@@ -56,6 +68,10 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   HeadlessBrowser::Options options_;
   HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
+  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+
+  std::unordered_map<HeadlessWebContents*, std::unique_ptr<HeadlessWebContents>>
+      web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);
 };

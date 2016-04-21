@@ -27,15 +27,24 @@ class Size;
 
 namespace headless {
 class HeadlessDevToolsHostImpl;
+class HeadlessBrowserImpl;
 class WebContentsObserverAdapter;
 
 class HeadlessWebContentsImpl : public HeadlessWebContents,
                                 public HeadlessDevToolsTarget {
  public:
-  HeadlessWebContentsImpl(content::BrowserContext* context,
-                          aura::Window* parent_window,
-                          const gfx::Size& initial_size);
   ~HeadlessWebContentsImpl() override;
+
+  static std::unique_ptr<HeadlessWebContentsImpl> Create(
+      content::BrowserContext* context,
+      aura::Window* parent_window,
+      const gfx::Size& initial_size,
+      HeadlessBrowserImpl* browser);
+
+  // Takes ownership of |web_contents|.
+  static std::unique_ptr<HeadlessWebContentsImpl> CreateFromWebContents(
+      content::WebContents* web_contents,
+      HeadlessBrowserImpl* browser);
 
   // HeadlessWebContents implementation:
   void AddObserver(Observer* observer) override;
@@ -49,11 +58,22 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
   content::WebContents* web_contents() const;
   bool OpenURL(const GURL& url);
 
+  void Close() override;
+
  private:
+  // Takes ownership of |web_contents|.
+  HeadlessWebContentsImpl(content::WebContents* web_contents,
+                          HeadlessBrowserImpl* browser);
+
+  void InitializeScreen(aura::Window* parent_window,
+                        const gfx::Size& initial_size);
+
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;
   std::unique_ptr<content::WebContents> web_contents_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
+
+  HeadlessBrowserImpl* browser_;  // Not owned.
 
   using ObserverMap =
       std::unordered_map<HeadlessWebContents::Observer*,
