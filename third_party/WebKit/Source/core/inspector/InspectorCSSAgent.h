@@ -111,7 +111,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     bool forcePseudoState(Element*, CSSSelector::PseudoType);
-    void discardAgent() override;
     void didCommitLoadForLocalFrame(LocalFrame*) override;
     void restore() override;
     void flushPendingProtocolNotifications() override;

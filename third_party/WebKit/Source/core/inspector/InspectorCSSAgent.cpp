@@ -621,17 +621,10 @@ InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrame
     , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
 {
-    m_domAgent->setDOMListener(this);
 }
 
 InspectorCSSAgent::~InspectorCSSAgent()
 {
-}
-
-void InspectorCSSAgent::discardAgent()
-{
-    m_domAgent->setDOMListener(nullptr);
-    m_domAgent = nullptr;
 }
 
 void InspectorCSSAgent::restore()
@@ -691,6 +684,7 @@ void InspectorCSSAgent::wasEnabled()
     }
 
     m_instrumentingAgents->setInspectorCSSAgent(this);
+    m_domAgent->setDOMListener(this);
     HeapVector<Member<Document>> documents = m_domAgent->documents();
     for (Document* document : documents)
         updateActiveStyleSheets(document, InitialFrontendLoad);
@@ -699,6 +693,7 @@ void InspectorCSSAgent::wasEnabled()
 void InspectorCSSAgent::disable(ErrorString*)
 {
     reset();
+    m_domAgent->setDOMListener(nullptr);
     m_instrumentingAgents->setInspectorCSSAgent(0);
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
 }

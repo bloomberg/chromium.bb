@@ -58,7 +58,6 @@ public:
     void disable(ErrorString*) override;
     void restore() override;
     void didCommitLoadForLocalFrame(LocalFrame*) override;
-    void discardAgent() override;
 
     // Called from the front-end.
     void enable(ErrorString*) override;

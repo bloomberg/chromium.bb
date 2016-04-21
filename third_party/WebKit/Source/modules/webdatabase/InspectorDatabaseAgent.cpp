@@ -233,8 +233,8 @@ void InspectorDatabaseAgent::didOpenDatabase(blink::Database* database, const St
     InspectorDatabaseResource* resource = InspectorDatabaseResource::create(database, domain, name, version);
     m_resources.set(resource->id(), resource);
     // Resources are only bound while visible.
-    if (frontend() && m_enabled)
-        resource->bind(frontend());
+    ASSERT(m_enabled && frontend());
+    resource->bind(frontend());
 }
 
 void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
@@ -251,18 +251,10 @@ InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
     , m_page(page)
     , m_enabled(false)
 {
-    DatabaseClient::fromPage(page)->setInspectorAgent(this);
-    DatabaseTracker::tracker().forEachOpenDatabaseInPage(m_page, bind<blink::Database*>(&InspectorDatabaseAgent::registerDatabaseOnCreation, this));
 }
 
 InspectorDatabaseAgent::~InspectorDatabaseAgent()
 {
-}
-
-void InspectorDatabaseAgent::discardAgent()
-{
-    if (DatabaseClient* client = DatabaseClient::fromPage(m_page))
-        client->setInspectorAgent(nullptr);
 }
 
 void InspectorDatabaseAgent::enable(ErrorString*)
@@ -271,10 +263,9 @@ void InspectorDatabaseAgent::enable(ErrorString*)
         return;
     m_enabled = true;
     m_state->setBoolean(DatabaseAgentState::databaseAgentEnabled, m_enabled);
-
-    DatabaseResourcesHeapMap::iterator databasesEnd = m_resources.end();
-    for (DatabaseResourcesHeapMap::iterator it = m_resources.begin(); it != databasesEnd; ++it)
-        it->value->bind(frontend());
+    if (DatabaseClient* client = DatabaseClient::fromPage(m_page))
+        client->setInspectorAgent(this);
+    DatabaseTracker::tracker().forEachOpenDatabaseInPage(m_page, bind<blink::Database*>(&InspectorDatabaseAgent::registerDatabaseOnCreation, this));
 }
 
 void InspectorDatabaseAgent::disable(ErrorString*)
@@ -283,11 +274,17 @@ void InspectorDatabaseAgent::disable(ErrorString*)
         return;
     m_enabled = false;
     m_state->setBoolean(DatabaseAgentState::databaseAgentEnabled, m_enabled);
+    if (DatabaseClient* client = DatabaseClient::fromPage(m_page))
+        client->setInspectorAgent(nullptr);
+    m_resources.clear();
 }
 
 void InspectorDatabaseAgent::restore()
 {
-    m_enabled = m_state->booleanProperty(DatabaseAgentState::databaseAgentEnabled, false);
+    if (m_state->booleanProperty(DatabaseAgentState::databaseAgentEnabled, false)) {
+        ErrorString error;
+        enable(&error);
+    }
 }
 
 void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, OwnPtr<protocol::Array<String>>* names)
