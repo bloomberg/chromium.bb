@@ -14,7 +14,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_flags.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/mock_spdy_framer_visitor.h"
@@ -296,8 +298,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         header_buffer_valid_(false) {}
 
   void OnError(SpdyFramer* f) override {
-    LOG(INFO) << "SpdyFramer Error: "
-              << SpdyFramer::ErrorCodeToString(f->error_code());
+    VLOG(1) << "SpdyFramer Error: "
+            << SpdyFramer::ErrorCodeToString(f->error_code());
     ++error_count_;
   }
 
@@ -312,6 +314,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                          const char* data,
                          size_t len,
                          bool fin) override {
+    VLOG(1) << "OnStreamFrameData(" << stream_id << ", data, " << len << ", "
+            << fin << ")   data:\n"
+            << base::HexEncode(data, len);
     EXPECT_EQ(header_stream_id_, stream_id);
     if (!FLAGS_spdy_on_stream_end) {
       if (len == 0) {
@@ -320,18 +325,10 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     }
 
     data_bytes_ += len;
-    LOG(INFO) << "OnStreamFrameData(" << stream_id << ", \"";
-    if (len > 0) {
-      for (size_t i = 0 ; i < len; ++i) {
-        LOG(INFO) << std::hex << (0xFF & static_cast<unsigned int>(data[i]))
-                  << std::dec;
-      }
-    }
-    LOG(INFO) << "\", " << len << ")\n";
   }
 
   void OnStreamEnd(SpdyStreamId stream_id) override {
-    LOG(INFO) << "OnStreamEnd(" << stream_id << ")";
+    VLOG(1) << "OnStreamEnd(" << stream_id << ")";
     EXPECT_EQ(header_stream_id_, stream_id);
     ++end_of_stream_count_;
   }
@@ -339,7 +336,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
     EXPECT_EQ(header_stream_id_, stream_id);
     data_bytes_ += len;
-    LOG(INFO) << "OnStreamPadding(" << stream_id << ", " << len << ")\n";
+    VLOG(1) << "OnStreamPadding(" << stream_id << ", " << len << ")\n";
   }
 
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
@@ -495,7 +492,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
-    DLOG(INFO) << "Unknown frame type " << frame_type;
+    VLOG(1) << "OnUnknownFrame(" << stream_id << ", " << frame_type << ")";
     return on_unknown_frame_result_;
   }
 
@@ -5917,8 +5914,8 @@ TEST_P(SpdyFramerTest, ProcessAllInput) {
   const size_t frame1_size = frame1.size();
   const size_t frame2_size = frame2.size();
 
-  LOG(INFO) << "frame1_size = " << frame1_size;
-  LOG(INFO) << "frame2_size = " << frame2_size;
+  VLOG(1) << "frame1_size = " << frame1_size;
+  VLOG(1) << "frame2_size = " << frame2_size;
 
   string input_buffer;
   input_buffer.append(frame1.data(), frame1_size);
@@ -5927,7 +5924,7 @@ TEST_P(SpdyFramerTest, ProcessAllInput) {
   const char* buf = input_buffer.data();
   const size_t buf_size = input_buffer.size();
 
-  LOG(INFO) << "buf_size = " << buf_size;
+  VLOG(1) << "buf_size = " << buf_size;
 
   size_t processed = framer.ProcessInput(buf, buf_size);
   EXPECT_EQ(buf_size, processed);
@@ -5965,8 +5962,8 @@ TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
   const size_t frame1_size = frame1.size();
   const size_t frame2_size = frame2.size();
 
-  LOG(INFO) << "frame1_size = " << frame1_size;
-  LOG(INFO) << "frame2_size = " << frame2_size;
+  VLOG(1) << "frame1_size = " << frame1_size;
+  VLOG(1) << "frame2_size = " << frame2_size;
 
   string input_buffer;
   input_buffer.append(frame1.data(), frame1_size);
@@ -5975,10 +5972,10 @@ TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
   const char* buf = input_buffer.data();
   const size_t buf_size = input_buffer.size();
 
-  LOG(INFO) << "buf_size = " << buf_size;
+  VLOG(1) << "buf_size = " << buf_size;
 
   for (size_t first_size = 0; first_size <= buf_size; ++first_size) {
-    LOG(INFO) << "first_size = " << first_size;
+    VLOG(1) << "first_size = " << first_size;
     visitor.reset(new TestSpdyVisitor(spdy_version_));
     framer.set_visitor(visitor.get());
 
@@ -5996,7 +5993,7 @@ TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
 
       const char* rest = buf + processed_first;
       const size_t remaining = buf_size - processed_first;
-      LOG(INFO) << "remaining = " << remaining;
+      VLOG(1) << "remaining = " << remaining;
 
       size_t processed_second = framer.ProcessInput(rest, remaining);
 

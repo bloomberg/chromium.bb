@@ -4,6 +4,7 @@
 
 #include "net/spdy/buffered_spdy_framer.h"
 
+#include "base/logging.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "testing/platform_test.h"
 
@@ -26,14 +27,14 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
         promised_stream_id_(static_cast<SpdyStreamId>(-1)) {}
 
   void OnError(SpdyFramer::SpdyError error_code) override {
-    LOG(INFO) << "SpdyFramer Error: " << error_code;
+    VLOG(1) << "SpdyFramer Error: " << error_code;
     error_count_++;
   }
 
   void OnStreamError(SpdyStreamId stream_id,
                      const std::string& description) override {
-    LOG(INFO) << "SpdyFramer Error on stream: " << stream_id  << " "
-              << description;
+    VLOG(1) << "SpdyFramer Error on stream: " << stream_id << " "
+            << description;
     error_count_++;
   }
 
