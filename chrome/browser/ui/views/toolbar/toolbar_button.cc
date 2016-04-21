@@ -254,6 +254,7 @@ void ToolbarButton::OnMenuClosed() {
   if (state() != STATE_DISABLED)
     SetState(STATE_NORMAL);
 
+  menu_runner_.reset();
   menu_model_adapter_.reset();
 }
 

@@ -15,6 +15,10 @@
 
 class Profile;
 
+namespace test {
+class ToolbarButtonTestApi;
+}
+
 namespace ui {
 class MenuModel;
 }
@@ -71,6 +75,8 @@ class ToolbarButton : public views::LabelButton,
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
 
  private:
+  friend test::ToolbarButtonTestApi;
+
   // Callback for MenuModelAdapter.
   void OnMenuClosed();
 

@@ -31,6 +31,12 @@ class TestView : public views::View {
   }
 
   void Layout() override {
+    // Permit a test to remove the view being tested from the hierarchy, then
+    // still handle a _NET_WM_STATE event on Linux during teardown that triggers
+    // layout.
+    if (!has_children())
+      return;
+
     View* child_view = child_at(0);
     child_view->SetBounds(0, 0, width(), height());
   }
