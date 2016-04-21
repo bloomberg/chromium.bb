@@ -29,6 +29,13 @@ cr.define('settings', function() {
      */
     onShowResetProfileDialog: function() {},
 
+    /**
+     * Gets the current settings (about to be reset) reported to Google for
+     * analysis.
+     * @return {!Promise<!Array<{key:string, value:string}>}
+     */
+    getReportedSettings: function() {},
+
 <if expr="chromeos">
     /**
      * A method to be called when the reset powerwash dialog is shown.
@@ -68,6 +75,11 @@ cr.define('settings', function() {
     /** @override */
     onShowResetProfileDialog: function() {
       chrome.send('onShowResetProfileDialog');
+    },
+
+    /** @override */
+    getReportedSettings: function() {
+      return cr.sendWithPromise('getReportedSettings');
     },
 
 <if expr="chromeos">

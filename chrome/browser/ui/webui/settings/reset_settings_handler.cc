@@ -91,6 +91,9 @@ void ResetSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onShowResetProfileDialog",
       base::Bind(&ResetSettingsHandler::OnShowResetProfileDialog,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getReportedSettings",
+      base::Bind(&ResetSettingsHandler::HandleGetReportedSettings,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onHideResetProfileDialog",
       base::Bind(&ResetSettingsHandler::OnHideResetProfileDialog,
                  base::Unretained(this)));
@@ -148,14 +151,28 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
   setting_snapshot_.reset();
 }
 
+void ResetSettingsHandler::HandleGetReportedSettings(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  setting_snapshot_->RequestShortcuts(base::Bind(
+      &ResetSettingsHandler::OnGetReportedSettingsDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      callback_id));
+}
+
+void ResetSettingsHandler::OnGetReportedSettingsDone(std::string callback_id) {
+  std::unique_ptr<base::ListValue> list =
+      GetReadableFeedbackForSnapshot(profile_, *setting_snapshot_);
+  ResolveJavascriptCallback(base::StringValue(callback_id), *list);
+}
+
 void ResetSettingsHandler::OnShowResetProfileDialog(
     const base::ListValue* args) {
   if (!GetResetter()->IsActive()) {
     setting_snapshot_.reset(new ResettableSettingsSnapshot(profile_));
-    setting_snapshot_->RequestShortcuts(base::Bind(
-        &ResetSettingsHandler::UpdateFeedbackUI,
-        weak_ptr_factory_.GetWeakPtr()));
-    UpdateFeedbackUI();
   }
 
   if (brandcode_.empty())
@@ -210,16 +227,6 @@ void ResetSettingsHandler::ResetProfile(std::string callback_id,
                  send_settings));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
-}
-
-void ResetSettingsHandler::UpdateFeedbackUI() {
-  if (!setting_snapshot_)
-    return;
-  std::unique_ptr<base::ListValue> list =
-      GetReadableFeedbackForSnapshot(profile_, *setting_snapshot_);
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("feedback-info-changed"),
-                                   *list.release());
 }
 
 ProfileResetter* ResetSettingsHandler::GetResetter() {

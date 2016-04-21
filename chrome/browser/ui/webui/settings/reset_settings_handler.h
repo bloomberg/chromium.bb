@@ -53,6 +53,12 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   void HandleResetProfileSettings(const base::ListValue* args);
 
  private:
+  // Retrieves the settings that will be reported, called from Javascript.
+  void HandleGetReportedSettings(const base::ListValue* args);
+
+  // Called once the settings that will be reported have been retrieved.
+  void OnGetReportedSettingsDone(std::string callback_id);
+
   // Called when the reset profile dialog is shown.
   void OnShowResetProfileDialog(const base::ListValue* args);
 
@@ -72,9 +78,6 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   // Closes the dialog once all requested settings has been reset.
   void OnResetProfileSettingsDone(std::string callback_id,
                                   bool send_feedback);
-
-  // Sets new values for the feedback area.
-  void UpdateFeedbackUI();
 
 #if defined(OS_CHROMEOS)
   // Will be called when powerwash dialog is shown.

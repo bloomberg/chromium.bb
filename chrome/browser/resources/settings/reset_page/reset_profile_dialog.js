@@ -12,10 +12,6 @@ Polymer({
 
   behaviors: [WebUIListenerBehavior],
 
-  properties: {
-    feedbackInfo_: String,
-  },
-
   /** @private {!settings.ResetBrowserProxy} */
   browserProxy_: null,
 
@@ -25,10 +21,6 @@ Polymer({
 
     this.addEventListener('iron-overlay-canceled', function() {
       this.browserProxy_.onHideResetProfileDialog();
-    }.bind(this));
-
-    this.addWebUIListener('feedback-info-changed', function(feedbackInfo) {
-      this.feedbackInfo_ = feedbackInfo;
     }.bind(this));
   },
 
@@ -53,11 +45,24 @@ Polymer({
     }.bind(this));
   },
 
-  /** @private */
-  onSendSettingsChange_: function() {
-    // TODO(dpapad): Update how settings info is surfaced when final mocks
-    // exist.
-    this.$.settings.hidden = !this.$.sendSettings.checked;
-    this.$.dialog.center();
+  /**
+   * Displays the settings that will be reported in a new tab.
+   * @private
+   */
+  onShowReportedSettingsTap_: function() {
+    this.browserProxy_.getReportedSettings().then(function(settings) {
+      var feedbackObj = {};
+      settings.forEach(function(entry) {
+        // Break strings with '\n' characters into arrays to make the settings a
+        // bit more readable.
+        var values = entry.value.split('\n');
+        feedbackObj[entry.key] = values.length == 1 ? values[0] : values;
+      });
+      var win = window.open('about:blank');
+      var div = win.document.createElement('div');
+      div.textContent = JSON.stringify(feedbackObj, null, 2 /* spaces */);
+      div.style.whiteSpace = 'pre';
+      win.document.body.appendChild(div);
+    });
   },
 });

@@ -2,6 +2,8 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://md-settings/reset_page/reset_browser_proxy.html">
@@ -28,12 +30,9 @@
       </div>
       <div class="footer">
         <paper-checkbox id="sendSettings" i18n-content="resetPageFeedback"
-            checked on-change="onSendSettingsChange_"></paper-checkbox>
-        <div id="settings">
-          <template is="dom-repeat" items="[[feedbackInfo_]]">
-            <div><span>[[item.key]]</span>: <span>[[item.value]]</span></div>
-          </template>
-        </div>
+            checked></paper-checkbox>
+        <iron-icon icon="icons:help" on-tap="onShowReportedSettingsTap_">
+        </iron-icon>
       </div>
     </settings-dialog>
   </template>

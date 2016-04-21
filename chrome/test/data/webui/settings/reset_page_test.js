@@ -24,6 +24,7 @@ cr.define('settings_reset_page', function() {
       'onHideResetProfileDialog',
       'onHideResetProfileBanner',
       'onShowResetProfileDialog',
+      'getReportedSettings',
       'onPowerwashDialogShow',
       'requestFactoryResetRestart',
     ]);
@@ -51,6 +52,12 @@ cr.define('settings_reset_page', function() {
     /** @override */
     onShowResetProfileDialog: function() {
       this.methodCalled('onShowResetProfileDialog');
+    },
+
+    /** @override */
+    getReportedSettings: function() {
+      this.methodCalled('getReportedSettings');
+      return Promise.resolve([]);
     },
 
     /** @override */
@@ -184,8 +191,15 @@ cr.define('settings_reset_page', function() {
         MockInteractions.tap(resetPage.$.resetProfile);
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
-        MockInteractions.tap(dialog.$.reset);
-        return browserProxy.whenCalled('performResetProfileSettings');
+
+        var showReportedSettingsButton = dialog.$$('iron-icon');
+        assertTrue(!!showReportedSettingsButton);
+        MockInteractions.tap(showReportedSettingsButton);
+
+        return browserProxy.whenCalled('getReportedSettings').then(function() {
+          MockInteractions.tap(dialog.$.reset);
+          return browserProxy.whenCalled('performResetProfileSettings');
+        });
       });
 
       if (cr.isChromeOS) {
