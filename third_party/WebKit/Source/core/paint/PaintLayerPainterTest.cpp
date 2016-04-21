@@ -451,4 +451,56 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition)
     EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
 }
 
+TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting)
+{
+    setBodyInnerHTML(
+        "<div id='will-be-self-painting' style='width: 100px; height: 100px; overflow: hidden'>"
+        "  <div>"
+        "    <div style='outline: 1px solid red; background-color: green'>outline and background</div>"
+        "  </div>"
+        "</div>");
+
+    LayoutBlock& layerDiv = *toLayoutBlock(document().getElementById("will-be-self-painting")->layoutObject());
+    ASSERT_TRUE(layerDiv.hasLayer());
+    EXPECT_FALSE(layerDiv.layer()->isSelfPaintingLayer());
+
+    PaintLayer& htmlLayer = *toLayoutBlock(document().documentElement()->layoutObject())->layer();
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    toHTMLElement(layerDiv.node())->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 100px; overflow: hidden; position: relative");
+    document().view()->updateAllLifecyclePhases();
+    PaintLayer& layer = *layerDiv.layer();
+    ASSERT_TRUE(layer.isSelfPaintingLayer());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
+}
+
+TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting)
+{
+    setBodyInnerHTML(
+        "<div id='will-be-non-self-painting' style='width: 100px; height: 100px; overflow: hidden; position: relative'>"
+        "  <div>"
+        "    <div style='outline: 1px solid red; background-color: green'>outline and background</div>"
+        "  </div>"
+        "</div>");
+
+    LayoutBlock& layerDiv = *toLayoutBlock(document().getElementById("will-be-non-self-painting")->layoutObject());
+    ASSERT_TRUE(layerDiv.hasLayer());
+    PaintLayer& layer = *layerDiv.layer();
+    EXPECT_TRUE(layer.isSelfPaintingLayer());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    PaintLayer& htmlLayer = *toLayoutBlock(document().documentElement()->layoutObject())->layer();
+    EXPECT_FALSE(htmlLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_FALSE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    toHTMLElement(layerDiv.node())->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 100px; overflow: hidden");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(layer.isSelfPaintingLayer());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantOutlines());
+    EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
+}
+
 } // namespace blink
