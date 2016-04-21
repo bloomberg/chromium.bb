@@ -32,7 +32,26 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
- private:
+ protected:
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           ReturnDefaultProfileNameAndIcons);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           ReturnSignedInProfiles);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           CreateProfile);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           CreateSupervisedUser);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           ImportSupervisedUser);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           ImportSupervisedUserAlreadyOnDevice);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           CustodianNotAuthenticated);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           CustodianHasAuthError);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           NotAllowedToCreateSupervisedUser);
+
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
   // Represents the final profile creation status. It is used to map
@@ -118,7 +137,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   base::StringValue GetWebUIListenerName(ProfileCreationStatus status) const;
 
-  // Used to allow cancelling a profile creation (particularly a supervised-user
+  // Used to allow canceling a profile creation (particularly a supervised-user
   // registration) in progress. Set when profile creation is begun, and
   // cleared when all the callbacks have been run and creation is complete.
   base::FilePath profile_path_being_created_;
@@ -131,11 +150,11 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   ProfileCreationOperationType profile_creation_type_;
 
   // Asynchronously creates and initializes a new profile.
-  void DoCreateProfile(const base::string16& name,
-                       const std::string& icon_url,
-                       bool create_shortcut,
-                       const std::string& supervised_user_id,
-                       Profile* custodian_profile);
+  virtual void DoCreateProfile(const base::string16& name,
+                               const std::string& icon_url,
+                               bool create_shortcut,
+                               const std::string& supervised_user_id,
+                               Profile* custodian_profile);
 
 #if defined(ENABLE_SUPERVISED_USERS)
   // Extracts the supervised user ID and the custodian user profile path from
@@ -168,10 +187,10 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   // After a new supervised-user profile has been created, registers the user
   // with the management server.
-  void RegisterSupervisedUser(bool create_shortcut,
-                              const std::string& managed_user_id,
-                              Profile* custodian_profile,
-                              Profile* new_profile);
+  virtual void RegisterSupervisedUser(bool create_shortcut,
+                                      const std::string& managed_user_id,
+                                      Profile* custodian_profile,
+                                      Profile* new_profile);
 
   // Called back with the result of the supervised user registration.
   void OnSupervisedUserRegistered(bool create_shortcut,
@@ -192,6 +211,11 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
                                  Profile* custodian_profile,
                                  const base::DictionaryValue* dict);
 
+
+  // Opens a new window for |profile|.
+  virtual void OpenNewWindowForProfile(Profile* profile,
+                                       Profile::CreateStatus status);
+
   std::unique_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;
 #endif
@@ -203,6 +227,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   base::WeakPtrFactory<SigninCreateProfileHandler> weak_ptr_factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SigninCreateProfileHandler);
 };
 

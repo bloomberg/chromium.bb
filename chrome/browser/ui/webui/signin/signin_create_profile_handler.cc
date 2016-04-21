@@ -347,10 +347,15 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   if (should_open_new_window) {
     // Opening the new window must be the last action, after all callbacks
     // have been run, to give them a chance to initialize the profile.
-    webui::OpenNewWindowForProfile(
-        profile, Profile::CREATE_STATUS_INITIALIZED);
+    OpenNewWindowForProfile(profile, Profile::CREATE_STATUS_INITIALIZED);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
+}
+
+void SigninCreateProfileHandler::OpenNewWindowForProfile(
+    Profile* profile,
+    Profile::CreateStatus status) {
+  webui::OpenNewWindowForProfile(profile, status);
 }
 
 void SigninCreateProfileHandler::ShowProfileCreationError(

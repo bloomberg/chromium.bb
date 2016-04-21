@@ -29,6 +29,7 @@
 namespace {
 
 const char kTestGaiaId[] = "test-gaia-id";
+const char kTestEmail[] = "foo@bar.com";
 
 const char kTestWebUIResponse[] = "cr.webUIResponse";
 const char kTestCallbackId[] = "test-callback-id";
@@ -92,7 +93,7 @@ class SigninSupervisedUserImportHandlerTest : public BrowserWithTestWindowTest {
     // Authenticate the test profile.
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(profile_));
-    fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId, kTestGaiaId);
+    fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
 
     // Add supervised users to the profile.
     SupervisedUserSyncService* sync_service_ =
