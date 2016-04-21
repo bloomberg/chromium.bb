@@ -93,10 +93,12 @@ TEST(PersistentSampleMapTest, PersistenceTest) {
   samples1.Accumulate(1, 100);
   samples1.Accumulate(2, 200);
   samples1.Accumulate(1, -200);
+  samples1.Accumulate(-1, 1);
   EXPECT_EQ(-100, samples1.GetCount(1));
   EXPECT_EQ(200, samples1.GetCount(2));
-  EXPECT_EQ(300, samples1.sum());
-  EXPECT_EQ(100, samples1.TotalCount());
+  EXPECT_EQ(1, samples1.GetCount(-1));
+  EXPECT_EQ(299, samples1.sum());
+  EXPECT_EQ(101, samples1.TotalCount());
   EXPECT_EQ(samples1.redundant_count(), samples1.TotalCount());
 
   PersistentSparseHistogramDataManager manager2(&allocator);
@@ -107,10 +109,12 @@ TEST(PersistentSampleMapTest, PersistenceTest) {
   EXPECT_EQ(samples1.TotalCount(), samples2.TotalCount());
   EXPECT_EQ(-100, samples2.GetCount(1));
   EXPECT_EQ(200, samples2.GetCount(2));
-  EXPECT_EQ(300, samples2.sum());
-  EXPECT_EQ(100, samples2.TotalCount());
+  EXPECT_EQ(1, samples2.GetCount(-1));
+  EXPECT_EQ(299, samples2.sum());
+  EXPECT_EQ(101, samples2.TotalCount());
   EXPECT_EQ(samples2.redundant_count(), samples2.TotalCount());
 
+  samples1.Accumulate(-1, -1);
   EXPECT_EQ(0, samples2.GetCount(3));
   EXPECT_EQ(0, samples1.GetCount(3));
   samples2.Accumulate(3, 300);
