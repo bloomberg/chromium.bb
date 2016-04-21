@@ -123,7 +123,6 @@ public:
     static const AtomicString& smallCaptionFontFamily() { return *s_smallCaptionFontFamilyName; }
     static int32_t statusFontHeight() { return s_statusFontHeight; }
     static const AtomicString& statusFontFamily() { return *s_statusFontFamilyName; }
-    static void setUseSkiaFontFallback(bool useSkiaFontFallback) { s_useSkiaFontFallback = useSkiaFontFallback; }
 #endif
 
     typedef uint32_t FontFileKey;
@@ -202,7 +201,6 @@ private:
     static int32_t s_smallCaptionFontHeight;
     static AtomicString* s_statusFontFamilyName;
     static int32_t s_statusFontHeight;
-    static bool s_useSkiaFontFallback;
 #endif
 
     friend class SimpleFontData; // For fontDataFromFontPlatformData
@@ -216,8 +214,6 @@ public:
     FontCachePurgePreventer() { FontCache::fontCache()->disablePurging(); }
     ~FontCachePurgePreventer() { FontCache::fontCache()->enablePurging(); }
 };
-
-CString toSkFontMgrLocale(const String& locale);
 
 } // namespace blink
 
