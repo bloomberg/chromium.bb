@@ -10,17 +10,17 @@
 
 class RegistryEntry;
 
-// Windows 8 shows the "No apps are installed to open this type of link(http)"
-// dialog when choosing default browser under certain circumstances. Under
-// these circumstances, it appears that ensuring the existance of the
-// HKCU\Software\Classes\http key with an empty "URL Protocol" value is
-// sufficient to make the dialog contain the usual list of registered browsers.
-// This class creates this key and value in its constructor if needed, and
-// cleans them up in its destructor if no other values or subkeys were created
-// in the meantime. For details, see https://crbug.com/569151.
+// Windows 8 shows the "No apps are installed to open this type of link"
+// dialog when choosing a default handler for a |protocol| under certain
+// circumstances. Under these circumstances, it appears that ensuring the
+// existance of the HKCU\Software\Classes\<protocol> key with an empty "URL
+// Protocol" value is sufficient to make the dialog contain the usual list of
+// registered browsers. This class creates this key and value in its constructor
+// if needed, and cleans them up in its destructor if no other values or subkeys
+// were created in the meantime. For details, see https://crbug.com/569151.
 class ScopedUserProtocolEntry {
  public:
-  ScopedUserProtocolEntry();
+  explicit ScopedUserProtocolEntry(const wchar_t* protocol);
   ~ScopedUserProtocolEntry();
 
  private:

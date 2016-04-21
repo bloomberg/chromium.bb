@@ -44,6 +44,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/scoped_user_protocol_entry.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -238,7 +239,7 @@ class OpenSystemSettingsHelper {
  public:
   // Begin the monitoring and will call |on_finished_callback| when done.
   // Takes in a null-terminated array of |protocols| whose registry keys must be
-  // watched.
+  // watched. The array must contain at least one element.
   static void Begin(const wchar_t* const protocols[],
                     const base::Closure& on_finished_callback) {
     new OpenSystemSettingsHelper(protocols, on_finished_callback);
@@ -251,7 +252,9 @@ class OpenSystemSettingsHelper {
 
   OpenSystemSettingsHelper(const wchar_t* const protocols[],
                            const base::Closure& on_finished_callback)
-      : on_finished_callback_(on_finished_callback), weak_ptr_factory_(this) {
+      : scoped_user_protocol_entry_(protocols[0]),
+        on_finished_callback_(on_finished_callback),
+        weak_ptr_factory_(this) {
     static const wchar_t kUrlAssociationFormat[] =
         L"SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"
         L"%ls\\UserChoice";
@@ -315,6 +318,10 @@ class OpenSystemSettingsHelper {
       registry_key_watchers_.push_back(std::move(reg_key));
     }
   }
+
+  // This is needed to make sure that Windows displays an entry for the protocol
+  // inside the "Choose default apps by protocol" settings page.
+  ScopedUserProtocolEntry scoped_user_protocol_entry_;
 
   // The function to call when the interaction with the system settings is
   // finished.
@@ -508,6 +515,28 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
 
   VLOG(1) << "Set-default-client Windows UI completed.";
   return true;
+}
+
+void SetAsDefaultProtocolClientUsingSystemSettings(
+    const std::string& protocol,
+    const base::Closure& on_finished_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    on_finished_callback.Run();
+    return;
+  }
+
+  // The helper manages its own lifetime.
+  base::string16 wprotocol(base::UTF8ToUTF16(protocol));
+  const wchar_t* const kProtocols[] = {wprotocol.c_str(), nullptr};
+  OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
+                                                         wprotocol);
 }
 
 base::string16 GetAppModelIdForProfile(const base::string16& app_name,

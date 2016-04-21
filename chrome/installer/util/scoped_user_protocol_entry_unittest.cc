@@ -37,7 +37,7 @@ class ScopedUserProtocolEntryTest : public testing::Test {
 
   void CreateScopedUserProtocolEntryAndVerifyRegistryValue(
       const base::string16& expected_entry_value) {
-    entry_ = base::WrapUnique(new ScopedUserProtocolEntry());
+    entry_ = base::WrapUnique(new ScopedUserProtocolEntry(L"http"));
     ASSERT_TRUE(RegistryEntry(kProtocolEntryKeyPath, kProtocolEntryName,
                               expected_entry_value)
                     .ExistsInRegistry(RegistryEntry::LOOK_IN_HKCU));
