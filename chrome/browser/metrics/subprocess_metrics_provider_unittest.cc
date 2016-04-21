@@ -97,6 +97,7 @@ class SubprocessMetricsProviderTest : public testing::Test {
     snapshot_manager.StartDeltas();
     provider_.RecordHistogramSnapshots(&snapshot_manager);
     snapshot_manager.FinishDeltas();
+    provider_.OnDidCreateMetricsLog();
     return flattener.GetRecordedDeltaHistogramNames().size();
   }
 

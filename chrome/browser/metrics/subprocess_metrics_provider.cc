@@ -51,7 +51,16 @@ void SubprocessMetricsProvider::DeregisterSubprocessAllocator(int id) {
   // Otherwise, the allocator and its memory will be released when the
   // unique_ptr goes out of scope at the end of this method.
   if (metrics_recording_enabled_)
-    allocators_to_release_.push_back(std::move(allocator));
+    allocators_for_exited_processes_.push_back(std::move(allocator));
+}
+
+void SubprocessMetricsProvider::OnDidCreateMetricsLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The previous reporting cycle is complete and the data used to create it
+  // will never be needed again. Allocators for exited processes can finally
+  // be released.
+  allocators_to_release_.clear();
 }
 
 void SubprocessMetricsProvider::OnRecordingEnabled() {
@@ -64,6 +73,7 @@ void SubprocessMetricsProvider::OnRecordingDisabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   metrics_recording_enabled_ = false;
+  allocators_for_exited_processes_.clear();
   allocators_to_release_.clear();
 }
 
@@ -97,18 +107,19 @@ void SubprocessMetricsProvider::RecordHistogramSnapshots(
         snapshot_manager, iter.GetCurrentKey(), iter.GetCurrentValue());
   }
 
-  for (auto& allocator : allocators_to_release_)
+  for (auto& allocator : allocators_for_exited_processes_)
     RecordHistogramSnapshotsFromAllocator(snapshot_manager, 0, allocator.get());
 
   UMA_HISTOGRAM_COUNTS_100(
       "UMA.SubprocessMetricsProvider.SubprocessCount",
-      allocators_by_id_.size() + allocators_to_release_.size());
+      allocators_by_id_.size() + allocators_for_exited_processes_.size());
 
-  // The snapshot-manager has taken ownership of the histograms but needs
-  // access to only the histogram objects, not "sample" data it uses. Thus,
-  // it is safe to release shared-memory segments without waiting for the
-  // snapshot-manager to "finish".
-  allocators_to_release_.clear();
+  // Move allocators for exited processes (which just had final reporting done
+  // for them) to the queue for being released. The actual release is delayed
+  // until after reporting is complete so as to not destruct objects that may
+  // still be needed.
+  DCHECK(allocators_to_release_.empty());
+  allocators_to_release_.swap(allocators_for_exited_processes_);
 }
 
 void SubprocessMetricsProvider::Observe(

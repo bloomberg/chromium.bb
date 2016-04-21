@@ -51,6 +51,7 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
       base::PersistentHistogramAllocator* allocator);
 
   // metrics::MetricsProvider:
+  void OnDidCreateMetricsLog() override;
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
   void RecordHistogramSnapshots(
@@ -80,6 +81,8 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
 
   // Allocators that are no longer attached to a subprocess, to be released
   // once the last data contained therein has been reported.
+  std::vector<std::unique_ptr<base::PersistentHistogramAllocator>>
+      allocators_for_exited_processes_;
   std::vector<std::unique_ptr<base::PersistentHistogramAllocator>>
       allocators_to_release_;
 
