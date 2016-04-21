@@ -156,10 +156,17 @@ arm_list="libc6-dev-armhf-cross
           g++-arm-linux-gnueabihf"
 
 # Work around for dependency issue Ubuntu/Trusty: http://crbug.com/435056
-if [ "x$lsb_release" = "xtrusty" ]; then
-  arm_list+=" g++-4.8-multilib-arm-linux-gnueabihf
-              gcc-4.8-multilib-arm-linux-gnueabihf"
-fi
+case $lsb_release in
+  trusty)
+    arm_list+=" g++-4.8-multilib-arm-linux-gnueabihf
+                gcc-4.8-multilib-arm-linux-gnueabihf"
+    ;;
+  wily)
+    arm_list+=" g++-5-multilib-arm-linux-gnueabihf
+                gcc-5-multilib-arm-linux-gnueabihf
+                gcc-arm-linux-gnueabihf"
+    ;;
+esac
 
 # Packages to build NaCl, its toolchains, and its ports.
 naclports_list="ant autoconf bison cmake gawk intltool xutils-dev xsltproc"
