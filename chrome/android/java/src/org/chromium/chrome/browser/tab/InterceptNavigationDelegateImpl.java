@@ -80,11 +80,30 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             return true;
         }
 
-        TabRedirectHandler tabRedirectHandler = mTab.getTabRedirectHandler();
+        TabRedirectHandler tabRedirectHandler = null;
+        if (navigationParams.isMainFrame) {
+            tabRedirectHandler = mTab.getTabRedirectHandler();
+        } else if (navigationParams.isExternalProtocol) {
+            // Only external protocol navigations are intercepted for iframe navigations.  Since
+            // we do not see all previous navigations for the iframe, we can not build a complete
+            // redirect handler for each iframe.  Nor can we use the top level redirect handler as
+            // that has the potential to incorrectly give access to the navigation due to previous
+            // main frame gestures.
+            //
+            // By creating a new redirect handler for each external navigation, we are specifically
+            // not covering the case where a gesture is carried over via a redirect.  This is
+            // currently not feasible because we do not see all navigations for iframes and it is
+            // better to error on the side of caution and require direct user gestures for iframes.
+            tabRedirectHandler = new TabRedirectHandler(mTab.getActivity());
+        } else {
+            assert false;
+            return false;
+        }
         tabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
                 navigationParams.isRedirect,
                 navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
                 mTab.getActivity().getLastUserInteractionTime(), getLastCommittedEntryIndex());
+
         boolean shouldCloseTab = shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent();
         boolean isInitialTabLaunchInBackground =
                 mTab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND && shouldCloseTab;
