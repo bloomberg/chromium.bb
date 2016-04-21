@@ -11,6 +11,7 @@ include(CheckCXXCompilerFlag)
 
 function (add_cxx_flag_if_supported cxx_flag)
   unset(FLAG_SUPPORTED CACHE)
+  message("Checking compiler flag support for: " ${cxx_flag})
   CHECK_CXX_COMPILER_FLAG("${cxx_flag}" FLAG_SUPPORTED)
   if (FLAG_SUPPORTED)
     set(CMAKE_CXX_FLAGS "${cxx_flag} ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
