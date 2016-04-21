@@ -367,6 +367,9 @@ weston_pointer_send_axis_source(struct weston_pointer *pointer, uint32_t source)
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 
+	if (!pointer->focus_client)
+		return;
+
 	resource_list = &pointer->focus_client->pointer_resources;
 	wl_resource_for_each(resource, resource_list) {
 		if (wl_resource_get_version(resource) >=
