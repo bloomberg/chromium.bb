@@ -2070,6 +2070,7 @@
         ['use_x11==1', {
           'dependencies': [
             '../build/linux/system.gyp:x11',
+            '../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',
             '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
           ]
         }]

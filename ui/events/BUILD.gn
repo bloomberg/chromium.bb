@@ -77,28 +77,8 @@ component("events_base") {
     "//ui/gfx/geometry",
   ]
 
-  # TODO(kylechar): move keycodes/ files into own component and x/ files into
-  # ui/events/x component
-  if (use_x11 || ozone_platform_x11) {
-    configs += [ "//build/config/linux:x11" ]
-
-    sources += [
-      "keycodes/keyboard_code_conversion_x.cc",
-      "keycodes/keyboard_code_conversion_x.h",
-      "keycodes/keysym_to_unicode.cc",
-      "keycodes/keysym_to_unicode.h",
-    ]
-
-    deps += [ "//ui/gfx/x" ]
-  }
-
-  if (use_x11 || ozone_platform_x11 || use_xkbcommon) {
-    sources += [
-      "keycodes/keyboard_code_conversion_xkb.cc",
-      "keycodes/keyboard_code_conversion_xkb.h",
-      "keycodes/scoped_xkb.h",
-      "keycodes/xkb_keysym.h",
-    ]
+  if (use_x11) {
+    public_deps += [ "//ui/events/keycodes:x11" ]
   }
 
   if (!is_ios) {
@@ -166,12 +146,9 @@ component("events") {
     deps += [
       "//ui/events/devices",
       "//ui/events/devices/x11",
+      "//ui/events/x",
       "//ui/gfx/x",
     ]
-  }
-
-  if (use_x11 || ozone_platform_x11) {
-    deps += [ "//ui/events/x" ]
   }
 
   if (!is_chromeos && is_linux) {

@@ -3291,6 +3291,7 @@
                 '../build/linux/system.gyp:gio',
                 '../ui/events/devices/events_devices.gyp:events_devices',
                 '../ui/events/devices/x11/events_devices_x11.gyp:events_devices_x11',
+                '../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',
               ],
             }],
             ['use_udev==1', {

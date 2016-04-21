@@ -437,6 +437,7 @@ component("base") {
     }
     deps += [
       "//ui/events/devices/x11",
+      "//ui/events/keycodes:x11",
       "//ui/gfx/x",
     ]
   }

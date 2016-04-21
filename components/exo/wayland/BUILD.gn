@@ -53,6 +53,7 @@ source_set("wayland") {
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]
     defines += [ "USE_XKBCOMMON" ]
+    deps += [ "//ui/events/keycodes:xkb" ]
   }
 }
 

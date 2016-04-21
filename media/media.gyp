@@ -770,6 +770,7 @@
                 '../build/linux/system.gyp:xext',
                 '../build/linux/system.gyp:xfixes',
                 '../build/linux/system.gyp:xtst',
+                '../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',
                 '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
               ],
             }, {  # else: use_x11==0

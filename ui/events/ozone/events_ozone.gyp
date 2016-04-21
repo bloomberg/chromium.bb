@@ -178,6 +178,7 @@
       ['use_xkbcommon==1', {
         'dependencies': [
           '../../../build/linux/system.gyp:xkbcommon',
+          '../keycodes/events_keycodes.gyp:keycodes_xkb',
         ],
         'defines': [
           'USE_XKBCOMMON',

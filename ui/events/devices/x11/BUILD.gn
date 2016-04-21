@@ -25,6 +25,7 @@ component("x11") {
     "//skia",
     "//ui/events:events_base",
     "//ui/events/devices",
+    "//ui/events/keycodes:x11",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/x",

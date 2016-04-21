@@ -63,8 +63,6 @@
         'keycodes/keyboard_code_conversion_mac.mm',
         'keycodes/keyboard_code_conversion_win.cc',
         'keycodes/keyboard_code_conversion_win.h',
-        'keycodes/keyboard_code_conversion_x.cc',
-        'keycodes/keyboard_code_conversion_x.h',
         'keycodes/keyboard_codes.h',
         'latency_info.cc',
         'latency_info.h',
@@ -75,19 +73,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            '../../build/linux/system.gyp:x11',
-            '../gfx/x/gfx_x11.gyp:gfx_x11',
-          ],
-          'sources': [
-            'keycodes/keysym_to_unicode.cc',
-            'keycodes/keysym_to_unicode.h',
-          ],
-        }],
-        ['use_x11==1 or use_xkbcommon==1', {
-          'sources': [
-            'keycodes/keyboard_code_conversion_xkb.cc',
-            'keycodes/keyboard_code_conversion_xkb.h',
-            'keycodes/xkb_keysym.h',
+            'keycodes/events_keycodes.gyp:keycodes_x11',
           ],
         }],
       ],
@@ -165,6 +151,7 @@
             '../gfx/x/gfx_x11.gyp:gfx_x11',
             'devices/events_devices.gyp:events_devices',
             'devices/x11/events_devices_x11.gyp:events_devices_x11',
+            'keycodes/events_keycodes.gyp:keycodes_x11',
             'x/events_x.gyp:events_x',
           ],
         }],
@@ -368,6 +355,7 @@
         ['use_x11==1', {
           'dependencies': [
             'devices/x11/events_devices_x11.gyp:events_devices_x11',
+            'keycodes/events_keycodes.gyp:keycodes_x11',
           ],
         }],
         ['use_x11==1 or use_ozone==1', {

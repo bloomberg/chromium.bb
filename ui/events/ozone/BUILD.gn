@@ -208,5 +208,7 @@ component("events_ozone_layout") {
       "layout/xkb/xkb_keyboard_layout_engine.cc",
       "layout/xkb/xkb_keyboard_layout_engine.h",
     ]
+
+    deps += [ "//ui/events/keycodes:xkb" ]
   }
 }

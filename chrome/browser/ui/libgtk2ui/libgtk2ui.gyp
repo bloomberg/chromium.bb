@@ -25,6 +25,7 @@
         '../../../../ui/base/ui_base.gyp:ui_base',
         '../../../../ui/events/events.gyp:events',
         '../../../../ui/events/events.gyp:events_base',
+        '../../../../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',
         '../../../../ui/gfx/gfx.gyp:gfx',
         '../../../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../../../ui/gfx/x/gfx_x11.gyp:gfx_x11',

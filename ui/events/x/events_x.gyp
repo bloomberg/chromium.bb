@@ -17,6 +17,7 @@
         '../../events/devices/events_devices.gyp:events_devices',
         '../../events/devices/x11/events_devices_x11.gyp:events_devices_x11',
         '../../events/events.gyp:events_base',
+        '../../events/keycodes/events_keycodes.gyp:keycodes_x11',
         '../../gfx/x/gfx_x11.gyp:gfx_x11',
       ],
       'defines': [

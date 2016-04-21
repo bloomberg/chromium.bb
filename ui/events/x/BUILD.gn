@@ -16,6 +16,7 @@ component("x") {
     "//ui/events:events_base",
     "//ui/events/devices",
     "//ui/events/devices/x11",
+    "//ui/events/keycodes:x11",
     "//ui/gfx/x",
   ]
   configs += [ "//build/config/linux:x11" ]

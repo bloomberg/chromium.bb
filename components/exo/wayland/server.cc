@@ -60,7 +60,7 @@
 
 #if defined(USE_XKBCOMMON)
 #include <xkbcommon/xkbcommon.h>
-#include "ui/events/keycodes/scoped_xkb.h"
+#include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
 #endif
 
 DECLARE_WINDOW_PROPERTY_TYPE(wl_resource*);

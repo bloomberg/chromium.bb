@@ -45,6 +45,9 @@
           'x11_event_source_libevent.cc',
           'x11_event_source_libevent.h',
         ],
+        'dependencies': [
+          '../../keycodes/events_keycodes.gyp:keycodes_x11',
+        ],
       }],
     ],
   }],

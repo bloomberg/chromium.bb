@@ -17,6 +17,7 @@
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/events/events.gyp:events_base',
         '../../../../ui/events/devices/events_devices.gyp:events_devices',
+        '../../../../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',
         '../../../../ui/gfx/gfx.gyp:gfx',
         '../../../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../../../ui/gfx/x/gfx_x11.gyp:gfx_x11',
