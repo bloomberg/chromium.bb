@@ -296,9 +296,15 @@ bool ChromeManagementAPIDelegate::IsNewBookmarkAppsEnabled() const {
 void ChromeManagementAPIDelegate::EnableExtension(
     content::BrowserContext* context,
     const std::string& extension_id) const {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(context)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::EVERYTHING);
+  // If the extension was disabled for a permissions increase, the Management
+  // API will have displayed a re-enable prompt to the user, so we know it's
+  // safe to grant permissions here.
   extensions::ExtensionSystem::Get(context)
       ->extension_service()
-      ->EnableExtension(extension_id);
+      ->GrantPermissionsAndEnableExtension(extension);
 }
 
 void ChromeManagementAPIDelegate::DisableExtension(

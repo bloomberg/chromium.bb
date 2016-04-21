@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -24,6 +25,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/test_util.h"
 
 namespace extensions {
@@ -47,7 +49,7 @@ namespace constants = extension_management_api_constants;
 
 // TODO(devlin): Unittests are awesome. Test more with unittests and less with
 // heavy api/browser tests.
-class ManagementApiUnitTest : public ExtensionServiceTestBase {
+class ManagementApiUnitTest : public ExtensionServiceTestWithInstall {
  protected:
   ManagementApiUnitTest() {}
   ~ManagementApiUnitTest() override {}
@@ -141,10 +143,6 @@ TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
                                            extension_id),
             function->GetError());
   policy->UnregisterProvider(&provider);
-
-  // TODO(devlin): We should also test enabling an extenion that has escalated
-  // permissions, but that needs a web contents (which is a bit of a pain in a
-  // unit test).
 }
 
 // Tests management.uninstall.
@@ -224,6 +222,116 @@ TEST_F(ManagementApiUnitTest, DISABLED_ManagementUninstall) {
     EXPECT_FALSE(registry()->GetExtensionById(extension_id,
                                               ExtensionRegistry::EVERYTHING));
   }
+}
+
+// Tests enabling an extension via management API after it was disabled due to
+// permission increase.
+TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
+  base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
+
+  base::FilePath path = base_path.AppendASCII("v1");
+  const Extension* extension = PackAndInstallCRX(path, pem_path, INSTALL_NEW);
+  // The extension must now be installed and enabled.
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+
+  // Save the id, as |extension| will be destroyed during updating.
+  std::string extension_id = extension->id();
+
+  std::unique_ptr<const PermissionSet> known_perms =
+      prefs->GetGrantedPermissions(extension_id);
+  ASSERT_TRUE(known_perms);
+  // v1 extension doesn't have any permissions.
+  EXPECT_TRUE(known_perms->IsEmpty());
+
+  // Update to a new version with increased permissions.
+  path = base_path.AppendASCII("v2");
+  PackCRXAndUpdateExtension(extension_id, path, pem_path, DISABLED);
+
+  // The extension should be disabled.
+  ASSERT_FALSE(registry()->enabled_extensions().Contains(extension_id));
+
+  // Due to a permission increase, prefs will contain escalation information.
+  EXPECT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
+
+  // TODO(lazyboy): Running this on UI thread shouldn't be necessary once
+  // api_test_utils::RunFunction uses base::RunLoop instead of
+  // content::RunMessageLoop(). Fix.
+  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+
+  auto enable_extension_via_management_api = [this](
+      const std::string& extension_id, bool use_user_gesture,
+      bool accept_dialog, bool expect_success) {
+    ScopedTestDialogAutoConfirm auto_confirm(
+        accept_dialog ? ScopedTestDialogAutoConfirm::ACCEPT
+                      : ScopedTestDialogAutoConfirm::CANCEL);
+    std::unique_ptr<ExtensionFunction::ScopedUserGestureForTests> gesture;
+    if (use_user_gesture)
+      gesture.reset(new ExtensionFunction::ScopedUserGestureForTests);
+    scoped_refptr<ManagementSetEnabledFunction> function(
+        new ManagementSetEnabledFunction());
+    base::ListValue args;
+    args.AppendString(extension_id);
+    args.AppendBoolean(true);
+    if (expect_success) {
+      EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
+    } else {
+      EXPECT_FALSE(RunFunction(function, args)) << function->GetError();
+    }
+  };
+
+  // 1) Confirm re-enable prompt without user gesture, expect the extension to
+  // stay disabled.
+  {
+    enable_extension_via_management_api(
+        extension_id, false /* use_user_gesture */, true /* accept_dialog */,
+        false /* expect_success */);
+    EXPECT_FALSE(registry()->enabled_extensions().Contains(extension_id));
+    // Prefs should still contain permissions escalation information.
+    EXPECT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
+  }
+
+  // 2) Deny re-enable prompt without user gesture, expect the extension to stay
+  // disabled.
+  {
+    enable_extension_via_management_api(
+        extension_id, false /* use_user_gesture */, false /* accept_dialog */,
+        false /* expect_success */);
+    EXPECT_FALSE(registry()->enabled_extensions().Contains(extension_id));
+    // Prefs should still contain permissions escalation information.
+    EXPECT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
+  }
+
+  // 3) Deny re-enable prompt with user gesture, expect the extension to stay
+  // disabled.
+  {
+    enable_extension_via_management_api(
+        extension_id, true /* use_user_gesture */, false /* accept_dialog */,
+        false /* expect_success */);
+    EXPECT_FALSE(registry()->enabled_extensions().Contains(extension_id));
+    // Prefs should still contain permissions escalation information.
+    EXPECT_TRUE(prefs->DidExtensionEscalatePermissions(extension_id));
+  }
+
+  // 4) Accept re-enable prompt with user gesture, expect the extension to be
+  // enabled.
+  {
+    enable_extension_via_management_api(
+        extension_id, true /* use_user_gesture */, true /* accept_dialog */,
+        true /* expect_success */);
+    EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
+    // Prefs will no longer contain the escalation information as user has
+    // accepted increased permissions.
+    EXPECT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
+  }
+
+  // Some permissions for v2 extension should be granted by now.
+  known_perms = prefs->GetGrantedPermissions(extension_id);
+  ASSERT_TRUE(known_perms);
+  EXPECT_FALSE(known_perms->IsEmpty());
 }
 
 }  // namespace extensions
