@@ -68,7 +68,7 @@ function test()
     tree.performSearch(new WebInspector.SearchableView.SearchConfig("foo12", true, false), false);
     for (var item of tree._searchResults) {
         var node = item.profileNode;
-        InspectorTest.addResult(`${node.callUID}: ${node.functionName} ${node.selfTime} ${node.totalTime}`);
+        InspectorTest.addResult(`${node.callUID}: ${node.functionName} ${node.self} ${node.total}`);
     }
     InspectorTest.completeProfilerTest();
 }

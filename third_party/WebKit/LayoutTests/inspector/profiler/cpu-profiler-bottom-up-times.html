@@ -103,7 +103,7 @@ function test()
     if (!node)
         InspectorTest.addResult("no node");
     while (node) {
-        InspectorTest.addResult(node.callUID + ": " + node.functionName + " " + node.selfTime + " " + node.totalTime + " " + node.element().textContent);
+        InspectorTest.addResult(node.callUID + ": " + node.functionName + " " + node.self + " " + node.total + " " + node.element().textContent);
         node = node.traverseNextNode(true, null, true);
     }
     InspectorTest.completeProfilerTest();
