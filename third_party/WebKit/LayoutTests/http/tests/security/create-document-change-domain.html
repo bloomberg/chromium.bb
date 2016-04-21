@@ -15,10 +15,10 @@
 
                 document.domain = 'example.test';
                 assert_equals(document.domain, 'example.test');
-                assert_equals(doc.domain, 'subdomain.example.test');
+                assert_equals(doc.domain, 'example.test');
 
                 document.domain = 'subdomain.example.test';
-            }, "Documents created using createDocument do not share the underlying domain.");
+            }, "Documents created using createDocument share the underlying domain.");
         }
     </script>
 </head>
