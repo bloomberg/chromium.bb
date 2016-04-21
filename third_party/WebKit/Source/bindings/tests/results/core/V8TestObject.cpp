@@ -174,13 +174,6 @@ static void FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local
     v8SetReturnValueInt(info, 5);
 }
 
-template<class CallbackInfo>
-static bool TestObjectCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
-{
-    ASSERT(info.This()->IsObject());
-    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
-}
-
 static void stringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -4133,7 +4126,7 @@ static void replaceableReadonlyLongAttributeAttributeGetterCallback(const v8::Fu
 static void replaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "replaceableReadonlyLongAttribute");
-    TestObjectCreateDataProperty(propertyName, v8Value, info);
+    v8CallBoolean(info.This()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value));
 }
 
 static void replaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -52,18 +52,6 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {{constant_getter_callback(constant)}}
 {% endfor %}
 {# Attributes #}
-{% if has_replaceable_attributes %}
-template<class CallbackInfo>
-static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
-{
-    {% if is_check_security %}
-#error TODO(yukishiino): Supports [Replaceable] accessor-type properties with security check (if we really need it).
-    {% endif %}
-    ASSERT(info.This()->IsObject());
-    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
-}
-
-{% endif %}
 {##############################################################################}
 {% from 'attributes.cpp' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,

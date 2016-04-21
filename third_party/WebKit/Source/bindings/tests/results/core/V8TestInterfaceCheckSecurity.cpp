@@ -34,14 +34,6 @@ const WrapperTypeInfo& TestInterfaceCheckSecurity::s_wrapperTypeInfo = V8TestInt
 
 namespace TestInterfaceCheckSecurityV8Internal {
 
-template<class CallbackInfo>
-static bool TestInterfaceCheckSecurityCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
-{
-#error TODO(yukishiino): Supports [Replaceable] accessor-type properties with security check (if we really need it).
-    ASSERT(info.This()->IsObject());
-    return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
-}
-
 static void readonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -185,7 +177,7 @@ static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCal
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "doNotCheckSecurityReplaceableReadonlyLongAttribute");
-    TestInterfaceCheckSecurityCreateDataProperty(propertyName, v8Value, info);
+    v8CallBoolean(info.This()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value));
 }
 
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
