@@ -7,6 +7,7 @@
    },
   'targets': [
     {
+      # GN version: //ios/public/consumer/base
       'target_name': 'ios_consumer_base',
       'type': 'static_library',
       'dependencies': [
