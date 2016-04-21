@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseDateAndTimeInputType_h
-#define BaseDateAndTimeInputType_h
+#ifndef BaseTemporalInputType_h
+#define BaseTemporalInputType_h
 
 #include "core/html/forms/InputType.h"
 #include "core/html/shadow/DateTimeEditElement.h"
@@ -91,4 +91,4 @@ private:
 };
 
 } // namespace blink
-#endif // BaseDateAndTimeInputType_h
+#endif // BaseTemporalInputType_h

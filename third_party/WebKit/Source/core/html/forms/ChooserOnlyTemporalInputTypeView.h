@@ -23,11 +23,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef BaseChooserOnlyDateAndTimeInputType_h
-#define BaseChooserOnlyDateAndTimeInputType_h
+#ifndef ChooserOnlyTemporalInputTypeView_h
+#define ChooserOnlyTemporalInputTypeView_h
 
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
-#include "core/html/forms/BaseDateAndTimeInputType.h"
+#include "core/html/forms/BaseTemporalInputType.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "platform/heap/Handle.h"
@@ -69,4 +69,4 @@ private:
 
 } // namespace blink
 
-#endif // BaseChooserOnlyDateAndTimeInputType_h
+#endif // ChooserOnlyTemporalInputTypeView_h

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
+#include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
 
 #include "core/CSSValueKeywords.h"
 #include "core/dom/StyleChangeReason.h"
@@ -38,7 +38,7 @@
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/html/forms/BaseDateAndTimeInputType.h"
+#include "core/html/forms/BaseTemporalInputType.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/ShadowElementNames.h"

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseMultipleFieldsDateAndTimeInputType_h
-#define BaseMultipleFieldsDateAndTimeInputType_h
+#ifndef MultipleFieldsTemporalInputTypeView_h
+#define MultipleFieldsTemporalInputTypeView_h
 
 #include "core/html/forms/InputTypeView.h"
 #include "core/html/shadow/ClearButtonElement.h"
@@ -131,4 +131,4 @@ private:
 
 } // namespace blink
 
-#endif // BaseMultipleFieldsDateAndTimeInputType_h
+#endif // MultipleFieldsTemporalInputTypeView_h

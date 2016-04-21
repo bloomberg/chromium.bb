@@ -31,7 +31,7 @@
 #ifndef DateInputType_h
 #define DateInputType_h
 
-#include "core/html/forms/BaseDateAndTimeInputType.h"
+#include "core/html/forms/BaseTemporalInputType.h"
 
 namespace blink {
 

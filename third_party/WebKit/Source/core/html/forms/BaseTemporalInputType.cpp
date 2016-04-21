@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/BaseDateAndTimeInputType.h"
+#include "core/html/forms/BaseTemporalInputType.h"
 
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
-#include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
+#include "core/html/forms/ChooserOnlyTemporalInputTypeView.h"
+#include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
