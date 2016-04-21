@@ -17,8 +17,6 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-class ExtensionRegistry;
-class ExtensionUninstallDialog;
 struct WebApplicationInfo;
 
 namespace extensions {
