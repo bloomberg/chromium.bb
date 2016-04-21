@@ -418,7 +418,8 @@ TEST_P(TransportClientSocketTest, FullDuplex_ReadFirst) {
   EXPECT_GE(rv, 0);
 }
 
-TEST_P(TransportClientSocketTest, FullDuplex_WriteFirst) {
+// FLaky on Win 10 Tests x64 builder: http://crbug/552053
+TEST_P(TransportClientSocketTest, DISABLED_FullDuplex_WriteFirst) {
   TestCompletionCallback callback;
   EstablishConnection(&callback);
 
