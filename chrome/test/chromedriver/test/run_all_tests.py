@@ -191,15 +191,15 @@ def main():
     latest_snapshot_revision = archive.GetLatestSnapshotVersion()
     versions = [
         ['HEAD', latest_snapshot_revision],
+        ['51', archive.CHROME_51_REVISION],
         ['50', archive.CHROME_50_REVISION],
         ['49', archive.CHROME_49_REVISION],
-        ['48', archive.CHROME_48_REVISION],
     ]
     code = 0
     for version in versions:
       if options.chrome_version and version[0] != options.chrome_version:
         continue
-      download_site = archive.Site.CONTINUOUS
+      download_site = archive.Site.CHROMIUM_SNAPSHOT
       version_name = version[0]
       if version_name == 'HEAD':
         version_name = version[1]

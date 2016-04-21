@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Downloads items from the Chromium continuous archive."""
+"""Downloads items from the Chromium snapshot archive."""
 
 import json
 import os
@@ -13,9 +13,9 @@ import urllib2
 
 import util
 
-CHROME_48_REVISION = '359663'
-CHROME_49_REVISION = '369874'
-CHROME_50_REVISION = '377898'
+CHROME_49_REVISION = '369932'
+CHROME_50_REVISION = '378110'
+CHROME_51_REVISION = '386266'
 
 _SITE = 'http://commondatastorage.googleapis.com'
 GS_GIT_LOG_URL = (
@@ -24,29 +24,27 @@ GS_SEARCH_PATTERN = r'Cr-Commit-Position: refs/heads/master@{#(\d+)}'
 
 
 class Site(object):
-  CONTINUOUS = _SITE + '/chromium-browser-continuous'
   CHROMIUM_SNAPSHOT = _SITE + '/chromium-browser-snapshots'
-  BLINK_SNAPSHOT = _SITE + '/chromium-webkit-snapshots'
   CHROMIUM_LINUX = _SITE + '/chromium-linux-archive/chromium.linux'
 
 
-def GetLatestRevision(site=Site.CONTINUOUS):
+def GetLatestRevision(site=Site.CHROMIUM_SNAPSHOT):
   """Returns the latest revision (as a string) available for this platform.
 
   Args:
-    site: the archive site to check against, default to the continuous one.
+    site: the archive site to check against, default to the snapshot one.
   """
   url = site + '/%s/LAST_CHANGE'
   return urllib.urlopen(url % _GetDownloadPlatform()).read()
 
 
-def DownloadChrome(revision, dest_dir, site=Site.CONTINUOUS):
+def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
   """Downloads the packaged Chrome from the archive to the given directory.
 
   Args:
     revision: the revision of Chrome to download.
     dest_dir: the directory to download Chrome to.
-    site: the archive site to download from, default to the continuous one.
+    site: the archive site to download from, default to the snapshot one.
 
   Returns:
     The path to the unzipped Chrome binary.
