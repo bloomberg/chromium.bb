@@ -59,7 +59,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ChromeClient.h"
@@ -328,7 +328,7 @@ static Element* elementUnderMouse(Document* documentUnderMouse, const IntPoint& 
 {
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(request, point);
-    documentUnderMouse->layoutView()->hitTest(result);
+    documentUnderMouse->layoutViewItem().hitTest(result);
 
     Node* n = result.innerNode();
     while (n && !n->isElementNode())
