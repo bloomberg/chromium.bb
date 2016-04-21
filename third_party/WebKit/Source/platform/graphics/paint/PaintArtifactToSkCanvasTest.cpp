@@ -198,7 +198,12 @@ TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
 
 static SkRegion getCanvasClipAsRegion(SkCanvas* canvas)
 {
-    return SkCanvas::LayerIter(canvas, false).clip();
+    SkIRect clipRect;
+    canvas->getClipDeviceBounds(&clipRect);
+
+    SkRegion clipRegion;
+    clipRegion.setRect(clipRect);
+    return clipRegion;
 }
 
 TEST_F(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
