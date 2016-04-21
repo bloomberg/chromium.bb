@@ -119,11 +119,40 @@ items it finds in the directory. You can help the fuzzer by "seeding" the corpus
 simply copy interesting inputs for your function to the corpus directory before
 running. This works especially well for strictly defined file formats or data
 transmission protocols.
+
 * For file-parsing functionality just use some valid files from your test suite.
+
 * For protocol processing targets put raw streams from test suite into separate
 files.
 
-After discovering new and interesting items, [upload corpus to ClusterFuzz].
+
+ClusterFuzz uses seed corpus stored in Chromium repository. You need to add
+`seed_corpus` attribute to fuzzer target:
+
+```
+fuzzer_test("my_protocol_fuzzer") {
+  ...
+  seed_corpus = "src/fuzz/testcases"
+  ...
+}
+```
+
+If you don't want to store seed corpus in Chromium repository, you can upload
+corpus to Google Cloud Storage bucket used by ClusterFuzz:
+
+
+1) go to [Corpus GCS Bucket]
+
+2) open directory named `%YOUR_FUZZER_NAME%_static`
+
+3) upload corpus files into the directory
+
+
+Alternative way is to use `gsutil` tool:
+```bash
+gsutil -m rsync <corpus_dir_on_disk> gs://clusterfuzz-corpus/libfuzzer/%YOUR_FUZZER_NAME%_static
+```
+
 
 ### Fuzzer Dictionary
 
@@ -190,6 +219,6 @@ Please note that `dict` parameter should be provided [separately](#Fuzzer-Dictio
 Other options may be passed through `libfuzzer_options` property.
 
 
-[ClusterFuzz status]: ./clusterfuzz.md#Status-Links
-[upload corpus to ClusterFuzz]: ./clusterfuzz.md#Upload-Corpus
 [AFL]: http://lcamtuf.coredump.cx/afl/
+[ClusterFuzz status]: clusterfuzz.md#Status-Links
+[Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
