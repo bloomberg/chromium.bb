@@ -7,7 +7,6 @@
 #include <dwmapi.h>
 
 #include "base/command_line.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/ui_base_switches.h"
@@ -66,14 +65,12 @@ void CalculateWindowStylesFromInitParams(
   // We also set the WS_EX_COMPOSITED style for software composited translucent
   // windows, which ensures that they are updated via the layered window code
   // path in the software compositor.
-  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
-    if (ui::win::IsAeroGlassEnabled() || params.force_software_compositing)
+  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
+    (ui::win::IsAeroGlassEnabled() || params.force_software_compositing))
       *ex_style |= WS_EX_COMPOSITED;
-  }
-  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP) {
-    *class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
-        0 : CS_DROPSHADOW;
-  }
+
+  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP)
+    *class_style |= CS_DROPSHADOW;
 
   // Set type-dependent style attributes.
   switch (params.type) {
