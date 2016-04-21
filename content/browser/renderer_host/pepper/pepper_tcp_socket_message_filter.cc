@@ -666,7 +666,7 @@ void PepperTCPSocketMessageFilter::DoConnectWithNetAddress(
 
   state_.SetPendingTransition(TCPSocketState::CONNECT);
 
-  net::IPAddressNumber address;
+  std::vector<uint8_t> address;
   uint16_t port;
   if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(
           net_addr, &address, &port)) {
@@ -678,7 +678,7 @@ void PepperTCPSocketMessageFilter::DoConnectWithNetAddress(
   // Copy the single IPEndPoint to address_list_.
   address_index_ = 0;
   address_list_.clear();
-  address_list_.push_back(net::IPEndPoint(address, port));
+  address_list_.push_back(net::IPEndPoint(net::IPAddress(address), port));
   StartConnect(context);
 }
 

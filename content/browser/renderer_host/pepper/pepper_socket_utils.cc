@@ -16,6 +16,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/cert/x509_certificate.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -140,40 +141,25 @@ bool GetCertificateFields(const char* der,
 #if defined(OS_CHROMEOS)
 namespace {
 
-const unsigned char kIPv4Empty[] = {0, 0, 0, 0};
-const unsigned char kIPv6Empty[] =
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-const unsigned char kIPv6Loopback[] =
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+// The entire IPv4 subnet 127.0.0.0/8 is for loopback. See RFC3330.
+const uint8_t kIPv4LocalhostPrefix[] = {127};
 
-bool IsLoopbackAddress(const net::IPAddressNumber& address) {
-  if (address.size() == net::kIPv4AddressSize) {
-    // The entire IPv4 subnet 127.0.0.0/8 is for loopback. See RFC3330.
-    return address[0] == 0x7f;
-  } else if (address.size() == net::kIPv6AddressSize) {
+bool IsLoopbackAddress(const net::IPAddress& address) {
+  if (address.IsIPv4()) {
+    return net::IPAddressStartsWith(address, kIPv4LocalhostPrefix);
+  } else if (address.IsIPv6()) {
     // ::1 is the only loopback address in ipv6.
-    return std::equal(&kIPv6Loopback[0], &kIPv6Loopback[net::kIPv6AddressSize],
-                      address.begin());
+    return address == net::IPAddress::IPv6Localhost();
   }
   return false;
 }
 
-std::string AddressToFirewallString(const net::IPAddressNumber& address) {
-  if (address.empty()) {
-    return std::string();
-  }
-  if (address.size() == net::kIPv4AddressSize &&
-      std::equal(&kIPv4Empty[0], &kIPv4Empty[net::kIPv4AddressSize],
-                 address.begin())) {
-    return std::string();
-  }
-  if (address.size() == net::kIPv6AddressSize &&
-      std::equal(&kIPv6Empty[0], &kIPv6Empty[net::kIPv6AddressSize],
-                 address.begin())) {
+std::string AddressToFirewallString(const net::IPAddress& address) {
+  if (address.IsZero() || address.empty()) {
     return std::string();
   }
 
-  return net::IPAddressToString(address);
+  return address.ToString();
 }
 
 }  // namespace
@@ -181,12 +167,11 @@ std::string AddressToFirewallString(const net::IPAddressNumber& address) {
 void OpenFirewallHole(const net::IPEndPoint& address,
                       chromeos::FirewallHole::PortType type,
                       FirewallHoleOpenCallback callback) {
-  if (IsLoopbackAddress(address.address().bytes())) {
+  if (IsLoopbackAddress(address.address())) {
     callback.Run(nullptr);
     return;
   }
-  std::string address_string =
-      AddressToFirewallString(address.address().bytes());
+  std::string address_string = AddressToFirewallString(address.address());
 
   chromeos::FirewallHole::Open(type, address.port(), address_string, callback);
 }
