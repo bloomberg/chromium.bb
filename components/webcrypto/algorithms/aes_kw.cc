@@ -5,9 +5,11 @@
 #include <openssl/evp.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
@@ -81,8 +83,8 @@ class AesKwImplementation : public AesAlgorithm {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateAesKwImplementation() {
-  return make_scoped_ptr(new AesKwImplementation);
+std::unique_ptr<AlgorithmImplementation> CreateAesKwImplementation() {
+  return base::WrapUnique(new AesKwImplementation);
 }
 
 }  // namespace webcrypto

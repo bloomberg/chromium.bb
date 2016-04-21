@@ -6,9 +6,10 @@
 #define COMPONENTS_WEBCRYPTO_ALGORITHM_IMPLEMENTATION_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 namespace webcrypto {

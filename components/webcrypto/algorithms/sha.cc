@@ -5,9 +5,11 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <stdint.h>
+
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/crypto_data.h"
@@ -122,13 +124,13 @@ class ShaImplementation : public AlgorithmImplementation {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateShaImplementation() {
-  return make_scoped_ptr(new ShaImplementation());
+std::unique_ptr<AlgorithmImplementation> CreateShaImplementation() {
+  return base::WrapUnique(new ShaImplementation());
 }
 
-scoped_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(
+std::unique_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(
     blink::WebCryptoAlgorithmId algorithm) {
-  return scoped_ptr<blink::WebCryptoDigestor>(new DigestorImpl(algorithm));
+  return std::unique_ptr<blink::WebCryptoDigestor>(new DigestorImpl(algorithm));
 }
 
 }  // namespace webcrypto

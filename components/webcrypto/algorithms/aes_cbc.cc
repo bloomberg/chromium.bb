@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "components/webcrypto/algorithms/aes.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -119,8 +120,8 @@ class AesCbcImplementation : public AesAlgorithm {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateAesCbcImplementation() {
-  return make_scoped_ptr(new AesCbcImplementation);
+std::unique_ptr<AlgorithmImplementation> CreateAesCbcImplementation() {
+  return base::WrapUnique(new AesCbcImplementation);
 }
 
 }  // namespace webcrypto

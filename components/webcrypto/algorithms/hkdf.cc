@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -105,8 +106,8 @@ class HkdfImplementation : public AlgorithmImplementation {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateHkdfImplementation() {
-  return make_scoped_ptr(new HkdfImplementation);
+std::unique_ptr<AlgorithmImplementation> CreateHkdfImplementation() {
+  return base::WrapUnique(new HkdfImplementation);
 }
 
 }  // namespace webcrypto

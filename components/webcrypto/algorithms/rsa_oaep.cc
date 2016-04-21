@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "base/memory/ptr_util.h"
 #include "components/webcrypto/algorithms/rsa.h"
 #include "components/webcrypto/algorithms/util.h"
 #include "components/webcrypto/blink_key_handle.h"
@@ -140,8 +141,8 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateRsaOaepImplementation() {
-  return make_scoped_ptr(new RsaOaepImplementation);
+std::unique_ptr<AlgorithmImplementation> CreateRsaOaepImplementation() {
+  return base::WrapUnique(new RsaOaepImplementation);
 }
 
 }  // namespace webcrypto

@@ -6,9 +6,10 @@
 #define COMPONENTS_WEBCRYPTO_ALGORITHM_DISPATCH_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 namespace webcrypto {
@@ -114,7 +115,7 @@ Status DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
                  blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoKey* derived_key);
 
-scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
+std::unique_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm);
 
 bool SerializeKeyForClone(const blink::WebCryptoKey& key,

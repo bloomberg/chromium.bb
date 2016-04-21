@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
@@ -83,16 +83,17 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict);
 
 // Reads a file in "src/content/test/data/webcrypto" to a base::Value.
 // The file must be JSON, however it can also include C++ style comments.
-::testing::AssertionResult ReadJsonTestFile(const char* test_file_name,
-                                            scoped_ptr<base::Value>* value);
+::testing::AssertionResult ReadJsonTestFile(
+    const char* test_file_name,
+    std::unique_ptr<base::Value>* value);
 // Same as ReadJsonTestFile(), but returns the value as a List.
 ::testing::AssertionResult ReadJsonTestFileToList(
     const char* test_file_name,
-    scoped_ptr<base::ListValue>* list);
+    std::unique_ptr<base::ListValue>* list);
 // Same as ReadJsonTestFile(), but returns the value as a Dictionary.
 ::testing::AssertionResult ReadJsonTestFileToDictionary(
     const char* test_file_name,
-    scoped_ptr<base::DictionaryValue>* dict);
+    std::unique_ptr<base::DictionaryValue>* dict);
 
 // Reads a string property from the dictionary with path |property_name|
 // (which can include periods for nested dictionaries). Interprets the
@@ -147,13 +148,13 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                             blink::WebCryptoKey* key);
 
 // Parses a vector of JSON into a dictionary.
-scoped_ptr<base::DictionaryValue> GetJwkDictionary(
+std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json);
 
 // Verifies the input dictionary contains the expected values. Exact matches are
 // required on the fields examined.
 ::testing::AssertionResult VerifyJwk(
-    const scoped_ptr<base::DictionaryValue>& dict,
+    const std::unique_ptr<base::DictionaryValue>& dict,
     const std::string& kty_expected,
     const std::string& alg_expected,
     blink::WebCryptoKeyUsageMask use_mask_expected);

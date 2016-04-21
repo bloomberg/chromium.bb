@@ -77,7 +77,7 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
 class WebCryptoEcdhTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
@@ -119,7 +119,7 @@ TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
 // 528 bits.
 ::testing::AssertionResult LoadTestKeys(blink::WebCryptoKey* public_key,
                                         blink::WebCryptoKey* private_key) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   if (!ReadJsonTestFileToList("ecdh.json", &tests))
     return ::testing::AssertionFailure() << "Failed loading ecdh.json";
 
@@ -302,7 +302,7 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyAes128) {
 TEST_F(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
   blink::WebCryptoKey key;
 
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
 
   const base::DictionaryValue* test;

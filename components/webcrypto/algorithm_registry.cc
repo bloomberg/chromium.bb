@@ -72,19 +72,19 @@ class AlgorithmRegistry {
   }
 
  private:
-  const scoped_ptr<AlgorithmImplementation> sha_;
-  const scoped_ptr<AlgorithmImplementation> aes_gcm_;
-  const scoped_ptr<AlgorithmImplementation> aes_cbc_;
-  const scoped_ptr<AlgorithmImplementation> aes_ctr_;
-  const scoped_ptr<AlgorithmImplementation> aes_kw_;
-  const scoped_ptr<AlgorithmImplementation> hmac_;
-  const scoped_ptr<AlgorithmImplementation> rsa_ssa_;
-  const scoped_ptr<AlgorithmImplementation> rsa_oaep_;
-  const scoped_ptr<AlgorithmImplementation> rsa_pss_;
-  const scoped_ptr<AlgorithmImplementation> ecdsa_;
-  const scoped_ptr<AlgorithmImplementation> ecdh_;
-  const scoped_ptr<AlgorithmImplementation> hkdf_;
-  const scoped_ptr<AlgorithmImplementation> pbkdf2_;
+  const std::unique_ptr<AlgorithmImplementation> sha_;
+  const std::unique_ptr<AlgorithmImplementation> aes_gcm_;
+  const std::unique_ptr<AlgorithmImplementation> aes_cbc_;
+  const std::unique_ptr<AlgorithmImplementation> aes_ctr_;
+  const std::unique_ptr<AlgorithmImplementation> aes_kw_;
+  const std::unique_ptr<AlgorithmImplementation> hmac_;
+  const std::unique_ptr<AlgorithmImplementation> rsa_ssa_;
+  const std::unique_ptr<AlgorithmImplementation> rsa_oaep_;
+  const std::unique_ptr<AlgorithmImplementation> rsa_pss_;
+  const std::unique_ptr<AlgorithmImplementation> ecdsa_;
+  const std::unique_ptr<AlgorithmImplementation> ecdh_;
+  const std::unique_ptr<AlgorithmImplementation> hkdf_;
+  const std::unique_ptr<AlgorithmImplementation> pbkdf2_;
 };
 
 }  // namespace

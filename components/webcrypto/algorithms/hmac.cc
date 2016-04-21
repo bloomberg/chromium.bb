@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/secret_key_util.h"
@@ -288,8 +289,8 @@ class HmacImplementation : public AlgorithmImplementation {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateHmacImplementation() {
-  return make_scoped_ptr(new HmacImplementation);
+std::unique_ptr<AlgorithmImplementation> CreateHmacImplementation() {
+  return base::WrapUnique(new HmacImplementation);
 }
 
 }  // namespace webcrypto

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/webcrypto/algorithm_implementation.h"
 #include "components/webcrypto/algorithms/ec.h"
 #include "components/webcrypto/algorithms/util.h"
@@ -125,8 +126,8 @@ class EcdhImplementation : public EcAlgorithm {
 
 }  // namespace
 
-scoped_ptr<AlgorithmImplementation> CreateEcdhImplementation() {
-  return make_scoped_ptr(new EcdhImplementation);
+std::unique_ptr<AlgorithmImplementation> CreateEcdhImplementation() {
+  return base::WrapUnique(new EcdhImplementation);
 }
 
 }  // namespace webcrypto

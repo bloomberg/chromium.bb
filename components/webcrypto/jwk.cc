@@ -90,9 +90,9 @@ bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
 }
 
 // Creates a JWK key_ops list from a Web Crypto usage mask.
-scoped_ptr<base::ListValue> CreateJwkKeyOpsFromWebCryptoUsages(
+std::unique_ptr<base::ListValue> CreateJwkKeyOpsFromWebCryptoUsages(
     blink::WebCryptoKeyUsageMask usages) {
-  scoped_ptr<base::ListValue> jwk_key_ops(new base::ListValue());
+  std::unique_ptr<base::ListValue> jwk_key_ops(new base::ListValue());
   for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
     if (usages & kJwkWebCryptoUsageMap[i].webcrypto_usage)
       jwk_key_ops->AppendString(kJwkWebCryptoUsageMap[i].jwk_key_op);
@@ -197,7 +197,7 @@ Status JwkReader::Init(const CryptoData& bytes,
   base::StringPiece json_string(reinterpret_cast<const char*>(bytes.bytes()),
                                 bytes.byte_length());
 
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json_string);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
   base::DictionaryValue* dict_value = NULL;
 
   if (!value.get() || !value->GetAsDictionary(&dict_value) || !dict_value)

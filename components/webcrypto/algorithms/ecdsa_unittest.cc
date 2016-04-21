@@ -96,7 +96,7 @@ TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
   // Import a public and private keypair from "ec_private_keys.json". It doesn't
   // really matter which one is used since they are all valid. In this case
   // using the first one.
-  scoped_ptr<base::ListValue> private_keys;
+  std::unique_ptr<base::ListValue> private_keys;
   ASSERT_TRUE(ReadJsonTestFileToList("ec_private_keys.json", &private_keys));
   const base::DictionaryValue* key_dict;
   ASSERT_TRUE(private_keys->GetDictionary(0, &key_dict));
@@ -113,7 +113,7 @@ TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
   // Erase the "d" member so the private key JWK can be used to import the
   // public key (WebCrypto doesn't provide a mechanism for importing a public
   // key given a private key).
-  scoped_ptr<base::DictionaryValue> key_jwk_copy(key_jwk->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> key_jwk_copy(key_jwk->DeepCopy());
   key_jwk_copy->Remove("d", NULL);
   blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
@@ -151,7 +151,7 @@ TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
 // Tests verify() for ECDSA using an assortment of keys, curves and hashes.
 // These tests also include expected failures for bad signatures and keys.
 TEST_F(WebCryptoEcdsaTest, VerifyKnownAnswer) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdsa.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
@@ -233,7 +233,7 @@ blink::WebCryptoKeyUsageMask GetExpectedUsagesForKeyImport(
 
 // Tests importing bad public/private keys in a variety of formats.
 TEST_F(WebCryptoEcdsaTest, ImportBadKeys) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("bad_ec_keys.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
@@ -263,7 +263,7 @@ TEST_F(WebCryptoEcdsaTest, ImportBadKeys) {
 // The test imports a key first using JWK, and then exporting it to JWK and
 // PKCS8. It does the same thing using PKCS8 as the original source of truth.
 TEST_F(WebCryptoEcdsaTest, ImportExportPrivateKey) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ec_private_keys.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {

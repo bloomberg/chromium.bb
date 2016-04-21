@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
@@ -99,7 +99,7 @@ class JwkReader {
   Status VerifyAlg(const std::string& expected_alg) const;
 
  private:
-  scoped_ptr<base::DictionaryValue> dict_;
+  std::unique_ptr<base::DictionaryValue> dict_;
 };
 
 // Helper class for building the JSON for a JWK.

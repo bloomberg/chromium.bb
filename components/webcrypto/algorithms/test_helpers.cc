@@ -142,8 +142,9 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   return MakeJsonVector(json);
 }
 
-::testing::AssertionResult ReadJsonTestFile(const char* test_file_name,
-                                            scoped_ptr<base::Value>* value) {
+::testing::AssertionResult ReadJsonTestFile(
+    const char* test_file_name,
+    std::unique_ptr<base::Value>* value) {
   base::FilePath test_data_dir;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir))
     return ::testing::AssertionFailure() << "Couldn't retrieve test dir";
@@ -176,9 +177,9 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
 
 ::testing::AssertionResult ReadJsonTestFileToList(
     const char* test_file_name,
-    scoped_ptr<base::ListValue>* list) {
+    std::unique_ptr<base::ListValue>* list) {
   // Read the JSON.
-  scoped_ptr<base::Value> json;
+  std::unique_ptr<base::Value> json;
   ::testing::AssertionResult result = ReadJsonTestFile(test_file_name, &json);
   if (!result)
     return result;
@@ -196,9 +197,9 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
 
 ::testing::AssertionResult ReadJsonTestFileToDictionary(
     const char* test_file_name,
-    scoped_ptr<base::DictionaryValue>* dict) {
+    std::unique_ptr<base::DictionaryValue>* dict) {
   // Read the JSON.
-  scoped_ptr<base::Value> json;
+  std::unique_ptr<base::Value> json;
   ::testing::AssertionResult result = ReadJsonTestFile(test_file_name, &json);
   if (!result)
     return result;
@@ -388,22 +389,22 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                    usages, key);
 }
 
-scoped_ptr<base::DictionaryValue> GetJwkDictionary(
+std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json) {
   base::StringPiece json_string(reinterpret_cast<const char*>(json.data()),
                                 json.size());
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json_string);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_TRUE(value.get());
   EXPECT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
 
-  return scoped_ptr<base::DictionaryValue>(
+  return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(value.release()));
 }
 
 // Verifies the input dictionary contains the expected values. Exact matches are
 // required on the fields examined.
 ::testing::AssertionResult VerifyJwk(
-    const scoped_ptr<base::DictionaryValue>& dict,
+    const std::unique_ptr<base::DictionaryValue>& dict,
     const std::string& kty_expected,
     const std::string& alg_expected,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
@@ -455,7 +456,7 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::string& alg_expected,
     const std::string& k_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
-  scoped_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
+  std::unique_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
   if (!dict.get() || dict->empty())
     return ::testing::AssertionFailure() << "JSON parsing failed";
 
@@ -483,7 +484,7 @@ scoped_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::string& n_expected_hex,
     const std::string& e_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
-  scoped_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
+  std::unique_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
   if (!dict.get() || dict->empty())
     return ::testing::AssertionFailure() << "JSON parsing failed";
 

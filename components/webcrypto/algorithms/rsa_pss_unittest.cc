@@ -168,7 +168,7 @@ TEST_F(WebCryptoRsaPssTest, SignEmptyMessage) {
 //   * Verify over corrupted message should fail
 //   * Verification with corrupted signature should fail
 TEST_F(WebCryptoRsaPssTest, VerifyKnownAnswer) {
-  scoped_ptr<base::DictionaryValue> test_data;
+  std::unique_ptr<base::DictionaryValue> test_data;
   ASSERT_TRUE(ReadJsonTestFileToDictionary("rsa_pss.json", &test_data));
 
   const base::DictionaryValue* keys_dict = NULL;

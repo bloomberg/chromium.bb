@@ -23,7 +23,7 @@ namespace {
 class WebCryptoShaTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoShaTest, DigestSampleSets) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("sha.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
@@ -44,7 +44,7 @@ TEST_F(WebCryptoShaTest, DigestSampleSets) {
 }
 
 TEST_F(WebCryptoShaTest, DigestSampleSetsInChunks) {
-  scoped_ptr<base::ListValue> tests;
+  std::unique_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("sha.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
@@ -63,7 +63,7 @@ TEST_F(WebCryptoShaTest, DigestSampleSetsInChunks) {
     unsigned int output_length;
     static const size_t kChunkSizeBytes = 129;
     size_t length = test_input.size();
-    scoped_ptr<blink::WebCryptoDigestor> digestor(
+    std::unique_ptr<blink::WebCryptoDigestor> digestor(
         CreateDigestor(test_algorithm.id()));
     std::vector<uint8_t>::iterator begin = test_input.begin();
     size_t chunk_index = 0;

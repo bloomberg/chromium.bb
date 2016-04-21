@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHM_IMPLEMENTATIONS_H_
 #define COMPONENTS_WEBCRYPTO_ALGORITHM_IMPLEMENTATIONS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 // The definitions for these functions live in the algorithms/ directory.
@@ -13,22 +14,22 @@ namespace webcrypto {
 
 class AlgorithmImplementation;
 
-scoped_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(
+std::unique_ptr<blink::WebCryptoDigestor> CreateDigestorImplementation(
     blink::WebCryptoAlgorithmId algorithm);
 
-scoped_ptr<AlgorithmImplementation> CreateShaImplementation();
-scoped_ptr<AlgorithmImplementation> CreateAesCbcImplementation();
-scoped_ptr<AlgorithmImplementation> CreateAesCtrImplementation();
-scoped_ptr<AlgorithmImplementation> CreateAesGcmImplementation();
-scoped_ptr<AlgorithmImplementation> CreateAesKwImplementation();
-scoped_ptr<AlgorithmImplementation> CreateHmacImplementation();
-scoped_ptr<AlgorithmImplementation> CreateRsaOaepImplementation();
-scoped_ptr<AlgorithmImplementation> CreateRsaSsaImplementation();
-scoped_ptr<AlgorithmImplementation> CreateRsaPssImplementation();
-scoped_ptr<AlgorithmImplementation> CreateEcdsaImplementation();
-scoped_ptr<AlgorithmImplementation> CreateEcdhImplementation();
-scoped_ptr<AlgorithmImplementation> CreateHkdfImplementation();
-scoped_ptr<AlgorithmImplementation> CreatePbkdf2Implementation();
+std::unique_ptr<AlgorithmImplementation> CreateShaImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateAesCbcImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateAesCtrImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateAesGcmImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateAesKwImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateHmacImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateRsaOaepImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateRsaSsaImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateRsaPssImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateEcdsaImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateEcdhImplementation();
+std::unique_ptr<AlgorithmImplementation> CreateHkdfImplementation();
+std::unique_ptr<AlgorithmImplementation> CreatePbkdf2Implementation();
 
 }  // namespace webcrypto
 
