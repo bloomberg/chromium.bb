@@ -800,7 +800,7 @@ const char kData_Help[] =
     "  generated files both in the \"outputs\" list as well as the \"data\"\n"
     "  list.\n"
     "\n"
-    "  By convention, directories are be listed with a trailing slash:\n"
+    "  By convention, directories are listed with a trailing slash:\n"
     "    data = [ \"test/data/\" ]\n"
     "  However, no verification is done on these so GN doesn't enforce this.\n"
     "  The paths are just rebased and passed along when requested.\n"
