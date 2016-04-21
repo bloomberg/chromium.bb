@@ -41,12 +41,11 @@ struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
   bool flush_required;
 };
 
-// Simple Index File format is a pickle serialized data of IndexMetadata and
-// EntryMetadata objects. The file format is as follows: one instance of
-// serialized |IndexMetadata| followed serialized |EntryMetadata| entries
-// repeated |number_of_entries| amount of times. To know more about the format,
-// see SimpleIndexFile::Serialize() and SeeSimpleIndexFile::LoadFromDisk()
-// methods.
+// Simple Index File format is a pickle of IndexMetadata and EntryMetadata
+// objects. The file format is as follows: one instance of |IndexMetadata|
+// followed by |EntryMetadata| repeated |entry_count| times. To learn more about
+// the format see |SimpleIndexFile::Serialize()| and
+// |SimpleIndexFile::LoadFromDisk()|.
 //
 // The non-static methods must run on the IO thread. All the real
 // work is done in the static methods, which are run on the cache thread
@@ -58,7 +57,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
    public:
     IndexMetadata();
     IndexMetadata(SimpleIndex::IndexWriteToDiskReason reason,
-                  uint64_t number_of_entries,
+                  uint64_t entry_count,
                   uint64_t cache_size);
 
     virtual void Serialize(base::Pickle* pickle) const;
@@ -67,7 +66,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     bool CheckIndexMetadata();
 
     SimpleIndex::IndexWriteToDiskReason reason() const { return reason_; }
-    uint64_t GetNumberOfEntries() { return number_of_entries_; }
+    uint64_t entry_count() const { return entry_count_; }
 
    private:
     FRIEND_TEST_ALL_PREFIXES(IndexMetadataTest, Basics);
@@ -78,7 +77,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint64_t magic_number_;
     uint32_t version_;
     SimpleIndex::IndexWriteToDiskReason reason_;
-    uint64_t number_of_entries_;
+    uint64_t entry_count_;
     uint64_t cache_size_;  // Total cache storage size in bytes.
   };
 

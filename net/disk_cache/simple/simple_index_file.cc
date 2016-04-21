@@ -158,24 +158,24 @@ SimpleIndexFile::IndexMetadata::IndexMetadata()
     : magic_number_(kSimpleIndexMagicNumber),
       version_(kSimpleVersion),
       reason_(SimpleIndex::INDEX_WRITE_REASON_MAX),
-      number_of_entries_(0),
+      entry_count_(0),
       cache_size_(0) {}
 
 SimpleIndexFile::IndexMetadata::IndexMetadata(
     SimpleIndex::IndexWriteToDiskReason reason,
-    uint64_t number_of_entries,
+    uint64_t entry_count,
     uint64_t cache_size)
     : magic_number_(kSimpleIndexMagicNumber),
       version_(kSimpleVersion),
       reason_(reason),
-      number_of_entries_(number_of_entries),
+      entry_count_(entry_count),
       cache_size_(cache_size) {}
 
 void SimpleIndexFile::IndexMetadata::Serialize(base::Pickle* pickle) const {
   DCHECK(pickle);
   pickle->WriteUInt64(magic_number_);
   pickle->WriteUInt32(version_);
-  pickle->WriteUInt64(number_of_entries_);
+  pickle->WriteUInt64(entry_count_);
   pickle->WriteUInt64(cache_size_);
   pickle->WriteUInt32(static_cast<uint32_t>(reason_));
 }
@@ -195,7 +195,7 @@ bool SimpleIndexFile::IndexMetadata::Deserialize(base::PickleIterator* it) {
 
   bool v6_format_index_read_results =
       it->ReadUInt64(&magic_number_) && it->ReadUInt32(&version_) &&
-      it->ReadUInt64(&number_of_entries_) && it->ReadUInt64(&cache_size_);
+      it->ReadUInt64(&entry_count_) && it->ReadUInt64(&cache_size_);
   if (!v6_format_index_read_results)
     return false;
   if (version_ >= 7) {
@@ -258,7 +258,7 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
 }
 
 bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
-  if (number_of_entries_ > kMaxEntriesInIndex ||
+  if (entry_count_ > kMaxEntriesInIndex ||
       magic_number_ != kSimpleIndexMagicNumber) {
     return false;
   }
@@ -452,8 +452,8 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
     return;
   }
 
-  entries->reserve(index_metadata.GetNumberOfEntries() + kExtraSizeForMerge);
-  while (entries->size() < index_metadata.GetNumberOfEntries()) {
+  entries->reserve(index_metadata.entry_count() + kExtraSizeForMerge);
+  while (entries->size() < index_metadata.entry_count()) {
     uint64_t hash_key;
     EntryMetadata entry_metadata;
     if (!pickle_it.ReadUInt64(&hash_key) ||

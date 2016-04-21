@@ -46,7 +46,7 @@ TEST(IndexMetadataTest, Basics) {
 
   EXPECT_EQ(disk_cache::kSimpleIndexMagicNumber, index_metadata.magic_number_);
   EXPECT_EQ(disk_cache::kSimpleVersion, index_metadata.version_);
-  EXPECT_EQ(0U, index_metadata.GetNumberOfEntries());
+  EXPECT_EQ(0U, index_metadata.entry_count());
   EXPECT_EQ(0U, index_metadata.cache_size_);
 
   // Without setting a |reason_|, the index metadata isn't valid.
@@ -67,8 +67,7 @@ TEST(IndexMetadataTest, Serialize) {
   EXPECT_EQ(new_index_metadata.magic_number_, index_metadata.magic_number_);
   EXPECT_EQ(new_index_metadata.version_, index_metadata.version_);
   EXPECT_EQ(new_index_metadata.reason_, index_metadata.reason_);
-  EXPECT_EQ(new_index_metadata.GetNumberOfEntries(),
-            index_metadata.GetNumberOfEntries());
+  EXPECT_EQ(new_index_metadata.entry_count(), index_metadata.entry_count());
   EXPECT_EQ(new_index_metadata.cache_size_, index_metadata.cache_size_);
 
   EXPECT_TRUE(new_index_metadata.CheckIndexMetadata());
@@ -81,9 +80,9 @@ class V6IndexMetadataForTest : public SimpleIndexFile::IndexMetadata {
   // Do not default to |SimpleIndex::INDEX_WRITE_REASON_MAX|, because we want to
   // ensure we don't serialize that value and then deserialize it and have a
   // false positive result.
-  V6IndexMetadataForTest(uint64_t number_of_entries, uint64_t cache_size)
+  V6IndexMetadataForTest(uint64_t entry_count, uint64_t cache_size)
       : SimpleIndexFile::IndexMetadata(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN,
-                                       number_of_entries,
+                                       entry_count,
                                        cache_size) {
     version_ = 6;
   }
@@ -93,7 +92,7 @@ class V6IndexMetadataForTest : public SimpleIndexFile::IndexMetadata {
   void Serialize(base::Pickle* pickle) const override {
     pickle->WriteUInt64(magic_number_);
     pickle->WriteUInt32(version_);
-    pickle->WriteUInt64(number_of_entries_);
+    pickle->WriteUInt64(entry_count_);
     pickle->WriteUInt64(cache_size_);
   }
 };
@@ -111,8 +110,7 @@ TEST(IndexMetadataTest, ReadV6Format) {
   EXPECT_EQ(new_index_metadata.version_, v6_index_metadata.version_);
 
   EXPECT_EQ(new_index_metadata.reason_, SimpleIndex::INDEX_WRITE_REASON_MAX);
-  EXPECT_EQ(new_index_metadata.GetNumberOfEntries(),
-            v6_index_metadata.GetNumberOfEntries());
+  EXPECT_EQ(new_index_metadata.entry_count(), v6_index_metadata.entry_count());
   EXPECT_EQ(new_index_metadata.cache_size_, v6_index_metadata.cache_size_);
 
   EXPECT_TRUE(new_index_metadata.CheckIndexMetadata());
