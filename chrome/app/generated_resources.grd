@@ -5618,6 +5618,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <message name="IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION" desc="Description for the flag for using media style notification">
               Use Android MediaStyle notifications for Chrome media notifications.
           </message>
+          <message name="IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME" desc="Title for the flag for including important sites whitelisting in the clear browsing dialog.">
+              Important sites options in clear browsing data dialog
+          </message>
+          <message name="IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION" desc="Description for the flag for using important sites whitelisting in the clear browsing dialog.">
+              Include the option to whitelist important sites in the clear browsing data dialog.
+          </message>
       </if>
       <if expr="use_ash">
         <message name="IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_NAME" desc="Title for the flag which can be used for window backdrops in TouchView.">

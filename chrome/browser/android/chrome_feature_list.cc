@@ -29,6 +29,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,
+    &kImportantSitesInCBD,
     &kMediaStyleNotification,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
@@ -39,6 +40,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
 };
 
 }  // namespace
+
+const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMediaStyleNotification {
   "MediaStyleNotification", base::FEATURE_DISABLED_BY_DEFAULT

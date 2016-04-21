@@ -1816,6 +1816,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
      IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kMediaStyleNotification)},
+    {"important-sites-in-cbd",
+     IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
+     IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
 #endif
     {"enable-pointer-events",  // FLAGS:RECORD_UMA
       IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
