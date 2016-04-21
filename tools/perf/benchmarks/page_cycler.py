@@ -119,9 +119,12 @@ class PageCyclerIntlKoThVi(_PageCycler):
     return 'page_cycler.intl_ko_th_vi'
 
   @classmethod
-  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
-      return (possible_browser.browser_type == 'reference' and
-              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+  def ShouldDisable(cls, possible_browser):
+    # http://crbug.com/597656 (Android Nexus 5X).
+    # http://crbug.com/605543 (Mac Snow Leopard).
+    return (possible_browser.browser_type == 'reference' and (
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X' or
+              possible_browser.platform.GetOSVersionName() == 'snowleopard'))
 
 
 class PageCyclerMorejs(_PageCycler):
