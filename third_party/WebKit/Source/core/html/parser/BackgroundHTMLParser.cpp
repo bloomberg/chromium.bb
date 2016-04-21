@@ -30,6 +30,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "wtf/text/TextPosition.h"
@@ -216,6 +217,7 @@ void BackgroundHTMLParser::markEndOfFile()
 
 void BackgroundHTMLParser::pumpTokenizer()
 {
+    TRACE_EVENT0("loading", "BackgroundHTMLParser::pumpTokenizer");
     HTMLTreeBuilderSimulator::SimulatedToken simulatedToken = HTMLTreeBuilderSimulator::OtherToken;
 
     // No need to start speculating until the main thread has almost caught up.
@@ -286,6 +288,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 #endif
 
     OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);
+    TRACE_EVENT_WITH_FLOW0("blink,loading", "BackgroundHTMLParser::sendTokensToMainThread", chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
     chunk->preloads.swap(m_pendingPreloads);
     if (m_viewportDescription.set)
         chunk->viewport = m_viewportDescription;
