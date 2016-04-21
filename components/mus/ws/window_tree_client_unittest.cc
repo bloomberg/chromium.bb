@@ -418,11 +418,11 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   mojom::WindowTreePtr tree_;
 
   // If non-null we're waiting for OnEmbed() using this RunLoop.
-  scoped_ptr<base::RunLoop> embed_run_loop_;
+  std::unique_ptr<base::RunLoop> embed_run_loop_;
 
   // If non-null we're waiting for a certain number of change notifications to
   // be encountered.
-  scoped_ptr<WaitState> wait_state_;
+  std::unique_ptr<WaitState> wait_state_;
 
   mojo::Binding<WindowTreeClient> binding_;
   Id connection_id_;
@@ -431,9 +431,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   uint32_t waiting_change_id_;
   bool on_change_completed_result_;
   bool track_root_bounds_changes_;
-  scoped_ptr<base::RunLoop> change_completed_run_loop_;
+  std::unique_ptr<base::RunLoop> change_completed_run_loop_;
 
-  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
+  std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
       window_manager_binding_;
   mojom::WindowManagerClientAssociatedPtr window_manager_client_;
 
@@ -450,7 +450,7 @@ class WindowTreeClientFactory
   ~WindowTreeClientFactory() override {}
 
   // Runs a nested MessageLoop until a new instance has been created.
-  scoped_ptr<TestWindowTreeClientImpl> WaitForInstance() {
+  std::unique_ptr<TestWindowTreeClientImpl> WaitForInstance() {
     if (!client_impl_.get()) {
       DCHECK(!run_loop_);
       run_loop_.reset(new base::RunLoop);
@@ -470,8 +470,8 @@ class WindowTreeClientFactory
       run_loop_->Quit();
   }
 
-  scoped_ptr<TestWindowTreeClientImpl> client_impl_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<TestWindowTreeClientImpl> client_impl_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientFactory);
 };
@@ -535,13 +535,13 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     ASSERT_TRUE(wt_client3_.get() != nullptr);
   }
 
-  scoped_ptr<TestWindowTreeClientImpl> WaitForWindowTreeClient() {
+  std::unique_ptr<TestWindowTreeClientImpl> WaitForWindowTreeClient() {
     return client_factory_->WaitForInstance();
   }
 
   // Establishes a new connection by way of Embed() on the specified
   // WindowTree.
-  scoped_ptr<TestWindowTreeClientImpl> EstablishConnectionViaEmbed(
+  std::unique_ptr<TestWindowTreeClientImpl> EstablishConnectionViaEmbed(
       WindowTree* owner,
       Id root_id,
       int* connection_id) {
@@ -549,7 +549,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
                                                         connection_id);
   }
 
-  scoped_ptr<TestWindowTreeClientImpl>
+  std::unique_ptr<TestWindowTreeClientImpl>
   EstablishConnectionViaEmbedWithPolicyBitmask(WindowTree* owner,
                                                Id root_id,
                                                int* connection_id) {
@@ -557,7 +557,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
-    scoped_ptr<TestWindowTreeClientImpl> client =
+    std::unique_ptr<TestWindowTreeClientImpl> client =
         client_factory_->WaitForInstance();
     if (!client.get()) {
       ADD_FAILURE() << "WaitForInstance failed";
@@ -619,14 +619,14 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     WindowServerShellTestBase::TearDown();
   }
 
-  scoped_ptr<TestWindowTreeClientImpl> wt_client1_;
-  scoped_ptr<TestWindowTreeClientImpl> wt_client2_;
-  scoped_ptr<TestWindowTreeClientImpl> wt_client3_;
+  std::unique_ptr<TestWindowTreeClientImpl> wt_client1_;
+  std::unique_ptr<TestWindowTreeClientImpl> wt_client2_;
+  std::unique_ptr<TestWindowTreeClientImpl> wt_client3_;
 
   mojom::WindowTreeHostPtr host_;
 
  private:
-  scoped_ptr<WindowTreeClientFactory> client_factory_;
+  std::unique_ptr<WindowTreeClientFactory> client_factory_;
   int connection_id_1_;
   int connection_id_2_;
   Id root_window_id_;
@@ -1370,7 +1370,7 @@ TEST_F(WindowTreeClientTest, EmbedWithSameWindowId2) {
     changes3()->clear();
 
     // We should get a new connection for the new embedding.
-    scoped_ptr<TestWindowTreeClientImpl> connection4(
+    std::unique_ptr<TestWindowTreeClientImpl> connection4(
         EstablishConnectionViaEmbed(wt1(), window_1_1, nullptr));
     ASSERT_TRUE(connection4.get());
     EXPECT_EQ("[" + WindowParentToString(window_1_1, kNullParentId) + "]",

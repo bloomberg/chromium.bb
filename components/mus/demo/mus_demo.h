@@ -6,12 +6,12 @@
 #define COMPONENTS_MUS_DEMO_MUS_DEMO_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
@@ -53,9 +53,10 @@ class MusDemo : public shell::ShellClient,
   // WindowManagerDelegate:
   void SetWindowManagerClient(mus::WindowManagerClient* client) override;
   bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override;
-  bool OnWmSetProperty(mus::Window* window,
-                       const std::string& name,
-                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
+  bool OnWmSetProperty(
+      mus::Window* window,
+      const std::string& name,
+      std::unique_ptr<std::vector<uint8_t>>* new_data) override;
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
@@ -72,7 +73,7 @@ class MusDemo : public shell::ShellClient,
   mus::mojom::WindowTreeHostPtr window_tree_host_;
 
   // Used to send frames to mus.
-  scoped_ptr<bitmap_uploader::BitmapUploader> uploader_;
+  std::unique_ptr<bitmap_uploader::BitmapUploader> uploader_;
 
   // Bitmap that is the same size as our client window area.
   SkBitmap bitmap_;

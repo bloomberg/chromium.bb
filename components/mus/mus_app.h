@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
@@ -65,7 +65,7 @@ class MandolineUIServicesApp
   struct PendingRequest;
   struct UserState;
 
-  using UserIdToUserState = std::map<ws::UserId, scoped_ptr<UserState>>;
+  using UserIdToUserState = std::map<ws::UserId, std::unique_ptr<UserState>>;
 
   void InitializeResources(shell::Connector* connector);
 
@@ -118,17 +118,17 @@ class MandolineUIServicesApp
               mojom::GpuRequest request) override;
 
   ws::PlatformDisplayInitParams platform_display_init_params_;
-  scoped_ptr<ws::WindowServer> window_server_;
-  scoped_ptr<ui::PlatformEventSource> event_source_;
+  std::unique_ptr<ws::WindowServer> window_server_;
+  std::unique_ptr<ui::PlatformEventSource> event_source_;
   mojo::TracingImpl tracing_;
-  using PendingRequests = std::vector<scoped_ptr<PendingRequest>>;
+  using PendingRequests = std::vector<std::unique_ptr<PendingRequest>>;
   PendingRequests pending_requests_;
 
   UserIdToUserState user_id_to_user_state_;
 
   bool test_config_;
 #if defined(USE_OZONE)
-  scoped_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
+  std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MandolineUIServicesApp);

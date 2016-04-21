@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/gles2/gpu_memory_buffer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -19,12 +20,12 @@ class MojoGpuMemoryBufferImpl : public mus::GpuMemoryBufferImpl {
  public:
   MojoGpuMemoryBufferImpl(const gfx::Size& size,
                           gfx::BufferFormat format,
-                          scoped_ptr<base::SharedMemory> shared_memory);
+                          std::unique_ptr<base::SharedMemory> shared_memory);
   ~MojoGpuMemoryBufferImpl() override;
 
-  static scoped_ptr<gfx::GpuMemoryBuffer> Create(const gfx::Size& size,
-                                                 gfx::BufferFormat format,
-                                                 gfx::BufferUsage usage);
+  static std::unique_ptr<gfx::GpuMemoryBuffer> Create(const gfx::Size& size,
+                                                      gfx::BufferFormat format,
+                                                      gfx::BufferUsage usage);
 
   static MojoGpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
@@ -41,7 +42,7 @@ class MojoGpuMemoryBufferImpl : public mus::GpuMemoryBufferImpl {
   gfx::GpuMemoryBufferType GetBufferType() const override;
 
  private:
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferImpl);
 };

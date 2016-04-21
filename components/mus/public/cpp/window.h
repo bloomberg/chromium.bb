@@ -105,10 +105,10 @@ class Window {
     return *viewport_metrics_;
   }
 
-  scoped_ptr<WindowSurface> RequestSurface(mojom::SurfaceType type);
+  std::unique_ptr<WindowSurface> RequestSurface(mojom::SurfaceType type);
 
   void AttachSurface(mojom::SurfaceType type,
-                     scoped_ptr<WindowSurfaceBinding> surface_binding);
+                     std::unique_ptr<WindowSurfaceBinding> surface_binding);
 
   // The template-ized versions of the following methods rely on the presence
   // of a mojo::TypeConverter<const std::vector<uint8_t>, T>.

@@ -247,15 +247,17 @@ bool Window::IsDrawn() const {
   return parent_ ? parent_->IsDrawn() : parent_drawn_;
 }
 
-scoped_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
-  scoped_ptr<WindowSurfaceBinding> surface_binding;
-  scoped_ptr<WindowSurface> surface = WindowSurface::Create(&surface_binding);
+std::unique_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
+  std::unique_ptr<WindowSurfaceBinding> surface_binding;
+  std::unique_ptr<WindowSurface> surface =
+      WindowSurface::Create(&surface_binding);
   AttachSurface(type, std::move(surface_binding));
   return surface;
 }
 
-void Window::AttachSurface(mojom::SurfaceType type,
-                           scoped_ptr<WindowSurfaceBinding> surface_binding) {
+void Window::AttachSurface(
+    mojom::SurfaceType type,
+    std::unique_ptr<WindowSurfaceBinding> surface_binding) {
   tree_client()->AttachSurface(
       server_id_, type, std::move(surface_binding->surface_request_),
       mojo::MakeProxy(std::move(surface_binding->surface_client_)));

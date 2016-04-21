@@ -52,9 +52,10 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
   bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override {
     return false;
   }
-  bool OnWmSetProperty(Window* window,
-                       const std::string& name,
-                       scoped_ptr<std::vector<uint8_t>>* new_data) override {
+  bool OnWmSetProperty(
+      Window* window,
+      const std::string& name,
+      std::unique_ptr<std::vector<uint8_t>>* new_data) override {
     return true;
   }
   Window* OnWmCreateTopLevelWindow(
@@ -330,7 +331,7 @@ class WindowServerTest : public WindowServerTestBase {
       EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
 
-  scoped_ptr<EmbedDetails> embed_details_;
+  std::unique_ptr<EmbedDetails> embed_details_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerTest);
 };
@@ -1139,7 +1140,7 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
 
  private:
   WindowTreeConnection* connection_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   Window* created_window_;
 
   DISALLOW_COPY_AND_ASSIGN(EstablishConnectionViaFactoryDelegate);
@@ -1148,7 +1149,7 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
 TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
-  scoped_ptr<WindowTreeConnection> second_connection(
+  std::unique_ptr<WindowTreeConnection> second_connection(
       WindowTreeConnection::Create(this, connector()));
   Window* window_in_second_connection =
       second_connection->NewTopLevelWindow(nullptr);

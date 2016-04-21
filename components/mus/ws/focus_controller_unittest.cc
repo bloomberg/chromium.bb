@@ -151,7 +151,7 @@ TEST(FocusControllerTest, FocusShiftsOnDestroy) {
   ServerWindow child_first(&server_window_delegate, WindowId());
   child_first.SetVisible(true);
   parent.Add(&child_first);
-  scoped_ptr<ServerWindow> child_second(
+  std::unique_ptr<ServerWindow> child_second(
       new ServerWindow(&server_window_delegate, WindowId()));
   child_second->SetVisible(true);
   parent.Add(child_second.get());

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_SURFACE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
@@ -24,8 +25,8 @@ class Window;
 class WindowSurface : public mojom::SurfaceClient {
  public:
   // static
-  static scoped_ptr<WindowSurface> Create(
-      scoped_ptr<WindowSurfaceBinding>* surface_binding);
+  static std::unique_ptr<WindowSurface> Create(
+      std::unique_ptr<WindowSurfaceBinding>* surface_binding);
 
   ~WindowSurface() override;
 
@@ -52,8 +53,8 @@ class WindowSurface : public mojom::SurfaceClient {
   mojo::InterfacePtrInfo<mojom::Surface> surface_info_;
   mojo::InterfaceRequest<mojom::SurfaceClient> client_request_;
   mojom::SurfacePtr surface_;
-  scoped_ptr<mojo::Binding<mojom::SurfaceClient>> client_binding_;
-  scoped_ptr<base::ThreadChecker> thread_checker_;
+  std::unique_ptr<mojo::Binding<mojom::SurfaceClient>> client_binding_;
+  std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSurface);
 };

@@ -4,9 +4,11 @@
 
 #include "components/mus/ws/window_manager_state.h"
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/mus/public/cpp/event_matcher.h"
@@ -36,7 +38,7 @@ class WindowManagerStateTest : public testing::Test {
   WindowManagerStateTest();
   ~WindowManagerStateTest() override {}
 
-  scoped_ptr<Accelerator> CreateAccelerator();
+  std::unique_ptr<Accelerator> CreateAccelerator();
 
   // Creates a child |server_window| with associataed |window_tree| and
   // |test_client|. The window is setup for processing input.
@@ -77,7 +79,7 @@ class WindowManagerStateTest : public testing::Test {
   TestWindowTreeClient* wm_client_;
 
   TestWindowServerDelegate window_server_delegate_;
-  scoped_ptr<WindowServer> window_server_;
+  std::unique_ptr<WindowServer> window_server_;
   // Handles WindowStateManager ack timeouts.
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestPlatformDisplayFactory platform_display_factory_;
@@ -94,12 +96,12 @@ WindowManagerStateTest::WindowManagerStateTest()
       task_runner_(new base::TestSimpleTaskRunner),
       platform_display_factory_(&cursor_id_) {}
 
-scoped_ptr<Accelerator> WindowManagerStateTest::CreateAccelerator() {
+std::unique_ptr<Accelerator> WindowManagerStateTest::CreateAccelerator() {
   mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
       mus::mojom::KeyboardCode::W, mus::mojom::kEventFlagControlDown);
   matcher->accelerator_phase = mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_id = 1;
-  scoped_ptr<Accelerator> accelerator(
+  std::unique_ptr<Accelerator> accelerator(
       new Accelerator(accelerator_id, *matcher));
   return accelerator;
 }
@@ -160,7 +162,7 @@ void WindowManagerStateTest::SetUp() {
   PlatformDisplayInitParams display_init_params;
   display_ = new Display(window_server_.get(), display_init_params);
   display_binding_ = new TestDisplayBinding(display_, window_server_.get());
-  display_->Init(make_scoped_ptr(display_binding_));
+  display_->Init(base::WrapUnique(display_binding_));
 
   wm_client_ = window_server_delegate_.last_client();
   window_manager_state_ = display_->GetActiveWindowManagerState();
@@ -211,7 +213,7 @@ TEST_F(WindowManagerStateTest, NullAccelerator) {
 // called on ack.
 TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator = CreateAccelerator();
+  std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
 
   ServerWindow* target = window();
   DispatchInputEventToWindow(target, true, key, accelerator.get());
@@ -229,7 +231,7 @@ TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
 // not called.
 TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator = CreateAccelerator();
+  std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
 
   ServerWindow* target = window();
   DispatchInputEventToWindow(target, true, key, accelerator.get());
@@ -246,7 +248,7 @@ TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
 // called.
 TEST_F(WindowManagerStateTest, AcceleratorDeleted) {
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator(CreateAccelerator());
+  std::unique_ptr<Accelerator> accelerator(CreateAccelerator());
 
   ServerWindow* target = window();
   DispatchInputEventToWindow(target, true, key, accelerator.get());
@@ -266,7 +268,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   WindowManagerState* state = window_manager_state();
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator(CreateAccelerator());
+  std::unique_ptr<Accelerator> accelerator(CreateAccelerator());
 
   ServerWindow* target = window();
   DispatchInputEventToWindow(target, true, key, accelerator.get());
@@ -281,7 +283,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
       mus::mojom::KeyboardCode::Y, mus::mojom::kEventFlagControlDown);
   matcher->accelerator_phase = mojom::AcceleratorPhase::POST_TARGET;
   uint32_t accelerator_id = 2;
-  scoped_ptr<Accelerator> accelerator2(
+  std::unique_ptr<Accelerator> accelerator2(
       new Accelerator(accelerator_id, *matcher));
   DispatchInputEventToWindow(target, true, key2, accelerator2.get());
   EXPECT_TRUE(tracker->changes()->empty());
@@ -299,7 +301,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
 // Tests that the accelerator is not sent when the tree is dying.
 TEST_F(WindowManagerStateTest, DeleteTree) {
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator = CreateAccelerator();
+  std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
 
   ServerWindow* target = window();
   DispatchInputEventToWindow(target, true, key, accelerator.get());
@@ -324,7 +326,7 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
       .set_window_manager_internal(&target_window_manager);
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator = CreateAccelerator();
+  std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
   DispatchInputEventToWindow(target, true, key, accelerator.get());
   TestChangeTracker* tracker = embed_connection->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());
@@ -340,7 +342,7 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
 // Tests that when an ack times out that the accelerator is notified.
 TEST_F(WindowManagerStateTest, AckTimeout) {
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  scoped_ptr<Accelerator> accelerator = CreateAccelerator();
+  std::unique_ptr<Accelerator> accelerator = CreateAccelerator();
   DispatchInputEventToWindow(window(), true, key, accelerator.get());
   TestChangeTracker* tracker = wm_client()->tracker();
   EXPECT_EQ(1u, tracker->changes()->size());

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_INPUT_EVENT_HANDLER_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_INPUT_EVENT_HANDLER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ui {
 class Event;
@@ -30,7 +31,8 @@ class InputEventHandler {
   virtual void OnWindowInputEvent(
       Window* target,
       const ui::Event& event,
-      scoped_ptr<base::Callback<void(mojom::EventResult)>>* ack_callback) = 0;
+      std::unique_ptr<base::Callback<void(mojom::EventResult)>>*
+          ack_callback) = 0;
 
  protected:
   virtual ~InputEventHandler() {}

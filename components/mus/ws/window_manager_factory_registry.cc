@@ -29,7 +29,7 @@ void WindowManagerFactoryRegistry::Register(
   if (ContainsServiceForUser(user_id))
     return;
 
-  scoped_ptr<WindowManagerFactoryService> service(
+  std::unique_ptr<WindowManagerFactoryService> service(
       new WindowManagerFactoryService(this, user_id, std::move(request)));
   AddServiceImpl(std::move(service));
 }
@@ -53,7 +53,7 @@ void WindowManagerFactoryRegistry::RemoveObserver(
 }
 
 void WindowManagerFactoryRegistry::AddServiceImpl(
-    scoped_ptr<WindowManagerFactoryService> service) {
+    std::unique_ptr<WindowManagerFactoryService> service) {
   services_.push_back(std::move(service));
 }
 

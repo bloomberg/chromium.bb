@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -21,7 +22,7 @@ class MojoBufferBacking : public gpu::BufferBacking {
                     size_t size);
   ~MojoBufferBacking() override;
 
-  static scoped_ptr<gpu::BufferBacking> Create(
+  static std::unique_ptr<gpu::BufferBacking> Create(
       mojo::ScopedSharedBufferHandle handle,
       size_t size);
 

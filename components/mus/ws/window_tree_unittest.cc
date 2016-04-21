@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/mus/ws/window_tree.h"
+
 #include <stdint.h>
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/mus/common/types.h"
@@ -28,7 +31,6 @@
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_server_delegate.h"
-#include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
@@ -148,10 +150,11 @@ class WindowTreeTest : public testing::Test {
   // a WindowTreeFactory does.
   WindowTree* CreateNewTree(const UserId& user_id,
                             TestWindowTreeBinding** binding) {
-    WindowTree* tree = new WindowTree(window_server_.get(), user_id, nullptr,
-                                      make_scoped_ptr(new DefaultAccessPolicy));
+    WindowTree* tree =
+        new WindowTree(window_server_.get(), user_id, nullptr,
+                       base::WrapUnique(new DefaultAccessPolicy));
     *binding = new TestWindowTreeBinding(tree);
-    window_server_->AddTree(make_scoped_ptr(tree), make_scoped_ptr(*binding),
+    window_server_->AddTree(base::WrapUnique(tree), base::WrapUnique(*binding),
                             nullptr);
     return tree;
   }
@@ -165,7 +168,7 @@ class WindowTreeTest : public testing::Test {
     display_init_params.surfaces_state = surfaces_state_;
     display_ = new Display(window_server_.get(), display_init_params);
     display_binding_ = new TestDisplayBinding(display_, window_server_.get());
-    display_->Init(make_scoped_ptr(display_binding_));
+    display_->Init(base::WrapUnique(display_binding_));
     wm_client_ = delegate_.last_client();
   }
 
@@ -179,7 +182,7 @@ class WindowTreeTest : public testing::Test {
   TestDisplayBinding* display_binding_;
   Display* display_ = nullptr;
   scoped_refptr<SurfacesState> surfaces_state_;
-  scoped_ptr<WindowServer> window_server_;
+  std::unique_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeTest);

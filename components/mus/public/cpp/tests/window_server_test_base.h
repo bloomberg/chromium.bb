@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_
 #define COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/tests/window_server_shelltest_base.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
@@ -71,9 +72,10 @@ class WindowServerTestBase
   // WindowManagerDelegate:
   void SetWindowManagerClient(WindowManagerClient* client) override;
   bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override;
-  bool OnWmSetProperty(Window* window,
-                       const std::string& name,
-                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
+  bool OnWmSetProperty(
+      Window* window,
+      const std::string& name,
+      std::unique_ptr<std::vector<uint8_t>>* new_data) override;
   Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;

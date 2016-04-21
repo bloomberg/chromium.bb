@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/geometry/rect.h"
@@ -76,7 +77,7 @@ enum class ChangeType {
 // the change succeeded. Use the following pattern for this. This code goes
 // where the change is sent to the server (in WindowTreeClientImpl):
 //   const uint32_t change_id =
-//   ScheduleInFlightChange(make_scoped_ptr(new CrashInFlightChange(
+//   ScheduleInFlightChange(base::WrapUnique(new CrashInFlightChange(
 //       window, ChangeType::REORDER)));
 //
 // For (2) use the same pattern as (1), but in the on change callback from the

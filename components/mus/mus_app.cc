@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -62,11 +63,11 @@ const char kResourceFile200[] = "mus_app_resources_200.pak";
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
 struct MandolineUIServicesApp::PendingRequest {
   shell::Connection* connection;
-  scoped_ptr<mojo::InterfaceRequest<mojom::WindowTreeFactory>> wtf_request;
+  std::unique_ptr<mojo::InterfaceRequest<mojom::WindowTreeFactory>> wtf_request;
 };
 
 struct MandolineUIServicesApp::UserState {
-  scoped_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
+  std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
 MandolineUIServicesApp::MandolineUIServicesApp() : test_config_(false) {}
@@ -112,7 +113,7 @@ MandolineUIServicesApp::UserState* MandolineUIServicesApp::GetUserState(
   auto it = user_id_to_user_state_.find(user_id);
   if (it != user_id_to_user_state_.end())
     return it->second.get();
-  user_id_to_user_state_[user_id] = make_scoped_ptr(new UserState);
+  user_id_to_user_state_[user_id] = base::WrapUnique(new UserState);
   return user_id_to_user_state_[user_id].get();
 }
 
@@ -233,7 +234,7 @@ void MandolineUIServicesApp::Create(Connection* connection,
                                     mojom::WindowTreeFactoryRequest request) {
   AddUserIfNecessary(connection);
   if (!window_server_->display_manager()->has_displays()) {
-    scoped_ptr<PendingRequest> pending_request(new PendingRequest);
+    std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->connection = connection;
     pending_request->wtf_request.reset(
         new mojo::InterfaceRequest<mojom::WindowTreeFactory>(

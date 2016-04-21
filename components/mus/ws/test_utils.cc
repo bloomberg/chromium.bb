@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/test_utils.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/output/copy_output_request.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_binding.h"
@@ -51,7 +52,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetImeVisibility(bool visible) override {}
   bool IsFramePending() const override { return false; }
   void RequestCopyOfOutput(
-      scoped_ptr<cc::CopyOutputRequest> output_request) override {}
+      std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
 
  private:
   mojom::ViewportMetrics display_metrics_;
@@ -85,7 +86,7 @@ WindowManagerFactoryRegistryTestApi::~WindowManagerFactoryRegistryTestApi() {}
 void WindowManagerFactoryRegistryTestApi::AddService(
     const UserId& user_id,
     mojom::WindowManagerFactory* factory) {
-  scoped_ptr<WindowManagerFactoryService> service_ptr(
+  std::unique_ptr<WindowManagerFactoryService> service_ptr(
       new WindowManagerFactoryService(registry_, user_id));
   WindowManagerFactoryService* service = service_ptr.get();
   registry_->AddServiceImpl(std::move(service_ptr));
@@ -130,7 +131,7 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
   return window_server_->EmbedAtWindow(
       root, shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr(),
-      make_scoped_ptr(new WindowManagerAccessPolicy));
+      base::WrapUnique(new WindowManagerAccessPolicy));
 }
 
 // TestWindowManager ----------------------------------------------------------
@@ -310,13 +311,15 @@ void TestWindowServerDelegate::OnNoMoreDisplays() {
   got_on_no_more_displays_ = true;
 }
 
-scoped_ptr<WindowTreeBinding> TestWindowServerDelegate::CreateWindowTreeBinding(
+std::unique_ptr<WindowTreeBinding>
+TestWindowServerDelegate::CreateWindowTreeBinding(
     BindingType type,
     ws::WindowServer* window_server,
     ws::WindowTree* tree,
     mojom::WindowTreeRequest* tree_request,
     mojom::WindowTreeClientPtr* client) {
-  scoped_ptr<TestWindowTreeBinding> binding(new TestWindowTreeBinding(tree));
+  std::unique_ptr<TestWindowTreeBinding> binding(
+      new TestWindowTreeBinding(tree));
   bindings_.push_back(binding.get());
   return std::move(binding);
 }

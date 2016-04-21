@@ -100,7 +100,7 @@ bool WindowServerTestBase::OnWmSetBounds(Window* window, gfx::Rect* bounds) {
 bool WindowServerTestBase::OnWmSetProperty(
     Window* window,
     const std::string& name,
-    scoped_ptr<std::vector<uint8_t>>* new_data) {
+    std::unique_ptr<std::vector<uint8_t>>* new_data) {
   return window_manager_delegate_
              ? window_manager_delegate_->OnWmSetProperty(window, name, new_data)
              : true;

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
@@ -91,7 +91,7 @@ class PlatformDisplay {
   virtual bool IsFramePending() const = 0;
 
   virtual void RequestCopyOfOutput(
-      scoped_ptr<cc::CopyOutputRequest> output_request) = 0;
+      std::unique_ptr<cc::CopyOutputRequest> output_request) = 0;
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
@@ -127,7 +127,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void SetImeVisibility(bool visible) override;
   bool IsFramePending() const override;
   void RequestCopyOfOutput(
-      scoped_ptr<cc::CopyOutputRequest> output_request) override;
+      std::unique_ptr<cc::CopyOutputRequest> output_request) override;
 
  private:
   void WantToDraw();
@@ -142,7 +142,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   // if there is budget for it.
   void DidDraw();
   void UpdateMetrics(const gfx::Size& size, float device_pixel_ratio);
-  scoped_ptr<cc::CompositorFrame> GenerateCompositorFrame();
+  std::unique_ptr<cc::CompositorFrame> GenerateCompositorFrame();
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
@@ -167,11 +167,11 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   base::Timer draw_timer_;
   bool frame_pending_;
 
-  scoped_ptr<TopLevelDisplayClient> top_level_display_client_;
-  scoped_ptr<ui::PlatformWindow> platform_window_;
+  std::unique_ptr<TopLevelDisplayClient> top_level_display_client_;
+  std::unique_ptr<ui::PlatformWindow> platform_window_;
 
 #if !defined(OS_ANDROID)
-  scoped_ptr<ui::CursorLoader> cursor_loader_;
+  std::unique_ptr<ui::CursorLoader> cursor_loader_;
 #endif
 
   base::WeakPtrFactory<DefaultPlatformDisplay> weak_factory_;

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_GLES2_GPU_STATE_H_
 #define COMPONENTS_MUS_GLES2_GPU_STATE_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/mus/gles2/command_buffer_driver_manager.h"
@@ -93,8 +94,8 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
   gpu::GpuPreferences gpu_preferences_;
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
   scoped_refptr<CommandBufferTaskRunner> command_buffer_task_runner_;
-  scoped_ptr<CommandBufferDriverManager> driver_manager_;
-  scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
+  std::unique_ptr<CommandBufferDriverManager> driver_manager_;
+  std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   gpu::GPUInfo gpu_info_;

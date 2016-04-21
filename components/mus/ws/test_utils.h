@@ -326,7 +326,7 @@ class TestWindowTreeBinding : public WindowTreeBinding {
   WindowTree* tree_;
   TestWindowTreeClient client_;
   bool is_paused_ = false;
-  scoped_ptr<TestWindowManager> window_manager_;
+  std::unique_ptr<TestWindowManager> window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeBinding);
 };
@@ -362,7 +362,7 @@ class TestWindowServerDelegate : public WindowServerDelegate {
 
   // WindowServerDelegate:
   void OnNoMoreDisplays() override;
-  scoped_ptr<WindowTreeBinding> CreateWindowTreeBinding(
+  std::unique_ptr<WindowTreeBinding> CreateWindowTreeBinding(
       BindingType type,
       ws::WindowServer* window_server,
       ws::WindowTree* tree,

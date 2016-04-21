@@ -174,7 +174,7 @@ bool CommandBufferDriver::Initialize(
   // TODO(piman): other callbacks
 
   const size_t kSize = sizeof(gpu::CommandBufferSharedState);
-  scoped_ptr<gpu::BufferBacking> backing(
+  std::unique_ptr<gpu::BufferBacking> backing(
       MojoBufferBacking::Create(std::move(shared_state), kSize));
   if (!backing)
     return false;
@@ -205,7 +205,7 @@ void CommandBufferDriver::RegisterTransferBuffer(
   DCHECK(CalledOnValidThread());
   // Take ownership of the memory and map it into this process.
   // This validates the size.
-  scoped_ptr<gpu::BufferBacking> backing(
+  std::unique_ptr<gpu::BufferBacking> backing(
       MojoBufferBacking::Create(std::move(transfer_buffer), size));
   if (!backing) {
     DVLOG(0) << "Failed to map shared memory.";

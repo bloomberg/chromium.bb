@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/display.mojom.h"
@@ -123,8 +124,8 @@ class WindowManagerState : public EventDispatcherDelegate {
     QueuedEvent();
     ~QueuedEvent();
 
-    scoped_ptr<ui::Event> event;
-    scoped_ptr<ProcessedEventTarget> processed_target;
+    std::unique_ptr<ui::Event> event;
+    std::unique_ptr<ProcessedEventTarget> processed_target;
   };
 
   WindowManagerState(Display* display,
@@ -139,7 +140,7 @@ class WindowManagerState : public EventDispatcherDelegate {
 
   // Schedules an event to be processed later.
   void QueueEvent(const ui::Event& event,
-                  scoped_ptr<ProcessedEventTarget> processed_event_target);
+                  std::unique_ptr<ProcessedEventTarget> processed_event_target);
 
   // Processes the next valid event in |event_queue_|. If the event has already
   // been processed it is dispatched, otherwise the event is passed to the
@@ -173,7 +174,7 @@ class WindowManagerState : public EventDispatcherDelegate {
   const UserId user_id_;
   // Root ServerWindow of this WindowManagerState. |root_| has a parent, the
   // root ServerWindow of the Display.
-  scoped_ptr<ServerWindow> root_;
+  std::unique_ptr<ServerWindow> root_;
   WindowTree* tree_ = nullptr;
 
   // Set to true the first time SetFrameDecorationValues() is received.
@@ -181,9 +182,9 @@ class WindowManagerState : public EventDispatcherDelegate {
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   mojom::WindowTree* tree_awaiting_input_ack_ = nullptr;
-  scoped_ptr<ui::Event> event_awaiting_input_ack_;
+  std::unique_ptr<ui::Event> event_awaiting_input_ack_;
   base::WeakPtr<Accelerator> post_target_accelerator_;
-  std::queue<scoped_ptr<QueuedEvent>> event_queue_;
+  std::queue<std::unique_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
 
   EventDispatcher event_dispatcher_;

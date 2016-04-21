@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
@@ -143,11 +144,11 @@ class CommandBufferDriver : base::NonThreadSafe {
   const gpu::CommandBufferId command_buffer_id_;
   gfx::AcceleratedWidget widget_;
   Client* client_;  // NOT OWNED.
-  scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_ptr<gpu::CommandExecutor> executor_;
+  std::unique_ptr<gpu::CommandBufferService> command_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2Decoder> decoder_;
+  std::unique_ptr<gpu::CommandExecutor> executor_;
   scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
-  scoped_ptr<gpu::SyncPointClient> sync_point_client_;
+  std::unique_ptr<gpu::SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<GpuState> gpu_state_;

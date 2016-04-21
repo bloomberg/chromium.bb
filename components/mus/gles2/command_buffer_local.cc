@@ -205,7 +205,7 @@ scoped_refptr<gpu::Buffer> CommandBufferLocal::CreateTransferBuffer(
       base::Bind(&CommandBufferLocal::RegisterTransferBufferOnGpuThread,
                  base::Unretained(this), *id, base::Passed(&duped),
                  static_cast<uint32_t>(size)));
-  scoped_ptr<gpu::BufferBacking> backing(
+  std::unique_ptr<gpu::BufferBacking> backing(
       new mus::MojoBufferBacking(std::move(handle), memory, size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
@@ -312,7 +312,7 @@ int32_t CommandBufferLocal::CreateGpuMemoryBufferImage(size_t width,
                                                        unsigned usage) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(usage, static_cast<unsigned>(GL_READ_WRITE_CHROMIUM));
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(MojoGpuMemoryBufferImpl::Create(
       gfx::Size(static_cast<int>(width), static_cast<int>(height)),
       gpu::DefaultBufferFormatForImageFormat(internal_format),
       gfx::BufferUsage::SCANOUT));

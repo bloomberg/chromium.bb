@@ -147,7 +147,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
 
   gfx::AcceleratedWidget widget_;
   scoped_refptr<GpuState> gpu_state_;
-  scoped_ptr<CommandBufferDriver> driver_;
+  std::unique_ptr<CommandBufferDriver> driver_;
   CommandBufferLocalClient* client_;
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
 
@@ -165,7 +165,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   bool lost_context_;
 
   // This sync point client is only for out of order Wait on client thread.
-  scoped_ptr<gpu::SyncPointClient> sync_point_client_waiter_;
+  std::unique_ptr<gpu::SyncPointClient> sync_point_client_waiter_;
 
   base::WeakPtr<CommandBufferLocal> weak_ptr_;
 

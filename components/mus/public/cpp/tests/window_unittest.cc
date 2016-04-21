@@ -978,8 +978,8 @@ TEST_F(WindowObserverTest, LocalPropertyChanged) {
 }
 
 TEST_F(WindowTest, RemoveTransientWindow) {
-  scoped_ptr<TestWindow> w1(CreateTestWindow(nullptr));
-  scoped_ptr<TestWindow> w11(CreateTestWindow(w1.get()));
+  std::unique_ptr<TestWindow> w1(CreateTestWindow(nullptr));
+  std::unique_ptr<TestWindow> w11(CreateTestWindow(w1.get()));
   TestWindow* w12 = CreateTestWindow(w1.get());
   EXPECT_EQ(2u, w1->children().size());
   // w12's lifetime is now tied to w11.
@@ -989,9 +989,9 @@ TEST_F(WindowTest, RemoveTransientWindow) {
 }
 
 TEST_F(WindowTest, TransientWindow) {
-  scoped_ptr<TestWindow> parent(CreateTestWindow(nullptr));
-  scoped_ptr<TestWindow> w1(CreateTestWindow(parent.get()));
-  scoped_ptr<TestWindow> w3(CreateTestWindow(parent.get()));
+  std::unique_ptr<TestWindow> parent(CreateTestWindow(nullptr));
+  std::unique_ptr<TestWindow> w1(CreateTestWindow(parent.get()));
+  std::unique_ptr<TestWindow> w3(CreateTestWindow(parent.get()));
 
   Window* w2 = CreateTestWindow(parent.get());
   EXPECT_EQ(w2, parent->children().back());
@@ -1012,11 +1012,11 @@ TEST_F(WindowTest, TransientWindow) {
 
 // Tests that transient windows are stacked as a unit when using order above.
 TEST_F(WindowTest, TransientWindowsGroupAbove) {
-  scoped_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
-  scoped_ptr<TestWindow> w1(CreateTestWindow(1, parent.get()));
+  std::unique_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
+  std::unique_ptr<TestWindow> w1(CreateTestWindow(1, parent.get()));
 
   TestWindow* w11 = CreateTestWindow(11, parent.get());
-  scoped_ptr<TestWindow> w2(CreateTestWindow(2, parent.get()));
+  std::unique_ptr<TestWindow> w2(CreateTestWindow(2, parent.get()));
 
   TestWindow* w21 = CreateTestWindow(21, parent.get());
   TestWindow* w211 = CreateTestWindow(211, parent.get());
@@ -1090,11 +1090,11 @@ TEST_F(WindowTest, TransientWindowsGroupAbove) {
 
 // Tests that transient children are stacked as a unit when using order below.
 TEST_F(WindowTest, TransientWindowsGroupBelow) {
-  scoped_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
-  scoped_ptr<TestWindow> w1(CreateTestWindow(1, parent.get()));
+  std::unique_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
+  std::unique_ptr<TestWindow> w1(CreateTestWindow(1, parent.get()));
 
   TestWindow* w11 = CreateTestWindow(11, parent.get());
-  scoped_ptr<TestWindow> w2(CreateTestWindow(2, parent.get()));
+  std::unique_ptr<TestWindow> w2(CreateTestWindow(2, parent.get()));
 
   TestWindow* w21 = CreateTestWindow(21, parent.get());
   TestWindow* w211 = CreateTestWindow(211, parent.get());
@@ -1166,8 +1166,8 @@ TEST_F(WindowTest, TransientWindowsGroupBelow) {
 // Tests that windows are restacked properly after a call to
 // AddTransientWindow() or RemoveTransientWindow).
 TEST_F(WindowTest, RestackUponAddOrRemoveTransientWindow) {
-  scoped_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
-  scoped_ptr<TestWindow> windows[4];
+  std::unique_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
+  std::unique_ptr<TestWindow> windows[4];
   for (int i = 0; i < 4; i++)
     windows[i].reset(CreateTestWindow(i, parent.get()));
 
@@ -1188,9 +1188,9 @@ TEST_F(WindowTest, RestackUponAddOrRemoveTransientWindow) {
 
 // Tests that transient windows are stacked properly when created.
 TEST_F(WindowTest, StackUponCreation) {
-  scoped_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
-  scoped_ptr<TestWindow> window0(CreateTestWindow(1, parent.get()));
-  scoped_ptr<TestWindow> window1(CreateTestWindow(2, parent.get()));
+  std::unique_ptr<TestWindow> parent(CreateTestWindow(0, nullptr));
+  std::unique_ptr<TestWindow> window0(CreateTestWindow(1, parent.get()));
+  std::unique_ptr<TestWindow> window1(CreateTestWindow(2, parent.get()));
 
   TestWindow* window2 = CreateTestWindow(3, parent.get());
 

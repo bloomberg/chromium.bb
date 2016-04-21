@@ -61,7 +61,7 @@ Display::~Display() {
     window_server_->DestroyTree(state->tree());
 }
 
-void Display::Init(scoped_ptr<DisplayBinding> binding) {
+void Display::Init(std::unique_ptr<DisplayBinding> binding) {
   init_called_ = true;
   binding_ = std::move(binding);
   display_manager()->AddDisplay(this);
@@ -250,7 +250,7 @@ void Display::InitWindowManagersIfNecessary() {
 
   display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   if (binding_) {
-    scoped_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
+    std::unique_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
         this, platform_display_.get(), top_level_surface_id_));
     WindowManagerState* wms = wms_ptr.get();
     // For this case we never create additional WindowManagerStates, so any
@@ -273,7 +273,7 @@ void Display::CreateWindowManagerStatesFromRegistry() {
 
 void Display::CreateWindowManagerStateFromService(
     WindowManagerFactoryService* service) {
-  scoped_ptr<WindowManagerState> wms_ptr(
+  std::unique_ptr<WindowManagerState> wms_ptr(
       new WindowManagerState(this, platform_display_.get(),
                              top_level_surface_id_, service->user_id()));
   WindowManagerState* wms = wms_ptr.get();

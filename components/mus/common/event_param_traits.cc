@@ -114,16 +114,16 @@ namespace IPC {
 #define WRITE_EVENT(T)                     \
   ParamTraits<T>::Write(m, *static_cast<T*>(p.get())); \
   break;
-#define READ_EVENT(T)                                    \
-  {                                                      \
-    scoped_ptr<T> event(new T(type, time_stamp, flags)); \
-    if (!ParamTraits<T>::Read(m, iter, event.get())) {   \
-      p->reset();                                        \
-      return false;                                      \
-    } else {                                             \
-      *p = std::move(event);                             \
-      return true;                                       \
-    }                                                    \
+#define READ_EVENT(T)                                         \
+  {                                                           \
+    std::unique_ptr<T> event(new T(type, time_stamp, flags)); \
+    if (!ParamTraits<T>::Read(m, iter, event.get())) {        \
+      p->reset();                                             \
+      return false;                                           \
+    } else {                                                  \
+      *p = std::move(event);                                  \
+      return true;                                            \
+    }                                                         \
   }
 #define LOG_EVENT(T) return ParamTraits<T>::Log(*static_cast<T*>(p.get()), l);
 

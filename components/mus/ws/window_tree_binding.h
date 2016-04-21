@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_TREE_BINDING_H_
 #define COMPONENTS_MUS_WS_WINDOW_TREE_BINDING_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

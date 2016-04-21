@@ -178,7 +178,7 @@ void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
 
 bool EventDispatcher::AddAccelerator(uint32_t id,
                                      mojom::EventMatcherPtr event_matcher) {
-  scoped_ptr<Accelerator> accelerator(new Accelerator(id, *event_matcher));
+  std::unique_ptr<Accelerator> accelerator(new Accelerator(id, *event_matcher));
   // If an accelerator with the same id or matcher already exists, then abort.
   for (const auto& pair : accelerators_) {
     if (pair.first == id || accelerator->EqualEventMatcher(pair.second.get()))
@@ -386,7 +386,7 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
   gfx::Point location(event.location());
   gfx::Transform transform(GetTransformToWindow(surface_id_, target.window));
   transform.TransformPoint(&location);
-  scoped_ptr<ui::Event> clone = ui::Event::Clone(event);
+  std::unique_ptr<ui::Event> clone = ui::Event::Clone(event);
   clone->AsLocatedEvent()->set_location(location);
   // TODO(jonross): add post-target accelerator support once accelerators
   // support pointer events.

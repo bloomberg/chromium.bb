@@ -282,7 +282,7 @@ void DefaultPlatformDisplay::Draw() {
     return;
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
-  scoped_ptr<cc::CompositorFrame> frame(GenerateCompositorFrame());
+  std::unique_ptr<cc::CompositorFrame> frame(GenerateCompositorFrame());
   frame_pending_ = true;
   if (top_level_display_client_) {
     top_level_display_client_->SubmitCompositorFrame(
@@ -329,9 +329,9 @@ void DefaultPlatformDisplay::UpdateMetrics(const gfx::Size& size,
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
-scoped_ptr<cc::CompositorFrame>
+std::unique_ptr<cc::CompositorFrame>
 DefaultPlatformDisplay::GenerateCompositorFrame() {
-  scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->damage_rect = dirty_rect_;
   render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
 
@@ -339,11 +339,12 @@ DefaultPlatformDisplay::GenerateCompositorFrame() {
   DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
                  1.0f, &referenced_window_ids);
 
-  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
+  std::unique_ptr<cc::DelegatedFrameData> frame_data(
+      new cc::DelegatedFrameData);
   frame_data->device_scale_factor = metrics_.device_pixel_ratio;
   frame_data->render_pass_list.push_back(std::move(render_pass));
 
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   frame->delegated_frame_data = std::move(frame_data);
   return frame;
 }
@@ -430,7 +431,7 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {
 void DefaultPlatformDisplay::OnActivationChanged(bool active) {}
 
 void DefaultPlatformDisplay::RequestCopyOfOutput(
-    scoped_ptr<cc::CopyOutputRequest> output_request) {
+    std::unique_ptr<cc::CopyOutputRequest> output_request) {
   if (top_level_display_client_)
     top_level_display_client_->RequestCopyOfOutput(std::move(output_request));
 }

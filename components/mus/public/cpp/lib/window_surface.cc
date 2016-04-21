@@ -4,14 +4,15 @@
 
 #include "components/mus/public/cpp/window_surface.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/mus/public/cpp/window_surface_client.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mus {
 
 // static
-scoped_ptr<WindowSurface> WindowSurface::Create(
-    scoped_ptr<WindowSurfaceBinding>* surface_binding) {
+std::unique_ptr<WindowSurface> WindowSurface::Create(
+    std::unique_ptr<WindowSurfaceBinding>* surface_binding) {
   mojom::SurfacePtr surface;
   mojom::SurfaceClientPtr surface_client;
   mojo::InterfaceRequest<mojom::SurfaceClient> surface_client_request =
@@ -19,8 +20,8 @@ scoped_ptr<WindowSurface> WindowSurface::Create(
 
   surface_binding->reset(new WindowSurfaceBinding(
       GetProxy(&surface), surface_client.PassInterface()));
-  return make_scoped_ptr(new WindowSurface(surface.PassInterface(),
-                                           std::move(surface_client_request)));
+  return base::WrapUnique(new WindowSurface(surface.PassInterface(),
+                                            std::move(surface_client_request)));
 }
 
 WindowSurface::~WindowSurface() {}

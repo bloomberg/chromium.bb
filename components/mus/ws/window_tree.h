@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -15,7 +16,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/access_policy_delegate.h"
@@ -65,10 +65,11 @@ class WindowTree : public mojom::WindowTree,
   WindowTree(WindowServer* window_server,
              const UserId& user_id,
              ServerWindow* root,
-             scoped_ptr<AccessPolicy> access_policy);
+             std::unique_ptr<AccessPolicy> access_policy);
   ~WindowTree() override;
 
-  void Init(scoped_ptr<WindowTreeBinding> binding, mojom::WindowTreePtr tree);
+  void Init(std::unique_ptr<WindowTreeBinding> binding,
+            mojom::WindowTreePtr tree);
 
   // Called if this WindowTree hosts the WindowManager. This happens if
   // this WindowTree serves as the root of a WindowTreeHost.
@@ -414,9 +415,9 @@ class WindowTree : public mojom::WindowTree,
 
   ConnectionSpecificId next_window_id_;
 
-  scoped_ptr<WindowTreeBinding> binding_;
+  std::unique_ptr<WindowTreeBinding> binding_;
 
-  scoped_ptr<mus::ws::AccessPolicy> access_policy_;
+  std::unique_ptr<mus::ws::AccessPolicy> access_policy_;
 
   // The roots, or embed points, of this tree. A WindowTree may have any
   // number of roots, including 0.
@@ -436,13 +437,14 @@ class WindowTree : public mojom::WindowTree,
   // WindowManager the current event came from.
   WindowManagerState* event_source_wms_ = nullptr;
 
-  std::queue<scoped_ptr<TargetedEvent>> event_queue_;
+  std::queue<std::unique_ptr<TargetedEvent>> event_queue_;
 
-  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManagerClient>>
+  std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManagerClient>>
       window_manager_internal_client_binding_;
   mojom::WindowManager* window_manager_internal_;
 
-  scoped_ptr<WaitingForTopLevelWindowInfo> waiting_for_top_level_window_info_;
+  std::unique_ptr<WaitingForTopLevelWindowInfo>
+      waiting_for_top_level_window_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTree);
 };

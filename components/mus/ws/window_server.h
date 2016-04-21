@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -73,12 +73,12 @@ class WindowServer : public ServerWindowDelegate,
   WindowTree* EmbedAtWindow(ServerWindow* root,
                             const UserId& user_id,
                             mojom::WindowTreeClientPtr client,
-                            scoped_ptr<AccessPolicy> access_policy);
+                            std::unique_ptr<AccessPolicy> access_policy);
 
   // Adds |tree_impl_ptr| to the set of known trees. Use DestroyTree() to
   // destroy the tree.
-  WindowTree* AddTree(scoped_ptr<WindowTree> tree_impl_ptr,
-                      scoped_ptr<WindowTreeBinding> binding,
+  WindowTree* AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
+                      std::unique_ptr<WindowTreeBinding> binding,
                       mojom::WindowTreePtr tree_ptr);
   WindowTree* CreateTreeForWindowManager(Display* display,
                                          mojom::WindowManagerFactory* factory,
@@ -195,7 +195,8 @@ class WindowServer : public ServerWindowDelegate,
  private:
   friend class Operation;
 
-  using WindowTreeMap = std::map<ConnectionSpecificId, scoped_ptr<WindowTree>>;
+  using WindowTreeMap =
+      std::map<ConnectionSpecificId, std::unique_ptr<WindowTree>>;
 
   struct InFlightWindowManagerChange {
     // Identifies the client that initiated the change.
@@ -286,7 +287,7 @@ class WindowServer : public ServerWindowDelegate,
   // ID to use for next WindowTree.
   ConnectionSpecificId next_connection_id_;
 
-  scoped_ptr<DisplayManager> display_manager_;
+  std::unique_ptr<DisplayManager> display_manager_;
 
   // Set of WindowTrees.
   WindowTreeMap tree_map_;

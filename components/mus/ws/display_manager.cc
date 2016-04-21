@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/display_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_manager_delegate.h"
 #include "components/mus/ws/server_window.h"
@@ -28,7 +29,7 @@ UserDisplayManager* DisplayManager::GetUserDisplayManager(
     const UserId& user_id) {
   if (!user_display_managers_.count(user_id)) {
     user_display_managers_[user_id] =
-        make_scoped_ptr(new UserDisplayManager(this, user_id));
+        base::WrapUnique(new UserDisplayManager(this, user_id));
   }
   return user_display_managers_[user_id].get();
 }

@@ -21,7 +21,7 @@ class WindowServerShellTestBase : public shell::test::ShellTest {
 
  private:
   // shell::test::ShellTest:
-  scoped_ptr<shell::ShellClient> CreateShellClient() override;
+  std::unique_ptr<shell::ShellClient> CreateShellClient() override;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerShellTestBase);
 };

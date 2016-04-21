@@ -6,10 +6,10 @@
 #define COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/user_id.h"
 
@@ -85,7 +85,7 @@ class DisplayManager {
   std::set<Display*> pending_displays_;
   std::set<Display*> displays_;
 
-  std::map<UserId, scoped_ptr<UserDisplayManager>> user_display_managers_;
+  std::map<UserId, std::unique_ptr<UserDisplayManager>> user_display_managers_;
 
   // ID to use for next root node.
   ConnectionSpecificId next_root_id_;

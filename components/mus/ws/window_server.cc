@@ -5,6 +5,7 @@
 #include "components/mus/ws/window_server.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
@@ -71,16 +72,17 @@ WindowTree* WindowServer::EmbedAtWindow(
     ServerWindow* root,
     const UserId& user_id,
     mojom::WindowTreeClientPtr client,
-    scoped_ptr<AccessPolicy> access_policy) {
-  scoped_ptr<WindowTree> tree_ptr(
+    std::unique_ptr<AccessPolicy> access_policy) {
+  std::unique_ptr<WindowTree> tree_ptr(
       new WindowTree(this, user_id, root, std::move(access_policy)));
   WindowTree* tree = tree_ptr.get();
 
   mojom::WindowTreePtr window_tree_ptr;
   mojom::WindowTreeRequest window_tree_request = GetProxy(&window_tree_ptr);
-  scoped_ptr<WindowTreeBinding> binding = delegate_->CreateWindowTreeBinding(
-      WindowServerDelegate::BindingType::EMBED, this, tree,
-      &window_tree_request, &client);
+  std::unique_ptr<WindowTreeBinding> binding =
+      delegate_->CreateWindowTreeBinding(
+          WindowServerDelegate::BindingType::EMBED, this, tree,
+          &window_tree_request, &client);
   if (!binding) {
     binding.reset(new ws::DefaultWindowTreeBinding(
         tree, this, std::move(window_tree_request), std::move(client)));
@@ -91,8 +93,8 @@ WindowTree* WindowServer::EmbedAtWindow(
   return tree;
 }
 
-WindowTree* WindowServer::AddTree(scoped_ptr<WindowTree> tree_impl_ptr,
-                                  scoped_ptr<WindowTreeBinding> binding,
+WindowTree* WindowServer::AddTree(std::unique_ptr<WindowTree> tree_impl_ptr,
+                                  std::unique_ptr<WindowTreeBinding> binding,
                                   mojom::WindowTreePtr tree_ptr) {
   CHECK_EQ(0u, tree_map_.count(tree_impl_ptr->id()));
   WindowTree* tree = tree_impl_ptr.get();
@@ -109,14 +111,15 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
   mojom::DisplayPtr display_ptr = display->ToMojomDisplay();
   mojom::WindowTreeClientPtr tree_client;
   factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
-  scoped_ptr<WindowTree> tree_ptr(new WindowTree(
-      this, user_id, root, make_scoped_ptr(new WindowManagerAccessPolicy)));
+  std::unique_ptr<WindowTree> tree_ptr(new WindowTree(
+      this, user_id, root, base::WrapUnique(new WindowManagerAccessPolicy)));
   WindowTree* tree = tree_ptr.get();
   mojom::WindowTreePtr window_tree_ptr;
   mojom::WindowTreeRequest tree_request;
-  scoped_ptr<WindowTreeBinding> binding = delegate_->CreateWindowTreeBinding(
-      WindowServerDelegate::BindingType::WINDOW_MANAGER, this, tree,
-      &tree_request, &tree_client);
+  std::unique_ptr<WindowTreeBinding> binding =
+      delegate_->CreateWindowTreeBinding(
+          WindowServerDelegate::BindingType::WINDOW_MANAGER, this, tree,
+          &tree_request, &tree_client);
   if (!binding) {
     DefaultWindowTreeBinding* default_binding = new DefaultWindowTreeBinding(
         tree_ptr.get(), this, std::move(tree_client));
@@ -129,7 +132,7 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
 }
 
 void WindowServer::DestroyTree(WindowTree* tree) {
-  scoped_ptr<WindowTree> tree_ptr;
+  std::unique_ptr<WindowTree> tree_ptr;
   {
     auto iter = tree_map_.find(tree->id());
     DCHECK(iter != tree_map_.end());

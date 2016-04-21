@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/window_tree_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
@@ -26,10 +27,10 @@ WindowTreeFactory::~WindowTreeFactory() {}
 void WindowTreeFactory::CreateWindowTree(
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<ws::WindowTree> service(
+  std::unique_ptr<ws::WindowTree> service(
       new ws::WindowTree(window_server_, user_id_, nullptr,
-                         make_scoped_ptr(new DefaultAccessPolicy)));
-  scoped_ptr<ws::DefaultWindowTreeBinding> binding(
+                         base::WrapUnique(new DefaultAccessPolicy)));
+  std::unique_ptr<ws::DefaultWindowTreeBinding> binding(
       new ws::DefaultWindowTreeBinding(service.get(), window_server_,
                                        std::move(tree_request),
                                        std::move(client)));

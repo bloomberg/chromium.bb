@@ -455,7 +455,7 @@ InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
 }
 
 uint32_t WindowTreeClientImpl::ScheduleInFlightChange(
-    scoped_ptr<InFlightChange> change) {
+    std::unique_ptr<InFlightChange> change) {
   DCHECK(!change->window() ||
          windows_.count(change->window()->server_id()) > 0);
   const uint32_t change_id = next_change_id_++;
@@ -643,7 +643,7 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
     // the window has been destroyed.
     return;
   }
-  scoped_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
+  std::unique_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
   in_flight_map_.erase(change_id);
 
   Window* window = change->window();
@@ -872,12 +872,12 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
     return;
   }
 
-  scoped_ptr<base::Callback<void(mojom::EventResult)>> ack_callback(
+  std::unique_ptr<base::Callback<void(mojom::EventResult)>> ack_callback(
       new base::Callback<void(mojom::EventResult)>(
           base::Bind(&mojom::WindowTree::OnWindowInputEventAck,
                      base::Unretained(tree_), event_id)));
   window->input_event_handler_->OnWindowInputEvent(
-      window, *event.To<scoped_ptr<ui::Event>>().get(), &ack_callback);
+      window, *event.To<std::unique_ptr<ui::Event>>().get(), &ack_callback);
 
   // The handler did not take ownership of the callback, so we send the ack,
   // marking the event as not consumed.
@@ -909,7 +909,7 @@ void WindowTreeClientImpl::OnWindowPredefinedCursorChanged(
 }
 
 void WindowTreeClientImpl::OnChangeCompleted(uint32_t change_id, bool success) {
-  scoped_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
+  std::unique_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
   in_flight_map_.erase(change_id);
   if (!change)
     return;
@@ -969,7 +969,7 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
   bool result = false;
   if (window) {
     DCHECK(window_manager_delegate_);
-    scoped_ptr<std::vector<uint8_t>> data;
+    std::unique_ptr<std::vector<uint8_t>> data;
     if (!transit_data.is_null()) {
       data.reset(
           new std::vector<uint8_t>(transit_data.To<std::vector<uint8_t>>()));
@@ -997,7 +997,7 @@ void WindowTreeClientImpl::WmCreateTopLevelWindow(
 
 void WindowTreeClientImpl::OnAccelerator(uint32_t id, mojom::EventPtr event) {
   window_manager_delegate_->OnAccelerator(
-      id, *event.To<scoped_ptr<ui::Event>>().get());
+      id, *event.To<std::unique_ptr<ui::Event>>().get());
 }
 
 void WindowTreeClientImpl::SetFrameDecorationValues(

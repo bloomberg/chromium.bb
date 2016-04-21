@@ -142,10 +142,11 @@ class TestInputEventHandler : public InputEventHandler {
 
  private:
   // InputEventHandler:
-  void OnWindowInputEvent(Window* target,
-                          const ui::Event& event,
-                          scoped_ptr<base::Callback<void(mojom::EventResult)>>*
-                              ack_callback) override {
+  void OnWindowInputEvent(
+      Window* target,
+      const ui::Event& event,
+      std::unique_ptr<base::Callback<void(mojom::EventResult)>>* ack_callback)
+      override {
     EXPECT_FALSE(received_event_)
         << "Observer was not reset after receiving event.";
     received_event_ = true;
@@ -460,7 +461,7 @@ TEST_F(WindowTreeClientImplTest, InputEventBasic) {
   TestInputEventHandler event_handler;
   root->set_input_event_handler(&event_handler);
 
-  scoped_ptr<ui::Event> ui_event(
+  std::unique_ptr<ui::Event> ui_event(
       new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
   setup.window_tree_client()->OnWindowInputEvent(
@@ -769,7 +770,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
 // Tests that if the client has multiple unowned windows, and one of them is a
 // transient child to another, the  teardown can happen cleanly.
 TEST_F(WindowTreeClientImplTest, MultipleUnOwnedWindowsDuringDestruction) {
-  scoped_ptr<WindowTreeSetup> setup(new WindowTreeSetup());
+  std::unique_ptr<WindowTreeSetup> setup(new WindowTreeSetup());
   Window* root1 = setup->GetFirstRoot();
   ASSERT_TRUE(root1);
   Window* root2 = setup->window_tree_connection()->NewTopLevelWindow(nullptr);

@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
@@ -62,7 +62,7 @@ class Display : public PlatformDisplayDelegate,
   ~Display() override;
 
   // Initializes state that depends on the existence of a Display.
-  void Init(scoped_ptr<DisplayBinding> binding);
+  void Init(std::unique_ptr<DisplayBinding> binding);
 
   uint32_t id() const { return id_; }
 
@@ -153,7 +153,7 @@ class Display : public PlatformDisplayDelegate,
   friend class test::DisplayTestApi;
 
   using WindowManagerStateMap =
-      std::map<UserId, scoped_ptr<WindowManagerState>>;
+      std::map<UserId, std::unique_ptr<WindowManagerState>>;
 
   // Inits the necessary state once the display is ready.
   void InitWindowManagersIfNecessary();
@@ -199,13 +199,13 @@ class Display : public PlatformDisplayDelegate,
   void OnWindowManagerFactorySet(WindowManagerFactoryService* service) override;
 
   const uint32_t id_;
-  scoped_ptr<DisplayBinding> binding_;
+  std::unique_ptr<DisplayBinding> binding_;
   // Set once Init() has been called.
   bool init_called_ = false;
   WindowServer* const window_server_;
-  scoped_ptr<ServerWindow> root_;
-  scoped_ptr<PlatformDisplay> platform_display_;
-  scoped_ptr<FocusController> focus_controller_;
+  std::unique_ptr<ServerWindow> root_;
+  std::unique_ptr<PlatformDisplay> platform_display_;
+  std::unique_ptr<FocusController> focus_controller_;
 
   // The last cursor set. Used to track whether we need to change the cursor.
   int32_t last_cursor_;

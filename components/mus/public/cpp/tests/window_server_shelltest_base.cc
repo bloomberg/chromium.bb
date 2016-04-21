@@ -4,9 +4,11 @@
 
 #include "components/mus/public/cpp/tests/window_server_shelltest_base.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/common/args.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_test.h"
@@ -51,8 +53,9 @@ WindowServerShellTestBase::WindowServerShellTestBase()
 
 WindowServerShellTestBase::~WindowServerShellTestBase() {}
 
-scoped_ptr<shell::ShellClient> WindowServerShellTestBase::CreateShellClient() {
-  return make_scoped_ptr(new WindowServerShellTestClient(this));
+std::unique_ptr<shell::ShellClient>
+WindowServerShellTestBase::CreateShellClient() {
+  return base::WrapUnique(new WindowServerShellTestClient(this));
 }
 
 }  // namespace mus

@@ -138,13 +138,13 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   using IdToWindowMap = std::map<Id, Window*>;
 
   // TODO(sky): this assumes change_ids never wrap, which is a bad assumption.
-  using InFlightMap = std::map<uint32_t, scoped_ptr<InFlightChange>>;
+  using InFlightMap = std::map<uint32_t, std::unique_ptr<InFlightChange>>;
 
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
 
   // See InFlightChange for details on how InFlightChanges are used.
-  uint32_t ScheduleInFlightChange(scoped_ptr<InFlightChange> change);
+  uint32_t ScheduleInFlightChange(std::unique_ptr<InFlightChange> change);
 
   // Returns true if there is an InFlightChange that matches |change|. If there
   // is an existing change SetRevertValueFrom() is invoked on it. Returns false
@@ -292,7 +292,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   base::ObserverList<WindowTreeConnectionObserver> observers_;
 
-  scoped_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
+  std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
       window_manager_internal_;
   mojom::WindowManagerClientAssociatedPtr window_manager_internal_client_;
 

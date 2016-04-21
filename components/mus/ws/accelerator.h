@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_WS_ACCELERATOR_H_
 #define COMPONENTS_MUS_WS_ACCELERATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/input_event_matcher.mojom.h"
 #include "ui/events/event.h"

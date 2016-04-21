@@ -77,11 +77,11 @@ class TransientWindowsTest : public testing::Test {
 TEST_F(TransientWindowsTest, TransientChildren) {
   TestServerWindowDelegate server_window_delegate;
 
-  scoped_ptr<ServerWindow> parent(
+  std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&server_window_delegate, WindowId(), nullptr));
-  scoped_ptr<ServerWindow> w1(
+  std::unique_ptr<ServerWindow> w1(
       CreateTestWindow(&server_window_delegate, WindowId(1, 1), parent.get()));
-  scoped_ptr<ServerWindow> w3(
+  std::unique_ptr<ServerWindow> w3(
       CreateTestWindow(&server_window_delegate, WindowId(1, 2), parent.get()));
 
   ServerWindow* w2 =
@@ -105,14 +105,14 @@ TEST_F(TransientWindowsTest, TransientChildren) {
 TEST_F(TransientWindowsTest, TransientChildrenGroupAbove) {
   TestServerWindowDelegate server_window_delegate;
 
-  scoped_ptr<ServerWindow> parent(
+  std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&server_window_delegate, WindowId(), nullptr));
-  scoped_ptr<ServerWindow> w1(
+  std::unique_ptr<ServerWindow> w1(
       CreateTestWindow(&server_window_delegate, WindowId(0, 1), parent.get()));
 
   ServerWindow* w11 =
       CreateTestWindow(&server_window_delegate, WindowId(0, 11), parent.get());
-  scoped_ptr<ServerWindow> w2(
+  std::unique_ptr<ServerWindow> w2(
       CreateTestWindow(&server_window_delegate, WindowId(0, 2), parent.get()));
 
   ServerWindow* w21 =
@@ -193,14 +193,14 @@ TEST_F(TransientWindowsTest, TransientChildrenGroupAbove) {
 TEST_F(TransientWindowsTest, TransienChildGroupBelow) {
   TestServerWindowDelegate server_window_delegate;
 
-  scoped_ptr<ServerWindow> parent(
+  std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&server_window_delegate, WindowId(), nullptr));
-  scoped_ptr<ServerWindow> w1(
+  std::unique_ptr<ServerWindow> w1(
       CreateTestWindow(&server_window_delegate, WindowId(0, 1), parent.get()));
 
   ServerWindow* w11 =
       CreateTestWindow(&server_window_delegate, WindowId(0, 11), parent.get());
-  scoped_ptr<ServerWindow> w2(
+  std::unique_ptr<ServerWindow> w2(
       CreateTestWindow(&server_window_delegate, WindowId(0, 2), parent.get()));
 
   ServerWindow* w21 =
@@ -278,11 +278,11 @@ TEST_F(TransientWindowsTest, TransienChildGroupBelow) {
 // Tests that transient windows are stacked properly when created.
 TEST_F(TransientWindowsTest, StackUponCreation) {
   TestServerWindowDelegate delegate;
-  scoped_ptr<ServerWindow> parent(
+  std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(), nullptr));
-  scoped_ptr<ServerWindow> window0(
+  std::unique_ptr<ServerWindow> window0(
       CreateTestWindow(&delegate, WindowId(0, 1), parent.get()));
-  scoped_ptr<ServerWindow> window1(
+  std::unique_ptr<ServerWindow> window1(
       CreateTestWindow(&delegate, WindowId(0, 2), parent.get()));
 
   ServerWindow* window2 =
@@ -295,9 +295,9 @@ TEST_F(TransientWindowsTest, StackUponCreation) {
 // AddTransientWindow() or RemoveTransientWindow().
 TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
   TestServerWindowDelegate delegate;
-  scoped_ptr<ServerWindow> parent(
+  std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(), nullptr));
-  scoped_ptr<ServerWindow> windows[4];
+  std::unique_ptr<ServerWindow> windows[4];
   for (int i = 0; i < 4; i++)
     windows[i].reset(CreateTestWindow(&delegate, WindowId(0, i), parent.get()));
 
@@ -319,9 +319,9 @@ TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
 // Verifies TransientWindowObserver is notified appropriately.
 TEST_F(TransientWindowsTest, TransientWindowObserverNotified) {
   TestServerWindowDelegate delegate;
-  scoped_ptr<ServerWindow> parent(
+  std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(), nullptr));
-  scoped_ptr<ServerWindow> w1(
+  std::unique_ptr<ServerWindow> w1(
       CreateTestWindow(&delegate, WindowId(0, 1), parent.get()));
 
   TestTransientWindowObserver test_observer;

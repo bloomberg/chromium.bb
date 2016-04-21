@@ -40,8 +40,8 @@ bool EventsCanBeCoalesced(const ui::Event& one, const ui::Event& two) {
          two.AsPointerEvent()->pointer_id();
 }
 
-scoped_ptr<ui::Event> CoalesceEvents(scoped_ptr<ui::Event> first,
-                                     scoped_ptr<ui::Event> second) {
+std::unique_ptr<ui::Event> CoalesceEvents(std::unique_ptr<ui::Event> first,
+                                          std::unique_ptr<ui::Event> second) {
   DCHECK(first->type() == ui::ET_POINTER_MOVED)
       << " Non-move events cannot be merged yet.";
   // For mouse moves, the new event just replaces the old event.
@@ -209,7 +209,7 @@ void WindowManagerState::Deactivate() {
   event_dispatcher_.Reset();
   // The tree is no longer active, so no point in dispatching any further
   // events.
-  std::queue<scoped_ptr<QueuedEvent>> event_queue;
+  std::queue<std::unique_ptr<QueuedEvent>> event_queue;
   event_queue.swap(event_queue_);
 }
 
@@ -257,8 +257,8 @@ void WindowManagerState::OnEventAckTimeout() {
 
 void WindowManagerState::QueueEvent(
     const ui::Event& event,
-    scoped_ptr<ProcessedEventTarget> processed_event_target) {
-  scoped_ptr<QueuedEvent> queued_event(new QueuedEvent);
+    std::unique_ptr<ProcessedEventTarget> processed_event_target) {
+  std::unique_ptr<QueuedEvent> queued_event(new QueuedEvent);
   queued_event->event = ui::Event::Clone(event);
   queued_event->processed_target = std::move(processed_event_target);
   event_queue_.push(std::move(queued_event));
@@ -268,7 +268,7 @@ void WindowManagerState::ProcessNextEventFromQueue() {
   // Loop through |event_queue_| stopping after dispatching the first valid
   // event.
   while (!event_queue_.empty()) {
-    scoped_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
+    std::unique_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
     event_queue_.pop();
     if (!queued_event->processed_target) {
       event_dispatcher_.ProcessEvent(*queued_event->event);
@@ -370,7 +370,7 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
   // TODO(sky): this needs to see if another wms has capture and if so forward
   // to it.
   if (event_ack_timer_.IsRunning()) {
-    scoped_ptr<ProcessedEventTarget> processed_event_target(
+    std::unique_ptr<ProcessedEventTarget> processed_event_target(
         new ProcessedEventTarget(target, in_nonclient_area, accelerator));
     QueueEvent(event, std::move(processed_event_target));
     return;

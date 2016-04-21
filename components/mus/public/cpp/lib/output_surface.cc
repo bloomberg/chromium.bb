@@ -15,7 +15,7 @@ namespace mus {
 
 OutputSurface::OutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    scoped_ptr<mus::WindowSurface> surface)
+    std::unique_ptr<mus::WindowSurface> surface)
     : cc::OutputSurface(context_provider), surface_(std::move(surface)) {
   capabilities_.delegated_rendering = true;
 }

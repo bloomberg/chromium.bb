@@ -124,7 +124,7 @@ class UserDisplayManagerTest : public testing::Test {
   int32_t cursor_id_;
   TestPlatformDisplayFactory platform_display_factory_;
   TestWindowServerDelegate window_server_delegate_;
-  scoped_ptr<WindowServer> window_server_;
+  std::unique_ptr<WindowServer> window_server_;
   base::MessageLoop message_loop_;
   TestWindowManagerFactory test_window_manager_factory_;
 

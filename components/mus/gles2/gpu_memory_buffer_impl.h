@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_MUS_GLES2_GPU_MEMORY_BUFFER_IMPL_H_
 #define COMPONENTS_MUS_GLES2_GPU_MEMORY_BUFFER_IMPL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"

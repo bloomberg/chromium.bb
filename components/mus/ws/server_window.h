@@ -216,7 +216,7 @@ class ServerWindow {
   gfx::Rect bounds_;
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
-  scoped_ptr<ServerWindowSurfaceManager> surface_manager_;
+  std::unique_ptr<ServerWindowSurfaceManager> surface_manager_;
   mojom::Cursor cursor_id_;
   float opacity_;
   bool can_focus_;

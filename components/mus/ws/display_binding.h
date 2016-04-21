@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_WS_DISPLAY_BINDING_H_
 #define COMPONENTS_MUS_WS_DISPLAY_BINDING_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/user_id.h"

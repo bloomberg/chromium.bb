@@ -41,7 +41,7 @@ void ServerWindowSurfaceManager::CreateSurface(
     mojom::SurfaceType surface_type,
     mojo::InterfaceRequest<mojom::Surface> request,
     mojom::SurfaceClientPtr client) {
-  scoped_ptr<ServerWindowSurface> surface(new ServerWindowSurface(
+  std::unique_ptr<ServerWindowSurface> surface(new ServerWindowSurface(
       this, surface_type, std::move(request), std::move(client)));
   if (!HasAnySurface()) {
     // Only one SurfaceFactoryClient can be registered per surface id namespace,

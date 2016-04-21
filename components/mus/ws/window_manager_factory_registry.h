@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/ws/user_id_tracker_observer.h"
@@ -48,7 +48,7 @@ class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
   friend class WindowManagerFactoryService;
   friend class test::WindowManagerFactoryRegistryTestApi;
 
-  void AddServiceImpl(scoped_ptr<WindowManagerFactoryService> service);
+  void AddServiceImpl(std::unique_ptr<WindowManagerFactoryService> service);
 
   bool ContainsServiceForUser(const UserId& user_id) const;
   void OnWindowManagerFactoryConnectionLost(
@@ -66,7 +66,7 @@ class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
   UserIdTracker* id_tracker_;
   WindowServer* window_server_;
 
-  std::vector<scoped_ptr<WindowManagerFactoryService>> services_;
+  std::vector<std::unique_ptr<WindowManagerFactoryService>> services_;
 
   base::ObserverList<WindowManagerFactoryRegistryObserver> observers_;
 

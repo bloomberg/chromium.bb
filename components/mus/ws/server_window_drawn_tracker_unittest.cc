@@ -63,7 +63,7 @@ class TestServerWindowDrawnTrackerObserver
 
 TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   TestServerWindowDelegate server_window_delegate;
-  scoped_ptr<ServerWindow> window(
+  std::unique_ptr<ServerWindow> window(
       new ServerWindow(&server_window_delegate, WindowId()));
   server_window_delegate.set_root_window(window.get());
   TestServerWindowDrawnTrackerObserver drawn_observer;

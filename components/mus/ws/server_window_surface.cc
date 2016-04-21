@@ -97,7 +97,8 @@ ServerWindow* ServerWindowSurface::window() {
   return manager_->window();
 }
 
-scoped_ptr<cc::CompositorFrame> ServerWindowSurface::ConvertCompositorFrame(
+std::unique_ptr<cc::CompositorFrame>
+ServerWindowSurface::ConvertCompositorFrame(
     const mojom::CompositorFramePtr& input) {
   referenced_window_ids_.clear();
   return ConvertToCompositorFrame(input, this);

@@ -17,7 +17,7 @@ namespace mus {
 class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
  public:
   OutputSurface(const scoped_refptr<cc::ContextProvider>& context_provider,
-                scoped_ptr<WindowSurface> surface);
+                std::unique_ptr<WindowSurface> surface);
   ~OutputSurface() override;
 
   // cc::OutputSurface implementation.
@@ -33,7 +33,7 @@ class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
 
   void SwapBuffersComplete();
 
-  scoped_ptr<WindowSurface> surface_;
+  std::unique_ptr<WindowSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };

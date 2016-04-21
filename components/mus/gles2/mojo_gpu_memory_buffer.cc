@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
@@ -17,24 +18,24 @@ namespace mus {
 MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
     const gfx::Size& size,
     gfx::BufferFormat format,
-    scoped_ptr<base::SharedMemory> shared_memory)
+    std::unique_ptr<base::SharedMemory> shared_memory)
     : GpuMemoryBufferImpl(gfx::GenericSharedMemoryId(0), size, format),
       shared_memory_(std::move(shared_memory)) {}
 
 // TODO(rjkroege): Support running a destructor callback as necessary.
 MojoGpuMemoryBufferImpl::~MojoGpuMemoryBufferImpl() {}
 
-scoped_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
+std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   size_t bytes = gfx::BufferSizeForBufferFormat(size, format);
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
 
   if (!shared_memory->CreateAnonymous(bytes))
     return nullptr;
 
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(
+  return base::WrapUnique<gfx::GpuMemoryBuffer>(
       new MojoGpuMemoryBufferImpl(size, format, std::move(shared_memory)));
 }
 

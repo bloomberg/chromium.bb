@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_MUS_WS_SERVER_WINDOW_DELEGATE_H_
 #define COMPONENTS_MUS_WS_SERVER_WINDOW_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 

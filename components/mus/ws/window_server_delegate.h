@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -50,7 +50,7 @@ class WindowServerDelegate {
 
   // Creates a WindowTreeBinding. Default implementation returns null, which
   // creates DefaultBinding.
-  virtual scoped_ptr<WindowTreeBinding> CreateWindowTreeBinding(
+  virtual std::unique_ptr<WindowTreeBinding> CreateWindowTreeBinding(
       BindingType type,
       ws::WindowServer* window_server,
       ws::WindowTree* tree,

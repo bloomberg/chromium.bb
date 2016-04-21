@@ -5,10 +5,12 @@
 #include "components/mus/ws/window_tree.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display.h"
@@ -48,7 +50,7 @@ class TargetedEvent : public ServerWindowObserver {
   }
 
   ServerWindow* target() { return target_; }
-  scoped_ptr<ui::Event> TakeEvent() { return std::move(event_); }
+  std::unique_ptr<ui::Event> TakeEvent() { return std::move(event_); }
 
  private:
   // ServerWindowObserver:
@@ -59,7 +61,7 @@ class TargetedEvent : public ServerWindowObserver {
   }
 
   ServerWindow* target_;
-  scoped_ptr<ui::Event> event_;
+  std::unique_ptr<ui::Event> event_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetedEvent);
 };
@@ -67,7 +69,7 @@ class TargetedEvent : public ServerWindowObserver {
 WindowTree::WindowTree(WindowServer* window_server,
                        const UserId& user_id,
                        ServerWindow* root,
-                       scoped_ptr<AccessPolicy> access_policy)
+                       std::unique_ptr<AccessPolicy> access_policy)
     : window_server_(window_server),
       user_id_(user_id),
       id_(window_server_->GetAndAdvanceNextConnectionId()),
@@ -84,7 +86,7 @@ WindowTree::~WindowTree() {
   DestroyWindows();
 }
 
-void WindowTree::Init(scoped_ptr<WindowTreeBinding> binding,
+void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
                       mojom::WindowTreePtr tree) {
   DCHECK(!binding_);
   binding_ = std::move(binding);
@@ -307,7 +309,7 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
   // When embedding we don't know the user id of where the TreeClient came
   // from. Use an invalid id, which limits what the client is able to do.
   window_server_->EmbedAtWindow(window, InvalidUserId(), std::move(client),
-                                make_scoped_ptr(new DefaultAccessPolicy));
+                                base::WrapUnique(new DefaultAccessPolicy));
   return true;
 }
 
@@ -315,7 +317,7 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
                                     const ui::Event& event) {
   if (event_ack_id_) {
     // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(make_scoped_ptr(new TargetedEvent(target, event)));
+    event_queue_.push(base::WrapUnique(new TargetedEvent(target, event)));
     // TODO(sad): If the |event_queue_| grows too large, then this should notify
     // Display, so that it can stop sending events.
     return;
@@ -325,7 +327,7 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
   // and dispatch the latest event from the queue instead that still has a live
   // target.
   if (!event_queue_.empty()) {
-    event_queue_.push(make_scoped_ptr(new TargetedEvent(target, event)));
+    event_queue_.push(base::WrapUnique(new TargetedEvent(target, event)));
     return;
   }
 
@@ -342,8 +344,9 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
     uint32_t client_change_id,
     const ServerWindow* window) {
   DCHECK(IsWaitingForNewTopLevelWindow(wm_change_id));
-  scoped_ptr<WaitingForTopLevelWindowInfo> waiting_for_top_level_window_info(
-      std::move(waiting_for_top_level_window_info_));
+  std::unique_ptr<WaitingForTopLevelWindowInfo>
+      waiting_for_top_level_window_info(
+          std::move(waiting_for_top_level_window_info_));
   binding_->SetIncomingMethodCallProcessingPaused(false);
   // We were paused, so the id should still be valid.
   DCHECK(IsValidIdForNewWindow(
@@ -1235,9 +1238,9 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
   if (!event_queue_.empty()) {
     DCHECK(!event_ack_id_);
     ServerWindow* target = nullptr;
-    scoped_ptr<ui::Event> event;
+    std::unique_ptr<ui::Event> event;
     do {
-      scoped_ptr<TargetedEvent> targeted_event =
+      std::unique_ptr<TargetedEvent> targeted_event =
           std::move(event_queue_.front());
       event_queue_.pop();
       target = targeted_event->target();

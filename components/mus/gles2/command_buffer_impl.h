@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/mus/gles2/command_buffer_driver.h"
@@ -111,8 +112,8 @@ class CommandBufferImpl : public mojom::CommandBuffer,
   void DeleteOnGpuThread2();
 
   scoped_refptr<GpuState> gpu_state_;
-  scoped_ptr<CommandBufferDriver> driver_;
-  scoped_ptr<mojo::Binding<CommandBuffer>> binding_;
+  std::unique_ptr<CommandBufferDriver> driver_;
+  std::unique_ptr<mojo::Binding<CommandBuffer>> binding_;
   mojom::CommandBufferClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);

@@ -18,16 +18,16 @@ MojoBufferBacking::~MojoBufferBacking() {
 }
 
 // static
-scoped_ptr<gpu::BufferBacking> MojoBufferBacking::Create(
+std::unique_ptr<gpu::BufferBacking> MojoBufferBacking::Create(
     mojo::ScopedSharedBufferHandle handle,
     size_t size) {
   void* memory = NULL;
   MojoResult result = mojo::MapBuffer(handle.get(), 0, size, &memory,
                                       MOJO_MAP_BUFFER_FLAG_NONE);
   if (result != MOJO_RESULT_OK)
-    return scoped_ptr<BufferBacking>();
+    return std::unique_ptr<BufferBacking>();
   DCHECK(memory);
-  return scoped_ptr<BufferBacking>(
+  return std::unique_ptr<BufferBacking>(
       new MojoBufferBacking(std::move(handle), memory, size));
 }
 void* MojoBufferBacking::GetMemory() const {

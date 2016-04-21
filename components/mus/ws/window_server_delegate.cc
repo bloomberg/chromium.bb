@@ -11,7 +11,8 @@ namespace ws {
 
 void WindowServerDelegate::OnFirstDisplayReady() {}
 
-scoped_ptr<WindowTreeBinding> WindowServerDelegate::CreateWindowTreeBinding(
+std::unique_ptr<WindowTreeBinding>
+WindowServerDelegate::CreateWindowTreeBinding(
     BindingType type,
     ws::WindowServer* window_server,
     ws::WindowTree* tree,

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/interfaces/input_event_matcher.mojom.h"
 #include "components/mus/ws/server_window_observer.h"
@@ -178,8 +178,8 @@ class EventDispatcher : public ServerWindowObserver {
 
   cc::SurfaceId surface_id_;
 
-  using Entry = std::pair<uint32_t, scoped_ptr<Accelerator>>;
-  std::map<uint32_t, scoped_ptr<Accelerator>> accelerators_;
+  using Entry = std::pair<uint32_t, std::unique_ptr<Accelerator>>;
+  std::map<uint32_t, std::unique_ptr<Accelerator>> accelerators_;
 
   using PointerIdToTargetMap = std::map<int32_t, PointerTarget>;
   // |pointer_targets_| contains the active pointers. For a mouse based pointer

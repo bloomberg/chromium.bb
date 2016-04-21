@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_MUS_GLES2_OZONE_GPU_MEMORY_BUFFER_
 #define COMPONENTS_MUS_GLES2_OZONE_GPU_MEMORY_BUFFER_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/mus/gles2/gpu_memory_buffer_impl.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -38,7 +39,7 @@ class OzoneGpuMemoryBuffer : public mus::GpuMemoryBufferImpl {
 
   // Create a NativeBuffer. The implementation (mus-specific) will call directly
   // into ozone to allocate the buffer. See the version in the .cc file.
-  static scoped_ptr<gfx::GpuMemoryBuffer> CreateOzoneGpuMemoryBuffer(
+  static std::unique_ptr<gfx::GpuMemoryBuffer> CreateOzoneGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
@@ -54,12 +55,12 @@ class OzoneGpuMemoryBuffer : public mus::GpuMemoryBufferImpl {
   OzoneGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                        const gfx::Size& size,
                        gfx::BufferFormat format,
-                       scoped_ptr<ui::ClientNativePixmap> client_pixmap,
+                       std::unique_ptr<ui::ClientNativePixmap> client_pixmap,
                        scoped_refptr<ui::NativePixmap> native_pixmap);
 
   // The real backing buffer.
   // From content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h
-  scoped_ptr<ui::ClientNativePixmap> client_pixmap_;
+  std::unique_ptr<ui::ClientNativePixmap> client_pixmap_;
   scoped_refptr<ui::NativePixmap> native_pixmap_;
 
   DISALLOW_COPY_AND_ASSIGN(OzoneGpuMemoryBuffer);

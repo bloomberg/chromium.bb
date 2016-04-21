@@ -17,7 +17,7 @@ OzoneGpuMemoryBuffer::OzoneGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    scoped_ptr<ui::ClientNativePixmap> client_pixmap,
+    std::unique_ptr<ui::ClientNativePixmap> client_pixmap,
     scoped_refptr<ui::NativePixmap> native_pixmap)
     : GpuMemoryBufferImpl(id, size, format),
       client_pixmap_(std::move(client_pixmap)),
@@ -34,7 +34,7 @@ OzoneGpuMemoryBuffer* OzoneGpuMemoryBuffer::FromClientBuffer(
 }
 
 // static
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 OzoneGpuMemoryBuffer::CreateOzoneGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -58,11 +58,11 @@ OzoneGpuMemoryBuffer::CreateOzoneGpuMemoryBuffer(
   gfx::NativePixmapHandle native_pixmap_handle = pixmap->ExportHandle();
   DCHECK(ui::ClientNativePixmapFactory::GetInstance())
       << "need me a ClientNativePixmapFactory";
-  scoped_ptr<ui::ClientNativePixmap> client_native_pixmap =
+  std::unique_ptr<ui::ClientNativePixmap> client_native_pixmap =
       ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
           native_pixmap_handle, size, usage);
 
-  scoped_ptr<OzoneGpuMemoryBuffer> nb(
+  std::unique_ptr<OzoneGpuMemoryBuffer> nb(
       new OzoneGpuMemoryBuffer(gfx::GpuMemoryBufferId(0), size, format,
                                std::move(client_native_pixmap), pixmap));
   return std::move(nb);

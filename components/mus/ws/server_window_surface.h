@@ -70,7 +70,7 @@ class ServerWindowSurface : public mojom::Surface,
   // CompositorFrame of this window can only refer to windows within its
   // subtree. Windows referenced in |input| are stored in
   // |referenced_window_ids_|.
-  scoped_ptr<cc::CompositorFrame> ConvertCompositorFrame(
+  std::unique_ptr<cc::CompositorFrame> ConvertCompositorFrame(
       const mojom::CompositorFramePtr& input);
 
   // Overriden from CustomSurfaceConverter:

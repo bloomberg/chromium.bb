@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/display_binding.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_server.h"
@@ -28,7 +29,7 @@ DisplayBindingImpl::~DisplayBindingImpl() {}
 WindowTree* DisplayBindingImpl::CreateWindowTree(ServerWindow* root) {
   WindowTree* tree = window_server_->EmbedAtWindow(
       root, user_id_, std::move(client_),
-      make_scoped_ptr(new WindowManagerAccessPolicy));
+      base::WrapUnique(new WindowManagerAccessPolicy));
   tree->ConfigureWindowManager();
   return tree;
 }

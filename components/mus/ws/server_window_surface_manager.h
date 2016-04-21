@@ -64,7 +64,7 @@ class ServerWindowSurfaceManager {
   cc::SurfaceIdAllocator surface_id_allocator_;
 
   using TypeToSurfaceMap =
-      std::map<mojom::SurfaceType, scoped_ptr<ServerWindowSurface>>;
+      std::map<mojom::SurfaceType, std::unique_ptr<ServerWindowSurface>>;
 
   TypeToSurfaceMap type_to_surface_map_;
 

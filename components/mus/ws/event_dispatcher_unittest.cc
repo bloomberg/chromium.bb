@@ -33,7 +33,7 @@ struct DispatchedEventDetails {
 
   ServerWindow* window;
   bool in_nonclient_area;
-  scoped_ptr<ui::Event> event;
+  std::unique_ptr<ui::Event> event;
   Accelerator* accelerator;
 };
 
@@ -53,11 +53,12 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
 
   // Returns the last dispatched event, or null if there are no more.
-  scoped_ptr<DispatchedEventDetails> GetAndAdvanceDispatchedEventDetails() {
+  std::unique_ptr<DispatchedEventDetails>
+  GetAndAdvanceDispatchedEventDetails() {
     if (dispatched_event_queue_.empty())
       return nullptr;
 
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         std::move(dispatched_event_queue_.front());
     dispatched_event_queue_.pop();
     return details;
@@ -95,7 +96,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
                                   bool in_nonclient_area,
                                   const ui::Event& event,
                                   Accelerator* accelerator) override {
-    scoped_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
+    std::unique_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
     details->window = target;
     details->in_nonclient_area = in_nonclient_area;
     details->event = ui::Event::Clone(event);
@@ -107,7 +108,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* focused_window_;
   ServerWindow* lost_capture_window_;
   uint32_t last_accelerator_;
-  std::queue<scoped_ptr<DispatchedEventDetails>> dispatched_event_queue_;
+  std::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
@@ -157,7 +158,7 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
     else
       dispatcher->ProcessEvent(ui::PointerEvent(test.input_event));
 
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
     ASSERT_NO_FATAL_FAILURE(ExpectDispatchedEventDetailsMatches(
         details.get(), test.expected_target_window1,
@@ -192,10 +193,11 @@ class EventDispatcherTest : public testing::Test {
   bool AreAnyPointersDown() const;
   // Deletes everything created during SetUp()
   void ClearSetup();
-  scoped_ptr<ServerWindow> CreateChildWindowWithParent(const WindowId& id,
-                                                       ServerWindow* parent);
+  std::unique_ptr<ServerWindow> CreateChildWindowWithParent(
+      const WindowId& id,
+      ServerWindow* parent);
   // Creates a window which is a child of |root_window_|.
-  scoped_ptr<ServerWindow> CreateChildWindow(const WindowId& id);
+  std::unique_ptr<ServerWindow> CreateChildWindow(const WindowId& id);
   bool IsMouseButtonDown() const;
   bool IsWindowPointerTarget(ServerWindow* window) const;
   int NumberPointerTargetsForWindow(ServerWindow* window) const;
@@ -205,10 +207,10 @@ class EventDispatcherTest : public testing::Test {
   void SetUp() override;
 
  private:
-  scoped_ptr<TestServerWindowDelegate> window_delegate_;
-  scoped_ptr<ServerWindow> root_window_;
-  scoped_ptr<TestEventDispatcherDelegate> test_event_dispatcher_delegate_;
-  scoped_ptr<EventDispatcher> event_dispatcher_;
+  std::unique_ptr<TestServerWindowDelegate> window_delegate_;
+  std::unique_ptr<ServerWindow> root_window_;
+  std::unique_ptr<TestEventDispatcherDelegate> test_event_dispatcher_delegate_;
+  std::unique_ptr<EventDispatcher> event_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcherTest);
 };
@@ -224,17 +226,18 @@ void EventDispatcherTest::ClearSetup() {
   event_dispatcher_.reset();
 }
 
-scoped_ptr<ServerWindow> EventDispatcherTest::CreateChildWindowWithParent(
+std::unique_ptr<ServerWindow> EventDispatcherTest::CreateChildWindowWithParent(
     const WindowId& id,
     ServerWindow* parent) {
-  scoped_ptr<ServerWindow> child(new ServerWindow(window_delegate_.get(), id));
+  std::unique_ptr<ServerWindow> child(
+      new ServerWindow(window_delegate_.get(), id));
   parent->Add(child.get());
   child->SetVisible(true);
   EnableHitTest(child.get());
   return child;
 }
 
-scoped_ptr<ServerWindow> EventDispatcherTest::CreateChildWindow(
+std::unique_ptr<ServerWindow> EventDispatcherTest::CreateChildWindow(
     const WindowId& id) {
   return CreateChildWindowWithParent(id, root_window_.get());
 }
@@ -270,7 +273,7 @@ void EventDispatcherTest::SetUp() {
 }
 
 TEST_F(EventDispatcherTest, ProcessEvent) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -281,7 +284,7 @@ TEST_F(EventDispatcherTest, ProcessEvent) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(ui_event);
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   ASSERT_EQ(child.get(), details->window);
@@ -389,12 +392,12 @@ TEST_F(EventDispatcherTest, PostTargetAccelerator) {
   dispatcher->ProcessEvent(key);
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate->GetAndClearLastAccelerator());
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(details);
 
   // Set focused window for EventDispatcher dispatches key events.
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
   event_dispatcher_delegate->SetFocusedWindowFromEventDispatcher(child.get());
 
   // With a focused window the event should be dispatched.
@@ -419,7 +422,7 @@ TEST_F(EventDispatcherTest, PostTargetAccelerator) {
 
 TEST_F(EventDispatcherTest, Capture) {
   ServerWindow* root = root_window();
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -461,7 +464,7 @@ TEST_F(EventDispatcherTest, Capture) {
 }
 
 TEST_F(EventDispatcherTest, CaptureMultipleMouseButtons) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -504,7 +507,7 @@ TEST_F(EventDispatcherTest, CaptureMultipleMouseButtons) {
 }
 
 TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -522,7 +525,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
   dispatcher->ProcessEvent(press_event);
 
   // Events should target child and be in the non-client area.
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_TRUE(details);
@@ -573,7 +576,7 @@ TEST_F(EventDispatcherTest, ClientAreaGoesToOwner) {
 }
 
 TEST_F(EventDispatcherTest, AdditionalClientArea) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -591,7 +594,7 @@ TEST_F(EventDispatcherTest, AdditionalClientArea) {
   event_dispatcher()->ProcessEvent(press_event);
 
   // Events should target child and be in the client area.
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(child.get(), details->window);
@@ -599,8 +602,8 @@ TEST_F(EventDispatcherTest, AdditionalClientArea) {
 }
 
 TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
-  scoped_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
+  std::unique_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child1->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -615,7 +618,7 @@ TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(press_event);
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child1.get(), details->window);
@@ -634,8 +637,8 @@ TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
 }
 
 TEST_F(EventDispatcherTest, TwoPointersActive) {
-  scoped_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
+  std::unique_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child1->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -649,7 +652,7 @@ TEST_F(EventDispatcherTest, TwoPointersActive) {
   const ui::PointerEvent touch_event1(ui::TouchEvent(
       ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
   dispatcher->ProcessEvent(touch_event1);
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(child1.get(), details->window);
 
@@ -693,7 +696,7 @@ TEST_F(EventDispatcherTest, TwoPointersActive) {
 }
 
 TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -706,7 +709,7 @@ TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   const ui::PointerEvent touch_event1(ui::TouchEvent(
       ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1, base::TimeDelta()));
   dispatcher->ProcessEvent(touch_event1);
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child.get(), details->window);
@@ -723,7 +726,7 @@ TEST_F(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
 
 TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   ServerWindow* root = root_window();
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -737,7 +740,7 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
       ui::ET_MOUSE_PRESSED, gfx::Point(8, 9), gfx::Point(8, 9),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   dispatcher->ProcessEvent(ui_event);
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   ASSERT_EQ(root, details->window);
 
@@ -771,8 +774,8 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
 }
 
 TEST_F(EventDispatcherTest, WheelWhileDown) {
-  scoped_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
+  std::unique_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child1->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -801,7 +804,7 @@ TEST_F(EventDispatcherTest, WheelWhileDown) {
 // appropriate target window.
 TEST_F(EventDispatcherTest, SetExplicitCapture) {
   ServerWindow* root = root_window();
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -822,7 +825,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     dispatcher->ProcessEvent(left_press_event);
 
     // Events should target child.
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
 
     ASSERT_TRUE(details);
@@ -883,7 +886,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
     dispatcher->ProcessEvent(press_event);
 
     // Events should target the root.
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
 
     ASSERT_TRUE(details);
@@ -895,7 +898,7 @@ TEST_F(EventDispatcherTest, SetExplicitCapture) {
 // capture.
 TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
   ServerWindow* root = root_window();
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -941,7 +944,7 @@ TEST_F(EventDispatcherTest, ExplicitCaptureOverridesImplicitCapture) {
     dispatcher->ProcessEvent(touch_event);
   }
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   EXPECT_EQ(child.get(), details->window);
@@ -992,7 +995,7 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
         base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
     dispatcher->ProcessEvent(press_event);
 
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
     ASSERT_TRUE(details);
     ASSERT_EQ(root, details->window);
@@ -1017,8 +1020,8 @@ TEST_F(EventDispatcherTest, CaptureUpdatesActivePointerTargets) {
 // Tests that when explicit capture is changed, that the previous window with
 // capture is no longer being observed.
 TEST_F(EventDispatcherTest, UpdatingCaptureStopsObservingPreviousCapture) {
-  scoped_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
+  std::unique_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child1->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -1040,7 +1043,7 @@ TEST_F(EventDispatcherTest, UpdatingCaptureStopsObservingPreviousCapture) {
 // Tests that destroying a window with explicit capture clears the capture
 // state.
 TEST_F(EventDispatcherTest, DestroyingCaptureWindowRemovesExplicitCapture) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
 
   EventDispatcher* dispatcher = event_dispatcher();
@@ -1074,7 +1077,7 @@ TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
   event_dispatcher()->ProcessEvent(press_event);
 
   // Events should target child and be in the client area.
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
   ASSERT_EQ(root, details->window);
@@ -1082,7 +1085,7 @@ TEST_F(EventDispatcherTest, CaptureInNonClientAreaOverridesActualPoint) {
 }
 
 TEST_F(EventDispatcherTest, ProcessPointerEvents) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -1093,7 +1096,7 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
         base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
     event_dispatcher()->ProcessEvent(pointer_event);
 
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
     ASSERT_TRUE(details);
     ASSERT_EQ(child.get(), details->window);
@@ -1113,7 +1116,7 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
                        base::TimeDelta()));
     event_dispatcher()->ProcessEvent(pointer_event);
 
-    scoped_ptr<DispatchedEventDetails> details =
+    std::unique_ptr<DispatchedEventDetails> details =
         test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
     ASSERT_TRUE(details);
     ASSERT_EQ(child.get(), details->window);
@@ -1129,7 +1132,7 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
 }
 
 TEST_F(EventDispatcherTest, ResetClearsPointerDown) {
-  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   child->SetBounds(gfx::Rect(10, 10, 20, 20));
@@ -1140,7 +1143,7 @@ TEST_F(EventDispatcherTest, ResetClearsPointerDown) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(ui_event);
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   ASSERT_EQ(child.get(), details->window);
@@ -1167,8 +1170,8 @@ TEST_F(EventDispatcherTest, ResetClearsCapture) {
 
 // Tests that events on a modal parent target the modal child.
 TEST_F(EventDispatcherTest, ModalWindowEventOnModalParent) {
-  scoped_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
@@ -1183,7 +1186,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalParent) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
@@ -1199,8 +1202,8 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalParent) {
 
 // Tests that events on a modal child target the modal child itself.
 TEST_F(EventDispatcherTest, ModalWindowEventOnModalChild) {
-  scoped_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
@@ -1215,7 +1218,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalChild) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
@@ -1232,9 +1235,9 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnModalChild) {
 // Tests that events on an unrelated window are not affected by the modal
 // window.
 TEST_F(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
-  scoped_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
-  scoped_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 6));
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 6));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
@@ -1250,7 +1253,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w3.get(), details->window);
@@ -1267,10 +1270,10 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
 // Tests that events events on a descendant of a modal parent target the modal
 // child.
 TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
-  scoped_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> w11 =
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w11 =
       CreateChildWindowWithParent(WindowId(1, 4), w1.get());
-  scoped_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
@@ -1286,7 +1289,7 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   event_dispatcher()->ProcessEvent(mouse_pressed);
 
-  scoped_ptr<DispatchedEventDetails> details =
+  std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
@@ -1303,10 +1306,10 @@ TEST_F(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
 
 // Tests that setting capture to a descendant of a modal parent fails.
 TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
-  scoped_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> w11 =
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w11 =
       CreateChildWindowWithParent(WindowId(1, 4), w1.get());
-  scoped_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
@@ -1322,9 +1325,9 @@ TEST_F(EventDispatcherTest, ModalWindowSetCaptureDescendantOfModalParent) {
 
 // Tests that setting capture to a window unrelated to a modal parent works.
 TEST_F(EventDispatcherTest, ModalWindowSetCaptureUnrelatedWindow) {
-  scoped_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
-  scoped_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
-  scoped_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 6));
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  std::unique_ptr<ServerWindow> w3 = CreateChildWindow(WindowId(1, 6));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));

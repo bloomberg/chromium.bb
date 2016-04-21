@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_MUS_GLES2_RASTER_THREAD_HELPER_H_
 #define COMPONENTS_MUS_GLES2_RASTER_THREAD_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace cc {
 class TaskGraphRunner;
@@ -23,7 +24,7 @@ class RasterThreadHelper {
   cc::TaskGraphRunner* task_graph_runner();
 
  private:
-  scoped_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
+  std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterThreadHelper);
 };
