@@ -728,6 +728,8 @@
         'browser/chromeos/net/onc_utils.h',
         'browser/chromeos/net/proxy_config_handler.cc',
         'browser/chromeos/net/proxy_config_handler.h',
+        'browser/chromeos/net/wake_on_wifi_connection_observer.cc',
+        'browser/chromeos/net/wake_on_wifi_connection_observer.h',
         'browser/chromeos/net/wake_on_wifi_manager.cc',
         'browser/chromeos/net/wake_on_wifi_manager.h',
         'browser/chromeos/options/cert_library.cc',

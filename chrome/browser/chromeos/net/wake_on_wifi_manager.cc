@@ -7,14 +7,12 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
-#include "base/containers/scoped_ptr_hash_map.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/net/wake_on_wifi_connection_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chromeos/chromeos_switches.h"
@@ -24,13 +22,11 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "net/base/ip_endpoint.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -64,101 +60,21 @@ std::string WakeOnWifiFeatureToString(
   return std::string();
 }
 
-bool IsWakeOnPacketEnabled(WakeOnWifiManager::WakeOnWifiFeature feature) {
-  return feature & WakeOnWifiManager::WAKE_ON_WIFI_PACKET;
-}
-
 // Weak pointer.  This class is owned by ChromeBrowserMainPartsChromeos.
 WakeOnWifiManager* g_wake_on_wifi_manager = NULL;
 
 }  // namespace
-
-// Simple class that listens for a connection to the GCM server and passes the
-// connection information down to shill.  Each profile gets its own instance of
-// this class.
-class WakeOnWifiManager::WakeOnPacketConnectionObserver
-    : public gcm::GCMConnectionObserver {
- public:
-  WakeOnPacketConnectionObserver(Profile* profile,
-                                 bool wifi_properties_received)
-      : profile_(profile),
-        ip_endpoint_(net::IPEndPoint()),
-        wifi_properties_received_(wifi_properties_received) {
-    gcm::GCMProfileServiceFactory::GetForProfile(profile_)
-        ->driver()
-        ->AddConnectionObserver(this);
-  }
-
-  ~WakeOnPacketConnectionObserver() override {
-    if (!(ip_endpoint_ == net::IPEndPoint()))
-      OnDisconnected();
-
-    gcm::GCMProfileServiceFactory::GetForProfile(profile_)
-        ->driver()
-        ->RemoveConnectionObserver(this);
-  }
-
-  void HandleWifiDevicePropertiesReady() {
-    wifi_properties_received_ = true;
-
-    // IPEndPoint doesn't implement operator!=
-    if (ip_endpoint_ == net::IPEndPoint())
-      return;
-
-    AddWakeOnPacketConnection();
-  }
-
-  // gcm::GCMConnectionObserver overrides.
-
-  void OnConnected(const net::IPEndPoint& ip_endpoint) override {
-    ip_endpoint_ = ip_endpoint;
-
-    if (wifi_properties_received_)
-      AddWakeOnPacketConnection();
-  }
-
-  void OnDisconnected() override {
-    if (ip_endpoint_ == net::IPEndPoint()) {
-      VLOG(1) << "Received GCMConnectionObserver::OnDisconnected without a "
-              << "valid IPEndPoint.";
-      return;
-    }
-
-    if (wifi_properties_received_)
-      RemoveWakeOnPacketConnection();
-
-    ip_endpoint_ = net::IPEndPoint();
-  }
-
- private:
-  void AddWakeOnPacketConnection() {
-    NetworkHandler::Get()
-        ->network_device_handler()
-        ->AddWifiWakeOnPacketConnection(ip_endpoint_,
-                                        base::Bind(&base::DoNothing),
-                                        network_handler::ErrorCallback());
-  }
-
-  void RemoveWakeOnPacketConnection() {
-    NetworkHandler::Get()
-        ->network_device_handler()
-        ->RemoveWifiWakeOnPacketConnection(ip_endpoint_,
-                                           base::Bind(&base::DoNothing),
-                                           network_handler::ErrorCallback());
-  }
-
-  Profile* profile_;
-  net::IPEndPoint ip_endpoint_;
-  bool wifi_properties_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(WakeOnPacketConnectionObserver);
-};
 
 // static
 WakeOnWifiManager* WakeOnWifiManager::Get() {
   DCHECK(g_wake_on_wifi_manager);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_wake_on_wifi_manager;
+}
+
+// static
+bool WakeOnWifiManager::IsWakeOnPacketEnabled(WakeOnWifiFeature feature) {
+  return feature & WakeOnWifiManager::WAKE_ON_WIFI_PACKET;
 }
 
 WakeOnWifiManager::WakeOnWifiManager()
@@ -210,6 +126,11 @@ void WakeOnWifiManager::OnPreferenceChanged(
     return;
 
   current_feature_ = feature;
+
+  // Update value of member variable feature for all connection observers.
+  for (const auto& kv_pair : connection_observers_) {
+    kv_pair.second->set_feature(current_feature_);
+  }
 
   if (wifi_properties_received_)
     HandleWakeOnWifiFeatureUpdated();
@@ -325,25 +246,26 @@ void WakeOnWifiManager::GetDevicePropertiesCallback(
                                              network_handler::ErrorCallback());
 
   for (const auto& kv_pair : connection_observers_) {
-    WakeOnPacketConnectionObserver* observer = kv_pair.second;
-    observer->HandleWifiDevicePropertiesReady();
+    kv_pair.second->HandleWifiDevicePropertiesReady();
   }
 }
 
 void WakeOnWifiManager::OnProfileAdded(Profile* profile) {
-  // add will do nothing if |profile| already exists in |connection_observers_|.
-  auto result = connection_observers_.add(
-      profile,
-      base::WrapUnique(new WakeOnWifiManager::WakeOnPacketConnectionObserver(
-          profile, wifi_properties_received_)));
+  auto result = connection_observers_.find(profile);
 
-  if (result.second) {
-    // This is a profile we haven't seen before.
-    gcm::GCMProfileServiceFactory::GetForProfile(profile)
-        ->driver()
-        ->WakeFromSuspendForHeartbeat(
-            IsWakeOnPacketEnabled(current_feature_));
-  }
+  // Only add the profile if it is not already present.
+  if (result != connection_observers_.end())
+    return;
+
+  connection_observers_[profile] =
+      base::WrapUnique(new WakeOnWifiConnectionObserver(
+          profile, wifi_properties_received_, current_feature_,
+          NetworkHandler::Get()->network_device_handler()));
+
+  gcm::GCMProfileServiceFactory::GetForProfile(profile)
+      ->driver()
+      ->WakeFromSuspendForHeartbeat(
+          IsWakeOnPacketEnabled(current_feature_));
 }
 
 void WakeOnWifiManager::OnProfileDestroyed(Profile* profile) {

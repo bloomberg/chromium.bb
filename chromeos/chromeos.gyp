@@ -601,6 +601,8 @@
         'network/fake_network_device_handler.h',
         'network/mock_managed_network_configuration_handler.cc',
         'network/mock_managed_network_configuration_handler.h',
+        'network/mock_network_device_handler.cc',
+        'network/mock_network_device_handler.h',
         'network/onc/onc_test_utils.cc',
         'network/onc/onc_test_utils.h',
         'system/fake_statistics_provider.cc',
