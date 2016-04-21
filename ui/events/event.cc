@@ -444,17 +444,10 @@ LocatedEvent::LocatedEvent(EventType type,
 void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& reversed_root_transform) {
   // Transform has to be done at root level.
-  bool locations_equal = location_ == root_location_;
   gfx::Point3F p(location_);
   reversed_root_transform.TransformPoint(&p);
   location_ = p.AsPointF();
-  if (locations_equal) {
-    root_location_ = location_;
-  } else {
-    p = gfx::Point3F(root_location_);
-    reversed_root_transform.TransformPoint(&p);
-    root_location_ = p.AsPointF();
-  }
+  root_location_ = location_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
