@@ -105,11 +105,7 @@ public:
     // rectangles are completely physical in terms of writing mode.
     LayoutRect fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const;
 
-    LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const
-    {
-        return flowThreadPoint + columnOffset(flowThreadPoint);
-    }
-
+    virtual LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const = 0;
     virtual LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const = 0;
 
     virtual LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;

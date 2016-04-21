@@ -62,7 +62,7 @@ public:
     void resetColumnHeight();
     bool recalculateColumnHeight(LayoutMultiColumnSet&);
 
-    LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
+    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, CoordinateSpaceConversion) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
     LayoutRect fragmentsBoundingBox(const LayoutRect& boundingBoxInFlowThread) const;

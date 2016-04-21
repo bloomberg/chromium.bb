@@ -1161,7 +1161,7 @@ public:
     virtual bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
-    // lives. This is used to convert a flow-thread point to a visual point.
+    // lives. This is used to convert a flow-thread point to a point in the containing coordinate space.
     virtual LayoutSize columnOffset(const LayoutPoint&) const { return LayoutSize(); }
 
     virtual unsigned length() const { return 1; }

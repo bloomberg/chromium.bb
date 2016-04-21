@@ -302,12 +302,7 @@ LayoutUnit LayoutMultiColumnFlowThread::tallestUnbreakableLogicalHeight(LayoutUn
 
 LayoutSize LayoutMultiColumnFlowThread::columnOffset(const LayoutPoint& point) const
 {
-    if (!hasValidColumnSetInfo())
-        return LayoutSize(0, 0);
-
-    LayoutPoint flowThreadPoint = flipForWritingMode(point);
-    LayoutUnit blockOffset = isHorizontalWritingMode() ? flowThreadPoint.y() : flowThreadPoint.x();
-    return flowThreadTranslationAtOffset(blockOffset);
+    return flowThreadTranslationAtPoint(point, CoordinateSpaceConversion::Containing);
 }
 
 bool LayoutMultiColumnFlowThread::needsNewWidth() const
@@ -325,12 +320,26 @@ bool LayoutMultiColumnFlowThread::isPageLogicalHeightKnown() const
     return false;
 }
 
-LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const
+LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread, CoordinateSpaceConversion mode) const
 {
+    if (!hasValidColumnSetInfo())
+        return LayoutSize(0, 0);
     LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(offsetInFlowThread);
     if (!columnSet)
         return LayoutSize(0, 0);
-    return columnSet->flowThreadTranslationAtOffset(offsetInFlowThread);
+    return columnSet->flowThreadTranslationAtOffset(offsetInFlowThread, mode);
+}
+
+LayoutSize LayoutMultiColumnFlowThread::flowThreadTranslationAtPoint(const LayoutPoint& flowThreadPoint, CoordinateSpaceConversion mode) const
+{
+    LayoutPoint flippedPoint = flipForWritingMode(flowThreadPoint);
+    LayoutUnit blockOffset = isHorizontalWritingMode() ? flippedPoint.y() : flippedPoint.x();
+    return flowThreadTranslationAtOffset(blockOffset, mode);
+}
+
+LayoutPoint LayoutMultiColumnFlowThread::flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const
+{
+    return flowThreadPoint + flowThreadTranslationAtPoint(flowThreadPoint, CoordinateSpaceConversion::Visual);
 }
 
 LayoutPoint LayoutMultiColumnFlowThread::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const

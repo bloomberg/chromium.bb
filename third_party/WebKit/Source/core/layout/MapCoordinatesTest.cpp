@@ -560,6 +560,44 @@ TEST_F(MapCoordinatesTest, MulticolWithBlock)
     EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
+TEST_F(MapCoordinatesTest, NestedMulticolWithBlock)
+{
+    setBodyInnerHTML(
+        "<div id='outerMulticol' style='columns:2; column-gap:0; column-fill:auto; width:560px; height:215px; border:8px solid; padding:7px;'>"
+        "    <div style='height:10px;'></div>"
+        "    <div id='innerMulticol' style='columns:2; column-gap:0; border:8px solid; padding:7px;'>"
+        "        <div style='height:630px;'></div>"
+        "        <div id='target' style='width:50px; height:50px;'></div>"
+        "    </div>"
+        "</div>");
+
+    LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+    LayoutBox* outerMulticol = toLayoutBox(getLayoutObjectByElementId("outerMulticol"));
+    LayoutBox* innerMulticol = toLayoutBox(getLayoutObjectByElementId("innerMulticol"));
+    LayoutBox* innerFlowThread = target->parentBox();
+    ASSERT_TRUE(innerFlowThread->isLayoutFlowThread());
+    LayoutBox* outerFlowThread = innerMulticol->parentBox();
+    ASSERT_TRUE(outerFlowThread->isLayoutFlowThread());
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, outerMulticol, FloatPoint());
+    EXPECT_EQ(FloatPoint(435, 115), mappedPoint);
+
+    // TODO(mstensho): Add mapAncestorToLocal() tests when it starts working in nested multicol.
+
+    // Walk each ancestor in the chain separately, to verify each step on the way.
+    mappedPoint = mapLocalToAncestor(target, innerFlowThread, FloatPoint());
+    EXPECT_EQ(FloatPoint(0, 630), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(innerFlowThread, innerMulticol, mappedPoint);
+    EXPECT_EQ(FloatPoint(140, 305), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(innerMulticol, outerFlowThread, mappedPoint);
+    EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(outerFlowThread, outerMulticol, mappedPoint);
+    EXPECT_EQ(FloatPoint(435, 115), mappedPoint);
+}
+
 TEST_F(MapCoordinatesTest, MulticolWithAbsPosInRelPos)
 {
     setBodyInnerHTML(
