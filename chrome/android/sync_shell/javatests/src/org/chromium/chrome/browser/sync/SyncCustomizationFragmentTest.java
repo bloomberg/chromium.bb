@@ -459,7 +459,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertNull(confirmPassphrase.getError());
         clickButton(okButton);
         assertTrue(pcdf.isResumed());
-        assertNotNull(confirmPassphrase.getError());
+        assertNotNull(enterPassphrase.getError());
 
         // Error if you try to submit with only the first box filled.
         clearError(confirmPassphrase);
