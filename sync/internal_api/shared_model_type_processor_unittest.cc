@@ -265,22 +265,28 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     }
   }
 
-  // Wipes existing DB and simulates a pending update of a server-known item.
-  void ResetStateWriteItem(const std::string& tag, const std::string& value) {
+  void ResetState() {
     clear_change_processor();
     db_.Reset();
+    worker_ = nullptr;
+    DCHECK(data_callback_.is_null());
+  }
+
+  // Wipes existing DB and simulates a pending update of a server-known item.
+  void ResetStateWriteItem(const std::string& tag, const std::string& value) {
+    ResetState();
     InitializeToReadyState();
     EXPECT_EQ(0U, ProcessorEntityCount());
     WriteItemAndAck(tag, "acked-value");
     WriteItem(tag, value);
     EXPECT_EQ(1U, ProcessorEntityCount());
     clear_change_processor();
+    worker_ = nullptr;
   }
 
   // Wipes existing DB and simulates a pending deletion of a server-known item.
   void ResetStateDeleteItem(const std::string& tag, const std::string& value) {
-    clear_change_processor();
-    db_.Reset();
+    ResetState();
     InitializeToReadyState();
     EXPECT_EQ(0U, ProcessorEntityCount());
     WriteItemAndAck(tag, value);
@@ -288,6 +294,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     DeleteItem(tag);
     EXPECT_EQ(1U, ProcessorEntityCount());
     clear_change_processor();
+    worker_ = nullptr;
   }
 
   // Simulates an initial GetUpdates response from the worker with |updates|.
@@ -511,7 +518,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
   OnSyncStarting();
-  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+  EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(0, kTag1, kValue1);
@@ -550,10 +557,10 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   WriteItem(kTag1, kValue2);
-  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  worker()->ExpectNthPendingCommit(0, kTag1, kValue2);
+  EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, kValue2);
 
   // Put, data, connect.
   ResetStateWriteItem(kTag1, kValue1);
@@ -569,10 +576,10 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   WriteItem(kTag1, kValue2);
   OnSyncStarting();
-  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  worker()->ExpectNthPendingCommit(0, kTag1, kValue2);
+  EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, kValue2);
 
   // Data, connect, delete.
   ResetStateWriteItem(kTag1, kValue1);
@@ -608,10 +615,10 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   DeleteItem(kTag1);
-  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  worker()->ExpectNthPendingCommit(0, kTag1, "");
+  EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, "");
 
   // Delete, data, connect.
   ResetStateWriteItem(kTag1, kValue1);
@@ -627,10 +634,10 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   DeleteItem(kTag1);
   OnSyncStarting();
-  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
-  worker()->ExpectNthPendingCommit(0, kTag1, "");
+  EXPECT_EQ(nullptr, worker());
   OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, "");
 }
 
 // This test covers race conditions during loading a pending delete. All cases
@@ -1269,6 +1276,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
   // Ensure the re-commit has the correct value.
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(1, kTag1, kValue1);
+  EXPECT_EQ(kValue1, db().GetValue(kTag1));
 }
 
 // Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.
@@ -1284,6 +1292,7 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseRemote) {
   // Ensure the re-commit has the correct value.
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(1, kTag1, kValue2);
+  EXPECT_EQ(kValue2, db().GetValue(kTag1));
 }
 
 // Test that re-encrypting enqueues the right data for USE_NEW conflicts.
@@ -1300,24 +1309,28 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseNew) {
   // Ensure the re-commit has the correct value.
   EXPECT_EQ(2U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(1, kTag1, kValue3);
+  EXPECT_EQ(kValue3, db().GetValue(kTag1));
 }
 
-// TODO(maxbogue): Fix this case (crbug.com/561814).
-TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptConflictWhileLoading) {
+TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictWhileLoading) {
   InitializeToReadyState();
   // Create item and ack so its data is no longer cached.
   WriteItemAndAck(kTag1, kValue1);
   // Update key so that it needs to fetch data to re-commit.
   worker()->UpdateWithEncryptionKey("k1");
+  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
-  SetConflictResolution(ConflictResolution::UseLocal());
   // Unencrypted update needs to be re-commited with key k1.
   worker()->UpdateFromServer(kTag1, kValue2, 1, "");
-  OnPendingCommitDataLoaded();
 
   // Ensure the re-commit has the correct value.
-  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
-  worker()->ExpectNthPendingCommit(1, kTag1, kValue1);
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, kValue2);
+  EXPECT_EQ(kValue2, db().GetValue(kTag1));
+
+  // Data load completing shouldn't change anything.
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
 }
 
 }  // namespace syncer_v2

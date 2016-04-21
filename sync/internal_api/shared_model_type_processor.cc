@@ -80,6 +80,7 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
                                                    ModelTypeService* service)
     : type_(type),
       is_metadata_loaded_(false),
+      is_initial_pending_data_loaded_(false),
       service_(service),
       weak_ptr_factory_(this) {
   DCHECK(service);
@@ -113,6 +114,9 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
   DCHECK(!is_metadata_loaded_);
   DCHECK(!IsConnected());
 
+  // Flip this flag here to cover all cases where we don't need to load data.
+  is_initial_pending_data_loaded_ = true;
+
   if (batch->GetDataTypeState().initial_sync_done()) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
     std::vector<std::string> entities_to_commit;
@@ -127,9 +131,10 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     }
     data_type_state_ = batch->GetDataTypeState();
     if (!entities_to_commit.empty()) {
+      is_initial_pending_data_loaded_ = false;
       service_->GetData(
           entities_to_commit,
-          base::Bind(&SharedModelTypeProcessor::OnPendingCommitDataLoaded,
+          base::Bind(&SharedModelTypeProcessor::OnInitialPendingDataLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
@@ -142,23 +147,10 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
   ConnectIfReady();
 }
 
-void SharedModelTypeProcessor::OnPendingCommitDataLoaded(
-    syncer::SyncError error,
-    std::unique_ptr<DataBatch> data_batch) {
-  while (data_batch->HasNext()) {
-    TagAndData data = data_batch->Next();
-    ProcessorEntityTracker* entity = GetEntityForTag(data.first);
-    // If the entity wasn't deleted or updated with new commit.
-    if (entity != nullptr && entity->RequiresCommitData()) {
-      entity->CacheCommitData(data.second.get());
-    }
-  }
-  FlushPendingCommitRequests();
-}
-
 void SharedModelTypeProcessor::ConnectIfReady() {
   DCHECK(CalledOnValidThread());
-  if (!is_metadata_loaded_ || start_callback_.is_null()) {
+  if (!is_metadata_loaded_ || !is_initial_pending_data_loaded_ ||
+      start_callback_.is_null()) {
     return;
   }
 
@@ -461,11 +453,6 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
     ProcessorEntityTracker* entity,
     EntityChangeList* changes) {
-  // There is a pending commit in conflict with the update. For now we require
-  // that pending commit data be loaded in this situation.
-  // TODO(maxbogue): Fix this for the re-encryption case, where there might be
-  // unsynced entities that need commit data (crbug.com/561814).
-  DCHECK(!entity->RequiresCommitData());
   const EntityData& data = update.entity.value();
 
   if (entity->MatchesData(data)) {
@@ -474,9 +461,14 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
     return ConflictResolution::CHANGES_MATCH;
   }
 
-  // There's a real data conflict here; let the service resolve it.
+  // If commit data needs to be loaded at this point, it can only be due to a
+  // re-encryption request, which means there's no actual local change and the
+  // remote version should win. Otherwise there's a real data conflict here; let
+  // the service resolve it.
   ConflictResolution resolution =
-      service_->ResolveConflict(entity->commit_data().value(), data);
+      entity->RequiresCommitData()
+          ? ConflictResolution::UseRemote()
+          : service_->ResolveConflict(entity->commit_data().value(), data);
   switch (resolution.type()) {
     case ConflictResolution::USE_LOCAL:
       // Record that we received the update from the server but leave the
@@ -527,8 +519,8 @@ void SharedModelTypeProcessor::RecommitAllForEncryption(
   if (!entities_needing_data.empty()) {
     service_->GetData(
         entities_needing_data,
-        base::Bind(&SharedModelTypeProcessor::OnPendingCommitDataLoaded,
-                   base::Unretained(this)));
+        base::Bind(&SharedModelTypeProcessor::OnDataLoadedForReEncryption,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -562,6 +554,35 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
 
   // We may have new reasons to commit by the time this function is done.
   FlushPendingCommitRequests();
+}
+
+void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
+    syncer::SyncError error,
+    std::unique_ptr<DataBatch> data_batch) {
+  DCHECK(!is_initial_pending_data_loaded_);
+  ConsumeDataBatch(std::move(data_batch));
+  is_initial_pending_data_loaded_ = true;
+  ConnectIfReady();
+}
+
+void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
+    syncer::SyncError error,
+    std::unique_ptr<DataBatch> data_batch) {
+  DCHECK(is_initial_pending_data_loaded_);
+  ConsumeDataBatch(std::move(data_batch));
+  FlushPendingCommitRequests();
+}
+
+void SharedModelTypeProcessor::ConsumeDataBatch(
+    std::unique_ptr<DataBatch> data_batch) {
+  while (data_batch->HasNext()) {
+    TagAndData data = data_batch->Next();
+    ProcessorEntityTracker* entity = GetEntityForTag(data.first);
+    // If the entity wasn't deleted or updated with new commit.
+    if (entity != nullptr && entity->RequiresCommitData()) {
+      entity->CacheCommitData(data.second.get());
+    }
+  }
 }
 
 std::string SharedModelTypeProcessor::GetHashForTag(const std::string& tag) {

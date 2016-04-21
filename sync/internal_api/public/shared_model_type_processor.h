@@ -76,11 +76,6 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
       std::map<std::string, std::unique_ptr<ProcessorEntityTracker>>;
   using UpdateMap = std::map<std::string, std::unique_ptr<UpdateResponseData>>;
 
-  // Callback for ModelTypeService::GetData(). Used when we need to load data
-  // for pending commits.
-  void OnPendingCommitDataLoaded(syncer::SyncError error,
-                                 std::unique_ptr<DataBatch> data_batch);
-
   // Check conditions, and if met inform sync that we are ready to connect.
   void ConnectIfReady();
 
@@ -102,6 +97,17 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Handle the first update received from the server after being enabled.
   void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
                                const UpdateResponseDataList& updates);
+
+  // ModelTypeService::GetData() callback for initial pending commit data.
+  void OnInitialPendingDataLoaded(syncer::SyncError error,
+                                  std::unique_ptr<DataBatch> data_batch);
+
+  // ModelTypeService::GetData() callback for re-encryption commit data.
+  void OnDataLoadedForReEncryption(syncer::SyncError error,
+                                   std::unique_ptr<DataBatch> data_batch);
+
+  // Caches EntityData from the |data_batch| in the entity trackers.
+  void ConsumeDataBatch(std::unique_ptr<DataBatch> data_batch);
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
@@ -131,6 +137,9 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // Indicates whether the metadata has finished loading.
   bool is_metadata_loaded_;
+
+  // Indicates whether data for any initial pending commits has been loaded.
+  bool is_initial_pending_data_loaded_;
 
   // Reference to the CommitQueue.
   //
