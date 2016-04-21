@@ -21,14 +21,14 @@ const char kClassName[] = "extensions::SafeBuiltins";
 // Documentation for makeCallback in the JavaScript, out here to reduce the
 // (very small) amount of effort that the v8 parser needs to do:
 //
-// Returns a new object with every function on |obj| configured to call()\n"
-// itself with the given arguments.\n"
-// E.g. given\n"
-//    var result = makeCallable(Function.prototype)\n"
-// |result| will be a object including 'bind' such that\n"
-//    result.bind(foo, 1, 2, 3);\n"
-// is equivalent to Function.prototype.bind.call(foo, 1, 2, 3), and so on.\n"
-// This is a convenient way to save functions that user scripts may clobber.\n"
+// Returns a new object with every function on |obj| configured to call()
+// itself with the given arguments.
+// E.g. given
+//    var result = makeCallable(Function.prototype)
+// |result| will be a object including 'bind' such that
+//    result.bind(foo, 1, 2, 3);
+// is equivalent to Function.prototype.bind.call(foo, 1, 2, 3), and so on.
+// This is a convenient way to save functions that user scripts may clobber.
 const char kScript[] =
     "(function() {\n"
     "'use strict';\n"

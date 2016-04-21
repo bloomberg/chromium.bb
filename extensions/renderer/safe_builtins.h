@@ -5,12 +5,13 @@
 #ifndef EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 #define EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 
+#include "base/macros.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 class ScriptContext;
 
-// A collection of safe builtin objects, in that they won't be tained by
+// A collection of safe builtin objects, in that they won't be tainted by
 // extensions overriding methods on them.
 class SafeBuiltins {
  public:
@@ -18,8 +19,7 @@ class SafeBuiltins {
   static v8::Extension* CreateV8Extension();
 
   explicit SafeBuiltins(ScriptContext* context);
-
-  virtual ~SafeBuiltins();
+  ~SafeBuiltins();
 
   // Each method returns an object with methods taken from their respective
   // builtin object's prototype, adapted to automatically call() themselves.
@@ -40,6 +40,8 @@ class SafeBuiltins {
 
  private:
   ScriptContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBuiltins);
 };
 
 }  //  namespace extensions
