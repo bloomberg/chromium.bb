@@ -91,15 +91,26 @@ const wchar_t* WctObjectStatusToString(WCT_OBJECT_STATUS status) {
 
 bool GetThreadWaitChain(DWORD thread_id,
                         WaitChainNodeVector* wait_chain,
-                        bool* is_deadlock) {
+                        bool* is_deadlock,
+                        base::string16* failure_reason,
+                        DWORD* last_error) {
   DCHECK(wait_chain);
   DCHECK(is_deadlock);
+
+  constexpr wchar_t kWaitChainSessionFailureReason[] =
+      L"OpenThreadWaitChainSession() failed.";
+  constexpr wchar_t kGetWaitChainFailureReason[] =
+      L"GetThreadWaitChain() failed.";
 
   // Open a synchronous session.
   ScopedWaitChainSessionHandle session_handle(
       ::OpenThreadWaitChainSession(0, nullptr));
   if (!session_handle) {
-    DPLOG(ERROR) << "Failed to create the Wait Chain session";
+    if (last_error)
+      *last_error = ::GetLastError();
+    if (failure_reason)
+      *failure_reason = kWaitChainSessionFailureReason;
+    DPLOG(ERROR) << kWaitChainSessionFailureReason;
     return false;
   }
 
@@ -108,7 +119,11 @@ bool GetThreadWaitChain(DWORD thread_id,
   BOOL is_cycle;
   if (!::GetThreadWaitChain(session_handle.get(), NULL, 0, thread_id, &nb_nodes,
                             wait_chain->data(), &is_cycle)) {
-    DPLOG(ERROR) << "Failed to get the thread wait chain";
+    if (last_error)
+      *last_error = ::GetLastError();
+    if (failure_reason)
+      *failure_reason = kGetWaitChainFailureReason;
+    DPLOG(ERROR) << kGetWaitChainFailureReason;
     return false;
   }
 

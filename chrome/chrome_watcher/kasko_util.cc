@@ -19,6 +19,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -226,8 +227,11 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
 
   base::win::WaitChainNodeVector wait_chain;
   bool is_deadlock = false;
-  if (base::win::GetThreadWaitChain(main_thread_id, &wait_chain,
-                                    &is_deadlock)) {
+  base::string16 thread_chain_failure_reason;
+  DWORD thread_chain_last_error = ERROR_SUCCESS;
+  if (base::win::GetThreadWaitChain(main_thread_id, &wait_chain, &is_deadlock,
+                                    &thread_chain_failure_reason,
+                                    &thread_chain_last_error)) {
     bool found_valid_node =
         GetLastValidNodeInfo(wait_chain, &hung_process, &hung_thread_id);
     DCHECK(found_valid_node);
@@ -248,6 +252,15 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
           base::win::WaitChainNodeToString(wait_chain[i]).c_str(),
           &annotations);
     }
+  } else {
+    // The call to GetThreadWaitChain() failed. Include the reason inside the
+    // report using crash keys.
+    // TODO(pmonette): Remove this when UMA is added to wait_chain.cc.
+    AddCrashKey(L"hung-process-wait-chain-failure-reason",
+                thread_chain_failure_reason.c_str(), &annotations);
+    AddCrashKey(L"hung-process-wait-chain-last-error",
+                base::UintToString16(thread_chain_last_error).c_str(),
+                &annotations);
   }
 
   std::vector<const base::char16*> key_buffers;

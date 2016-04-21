@@ -259,8 +259,8 @@ TEST(WaitChainTest, Deadlock) {
 
   WaitChainNodeVector wait_chain;
   bool is_deadlock;
-  ASSERT_TRUE(
-      GetThreadWaitChain(waiting_thread_2->tid(), &wait_chain, &is_deadlock));
+  ASSERT_TRUE(GetThreadWaitChain(waiting_thread_2->tid(), &wait_chain,
+                                 &is_deadlock, nullptr, nullptr));
 
   EXPECT_EQ(9U, wait_chain.size());
   EXPECT_TRUE(is_deadlock);
@@ -298,8 +298,8 @@ TEST(WaitChainTest, CrossProcess) {
 
   WaitChainNodeVector wait_chain;
   bool is_deadlock;
-  ASSERT_TRUE(
-      GetThreadWaitChain(waiting_thread_3->tid(), &wait_chain, &is_deadlock));
+  ASSERT_TRUE(GetThreadWaitChain(waiting_thread_3->tid(), &wait_chain,
+                                 &is_deadlock, nullptr, nullptr));
 
   EXPECT_EQ(7U, wait_chain.size());
   EXPECT_FALSE(is_deadlock);
