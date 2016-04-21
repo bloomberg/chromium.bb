@@ -208,13 +208,23 @@ remoting.ClientSession.PerfStats.prototype.videoFrameRate;
 /** @type {number} */
 remoting.ClientSession.PerfStats.prototype.captureLatency;
 /** @type {number} */
+remoting.ClientSession.PerfStats.prototype.maxCaptureLatency;
+/** @type {number} */
 remoting.ClientSession.PerfStats.prototype.encodeLatency;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.maxEncodeLatency;
 /** @type {number} */
 remoting.ClientSession.PerfStats.prototype.decodeLatency;
 /** @type {number} */
+remoting.ClientSession.PerfStats.prototype.maxDecodeLatency;
+/** @type {number} */
 remoting.ClientSession.PerfStats.prototype.renderLatency;
 /** @type {number} */
+remoting.ClientSession.PerfStats.prototype.maxRenderLatency;
+/** @type {number} */
 remoting.ClientSession.PerfStats.prototype.roundtripLatency;
+/** @type {number} */
+remoting.ClientSession.PerfStats.prototype.maxRoundtripLatency;
 
 // Keys for connection statistics.
 remoting.ClientSession.STATS_KEY_VIDEO_BANDWIDTH = 'videoBandwidth';
