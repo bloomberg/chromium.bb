@@ -8,10 +8,11 @@ var validate = require('schemaUtils').validate;
 
 function extendSchema(schema) {
   var extendedSchema = $Array.slice(schema);
-  extendedSchema.unshift({'type': 'string'});
+  $Array.unshift(extendedSchema, {'type': 'string'});
   return extendedSchema;
 }
 
+// TODO(devlin): Maybe find a way to combine this and ContentSetting.
 function ChromeSetting(prefKey, valueSchema) {
   this.get = function(details, callback) {
     var getSchema = this.functionSchemas.get.definition.parameters;
@@ -21,13 +22,24 @@ function ChromeSetting(prefKey, valueSchema) {
                        extendSchema(getSchema));
   };
   this.set = function(details, callback) {
-    var setSchema = $Array.slice(
-        this.functionSchemas.set.definition.parameters);
-    setSchema[0].properties.value = valueSchema;
-    validate([details, callback], setSchema);
+    // The set schema included in the Schema object is generic, since it varies
+    // per-setting. However, this is only ever for a single setting, so we can
+    // enforce the types more thoroughly.
+    var rawSetSchema = this.functionSchemas.set.definition.parameters;
+    var rawSettingParam = rawSetSchema[0];
+    var props = $Object.assign({}, rawSettingParam.properties);
+    props.value = valueSchema;
+    var modSettingParam = {
+      name: rawSettingParam.name,
+      type: rawSettingParam.type,
+      properties: props,
+    };
+    var modSetSchema = $Array.slice(rawSetSchema);
+    modSetSchema[0] = modSettingParam;
+    validate([details, callback], modSetSchema);
     return sendRequest('types.ChromeSetting.set',
                        [prefKey, details, callback],
-                       extendSchema(setSchema));
+                       extendSchema(modSetSchema));
   };
   this.clear = function(details, callback) {
     var clearSchema = this.functionSchemas.clear.definition.parameters;

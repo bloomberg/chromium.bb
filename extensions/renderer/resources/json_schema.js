@@ -330,7 +330,7 @@ JSONSchemaValidator.prototype.validateEnum = function(instance, schema, path) {
   }
 
   this.addError(path, "invalidEnum",
-                [schema.enum.map(enumToString).join(", ")]);
+                [$Array.join($Array.map(schema.enum, enumToString), ", ")]);
   return false;
 };
 

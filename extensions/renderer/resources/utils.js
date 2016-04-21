@@ -33,7 +33,7 @@ function forEach(obj, f, self) {
  */
 function lookup(array_of_dictionaries, field, value) {
   var filter = function (dict) {return dict[field] == value;};
-  var matches = array_of_dictionaries.filter(filter);
+  var matches = $Array.filter(array_of_dictionaries, filter);
   if (matches.length == 0) {
     return undefined;
   } else if (matches.length == 1) {

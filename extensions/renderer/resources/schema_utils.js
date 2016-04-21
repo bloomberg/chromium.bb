@@ -86,7 +86,7 @@ function getParameterSignatureString(name, definedSignature) {
       return "optional " + typeName;
     return typeName;
   };
-  var typeNames = definedSignature.map(getSchemaTypeString);
+  var typeNames = $Array.map(definedSignature, getSchemaTypeString);
   return name + "(" + typeNames.join(", ") + ")";
 };
 
@@ -94,7 +94,7 @@ function getParameterSignatureString(name, definedSignature) {
 // Example return value for call: chrome.windows.get(1, callback) is:
 // "windows.get(int, function)"
 function getArgumentSignatureString(name, args) {
-  var typeNames = args.map(JSONSchemaValidator.getType);
+  var typeNames = $Array.map(args, JSONSchemaValidator.getType);
   return name + "(" + typeNames.join(", ") + ")";
 };
 

@@ -21,6 +21,22 @@ namespace extensions {
 
 namespace {
 
+// Recursively freezes every v8 object on |object|.
+void DeepFreeze(const v8::Local<v8::Object>& object,
+                const v8::Local<v8::Context>& context) {
+  // Don't let the object trace upwards via the prototype.
+  v8::Maybe<bool> maybe =
+      object->SetPrototype(context, v8::Null(context->GetIsolate()));
+  CHECK(maybe.IsJust() && maybe.FromJust());
+  v8::Local<v8::Array> property_names = object->GetOwnPropertyNames();
+  for (uint32_t i = 0; i < property_names->Length(); ++i) {
+    v8::Local<v8::Value> child = object->Get(property_names->Get(i));
+    if (child->IsObject())
+      DeepFreeze(v8::Local<v8::Object>::Cast(child), context);
+  }
+  object->SetIntegrityLevel(context, v8::IntegrityLevel::kFrozen);
+}
+
 class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
  public:
   SchemaRegistryNativeHandler(V8SchemaRegistry* registry,
@@ -105,7 +121,7 @@ v8::Local<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   CHECK(!value.IsEmpty());
 
   v8::Local<v8::Object> v8_schema(v8::Local<v8::Object>::Cast(value));
-  v8_schema->SetIntegrityLevel(context, v8::IntegrityLevel::kFrozen);
+  DeepFreeze(v8_schema, context);
   schema_cache_->Set(api, v8_schema);
 
   return handle_scope.Escape(v8_schema);

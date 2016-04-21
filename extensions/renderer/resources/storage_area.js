@@ -8,7 +8,7 @@ var sendRequest = require('sendRequest').sendRequest;
 
 function extendSchema(schema) {
   var extendedSchema = $Array.slice(schema);
-  extendedSchema.unshift({'type': 'string'});
+  $Array.unshift(extendedSchema, {'type': 'string'});
   return extendedSchema;
 }
 

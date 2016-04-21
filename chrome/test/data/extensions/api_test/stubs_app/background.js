@@ -22,7 +22,8 @@ function getApiPaths() {
     [module.functions, module.events].forEach(function(section) {
       if (typeof(section) == "undefined")
         return;
-      section.forEach(function(entry) {
+      // Pieces of the module don't inherit from Array/Object.
+      Array.prototype.forEach.call(section, function(entry) {
         apiPaths.push(namespace + "." + entry.name);
       });
     });
