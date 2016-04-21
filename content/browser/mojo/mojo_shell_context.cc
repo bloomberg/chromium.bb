@@ -148,6 +148,7 @@ class MojoShellContext::BuiltinManifestProvider
       return false;
     *manifest_contents = GetContentClient()->GetDataResource(
         it->second, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
+    DCHECK(!manifest_contents->empty());
     return true;
   }
 
