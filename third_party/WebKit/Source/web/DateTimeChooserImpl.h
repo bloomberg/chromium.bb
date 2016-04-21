@@ -33,9 +33,6 @@
 
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/page/PagePopupClient.h"
-#include "wtf/build_config.h"
-
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
 namespace blink {
 
@@ -74,7 +71,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
 #endif // DateTimeChooserImpl_h

@@ -30,7 +30,6 @@
 
 #include "web/DateTimeChooserImpl.h"
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/InputTypeNames.h"
 #include "core/frame/FrameView.h"
 #include "core/html/forms/DateTimeChooserClient.h"
@@ -52,6 +51,7 @@ DateTimeChooserImpl::DateTimeChooserImpl(ChromeClientImpl* chromeClient, DateTim
     , m_parameters(parameters)
     , m_locale(Locale::create(parameters.locale))
 {
+    DCHECK(RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
     DCHECK(m_chromeClient);
     DCHECK(m_client);
     m_popup = m_chromeClient->openPagePopup(this);
@@ -210,5 +210,3 @@ void DateTimeChooserImpl::didClosePopup()
 }
 
 } // namespace blink
-
-#endif // ENABLE(INPUT_MULTIPLE_FIELDS_UI)

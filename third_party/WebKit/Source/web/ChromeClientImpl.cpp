@@ -686,11 +686,9 @@ ColorChooser* ChromeClientImpl::openColorChooser(LocalFrame* frame, ColorChooser
 DateTimeChooser* ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
 {
     notifyPopupOpeningObservers();
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    return DateTimeChooserImpl::create(this, pickerClient, parameters);
-#else
+    if (RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled())
+        return DateTimeChooserImpl::create(this, pickerClient, parameters);
     return ExternalDateTimeChooser::create(this, m_webView->client(), pickerClient, parameters);
-#endif
 }
 
 void ChromeClientImpl::openFileChooser(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)

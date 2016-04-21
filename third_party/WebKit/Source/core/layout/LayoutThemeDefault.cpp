@@ -110,12 +110,15 @@ Color LayoutThemeDefault::systemColor(CSSValueID cssValueId) const
 // Use the Windows style sheets to match their metrics.
 String LayoutThemeDefault::extraDefaultStyleSheet()
 {
-    return LayoutTheme::extraDefaultStyleSheet()
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-        + loadResourceAsASCIIString("themeInputMultipleFields.css")
-#endif
-        + loadResourceAsASCIIString("themeWin.css");
-
+    String extraStyleSheet = LayoutTheme::extraDefaultStyleSheet();
+    String multipleFieldsStyleSheet = RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled() ? loadResourceAsASCIIString("themeInputMultipleFields.css") : String();
+    String windowsStyleSheet = loadResourceAsASCIIString("themeWin.css");
+    StringBuilder builder;
+    builder.reserveCapacity(extraStyleSheet.length() + multipleFieldsStyleSheet.length() + windowsStyleSheet.length());
+    builder.append(extraStyleSheet);
+    builder.append(multipleFieldsStyleSheet);
+    builder.append(windowsStyleSheet);
+    return builder.toString();
 }
 
 String LayoutThemeDefault::extraQuirksStyleSheet()

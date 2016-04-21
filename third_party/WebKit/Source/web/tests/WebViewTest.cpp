@@ -2050,7 +2050,6 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus)
     EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.textContent().utf8().data());
 }
 
-#if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 static void openDateTimeChooser(WebView* webView, HTMLInputElement* inputElement)
 {
     inputElement->focus();
@@ -2073,6 +2072,8 @@ static void openDateTimeChooser(WebView* webView, HTMLInputElement* inputElement
 #endif
 TEST_F(WebViewTest, MAYBE_ChooseValueFromDateTimeChooser)
 {
+    bool originalMultipleFieldsFlag = RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled();
+    RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(false);
     DateTimeChooserWebViewClient client;
     std::string url = m_baseURL + "date_time_chooser.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "date_time_chooser.html");
@@ -2140,8 +2141,8 @@ TEST_F(WebViewTest, MAYBE_ChooseValueFromDateTimeChooser)
     // Clear the WebViewClient from the webViewHelper to avoid use-after-free in the
     // WebViewHelper destructor.
     m_webViewHelper.reset();
+    RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(originalMultipleFieldsFlag);
 }
-#endif
 
 TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle)
 {

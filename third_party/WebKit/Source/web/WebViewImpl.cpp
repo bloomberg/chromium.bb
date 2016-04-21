@@ -2518,12 +2518,10 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeTextArea;
     }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     if (element->isHTMLElement()) {
         if (toHTMLElement(element)->isDateTimeFieldElement())
             return WebTextInputTypeDateTimeField;
     }
-#endif
 
     if (element->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
         return WebTextInputTypeContentEditable;
