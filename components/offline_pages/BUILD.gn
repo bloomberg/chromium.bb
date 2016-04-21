@@ -57,8 +57,6 @@ source_set("switches") {
   sources = [
     "offline_page_feature.cc",
     "offline_page_feature.h",
-    "offline_page_switches.cc",
-    "offline_page_switches.h",
   ]
 
   deps = [
@@ -90,12 +88,6 @@ source_set("unit_tests") {
 }
 
 if (is_android) {
-  java_cpp_enum("offline_page_feature_enums_java") {
-    sources = [
-      "offline_page_feature.h",
-    ]
-  }
-
   java_cpp_enum("offline_page_model_enums_java") {
     sources = [
       "offline_page_model.h",

@@ -44,7 +44,6 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/offline_pages/offline_page_feature.h"
-#include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/proximity_auth/switches.h"
@@ -488,16 +487,6 @@ const FeatureEntry::Choice kUpdateMenuItemSummaryChoices[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-const FeatureEntry::Choice kEnableOfflinePagesChoices[] = {
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_FLAGS_ENABLE_OFFLINE_PAGES_AS_BOOKMARKS,
-     switches::kEnableOfflinePagesAsBookmarks, ""},
-    {IDS_FLAGS_ENABLE_OFFLINE_PAGES_AS_SAVED_PAGES,
-     switches::kEnableOfflinePagesAsSavedPages, ""},
-    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableOfflinePages,
-     ""},
-};
-
 const FeatureEntry::Choice kHerbPrototypeChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
@@ -1575,9 +1564,9 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kProgressBarAnimationChoices)},
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
-    {"offline-pages-mode", IDS_FLAGS_OFFLINE_PAGES_NAME,
-     IDS_FLAGS_OFFLINE_PAGES_DESCRIPTION, kOsAndroid,
-     MULTI_VALUE_TYPE(kEnableOfflinePagesChoices)},
+    {"offline-bookmarks", IDS_FLAGS_OFFLINE_BOOKMARKS_NAME,
+     IDS_FLAGS_OFFLINE_BOOKMARKS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflineBookmarksFeature)},
     {"offline-pages-background-loading",
      IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_NAME,
      IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_DESCRIPTION, kOsAndroid,

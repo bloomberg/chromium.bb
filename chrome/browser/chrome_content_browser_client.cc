@@ -205,7 +205,6 @@
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/offline_pages/offline_page_switches.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
@@ -1638,9 +1637,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kEnableNetBenchmarking,
       switches::kEnableNewBookmarkApps,
-#if defined(OS_ANDROID)
-      switches::kEnableOfflinePagesAsBookmarks,
-#endif
       switches::kEnableWasm,
 #if !defined(DISABLE_NACL)
       switches::kForcePNaClSubzero,

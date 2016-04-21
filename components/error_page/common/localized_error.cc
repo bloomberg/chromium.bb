@@ -1056,22 +1056,6 @@ void LocalizedError::GetStrings(int error_code,
     error_strings->Set("showSavedCopyButton", show_saved_copy_button);
   }
 
-#if defined(OS_ANDROID)
-  // Offline button will not be provided when we want to show something in the
-  // cache.
-  if (!show_saved_copy_visible && has_offline_pages) {
-    base::DictionaryValue* show_offline_pages_button =
-        new base::DictionaryValue;
-    base::string16 button_text = l10n_util::GetStringUTF16(
-        offline_pages::GetOfflinePageFeatureMode() ==
-            offline_pages::FeatureMode::ENABLED_AS_BOOKMARKS
-                ? IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES_AS_BOOKMARKS
-                : IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES);
-    show_offline_pages_button->SetString("msg", button_text);
-    error_strings->Set("showOfflinePagesButton", show_offline_pages_button);
-  }
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
   // ChromeOS has its own diagnostics extension, which doesn't rely on a
   // browser-initiated dialog.

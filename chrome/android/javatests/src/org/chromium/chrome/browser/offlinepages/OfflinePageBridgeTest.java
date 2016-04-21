@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
@@ -20,8 +19,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.SavePageResult;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -30,10 +27,9 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for {@link OfflinePageBridge}. */
-@CommandLineFlags.Add({ChromeSwitches.ENABLE_OFFLINE_PAGES})
+@CommandLineFlags.Add("enable-features=OfflineBookmarks")
 public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
@@ -130,102 +126,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
-    public void testGetLaunchUrlFromOnlineUrl() throws Exception {
-        // Start online
-        forceConnectivityStateOnUiThread(true);
-        loadUrl(mTestPage);
-        savePage(SavePageResult.SUCCESS, mTestPage);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Should return online URL since we are online.
-                assertEquals(mTestPage, mOfflinePageBridge.getLaunchUrlFromOnlineUrl(mTestPage));
-
-                // Switch to offline
-                NetworkChangeNotifier.forceConnectivityState(false);
-
-                // Should return saved page URL since we are offline.
-                assertTrue("Offline page item offline file url doesn't start properly.",
-                        mOfflinePageBridge.getLaunchUrlFromOnlineUrl(mTestPage).startsWith(
-                                "file:///"));
-            }
-        });
-    }
-
-    @SmallTest
-    public void testGetLaunchUrlAndMarkAccessed() throws Exception {
-        // Start online
-        forceConnectivityStateOnUiThread(true);
-
-        loadUrl(mTestPage);
-        savePage(SavePageResult.SUCCESS, mTestPage);
-
-        final OfflinePageItem offlinePage = getPageByClientId(BOOKMARK_ID);
-
-        assertEquals("", 0, offlinePage.getAccessCount());
-        long initialAccessTimeMs = offlinePage.getLastAccessTimeMs();
-
-        final AtomicReference<String> launchUrlRef = new AtomicReference<String>();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                launchUrlRef.set(
-                        mOfflinePageBridge.getLaunchUrlAndMarkAccessed(offlinePage, mTestPage));
-            }
-        });
-
-        assertEquals("Should return online URL while online", mTestPage, launchUrlRef.get());
-        launchUrlRef.set(null);
-
-        assertEquals("Get launch URL should not affect access time while online.",
-                initialAccessTimeMs, getPageByClientId(BOOKMARK_ID).getLastAccessTimeMs());
-        assertEquals("Get launch URL should not affect access count while online.", 0,
-                getPageByClientId(BOOKMARK_ID).getAccessCount());
-
-        // Switch to offline
-        forceConnectivityStateOnUiThread(false);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Should return saved page URL since we are offline.
-                launchUrlRef.set(
-                        mOfflinePageBridge.getLaunchUrlAndMarkAccessed(offlinePage, mTestPage));
-            }
-        });
-
-        assertTrue("Offline page item offline file url doesn't start properly.",
-                launchUrlRef.get().startsWith("file:///"));
-        // We need to poll since there is no callback for mark page as accessed.  Polling on
-        // instrumentation thread because getPageByClientId jumps to the UI thread.
-        try {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Failed while waiting for access count to change.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            try {
-                                OfflinePageItem entry = getPageByClientId(BOOKMARK_ID);
-                                return entry != null && entry.getAccessCount() != 0;
-                            } catch (InterruptedException e) {
-                                return false;
-                            }
-                        }
-                    },
-                    TIMEOUT_MS, POLLING_INTERVAL);
-        } catch (InterruptedException e) {
-            fail("Failed while waiting for access count to change." + e);
-        }
-
-        OfflinePageItem entry = getPageByClientId(BOOKMARK_ID);
-        assertEquals("GetLaunchUrl should increment accessed count when used while offline.", 1,
-                entry.getAccessCount());
-
-        assertTrue("GetLaunchUrl should update last accessed time when used while offline.",
-                entry.getLastAccessTimeMs() > offlinePage.getLastAccessTimeMs());
-    }
-
-    @SmallTest
     public void testGetPageByBookmarkId() throws Exception {
         loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
@@ -264,12 +164,16 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 mOfflinePageBridge.getOfflineUrlForOnlineUrl(offlinePage.getUrl()));
     }
 
-    @CommandLineFlags.Add("disable-features=offline-pages-background-loading")
+    @CommandLineFlags.Add("disable-features=OfflinePagesBackgroundLoading")
     @SmallTest
     public void testBackgroundLoadSwitch() throws Exception {
-        // We should be able to call the C++ is enabled function from the Java side.
-        assertFalse("If background loading is off, we should see the feature disabled",
-                OfflinePageBridge.isBackgroundLoadingEnabled());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse("If background loading is off, we should see the feature disabled",
+                        OfflinePageBridge.isBackgroundLoadingEnabled());
+            }
+        });
     }
 
     private void savePage(final int expectedResult, final String expectedUrl)

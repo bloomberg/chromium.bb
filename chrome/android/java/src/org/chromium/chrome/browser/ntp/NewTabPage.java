@@ -218,7 +218,8 @@ public class NewTabPage
         private static final String NTP_OFFLINE_PAGES_FEATURE_NAME = "NTPOfflinePages";
 
         private boolean isNtpOfflinePagesEnabled() {
-            return OfflinePageBridge.isEnabled()
+            // TODO(treib): Figure out correct offline feature to check.
+            return OfflinePageBridge.isOfflinePagesEnabled()
                     && ChromeFeatureList.isEnabled(NTP_OFFLINE_PAGES_FEATURE_NAME);
         }
 
@@ -313,19 +314,10 @@ public class NewTabPage
             return matchByHost ? UrlUtilities.sameHost(url1, url2) : url1.equals(url2);
         }
 
-        private String getLaunchUrl(String url) {
-            if (!isNtpOfflinePagesEnabled()) return url;
-
-            if (mOfflinePageBridge == null) {
-                mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
-            }
-            return mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
-        }
-
         @Override
         public void open(String url) {
             if (mIsDestroyed) return;
-            mTab.loadUrl(new LoadUrlParams(getLaunchUrl(url), PageTransition.AUTO_BOOKMARK));
+            mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
         }
 
         @Override
@@ -353,19 +345,19 @@ public class NewTabPage
             switch (menuId) {
                 case ID_OPEN_IN_NEW_WINDOW:
                     TabDelegate tabDelegate = new TabDelegate(false);
-                    LoadUrlParams loadUrlParams = new LoadUrlParams(getLaunchUrl(item.getUrl()));
+                    LoadUrlParams loadUrlParams = new LoadUrlParams(item.getUrl());
                     tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity,
                             mTab.getParentId());
                     return true;
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(getLaunchUrl(item.getUrl()),
+                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
                             PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
                             mTab, false);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(getLaunchUrl(item.getUrl()),
+                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
                             PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_FOREGROUND,
                             mTab, true);
                     return true;

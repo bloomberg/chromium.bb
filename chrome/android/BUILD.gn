@@ -179,7 +179,6 @@ android_library("chrome_java") {
       "//chrome:page_info_connection_type_javagen",
       "//chrome:website_settings_action_javagen",
       "//components/infobars/core:infobar_enums_java",
-      "//components/offline_pages:offline_page_feature_enums_java",
       "//components/offline_pages:offline_page_model_enums_java",
       "//components/omnibox/browser:autocomplete_match_javagen",
       "//components/omnibox/browser:autocomplete_match_type_javagen",

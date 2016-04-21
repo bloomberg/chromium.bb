@@ -7,16 +7,16 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
-#include "components/offline_pages/offline_page_switches.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -95,16 +95,19 @@ class OfflinePageTabHelperTest :
 };
 
 void OfflinePageTabHelperTest::SetUp() {
+  // Enables offline pages feature.
+  // TODO(jianli): Remove this once the feature is completely enabled.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOfflineBookmarksFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+
   // Creates a test web contents.
   content::RenderViewHostTestHarness::SetUp();
   OfflinePageTabHelper::CreateForWebContents(web_contents());
   offline_page_tab_helper_ =
       OfflinePageTabHelper::FromWebContents(web_contents());
-
-  // Enables offline pages feature.
-  // TODO(jianli): Remove this once the feature is completely enabled.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableOfflinePages);
 
   // Sets up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(

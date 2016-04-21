@@ -72,7 +72,7 @@ public class OfflinePageUtils {
         if (bookmarkId == null) return;
 
         // Making sure the feature is enabled.
-        if (!OfflinePageBridge.isEnabled()) return;
+        if (!OfflinePageBridge.isOfflineBookmarksEnabled()) return;
 
         // Making sure tab is worth keeping.
         if (shouldSkipSavingTabOffline(tab)) return;
@@ -126,7 +126,7 @@ public class OfflinePageUtils {
      * @param tab The current tab.
      */
     public static void showOfflineSnackbarIfNecessary(ChromeActivity activity, Tab tab) {
-        if (!OfflinePageBridge.isEnabled()) return;
+        if (!OfflinePageBridge.isOfflinePagesEnabled()) return;
 
         if (OfflinePageTabObserver.getInstance() == null) {
             SnackbarController snackbarController =

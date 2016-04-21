@@ -171,32 +171,6 @@ public abstract class ChromeSwitches {
     public static final String NTP_SWITCH_TO_EXISTING_TAB = "ntp-switch-to-existing-tab";
 
     /**
-     * Enables offline pages.
-     * Native switch - switches::kEnableOfflinePages
-     */
-    public static final String ENABLE_OFFLINE_PAGES = "enable-offline-pages";
-
-    /**
-     * Enables offline pages, showing 'bookmarks' name in UI strings.
-     * Native switch - switches::kEnableOfflinePagesAsBookmarks
-     */
-    public static final String ENABLE_OFFLINE_PAGES_AS_BOOKMARKS =
-            "enable-offline-pages-as-bookmarks";
-
-    /**
-     * Enables offline pages, showing 'saved pages' name in UI strings.
-     * Native switch - switches::kEnableOfflinePagesAsSavedPages
-     */
-    public static final String ENABLE_OFFLINE_PAGES_AS_SAVED_PAGES =
-            "enable-offline-pages-as-saved-pages";
-
-    /**
-     * Disables offline pages.
-     * Native switch - switches::kDisableOfflinePages
-     */
-    public static final String DISABLE_OFFLINE_PAGES = "disable-offline-pages";
-
-    /**
      * Enable keyboard accessory view that shows autofill suggestions on top of the keyboard.
      * Native switch - autofill::switches::kEnableAccessorySuggestionView
      */

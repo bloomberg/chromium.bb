@@ -12,10 +12,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offlinepages.DeletePageResult;
-import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
@@ -31,8 +29,6 @@ import java.util.Set;
 public class OfflinePageBridge {
     public static final String BOOKMARK_NAMESPACE = "bookmark";
     public static final long INVALID_OFFLINE_ID = 0;
-    private static final String OFFLINE_PAGES_BACKGROUND_LOADING_FEATURE_NAME =
-            "offline-pages-background-loading";
 
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
@@ -51,8 +47,12 @@ public class OfflinePageBridge {
     private final ObserverList<OfflinePageModelObserver> mObservers =
             new ObserverList<OfflinePageModelObserver>();
 
-    /** Mode of the offline pages feature */
-    private static Integer sFeatureMode;
+    /** Whether offline pages feature is enabled or not. */
+    private static Boolean sOfflinePagesEnabled;
+
+    /** Whether an offline sub-feature is enabled or not. */
+    private static Boolean sOfflineBookmarksEnabled;
+    private static Boolean sBackgroundLoadingEnabled;
 
     /**
      * Callback used when saving an offline page.
@@ -185,21 +185,37 @@ public class OfflinePageBridge {
     }
 
     /**
-     * @return True if the offline pages feature is enabled, regardless whether bookmark or saved
-     *     page shown in UI strings.
+     * @return True if offline pages feature is enabled.
      */
-    public static boolean isEnabled() {
+    public static boolean isOfflinePagesEnabled() {
         ThreadUtils.assertOnUiThread();
-        return nativeGetFeatureMode() != FeatureMode.DISABLED;
+        if (sOfflinePagesEnabled == null) {
+            sOfflinePagesEnabled = nativeIsOfflinePagesEnabled();
+        }
+        return sOfflinePagesEnabled;
     }
 
     /**
-     * @return True if the offline pages feature is enabled, regardless whether bookmark or saved
-     *     page shown in UI strings.
+     * @return True if saving bookmarked pages for offline viewing is enabled.
+     */
+    public static boolean isOfflineBookmarksEnabled() {
+        ThreadUtils.assertOnUiThread();
+        if (sOfflineBookmarksEnabled == null) {
+            sOfflineBookmarksEnabled = nativeIsOfflineBookmarksEnabled();
+        }
+        return sOfflineBookmarksEnabled;
+    }
+
+    /**
+     * @return True if saving offline pages in the background is enabled.
      */
     @VisibleForTesting
     public static boolean isBackgroundLoadingEnabled() {
-        return ChromeFeatureList.isEnabled(OFFLINE_PAGES_BACKGROUND_LOADING_FEATURE_NAME);
+        ThreadUtils.assertOnUiThread();
+        if (sBackgroundLoadingEnabled == null) {
+            sBackgroundLoadingEnabled = nativeIsBackgroundLoadingEnabled();
+        }
+        return sBackgroundLoadingEnabled;
     }
 
     /**
@@ -488,45 +504,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as accessed
-     * and reports the UMAs.
-     *
-     * @param onlineUrl Online url of a bookmark.
-     * @return The launch URL.
-     */
-    public String getLaunchUrlFromOnlineUrl(String onlineUrl) {
-        if (!isEnabled()) return onlineUrl;
-        return getLaunchUrlAndMarkAccessed(
-                nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl), onlineUrl);
-    }
-
-    /**
-     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as
-     * accessed and reports the UMAs.
-     *
-     * @param page Offline page to get the launch url for.
-     * @param onlineUrl Online URL to launch if offline is not available.
-     * @return The launch URL.
-     */
-    @VisibleForTesting
-    String getLaunchUrlAndMarkAccessed(OfflinePageItem page, String onlineUrl) {
-        if (page == null) return onlineUrl;
-
-        boolean isOnline = OfflinePageUtils.isConnected();
-        RecordHistogram.recordBooleanHistogram("OfflinePages.OnlineOnOpen", isOnline);
-
-        // When there is a network connection, we visit original URL online.
-        if (isOnline) return onlineUrl;
-
-        // Mark that the offline page has been accessed, that will cause last access time and access
-        // count being updated.
-        markPageAccessed(page.getOfflineId());
-
-        // Returns the offline URL for offline access.
-        return page.getOfflineUrl();
-    }
-
-    /**
      * Gets the offline URL of an offline page of that is saved for the online URL.
      * This method is deprecated. Use OfflinePageBridge#getPagesByOnlineUrl.
      *
@@ -636,7 +613,9 @@ public class OfflinePageBridge {
         return new ClientId(clientNamespace, id);
     }
 
-    private static native int nativeGetFeatureMode();
+    private static native boolean nativeIsOfflinePagesEnabled();
+    private static native boolean nativeIsOfflineBookmarksEnabled();
+    private static native boolean nativeIsBackgroundLoadingEnabled();
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
 

@@ -275,7 +275,6 @@
         '../../chrome/chrome.gyp:chrome_java_test_support',
         '../../components/components.gyp:invalidation_javatests',
         '../../components/components.gyp:gcm_driver_java',
-        '../../components/components.gyp:offline_page_feature_enums_java',
         '../../components/components.gyp:offline_page_model_enums_java',
         '../../components/components.gyp:precache_javatests',
         '../../components/components.gyp:security_state_enums_java',

@@ -89,8 +89,19 @@ void DeletePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
 
 }  // namespace
 
-static jint GetFeatureMode(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  return static_cast<jint>(offline_pages::GetOfflinePageFeatureMode());
+static jboolean IsOfflinePagesEnabled(JNIEnv* env,
+                                          const JavaParamRef<jclass>& clazz) {
+  return offline_pages::IsOfflinePagesEnabled();
+}
+
+static jboolean IsOfflineBookmarksEnabled(JNIEnv* env,
+                                          const JavaParamRef<jclass>& clazz) {
+  return offline_pages::IsOfflineBookmarksEnabled();
+}
+
+static jboolean IsBackgroundLoadingEnabled(JNIEnv* env,
+                                           const JavaParamRef<jclass>& clazz) {
+  return offline_pages::IsOfflinePagesBackgroundLoadingEnabled();
 }
 
 static jboolean CanSavePage(JNIEnv* env,

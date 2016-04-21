@@ -29,14 +29,6 @@
       Show saved copy
     </message>
   </if>
-  <if expr="is_android">
-    <message name="IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES_AS_BOOKMARKS" desc="Label for the button on an error page to show bookmarks that have been saved offline">
-      Show offline bookmarks
-    </message>
-    <message name="IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES" desc="Label for the button on an error page to show pages that have been saved offline">
-      Show all saved pages
-    </message>
-  </if>
   <message name="IDS_ERRORPAGE_FUN_DISABLED" desc="Explanation for when easter egg has been disabled by administrator">
     The owner of this device turned off the dinosaur game.
   </message>

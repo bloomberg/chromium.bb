@@ -30,7 +30,6 @@
 #include "components/offline_pages/offline_page_bookmark_bridge.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_switches.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1134,35 +1133,62 @@ TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
 }
 
-TEST(CommandLineFlagsTest, OffliningRecentPages) {
-  // TODO(dimich): once offline pages are enabled by default, remove this.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableOfflinePages);
+TEST(CommandLineFlagsTest, OfflineBookmarks) {
   // Disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());
+
+  // Check if feature is correctly enabled by command-line flag.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOfflineBookmarksFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+  EXPECT_TRUE(offline_pages::IsOfflineBookmarksEnabled());
+}
+
+TEST(CommandLineFlagsTest, OffliningRecentPages) {
+  // Enable offline bookmarks feature first.
+  // TODO(dimich): once offline pages are enabled by default, remove this.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOfflineBookmarksFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  // This feature is still disabled by default.
   EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
 
   // Check if feature is correctly enabled by command-line flag.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOffliningRecentPagesFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  scoped_ptr<base::FeatureList> feature_list2(new base::FeatureList);
+  feature_list2->InitializeFromCommandLine(
+      std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
+          offline_pages::kOffliningRecentPagesFeature.name,
+      "");
+  base::FeatureList::SetInstance(std::move(feature_list2));
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
 TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
+  // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableOfflinePages);
-  // Disabled by default.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOfflineBookmarksFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+
+  // This feature is still disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
 
   // Check if feature is correctly enabled by command-line flag.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOfflinePagesBackgroundLoadingFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  scoped_ptr<base::FeatureList> feature_list2(new base::FeatureList);
+  feature_list2->InitializeFromCommandLine(
+      std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
+          offline_pages::kOfflinePagesBackgroundLoadingFeature.name,
+      "");
+  base::FeatureList::SetInstance(std::move(feature_list2));
   EXPECT_TRUE(offline_pages::IsOfflinePagesBackgroundLoadingEnabled());
 }
 
