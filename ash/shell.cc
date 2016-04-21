@@ -221,7 +221,6 @@ bool Shell::HasInstance() {
 // static
 void Shell::DeleteInstance() {
   delete instance_;
-  instance_ = nullptr;
 }
 
 // static
@@ -816,6 +815,10 @@ Shell::~Shell() {
   // of its owned RootWindowControllers relies on the value.
   display_manager_->CreateScreenForShutdown();
   display_configuration_controller_.reset();
+
+  // Needs to happen before |window_tree_host_manager_|. Calls back to Shell, so
+  // also needs to be destroyed before |instance_| reset to null.
+  wm_globals_.reset();
 
   // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_->Shutdown();

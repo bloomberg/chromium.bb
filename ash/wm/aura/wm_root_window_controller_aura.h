@@ -36,6 +36,10 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
   WmGlobals* GetGlobals() override;
   WorkspaceWindowState GetWorkspaceWindowState() override;
   WmWindow* GetWindow() override;
+  void ConfigureWidgetInitParamsForContainer(
+      views::Widget* widget,
+      int shell_container_id,
+      views::Widget::InitParams* init_params) override;
 
  private:
   RootWindowController* root_window_controller_;

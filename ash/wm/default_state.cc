@@ -68,17 +68,7 @@ void MoveToDisplayForRestore(WindowState* window_state) {
 }
 
 DockedWindowLayoutManager* GetDockedWindowLayoutManager(WmGlobals* globals) {
-  WmWindow* active_window = globals->GetActiveWindow();
-  if (!active_window)
-    return nullptr;
-
-  WmWindow* dock_container =
-      active_window->GetRootWindow()->GetChildByShellWindowId(
-          kShellWindowId_DockedContainer);
-  DockedWindowLayoutManager* dock_layout =
-      static_cast<DockedWindowLayoutManager*>(
-          WmWindowAura::GetAuraWindow(dock_container)->layout_manager());
-  return dock_layout;
+  return DockedWindowLayoutManager::Get(globals->GetActiveWindow());
 }
 
 class ScopedPreferredAlignmentResetter {
@@ -143,7 +133,7 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
     }
 
     if (dock_layout &&
-        dock_layout->CanDockWindow(window_state->aura_window(),
+        dock_layout->CanDockWindow(window_state->window(),
                                    desired_dock_alignment)) {
       if (window_state->IsDocked()) {
         dock_layout->MaybeSetDesiredDockedAlignment(desired_dock_alignment);

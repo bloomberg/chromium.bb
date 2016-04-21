@@ -270,8 +270,8 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
             window->GetBoundsInScreen().x());
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
-  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
-      window->parent()->layout_manager());
+  DockedWindowLayoutManager* manager =
+      DockedWindowLayoutManager::Get(wm::WmWindowAura::Get(window.get()));
 
   // Create two additional windows and test their auto-placement
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -320,8 +320,8 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
             window->GetBoundsInScreen().right());
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
-  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
-      window->parent()->layout_manager());
+  DockedWindowLayoutManager* manager =
+      DockedWindowLayoutManager::Get(wm::WmWindowAura::Get(window.get()));
 
   // Create two additional windows and test their auto-placement
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
@@ -374,8 +374,8 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
             window->GetBoundsInScreen().right());
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
-  DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
-      window->parent()->layout_manager());
+  DockedWindowLayoutManager* manager =
+      DockedWindowLayoutManager::Get(wm::WmWindowAura::Get(window.get()));
 
   // Create two additional windows and test their auto-placement
   bounds = gfx::Rect(616, 32, 231, 320);

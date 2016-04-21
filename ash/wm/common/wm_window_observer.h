@@ -42,6 +42,8 @@ class ASH_EXPORT WmWindowObserver {
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {}
 
+  virtual void OnWindowVisibilityChanging(wm::WmWindow* window, bool visible) {}
+
  protected:
   virtual ~WmWindowObserver() {}
 };

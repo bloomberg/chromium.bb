@@ -132,12 +132,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // on the size.
   if (details().bounds_change & kBoundsChange_Resizes) {
     gfx::Rect work_area = GetTarget()->GetDisplayNearestWindow().work_area();
-    wm::WmWindow* dock_container =
-        GetTarget()->GetRootWindow()->GetChildByShellWindowId(
-            kShellWindowId_DockedContainer);
     DockedWindowLayoutManager* dock_layout =
-        static_cast<DockedWindowLayoutManager*>(
-            wm::WmWindowAura::GetAuraWindow(dock_container)->layout_manager());
+        DockedWindowLayoutManager::Get(GetTarget());
 
     work_area.Union(dock_layout->docked_bounds());
     work_area = GetTarget()->GetParent()->ConvertRectFromScreen(work_area);
@@ -203,12 +199,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // calculate the target display after the drag.
     const gfx::Display& display =
         gfx::Screen::GetScreen()->GetDisplayMatching(near_passed_location);
-    wm::WmWindow* dock_container =
-        wm::GetRootWindowMatching(near_passed_location)
-            ->GetChildByShellWindowId(kShellWindowId_DockedContainer);
-    DockedWindowLayoutManager* dock_layout =
-        static_cast<DockedWindowLayoutManager*>(
-            wm::WmWindowAura::GetAuraWindow(dock_container)->layout_manager());
+    DockedWindowLayoutManager* dock_layout = DockedWindowLayoutManager::Get(
+        wm::GetRootWindowMatching(near_passed_location));
 
     gfx::Rect screen_work_area = display.work_area();
     screen_work_area.Union(dock_layout->docked_bounds());

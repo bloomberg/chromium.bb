@@ -76,5 +76,12 @@ WmWindow* WmRootWindowControllerAura::GetWindow() {
   return WmWindowAura::Get(root_window_controller_->GetRootWindow());
 }
 
+void WmRootWindowControllerAura::ConfigureWidgetInitParamsForContainer(
+    views::Widget* widget,
+    int shell_container_id,
+    views::Widget::InitParams* init_params) {
+  init_params->parent = Shell::GetContainer(
+      root_window_controller_->GetRootWindow(), shell_container_id);
+}
 }  // namespace wm
 }  // namespace ash

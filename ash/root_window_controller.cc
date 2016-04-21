@@ -33,6 +33,7 @@
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/aura/aura_layout_manager_adapter.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
@@ -809,10 +810,11 @@ void RootWindowController::InitLayoutManagers() {
   }
 
   // Create Docked windows layout manager
-  aura::Window* docked_container = GetContainer(kShellWindowId_DockedContainer);
+  wm::WmWindow* docked_container =
+      wm::WmWindowAura::Get(GetContainer(kShellWindowId_DockedContainer));
   docked_layout_manager_ =
       new DockedWindowLayoutManager(docked_container, workspace_controller());
-  docked_container->SetLayoutManager(docked_layout_manager_);
+  docked_container->SetLayoutManager(base::WrapUnique(docked_layout_manager_));
 
   // Installs SnapLayoutManager to containers who set the
   // |kSnapsChildrenToPhysicalPixelBoundary| property.

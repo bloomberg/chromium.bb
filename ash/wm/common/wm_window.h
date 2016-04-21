@@ -5,6 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_WINDOW_H_
 #define ASH_WM_COMMON_WM_WINDOW_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -24,11 +25,16 @@ namespace ui {
 class Layer;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace ash {
 namespace wm {
 
 class WMEvent;
 class WmGlobals;
+class WmLayoutManager;
 class WmRootWindowController;
 class WmWindowObserver;
 enum class WmWindowProperty;
@@ -39,6 +45,8 @@ class WindowState;
 // or mus::Window. See aura::Window for details on the functions.
 class ASH_EXPORT WmWindow {
  public:
+  static WmWindow* Get(views::Widget* widget);
+
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetRootWindow());
@@ -69,8 +77,8 @@ class ASH_EXPORT WmWindow {
   virtual gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const = 0;
   virtual gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const = 0;
 
-  virtual gfx::Size GetMinimumSize() = 0;
-  virtual gfx::Size GetMaximumSize() = 0;
+  virtual gfx::Size GetMinimumSize() const = 0;
+  virtual gfx::Size GetMaximumSize() const = 0;
 
   // Returns the visibility requested by this window. IsVisible() takes into
   // account the visibility of the layer and ancestors, where as this tracks
@@ -96,11 +104,20 @@ class ASH_EXPORT WmWindow {
 
   virtual WmWindow* GetParent() = 0;
 
-  virtual WmWindow* GetTransientParent() = 0;
+  WmWindow* GetTransientParent() {
+    return const_cast<WmWindow*>(
+        const_cast<const WmWindow*>(this)->GetTransientParent());
+  }
+  virtual const WmWindow* GetTransientParent() const = 0;
   virtual std::vector<WmWindow*> GetTransientChildren() = 0;
+
+  virtual void SetLayoutManager(
+      std::unique_ptr<WmLayoutManager> layout_manager) = 0;
+  virtual WmLayoutManager* GetLayoutManager() = 0;
 
   // |type| is WindowVisibilityAnimationType. Has to be an int to match aura.
   virtual void SetVisibilityAnimationType(int type) = 0;
+  virtual void SetVisibilityAnimationDuration(base::TimeDelta delta) = 0;
   virtual void Animate(::wm::WindowAnimationType type) = 0;
 
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
@@ -141,6 +158,8 @@ class ASH_EXPORT WmWindow {
   virtual void Hide() = 0;
   virtual void Show() = 0;
 
+  virtual bool IsFocused() const = 0;
+
   virtual bool IsActive() const = 0;
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
@@ -155,10 +174,16 @@ class ASH_EXPORT WmWindow {
   virtual bool CanActivate() const = 0;
 
   virtual void StackChildAtTop(WmWindow* child) = 0;
+  virtual void StackChildAtBottom(WmWindow* child) = 0;
   virtual void StackChildAbove(WmWindow* child, WmWindow* target) = 0;
   virtual void StackChildBelow(WmWindow* child, WmWindow* target) = 0;
 
   virtual std::vector<WmWindow*> GetChildren() = 0;
+
+  // If an ancestor has been set to snap children to pixel boundaries, then
+  // snaps the layer associated with this window to the layer associated with
+  // the ancestor.
+  virtual void SnapToPixelBoundaryIfNecessary() = 0;
 
   virtual void AddObserver(WmWindowObserver* observer) = 0;
   virtual void RemoveObserver(WmWindowObserver* observer) = 0;

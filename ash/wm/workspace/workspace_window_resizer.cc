@@ -537,10 +537,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     did_lock_cursor_ = true;
   }
 
-  aura::Window* dock_container = Shell::GetContainer(
-      GetAuraTarget()->GetRootWindow(), kShellWindowId_DockedContainer);
-  dock_layout_ = static_cast<DockedWindowLayoutManager*>(
-      dock_container->layout_manager());
+  dock_layout_ = DockedWindowLayoutManager::Get(GetTarget());
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||
@@ -926,9 +923,8 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   DockedAlignment desired_alignment = (snap_type_ == SNAP_LEFT) ?
       DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
   const bool can_dock =
-      dock_layout_->CanDockWindow(GetAuraTarget(), desired_alignment) &&
-      dock_layout_->GetAlignmentOfWindow(GetAuraTarget()) !=
-          DOCKED_ALIGNMENT_NONE;
+      dock_layout_->CanDockWindow(GetTarget(), desired_alignment) &&
+      dock_layout_->GetAlignmentOfWindow(GetTarget()) != DOCKED_ALIGNMENT_NONE;
   if (!can_dock) {
     // If the window cannot be docked, undock the window. This may change the
     // workspace bounds and hence |snap_type_|.
@@ -1041,7 +1037,7 @@ void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
   if (should_dock) {
     if (!dock_layout_->is_dragged_window_docked()) {
       window_state()->set_bounds_changed_by_user(false);
-      dock_layout_->DockDraggedWindow(GetAuraTarget());
+      dock_layout_->DockDraggedWindow(GetTarget());
     }
   } else {
     if (dock_layout_->is_dragged_window_docked()) {

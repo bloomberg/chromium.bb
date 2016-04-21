@@ -21,7 +21,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   // TODO(sky): friend deleter and make private.
   ~WmWindowAura() override;
 
-  // Returns a WmWindow for an aura::Window, creating if necessary.
+  // Returns a WmWindow for an aura::Window, creating if necessary. |window| may
+  // be null, in which case null is returned.
   static WmWindow* Get(aura::Window* window);
 
   static aura::Window* GetAuraWindow(WmWindow* wm_window) {
@@ -50,8 +51,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   gfx::Point ConvertPointFromScreen(const gfx::Point& point) const override;
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
   gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const override;
-  gfx::Size GetMinimumSize() override;
-  gfx::Size GetMaximumSize() override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
   bool GetTargetVisibility() const override;
   bool IsVisible() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
@@ -61,9 +62,13 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
                              const gfx::Rect& screen_bounds) override;
   void AddChild(WmWindow* window) override;
   WmWindow* GetParent() override;
-  WmWindow* GetTransientParent() override;
+  const WmWindow* GetTransientParent() const override;
   std::vector<WmWindow*> GetTransientChildren() override;
+  void SetLayoutManager(
+      std::unique_ptr<WmLayoutManager> layout_manager) override;
+  WmLayoutManager* GetLayoutManager() override;
   void SetVisibilityAnimationType(int type) override;
+  void SetVisibilityAnimationDuration(base::TimeDelta delta) override;
   void Animate(::wm::WindowAnimationType type) override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
@@ -93,12 +98,14 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool CanResize() const override;
   bool CanActivate() const override;
   void StackChildAtTop(WmWindow* child) override;
+  void StackChildAtBottom(WmWindow* child) override;
   void StackChildAbove(WmWindow* child, WmWindow* target) override;
   void StackChildBelow(WmWindow* child, WmWindow* target) override;
   void SetAlwaysOnTop(bool value) override;
   bool IsAlwaysOnTop() const override;
   void Hide() override;
   void Show() override;
+  bool IsFocused() const override;
   bool IsActive() const override;
   void Activate() override;
   void Deactivate() override;
@@ -106,6 +113,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void Minimize() override;
   void Unminimize() override;
   std::vector<WmWindow*> GetChildren() override;
+  void SnapToPixelBoundaryIfNecessary() override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
 
@@ -120,6 +128,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
 
   aura::Window* window_;
 

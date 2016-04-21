@@ -9,8 +9,10 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/wm_activation_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -33,6 +35,10 @@ WmGlobalsAura::WmGlobalsAura() {
 
 WmGlobalsAura::~WmGlobalsAura() {
   instance_ = nullptr;
+  if (added_activation_observer_) {
+    aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
+        ->RemoveObserver(this);
+  }
 }
 
 // static
@@ -40,6 +46,12 @@ WmGlobalsAura* WmGlobalsAura::Get() {
   if (!instance_)
     new WmGlobalsAura;
   return instance_;
+}
+
+WmWindow* WmGlobalsAura::GetFocusedWindow() {
+  return WmWindowAura::Get(
+      aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
+          ->GetFocusedWindow());
 }
 
 WmWindow* WmGlobalsAura::GetActiveWindow() {
@@ -84,6 +96,28 @@ std::vector<WmWindow*> WmGlobalsAura::GetAllRootWindows() {
   for (size_t i = 0; i < root_windows.size(); ++i)
     wm_windows[i] = WmWindowAura::Get(root_windows[i]);
   return wm_windows;
+}
+
+void WmGlobalsAura::AddActivationObserver(WmActivationObserver* observer) {
+  if (!added_activation_observer_) {
+    added_activation_observer_ = true;
+    aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
+        ->AddObserver(this);
+  }
+  activation_observers_.AddObserver(observer);
+}
+
+void WmGlobalsAura::RemoveActivationObserver(WmActivationObserver* observer) {
+  activation_observers_.RemoveObserver(observer);
+}
+
+void WmGlobalsAura::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  FOR_EACH_OBSERVER(WmActivationObserver, activation_observers_,
+                    OnWindowActivated(WmWindowAura::Get(gained_active),
+                                      WmWindowAura::Get(lost_active)));
 }
 
 }  // namespace wm

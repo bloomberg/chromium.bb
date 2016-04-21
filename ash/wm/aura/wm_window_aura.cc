@@ -5,8 +5,10 @@
 #include "ash/wm/aura/wm_window_aura.h"
 
 #include "ash/screen_util.h"
+#include "ash/wm/aura/aura_layout_manager_adapter.h"
 #include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
+#include "ash/wm/common/wm_layout_manager.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/common/wm_window_property.h"
 #include "ash/wm/window_animations.h"
@@ -67,6 +69,11 @@ class BoundsSetter : public aura::LayoutManager {
 WmWindowAura::WmWindowAura(aura::Window* window) : window_(window) {
   window_->AddObserver(this);
   window_->SetProperty(kWmWindowKey, this);
+}
+
+// static
+WmWindow* WmWindow::Get(views::Widget* widget) {
+  return WmWindowAura::Get(widget->GetNativeWindow());
 }
 
 // static
@@ -152,12 +159,12 @@ gfx::Rect WmWindowAura::ConvertRectFromScreen(const gfx::Rect& rect) const {
   return ScreenUtil::ConvertRectFromScreen(window_, rect);
 }
 
-gfx::Size WmWindowAura::GetMinimumSize() {
+gfx::Size WmWindowAura::GetMinimumSize() const {
   return window_->delegate() ? window_->delegate()->GetMinimumSize()
                              : gfx::Size();
 }
 
-gfx::Size WmWindowAura::GetMaximumSize() {
+gfx::Size WmWindowAura::GetMaximumSize() const {
   return window_->delegate() ? window_->delegate()->GetMaximumSize()
                              : gfx::Size();
 }
@@ -205,7 +212,7 @@ WmWindow* WmWindowAura::GetParent() {
   return Get(window_->parent());
 }
 
-WmWindow* WmWindowAura::GetTransientParent() {
+const WmWindow* WmWindowAura::GetTransientParent() const {
   return Get(::wm::GetTransientParent(window_));
 }
 
@@ -218,8 +225,24 @@ std::vector<WmWindow*> WmWindowAura::GetTransientChildren() {
   return wm_windows;
 }
 
+void WmWindowAura::SetLayoutManager(
+    std::unique_ptr<WmLayoutManager> layout_manager) {
+  // |window_| takes ownership of AuraLayoutManagerAdapter.
+  window_->SetLayoutManager(
+      new AuraLayoutManagerAdapter(std::move(layout_manager)));
+}
+
+WmLayoutManager* WmWindowAura::GetLayoutManager() {
+  return static_cast<AuraLayoutManagerAdapter*>(window_->layout_manager())
+      ->wm_layout_manager();
+}
+
 void WmWindowAura::SetVisibilityAnimationType(int type) {
   ::wm::SetWindowVisibilityAnimationType(window_, type);
+}
+
+void WmWindowAura::SetVisibilityAnimationDuration(base::TimeDelta delta) {
+  ::wm::SetWindowVisibilityAnimationDuration(window_, delta);
 }
 
 void WmWindowAura::Animate(::wm::WindowAnimationType type) {
@@ -374,6 +397,10 @@ void WmWindowAura::StackChildAtTop(WmWindow* child) {
   window_->StackChildAtTop(GetAuraWindow(child));
 }
 
+void WmWindowAura::StackChildAtBottom(WmWindow* child) {
+  window_->StackChildAtBottom(GetAuraWindow(child));
+}
+
 void WmWindowAura::StackChildAbove(WmWindow* child, WmWindow* target) {
   window_->StackChildAbove(GetAuraWindow(child), GetAuraWindow(target));
 }
@@ -396,6 +423,10 @@ void WmWindowAura::Hide() {
 
 void WmWindowAura::Show() {
   window_->Show();
+}
+
+bool WmWindowAura::IsFocused() const {
+  return window_->HasFocus();
 }
 
 bool WmWindowAura::IsActive() const {
@@ -436,6 +467,10 @@ std::vector<WmWindow*> WmWindowAura::GetChildren() {
 
 WmWindow* WmWindowAura::GetChildByShellWindowId(int id) {
   return Get(window_->GetChildById(id));
+}
+
+void WmWindowAura::SnapToPixelBoundaryIfNecessary() {
+  SnapWindowToPixelBoundary(window_);
 }
 
 void WmWindowAura::AddObserver(WmWindowObserver* observer) {
@@ -493,6 +528,12 @@ void WmWindowAura::OnWindowBoundsChanged(aura::Window* window,
 
 void WmWindowAura::OnWindowDestroying(aura::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroying(this));
+}
+
+void WmWindowAura::OnWindowVisibilityChanging(aura::Window* window,
+                                              bool visible) {
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_,
+                    OnWindowVisibilityChanging(this, visible));
 }
 
 }  // namespace wm

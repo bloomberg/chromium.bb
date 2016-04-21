@@ -9,7 +9,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "ash/snap_to_pixel_layout_manager.h"
+#include "ash/wm/common/wm_activation_observer.h"
+#include "ash/wm/common/wm_snap_to_pixel_layout_manager.h"
+#include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/dock/dock_types.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -17,11 +19,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class Window;
@@ -55,10 +54,10 @@ class WorkspaceController;
 // TODO(varkha): extend BaseLayoutManager instead of LayoutManager to inherit
 // common functionality.
 class ASH_EXPORT DockedWindowLayoutManager
-    : public SnapToPixelLayoutManager,
+    : public wm::WmSnapToPixelLayoutManager,
       public ash::ShellObserver,
-      public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver,
+      public wm::WmWindowObserver,
+      public wm::WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
       public wm::WindowStateObserver {
  public:
@@ -68,9 +67,13 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Minimum width of the docked windows area.
   static const int kMinDockWidth;
 
-  DockedWindowLayoutManager(aura::Window* dock_container,
+  DockedWindowLayoutManager(wm::WmWindow* dock_container,
                             WorkspaceController* workspace_controller);
   ~DockedWindowLayoutManager() override;
+
+  // Returns the DockedWindowLayoutManager in the specified hierarchy. This
+  // searches from the root of |window|.
+  static DockedWindowLayoutManager* Get(wm::WmWindow* window);
 
   // Disconnects observers before container windows get destroyed.
   void Shutdown();
@@ -81,10 +84,10 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Called by a DockedWindowResizer to update which window is being dragged.
   // Starts observing the window unless it is a child.
-  void StartDragging(aura::Window* window);
+  void StartDragging(wm::WmWindow* window);
 
   // Called by a DockedWindowResizer when a dragged window is docked.
-  void DockDraggedWindow(aura::Window* window);
+  void DockDraggedWindow(wm::WmWindow* window);
 
   // Called by a DockedWindowResizer when a dragged window is no longer docked.
   void UndockDraggedWindow();
@@ -103,7 +106,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   void SetShelf(Shelf* shelf);
 
   // Calculates if a window is touching the screen edges and returns edge.
-  DockedAlignment GetAlignmentOfWindow(const aura::Window* window) const;
+  DockedAlignment GetAlignmentOfWindow(const wm::WmWindow* window) const;
 
   // Used to snap docked windows to the side of screen during drag.
   DockedAlignment CalculateAlignment() const;
@@ -118,9 +121,9 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Returns true when a window can be docked. Windows cannot be docked at the
   // edge used by the shelf or the edge opposite from existing dock.
-  bool CanDockWindow(aura::Window* window, DockedAlignment desired_alignment);
+  bool CanDockWindow(wm::WmWindow* window, DockedAlignment desired_alignment);
 
-  aura::Window* dock_container() const { return dock_container_; }
+  wm::WmWindow* dock_container() const { return dock_container_; }
 
   // Returns current bounding rectangle of docked windows area.
   const gfx::Rect& docked_bounds() const { return docked_bounds_; }
@@ -136,12 +139,12 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // SnapLayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(aura::Window* child) override;
-  void OnWillRemoveWindowFromLayout(aura::Window* child) override {}
-  void OnWindowRemovedFromLayout(aura::Window* child) override;
-  void OnChildWindowVisibilityChanged(aura::Window* child,
+  void OnWindowAddedToLayout(wm::WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(wm::WmWindow* child) override {}
+  void OnWindowRemovedFromLayout(wm::WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(wm::WmWindow* child,
                                       bool visibile) override;
-  void SetChildBounds(aura::Window* child,
+  void SetChildBounds(wm::WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
   // ash::ShellObserver:
@@ -154,18 +157,16 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
                                   wm::WindowStateType old_type) override;
 
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
+  // wm::WmWindowObserver:
+  void OnWindowBoundsChanged(wm::WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
-  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
-  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanging(wm::WmWindow* window, bool visible) override;
+  void OnWindowDestroying(wm::WmWindow* window) override;
 
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // wm::WmActivationObserver:
+  void OnWindowActivated(wm::WmWindow* gained_active,
+                         wm::WmWindow* lost_active) override;
 
  private:
   struct CompareMinimumHeight;
@@ -183,7 +184,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   static const int kIdealWidth;
 
   // Returns the alignment of the docked windows other than the |child|.
-  DockedAlignment CalculateAlignmentExcept(const aura::Window* child) const;
+  DockedAlignment CalculateAlignmentExcept(const wm::WmWindow* child) const;
 
   // Determines if the |alignment| is applicable taking into account
   // the shelf alignment.
@@ -191,7 +192,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Keep at most kMaxVisibleWindows visible in the dock and minimize the rest
   // (except for |child|).
-  void MaybeMinimizeChildrenExcept(aura::Window* child);
+  void MaybeMinimizeChildrenExcept(wm::WmWindow* child);
 
   // Minimize / restore window and relayout.
   void MinimizeDockedWindow(wm::WindowState* window_state);
@@ -204,7 +205,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   void UpdateDockedWidth(int width);
 
   // Updates docked layout state when a window gets inside the dock.
-  void OnDraggedWindowDocked(aura::Window* window);
+  void OnDraggedWindowDocked(wm::WmWindow* window);
 
   // Updates docked layout state when a window gets outside the dock.
   void OnDraggedWindowUndocked();
@@ -216,7 +217,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // the |dock_container_|'s left edge than the |window|'s right edge to
   // the |dock_container_|'s right edge. Returns DOCKED_ALIGNMENT_RIGHT
   // otherwise.
-  DockedAlignment GetEdgeNearestWindow(const aura::Window* window) const;
+  DockedAlignment GetEdgeNearestWindow(const wm::WmWindow* window) const;
 
   // Called whenever the window layout might change.
   void Relayout();
@@ -227,7 +228,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // (positive value) that remains after resizing all windows or deficit
   // (negative value) if not all the windows fit.
   int CalculateWindowHeightsAndRemainingRoom(
-      const gfx::Rect work_area,
+      const gfx::Rect& work_area,
       std::vector<WindowWithHeight>* visible_windows);
 
   // Calculate ideal width for the docked area. It will get used to adjust the
@@ -249,13 +250,13 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Called whenever the window stacking order needs to be updated (e.g. focus
   // changes or a window is moved).
-  void UpdateStacking(aura::Window* active_window);
+  void UpdateStacking(wm::WmWindow* active_window);
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
 
   // Parent window associated with this layout manager.
-  aura::Window* dock_container_;
+  wm::WmWindow* dock_container_;
   // Protect against recursive calls to Relayout().
   bool in_layout_;
 
@@ -263,7 +264,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Windows are tracked by docked layout manager only if they are docked;
   // however we need to know if a window is being dragged in order to avoid
   // positioning it or even considering it for layout.
-  aura::Window* dragged_window_;
+  wm::WmWindow* dragged_window_;
 
   // True if the window being dragged is currently docked.
   bool is_dragged_window_docked_;
@@ -300,7 +301,7 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // The last active window. Used to maintain stacking order even if no windows
   // are currently focused.
-  aura::Window* last_active_window_;
+  wm::WmWindow* last_active_window_;
 
   // Timestamp of the last user-initiated action that changed docked state.
   // Used in UMA metrics.

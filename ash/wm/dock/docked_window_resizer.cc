@@ -13,20 +13,12 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
-#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
 namespace {
-
-DockedWindowLayoutManager* GetDockedLayoutManagerInRoot(wm::WmWindow* root) {
-  wm::WmWindow* dock_container =
-      root->GetChildByShellWindowId(kShellWindowId_DockedContainer);
-  return static_cast<DockedWindowLayoutManager*>(
-      wm::WmWindowAura::GetAuraWindow(dock_container)->layout_manager());
-}
 
 DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     const gfx::Point& point) {
@@ -35,7 +27,7 @@ DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
   if (!display.bounds().Contains(point))
     return nullptr;
 
-  return GetDockedLayoutManagerInRoot(
+  return DockedWindowLayoutManager::Get(
       wm::WmRootWindowController::GetWithDisplayId(display.id())->GetWindow());
 }
 
@@ -93,7 +85,7 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     // The window's initial layout manager already knows that the drag is
     // in progress for this window.
     if (new_dock_layout != initial_dock_layout_)
-      new_dock_layout->StartDragging(GetAuraTarget());
+      new_dock_layout->StartDragging(GetTarget());
   }
   // Window could get docked by the WorkspaceWindowResizer, update the state.
   is_docked_ = dock_layout_->is_dragged_window_docked();
@@ -115,7 +107,7 @@ void DockedWindowResizer::RevertDrag() {
   if (is_docked_ != was_docked_) {
     is_docked_ = was_docked_;
     if (is_docked_)
-      dock_layout_->DockDraggedWindow(GetAuraTarget());
+      dock_layout_->DockDraggedWindow(GetTarget());
     else
       dock_layout_->UndockDraggedWindow();
   }
@@ -134,12 +126,9 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
       was_bounds_changed_by_user_(window_state->bounds_changed_by_user()),
       weak_ptr_factory_(this) {
   DCHECK(details().is_resizable);
-  wm::WmWindow* dock_container =
-      GetTarget()->GetRootWindow()->GetChildByShellWindowId(
-          kShellWindowId_DockedContainer);
-  dock_layout_ = GetDockedLayoutManagerInRoot(GetTarget()->GetRootWindow());
+  dock_layout_ = DockedWindowLayoutManager::Get(GetTarget()->GetRootWindow());
   initial_dock_layout_ = dock_layout_;
-  was_docked_ = GetTarget()->GetParent() == dock_container;
+  was_docked_ = GetTarget()->GetParent() == dock_layout_->dock_container();
   is_docked_ = was_docked_;
 }
 
@@ -183,7 +172,7 @@ void DockedWindowResizer::StartedDragging(
   // Tell the dock layout manager that we are dragging this window.
   // At this point we are not yet animating the window as it may not be
   // inside the docked area.
-  dock_layout_->StartDragging(GetAuraTarget());
+  dock_layout_->StartDragging(GetTarget());
   if (!resizer)
     return;
   // Reparent workspace windows during the drag to elevate them above workspace.
@@ -203,7 +192,7 @@ void DockedWindowResizer::StartedDragging(
       return;
   }
   if (is_docked_)
-    dock_layout_->DockDraggedWindow(GetAuraTarget());
+    dock_layout_->DockDraggedWindow(GetTarget());
 }
 
 void DockedWindowResizer::FinishedDragging(

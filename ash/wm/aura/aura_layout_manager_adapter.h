@@ -25,6 +25,8 @@ class ASH_EXPORT AuraLayoutManagerAdapter : public aura::LayoutManager {
       std::unique_ptr<WmLayoutManager> wm_layout_manager);
   ~AuraLayoutManagerAdapter() override;
 
+  WmLayoutManager* wm_layout_manager() { return wm_layout_manager_.get(); }
+
   // aura::LayoutManager:
   void OnWindowResized() override;
   void OnWindowAddedToLayout(aura::Window* child) override;

@@ -18,6 +18,7 @@ class Rect;
 namespace ash {
 namespace wm {
 
+class WmActivationObserver;
 class WmWindow;
 
 // Used for accessing global state.
@@ -29,6 +30,7 @@ class ASH_EXPORT WmGlobals {
   // through context.
   static WmGlobals* Get();
 
+  virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;
 
   // Returns the root window for the specified display.
@@ -52,6 +54,9 @@ class ASH_EXPORT WmGlobals {
   virtual void UnlockCursor() = 0;
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
+
+  virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
+  virtual void RemoveActivationObserver(WmActivationObserver* observer) = 0;
 };
 
 }  // namespace wm
