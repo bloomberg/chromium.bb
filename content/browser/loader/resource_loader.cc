@@ -21,6 +21,7 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl/ssl_policy.h"
@@ -103,10 +104,10 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
       content::ResourceRequestInfo::ForRequest(request);
   if (request_info)
     response->head.is_using_lofi = request_info->IsUsingLoFi();
-  if (ServiceWorkerRequestHandler* handler =
-          ServiceWorkerRequestHandler::GetHandler(request)) {
-    handler->GetExtraResponseInfo(&response->head);
-  }
+  const ServiceWorkerResponseInfo* service_worker_info =
+      ServiceWorkerResponseInfo::ForRequest(request);
+  if (service_worker_info)
+    service_worker_info->GetExtraResponseInfo(&response->head);
   AppCacheInterceptor::GetExtraResponseInfo(
       request, &response->head.appcache_id,
       &response->head.appcache_manifest_url);

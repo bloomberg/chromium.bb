@@ -103,15 +103,6 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   return NULL;
 }
 
-void ServiceWorkerContextRequestHandler::GetExtraResponseInfo(
-    ResourceResponseInfo* response_info) const {
-  response_info->was_fetched_via_service_worker = false;
-  response_info->was_fallback_required_by_service_worker = false;
-  response_info->original_url_via_service_worker = GURL();
-  response_info->response_type_via_service_worker =
-      blink::WebServiceWorkerResponseTypeDefault;
-}
-
 bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
     const GURL& url) {
   // We only write imports that occur during the initial eval.

@@ -117,5 +117,34 @@ promise_test(t => {
         });
   }, 'Service Worker does not intercept navigations.');
 
+promise_test(t => {
+    var scope = 'simple.txt?fallback';
+    var remote_url =
+        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+    return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
+      .then(() => fetch(remote_url))
+      .then(response => {});
+  }, 'Service Worker that fallback to network should not crash.');
+
+promise_test(t => {
+    var ff_scope = 'foreign-fetch/scope/controlled?basic';
+    var remote_url =
+        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + ff_scope;
+    var scope = 'resources/simple.html';
+    var worker = 'resources/empty-worker.js';
+    return install_cross_origin_worker(t, worker_for_scopes(['']), ff_scope)
+      .then(() => service_worker_unregister_and_register(t, worker, scope))
+      .then(r => {
+          add_completion_callback(() => r.unregister());
+          return wait_for_state(t, r.installing, 'activated');
+        })
+      .then(() => with_iframe(scope))
+      .then(frame => frame.contentWindow.fetch(remote_url))
+      .then(response => response.text())
+      .then(response_text => {
+          assert_equals(response_text, 'Foreign Fetch');
+        });
+  }, 'Foreign fetch can intercept requests from SW controlled pages.');
+
 </script>
 </body>

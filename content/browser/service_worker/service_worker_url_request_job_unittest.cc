@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/streams/stream.h"
@@ -62,103 +63,6 @@ namespace {
 
 const int kProviderID = 100;
 const char kTestData[] = "Here is sample text for the blob.";
-
-class TestCallbackTracker {
- public:
-  TestCallbackTracker() {}
-  ~TestCallbackTracker() {}
-
-  void OnStartCompleted(
-      bool was_fetched_via_service_worker,
-      bool was_fallback_required,
-      const GURL& original_url_via_service_worker,
-      blink::WebServiceWorkerResponseType response_type_via_service_worker,
-      base::TimeTicks service_worker_start_time,
-      base::TimeTicks service_worker_ready_time,
-      bool response_is_in_cache_storage,
-      const std::string& response_cache_storage_cache_name) {
-    ++times_on_start_completed_invoked_;
-
-    was_fetched_via_service_worker_ = was_fetched_via_service_worker;
-    was_fallback_required_ = was_fallback_required;
-    original_url_via_service_worker_ = original_url_via_service_worker;
-    response_type_via_service_worker_ =
-        blink::WebServiceWorkerResponseTypeDefault;
-    service_worker_start_time_ = service_worker_start_time;
-    service_worker_ready_time_ = service_worker_ready_time;
-    response_is_in_cache_storage_ = response_is_in_cache_storage;
-    response_cache_storage_cache_name_ = response_cache_storage_cache_name;
-  }
-
-  void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
-                          base::TimeTicks service_worker_ready_time) {
-    ++times_prepare_to_restart_invoked_;
-
-    was_fetched_via_service_worker_ = false;
-    was_fallback_required_ = false;
-    original_url_via_service_worker_ = GURL();
-    response_type_via_service_worker_ =
-        blink::WebServiceWorkerResponseTypeDefault;
-    service_worker_start_time_ = service_worker_start_time;
-    service_worker_ready_time_ = service_worker_ready_time;
-  }
-
-  int times_on_start_completed_invoked() const {
-    return times_on_start_completed_invoked_;
-  }
-
-  int times_prepare_to_restart_invoked() const {
-    return times_prepare_to_restart_invoked_;
-  }
-
-  bool was_fetched_via_service_worker() const {
-    return was_fetched_via_service_worker_;
-  }
-
-  bool was_fallback_required() const { return was_fallback_required_; }
-
-  const GURL& original_url_via_service_worker() const {
-    return original_url_via_service_worker_;
-  }
-
-  blink::WebServiceWorkerResponseType response_type_via_service_worker() const {
-    return response_type_via_service_worker_;
-  }
-
-  base::TimeTicks service_worker_start_time() const {
-    return service_worker_start_time_;
-  }
-
-  base::TimeTicks service_worker_ready_time() const {
-    return service_worker_ready_time_;
-  }
-
-  bool response_is_in_cache_storage() const {
-    return response_is_in_cache_storage_;
-  }
-
-  const std::string& response_cache_storage_cache_name() const {
-    return response_cache_storage_cache_name_;
-  }
-
- private:
-  int times_on_start_completed_invoked_ = 0;
-  int times_prepare_to_restart_invoked_ = 0;
-
-  // These are all updated every time OnStartCompleted / OnPrepareToRestart are
-  // invoked.
-  bool was_fetched_via_service_worker_ = false;
-  bool was_fallback_required_ = false;
-  GURL original_url_via_service_worker_;
-  blink::WebServiceWorkerResponseType response_type_via_service_worker_ =
-      blink::WebServiceWorkerResponseTypeDefault;
-  base::TimeTicks service_worker_start_time_;
-  base::TimeTicks service_worker_ready_time_;
-  bool response_is_in_cache_storage_ = false;
-  std::string response_cache_storage_cache_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCallbackTracker);
-};
 
 class MockHttpProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
@@ -351,27 +255,7 @@ class ServiceWorkerURLRequestJobTest
   }
 
   // ServiceWorkerURLRequestJob::Delegate implementation:
-  void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
-                          base::TimeTicks service_worker_ready_time) override {
-    callback_tracker_.OnPrepareToRestart(service_worker_start_time,
-                                         service_worker_ready_time);
-  }
-
-  void OnStartCompleted(
-      bool was_fetched_via_service_worker,
-      bool was_fallback_required,
-      const GURL& original_url_via_service_worker,
-      blink::WebServiceWorkerResponseType response_type_via_service_worker,
-      base::TimeTicks worker_start_time,
-      base::TimeTicks service_worker_ready_time,
-      bool response_is_in_cache_storage,
-      const std::string& response_cache_storage_cache_name) override {
-    callback_tracker_.OnStartCompleted(
-        was_fetched_via_service_worker, was_fallback_required,
-        original_url_via_service_worker, response_type_via_service_worker,
-        worker_start_time, service_worker_ready_time,
-        response_is_in_cache_storage, response_cache_storage_cache_name);
-  }
+  void OnPrepareToRestart() override { times_prepare_to_restart_invoked_++; }
 
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override {
@@ -415,7 +299,7 @@ class ServiceWorkerURLRequestJobTest
 
   std::unique_ptr<storage::BlobDataBuilder> blob_data_;
 
-  TestCallbackTracker callback_tracker_;
+  int times_prepare_to_restart_invoked_ = 0;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
  private:
@@ -426,18 +310,19 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
-  EXPECT_FALSE(callback_tracker_.response_is_in_cache_storage());
-  EXPECT_EQ(std::string(),
-            callback_tracker_.response_cache_storage_cache_name());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
+  EXPECT_FALSE(info->response_is_in_cache_storage());
+  EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
 }
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
@@ -475,15 +360,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   TestRequest(500, "Service Worker Response Error", std::string(),
               false /* expect_valid_ssl */);
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
@@ -500,15 +387,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
   TestRequestResult(500, "Service Worker Response Error", std::string(),
                     false /* expect_valid_ssl */);
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_TRUE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_TRUE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_TRUE(info->service_worker_start_time().is_null());
+  EXPECT_TRUE(info->service_worker_ready_time().is_null());
 }
 
 // Responds to fetch events with a blob.
@@ -559,15 +448,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", expected_response, true /* expect_valid_ssl */);
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
@@ -576,15 +467,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
   TestRequest(500, "Service Worker Response Error", std::string(),
               true /* expect_valid_ssl */);
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 // Responds to fetch events with a stream.
@@ -647,18 +540,21 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
+  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
+
   request_.reset();
   EXPECT_FALSE(HasInflightRequests());
-
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
-  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
@@ -694,18 +590,21 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
+  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
+
   request_.reset();
   EXPECT_FALSE(HasInflightRequests());
-
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
-  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
 }
 
 
@@ -740,18 +639,21 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
+  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
+
   request_.reset();
   EXPECT_FALSE(HasInflightRequests());
-
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
-  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
 }
 
 
@@ -788,15 +690,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
             request_->response_headers()->GetStatusText());
   EXPECT_EQ(expected_response, url_request_delegate_.response_data());
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
@@ -839,15 +743,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_->status().is_success());
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest,
@@ -881,8 +787,8 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_->status().is_success());
 
-  EXPECT_EQ(0, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  EXPECT_FALSE(ServiceWorkerResponseInfo::ForRequest(request_.get()));
 }
 
 // Helper to simulate failing to dispatch a fetch event to a worker.
@@ -923,10 +829,12 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   ASSERT_TRUE(host);
   EXPECT_EQ(host->controlling_version(), nullptr);
 
-  EXPECT_EQ(0, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(1, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+  EXPECT_EQ(1, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 // TODO(horo): Remove this test when crbug.com/485900 is fixed.
@@ -944,15 +852,17 @@ TEST_F(ServiceWorkerURLRequestJobTest, MainScriptHTTPResponseInfoNotSet) {
   EXPECT_EQ(200, request_->GetResponseCode());
   EXPECT_EQ("", url_request_delegate_.response_data());
 
-  EXPECT_EQ(1, callback_tracker_.times_on_start_completed_invoked());
-  EXPECT_EQ(0, callback_tracker_.times_prepare_to_restart_invoked());
-  EXPECT_TRUE(callback_tracker_.was_fetched_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.was_fallback_required());
-  EXPECT_EQ(GURL(), callback_tracker_.original_url_via_service_worker());
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
   EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
-            callback_tracker_.response_type_via_service_worker());
-  EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
-  EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
 // TODO(kinuko): Add more tests with different response data and also for

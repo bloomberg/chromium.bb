@@ -32,8 +32,6 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
-  void GetExtraResponseInfo(ResourceResponseInfo* response_info) const override;
-
  private:
   bool ShouldAddToScriptCache(const GURL& url);
   bool ShouldReadFromScriptCache(const GURL& url, int64_t* resource_id_out);

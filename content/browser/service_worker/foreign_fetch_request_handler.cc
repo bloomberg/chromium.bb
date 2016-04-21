@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -102,6 +103,7 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
     net::NetworkDelegate* network_delegate,
     ResourceContext* resource_context) {
   ClearJob();
+  ServiceWorkerResponseInfo::ResetDataForRequest(request);
 
   if (!context_) {
     // We can't do anything other than to fall back to network.
@@ -204,22 +206,10 @@ void ForeignFetchRequestHandler::DidFindRegistration(
   job->ForwardToServiceWorker();
 }
 
-void ForeignFetchRequestHandler::OnPrepareToRestart(
-    base::TimeTicks service_worker_start_time,
-    base::TimeTicks service_worker_ready_time) {
+void ForeignFetchRequestHandler::OnPrepareToRestart() {
   use_network_ = true;
   ClearJob();
 }
-
-void ForeignFetchRequestHandler::OnStartCompleted(
-    bool was_fetched_via_service_worker,
-    bool was_fallback_required,
-    const GURL& original_url_via_service_worker,
-    blink::WebServiceWorkerResponseType response_type_via_service_worker,
-    base::TimeTicks service_worker_start_time,
-    base::TimeTicks service_worker_ready_time,
-    bool response_is_in_cache_storage,
-    const std::string& response_cache_storage_cache_name) {}
 
 ServiceWorkerVersion* ForeignFetchRequestHandler::GetServiceWorkerVersion(
     ServiceWorkerMetrics::URLRequestJobResult* result) {

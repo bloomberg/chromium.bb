@@ -38,7 +38,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
-struct ResourceResponseInfo;
 
 // Abstract base class for routing network requests to ServiceWorkers.
 // Created one per URLRequest and attached to each request.
@@ -101,9 +100,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       ResourceContext* context) = 0;
-
-  virtual void GetExtraResponseInfo(
-      ResourceResponseInfo* response_info) const = 0;
 
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer(int old_process_id);

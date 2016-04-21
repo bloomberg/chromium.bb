@@ -24,6 +24,7 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -613,7 +614,10 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
          request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
         !request()->initiator().IsSameOriginWith(
             url::Origin(request()->url()))) {
-      fall_back_required_ = true;
+      // TODO(mek): http://crbug.com/604084 Figure out what to do about CORS
+      // preflight and fallbacks for foreign fetch events.
+      fall_back_required_ =
+          fetch_type_ != ServiceWorkerFetchType::FOREIGN_FETCH;
       RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
       CreateResponseHeader(
           400, "Service Worker Fallback Required", ServiceWorkerHeaderMap());
@@ -824,28 +828,32 @@ void ServiceWorkerURLRequestJob::NotifyStartError(
 }
 
 void ServiceWorkerURLRequestJob::NotifyRestartRequired() {
-  delegate_->OnPrepareToRestart(worker_start_time_, worker_ready_time_);
+  ServiceWorkerResponseInfo::ForRequest(request_, true)
+      ->OnPrepareToRestart(worker_start_time_, worker_ready_time_);
+  delegate_->OnPrepareToRestart();
   URLRequestJob::NotifyRestartRequired();
 }
 
 void ServiceWorkerURLRequestJob::OnStartCompleted() const {
   if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
-    delegate_->OnStartCompleted(
-        false /* was_fetched_via_service_worker */,
-        false /* was_fallback_required */,
-        GURL() /* original_url_via_service_worker */,
-        blink::WebServiceWorkerResponseTypeDefault,
-        base::TimeTicks() /* service_worker_start_time */,
-        base::TimeTicks() /* service_worker_ready_time */,
-        false /* respons_is_in_cache_storage */,
-        std::string() /* response_cache_storage_cache_name */);
+    ServiceWorkerResponseInfo::ForRequest(request_, true)
+        ->OnStartCompleted(
+            false /* was_fetched_via_service_worker */,
+            false /* was_fallback_required */,
+            GURL() /* original_url_via_service_worker */,
+            blink::WebServiceWorkerResponseTypeDefault,
+            base::TimeTicks() /* service_worker_start_time */,
+            base::TimeTicks() /* service_worker_ready_time */,
+            false /* respons_is_in_cache_storage */,
+            std::string() /* response_cache_storage_cache_name */);
     return;
   }
-  delegate_->OnStartCompleted(true /* was_fetched_via_service_worker */,
-                              fall_back_required_, response_url_,
-                              service_worker_response_type_, worker_start_time_,
-                              worker_ready_time_, response_is_in_cache_storage_,
-                              response_cache_storage_cache_name_);
+  ServiceWorkerResponseInfo::ForRequest(request_, true)
+      ->OnStartCompleted(true /* was_fetched_via_service_worker */,
+                         fall_back_required_, response_url_,
+                         service_worker_response_type_, worker_start_time_,
+                         worker_ready_time_, response_is_in_cache_storage_,
+                         response_cache_storage_cache_name_);
 }
 
 bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {

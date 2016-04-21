@@ -63,21 +63,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
     // can use this opportunity to grab state from the
     // ServiceWorkerURLRequestJob to determine how it should behave when the
     // request is restarted.
-    virtual void OnPrepareToRestart(
-        base::TimeTicks service_worker_start_time,
-        base::TimeTicks service_worker_ready_time) = 0;
-
-    // Called when the request has finished starting.
-    // Unlike URLRequestJob::NotifyComplete, called both on success and failure.
-    virtual void OnStartCompleted(
-        bool was_fetched_via_service_worker,
-        bool was_fallback_required,
-        const GURL& original_url_via_service_worker,
-        blink::WebServiceWorkerResponseType response_type_via_service_worker,
-        base::TimeTicks worker_start_time,
-        base::TimeTicks service_worker_ready_time,
-        bool response_is_in_cache_storage,
-        const std::string& response_cache_storage_cache_name) = 0;
+    virtual void OnPrepareToRestart() = 0;
 
     // Returns the ServiceWorkerVersion fetch events for this request job should
     // be dispatched to. If no appropriate worker can be determined, returns

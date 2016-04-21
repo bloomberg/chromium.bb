@@ -57,8 +57,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
-  void GetExtraResponseInfo(ResourceResponseInfo* response_info) const override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
@@ -89,20 +87,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   // Called just before the request is restarted. Makes sure the next request
   // goes over the network.
-  void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
-                          base::TimeTicks service_worker_ready_time) override;
-
-  // Called when the request's start phase completes. Caches response info for
-  // GetExtraResponseInfo.
-  void OnStartCompleted(
-      bool was_fetched_via_service_worker,
-      bool was_fallback_required,
-      const GURL& original_url_via_service_worker,
-      blink::WebServiceWorkerResponseType response_type_via_service_worker,
-      base::TimeTicks worker_start_time,
-      base::TimeTicks service_worker_ready_time,
-      bool response_is_in_cache_storage,
-      const std::string& response_cache_storage_cache_name) override;
+  void OnPrepareToRestart() override;
 
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
@@ -130,16 +115,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // delivered from the network, bypassing the ServiceWorker. Cleared after the
   // next intercept opportunity, for main frame requests.
   bool use_network_;
-
-  // Cached metadata for GetExtraResponseInfo.
-  bool was_fetched_via_service_worker_;
-  bool was_fallback_required_;
-  GURL original_url_via_service_worker_;
-  blink::WebServiceWorkerResponseType response_type_via_service_worker_;
-  base::TimeTicks service_worker_start_time_;
-  base::TimeTicks service_worker_ready_time_;
-  bool response_is_in_cache_storage_ = false;
-  std::string response_cache_storage_cache_name_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
