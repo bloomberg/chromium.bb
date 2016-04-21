@@ -48,22 +48,15 @@
       'sources': [
         'ipc/service/image_transport_surface_overlay_mac.h',
         'ipc/service/image_transport_surface_overlay_mac.mm',
-        'ipc/service/ca_layer_partial_damage_tree_mac.h',
-        'ipc/service/ca_layer_partial_damage_tree_mac.mm',
-        'ipc/service/ca_layer_tree_mac.h',
-        'ipc/service/ca_layer_tree_mac.mm',
         'ipc/service/gpu_memory_buffer_factory_io_surface.cc',
         'ipc/service/gpu_memory_buffer_factory_io_surface.h',
         'ipc/service/image_transport_surface_mac.mm',
       ],
       'dependencies': [
-        '../skia/skia.gyp:skia',
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
       ],
       'link_settings': {
         'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/AVFoundation.framework',
-          '$(SDKROOT)/System/Library/Frameworks/CoreMedia.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
         ],
       },

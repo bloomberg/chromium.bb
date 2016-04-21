@@ -68,26 +68,15 @@ source_set("ipc_service_sources") {
   }
   if (is_mac) {
     sources += [
-      "ca_layer_partial_damage_tree_mac.h",
-      "ca_layer_partial_damage_tree_mac.mm",
-      "ca_layer_tree_mac.h",
-      "ca_layer_tree_mac.mm",
       "gpu_memory_buffer_factory_io_surface.cc",
       "gpu_memory_buffer_factory_io_surface.h",
       "image_transport_surface_mac.mm",
       "image_transport_surface_overlay_mac.h",
       "image_transport_surface_overlay_mac.mm",
     ]
-    deps += [
-      "//skia",
-      "//ui/accelerated_widget_mac",
-    ]
+    deps += [ "//ui/accelerated_widget_mac" ]
     lib_dirs = [ "$mac_sdk_path/usr/lib" ]
-    libs += [
-      "AVFoundation.framework",
-      "CoreMedia.framework",
-      "QuartzCore.framework",
-    ]
+    libs += [ "QuartzCore.framework" ]
   }
   if (is_android) {
     sources += [
@@ -161,16 +150,7 @@ test("gpu_ipc_service_unittests") {
     sources += [ "gpu_memory_buffer_factory_surface_texture_unittest.cc" ]
   }
   if (is_mac) {
-    sources += [
-      "ca_layer_tree_unittest_mac.mm",
-      "gpu_memory_buffer_factory_io_surface_unittest.cc",
-    ]
-    deps += [ "//ui/accelerated_widget_mac" ]
-    libs += [
-      "AVFoundation.framework",
-      "CoreMedia.framework",
-      "QuartzCore.framework",
-    ]
+    sources += [ "gpu_memory_buffer_factory_io_surface_unittest.cc" ]
   }
   if (use_ozone) {
     sources += [ "gpu_memory_buffer_factory_ozone_native_pixmap_unittest.cc" ]

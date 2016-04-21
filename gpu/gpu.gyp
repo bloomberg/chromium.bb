@@ -341,16 +341,8 @@
         }],
         ['OS == "mac"', {
           'sources': [
-            'ipc/service/ca_layer_tree_unittest_mac.mm',
             'ipc/service/gpu_memory_buffer_factory_io_surface_unittest.cc',
           ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/CoreMedia.framework',
-              '$(SDKROOT)/System/Library/Frameworks/AVFoundation.framework',
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
         }],
         ['use_ozone == 1', {
           'sources': [

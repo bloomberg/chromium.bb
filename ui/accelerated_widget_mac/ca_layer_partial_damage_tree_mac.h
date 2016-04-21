@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_CA_LAYER_PARTIAL_DAMAGE_TREE_MAC_H_
-#define GPU_IPC_SERVICE_CA_LAYER_PARTIAL_DAMAGE_TREE_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_CA_LAYER_PARTIAL_DAMAGE_TREE_MAC_H_
+#define UI_ACCELERATED_WIDGET_MAC_CA_LAYER_PARTIAL_DAMAGE_TREE_MAC_H_
 
 #include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
@@ -12,12 +12,13 @@
 #include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace gpu {
+namespace ui {
 
-class CALayerPartialDamageTree {
+class ACCELERATED_WIDGET_MAC_EXPORT CALayerPartialDamageTree {
  public:
   CALayerPartialDamageTree(bool allow_partial_swap,
                            base::ScopedCFTypeRef<IOSurfaceRef> io_surface,

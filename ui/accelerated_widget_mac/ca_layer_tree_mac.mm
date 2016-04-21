@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/ca_layer_tree_mac.h"
+#include "ui/accelerated_widget_mac/ca_layer_tree_mac.h"
 
 #include <AVFoundation/AVFoundation.h>
 #include <CoreMedia/CoreMedia.h>
 #include <CoreVideo/CoreVideo.h>
+#include <GLES2/gl2extchromium.h>
 
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
@@ -44,7 +44,7 @@ extern CFStringRef const kCMSampleAttachmentKey_DisplayImmediately;
 extern const CMTime kCMTimeInvalid;
 #endif  // MAC_OS_X_VERSION_10_8
 
-namespace gpu {
+namespace ui {
 
 namespace {
 
@@ -568,4 +568,4 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   }
 }
 
-}  // namespace gpu
+}  // namespace ui

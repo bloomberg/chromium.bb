@@ -2,12 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 # GYP version: ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac
 component("accelerated_widget_mac") {
   sources = [
     "accelerated_widget_mac.h",
     "accelerated_widget_mac.mm",
     "accelerated_widget_mac_export.h",
+    "ca_layer_partial_damage_tree_mac.h",
+    "ca_layer_partial_damage_tree_mac.mm",
+    "ca_layer_tree_mac.h",
+    "ca_layer_tree_mac.mm",
     "display_link_mac.cc",
     "display_link_mac.h",
     "io_surface_context.h",
@@ -24,9 +30,34 @@ component("accelerated_widget_mac") {
     "//ui/base",
     "//ui/events",
     "//ui/events:events_base",
+    "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
 
+  libs = [
+    "AVFoundation.framework",
+    "CoreMedia.framework",
+    "QuartzCore.framework",
+  ]
+}
+
+# GYP version: ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac_unittests
+test("accelerated_widget_mac_unittests") {
+  configs += [ "//build/config:precompiled_headers" ]
+  sources = [
+    "ca_layer_tree_unittest_mac.mm",
+  ]
+  deps = [
+    ":accelerated_widget_mac",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx:test_support",
+    "//ui/gl:test_support",
+  ]
   libs = [ "QuartzCore.framework" ]
 }

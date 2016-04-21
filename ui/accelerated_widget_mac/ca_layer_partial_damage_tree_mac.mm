@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/ca_layer_partial_damage_tree_mac.h"
+#include "ui/accelerated_widget_mac/ca_layer_partial_damage_tree_mac.h"
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
@@ -15,7 +15,7 @@
 -(void)setContentsChanged;
 @end
 
-namespace gpu {
+namespace ui {
 namespace {
 
 // When selecting a CALayer to re-use for partial damage, this is the maximum
@@ -284,4 +284,4 @@ void CALayerPartialDamageTree::CommitCALayers(
   UpdateCALayers(superlayer, scale_factor);
 }
 
-}  // namespace gpu
+}  // namespace ui

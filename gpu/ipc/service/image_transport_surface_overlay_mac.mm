@@ -24,10 +24,10 @@ typedef void* GLeglImageOES;
 #include "base/bind_helpers.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/ipc/service/ca_layer_partial_damage_tree_mac.h"
-#include "gpu/ipc/service/ca_layer_tree_mac.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "ui/accelerated_widget_mac/ca_layer_partial_damage_tree_mac.h"
+#include "ui/accelerated_widget_mac/ca_layer_tree_mac.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
@@ -281,7 +281,7 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     DLOG(ERROR) << "Only one overlay per swap is allowed.";
     return false;
   }
-  pending_partial_damage_tree_.reset(new CALayerPartialDamageTree(
+  pending_partial_damage_tree_.reset(new ui::CALayerPartialDamageTree(
       use_remote_layer_api_,
       static_cast<gl::GLImageIOSurface*>(image)->io_surface(),
       pixel_frame_rect));
@@ -306,7 +306,7 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
         static_cast<gl::GLImageIOSurface*>(contents_image)->io_surface();
   }
   if (!pending_ca_layer_tree_)
-    pending_ca_layer_tree_.reset(new CALayerTree);
+    pending_ca_layer_tree_.reset(new ui::CALayerTree);
   return pending_ca_layer_tree_->ScheduleCALayer(
       is_clipped, gfx::ToEnclosingRect(clip_rect), sorting_context_id,
       transform, io_surface, contents_rect, gfx::ToEnclosingRect(rect),

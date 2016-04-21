@@ -21,10 +21,12 @@
 @class CAContext;
 @class CALayer;
 
-namespace gpu {
-
+namespace ui {
 class CALayerTree;
 class CALayerPartialDamageTree;
+}
+
+namespace gpu {
 
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                                         public ui::GpuSwitchingObserver {
@@ -101,12 +103,12 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   // Planes that have been scheduled, but have not had a subsequent SwapBuffers
   // call made yet.
-  std::unique_ptr<CALayerPartialDamageTree> pending_partial_damage_tree_;
-  std::unique_ptr<CALayerTree> pending_ca_layer_tree_;
+  std::unique_ptr<ui::CALayerPartialDamageTree> pending_partial_damage_tree_;
+  std::unique_ptr<ui::CALayerTree> pending_ca_layer_tree_;
 
   // The planes that are currently being displayed on the screen.
-  std::unique_ptr<CALayerPartialDamageTree> current_partial_damage_tree_;
-  std::unique_ptr<CALayerTree> current_ca_layer_tree_;
+  std::unique_ptr<ui::CALayerPartialDamageTree> current_partial_damage_tree_;
+  std::unique_ptr<ui::CALayerTree> current_ca_layer_tree_;
 
   // The vsync information provided by the browser.
   bool vsync_parameters_valid_;

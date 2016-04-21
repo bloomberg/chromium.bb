@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_CA_LAYER_TREE_MAC_H_
-#define GPU_IPC_SERVICE_CA_LAYER_TREE_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_CA_LAYER_TREE_MAC_H_
+#define UI_ACCELERATED_WIDGET_MAC_CA_LAYER_TREE_MAC_H_
 
 #include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
@@ -14,7 +14,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "gpu/gpu_export.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -22,12 +22,12 @@
 
 @class AVSampleBufferDisplayLayer;
 
-namespace gpu {
+namespace ui {
 
 // The CALayerTree will construct a hierarchy of CALayers from a linear list,
 // using the algorithm and structure referenced described in
 // https://docs.google.com/document/d/1DtSN9zzvCF44_FQPM7ie01UxGHagQ66zfF5L9HnigQY/edit?usp=sharing
-class GPU_EXPORT CALayerTree {
+class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
  public:
   CALayerTree();
 
@@ -198,6 +198,6 @@ class GPU_EXPORT CALayerTree {
   DISALLOW_COPY_AND_ASSIGN(CALayerTree);
 };
 
-}  // namespace gpu
+}  // namespace ui
 
-#endif  // GPU_IPC_SERVICE_CA_LAYER_TREE_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_CA_LAYER_TREE_MAC_H_
