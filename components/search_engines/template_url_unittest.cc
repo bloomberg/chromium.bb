@@ -1192,6 +1192,32 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromNonUTF8URL) {
       result);
 }
 
+// Checks that the ExtractSearchTermsFromURL function strips constant
+// prefix/suffix strings from the search terms param.
+TEST_F(TemplateURLTest, ExtractSearchTermsWithPrefixAndSuffix) {
+  TemplateURLData data;
+  data.alternate_urls.push_back(
+      "http://www.example.com/?q=chromium-{searchTerms}@chromium.org");
+  data.alternate_urls.push_back(
+      "http://www.example.com/chromium-{searchTerms}@chromium.org/info");
+  TemplateURL url(data);
+  base::string16 result;
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://www.example.com/?q=chromium-dev@chromium.org"),
+      search_terms_data_, &result));
+  EXPECT_EQ(ASCIIToUTF16("dev"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://www.example.com/chromium-dev@chromium.org/info"),
+      search_terms_data_, &result));
+  EXPECT_EQ(ASCIIToUTF16("dev"), result);
+
+  // Don't match if the prefix and suffix aren't there.
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://www.example.com/?q=invalid"), search_terms_data_, &result));
+}
+
 TEST_F(TemplateURLTest, HasSearchTermsReplacementKey) {
   TemplateURLData data;
   data.SetURL("http://google.com/?q={searchTerms}");

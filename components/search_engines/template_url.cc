@@ -96,26 +96,49 @@ bool TryEncoding(const base::string16& terms,
   return true;
 }
 
+// Returns true if the search term placeholder is present, and also produces
+// the constant prefix/suffix found.
+bool TryMatchSearchParam(base::StringPiece text,
+                         base::StringPiece pattern,
+                         std::string* prefix,
+                         std::string* suffix) {
+  auto pos = text.find(pattern);
+  if (pos == base::StringPiece::npos)
+    return false;
+  text.substr(0, pos).CopyToString(prefix);
+  text.substr(pos + pattern.length()).CopyToString(suffix);
+  return true;
+}
+
 // Extract query key and host given a list of parameters coming from the URL
 // query or ref.
-std::string FindSearchTermsKey(const std::string& params) {
+struct SearchTermsKeyResult {
+  std::string key;
+  std::string value_prefix;
+  std::string value_suffix;
+  bool found() const { return !key.empty(); }
+};
+SearchTermsKeyResult FindSearchTermsKey(const std::string& params) {
+  SearchTermsKeyResult result;
   if (params.empty())
-    return std::string();
+    return result;
   url::Component query, key, value;
   query.len = static_cast<int>(params.size());
   while (url::ExtractQueryKeyValue(params.c_str(), &query, &key, &value)) {
     if (key.is_nonempty() && value.is_nonempty()) {
       const base::StringPiece value_string(params.c_str() + value.begin,
                                            value.len);
-      if (value_string.find(kSearchTermsParameterFull, 0) !=
-          base::StringPiece::npos ||
-          value_string.find(kGoogleUnescapedSearchTermsParameterFull, 0) !=
-          base::StringPiece::npos) {
-        return params.substr(key.begin, key.len);
+      if (TryMatchSearchParam(value_string, kSearchTermsParameterFull,
+                              &result.value_prefix, &result.value_suffix) ||
+          TryMatchSearchParam(value_string,
+                              kGoogleUnescapedSearchTermsParameterFull,
+                              &result.value_prefix, &result.value_suffix)) {
+        result.key = params.substr(key.begin, key.len);
+        break;
       }
     }
   }
-  return std::string();
+  return result;
 }
 
 // Extract the position of the search terms' parameter in the URL path.
@@ -506,8 +529,19 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
           // Fail if search term key is found twice.
           if (key_found)
             return false;
+
+          // If the query parameter does not contain the expected prefix and
+          // suffix, then this is not a match.
+          base::StringPiece search_term =
+              base::StringPiece(source).substr(value.begin, value.len);
+          if (!search_term.starts_with(search_term_value_prefix_) ||
+              !search_term.ends_with(search_term_value_suffix_))
+            continue;
+
           key_found = true;
-          position = value;
+          position =
+              url::MakeRange(value.begin + search_term_value_prefix_.size(),
+                             value.end() - search_term_value_suffix_.size());
         }
       }
     }
@@ -516,8 +550,8 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
   }
 
   // Extract the search term.
-  *search_terms = SearchTermToString16(
-      source.substr(position.begin, position.len));
+  *search_terms =
+      SearchTermToString16(source.substr(position.begin, position.len));
   if (search_terms_component)
     *search_terms_component = search_term_key_location_;
   if (search_terms_position)
@@ -783,11 +817,11 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   if (!url.is_valid())
     return;
 
-  std::string query_key = FindSearchTermsKey(url.query());
-  std::string ref_key = FindSearchTermsKey(url.ref());
+  auto query_result = FindSearchTermsKey(url.query());
+  auto ref_result = FindSearchTermsKey(url.ref());
   url::Component parameter_position;
-  const bool in_query = !query_key.empty();
-  const bool in_ref = !ref_key.empty();
+  const bool in_query = query_result.found();
+  const bool in_ref = ref_result.found();
   const bool in_path = FindSearchTermsInPath(url.path(), &parameter_position);
   if (in_query ? (in_ref || in_path) : (in_ref == in_path))
     return;  // No key or multiple keys found.  We only handle having one key.
@@ -796,11 +830,15 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   port_ = url.port();
   path_ = url.path();
   if (in_query) {
-    search_term_key_ = query_key;
+    search_term_key_ = query_result.key;
     search_term_key_location_ = url::Parsed::QUERY;
+    search_term_value_prefix_ = query_result.value_prefix;
+    search_term_value_suffix_ = query_result.value_suffix;
   } else if (in_ref) {
-    search_term_key_ = ref_key;
+    search_term_key_ = ref_result.key;
     search_term_key_location_ = url::Parsed::REF;
+    search_term_value_prefix_ = ref_result.value_prefix;
+    search_term_value_suffix_ = ref_result.value_suffix;
   } else {
     DCHECK(in_path);
     DCHECK_GE(parameter_position.begin, 1);  // Path must start with '/'.

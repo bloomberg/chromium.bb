@@ -467,6 +467,8 @@ class TemplateURLRef {
   mutable std::string search_term_key_;
   mutable size_t search_term_position_in_path_;
   mutable url::Parsed::ComponentType search_term_key_location_;
+  mutable std::string search_term_value_prefix_;
+  mutable std::string search_term_value_suffix_;
 
   mutable PostParams post_params_;
 
