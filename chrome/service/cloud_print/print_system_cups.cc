@@ -11,7 +11,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <list>
 #include <map>
 #include <memory>
 
@@ -161,10 +160,9 @@ class PrintSystemCUPS : public PrintSystem {
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& printer_info);
 
-  // PrintServerList contains information about all print servers and backends
-  // this proxy is connected to.
-  typedef std::list<PrintServerInfoCUPS> PrintServerList;
-  PrintServerList print_servers_;
+  // Contains information about all print servers and backends this proxy is
+  // connected to.
+  std::vector<PrintServerInfoCUPS> print_servers_;
 
   base::TimeDelta update_timeout_;
   bool initialized_;
@@ -199,8 +197,9 @@ class PrintServerWatcherCUPS
   }
 
   void CheckForUpdates() {
-    if (delegate_ == NULL)
+    if (!delegate_)
       return;  // Orphan call. We have been stopped already.
+
     VLOG(1) << "CP_CUPS: Checking for new printers";
     std::string new_hash = GetPrintersHash();
     if (printers_hash_ != new_hash) {
@@ -222,15 +221,13 @@ class PrintServerWatcherCUPS
 
     // Sort printer names.
     std::vector<std::string> printers;
-    printing::PrinterList::iterator it;
-    for (it = printer_list.begin(); it != printer_list.end(); ++it)
-      printers.push_back(it->printer_name);
+    for (const auto& it : printer_list)
+      printers.push_back(it.printer_name);
     std::sort(printers.begin(), printers.end());
 
     std::string to_hash;
-    for (size_t i = 0; i < printers.size(); i++)
-      to_hash += printers[i];
-
+    for (const auto& printer : printers)
+      to_hash += printer;
     return base::MD5String(to_hash);
   }
 
@@ -257,7 +254,7 @@ class PrinterWatcherCUPS
         printing::PrintBackend::CreateInstance(NULL));
     crash_keys::ScopedPrinterInfo crash_key(
         print_backend->GetPrinterDriverInfo(printer_name_));
-    if (delegate_ != NULL)
+    if (delegate_)
       StopWatching();
     delegate_ = delegate;
     settings_hash_ = GetSettingsHash();
@@ -285,8 +282,9 @@ class PrinterWatcherCUPS
   }
 
   void JobStatusUpdate() {
-    if (delegate_ == NULL)
+    if (!delegate_)
       return;  // Orphan call. We have been stopped already.
+
     // For CUPS proxy, we are going to fire OnJobChanged notification
     // periodically. Higher level will check if there are any outstanding
     // jobs for this printer and check their status. If printer has no
@@ -298,8 +296,9 @@ class PrinterWatcherCUPS
   }
 
   void PrinterUpdate() {
-    if (delegate_ == NULL)
+    if (!delegate_)
       return;  // Orphan call. We have been stopped already.
+
     VLOG(1) << "CP_CUPS: Checking for updates"
             << ", printer name: " << printer_name_;
     if (print_system_->NotifyDelete() &&
@@ -336,10 +335,9 @@ class PrinterWatcherCUPS
 
     std::string to_hash(info.printer_name);
     to_hash += info.printer_description;
-    std::map<std::string, std::string>::const_iterator it;
-    for (it = info.options.begin(); it != info.options.end(); ++it) {
-      to_hash += it->first;
-      to_hash += it->second;
+    for (const auto& it : info.options) {
+      to_hash += it.first;
+      to_hash += it.second;
     }
 
     to_hash += caps.printer_capabilities;
@@ -478,21 +476,18 @@ PrintSystem::PrintSystemResult PrintSystemCUPS::Init() {
 }
 
 void PrintSystemCUPS::UpdatePrinters() {
-  PrintServerList::iterator it;
   printer_enum_succeeded_ = true;
-  for (it = print_servers_.begin(); it != print_servers_.end(); ++it) {
-    if (!it->backend->EnumeratePrinters(&it->printers))
+  for (auto& print_server : print_servers_) {
+    if (!print_server.backend->EnumeratePrinters(&print_server.printers))
       printer_enum_succeeded_ = false;
-    it->caps_cache.clear();
-    printing::PrinterList::iterator printer_it;
-    for (printer_it = it->printers.begin();
-        printer_it != it->printers.end(); ++printer_it) {
-      printer_it->printer_name = MakeFullPrinterName(it->url,
-                                                     printer_it->printer_name);
+    print_server.caps_cache.clear();
+    for (auto& printer : print_server.printers) {
+      printer.printer_name =
+          MakeFullPrinterName(print_server.url, printer.printer_name);
     }
     VLOG(1) << "CP_CUPS: Updated printers list"
-            << ", server: " << it->url
-            << ", # of printers: " << it->printers.size();
+            << ", server: " << print_server.url
+            << ", # of printers: " << print_server.printers.size();
   }
 
   // Schedule next update.
@@ -505,10 +500,9 @@ PrintSystem::PrintSystemResult PrintSystemCUPS::EnumeratePrinters(
     printing::PrinterList* printer_list) {
   DCHECK(initialized_);
   printer_list->clear();
-  PrintServerList::iterator it;
-  for (it = print_servers_.begin(); it != print_servers_.end(); ++it) {
-    printer_list->insert(printer_list->end(),
-        it->printers.begin(), it->printers.end());
+  for (const auto& print_server : print_servers_) {
+    printer_list->insert(printer_list->end(), print_server.printers.begin(),
+                         print_server.printers.end());
   }
   VLOG(1) << "CP_CUPS: Total printers enumerated: " << printer_list->size();
   // TODO(sanjeevr): Maybe some day we want to report the actual server names
@@ -535,10 +529,9 @@ bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& print_ticket_data,
     const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
-  std::unique_ptr<base::Value> ticket_value(
-      base::JSONReader::Read(print_ticket_data));
-  return ticket_value != NULL &&
-         ticket_value->IsType(base::Value::TYPE_DICTIONARY);
+  std::unique_ptr<base::DictionaryValue> ticket_value(
+      base::DictionaryValue::From(base::JSONReader::Read(print_ticket_data)));
+  return !!ticket_value;
 }
 
 // Print ticket on linux is a JSON string containing only one dictionary.
@@ -546,17 +539,13 @@ bool PrintSystemCUPS::ParsePrintTicket(
     const std::string& print_ticket,
     std::map<std::string, std::string>* options) {
   DCHECK(options);
-  std::unique_ptr<base::Value> ticket_value(
-      base::JSONReader::Read(print_ticket));
-  if (ticket_value == NULL ||
-      !ticket_value->IsType(base::Value::TYPE_DICTIONARY)) {
+  std::unique_ptr<base::DictionaryValue> ticket_value(
+      base::DictionaryValue::From(base::JSONReader::Read(print_ticket)));
+  if (!ticket_value)
     return false;
-  }
 
   options->clear();
-  base::DictionaryValue* ticket_dict =
-      static_cast<base::DictionaryValue*>(ticket_value.get());
-  for (base::DictionaryValue::Iterator it(*ticket_dict); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*ticket_value); !it.IsAtEnd();
        it.Advance()) {
     std::string value;
     if (it.value().GetAsString(&value))
@@ -576,7 +565,7 @@ bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
   if (!server_info)
     return false;
 
-  PrintServerInfoCUPS::CapsMap::iterator caps_it =
+  PrintServerInfoCUPS::CapsMap::const_iterator caps_it =
       server_info->caps_cache.find(printer_name);
   if (caps_it != server_info->caps_cache.end()) {
     *printer_info = caps_it->second;
@@ -597,12 +586,12 @@ bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
 
 bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
                                     PlatformJobId job_id,
-                                    PrintJobDetails *job_details) {
+                                    PrintJobDetails* job_details) {
   DCHECK(initialized_);
   DCHECK(job_details);
 
   std::string short_printer_name;
-  PrintServerInfoCUPS* server_info =
+  const PrintServerInfoCUPS* server_info =
       FindServerByFullName(printer_name, &short_printer_name);
   if (!server_info)
     return false;
@@ -675,30 +664,28 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
 bool PrintSystemCUPS::GetPrinterInfo(const std::string& printer_name,
                                      printing::PrinterBasicInfo* info) {
   DCHECK(initialized_);
-  if (info)
+  if (info) {
     VLOG(1) << "CP_CUPS: Getting printer info"
             << ", printer name: " << printer_name;
+  }
 
   std::string short_printer_name;
-  PrintServerInfoCUPS* server_info =
+  const PrintServerInfoCUPS* server_info =
       FindServerByFullName(printer_name, &short_printer_name);
   if (!server_info)
     return false;
 
-  printing::PrinterList::iterator it;
-  for (it = server_info->printers.begin();
-      it != server_info->printers.end(); ++it) {
-    if (it->printer_name == printer_name) {
+  for (const auto& printer : server_info->printers) {
+    if (printer.printer_name == printer_name) {
       if (info)
-        *info = *it;
+        *info = printer;
       return true;
     }
   }
   return false;
 }
 
-PrintSystem::PrintServerWatcher*
-PrintSystemCUPS::CreatePrintServerWatcher() {
+PrintSystem::PrintServerWatcher* PrintSystemCUPS::CreatePrintServerWatcher() {
   DCHECK(initialized_);
   return new PrintServerWatcherCUPS(this);
 }
@@ -766,7 +753,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   VLOG(1) << "CP_CUPS: Spooling print job, printer name: " << printer_name;
 
   std::string short_printer_name;
-  PrintServerInfoCUPS* server_info =
+  const PrintServerInfoCUPS* server_info =
       FindServerByFullName(printer_name, &short_printer_name);
   if (!server_info)
     return false;
@@ -789,22 +776,18 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   }
 
   std::vector<cups_option_t> cups_options;
-  std::map<std::string, std::string>::iterator it;
 
-  for (it = options.begin(); it != options.end(); ++it) {
+  for (const auto& it : options) {
     cups_option_t opt;
-    opt.name = const_cast<char*>(it->first.c_str());
-    opt.value = const_cast<char*>(it->second.c_str());
+    opt.name = const_cast<char*>(it.first.c_str());
+    opt.value = const_cast<char*>(it.second.c_str());
     cups_options.push_back(opt);
   }
 
-  int job_id = PrintFile(server_info->url,
-                         cups_encryption_,
-                         short_printer_name.c_str(),
-                         print_data_file_path.value().c_str(),
-                         job_title.c_str(),
-                         cups_options.size(),
-                         &(cups_options[0]));
+  int job_id =
+      PrintFile(server_info->url, cups_encryption_, short_printer_name.c_str(),
+                print_data_file_path.value().c_str(), job_title.c_str(),
+                cups_options.size(), cups_options.data());
 
   // TODO(alexyu): Output printer id.
   VLOG(1) << "CP_CUPS: Job spooled"
@@ -839,17 +822,16 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
   }
   std::string server = full_printer_name.substr(2, separator - 2);
 
-  PrintServerList::iterator it;
-  for (it = print_servers_.begin(); it != print_servers_.end(); ++it) {
+  for (auto& print_server : print_servers_) {
     std::string cur_server;
-    cur_server += it->url.host();
-    if (!it->url.port().empty()) {
+    cur_server += print_server.url.host();
+    if (!print_server.url.port().empty()) {
       cur_server += ":";
-      cur_server += it->url.port();
+      cur_server += print_server.url.port();
     }
     if (cur_server == server) {
       *short_printer_name = full_printer_name.substr(separator + 1);
-      return &(*it);
+      return &print_server;
     }
   }
 

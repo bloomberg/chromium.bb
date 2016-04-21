@@ -162,7 +162,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawData(
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(next_json_data_handler_);
   return (this->*next_json_data_handler_)(source, url, json_data, succeeded);
@@ -203,19 +203,17 @@ bool PrinterJobHandler::OnJobCompleted(JobStatusUpdater* updater) {
                             JOB_HANDLER_JOB_COMPLETED, JOB_HANDLER_MAX);
   UMA_HISTOGRAM_LONG_TIMES("CloudPrint.PrintingTime",
                            base::Time::Now() - updater->start_time());
-  bool ret = false;
   base::subtle::NoBarrier_AtomicIncrement(&g_total_jobs_done, 1);
   job_queue_handler_.JobDone(job_details_.job_id_);
 
-  for (JobStatusUpdaterList::iterator index = job_status_updater_list_.begin();
-       index != job_status_updater_list_.end(); index++) {
-    if (index->get() == updater) {
-      job_status_updater_list_.erase(index);
-      ret = true;
-      break;
+  for (JobStatusUpdaterList::iterator it = job_status_updater_list_.begin();
+       it != job_status_updater_list_.end(); ++it) {
+    if (it->get() == updater) {
+      job_status_updater_list_.erase(it);
+      return true;
     }
   }
-  return ret;
+  return false;
 }
 
 void PrinterJobHandler::OnAuthError() {
@@ -241,10 +239,9 @@ void PrinterJobHandler::OnPrinterChanged() {
 void PrinterJobHandler::OnJobChanged() {
   // Some job on the printer changed. Loop through all our JobStatusUpdaters
   // and have them check for updates.
-  for (JobStatusUpdaterList::iterator index = job_status_updater_list_.begin();
-       index != job_status_updater_list_.end(); index++) {
+  for (const auto& it : job_status_updater_list_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&JobStatusUpdater::UpdateStatus, index->get()));
+        FROM_HERE, base::Bind(&JobStatusUpdater::UpdateStatus, it.get()));
   }
 }
 
@@ -287,7 +284,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandlePrinterUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling printer update response"
           << ", printer id: " << printer_info_cloud_.printer_id;
@@ -303,14 +300,14 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleJobMetadataResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling job metadata response"
           << ", printer id: " << printer_info_cloud_.printer_id;
   bool job_available = false;
   if (succeeded) {
-    std::vector<JobDetails> jobs;
-    job_queue_handler_.GetJobsFromQueue(json_data, &jobs);
+    std::vector<JobDetails> jobs =
+        job_queue_handler_.GetJobsFromQueue(*json_data);
     if (!jobs.empty()) {
       if (jobs[0].time_remaining_ == base::TimeDelta()) {
         job_available = true;
@@ -396,7 +393,6 @@ PrinterJobHandler::HandlePrintDataResponse(const net::URLFetcher* source,
                               data.c_str(), data.length());
     source->GetResponseHeaders()->GetMimeType(
         &job_details_.print_data_mime_type_);
-    DCHECK(ret == static_cast<int>(data.length()));
     if (ret == static_cast<int>(data.length())) {
       UpdateJobStatus(PRINT_JOB_STATUS_IN_PROGRESS, JOB_SUCCESS);
       return CloudPrintURLFetcher::STOP_PROCESSING;
@@ -419,7 +415,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleInProgressStatusUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling success status update response"
           << ", printer id: " << printer_info_cloud_.printer_id;
@@ -432,7 +428,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleFailureStatusUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling failure status update response"
           << ", printer id: " << printer_info_cloud_.printer_id;

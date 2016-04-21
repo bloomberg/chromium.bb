@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 
@@ -25,11 +24,13 @@ class DictionaryValue;
 namespace cloud_print {
 
 struct JobDetails {
+  static bool Ordering(const JobDetails& first, const JobDetails& second);
+
   JobDetails();
   JobDetails(const JobDetails& other);
   ~JobDetails();
+
   void Clear();
-  static bool ordering(const JobDetails& first, const JobDetails& second);
 
   std::string job_id_;
   std::string job_title_;
@@ -58,24 +59,29 @@ class PrinterJobQueueHandler {
     virtual ~TimeProvider() {}
   };
 
-  // PrinterJobQueueHandler takes ownership of |time_provider| and is
-  // responsible for deleting it.
-  explicit PrinterJobQueueHandler(TimeProvider* time_provider);
   PrinterJobQueueHandler();
   ~PrinterJobQueueHandler();
 
-  // jobs will be filled with details of all jobs in the queue, sorted by time
+  // Returns a vector with details of all jobs in the queue, sorted by time
   // until they are ready to print, lowest to highest. Jobs that are ready to
   // print will have a time_remaining_ of 0.
-  void GetJobsFromQueue(const base::DictionaryValue* json_data,
-                        std::vector<JobDetails>* jobs);
+  std::vector<JobDetails> GetJobsFromQueue(
+      const base::DictionaryValue& json_data);
 
   // Marks a job fetch as failed. Returns "true" if the job will be retried.
   bool JobFetchFailed(const std::string& job_id);
 
   void JobDone(const std::string& job_id);
 
+ protected:
+  // Only used for testing.
+  explicit PrinterJobQueueHandler(std::unique_ptr<TimeProvider> time_provider);
+
+  TimeProvider* time_provider() { return time_provider_.get(); }
+
  private:
+  base::TimeDelta ComputeBackoffTime(const std::string& job_id);
+
   std::unique_ptr<TimeProvider> time_provider_;
 
   struct FailedJobMetadata {
@@ -83,14 +89,10 @@ class PrinterJobQueueHandler {
     base::Time last_retry_;
   };
 
-  typedef std::map<std::string, FailedJobMetadata> FailedJobMap;
-  typedef std::pair<std::string, FailedJobMetadata> FailedJobPair;
+  using FailedJobMap = std::map<std::string, FailedJobMetadata>;
+  using FailedJobPair = std::pair<std::string, FailedJobMetadata>;
 
   FailedJobMap failed_job_map_;
-
-  void ConstructJobDetailsFromJson(const base::DictionaryValue* json_data,
-                                   JobDetails* details_obj);
-  base::TimeDelta ComputeBackoffTime(const std::string& job_id);
 
   DISALLOW_COPY_AND_ASSIGN(PrinterJobQueueHandler);
 };
@@ -98,5 +100,3 @@ class PrinterJobQueueHandler {
 }  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_PRINTER_JOB_QUEUE_HANDLER_H_
-
-

@@ -28,8 +28,8 @@ namespace cloud_print {
 class CloudPrintConnector
     : public base::RefCountedThreadSafe<CloudPrintConnector>,
       private PrintSystem::PrintServerWatcher::Delegate,
-      private PrinterJobHandlerDelegate,
-      private CloudPrintURLFetcherDelegate {
+      private PrinterJobHandler::Delegate,
+      private CloudPrintURLFetcher::Delegate {
  public:
   class Client {
    public:
@@ -46,7 +46,7 @@ class CloudPrintConnector
   bool IsRunning();
 
   // Return list of printer ids registered with CloudPrint.
-  void GetPrinterIds(std::list<std::string>* printer_ids);
+  std::list<std::string> GetPrinterIds() const;
 
   // Check for jobs for specific printer. If printer id is empty
   // jobs will be checked for all available printers.
@@ -59,12 +59,12 @@ class CloudPrintConnector
   friend class base::RefCountedThreadSafe<CloudPrintConnector>;
 
   // Prototype for a response handler.
-  typedef CloudPrintURLFetcher::ResponseAction
-      (CloudPrintConnector::*ResponseHandler)(
-          const net::URLFetcher* source,
-          const GURL& url,
-          base::DictionaryValue* json_data,
-          bool succeeded);
+  typedef CloudPrintURLFetcher::ResponseAction (
+      CloudPrintConnector::*ResponseHandler)(
+      const net::URLFetcher* source,
+      const GURL& url,
+      const base::DictionaryValue* json_data,
+      bool succeeded);
 
   enum PendingTaskType {
     PENDING_PRINTERS_NONE,
@@ -85,13 +85,15 @@ class CloudPrintConnector
   };
 
   ~CloudPrintConnector() override;
-  // PrintServerWatcherDelegate implementation
+
+  // PrintServerWatcherDelegate implementation:
   void OnPrinterAdded() override;
-  // PrinterJobHandler::Delegate implementation
+
+  // PrinterJobHandler::Delegate implementation:
   void OnPrinterDeleted(const std::string& printer_name) override;
   void OnAuthError() override;
 
-  // CloudPrintURLFetcher::Delegate implementation.
+  // CloudPrintURLFetcher::Delegate implementation:
   CloudPrintURLFetcher::ResponseAction HandleRawData(
       const net::URLFetcher* source,
       const GURL& url,
@@ -99,7 +101,7 @@ class CloudPrintConnector
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded) override;
   CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
   std::string GetAuthHeader() override;
@@ -108,25 +110,25 @@ class CloudPrintConnector
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponseSettingsUpdate(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrinterDeleteResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleRegisterPrinterResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded);
   // End response handlers
 
@@ -148,9 +150,9 @@ class CloudPrintConnector
   bool RemovePrinterFromList(const std::string& printer_name,
                              printing::PrinterList* printer_list);
 
-  void InitJobHandlerForPrinter(base::DictionaryValue* printer_data);
+  void InitJobHandlerForPrinter(const base::DictionaryValue* printer_data);
 
-  void UpdateSettingsFromPrintersList(base::DictionaryValue* json_data);
+  void UpdateSettingsFromPrintersList(const base::DictionaryValue* json_data);
 
   void AddPendingAvailableTask();
   void AddPendingDeleteTask(const std::string& id);
@@ -186,8 +188,7 @@ class CloudPrintConnector
   scoped_refptr<PrintSystem::PrintServerWatcher>
       print_server_watcher_;
   // A map of printer id to job handler.
-  typedef std::map<std::string, scoped_refptr<PrinterJobHandler> >
-      JobHandlerMap;
+  using JobHandlerMap = std::map<std::string, scoped_refptr<PrinterJobHandler>>;
   JobHandlerMap job_handler_map_;
   // Next response handler.
   ResponseHandler next_response_handler_;

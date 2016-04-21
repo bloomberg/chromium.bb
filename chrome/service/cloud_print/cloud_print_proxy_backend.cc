@@ -403,10 +403,7 @@ void CloudPrintProxyBackend::Core::DoUnregisterPrinters() {
   DCHECK(CurrentlyOnCoreThread());
 
   std::string access_token = GetTokenStore()->token();
-
-  std::list<std::string> printer_ids;
-  connector_->GetPrinterIds(&printer_ids);
-
+  std::list<std::string> printer_ids = connector_->GetPrinterIds();
   PostFrontendTask(FROM_HERE, base::Bind(&Core::NotifyUnregisterPrinters, this,
                                          access_token, printer_ids));
 }

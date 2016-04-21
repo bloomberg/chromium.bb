@@ -22,10 +22,9 @@ namespace cloud_print {
 // CloudPrintAuth will obtain new OAuth token.
 // CloudPrintAuth will schedule periodic OAuth token refresh
 // It is running in the same thread as CloudPrintProxyBackend::Core.
-class CloudPrintAuth
-    : public base::RefCountedThreadSafe<CloudPrintAuth>,
-      public CloudPrintURLFetcherDelegate,
-      public gaia::GaiaOAuthClient::Delegate {
+class CloudPrintAuth : public base::RefCountedThreadSafe<CloudPrintAuth>,
+                       public CloudPrintURLFetcher::Delegate,
+                       public gaia::GaiaOAuthClient::Delegate {
  public:
   class Client {
    public:
@@ -70,7 +69,7 @@ class CloudPrintAuth
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded) override;
   CloudPrintURLFetcher::ResponseAction OnRequestAuthError() override;
   std::string GetAuthHeader() override;

@@ -86,9 +86,9 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
 };
 
 class CloudPrintURLFetcherTest : public testing::Test,
-                                 public CloudPrintURLFetcherDelegate {
+                                 public CloudPrintURLFetcher::Delegate {
  public:
-  CloudPrintURLFetcherTest() : max_retries_(0), fetcher_(NULL) { }
+  CloudPrintURLFetcherTest() : max_retries_(0), fetcher_(nullptr) {}
 
   // Creates a URLFetcher, using the program's main thread to do IO.
   virtual void CreateFetcher(const GURL& url, int max_retries);
@@ -143,7 +143,8 @@ class CloudPrintURLFetcherTest : public testing::Test,
 class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
  public:
   CloudPrintURLFetcherBasicTest()
-      : handle_raw_response_(false), handle_raw_data_(false) { }
+      : handle_raw_response_(false), handle_raw_data_(false) {}
+
   // CloudPrintURLFetcher::Delegate
   CloudPrintURLFetcher::ResponseAction HandleRawResponse(
       const net::URLFetcher* source,
@@ -161,7 +162,7 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
   CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      base::DictionaryValue* json_data,
+      const base::DictionaryValue* json_data,
       bool succeeded) override;
 
   void SetHandleRawResponse(bool handle_raw_response) {
@@ -170,6 +171,7 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
   void SetHandleRawData(bool handle_raw_data) {
     handle_raw_data_ = handle_raw_data;
   }
+
  private:
   bool handle_raw_response_;
   bool handle_raw_data_;
@@ -281,7 +283,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintURLFetcherBasicTest::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   // We should never get here if we returned true in one of the above methods.
   EXPECT_FALSE(handle_raw_response_);

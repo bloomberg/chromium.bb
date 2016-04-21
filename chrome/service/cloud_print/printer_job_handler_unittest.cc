@@ -505,7 +505,7 @@ void PrinterJobHandlerTest::SetUp() {
   ON_CALL(*print_system_.get(), GetPrinterCapsAndDefaults(_, _))
       .WillByDefault(Invoke(this, &PrinterJobHandlerTest::SendCapsAndDefaults));
 
-  CloudPrintURLFetcher::set_factory(&cloud_print_factory_);
+  CloudPrintURLFetcher::set_test_factory(&cloud_print_factory_);
 }
 
 void PrinterJobHandlerTest::MakeJobFetchReturnNoJobs() {
@@ -635,7 +635,7 @@ bool PrinterJobHandlerTest::GetPrinterInfo(printing::PrinterBasicInfo* info) {
 
 void PrinterJobHandlerTest::TearDown() {
   IdleOut();
-  CloudPrintURLFetcher::set_factory(NULL);
+  CloudPrintURLFetcher::set_test_factory(nullptr);
 }
 
 void PrinterJobHandlerTest::IdleOut() {
@@ -677,7 +677,7 @@ MockPrintSystem::MockPrintSystem()
 
   ON_CALL(*this, ValidatePrintTicket(_, _, _)).
       WillByDefault(Return(true));
-};
+}
 
 // This test simulates an end-to-end printing of a document
 // but tests only non-failure cases.

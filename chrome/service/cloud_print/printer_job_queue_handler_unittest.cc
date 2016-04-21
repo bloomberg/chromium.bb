@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,36 +52,45 @@ class TimeProviderMock : public PrinterJobQueueHandler::TimeProvider {
   MOCK_METHOD0(GetNow, base::Time());
 };
 
+class PrinterJobQueueHandlerWithMockedTime : public PrinterJobQueueHandler {
+ public:
+  PrinterJobQueueHandlerWithMockedTime()
+      : PrinterJobQueueHandler(base::WrapUnique(new TimeProviderMock)) {}
+
+  TimeProviderMock* GetMock() {
+    return static_cast<TimeProviderMock*>(
+        PrinterJobQueueHandler::time_provider());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrinterJobQueueHandlerWithMockedTime);
+};
+
 class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
-  std::unique_ptr<base::Value> data_;
-
-  const base::DictionaryValue* GetAsDictionary() const {
-    const base::DictionaryValue* json_data_ = nullptr;
-    EXPECT_TRUE(data_->GetAsDictionary(&json_data_));
-    return json_data_;
-  }
-
   void SetUp() override {
     base::JSONReader json_reader;
-    data_ = json_reader.Read(kJobListResponse);
+    data_ = base::DictionaryValue::From(json_reader.Read(kJobListResponse));
   }
+
+  const base::DictionaryValue& GetDictionary() const { return *data_; }
+
+ private:
+  std::unique_ptr<base::DictionaryValue> data_;
 };
 
 TEST_F(PrinterJobQueueHandlerTest, BasicJobReadTest) {
   PrinterJobQueueHandler job_queue_handler;
-  std::vector<JobDetails> jobs;
+  std::vector<JobDetails> jobs =
+      job_queue_handler.GetJobsFromQueue(GetDictionary());
 
-  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
+  ASSERT_EQ(3U, jobs.size());
 
-  ASSERT_EQ((size_t)3, jobs.size());
-
-  EXPECT_EQ(std::string("__testjob1"), jobs[0].job_id_);
-  EXPECT_EQ(std::string("test1"), jobs[0].job_title_);
-  EXPECT_EQ(std::string("http://example.com/job1ticket"),
-            jobs[0].print_ticket_url_);
-  EXPECT_EQ(std::string("http://example.com/job1data"),
-            jobs[0].print_data_url_);
+  EXPECT_STREQ("__testjob1", jobs[0].job_id_.c_str());
+  EXPECT_STREQ("test1", jobs[0].job_title_.c_str());
+  EXPECT_STREQ("http://example.com/job1ticket",
+               jobs[0].print_ticket_url_.c_str());
+  EXPECT_STREQ("http://example.com/job1data", jobs[0].print_data_url_.c_str());
 
   std::set<std::string> expected_tags;
   expected_tags.insert("^own");
@@ -93,9 +103,8 @@ TEST_F(PrinterJobQueueHandlerTest, BasicJobReadTest) {
 }
 
 TEST_F(PrinterJobQueueHandlerTest, PreferNonFailureTest) {
-  TimeProviderMock* time_mock = new TimeProviderMock();
-  PrinterJobQueueHandler job_queue_handler(time_mock);
-  EXPECT_CALL((*time_mock), GetNow())
+  PrinterJobQueueHandlerWithMockedTime job_queue_handler;
+  EXPECT_CALL((*job_queue_handler.GetMock()), GetNow())
       .Times(AtLeast(2))
       .WillRepeatedly(Return(base::Time::UnixEpoch()));
 
@@ -103,28 +112,26 @@ TEST_F(PrinterJobQueueHandlerTest, PreferNonFailureTest) {
   job_queue_handler.JobFetchFailed("__testjob1");
   job_queue_handler.JobFetchFailed("__testjob1");
 
-  std::vector<JobDetails> jobs;
-  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
+  std::vector<JobDetails> jobs =
+      job_queue_handler.GetJobsFromQueue(GetDictionary());
 
-  EXPECT_EQ(std::string("__testjob2"), jobs[0].job_id_);
+  EXPECT_STREQ("__testjob2", jobs[0].job_id_.c_str());
   EXPECT_EQ(base::TimeDelta(), jobs[0].time_remaining_);
 }
 
 TEST_F(PrinterJobQueueHandlerTest, PreferNoTimeTest) {
-  TimeProviderMock* time_mock = new TimeProviderMock();
-  PrinterJobQueueHandler job_queue_handler(time_mock);
-  EXPECT_CALL((*time_mock), GetNow()).
-      Times(AtLeast(8));
+  PrinterJobQueueHandlerWithMockedTime job_queue_handler;
+  EXPECT_CALL((*job_queue_handler.GetMock()), GetNow()).Times(AtLeast(8));
 
-  ON_CALL((*time_mock), GetNow())
+  ON_CALL((*job_queue_handler.GetMock()), GetNow())
       .WillByDefault(Return(base::Time::UnixEpoch()));
 
   for (int i = 0; i < 4; i++)
     job_queue_handler.JobFetchFailed("__testjob1");
 
-  ON_CALL((*time_mock), GetNow())
-      .WillByDefault(Return(base::Time::UnixEpoch() +
-                            base::TimeDelta::FromMinutes(4)));
+  ON_CALL((*job_queue_handler.GetMock()), GetNow())
+      .WillByDefault(
+          Return(base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(4)));
 
   for (int i = 0; i < 2; i++)
     job_queue_handler.JobFetchFailed("__testjob2");
@@ -132,29 +139,27 @@ TEST_F(PrinterJobQueueHandlerTest, PreferNoTimeTest) {
   for (int i = 0; i < 2; i++)
     job_queue_handler.JobFetchFailed("__testjob3");
 
-  std::vector<JobDetails> jobs;
-  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
+  std::vector<JobDetails> jobs =
+      job_queue_handler.GetJobsFromQueue(GetDictionary());
 
   EXPECT_EQ(base::TimeDelta(), jobs[0].time_remaining_);
-  EXPECT_EQ(std::string("__testjob1"), jobs[0].job_id_);
+  EXPECT_STREQ("__testjob1", jobs[0].job_id_.c_str());
 }
 
 TEST_F(PrinterJobQueueHandlerTest, PreferLowerTimeTest) {
-  TimeProviderMock* time_mock = new TimeProviderMock();
-  PrinterJobQueueHandler job_queue_handler(time_mock);
+  PrinterJobQueueHandlerWithMockedTime job_queue_handler;
 
-  EXPECT_CALL((*time_mock), GetNow()).
-      Times(AtLeast(8));
+  EXPECT_CALL((*job_queue_handler.GetMock()), GetNow()).Times(AtLeast(8));
 
-  ON_CALL((*time_mock), GetNow())
+  ON_CALL((*job_queue_handler.GetMock()), GetNow())
       .WillByDefault(Return(base::Time::UnixEpoch()));
 
   for (int i = 0; i < 4; i++)
     job_queue_handler.JobFetchFailed("__testjob1");
 
-  ON_CALL((*time_mock), GetNow())
-      .WillByDefault(Return(base::Time::UnixEpoch() +
-                            base::TimeDelta::FromSeconds(4)));
+  ON_CALL((*job_queue_handler.GetMock()), GetNow())
+      .WillByDefault(
+          Return(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(4)));
 
   for (int i = 0; i < 2; i++)
     job_queue_handler.JobFetchFailed("__testjob2");
@@ -162,21 +167,21 @@ TEST_F(PrinterJobQueueHandlerTest, PreferLowerTimeTest) {
   for (int i = 0; i < 2; i++)
     job_queue_handler.JobFetchFailed("__testjob3");
 
-  std::vector<JobDetails> jobs;
-  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
+  std::vector<JobDetails> jobs =
+      job_queue_handler.GetJobsFromQueue(GetDictionary());
 
   base::TimeDelta time_to_wait = jobs[0].time_remaining_;
   EXPECT_NE(base::TimeDelta(), time_to_wait);
 
   jobs.clear();
-  ON_CALL((*time_mock), GetNow())
+  ON_CALL((*job_queue_handler.GetMock()), GetNow())
       .WillByDefault(Return(base::Time::UnixEpoch() +
                             base::TimeDelta::FromSeconds(4) + time_to_wait));
 
-  job_queue_handler.GetJobsFromQueue(GetAsDictionary(), &jobs);
+  jobs = job_queue_handler.GetJobsFromQueue(GetDictionary());
 
   EXPECT_EQ(base::TimeDelta(), jobs[0].time_remaining_);
-  EXPECT_EQ(std::string("__testjob2"),  jobs[0].job_id_);
+  EXPECT_STREQ("__testjob2", jobs[0].job_id_.c_str());
 }
 
 }  // namespace cloud_print

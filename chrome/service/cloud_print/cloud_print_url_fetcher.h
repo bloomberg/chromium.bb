@@ -90,10 +90,11 @@ class CloudPrintURLFetcher
     // This will be invoked only if HandleRawResponse and HandleRawData return
     // CONTINUE_PROCESSING AND if the response contains a valid JSON dictionary.
     // |succeeded| is the value of the "success" field in the response JSON.
-    virtual ResponseAction HandleJSONData(const net::URLFetcher* source,
-                                          const GURL& url,
-                                          base::DictionaryValue* json_data,
-                                          bool succeeded);
+    virtual ResponseAction HandleJSONData(
+        const net::URLFetcher* source,
+        const GURL& url,
+        const base::DictionaryValue* json_data,
+        bool succeeded);
 
     // Invoked when the retry limit for this request has been reached (if there
     // was a retry limit - a limit of -1 implies no limit).
@@ -116,7 +117,7 @@ class CloudPrintURLFetcher
   };
 
   static CloudPrintURLFetcher* Create();
-  static void set_factory(CloudPrintURLFetcherFactory* factory);
+  static void set_test_factory(CloudPrintURLFetcherFactory* factory);
 
   bool IsSameRequest(const net::URLFetcher* source);
 
@@ -154,7 +155,6 @@ class CloudPrintURLFetcher
                           const std::string& post_data,
                           const std::string& additional_headers);
   void SetupRequestHeaders();
-  static CloudPrintURLFetcherFactory* factory();
 
   std::unique_ptr<net::URLFetcher> request_;
   Delegate* delegate_;
@@ -166,8 +166,6 @@ class CloudPrintURLFetcher
   RequestType type_;
   base::Time start_time_;
 };
-
-typedef CloudPrintURLFetcher::Delegate CloudPrintURLFetcherDelegate;
 
 }  // namespace cloud_print
 

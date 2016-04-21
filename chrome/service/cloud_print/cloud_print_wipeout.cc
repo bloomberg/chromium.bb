@@ -46,7 +46,7 @@ void CloudPrintWipeout::UnregisterNextPrinter() {
 CloudPrintURLFetcher::ResponseAction CloudPrintWipeout::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   // We don't care if delete was successful or not here.
   UnregisterNextPrinter();

@@ -77,21 +77,23 @@ void ServiceProcessPrefs::SetInt(const std::string& key, int value) {
 const base::DictionaryValue* ServiceProcessPrefs::GetDictionary(
     const std::string& key) const {
   const base::Value* value;
-  if (!prefs_->GetValue(key, &value) ||
-      !value->IsType(base::Value::TYPE_DICTIONARY)) {
-    return NULL;
-  }
+  if (!prefs_->GetValue(key, &value))
+    return nullptr;
 
-  return static_cast<const base::DictionaryValue*>(value);
+  const base::DictionaryValue* dict_value = nullptr;
+  value->GetAsDictionary(&dict_value);
+  return dict_value;
 }
 
 const base::ListValue* ServiceProcessPrefs::GetList(
     const std::string& key) const {
   const base::Value* value;
-  if (!prefs_->GetValue(key, &value) || !value->IsType(base::Value::TYPE_LIST))
-    return NULL;
+  if (!prefs_->GetValue(key, &value))
+    return nullptr;
 
-  return static_cast<const base::ListValue*>(value);
+  const base::ListValue* list_value = nullptr;
+  value->GetAsList(&list_value);
+  return list_value;
 }
 
 void ServiceProcessPrefs::SetValue(const std::string& key,
@@ -103,4 +105,3 @@ void ServiceProcessPrefs::SetValue(const std::string& key,
 void ServiceProcessPrefs::RemovePref(const std::string& key) {
   prefs_->RemoveValue(key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
-

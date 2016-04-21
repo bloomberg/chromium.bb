@@ -102,23 +102,21 @@ bool CloudPrintConnector::IsRunning() {
   return print_server_watcher_.get() != NULL;
 }
 
-void CloudPrintConnector::GetPrinterIds(std::list<std::string>* printer_ids) {
-  DCHECK(printer_ids);
-  printer_ids->clear();
-  for (JobHandlerMap::const_iterator iter = job_handler_map_.begin();
-       iter != job_handler_map_.end(); ++iter) {
-    printer_ids->push_back(iter->first);
-  }
+std::list<std::string> CloudPrintConnector::GetPrinterIds() const {
+  std::list<std::string> printer_ids;
+  for (const auto& it : job_handler_map_)
+    printer_ids.push_back(it.first);
+  return printer_ids;
 }
 
 void CloudPrintConnector::RegisterPrinters(
     const printing::PrinterList& printers) {
   if (!IsRunning())
     return;
-  printing::PrinterList::const_iterator it;
-  for (it = printers.begin(); it != printers.end(); ++it) {
-    if (settings_.ShouldConnect(it->printer_name))
-      AddPendingRegisterTask(*it);
+
+  for (const auto& it : printers) {
+    if (settings_.ShouldConnect(it.printer_name))
+      AddPendingRegisterTask(it);
   }
 }
 
@@ -127,23 +125,23 @@ void CloudPrintConnector::CheckForJobs(const std::string& reason,
                                        const std::string& printer_id) {
   if (!IsRunning())
     return;
-  if (!printer_id.empty()) {
-    JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
-    if (index != job_handler_map_.end()) {
-      index->second->CheckForJobs(reason);
-    } else {
-      std::string status_message = l10n_util::GetStringUTF8(
-          IDS_CLOUD_PRINT_ZOMBIE_PRINTER);
-      LOG(ERROR) << "CP_CONNECTOR: " << status_message <<
-          " Printer_id: " << printer_id;
-      ReportUserMessage(kZombiePrinterMessageId, status_message);
-    }
-  } else {
-    for (JobHandlerMap::iterator index = job_handler_map_.begin();
-         index != job_handler_map_.end(); index++) {
-      index->second->CheckForJobs(reason);
-    }
+
+  if (printer_id.empty()) {
+    for (const auto& it : job_handler_map_)
+      it.second->CheckForJobs(reason);
+    return;
   }
+
+  JobHandlerMap::iterator printer_it = job_handler_map_.find(printer_id);
+  if (printer_it == job_handler_map_.end()) {
+    std::string status_message =
+        l10n_util::GetStringUTF8(IDS_CLOUD_PRINT_ZOMBIE_PRINTER);
+    LOG(ERROR) << "CP_CONNECTOR: " << status_message
+               << " Printer_id: " << printer_id;
+    ReportUserMessage(kZombiePrinterMessageId, status_message);
+    return;
+  }
+  printer_it->second->CheckForJobs(reason);
 }
 
 void CloudPrintConnector::UpdatePrinterSettings(const std::string& printer_id) {
@@ -176,8 +174,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleRawData(
     const std::string& data) {
   // If this notification came as a result of user message call, stop it.
   // Otherwise proceed continue processing.
-  if (user_message_request_.get() &&
-      user_message_request_->IsSameRequest(source))
+  if (user_message_request_ && user_message_request_->IsSameRequest(source))
     return CloudPrintURLFetcher::STOP_PROCESSING;
   return CloudPrintURLFetcher::CONTINUE_PROCESSING;
 }
@@ -185,9 +182,9 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleRawData(
 CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
-  if (!IsRunning())  // Orphant response. Connector has been stopped already.
+  if (!IsRunning())  // Orphan response. Connector has been stopped already.
     return CloudPrintURLFetcher::STOP_PROCESSING;
 
   DCHECK(next_response_handler_);
@@ -209,7 +206,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(succeeded);
   if (!succeeded)
@@ -238,48 +235,47 @@ CloudPrintConnector::HandlePrinterListResponse(
   }
 
   // Go through the list of the cloud printers and init print job handlers.
-  base::ListValue* printer_list = NULL;
+  const base::ListValue* printer_list = nullptr;
   // There may be no "printers" value in the JSON
   if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
-    for (size_t index = 0; index < printer_list->GetSize(); index++) {
-      base::DictionaryValue* printer_data = NULL;
-      if (printer_list->GetDictionary(index, &printer_data)) {
-        std::string printer_name;
-        printer_data->GetString(kNameValue, &printer_name);
-        std::string printer_id;
-        printer_data->GetString(kIdValue, &printer_id);
+    for (size_t i = 0; i < printer_list->GetSize(); ++i) {
+      const base::DictionaryValue* printer_data = nullptr;
+      if (!printer_list->GetDictionary(i, &printer_data))
+        continue;
 
-        if (!settings_.ShouldConnect(printer_name)) {
-          VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
-              " id: " << printer_id << " as blacklisted";
-          AddPendingDeleteTask(printer_id);
-        } else if (RemovePrinterFromList(printer_name, &local_printers)) {
-          InitJobHandlerForPrinter(printer_data);
-        } else {
-          // Cloud printer is not found on the local system.
-          if (full_list || settings_.delete_on_enum_fail()) {
-            // Delete if we get the full list of printers or
-            // |delete_on_enum_fail_| is set.
-            VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
-                " id: " << printer_id <<
-                " full_list: " << full_list <<
-                " delete_on_enum_fail: " << settings_.delete_on_enum_fail();
-            AddPendingDeleteTask(printer_id);
-          } else {
-            LOG(ERROR) << "CP_CONNECTOR: Printer: " << printer_name <<
-                " id: " << printer_id <<
-                " not found in print system and full printer list was" <<
-                " not received.  Printer will not be able to process" <<
-                " jobs.";
-          }
-        }
+      std::string printer_name;
+      printer_data->GetString(kNameValue, &printer_name);
+      std::string printer_id;
+      printer_data->GetString(kIdValue, &printer_id);
+
+      if (!settings_.ShouldConnect(printer_name)) {
+        VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name
+                << " id: " << printer_id << " as blacklisted";
+        AddPendingDeleteTask(printer_id);
+      } else if (RemovePrinterFromList(printer_name, &local_printers)) {
+        InitJobHandlerForPrinter(printer_data);
       } else {
-        NOTREACHED();
+        // Cloud printer is not found on the local system.
+        if (full_list || settings_.delete_on_enum_fail()) {
+          // Delete if we get the full list of printers or
+          // |delete_on_enum_fail_| is set.
+          VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name
+                  << " id: " << printer_id << " full_list: " << full_list
+                  << " delete_on_enum_fail: "
+                  << settings_.delete_on_enum_fail();
+          AddPendingDeleteTask(printer_id);
+        } else {
+          LOG(ERROR) << "CP_CONNECTOR: Printer: " << printer_name
+                     << " id: " << printer_id
+                     << " not found in print system and full printer list was"
+                     << " not received.  Printer will not be able to process"
+                     << " jobs.";
+        }
       }
     }
   }
 
-  request_ = NULL;
+  request_ = nullptr;
 
   RegisterPrinters(local_printers);
   ContinuePendingTaskProcessing();  // Continue processing background tasks.
@@ -290,7 +286,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponseSettingsUpdate(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(succeeded);
   if (!succeeded)
@@ -304,7 +300,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterDeleteResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handler printer delete response"
           << ", succeeded: " << succeeded
@@ -317,16 +313,16 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandleRegisterPrinterResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    base::DictionaryValue* json_data,
+    const base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handler printer register response"
           << ", succeeded: " << succeeded
           << ", url: " << url;
   if (succeeded) {
-    base::ListValue* printer_list = NULL;
+    const base::ListValue* printer_list = nullptr;
     // There should be a "printers" value in the JSON
     if (json_data->GetList(kPrinterListValue, &printer_list)) {
-      base::DictionaryValue* printer_data = NULL;
+      const base::DictionaryValue* printer_data = nullptr;
       if (printer_list->GetDictionary(0, &printer_data))
         InitJobHandlerForPrinter(printer_data);
     }
@@ -379,10 +375,10 @@ void CloudPrintConnector::ReportUserMessage(const std::string& message_id,
 bool CloudPrintConnector::RemovePrinterFromList(
     const std::string& printer_name,
     printing::PrinterList* printer_list) {
-  for (printing::PrinterList::iterator index = printer_list->begin();
-       index != printer_list->end(); index++) {
-    if (IsSamePrinter(index->printer_name, printer_name)) {
-      index = printer_list->erase(index);
+  for (printing::PrinterList::iterator it = printer_list->begin();
+       it != printer_list->end(); ++it) {
+    if (IsSamePrinter(it->printer_name, printer_name)) {
+      printer_list->erase(it);
       return true;
     }
   }
@@ -390,16 +386,14 @@ bool CloudPrintConnector::RemovePrinterFromList(
 }
 
 void CloudPrintConnector::InitJobHandlerForPrinter(
-    base::DictionaryValue* printer_data) {
+    const base::DictionaryValue* printer_data) {
   DCHECK(printer_data);
   PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
   printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
   DCHECK(!printer_info_cloud.printer_id.empty());
   VLOG(1) << "CP_CONNECTOR: Init job handler"
           << ", printer id: " << printer_info_cloud.printer_id;
-  JobHandlerMap::iterator index = job_handler_map_.find(
-      printer_info_cloud.printer_id);
-  if (index != job_handler_map_.end())
+  if (ContainsKey(job_handler_map_, printer_info_cloud.printer_id))
     return;  // Nothing to do if we already have a job handler for this printer.
 
   printing::PrinterBasicInfo printer_info;
@@ -414,16 +408,15 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
   }
   printer_data->GetString(kPrinterCapsHashValue,
       &printer_info_cloud.caps_hash);
-  base::ListValue* tags_list = NULL;
+  const base::ListValue* tags_list = nullptr;
   if (printer_data->GetList(kTagsValue, &tags_list) && tags_list) {
-    for (size_t index = 0; index < tags_list->GetSize(); index++) {
+    for (size_t i = 0; i < tags_list->GetSize(); ++i) {
       std::string tag;
-      if (tags_list->GetString(index, &tag) &&
+      if (tags_list->GetString(i, &tag) &&
           base::StartsWith(tag, kCloudPrintServiceTagsHashTagName,
                            base::CompareCase::INSENSITIVE_ASCII)) {
         std::vector<std::string> tag_parts = base::SplitString(
             tag, "=", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-        DCHECK_EQ(tag_parts.size(), 2U);
         if (tag_parts.size() == 2)
           printer_info_cloud.tags_hash = tag_parts[1];
       }
@@ -446,14 +439,14 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
 }
 
 void CloudPrintConnector::UpdateSettingsFromPrintersList(
-    base::DictionaryValue* json_data) {
-  base::ListValue* printer_list = NULL;
+    const base::DictionaryValue* json_data) {
+  const base::ListValue* printer_list = nullptr;
   int min_xmpp_timeout = std::numeric_limits<int>::max();
   // There may be no "printers" value in the JSON
   if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
-    for (size_t index = 0; index < printer_list->GetSize(); index++) {
-      base::DictionaryValue* printer_data = NULL;
-      if (printer_list->GetDictionary(index, &printer_data)) {
+    for (size_t i = 0; i < printer_list->GetSize(); ++i) {
+      const base::DictionaryValue* printer_data = nullptr;
+      if (printer_list->GetDictionary(i, &printer_data)) {
         int xmpp_timeout = 0;
         if (printer_data->GetInteger(kLocalSettingsPendingXmppValue,
                                      &xmpp_timeout)) {
@@ -469,7 +462,6 @@ void CloudPrintConnector::UpdateSettingsFromPrintersList(
     client_->OnXmppPingUpdated(min_xmpp_timeout);
   }
 }
-
 
 void CloudPrintConnector::AddPendingAvailableTask() {
   PendingTask task;
@@ -503,8 +495,9 @@ void CloudPrintConnector::AddPendingTask(const PendingTask& task) {
 
 void CloudPrintConnector::ProcessPendingTask() {
   if (!IsRunning())
-    return;  // Orphant call.
-  if (pending_tasks_.size() == 0)
+    return;  // Orphan call.
+
+  if (pending_tasks_.empty())
     return;  // No peding tasks.
 
   PendingTask task = pending_tasks_.front();
@@ -525,15 +518,16 @@ void CloudPrintConnector::ProcessPendingTask() {
 }
 
 void CloudPrintConnector::ContinuePendingTaskProcessing() {
-  if (pending_tasks_.size() == 0)
+  if (pending_tasks_.empty())
     return;  // No pending tasks.
 
   // Delete current task and repost if we have more task available.
   pending_tasks_.pop_front();
-  if (pending_tasks_.size() != 0) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
-  }
+  if (pending_tasks_.empty())
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
 }
 
 void CloudPrintConnector::OnPrintersAvailable() {
@@ -546,9 +540,8 @@ void CloudPrintConnector::OnPrintersAvailable() {
 
 void CloudPrintConnector::OnPrinterRegister(
     const printing::PrinterBasicInfo& info) {
-  for (JobHandlerMap::iterator it = job_handler_map_.begin();
-       it != job_handler_map_.end(); ++it) {
-    if (IsSamePrinter(it->second->GetPrinterName(), info.printer_name)) {
+  for (const auto& it : job_handler_map_) {
+    if (IsSamePrinter(it.second->GetPrinterName(), info.printer_name)) {
       // Printer already registered, continue to the next task.
       ContinuePendingTaskProcessing();
       return;
@@ -586,9 +579,10 @@ void CloudPrintConnector::OnReceivePrinterCaps(
     const std::string& printer_name,
     const printing::PrinterCapsAndDefaults& caps_and_defaults) {
   if (!IsRunning())
-    return;  // Orphant call.
-  DCHECK(pending_tasks_.size() > 0 &&
-         pending_tasks_.front().type == PENDING_PRINTER_REGISTER);
+    return;  // Orphan call.
+
+  DCHECK(!pending_tasks_.empty());
+  DCHECK_EQ(PENDING_PRINTER_REGISTER, pending_tasks_.front().type);
 
   if (!succeeded) {
     LOG(ERROR) << "CP_CONNECTOR: Failed to get printer info"
