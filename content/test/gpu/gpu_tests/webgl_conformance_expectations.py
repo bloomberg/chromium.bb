@@ -60,6 +60,32 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension.WEBGL_draw_buffers',
         ['win', 'd3d9'])
 
+    # Android general
+    self.Fail('WebglExtension.EXT_frag_depth',
+        ['android'])
+    self.Fail('WebglExtension.EXT_shader_texture_lod',
+        ['android'])
+    self.Fail('WebglExtension.WEBGL_compressed_texture_astc',
+        ['android'])
+    self.Fail('WebglExtension.WEBGL_compressed_texture_pvrtc',
+        ['android'])
+    self.Fail('WebglExtension.WEBGL_compressed_texture_s3tc',
+        ['android'])
+    self.Fail('WebglExtension.WEBGL_depth_texture',
+        ['android'])
+    self.Fail('WebglExtension.WEBGL_draw_buffers',
+        ['android'])
+
+    # Nexus 5
+    self.Fail('WebglExtension.OES_texture_float_linear',
+        ['android', ('qualcomm', 'Adreno (TM) 330')])
+
+    # Nexus 6
+    self.Fail('WebglExtension.EXT_disjoint_timer_query',
+        ['android', ('qualcomm', 'Adreno (TM) 420')])
+    self.Fail('WebglExtension.EXT_sRGB',
+        ['android', ('qualcomm', 'Adreno (TM) 420')])
+
     # ========================
     # Conformance expectations
     # ========================
