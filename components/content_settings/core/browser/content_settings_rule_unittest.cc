@@ -54,9 +54,9 @@ TEST(RuleTest, ConcatenationIterator) {
                         ContentSettingsPattern::Wildcard(),
                         new base::FundamentalValue(0)));
 
-  std::vector<scoped_ptr<RuleIterator>> iterators;
-  iterators.push_back(scoped_ptr<RuleIterator>(new ListIterator(rules1)));
-  iterators.push_back(scoped_ptr<RuleIterator>(new ListIterator(rules2)));
+  std::vector<std::unique_ptr<RuleIterator>> iterators;
+  iterators.push_back(std::unique_ptr<RuleIterator>(new ListIterator(rules1)));
+  iterators.push_back(std::unique_ptr<RuleIterator>(new ListIterator(rules2)));
   ConcatenationIterator concatenation_iterator(std::move(iterators), nullptr);
 
   Rule rule;

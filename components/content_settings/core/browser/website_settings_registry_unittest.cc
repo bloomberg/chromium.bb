@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/content_settings/core/browser/website_settings_registry.h"
+
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
-#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -69,7 +71,7 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
 
   // Register a new setting.
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
-                       make_scoped_ptr(new base::FundamentalValue(999)),
+                       base::WrapUnique(new base::FundamentalValue(999)),
                        WebsiteSettingsInfo::SYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,
@@ -93,7 +95,7 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
 
 TEST_F(WebsiteSettingsRegistryTest, Iteration) {
   registry()->Register(static_cast<ContentSettingsType>(10), "test",
-                       make_scoped_ptr(new base::FundamentalValue(999)),
+                       base::WrapUnique(new base::FundamentalValue(999)),
                        WebsiteSettingsInfo::SYNCABLE,
                        WebsiteSettingsInfo::LOSSY,
                        WebsiteSettingsInfo::TOP_LEVEL_DOMAIN_ONLY_SCOPE,

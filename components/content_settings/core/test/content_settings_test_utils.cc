@@ -30,14 +30,14 @@ ContentSetting TestUtils::GetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     bool include_incognito) {
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       GetContentSettingValue(provider, primary_url, secondary_url, content_type,
                              resource_identifier, include_incognito));
   return ValueToContentSetting(value.get());
 }
 
 // static
-scoped_ptr<base::Value> TestUtils::GetContentSettingValueAndPatterns(
+std::unique_ptr<base::Value> TestUtils::GetContentSettingValueAndPatterns(
     content_settings::RuleIterator* rule_iterator,
     const GURL& primary_url,
     const GURL& secondary_url,

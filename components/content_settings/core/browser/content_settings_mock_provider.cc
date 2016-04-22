@@ -16,7 +16,7 @@ MockProvider::MockProvider(bool read_only)
 
 MockProvider::~MockProvider() {}
 
-scoped_ptr<RuleIterator> MockProvider::GetRuleIterator(
+std::unique_ptr<RuleIterator> MockProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {

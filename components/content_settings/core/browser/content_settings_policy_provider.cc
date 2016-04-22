@@ -190,7 +190,7 @@ PolicyProvider::~PolicyProvider() {
   DCHECK(!prefs_);
 }
 
-scoped_ptr<RuleIterator> PolicyProvider::GetRuleIterator(
+std::unique_ptr<RuleIterator> PolicyProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
@@ -290,7 +290,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    scoped_ptr<base::Value> value = base::JSONReader::Read(
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(
         pattern_filter_json, base::JSON_ALLOW_TRAILING_COMMAS);
     if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
@@ -298,7 +298,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    scoped_ptr<base::DictionaryValue> pattern_filter_pair(
+    std::unique_ptr<base::DictionaryValue> pattern_filter_pair(
         static_cast<base::DictionaryValue*>(value.release()));
     std::string pattern_str;
     bool pattern_read = pattern_filter_pair->GetStringWithoutPathExpansion(

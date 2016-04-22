@@ -22,7 +22,7 @@ class MockProvider : public ObservableProvider {
   explicit MockProvider(bool read_only);
   ~MockProvider() override;
 
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;

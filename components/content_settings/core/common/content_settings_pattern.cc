@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
@@ -361,7 +361,7 @@ BuilderInterface* ContentSettingsPattern::CreateBuilder(
 
 // static
 ContentSettingsPattern ContentSettingsPattern::Wildcard() {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(true));
   builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
            WithPathWildcard();
@@ -371,7 +371,7 @@ ContentSettingsPattern ContentSettingsPattern::Wildcard() {
 // static
 ContentSettingsPattern ContentSettingsPattern::FromURL(
     const GURL& url) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
   const GURL* local_url = &url;
   if (url.SchemeIsFileSystem() && url.inner_url()) {
@@ -408,7 +408,7 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
 // static
 ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
     const GURL& url) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
 
   const GURL* local_url = &url;
@@ -431,7 +431,7 @@ ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
 // static
 ContentSettingsPattern ContentSettingsPattern::FromString(
     const std::string& pattern_spec) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
   content_settings::PatternParser::Parse(pattern_spec,
                                          builder.get());

@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 namespace base {
@@ -52,7 +52,7 @@ class WebsiteSettingsInfo {
 
   WebsiteSettingsInfo(ContentSettingsType type,
                       const std::string& name,
-                      scoped_ptr<base::Value> initial_default_value,
+                      std::unique_ptr<base::Value> initial_default_value,
                       SyncStatus sync_status,
                       LossyStatus lossy_status,
                       ScopingType scoping_type,
@@ -81,7 +81,7 @@ class WebsiteSettingsInfo {
 
   const std::string pref_name_;
   const std::string default_value_pref_name_;
-  const scoped_ptr<base::Value> initial_default_value_;
+  const std::unique_ptr<base::Value> initial_default_value_;
   const SyncStatus sync_status_;
   const LossyStatus lossy_status_;
   const ScopingType scoping_type_;

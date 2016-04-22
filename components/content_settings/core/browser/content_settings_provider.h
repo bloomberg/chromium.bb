@@ -7,9 +7,9 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -32,7 +32,7 @@ class ProviderInterface {
   // mode. It is not allowed to call other |ProviderInterface| functions
   // (including |GetRuleIterator|) for the same provider until the
   // |RuleIterator| is destroyed.
-  virtual scoped_ptr<RuleIterator> GetRuleIterator(
+  virtual std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const = 0;

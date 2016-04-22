@@ -17,7 +17,7 @@ namespace {
 class RuleIteratorBinary : public RuleIterator {
  public:
   explicit RuleIteratorBinary(bool is_enabled,
-                              scoped_ptr<base::AutoLock> auto_lock)
+                              std::unique_ptr<base::AutoLock> auto_lock)
       : is_done_(is_enabled), auto_lock_(std::move(auto_lock)) {}
 
   bool HasNext() const override { return !is_done_; }
@@ -32,7 +32,7 @@ class RuleIteratorBinary : public RuleIterator {
 
  private:
   bool is_done_;
-  scoped_ptr<base::AutoLock> auto_lock_;
+  std::unique_ptr<base::AutoLock> auto_lock_;
 };
 
 }  // namespace
@@ -41,15 +41,15 @@ BinaryValueMap::BinaryValueMap() {}
 
 BinaryValueMap::~BinaryValueMap() {}
 
-scoped_ptr<RuleIterator> BinaryValueMap::GetRuleIterator(
+std::unique_ptr<RuleIterator> BinaryValueMap::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    scoped_ptr<base::AutoLock> auto_lock) const {
+    std::unique_ptr<base::AutoLock> auto_lock) const {
   if (resource_identifier.empty()) {
-    return scoped_ptr<RuleIterator>(new RuleIteratorBinary(
+    return std::unique_ptr<RuleIterator>(new RuleIteratorBinary(
         IsContentSettingEnabled(content_type), std::move(auto_lock)));
   }
-  return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
+  return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
 }
 
 void BinaryValueMap::SetContentSettingDisabled(ContentSettingsType content_type,

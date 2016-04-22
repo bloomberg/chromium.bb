@@ -7,12 +7,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/time/clock.h"
@@ -94,7 +95,7 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
   for (const WebsiteSettingsInfo* info : *website_settings) {
     content_settings_prefs_.insert(std::make_pair(
         info->type(),
-        make_scoped_ptr(new ContentSettingsPref(
+        base::WrapUnique(new ContentSettingsPref(
             info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
             is_incognito_,
             base::Bind(&PrefProvider::Notify, base::Unretained(this))))));
@@ -116,7 +117,7 @@ PrefProvider::~PrefProvider() {
   DCHECK(!prefs_);
 }
 
-scoped_ptr<RuleIterator> PrefProvider::GetRuleIterator(
+std::unique_ptr<RuleIterator> PrefProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
@@ -194,7 +195,7 @@ ContentSettingsPref* PrefProvider::GetPref(ContentSettingsType type) const {
   return it->second.get();
 }
 
-void PrefProvider::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+void PrefProvider::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 

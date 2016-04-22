@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/content_settings/core/browser/content_settings_mock_provider.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
@@ -28,7 +29,7 @@ TEST(ContentSettingsProviderTest, Mock) {
             TestUtils::GetContentSetting(&mock_provider, url, url,
                                          CONTENT_SETTINGS_TYPE_PLUGINS,
                                          "java_plugin", false));
-  scoped_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
+  std::unique_ptr<base::Value> value_ptr(TestUtils::GetContentSettingValue(
       &mock_provider, url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
       false));
   int int_value = -1;
@@ -63,7 +64,7 @@ TEST(ContentSettingsProviderTest, Mock) {
                                          "java_plugin", false));
 
   mock_provider.set_read_only(true);
-  scoped_ptr<base::Value> value(
+  std::unique_ptr<base::Value> value(
       new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   owned = mock_provider.SetWebsiteSetting(
       pattern,

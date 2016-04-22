@@ -73,7 +73,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Adds a new provider for |type|.
   void RegisterProvider(
       ProviderType type,
-      scoped_ptr<content_settings::ObservableProvider> provider);
+      std::unique_ptr<content_settings::ObservableProvider> provider);
 
   // Returns the default setting for a particular content type. If |provider_id|
   // is not NULL, the id of the provider which provided the default setting is
@@ -108,7 +108,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // |SETTING_SOURCE_NONE|. The pattern fiels of |info| are set to empty
   // patterns.
   // May be called on any thread.
-  scoped_ptr<base::Value> GetWebsiteSetting(
+  std::unique_ptr<base::Value> GetWebsiteSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
@@ -196,7 +196,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
-      scoped_ptr<base::Value> value);
+      std::unique_ptr<base::Value> value);
 
   // Sets the most specific rule that currently defines the setting for the
   // given content type. TODO(raymes): Remove this once all content settings
@@ -279,7 +279,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   void FlushLossyWebsiteSettings();
 
   // Passes ownership of |clock|.
-  void SetPrefClockForTesting(scoped_ptr<base::Clock> clock);
+  void SetPrefClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
@@ -339,14 +339,14 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // Returns the single content setting |value| with a toggle for if it
   // takes the global on/off switch into account.
-  scoped_ptr<base::Value> GetWebsiteSettingInternal(
+  std::unique_ptr<base::Value> GetWebsiteSettingInternal(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
       content_settings::SettingInfo* info) const;
 
-  static scoped_ptr<base::Value> GetContentSettingValueAndPatterns(
+  static std::unique_ptr<base::Value> GetContentSettingValueAndPatterns(
       const content_settings::ProviderInterface* provider,
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -356,7 +356,7 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern);
 
-  static scoped_ptr<base::Value> GetContentSettingValueAndPatterns(
+  static std::unique_ptr<base::Value> GetContentSettingValueAndPatterns(
       content_settings::RuleIterator* rule_iterator,
       const GURL& primary_url,
       const GURL& secondary_url,

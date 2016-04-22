@@ -7,11 +7,11 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_RULE_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_RULE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -50,15 +50,15 @@ class ConcatenationIterator : public RuleIterator {
  public:
   // ConcatenationIterator takes ownership of the pointers in the |iterators|
   // list and |auto_lock|. |auto_lock| can be NULL if no locking is needed.
-  ConcatenationIterator(std::vector<scoped_ptr<RuleIterator>> iterators,
+  ConcatenationIterator(std::vector<std::unique_ptr<RuleIterator>> iterators,
                         base::AutoLock* auto_lock);
   ~ConcatenationIterator() override;
   bool HasNext() const override;
   Rule Next() override;
 
  private:
-  std::vector<scoped_ptr<RuleIterator>> iterators_;
-  scoped_ptr<base::AutoLock> auto_lock_;
+  std::vector<std::unique_ptr<RuleIterator>> iterators_;
+  std::unique_ptr<base::AutoLock> auto_lock_;
 };
 
 }  // namespace content_settings

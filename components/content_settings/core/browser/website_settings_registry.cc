@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 
 namespace {
@@ -54,7 +55,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::GetByName(
 const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
     ContentSettingsType type,
     const std::string& name,
-    scoped_ptr<base::Value> initial_default_value,
+    std::unique_ptr<base::Value> initial_default_value,
     WebsiteSettingsInfo::SyncStatus sync_status,
     WebsiteSettingsInfo::LossyStatus lossy_status,
     WebsiteSettingsInfo::ScopingType scoping_type,
@@ -62,7 +63,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
   WebsiteSettingsInfo* info = new WebsiteSettingsInfo(
       type, name, std::move(initial_default_value), sync_status, lossy_status,
       scoping_type, incognito_behavior);
-  website_settings_info_[info->type()] = make_scoped_ptr(info);
+  website_settings_info_[info->type()] = base::WrapUnique(info);
   return info;
 }
 

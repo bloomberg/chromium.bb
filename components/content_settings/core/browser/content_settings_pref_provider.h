@@ -8,10 +8,10 @@
 // A content settings provider that takes its settings out of the pref service.
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -41,7 +41,7 @@ class PrefProvider : public ObservableProvider {
   ~PrefProvider() override;
 
   // ProviderInterface implementations.
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;
@@ -70,7 +70,7 @@ class PrefProvider : public ObservableProvider {
   ContentSettingsPref* GetPref(ContentSettingsType type) const;
 
   // Gains ownership of |clock|.
-  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
   friend class DeadlockCheckerObserver;  // For testing.
@@ -87,13 +87,13 @@ class PrefProvider : public ObservableProvider {
   PrefService* prefs_;
 
   // Can be set for testing.
-  scoped_ptr<base::Clock> clock_;
+  std::unique_ptr<base::Clock> clock_;
 
   bool is_incognito_;
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  std::map<ContentSettingsType, scoped_ptr<ContentSettingsPref>>
+  std::map<ContentSettingsType, std::unique_ptr<ContentSettingsPref>>
       content_settings_prefs_;
 
   base::ThreadChecker thread_checker_;

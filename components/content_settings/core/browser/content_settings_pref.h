@@ -51,7 +51,7 @@ class ContentSettingsPref {
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       const ResourceIdentifier& resource_identifier,
       bool incognito) const;
 

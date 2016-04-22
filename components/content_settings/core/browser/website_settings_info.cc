@@ -30,7 +30,7 @@ namespace content_settings {
 WebsiteSettingsInfo::WebsiteSettingsInfo(
     ContentSettingsType type,
     const std::string& name,
-    scoped_ptr<base::Value> initial_default_value,
+    std::unique_ptr<base::Value> initial_default_value,
     SyncStatus sync_status,
     LossyStatus lossy_status,
     ScopingType scoping_type,

@@ -4,10 +4,11 @@
 
 #include "components/content_settings/core/browser/content_settings_registry.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -311,7 +312,7 @@ void ContentSettingsRegistry::Register(
          || ContainsKey(valid_settings, CONTENT_SETTING_ASK))
       << "If INHERIT_IN_INCOGNITO_EXCEPT_ALLOW is set, ASK must be listed as a "
          "valid setting.";
-  scoped_ptr<base::Value> default_value(
+  std::unique_ptr<base::Value> default_value(
       new base::FundamentalValue(static_cast<int>(initial_default_value)));
   const WebsiteSettingsInfo* website_settings_info =
       website_settings_registry_->Register(
@@ -319,7 +320,7 @@ void ContentSettingsRegistry::Register(
           WebsiteSettingsInfo::NOT_LOSSY, scoping_type,
           WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   DCHECK(!ContainsKey(content_settings_info_, type));
-  content_settings_info_[type] = make_scoped_ptr(
+  content_settings_info_[type] = base::WrapUnique(
       new ContentSettingsInfo(website_settings_info, whitelisted_schemes,
                               valid_settings, incognito_behavior));
 }

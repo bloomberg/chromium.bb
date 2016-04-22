@@ -26,10 +26,10 @@ class BinaryValueMap {
   BinaryValueMap();
   ~BinaryValueMap();
 
-  scoped_ptr<RuleIterator> GetRuleIterator(
+  std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      scoped_ptr<base::AutoLock> lock) const;
+      std::unique_ptr<base::AutoLock> lock) const;
   void SetContentSettingDisabled(ContentSettingsType content_type,
                                  bool disabled);
   bool IsContentSettingEnabled(ContentSettingsType content_type) const;

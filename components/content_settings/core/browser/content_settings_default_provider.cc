@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -74,7 +75,7 @@ class DefaultRuleIterator : public RuleIterator {
   }
 
  private:
-  scoped_ptr<base::Value> value_;
+  std::unique_ptr<base::Value> value_;
 };
 
 }  // namespace
@@ -215,7 +216,7 @@ bool DefaultProvider::SetWebsiteSetting(
 
   // Put |in_value| in a scoped pointer to ensure that it gets cleaned up
   // properly if we don't pass on the ownership.
-  scoped_ptr<base::Value> value(in_value);
+  std::unique_ptr<base::Value> value(in_value);
 
   // The default settings may not be directly modified for OTR sessions.
   // Instead, they are synced to the main profile's setting.
@@ -243,23 +244,23 @@ bool DefaultProvider::SetWebsiteSetting(
   return true;
 }
 
-scoped_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
+std::unique_ptr<RuleIterator> DefaultProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
   // The default provider never has incognito-specific settings.
   if (incognito)
-    return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
+    return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
 
   base::AutoLock lock(lock_);
   if (resource_identifier.empty()) {
     auto it(default_settings_.find(content_type));
     if (it != default_settings_.end())
-      return scoped_ptr<RuleIterator>(
+      return std::unique_ptr<RuleIterator>(
           new DefaultRuleIterator(it->second.get()));
     NOTREACHED();
   }
-  return scoped_ptr<RuleIterator>(new EmptyRuleIterator());
+  return std::unique_ptr<RuleIterator>(new EmptyRuleIterator());
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(
@@ -295,7 +296,7 @@ bool DefaultProvider::IsValueEmptyOrDefault(ContentSettingsType content_type,
 void DefaultProvider::ChangeSetting(ContentSettingsType content_type,
                                     base::Value* value) {
   default_settings_[content_type] =
-      value ? make_scoped_ptr(value->DeepCopy())
+      value ? base::WrapUnique(value->DeepCopy())
             : ContentSettingToValue(GetDefaultValue(content_type));
 }
 
@@ -354,7 +355,7 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
                   ResourceIdentifier());
 }
 
-scoped_ptr<base::Value> DefaultProvider::ReadFromPref(
+std::unique_ptr<base::Value> DefaultProvider::ReadFromPref(
     ContentSettingsType content_type) {
   int int_value = prefs_->GetInteger(GetPrefName(content_type));
   return ContentSettingToValue(IntToContentSetting(int_value));

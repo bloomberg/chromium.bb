@@ -37,7 +37,7 @@ Rule EmptyRuleIterator::Next() {
 }
 
 ConcatenationIterator::ConcatenationIterator(
-    std::vector<scoped_ptr<RuleIterator>> iterators,
+    std::vector<std::unique_ptr<RuleIterator>> iterators,
     base::AutoLock* auto_lock)
     : iterators_(std::move(iterators)), auto_lock_(auto_lock) {
   auto it = iterators_.begin();

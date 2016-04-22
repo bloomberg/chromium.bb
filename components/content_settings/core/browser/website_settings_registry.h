@@ -6,11 +6,11 @@
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_WEBSITE_SETTINGS_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
@@ -25,7 +25,8 @@ namespace content_settings {
 // const.
 class WebsiteSettingsRegistry {
  public:
-  using Map = std::map<ContentSettingsType, scoped_ptr<WebsiteSettingsInfo>>;
+  using Map =
+      std::map<ContentSettingsType, std::unique_ptr<WebsiteSettingsInfo>>;
   using const_iterator = MapValueIterator<typename Map::const_iterator,
                                           const WebsiteSettingsInfo*>;
 
@@ -43,7 +44,7 @@ class WebsiteSettingsRegistry {
   const WebsiteSettingsInfo* Register(
       ContentSettingsType type,
       const std::string& name,
-      scoped_ptr<base::Value> initial_default_value,
+      std::unique_ptr<base::Value> initial_default_value,
       WebsiteSettingsInfo::SyncStatus sync_status,
       WebsiteSettingsInfo::LossyStatus lossy_status,
       WebsiteSettingsInfo::ScopingType scoping_type,

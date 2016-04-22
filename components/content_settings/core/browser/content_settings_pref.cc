@@ -4,9 +4,10 @@
 
 #include "components/content_settings/core/browser/content_settings_pref.h"
 
+#include <memory>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/time/clock.h"
@@ -82,7 +83,7 @@ ContentSettingsPref::ContentSettingsPref(
 ContentSettingsPref::~ContentSettingsPref() {
 }
 
-scoped_ptr<RuleIterator> ContentSettingsPref::GetRuleIterator(
+std::unique_ptr<RuleIterator> ContentSettingsPref::GetRuleIterator(
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
   if (incognito)
@@ -105,7 +106,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
          !resource_identifier.empty());
 
   // At this point take the ownership of the |in_value|.
-  scoped_ptr<base::Value> value(in_value);
+  std::unique_ptr<base::Value> value(in_value);
 
   // Update in memory value map.
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;
@@ -268,7 +269,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
     return;
 
   base::DictionaryValue* mutable_settings;
-  scoped_ptr<base::DictionaryValue> mutable_settings_scope;
+  std::unique_ptr<base::DictionaryValue> mutable_settings_scope;
 
   if (!is_incognito_) {
     mutable_settings = update.Get();
@@ -313,7 +314,7 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
           bool is_integer = j.value().GetAsInteger(&setting);
           DCHECK(is_integer);
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
-          scoped_ptr<base::Value> setting_ptr(
+          std::unique_ptr<base::Value> setting_ptr(
               new base::FundamentalValue(setting));
           value_map_.SetValue(pattern_pair.first,
                               pattern_pair.second,
@@ -498,7 +499,7 @@ void ContentSettingsPref::CanonicalizeContentSettingsExceptions(
   }
 
   for (size_t i = 0; i < move_items.size(); ++i) {
-    scoped_ptr<base::Value> pattern_settings_dictionary;
+    std::unique_ptr<base::Value> pattern_settings_dictionary;
     all_settings_dictionary->RemoveWithoutPathExpansion(
         move_items[i].first, &pattern_settings_dictionary);
     all_settings_dictionary->SetWithoutPathExpansion(
