@@ -7,8 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -213,8 +211,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
         kSupervisedUserId2,  // supervised_user_id
         TestingProfile::TestingFactories());
 
-    EXPECT_EQ(2u,
-        profile_manager()->profile_attributes_storage()->GetNumberOfProfiles());
+    const ProfileInfoCache* cache = profile_manager_->profile_info_cache();
+    EXPECT_EQ(2u, cache->GetNumberOfProfiles());
   }
 
   void TearDown() override {

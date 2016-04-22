@@ -16,8 +16,7 @@
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -70,11 +69,11 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
   if (profile_path == ProfileManager::GetGuestProfilePath()) {
     display_name = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
   } else {
-    ProfileAttributesStorage& storage =
-        g_browser_process->profile_manager()->GetProfileAttributesStorage();
+    const ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t index = cache.GetIndexOfProfileWithPath(profile_path);
 
-    ProfileAttributesEntry* entry;
-    if (!storage.GetProfileAttributesWithPath(profile_path, &entry))
+    if (index == std::string::npos)
       return l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
 
     // Using the --new-avatar-menu flag, there's a couple of rules about what
@@ -83,12 +82,12 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
     // IDS_SINGLE_PROFILE_DISPLAY_NAME. If the profile is signed in but is using
     // a default name, use the profiles's email address. Otherwise, it
     // will return the actual name of the profile.
-    const base::string16 profile_name = entry->GetName();
-    const base::string16 email = entry->GetUserName();
-    bool is_default_name = entry->IsUsingDefaultName() &&
-        storage.IsDefaultProfileName(profile_name);
+    const base::string16 profile_name = cache.GetNameOfProfileAtIndex(index);
+    const base::string16 email = cache.GetUserNameOfProfileAtIndex(index);
+    bool is_default_name = cache.ProfileIsUsingDefaultNameAtIndex(index) &&
+        cache.IsDefaultProfileName(profile_name);
 
-    if (storage.GetNumberOfProfiles() == 1u && is_default_name)
+    if (cache.GetNumberOfProfiles() == 1 && is_default_name)
       display_name = l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
     else
       display_name = (is_default_name && !email.empty()) ? email : profile_name;
@@ -121,13 +120,13 @@ base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item) {
 
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name) {
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index == std::string::npos)
     return;
-  }
 
-  if (new_profile_name == entry->GetName())
+  if (new_profile_name == cache.GetNameOfProfileAtIndex(profile_index))
     return;
 
   // This is only called when updating the profile name through the UI,
@@ -135,8 +134,8 @@ void UpdateProfileName(Profile* profile,
   PrefService* pref_service = profile->GetPrefs();
   pref_service->SetBoolean(prefs::kProfileUsingDefaultName, false);
 
-  // Updating the profile preference will cause the profile attributes storage
-  // to be updated for this preference.
+  // Updating the profile preference will cause the cache to be updated for
+  // this preference.
   pref_service->SetString(prefs::kProfileName,
                           base::UTF16ToUTF8(new_profile_name));
 }
@@ -162,14 +161,15 @@ bool IsRegularOrGuestSession(Browser* browser) {
   return profile->IsGuestSession() || !profile->IsOffTheRecord();
 }
 
-bool IsProfileLocked(const base::FilePath& profile_path) {
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_path, &entry)) {
-    return false;
-  }
+bool IsProfileLocked(const base::FilePath& path) {
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(path);
 
-  return entry->IsSigninRequired();
+  if (profile_index == std::string::npos)
+    return false;
+
+  return cache.ProfileIsSigninRequiredAtIndex(profile_index);
 }
 
 void UpdateIsProfileLockEnabledIfNeeded(Profile* profile) {
@@ -211,13 +211,9 @@ bool SetActiveProfileToGuestIfLocked() {
   if (active_profile_path == guest_path)
     return true;
 
-  ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(active_profile_path, &entry);
-  DCHECK(has_entry);
-
-  if (!entry->IsSigninRequired())
+  const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(active_profile_path);
+  if (!cache.ProfileIsSigninRequiredAtIndex(index))
     return false;
 
   SetLastUsedProfile(guest_path.BaseName().MaybeAsASCII());

@@ -164,18 +164,17 @@ class ProfileManagerTest : public testing::Test {
         is_supervised ? "Dummy ID" : std::string());
   }
 
-  // Helper function to add a profile with |profile_name| to |profile_manager|'s
-  // ProfileAttributesStorage, and return the profile created.
-  Profile* AddProfileToStorage(ProfileManager* profile_manager,
-                               const std::string& path_suffix,
-                               const base::string16& profile_name) {
-    ProfileAttributesStorage& storage =
-        profile_manager->GetProfileAttributesStorage();
-    size_t num_profiles = storage.GetNumberOfProfiles();
+  // Helper function to add a profile with |profile_name| to
+  // |profile_manager|'s ProfileInfoCache, and return the profile created.
+  Profile* AddProfileToCache(ProfileManager* profile_manager,
+                             const std::string& path_suffix,
+                             const base::string16& profile_name) {
+    ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+    size_t num_profiles = cache.GetNumberOfProfiles();
     base::FilePath path = temp_dir_.path().AppendASCII(path_suffix);
-    storage.AddProfile(path, profile_name, std::string(), base::string16(), 0,
-                       std::string());
-    EXPECT_EQ(num_profiles + 1u, storage.GetNumberOfProfiles());
+    cache.AddProfileToCache(path, profile_name,
+                            std::string(), base::string16(), 0, std::string());
+    EXPECT_EQ(num_profiles + 1, cache.GetNumberOfProfiles());
     return profile_manager->GetProfile(path);
   }
 
@@ -416,31 +415,29 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncCheckOmitted) {
       testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
 
   CreateProfileAsync(profile_manager, name, true, &mock_observer);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(1u, cache.GetNumberOfProfiles());
   // Supervised profiles should start out omitted from the profile list.
-  EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0u]->IsOmitted());
+  EXPECT_TRUE(cache.IsOmittedProfileAtIndex(0));
 
   name = "1 Regular Profile";
   CreateProfileAsync(profile_manager, name, false, &mock_observer);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(2u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(2u, cache.GetNumberOfProfiles());
   // Non-supervised profiles should be included in the profile list.
-  EXPECT_FALSE(storage.GetAllProfilesAttributesSortedByName()[1u]->IsOmitted());
+  EXPECT_FALSE(cache.IsOmittedProfileAtIndex(1));
 }
 
-TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
+TEST_F(ProfileManagerTest, AddProfileToCacheCheckOmitted) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
 
   const base::FilePath supervised_path =
       temp_dir_.path().AppendASCII("Supervised");
@@ -450,8 +447,8 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
 
   // RegisterTestingProfile adds the profile to the cache and takes ownership.
   profile_manager->RegisterTestingProfile(supervised_profile, true, false);
-  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
-  EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0u]->IsOmitted());
+  EXPECT_EQ(1u, cache.GetNumberOfProfiles());
+  EXPECT_TRUE(cache.IsOmittedProfileAtIndex(0));
 
   const base::FilePath nonsupervised_path = temp_dir_.path().AppendASCII(
       "Non-Supervised");
@@ -459,13 +456,12 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
                                                              NULL);
   profile_manager->RegisterTestingProfile(nonsupervised_profile, true, false);
 
-  EXPECT_EQ(2u, storage.GetNumberOfProfiles());
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(supervised_path, &entry));
-  EXPECT_TRUE(entry->IsOmitted());
-
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(nonsupervised_path, &entry));
-  EXPECT_FALSE(entry->IsOmitted());
+  EXPECT_EQ(2u, cache.GetNumberOfProfiles());
+  size_t supervised_index = cache.GetIndexOfProfileWithPath(supervised_path);
+  EXPECT_TRUE(cache.IsOmittedProfileAtIndex(supervised_index));
+  size_t nonsupervised_index =
+      cache.GetIndexOfProfileWithPath(nonsupervised_path);
+  EXPECT_FALSE(cache.IsOmittedProfileAtIndex(nonsupervised_index));
 }
 
 TEST_F(ProfileManagerTest, GetGuestProfilePath) {
@@ -548,8 +544,7 @@ TEST_F(ProfileManagerGuestTest, GuestProfileIngonito) {
 
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
                                   new base::FundamentalValue(true));
 
@@ -560,21 +555,19 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   if (!local_state_.Get()->HasPrefPath(prefs::kBackgroundModeEnabled))
     return;
 
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
-
-  storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_1"),
-      ASCIIToUTF16("name_1"), "12345", base::string16(), 0, std::string());
-  storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_2"),
-      ASCIIToUTF16("name_2"), "23456", base::string16(), 0, std::string());
-  storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_3"),
-      ASCIIToUTF16("name_3"), "34567", base::string16(), 0, std::string());
-
-  EXPECT_EQ(3u, storage.GetNumberOfProfiles());
-
-  std::vector<ProfileAttributesEntry*> entries =
-      storage.GetAllProfilesAttributes();
-  entries[0u]->SetBackgroundStatus(true);
-  entries[2u]->SetBackgroundStatus(true);
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
+                          ASCIIToUTF16("name_1"), "12345", base::string16(), 0,
+                          std::string());
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
+                          ASCIIToUTF16("name_2"), "23456", base::string16(), 0,
+                          std::string());
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_3"),
+                          ASCIIToUTF16("name_3"), "34567", base::string16(), 0,
+                          std::string());
+  cache.SetBackgroundStatusOfProfileAtIndex(0, true);
+  cache.SetBackgroundStatusOfProfileAtIndex(2, true);
+  EXPECT_EQ(3u, cache.GetNumberOfProfiles());
 
   profile_manager->AutoloadProfiles();
 
@@ -583,24 +576,20 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
 
 TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
                                   new base::FundamentalValue(false));
 
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
-
-  storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_1"),
-      ASCIIToUTF16("name_1"), "12345", base::string16(), 0, std::string());
-  storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_2"),
-      ASCIIToUTF16("name_2"), "23456", base::string16(), 0, std::string());
-
-  EXPECT_EQ(2u, storage.GetNumberOfProfiles());
-
-  std::vector<ProfileAttributesEntry*> entries =
-      storage.GetAllProfilesAttributes();
-  entries[0u]->SetBackgroundStatus(false);
-  entries[1u]->SetBackgroundStatus(true);
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),
+                          ASCIIToUTF16("name_1"), "12345", base::string16(), 0,
+                          std::string());
+  cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_2"),
+                          ASCIIToUTF16("name_2"), "23456", base::string16(), 0,
+                          std::string());
+  cache.SetBackgroundStatusOfProfileAtIndex(0, false);
+  cache.SetBackgroundStatusOfProfileAtIndex(1, true);
+  EXPECT_EQ(2u, cache.GetNumberOfProfiles());
 
   profile_manager->AutoloadProfiles();
 
@@ -638,6 +627,7 @@ TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
   dest_path = dest_path.Append(FILE_PATH_LITERAL("New Profile"));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
 
   // Successfully create the profile
   Profile* profile = profile_manager->GetProfile(dest_path);
@@ -648,13 +638,13 @@ TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
   size_t avatar_index =
       profile->GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
 
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(profile_manager->GetProfileAttributesStorage().
-                  GetProfileAttributesWithPath(dest_path, &entry));
+  size_t profile_index = cache.GetIndexOfProfileWithPath(dest_path);
 
   // Check if the profile prefs are the same as the cache prefs
-  EXPECT_EQ(profile_name, base::UTF16ToUTF8(entry->GetName()));
-  EXPECT_EQ(avatar_index, entry->GetAvatarIconIndex());
+  EXPECT_EQ(profile_name,
+            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+  EXPECT_EQ(avatar_index,
+            cache.GetAvatarIconIndexOfProfileAtIndex(profile_index));
 }
 
 TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
@@ -966,24 +956,23 @@ TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastOpenedAtShutdown) {
 TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   // Create two profiles, one of them ephemeral.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  ASSERT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  ASSERT_EQ(0u, cache.GetNumberOfProfiles());
 
   const std::string profile_name1 = "Homer";
-  base::FilePath path1 =
-      profile_manager->user_data_dir().AppendASCII(profile_name1);
-  storage.AddProfile(path1, base::UTF8ToUTF16(profile_name1), std::string(),
-                     base::UTF8ToUTF16(profile_name1), 0, std::string());
-  storage.GetAllProfilesAttributes()[0u]->SetIsEphemeral(true);
+  base::FilePath path1 = temp_dir_.path().AppendASCII(profile_name1);
+  cache.AddProfileToCache(path1, base::UTF8ToUTF16(profile_name1),
+                          std::string(), base::UTF8ToUTF16(profile_name1), 0,
+                          std::string());
+  cache.SetProfileIsEphemeralAtIndex(0, true);
   ASSERT_TRUE(base::CreateDirectory(path1));
 
   const std::string profile_name2 = "Marge";
-  base::FilePath path2 =
-      profile_manager->user_data_dir().AppendASCII(profile_name2);
-  storage.AddProfile(path2, base::UTF8ToUTF16(profile_name2), std::string(),
-                     base::UTF8ToUTF16(profile_name2), 0, std::string());
-  ASSERT_EQ(2u, storage.GetNumberOfProfiles());
+  base::FilePath path2 = temp_dir_.path().AppendASCII(profile_name2);
+  cache.AddProfileToCache(path2, base::UTF8ToUTF16(profile_name2),
+                          std::string(), base::UTF8ToUTF16(profile_name2), 0,
+                          std::string());
+  ASSERT_EQ(2u, cache.GetNumberOfProfiles());
   ASSERT_TRUE(base::CreateDirectory(path2));
 
   // Set the active profile.
@@ -998,16 +987,16 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_FALSE(base::DirectoryExists(path1));
   EXPECT_TRUE(base::DirectoryExists(path2));
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
-  ASSERT_EQ(1u, storage.GetNumberOfProfiles());
+  ASSERT_EQ(1u, cache.GetNumberOfProfiles());
 
   // Mark the remaining profile ephemeral and clean up.
-  storage.GetAllProfilesAttributes()[0u]->SetIsEphemeral(true);
+  cache.SetProfileIsEphemeralAtIndex(0, true);
   profile_manager->CleanUpEphemeralProfiles();
   base::RunLoop().RunUntilIdle();
 
   // The profile should be deleted, and the last used profile set to a new one.
   EXPECT_FALSE(base::DirectoryExists(path2));
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
 }
 
@@ -1030,8 +1019,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(2u, profile_manager->GetProfileAttributesStorage().
-                    GetNumberOfProfiles());
+  EXPECT_EQ(2u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
 
   // Set the active profile.
   PrefService* local_state = g_browser_process->local_state();
@@ -1050,8 +1038,6 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
 TEST_F(ProfileManagerTest, LastProfileDeleted) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
 
   // Create and load a profile.
   const std::string profile_name1 = "New Profile 1";
@@ -1065,7 +1051,7 @@ TEST_F(ProfileManagerTest, LastProfileDeleted) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
 
   // Set it as the active profile.
   PrefService* local_state = g_browser_process->local_state();
@@ -1083,14 +1069,13 @@ TEST_F(ProfileManagerTest, LastProfileDeleted) {
 
   EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
-  EXPECT_EQ(dest_path2, storage.GetAllProfilesAttributes()[0u]->GetPath());
+  EXPECT_EQ(dest_path2,
+      profile_manager->GetProfileInfoCache().GetPathOfProfileAtIndex(0));
 }
 
 TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
 
   // Create and load a profile.
   const std::string profile_name1 = "New Profile 1";
@@ -1104,7 +1089,7 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
 
   // Create the profile and register it.
   const std::string guest_profile_name =
@@ -1118,9 +1103,9 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
   // Registering the profile passes ownership to the ProfileManager.
   profile_manager->RegisterTestingProfile(guest_profile, false, false);
 
-  // The Guest profile does not get added to the ProfileAttributesStorage.
+  // The Guest profile does not get added to the ProfileInfoCache.
   EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
 
   // Set the Guest profile as the active profile.
   PrefService* local_state = g_browser_process->local_state();
@@ -1137,8 +1122,9 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
   base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
 
   EXPECT_EQ(3u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
-  EXPECT_EQ(dest_path2, storage.GetAllProfilesAttributes()[0u]->GetPath());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
+  EXPECT_EQ(dest_path2,
+      profile_manager->GetProfileInfoCache().GetPathOfProfileAtIndex(0));
 }
 
 TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
@@ -1146,23 +1132,22 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
 
   // Only one local profile means we display IDS_SINGLE_PROFILE_DISPLAY_NAME.
   const base::string16 default_profile_name =
       l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
-  const base::string16 profile_name1 = storage.ChooseNameForNewProfile(0u);
-  Profile* profile1 = AddProfileToStorage(profile_manager,
-                                          "path_1", profile_name1);
+  const base::string16 profile_name1 = cache.ChooseNameForNewProfile(0);
+  Profile* profile1 = AddProfileToCache(profile_manager,
+                                        "path_1", profile_name1);
   EXPECT_EQ(default_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
   // Multiple profiles means displaying the actual profile names.
-  const base::string16 profile_name2 = storage.ChooseNameForNewProfile(1u);
-  Profile* profile2 = AddProfileToStorage(profile_manager,
-                                          "path_2", profile_name2);
+  const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
+  Profile* profile2 = AddProfileToCache(profile_manager,
+                                        "path_2", profile_name2);
   EXPECT_EQ(profile_name1,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
   EXPECT_EQ(profile_name2,
@@ -1182,33 +1167,30 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
 
   // Only one local profile means we display IDS_SINGLE_PROFILE_DISPLAY_NAME.
   const base::string16 default_profile_name =
       l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
-  const base::string16 profile_name1 = storage.ChooseNameForNewProfile(0u);
-  Profile* profile1 = AddProfileToStorage(profile_manager,
-                                          "path_1", profile_name1);
+  const base::string16 profile_name1 = cache.ChooseNameForNewProfile(0);
+  Profile* profile1 = AddProfileToCache(profile_manager,
+                                        "path_1", profile_name1);
   EXPECT_EQ(default_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
-  ASSERT_EQ(1u, storage.GetNumberOfProfiles());
 
   // We should display custom names for local profiles.
   const base::string16 custom_profile_name = ASCIIToUTF16("Batman");
-  ProfileAttributesEntry* entry = storage.GetAllProfilesAttributes()[0u];
-  entry->SetName(custom_profile_name);
-  entry->SetIsUsingDefaultName(false);
-  EXPECT_EQ(custom_profile_name, entry->GetName());
+  cache.SetNameOfProfileAtIndex(0, custom_profile_name);
+  cache.SetProfileIsUsingDefaultNameAtIndex(0, false);
+  EXPECT_EQ(custom_profile_name, cache.GetNameOfProfileAtIndex(0));
   EXPECT_EQ(custom_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
   // Multiple profiles means displaying the actual profile names.
-  const base::string16 profile_name2 = storage.ChooseNameForNewProfile(1u);
-  Profile* profile2 = AddProfileToStorage(profile_manager,
-                                          "path_2", profile_name2);
+  const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
+  Profile* profile2 = AddProfileToCache(profile_manager,
+                                        "path_2", profile_name2);
   EXPECT_EQ(custom_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
   EXPECT_EQ(profile_name2,
@@ -1228,40 +1210,38 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
 
   // Only one local profile means we display IDS_SINGLE_PROFILE_DISPLAY_NAME.
   const base::string16 default_profile_name =
       l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
-  const base::string16 profile_name1 = storage.ChooseNameForNewProfile(0u);
-  Profile* profile1 = AddProfileToStorage(profile_manager,
-                                          "path_1", profile_name1);
+  const base::string16 profile_name1 = cache.ChooseNameForNewProfile(0);
+  Profile* profile1 = AddProfileToCache(profile_manager,
+                                        "path_1", profile_name1);
   EXPECT_EQ(default_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
-  ProfileAttributesEntry* entry = storage.GetAllProfilesAttributes()[0u];
   // For a signed in profile with a default name we still display
   // IDS_SINGLE_PROFILE_DISPLAY_NAME.
-  entry->SetAuthInfo("12345", ASCIIToUTF16("user@gmail.com"));
-  EXPECT_EQ(profile_name1, entry->GetName());
+  cache.SetAuthInfoOfProfileAtIndex(0, "12345", ASCIIToUTF16("user@gmail.com"));
+  EXPECT_EQ(profile_name1, cache.GetNameOfProfileAtIndex(0));
   EXPECT_EQ(default_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
   // For a signed in profile with a non-default Gaia given name we display the
   // Gaia given name.
-  entry->SetAuthInfo("12345", ASCIIToUTF16("user@gmail.com"));
+  cache.SetAuthInfoOfProfileAtIndex(0, "12345", ASCIIToUTF16("user@gmail.com"));
   const base::string16 gaia_given_name(ASCIIToUTF16("given name"));
-  entry->SetGAIAGivenName(gaia_given_name);
-  EXPECT_EQ(gaia_given_name, entry->GetName());
+  cache.SetGAIAGivenNameOfProfileAtIndex(0, gaia_given_name);
+  EXPECT_EQ(gaia_given_name, cache.GetNameOfProfileAtIndex(0));
   EXPECT_EQ(gaia_given_name,
       profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
   // Multiple profiles means displaying the actual profile names.
-  const base::string16 profile_name2 = storage.ChooseNameForNewProfile(1u);
-  Profile* profile2 = AddProfileToStorage(profile_manager,
-                                          "path_2", profile_name2);
+  const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
+  Profile* profile2 = AddProfileToCache(profile_manager,
+                                        "path_2", profile_name2);
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
   EXPECT_EQ(profile_name2,
@@ -1281,46 +1261,40 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  EXPECT_EQ(0u, storage.GetNumberOfProfiles());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
 
   // Create two signed in profiles, with both new and legacy default names, and
   // a profile with a custom name.
-  Profile* profile1 = AddProfileToStorage(profile_manager, "path_1",
-                                          ASCIIToUTF16("Person 1"));
-  Profile* profile2 = AddProfileToStorage(profile_manager, "path_2",
-                                          ASCIIToUTF16("Default Profile"));
+  Profile* profile1 = AddProfileToCache(
+      profile_manager, "path_1", ASCIIToUTF16("Person 1"));
+  Profile* profile2 = AddProfileToCache(
+      profile_manager, "path_2", ASCIIToUTF16("Default Profile"));
   const base::string16 profile_name3(ASCIIToUTF16("Batman"));
-  Profile* profile3 = AddProfileToStorage(profile_manager, "path_3",
-                                          profile_name3);
-  EXPECT_EQ(3u, storage.GetNumberOfProfiles());
+  Profile* profile3 = AddProfileToCache(
+      profile_manager, "path_3", profile_name3);
+  EXPECT_EQ(3u, cache.GetNumberOfProfiles());
 
   // Sign in all profiles, and make sure they do not have a Gaia name set.
   const base::string16 email1(ASCIIToUTF16("user1@gmail.com"));
   const base::string16 email2(ASCIIToUTF16("user2@gmail.com"));
   const base::string16 email3(ASCIIToUTF16("user3@gmail.com"));
 
-  ProfileAttributesEntry* entry;
-
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile1->GetPath(),
-                                                   &entry));
-  entry->SetAuthInfo("12345", email1);
-  entry->SetGAIAGivenName(base::string16());
-  entry->SetGAIAName(base::string16());
+  int index = cache.GetIndexOfProfileWithPath(profile1->GetPath());
+  cache.SetAuthInfoOfProfileAtIndex(index, "12345", email1);
+  cache.SetGAIAGivenNameOfProfileAtIndex(index, base::string16());
+  cache.SetGAIANameOfProfileAtIndex(index, base::string16());
 
   // This may resort the cache, so be extra cautious to use the right profile.
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile2->GetPath(),
-                                                   &entry));
-  entry->SetAuthInfo("23456", email2);
-  entry->SetGAIAGivenName(base::string16());
-  entry->SetGAIAName(base::string16());
+  index = cache.GetIndexOfProfileWithPath(profile2->GetPath());
+  cache.SetAuthInfoOfProfileAtIndex(index, "23456", email2);
+  cache.SetGAIAGivenNameOfProfileAtIndex(index, base::string16());
+  cache.SetGAIANameOfProfileAtIndex(index, base::string16());
 
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile3->GetPath(),
-                                                   &entry));
-  entry->SetAuthInfo("34567", email3);
-  entry->SetGAIAGivenName(base::string16());
-  entry->SetGAIAName(base::string16());
+  index = cache.GetIndexOfProfileWithPath(profile3->GetPath());
+  cache.SetAuthInfoOfProfileAtIndex(index, "34567", email3);
+  cache.SetGAIAGivenNameOfProfileAtIndex(index, base::string16());
+  cache.SetGAIANameOfProfileAtIndex(index, base::string16());
 
   // The profiles with default names should display the email address.
   EXPECT_EQ(email1, profiles::GetAvatarNameForProfile(profile1->GetPath()));
@@ -1333,9 +1307,8 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   // Adding a Gaia name to a profile that previously had a default name should
   // start displaying it.
   const base::string16 gaia_given_name(ASCIIToUTF16("Robin"));
-  ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile1->GetPath(),
-                                                   &entry));
-  entry->SetGAIAGivenName(gaia_given_name);
+  cache.SetGAIAGivenNameOfProfileAtIndex(
+      cache.GetIndexOfProfileWithPath(profile1->GetPath()), gaia_given_name);
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
@@ -1361,14 +1334,13 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
   base::RunLoop().RunUntilIdle();
 
   // Track the profile, but don't load it.
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  storage.AddProfile(dest_path2, ASCIIToUTF16(profile_name2), "23456",
-                     base::string16(), 0, std::string());
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  cache.AddProfileToCache(dest_path2, ASCIIToUTF16(profile_name2), "23456",
+                          base::string16(), 0, std::string());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(2u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(2u, cache.GetNumberOfProfiles());
 
   // Set the active profile.
   PrefService* local_state = g_browser_process->local_state();
@@ -1410,19 +1382,20 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   base::RunLoop().RunUntilIdle();
 
   // Create the other profiles, but don't load them. Assign a fake avatar icon
-  // to ensure that profiles in the profile attributes storage are sorted by the
-  // profile name, and not randomly by the avatar name.
-  ProfileAttributesStorage& storage =
-      profile_manager->GetProfileAttributesStorage();
-  storage.AddProfile(dest_path2, ASCIIToUTF16(profile_name2), "23456",
-                     ASCIIToUTF16(profile_name2), 1, std::string());
-  storage.AddProfile(dest_path3, ASCIIToUTF16(profile_name3), "34567",
-                     ASCIIToUTF16(profile_name3), 2, std::string());
+  // to ensure that profiles in the info cache are sorted by the profile name,
+  // and not randomly by the avatar name.
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  cache.AddProfileToCache(dest_path2, ASCIIToUTF16(profile_name2),
+                          "23456", ASCIIToUTF16(profile_name2), 1,
+                          std::string());
+  cache.AddProfileToCache(dest_path3, ASCIIToUTF16(profile_name3),
+                          "34567", ASCIIToUTF16(profile_name3), 2,
+                          std::string());
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
-  EXPECT_EQ(3u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(3u, cache.GetNumberOfProfiles());
 
   // Set the active profile.
   PrefService* local_state = g_browser_process->local_state();

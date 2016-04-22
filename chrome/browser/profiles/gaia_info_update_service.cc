@@ -11,8 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -121,22 +120,29 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
       downloader->GetProfilePictureStatus();
   std::string picture_url = downloader->GetProfilePictureURL();
 
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  if (profile_index == std::string::npos)
     return;
-  }
 
-  entry->SetGAIAName(full_name);
-  entry->SetGAIAGivenName(given_name);
+  cache.SetGAIANameOfProfileAtIndex(profile_index, full_name);
+  // The profile index may have changed.
+  profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  DCHECK_NE(profile_index, std::string::npos);
+
+  cache.SetGAIAGivenNameOfProfileAtIndex(profile_index, given_name);
+  // The profile index may have changed.
+  profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  DCHECK_NE(profile_index, std::string::npos);
 
   if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
     profile_->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,
                                     picture_url);
     gfx::Image gfx_image = gfx::Image::CreateFrom1xBitmap(bitmap);
-    entry->SetGAIAPicture(&gfx_image);
+    cache.SetGAIAPictureOfProfileAtIndex(profile_index, &gfx_image);
   } else if (picture_status == ProfileDownloader::PICTURE_DEFAULT) {
-    entry->SetGAIAPicture(nullptr);
+    cache.SetGAIAPictureOfProfileAtIndex(profile_index, NULL);
   }
 
   const base::string16 hosted_domain = downloader->GetProfileHostedDomain();
@@ -158,17 +164,21 @@ void GAIAInfoUpdateService::OnProfileDownloadFailure(
 }
 
 void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  if (profile_index == std::string::npos)
     return;
-  }
 
   if (username.empty()) {
     // Unset the old user's GAIA info.
-    entry->SetGAIAName(base::string16());
-    entry->SetGAIAGivenName(base::string16());
-    entry->SetGAIAPicture(nullptr);
+    cache.SetGAIANameOfProfileAtIndex(profile_index, base::string16());
+    cache.SetGAIAGivenNameOfProfileAtIndex(profile_index, base::string16());
+    // The profile index may have changed.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+    if (profile_index == std::string::npos)
+      return;
+    cache.SetGAIAPictureOfProfileAtIndex(profile_index, NULL);
     // Unset the cached URL.
     profile_->GetPrefs()->ClearPref(prefs::kProfileGAIAInfoPictureURL);
   } else {
@@ -187,7 +197,7 @@ void GAIAInfoUpdateService::Shutdown() {
   // OK to reset |profile_| pointer here because GAIAInfoUpdateService will not
   // access it again.  This pointer is also used to implement the delegate for
   // |profile_image_downloader_|.  However that object was destroyed above.
-  profile_ = nullptr;
+  profile_ = NULL;
 }
 
 void GAIAInfoUpdateService::ScheduleNextUpdate() {

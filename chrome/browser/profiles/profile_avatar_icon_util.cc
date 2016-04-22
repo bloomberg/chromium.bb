@@ -5,7 +5,6 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 
 #include <memory>
-#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -15,6 +14,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"

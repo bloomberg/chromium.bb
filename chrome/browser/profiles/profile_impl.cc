@@ -62,9 +62,8 @@
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
@@ -486,36 +485,36 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kSupervisedUserId,
-      base::Bind(&ProfileImpl::UpdateSupervisedUserIdInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileSupervisedUserIdCache,
                  base::Unretained(this)));
 
   // Changes in the profile avatar.
   pref_change_registrar_.Add(
       prefs::kProfileAvatarIndex,
-      base::Bind(&ProfileImpl::UpdateAvatarInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kProfileUsingDefaultAvatar,
-      base::Bind(&ProfileImpl::UpdateAvatarInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kProfileUsingGAIAAvatar,
-      base::Bind(&ProfileImpl::UpdateAvatarInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileAvatarCache,
                  base::Unretained(this)));
 
   // Changes in the profile name.
   pref_change_registrar_.Add(
       prefs::kProfileUsingDefaultName,
-      base::Bind(&ProfileImpl::UpdateNameInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileNameCache,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kProfileName,
-      base::Bind(&ProfileImpl::UpdateNameInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileNameCache,
                  base::Unretained(this)));
 
   pref_change_registrar_.Add(
       prefs::kForceEphemeralProfiles,
-      base::Bind(&ProfileImpl::UpdateIsEphemeralInStorage,
+      base::Bind(&ProfileImpl::UpdateProfileIsEphemeralCache,
                  base::Unretained(this)));
 
   // It would be nice to use PathService for fetching this directory, but
@@ -529,8 +528,8 @@ void ProfileImpl::DoFinalInit() {
   CreateProfileDirectory(sequenced_task_runner.get(), base_cache_path_, false);
 
   // Initialize components that depend on the current value.
-  UpdateSupervisedUserIdInStorage();
-  UpdateIsEphemeralInStorage();
+  UpdateProfileSupervisedUserIdCache();
+  UpdateProfileIsEphemeralCache();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
 
   PrefService* local_state = g_browser_process->local_state();
@@ -1171,53 +1170,56 @@ GURL ProfileImpl::GetHomePage() {
   return home_page;
 }
 
-void ProfileImpl::UpdateSupervisedUserIdInStorage() {
+void ProfileImpl::UpdateProfileSupervisedUserIdCache() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileAttributesEntry* entry;
-  bool has_entry = profile_manager->GetProfileAttributesStorage().
-                       GetProfileAttributesWithPath(GetPath(), &entry);
-  if (has_entry) {
-    entry->SetSupervisedUserId(GetPrefs()->GetString(prefs::kSupervisedUserId));
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+  if (index != std::string::npos) {
+    std::string supervised_user_id =
+        GetPrefs()->GetString(prefs::kSupervisedUserId);
+    cache.SetSupervisedUserIdOfProfileAtIndex(index, supervised_user_id);
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
   }
 }
 
-void ProfileImpl::UpdateNameInStorage() {
-  ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(GetPath(), &entry);
-  if (has_entry) {
-    entry->SetName(
-        base::UTF8ToUTF16(GetPrefs()->GetString(prefs::kProfileName)));
-    entry->SetIsUsingDefaultName(
-        GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultName));
+void ProfileImpl::UpdateProfileNameCache() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+  if (index != std::string::npos) {
+    std::string profile_name =
+        GetPrefs()->GetString(prefs::kProfileName);
+    cache.SetNameOfProfileAtIndex(index, base::UTF8ToUTF16(profile_name));
+    bool default_name =
+        GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultName);
+    cache.SetProfileIsUsingDefaultNameAtIndex(index, default_name);
   }
 }
 
-void ProfileImpl::UpdateAvatarInStorage() {
-  ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(GetPath(), &entry);
-  if (has_entry) {
-    entry->SetAvatarIconIndex(
-        GetPrefs()->GetInteger(prefs::kProfileAvatarIndex));
-    entry->SetIsUsingDefaultAvatar(
-        GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultAvatar));
-    entry->SetIsUsingGAIAPicture(
-        GetPrefs()->GetBoolean(prefs::kProfileUsingGAIAAvatar));
+void ProfileImpl::UpdateProfileAvatarCache() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+  if (index != std::string::npos) {
+    size_t avatar_index =
+        GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
+    cache.SetAvatarIconOfProfileAtIndex(index, avatar_index);
+    bool default_avatar =
+        GetPrefs()->GetBoolean(prefs::kProfileUsingDefaultAvatar);
+    cache.SetProfileIsUsingDefaultAvatarAtIndex(index, default_avatar);
+    bool gaia_avatar =
+        GetPrefs()->GetBoolean(prefs::kProfileUsingGAIAAvatar);
+    cache.SetIsUsingGAIAPictureOfProfileAtIndex(index, gaia_avatar);
   }
 }
 
-void ProfileImpl::UpdateIsEphemeralInStorage() {
-  ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(GetPath(), &entry);
-  if (has_entry) {
-    entry->SetIsEphemeral(
-        GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
+void ProfileImpl::UpdateProfileIsEphemeralCache() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
+  if (index != std::string::npos) {
+    bool is_ephemeral = GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
+    cache.SetProfileIsEphemeralAtIndex(index, is_ephemeral);
   }
 }
 

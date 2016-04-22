@@ -152,10 +152,10 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
 }
 
 void SigninCreateProfileHandler::SendNewProfileDefaults() {
-  ProfileAttributesStorage& storage =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   base::DictionaryValue profile_info;
-  profile_info.SetString("name", storage.ChooseNameForNewProfile(0));
+  profile_info.SetString("name", cache.ChooseNameForNewProfile(0));
 
   web_ui()->CallJavascriptFunction(
       "cr.webUIListenerCallback",

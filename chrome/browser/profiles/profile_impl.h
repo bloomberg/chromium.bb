@@ -178,11 +178,11 @@ class ProfileImpl : public Profile {
   void EnsureSessionServiceCreated();
 #endif
 
-  // Updates the ProfileAttributesStorage with the data from this profile.
-  void UpdateSupervisedUserIdInStorage();
-  void UpdateNameInStorage();
-  void UpdateAvatarInStorage();
-  void UpdateIsEphemeralInStorage();
+  // Updates the ProfileInfoCache with data from this profile.
+  void UpdateProfileSupervisedUserIdCache();
+  void UpdateProfileNameCache();
+  void UpdateProfileAvatarCache();
+  void UpdateProfileIsEphemeralCache();
 
   void GetCacheParameters(bool is_media_context,
                           base::FilePath* cache_path,

@@ -26,9 +26,8 @@
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/common/chrome_switches.h"
@@ -805,11 +804,11 @@ ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
 
-  profile_manager_->GetProfileAttributesStorage().AddObserver(this);
+  profile_manager_->GetProfileInfoCache().AddObserver(this);
 }
 
 ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
-  profile_manager_->GetProfileAttributesStorage().RemoveObserver(this);
+  profile_manager_->GetProfileInfoCache().RemoveObserver(this);
 }
 
 void ProfileShortcutManagerWin::CreateOrUpdateProfileIcon(
@@ -851,16 +850,14 @@ void ProfileShortcutManagerWin::GetShortcutProperties(
     return;
   }
 
-  ProfileAttributesStorage& storage =
-      profile_manager_->GetProfileAttributesStorage();
-  ProfileAttributesEntry* entry;
-  bool has_entry = storage.GetProfileAttributesWithPath(profile_path, &entry);
-  DCHECK(has_entry);
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
+  DCHECK_LT(profile_index, cache.GetNumberOfProfiles());
 
   // The used profile name should be empty if there is only 1 profile.
   base::string16 shortcut_profile_name;
-  if (storage.GetNumberOfProfiles() > 1u)
-    shortcut_profile_name = entry->GetName();
+  if (cache.GetNumberOfProfiles() > 1)
+    shortcut_profile_name = cache.GetNameOfProfileAtIndex(profile_index);
 
   *name = base::FilePath(profiles::internal::GetShortcutFilenameForProfile(
       shortcut_profile_name,
@@ -875,8 +872,7 @@ void ProfileShortcutManagerWin::GetShortcutProperties(
 void ProfileShortcutManagerWin::OnProfileAdded(
     const base::FilePath& profile_path) {
   CreateOrUpdateProfileIcon(profile_path);
-  if (profile_manager_->GetProfileAttributesStorage().GetNumberOfProfiles() ==
-          2u) {
+  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 2) {
     // When the second profile is added, make existing non-profile shortcuts
     // point to the first profile and be badged/named appropriately.
     CreateOrUpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path),
@@ -888,18 +884,15 @@ void ProfileShortcutManagerWin::OnProfileAdded(
 void ProfileShortcutManagerWin::OnProfileWasRemoved(
     const base::FilePath& profile_path,
     const base::string16& profile_name) {
-  ProfileAttributesStorage& storage =
-      profile_manager_->GetProfileAttributesStorage();
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   // If there is only one profile remaining, remove the badging information
   // from an existing shortcut.
-  const bool deleting_down_to_last_profile =
-      (storage.GetNumberOfProfiles() == 1u);
+  const bool deleting_down_to_last_profile = (cache.GetNumberOfProfiles() == 1);
   if (deleting_down_to_last_profile) {
     // This is needed to unbadge the icon.
-    CreateOrUpdateShortcutsForProfileAtPath(
-        storage.GetAllProfilesAttributes().front()->GetPath(),
-        UPDATE_EXISTING_ONLY,
-        IGNORE_NON_PROFILE_SHORTCUTS);
+    CreateOrUpdateShortcutsForProfileAtPath(cache.GetPathOfProfileAtIndex(0),
+                                            UPDATE_EXISTING_ONLY,
+                                            IGNORE_NON_PROFILE_SHORTCUTS);
   }
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -922,21 +915,13 @@ void ProfileShortcutManagerWin::OnProfileAvatarChanged(
 
 base::FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
     const base::FilePath& profile_path) {
-  const ProfileAttributesStorage& storage =
-      profile_manager_->GetProfileAttributesStorage();
-  DCHECK_EQ(2u, storage.GetNumberOfProfiles());
+  const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
+  DCHECK_EQ(2U, cache.GetNumberOfProfiles());
   // Get the index of the current profile, in order to find the index of the
   // other profile.
-  std::vector<ProfileAttributesEntry*> entries = g_browser_process->
-      profile_manager()->GetProfileAttributesStorage().
-          GetAllProfilesAttributes();
-  for (ProfileAttributesEntry* entry : entries) {
-    base::FilePath path = entry->GetPath();
-    if (path != profile_path)
-      return path;
-  }
-  NOTREACHED();
-  return base::FilePath();
+  size_t current_profile_index = cache.GetIndexOfProfileWithPath(profile_path);
+  size_t other_profile_index = (current_profile_index == 0) ? 1 : 0;
+  return cache.GetPathOfProfileAtIndex(other_profile_index);
 }
 
 void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
@@ -947,20 +932,18 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   CreateOrUpdateShortcutsParams params(profile_path, create_mode, action);
 
-  ProfileAttributesStorage& storage =
-      profile_manager_->GetProfileAttributesStorage();
-  ProfileAttributesEntry* entry;
-  bool has_entry = storage.GetProfileAttributesWithPath(profile_path, &entry);
-  if (!has_entry)
+  ProfileInfoCache* cache = &profile_manager_->GetProfileInfoCache();
+  size_t profile_index = cache->GetIndexOfProfileWithPath(profile_path);
+  if (profile_index == std::string::npos)
     return;
-  bool remove_badging = (storage.GetNumberOfProfiles() == 1u);
+  bool remove_badging = cache->GetNumberOfProfiles() == 1;
 
   params.old_profile_name =
-      entry->GetShortcutName();
+      cache->GetShortcutNameOfProfileAtIndex(profile_index);
 
   // Exit early if the mode is to update existing profile shortcuts only and
   // none were ever created for this profile, per the shortcut name not being
-  // set in the profile attributes storage.
+  // set in the profile info cache.
   if (params.old_profile_name.empty() &&
       create_mode == UPDATE_EXISTING_ONLY &&
       action == IGNORE_NON_PROFILE_SHORTCUTS) {
@@ -968,13 +951,14 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
   }
 
   if (!remove_badging) {
-    params.profile_name = entry->GetName();
+    params.profile_name = cache->GetNameOfProfileAtIndex(profile_index);
 
     // The profile might be using the Gaia avatar, which is not in the
     // resources array.
     bool has_gaia_image = false;
-    if (entry->IsUsingGAIAPicture()) {
-      const gfx::Image* image = entry->GetGAIAPicture();
+    if (cache->IsUsingGAIAPictureOfProfileAtIndex(profile_index)) {
+      const gfx::Image* image =
+          cache->GetGAIAPictureOfProfileAtIndex(profile_index);
       if (image) {
         params.avatar_image_1x = GetSkBitmapCopy(*image);
         // Gaia images are 256px, which makes them big enough to use in the
@@ -988,7 +972,8 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     // If the profile isn't using a Gaia image, or if the Gaia image did not
     // exist, revert to the previously used avatar icon.
     if (!has_gaia_image) {
-      const size_t icon_index = entry->GetAvatarIconIndex();
+      const size_t icon_index =
+          cache->GetAvatarIconIndexOfProfileAtIndex(profile_index);
       const int resource_id_1x =
           profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
       const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
@@ -1002,7 +987,8 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateOrUpdateDesktopShortcutsAndIconForProfile, params));
 
-  entry->SetShortcutName(params.profile_name);
+  cache->SetShortcutNameOfProfileAtIndex(profile_index,
+                                         params.profile_name);
 }
 
 void ProfileShortcutManagerWin::Observe(

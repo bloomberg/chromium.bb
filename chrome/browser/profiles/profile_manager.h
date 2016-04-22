@@ -28,7 +28,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class NewProfileLauncher;
-class ProfileAttributesStorage;
 class ProfileInfoCache;
 
 class ProfileManager : public base::NonThreadSafe,
@@ -209,11 +208,11 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Register and add testing profile to the ProfileManager. Use ONLY in tests.
   // This allows the creation of Profiles outside of the standard creation path
-  // for testing. If |addToStorage|, adds to ProfileAttributesStorage as well.
+  // for testing. If |addToCache|, adds to ProfileInfoCache as well.
   // If |start_deferred_task_runners|, starts the deferred task runners.
   // Use ONLY in tests.
   void RegisterTestingProfile(Profile* profile,
-                              bool addToStorage,
+                              bool addToCache,
                               bool start_deferred_task_runners);
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
@@ -309,9 +308,8 @@ class ProfileManager : public base::NonThreadSafe,
   // should be used carefully.
   Profile* GetProfileByPathInternal(const base::FilePath& path) const;
 
-  // Adds |profile| to the profile attributes storage if it hasn't been added
-  // yet.
-  void AddProfileToStorage(Profile* profile);
+  // Adds |profile| to the profile info cache if it hasn't been added yet.
+  void AddProfileToCache(Profile* profile);
 
   // Apply settings for profiles created by the system rather than users: The
   // (desktop) Guest User profile and (desktop) System Profile.

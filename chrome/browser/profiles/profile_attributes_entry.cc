@@ -176,10 +176,6 @@ void ProfileAttributesEntry::SetShortcutName(const base::string16& name) {
   profile_info_cache_->SetShortcutNameOfProfileAtIndex(profile_index(), name);
 }
 
-void ProfileAttributesEntry::SetActiveTimeToNow() {
-  profile_info_cache_->SetProfileActiveTimeAtIndex(profile_index());
-}
-
 void ProfileAttributesEntry::SetIsOmitted(bool is_omitted) {
   profile_info_cache_->SetIsOmittedProfileAtIndex(profile_index(), is_omitted);
 }

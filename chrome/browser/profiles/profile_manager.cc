@@ -37,7 +37,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
@@ -431,7 +430,7 @@ Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
-  return GetProfileAttributesStorage().GetNumberOfProfiles();
+  return GetProfileInfoCache().GetNumberOfProfiles();
 }
 
 bool ProfileManager::LoadProfile(const std::string& profile_name,
@@ -481,12 +480,14 @@ void ProfileManager::CreateProfileAsync(
   } else {
     // Initiate asynchronous creation process.
     info = RegisterProfile(CreateProfileAsyncHelper(profile_path, this), false);
+    ProfileInfoCache& cache = GetProfileInfoCache();
+    // Get the icon index from the user's icon url
     size_t icon_index;
     DCHECK(base::IsStringASCII(icon_url));
     if (profiles::IsDefaultAvatarIconUrl(icon_url, &icon_index)) {
       // add profile to cache with user selected name and avatar
-      GetProfileAttributesStorage().AddProfile(profile_path, name,
-          std::string(), base::string16(), icon_index, supervised_user_id);
+      cache.AddProfileToCache(profile_path, name, std::string(),
+                              base::string16(), icon_index, supervised_user_id);
     }
 
     if (!supervised_user_id.empty()) {
@@ -741,18 +742,17 @@ void ProfileManager::ScheduleProfileForDeletion(
     service->CancelDownloads();
   }
 
-  ProfileAttributesStorage& storage = GetProfileAttributesStorage();
+  ProfileInfoCache& cache = GetProfileInfoCache();
+
   // If we're deleting the last (non-legacy-supervised) profile, then create a
   // new profile in its place.
   base::FilePath last_non_supervised_profile_path;
-  std::vector<ProfileAttributesEntry*> entries =
-      storage.GetAllProfilesAttributes();
-  for (ProfileAttributesEntry* entry : entries) {
-    base::FilePath cur_path = entry->GetPath();
+  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+    base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
     // Make sure that this profile is not pending deletion, and is not
     // legacy-supervised.
     if (cur_path != profile_dir &&
-        !entry->IsLegacySupervised() &&
+        !cache.ProfileIsLegacySupervisedAtIndex(i) &&
         !IsProfileMarkedForDeletion(cur_path)) {
       last_non_supervised_profile_path = cur_path;
       break;
@@ -766,7 +766,7 @@ void ProfileManager::ScheduleProfileForDeletion(
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     int avatar_index = profiles::GetPlaceholderAvatarIndex();
     new_avatar_url = profiles::GetDefaultAvatarIconUrl(avatar_index);
-    new_profile_name = storage.ChooseNameForNewProfile(avatar_index);
+    new_profile_name = cache.ChooseNameForNewProfile(avatar_index);
 #endif
 
     base::FilePath new_path(GenerateNextProfileDirectoryPath());
@@ -820,14 +820,14 @@ void ProfileManager::AutoloadProfiles() {
     return;
   }
 
-  std::vector<ProfileAttributesEntry*> entries =
-      GetProfileAttributesStorage().GetAllProfilesAttributes();
-  for (ProfileAttributesEntry* entry : entries) {
-    if (entry->GetBackgroundStatus()) {
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  size_t number_of_profiles = cache.GetNumberOfProfiles();
+  for (size_t p = 0; p < number_of_profiles; ++p) {
+    if (cache.GetBackgroundStatusOfProfileAtIndex(p)) {
       // If status is true, that profile is running background apps. By calling
       // GetProfile, we automatically cause the profile to be loaded which will
       // register it with the BackgroundModeManager.
-      GetProfile(entry->GetPath());
+      GetProfile(cache.GetPathOfProfileAtIndex(p));
     }
   }
 }
@@ -838,12 +838,11 @@ void ProfileManager::CleanUpEphemeralProfiles() {
   bool last_active_profile_deleted = false;
   base::FilePath new_profile_path;
   std::vector<base::FilePath> profiles_to_delete;
-  ProfileAttributesStorage& storage = GetProfileAttributesStorage();
-  std::vector<ProfileAttributesEntry*> entries =
-      storage.GetAllProfilesAttributes();
-  for (ProfileAttributesEntry* entry : entries) {
-    base::FilePath profile_path = entry->GetPath();
-    if (entry->IsEphemeral()) {
+  ProfileInfoCache& profile_cache = GetProfileInfoCache();
+  size_t profiles_count = profile_cache.GetNumberOfProfiles();
+  for (size_t i = 0; i < profiles_count; ++i) {
+    base::FilePath profile_path = profile_cache.GetPathOfProfileAtIndex(i);
+    if (profile_cache.ProfileIsEphemeralAtIndex(i)) {
       profiles_to_delete.push_back(profile_path);
       if (profile_path.BaseName().MaybeAsASCII() == last_used_profile)
         last_active_profile_deleted = true;
@@ -866,18 +865,16 @@ void ProfileManager::CleanUpEphemeralProfiles() {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                             base::Bind(&NukeProfileFromDisk, profile_path));
 
-    storage.RemoveProfile(profile_path);
+    profile_cache.DeleteProfileFromCache(profile_path);
   }
 }
 
 void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::InitProfileUserPrefs");
-  ProfileAttributesStorage& storage = GetProfileAttributesStorage();
+  ProfileInfoCache& cache = GetProfileInfoCache();
 
-  if (profile->GetPath().DirName() != user_data_dir()) {
-    UMA_HISTOGRAM_BOOLEAN("Profile.InitProfileUserPrefs.OutsideUserDir", true);
+  if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
-  }
 
   size_t avatar_index;
   std::string profile_name;
@@ -886,28 +883,29 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile_name = l10n_util::GetStringUTF8(IDS_PROFILES_GUEST_PROFILE_NAME);
     avatar_index = 0;
   } else {
-    ProfileAttributesEntry* entry;
-    bool has_entry = storage.GetProfileAttributesWithPath(profile->GetPath(),
-                                                          &entry);
-    // If the profile attributes storage has an entry for this profile, use the
-    // data in the profile attributes storage.
-    if (has_entry) {
-      avatar_index = entry->GetAvatarIconIndex();
-      profile_name = base::UTF16ToUTF8(entry->GetName());
-      supervised_user_id = entry->GetSupervisedUserId();
+    size_t profile_cache_index =
+        cache.GetIndexOfProfileWithPath(profile->GetPath());
+    // If the cache has an entry for this profile, use the cache data.
+    if (profile_cache_index != std::string::npos) {
+      avatar_index =
+          cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
+      profile_name =
+          base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
+      supervised_user_id =
+          cache.GetSupervisedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
-                   profiles::GetDefaultProfileDir(user_data_dir())) {
+               profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
       avatar_index = profiles::GetPlaceholderAvatarIndex();
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
       profile_name =
-          base::UTF16ToUTF8(storage.ChooseNameForNewProfile(avatar_index));
+          base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
 #else
       profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
 #endif
     } else {
-      avatar_index = storage.ChooseAvatarIconIndexForNewProfile();
+      avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
       profile_name =
-          base::UTF16ToUTF8(storage.ChooseNameForNewProfile(avatar_index));
+          base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
     }
   }
 
@@ -937,12 +935,12 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,
-                                            bool add_to_storage,
+                                            bool add_to_cache,
                                             bool start_deferred_task_runners) {
   RegisterProfile(profile, true);
-  if (add_to_storage) {
+  if (add_to_cache) {
     InitProfileUserPrefs(profile);
-    AddProfileToStorage(profile);
+    AddProfileToCache(profile);
   }
   if (start_deferred_task_runners) {
     StartupTaskRunnerServiceFactory::GetForProfile(profile)->
@@ -1114,7 +1112,7 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   TRACK_SCOPED_REGION("Startup", "ProfileManager::DoFinalInit");
 
   DoFinalInitForServices(profile, go_off_the_record);
-  AddProfileToStorage(profile);
+  AddProfileToCache(profile);
   DoFinalInitLogging(profile);
 
   ProfileMetrics::LogNumberOfProfiles(this);
@@ -1141,6 +1139,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   TRACK_SCOPED_REGION("Startup", "ProfileManager::DoFinalInitForServices");
 
 #if defined(ENABLE_EXTENSIONS)
+  ProfileInfoCache& cache = GetProfileInfoCache();
+
   // Ensure that the HostContentSettingsMap has been created before the
   // ExtensionSystem is initialized otherwise the ExtensionSystem will be
   // registered twice
@@ -1160,10 +1160,9 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   }
   // Set the block extensions bit on the ExtensionService. There likely are no
   // blockable extensions to block.
-  ProfileAttributesEntry* entry;
-  bool has_entry = GetProfileAttributesStorage().
-                       GetProfileAttributesWithPath(profile->GetPath(), &entry);
-  if (has_entry && entry->IsSigninRequired()) {
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index != std::string::npos &&
+      cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
     extensions::ExtensionSystem::Get(profile)
         ->extension_service()
         ->BlockAllExtensions();
@@ -1340,7 +1339,7 @@ void ProfileManager::FinishDeletingProfile(
   profiles::SetLastUsedProfile(
       new_active_profile_dir.BaseName().MaybeAsASCII());
 
-  ProfileAttributesStorage& storage = GetProfileAttributesStorage();
+  ProfileInfoCache& cache = GetProfileInfoCache();
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
   Profile* profile = GetProfileByPath(profile_dir);
@@ -1356,12 +1355,12 @@ void ProfileManager::FinishDeletingProfile(
     // By this point, all in-progress downloads for the profile being deleted
     // must have been canceled (crbug.com/336725).
     DCHECK(DownloadServiceFactory::GetForBrowserContext(profile)->
-               NonMaliciousDownloadCount() == 0);
+           NonMaliciousDownloadCount() == 0);
     BrowserList::CloseAllBrowsersWithProfile(profile);
 
     // Disable sync for doomed profile.
     if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-            profile)) {
+        profile)) {
       ProfileSyncService* sync_service =
           ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
       if (sync_service->IsSyncRequested()) {
@@ -1375,10 +1374,8 @@ void ProfileManager::FinishDeletingProfile(
           profile)->RequestStop(ProfileSyncService::CLEAR_DATA);
     }
 
-    ProfileAttributesEntry* entry;
-    bool has_entry = storage.GetProfileAttributesWithPath(profile_dir, &entry);
-    DCHECK(has_entry);
-    ProfileMetrics::LogProfileDelete(entry->IsAuthenticated());
+    ProfileMetrics::LogProfileDelete(cache.ProfileIsAuthenticatedAtIndex(
+        cache.GetIndexOfProfileWithPath(profile_dir)));
     // Some platforms store passwords in keychains. They should be removed.
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(
@@ -1401,7 +1398,7 @@ void ProfileManager::FinishDeletingProfile(
   // Queue even a profile that was nuked so it will be MarkedForDeletion and so
   // CreateProfileAsync can't create it.
   QueueProfileDirectoryForDeletion(profile_dir);
-  storage.RemoveProfile(profile_dir);
+  cache.DeleteProfileFromCache(profile_dir);
   ProfileMetrics::UpdateReportedProfilesStatistics(this);
 }
 #endif  // !defined(OS_ANDROID)
@@ -1422,15 +1419,13 @@ ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
   return (iter == profiles_info_.end()) ? NULL : iter->second.get();
 }
 
-void ProfileManager::AddProfileToStorage(Profile* profile) {
+void ProfileManager::AddProfileToCache(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfileToCache");
   if (profile->IsGuestSession() || profile->IsSystemProfile())
     return;
-  if (profile->GetPath().DirName() != user_data_dir()) {
-    UMA_HISTOGRAM_BOOLEAN("Profile.GetProfileInfoPath.OutsideUserDir", true);
+  ProfileInfoCache& cache = GetProfileInfoCache();
+  if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
-  }
-
 
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
@@ -1440,40 +1435,35 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
       signin_manager->GetAuthenticatedAccountId());
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
-  ProfileAttributesStorage& storage = GetProfileAttributesStorage();
-  // |entry| and |has_entry| below are put inside a pair of brackets for
-  // scoping, to avoid potential clashes of variable names.
-  {
-    ProfileAttributesEntry* entry;
-    bool has_entry = storage.GetProfileAttributesWithPath(profile->GetPath(),
-                                                          &entry);
-    if (has_entry) {
-      // The ProfileAttributesStorage's info must match the Signin Manager.
-      entry->SetAuthInfo(account_info.gaia, username);
-      return;
-    }
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index != std::string::npos) {
+    // The ProfileInfoCache's info must match the Signin Manager.
+    cache.SetAuthInfoOfProfileAtIndex(profile_index, account_info.gaia,
+                                      username);
+    return;
   }
 
   // Profile name and avatar are set by InitProfileUserPrefs and stored in the
-  // profile. Use those values to setup the entry in profile attributes storage.
+  // profile. Use those values to setup the cache entry.
   base::string16 profile_name =
       base::UTF8ToUTF16(profile->GetPrefs()->GetString(prefs::kProfileName));
 
-  size_t icon_index =
-      profile->GetPrefs()->GetInteger(prefs::kProfileAvatarIndex);
+  size_t icon_index = profile->GetPrefs()->GetInteger(
+      prefs::kProfileAvatarIndex);
 
   std::string supervised_user_id =
       profile->GetPrefs()->GetString(prefs::kSupervisedUserId);
 
-  storage.AddProfile(profile->GetPath(), profile_name, account_info.gaia,
-                     username, icon_index, supervised_user_id);
+  cache.AddProfileToCache(profile->GetPath(),
+                          profile_name,
+                          account_info.gaia,
+                          username,
+                          icon_index,
+                          supervised_user_id);
 
   if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
-    ProfileAttributesEntry* entry;
-    bool has_entry = storage.GetProfileAttributesWithPath(profile->GetPath(),
-                                                          &entry);
-    DCHECK(has_entry);
-    entry->SetIsEphemeral(true);
+    cache.SetProfileIsEphemeralAtIndex(
+        cache.GetIndexOfProfileWithPath(profile->GetPath()), true);
   }
 }
 
@@ -1525,17 +1515,19 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
     if (profile_path_base != GetLastUsedProfileName())
       profiles::SetLastUsedProfile(profile_path_base);
 
-    ProfileAttributesEntry* entry;
-    if (GetProfileAttributesStorage().
-            GetProfileAttributesWithPath(last_active->GetPath(), &entry)) {
+    ProfileInfoCache& cache = GetProfileInfoCache();
+    size_t profile_index =
+        cache.GetIndexOfProfileWithPath(last_active->GetPath());
+    if (profile_index != std::string::npos) {
 #if !defined(OS_CHROMEOS)
       // Incognito Profiles don't have ProfileKeyedServices.
       if (!last_active->IsOffTheRecord()) {
-        CrossDevicePromoFactory::GetForProfile(last_active)->
-            MaybeBrowsingSessionStarted(entry->GetActiveTime());
+        CrossDevicePromoFactory::GetForProfile(last_active)
+            ->MaybeBrowsingSessionStarted(
+                cache.GetProfileActiveTimeAtIndex(profile_index));
       }
 #endif
-      entry->SetActiveTimeToNow();
+      cache.SetProfileActiveTimeAtIndex(profile_index);
     }
   }
 }

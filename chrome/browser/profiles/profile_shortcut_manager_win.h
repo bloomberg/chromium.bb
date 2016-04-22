@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -61,7 +60,7 @@ base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path);
 }  // namespace profiles
 
 class ProfileShortcutManagerWin : public ProfileShortcutManager,
-                                  public ProfileAttributesStorage::Observer,
+                                  public ProfileInfoCacheObserver,
                                   public content::NotificationObserver {
  public:
   // Specifies whether only the existing shortcut should be updated, a new
@@ -92,7 +91,7 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
                              base::string16* name,
                              base::FilePath* icon_path) override;
 
-  // ProfileAttributesStorage::Observer implementation:
+  // ProfileInfoCacheObserver implementation:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
