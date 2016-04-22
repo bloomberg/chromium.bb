@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://md-user-manager/import_supervised_user.html">
 <link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
 <link rel="import" href="chrome://md-user-manager/shared_styles.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
@@ -6,7 +7,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
@@ -64,6 +65,11 @@
                   </template>
                 </paper-menu>
               </paper-dropdown-menu>
+              <a id="import-user" is="action-link" on-tap="onImportUserTap_"
+                  hidden="[[isImportUserLinkHidden_(createInProgress_,
+                                                    signedInUserIndex_)]]">
+                [[i18n('importExistingSupervisedUserLink')]]
+              </a>
             </template>
           </div>
         </div>
@@ -77,6 +83,7 @@
             disabled="[[isSaveDisabled_(createInProgress_, profileName_)]]">
         </paper-button>
       </div>
+      <import-supervised-user id="importUserPopup"></import-supervised-user>
     </div>
   </template>
   <script src="chrome://md-user-manager/create_profile.js"></script>

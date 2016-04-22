@@ -45,6 +45,25 @@ SigninSupervisedUserImportHandler::SigninSupervisedUserImportHandler()
 SigninSupervisedUserImportHandler::~SigninSupervisedUserImportHandler() {
 }
 
+void SigninSupervisedUserImportHandler::GetLocalizedValues(
+    base::DictionaryValue* localized_strings) {
+  DCHECK(localized_strings);
+
+  localized_strings->SetString("supervisedUserImportTitle",
+      l10n_util::GetStringUTF16(
+          IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TITLE));
+  localized_strings->SetString("supervisedUserImportText",
+      l10n_util::GetStringUTF16(
+          IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TEXT));
+  localized_strings->SetString("noSupervisedUserImportText",
+      l10n_util::GetStringUTF16(IDS_IMPORT_NO_EXISTING_SUPERVISED_USER_TEXT));
+  localized_strings->SetString("supervisedUserImportOk",
+      l10n_util::GetStringUTF16(IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_OK));
+  localized_strings->SetString("supervisedUserAlreadyOnThisDevice",
+      l10n_util::GetStringUTF16(
+          IDS_LEGACY_SUPERVISED_USER_ALREADY_ON_THIS_DEVICE));
+}
+
 void SigninSupervisedUserImportHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getExistingSupervisedUsers",
       base::Bind(&SigninSupervisedUserImportHandler::GetExistingSupervisedUsers,

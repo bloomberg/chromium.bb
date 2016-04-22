@@ -406,6 +406,8 @@
         <include name="IDR_MD_CREATE_PROFILE_CSS" file="resources\md_user_manager\create_profile.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_CREATE_PROFILE_HTML" file="resources\md_user_manager\create_profile.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_CREATE_PROFILE_JS" file="resources\md_user_manager\create_profile.js" type="BINDATA" />
+        <include name="IDR_MD_IMPORT_SUPERVISED_USER_HTML" file="resources\md_user_manager\import_supervised_user.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MD_IMPORT_SUPERVISED_USER_JS" file="resources\md_user_manager\import_supervised_user.js" type="BINDATA" />
         <include name="IDR_MD_PROFILE_BROWSER_PROXY_HTML" file="resources\md_user_manager\profile_browser_proxy.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_PROFILE_BROWSER_PROXY_JS" file="resources\md_user_manager\profile_browser_proxy.js" type="BINDATA" />
         <include name="IDR_MD_SUPERVISED_USER_LEARN_MORE_CSS" file="resources\md_user_manager\supervised_user_learn_more.css" flattenhtml="true" type="BINDATA" />

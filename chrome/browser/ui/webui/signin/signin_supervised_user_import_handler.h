@@ -26,6 +26,8 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   SigninSupervisedUserImportHandler();
   ~SigninSupervisedUserImportHandler() override;
 
+  void GetLocalizedValues(base::DictionaryValue* localized_strings);
+
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 

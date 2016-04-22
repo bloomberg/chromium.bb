@@ -20,8 +20,8 @@
 }
 
 #message-container iron-icon {
-  height: 20px;
-  width: 20px;
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
 }
 
 #message-container #message {
@@ -115,6 +115,10 @@ paper-menu paper-item {
 #supervised-user-container #learn-more {
   display: block;
   line-height: 20px;
+}
+
+#supervised-user-container #import-user {
+  -webkit-margin-start: 16px;
 }
 
 #actions {

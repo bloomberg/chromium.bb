@@ -91,6 +91,10 @@ void SigninCreateProfileHandler::GetLocalizedValues(
           base::ASCIIToUTF16(
               chrome::kLegacySupervisedUserManagementDisplayURL)));
   localized_strings->SetString(
+      "importExistingSupervisedUserLink",
+      l10n_util::GetStringUTF16(
+          IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TITLE));
+  localized_strings->SetString(
       "manageProfilesExistingSupervisedUser",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_LEGACY_SUPERVISED_USER_ERROR_EXISTS_REMOTELY));

@@ -95,6 +95,10 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
                           IDR_MD_USER_MANAGER_TUTORIAL_JS);
   source->AddResourcePath("shared_styles.html",
                           IDR_MD_USER_MANAGER_SHARED_STYLES_HTML);
+  source->AddResourcePath("import_supervised_user.html",
+                          IDR_MD_IMPORT_SUPERVISED_USER_HTML);
+  source->AddResourcePath("import_supervised_user.js",
+                          IDR_MD_IMPORT_SUPERVISED_USER_JS);
 
   source->SetDefaultResource(IDR_MD_USER_MANAGER_HTML);
 
@@ -105,6 +109,9 @@ void MDUserManagerUI::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   user_manager_screen_handler_->GetLocalizedValues(localized_strings);
   signin_create_profile_handler_->GetLocalizedValues(localized_strings);
+#if defined(ENABLE_SUPERVISED_USERS)
+  signin_supervised_user_import_handler_->GetLocalizedValues(localized_strings);
+#endif
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
 

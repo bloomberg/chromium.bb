@@ -62,11 +62,13 @@ cr.define('signin', function() {
      * @param {string} profileIconUrl URL of the selected icon of the new
      *     profile.
      * @param {boolean} isSupervised True if the new profile is supervised.
+     * @param {string} supervisedUserId ID of the supervised user to be
+     *     imported.
      * @param {string} custodianProfilePath Profile path of the custodian if
      *     the new profile is supervised.
      */
     createProfile: function(profileName, profileIconUrl, isSupervised,
-        custodianProfilePath) {
+        supervisedUserId, custodianProfilePath) {
       assertNotReached();
     },
 
@@ -137,10 +139,10 @@ cr.define('signin', function() {
 
     /** @override */
     createProfile: function(profileName, profileIconUrl, isSupervised,
-        custodianProfilePath) {
+        supervisedUserId, custodianProfilePath) {
       chrome.send('createProfile',
-                  [profileName, profileIconUrl, false, isSupervised, '',
-                   custodianProfilePath]);
+                  [profileName, profileIconUrl, false, isSupervised,
+                   supervisedUserId, custodianProfilePath]);
     },
 
     /** @override */

@@ -12837,6 +12837,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TEXT" desc="Text that instructs the user to choose one of the displayed supervised users to import to this device.">
           Choose a supervised user to add to this device.
         </message>
+        <message name="IDS_IMPORT_NO_EXISTING_SUPERVISED_USER_TEXT" desc="Message shown to the custodian when they open the 'supervised user import' overlay but have no existing supervised users to import.">
+          There are no supervised users to add to this device.
+        </message>
         <message name="IDS_CREATE_NEW_LEGACY_SUPERVISED_USER_LINK" desc="The text for the link button that takes the user back from the dialog for importing an existing supervised user to the user creation dialog.">
           Create a new supervised user
         </message>
@@ -12850,13 +12853,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Oops! Looks like you have no existing supervised users to import. Please create one or more from another device then you can import them here.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during supervised user import.">
-          Oops! The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.
+          The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during supervised user import.">
-          Oops! The supervised user couldn't be imported. Please check your network connection and try again later.
+          The supervised user couldn't be imported. Please check your network connection and try again later.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during supervised user import.">
-          Oops! Looks like there's a problem with your credentials. Please make sure you're signed in properly and try again.
+          Looks like there's a problem with your credentials. Please make sure you're signed in properly and try again.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_SELECT_AVATAR_TITLE" desc="Title for the dialog used to select an avatar for a supervised user being imported. The dialog is shown only when the supervised user being imported has no Chrome synced avatar.">
           Select an avatar for this supervised user

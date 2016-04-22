@@ -1,0 +1,144 @@
+<link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
+<link rel="import" href="chrome://md-user-manager/shared_styles.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+
+<dom-module id="import-supervised-user">
+  <template>
+    <style include="shared-styles">
+      #backdrop {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.6);
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      #dialog {
+        background: white;
+        border-radius: 2px;
+        box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
+                    0 6px 30px 5px rgba(0, 0, 0, 0.12),
+                    0 8px 10px -5px rgba(0, 0, 0, 0.4);
+        color: var(--paper-grey-800);
+        width: 512px;
+      }
+
+      #title-bar {
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+        font-size: 16px;
+        padding: 16px;
+      }
+
+      #title-bar iron-icon {
+        --iron-icon-height: 12px;
+        --iron-icon-width: 12px;
+      }
+
+      #message {
+        padding: 20px 16px 16px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      #user-list .list-item {
+        align-items: center;
+        display: flex;
+        height: 52px;
+        padding: 0 16px;
+      }
+
+      #user-list .list-item .profile-img {
+        flex-shrink: 0;
+      }
+
+      #user-list .list-item .profile-name {
+        -webkit-margin-start: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #user-list .list-item .on-device {
+        -webkit-margin-start: 10px;
+        flex-shrink: 0;
+      }
+
+      #user-list .list-item.selectable.iron-selected {
+        background: var(--paper-grey-200);
+      }
+
+      #actions {
+        margin-top: 20px;
+        padding: 16px;
+      }
+
+      #actions paper-button {
+        border-radius: 2px;
+        font-weight: 500;
+        line-height: 36px;
+        margin: 0;
+        min-width: 52px;
+        padding: 0 16px;
+      }
+
+      #actions #cancel {
+        color: var(--paper-grey-600);
+      }
+
+      #actions #import {
+        -webkit-margin-start: 8px;
+        background: var(--google-blue-500);
+        color: white;
+      }
+
+      #actions #import[disabled] {
+        background: rgba(66, 133, 244, .5);
+      }
+    </style>
+    <template is="dom-if" if="[[!popupHidden_]]">
+      <div id="backdrop">
+        <div id="dialog">
+          <div id="title-bar" class="horizontal justified layout">
+            <span id="title">[[i18n('supervisedUserImportTitle')]]</span>
+            <iron-icon icon="close" on-tap="onCancelTap_"></iron-icon>
+          </div>
+          <div id="message">[[getMessage_(supervisedUsers_)]]</div>
+          <div id="user-list" class="content-area">
+            <iron-selector selected="{{supervisedUserIndex_}}"
+                selectable=".selectable">
+              <template is="dom-repeat" items="[[supervisedUsers_]]">
+                <div class$="[[getUserClassNames_(item)]]">
+                  <img class="profile-img" src="[[item.iconURL]]"></img>
+                  <div class="profile-name">[[item.name]]</div>
+                  <div class="on-device" hidden="[[!item.onCurrentDevice]]">
+                    [[i18n('supervisedUserAlreadyOnThisDevice')]]
+                  </div>
+                </div>
+              </template>
+            </iron-selector>
+          </div>
+          <div id="actions" class="horizontal end-justified layout">
+            <paper-button id="cancel" on-tap="onCancelTap_">
+              [[i18n('cancel')]]
+            </paper-button>
+            <paper-button id="import" on-tap="onImportTap_"
+                disabled="[[isImportDisabled_(supervisedUserIndex_)]]">
+              [[i18n('supervisedUserImportOk')]]
+            </paper-button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </template>
+  <script src="chrome://md-user-manager/import_supervised_user.js"></script>
+</dom-module>

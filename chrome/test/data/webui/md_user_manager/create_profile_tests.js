@@ -112,6 +112,7 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals('profile name', args.profileName);
           assertEquals('icon1.png', args.profileIconUrl);
           assertFalse(args.isSupervised);
+          assertEquals('', args.supervisedUserId);
           assertEquals('', args.custodianProfilePath);
         });
       });
@@ -209,6 +210,7 @@ cr.define('user_manager.create_profile_tests', function() {
           assertEquals('profile name', args.profileName);
           assertEquals('icon1.png', args.profileIconUrl);
           assertTrue(args.isSupervised);
+          assertEquals('', args.supervisedUserId);
           assertEquals('path/to/profile', args.custodianProfilePath);
         });
       });
