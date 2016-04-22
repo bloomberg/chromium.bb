@@ -50,6 +50,14 @@ enum IndexFileState {
   INDEX_STATE_MAX = 4,
 };
 
+enum StaleIndexQuality {
+  STALE_INDEX_OK = 0,
+  STALE_INDEX_MISSED_ENTRIES = 1,
+  STALE_INDEX_EXTRA_ENTRIES = 2,
+  STALE_INDEX_BOTH_MISSED_AND_EXTRA_ENTRIES = 3,
+  STALE_INDEX_MAX = 4,
+};
+
 void UmaRecordIndexFileState(IndexFileState state, net::CacheType cache_type) {
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "IndexFileStateOnLoad", cache_type, state, INDEX_STATE_MAX);
@@ -71,6 +79,27 @@ void UmaRecordIndexWriteReasonAtLoad(SimpleIndex::IndexWriteToDiskReason reason,
                                      net::CacheType cache_type) {
   SIMPLE_CACHE_UMA(ENUMERATION, "IndexWriteReasonAtLoad", cache_type, reason,
                    SimpleIndex::INDEX_WRITE_REASON_MAX);
+}
+
+void UmaRecordStaleIndexQuality(int missed_entry_count,
+                                int extra_entry_count,
+                                net::CacheType cache_type) {
+  SIMPLE_CACHE_UMA(CUSTOM_COUNTS, "StaleIndexMissedEntryCount", cache_type,
+                   missed_entry_count, 1, 100, 5);
+  SIMPLE_CACHE_UMA(CUSTOM_COUNTS, "StaleIndexExtraEntryCount", cache_type,
+                   extra_entry_count, 1, 100, 5);
+
+  StaleIndexQuality quality;
+  if (missed_entry_count > 0 && extra_entry_count > 0)
+    quality = STALE_INDEX_BOTH_MISSED_AND_EXTRA_ENTRIES;
+  else if (missed_entry_count > 0)
+    quality = STALE_INDEX_MISSED_ENTRIES;
+  else if (extra_entry_count > 0)
+    quality = STALE_INDEX_EXTRA_ENTRIES;
+  else
+    quality = STALE_INDEX_OK;
+  SIMPLE_CACHE_UMA(ENUMERATION, "StaleIndexQuality", cache_type, quality,
+                   STALE_INDEX_MAX);
 }
 
 bool WritePickleFile(base::Pickle* pickle, const base::FilePath& file_name) {
@@ -361,6 +390,8 @@ void SimpleIndexFile::SyncLoadIndexEntries(
   }
 
   // Reconstruct the index by scanning the disk for entries.
+  SimpleIndex::EntrySet entries_from_stale_index;
+  entries_from_stale_index.swap(out_result->entries);
   const base::TimeTicks start = base::TimeTicks::Now();
   SyncRestoreFromDisk(cache_directory, index_file_path, out_result);
   SIMPLE_CACHE_UMA(MEDIUM_TIMES, "IndexRestoreTime", cache_type,
@@ -370,6 +401,18 @@ void SimpleIndexFile::SyncLoadIndexEntries(
   if (index_file_existed) {
     out_result->init_method = SimpleIndex::INITIALIZE_METHOD_RECOVERED;
 
+    int missed_entry_count = 0;
+    for (const auto& i : out_result->entries) {
+      if (entries_from_stale_index.count(i.first) == 0)
+        ++missed_entry_count;
+    }
+    int extra_entry_count = 0;
+    for (const auto& i : entries_from_stale_index) {
+      if (out_result->entries.count(i.first) == 0)
+        ++extra_entry_count;
+    }
+    UmaRecordStaleIndexQuality(missed_entry_count, extra_entry_count,
+                               cache_type);
   } else {
     out_result->init_method = SimpleIndex::INITIALIZE_METHOD_NEWCACHE;
     SIMPLE_CACHE_UMA(COUNTS,

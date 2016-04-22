@@ -49334,6 +49334,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
+<histogram name="SimpleCache.StaleIndexExtraEntryCount" units="entries">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    Count of the number of entries recorded in the index, but not actually
+    present in the cache. Recorded each time a stale index is found and a
+    directory rescan is required.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.StaleIndexMissedEntryCount" units="entries">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    Count of the number of entries present in a cache, but not recorded in the
+    index. Recorded each time a stale index is found and a directory rescan is
+    required.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.StaleIndexQuality"
+    enum="SimpleCacheStaleIndexQuality">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    The quality of a &quot;stale&quot; index compared to a full directory
+    rescan. Recorded immediately after every directory scan for stale indexes.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.SyncCheckEOFHasCrc" enum="BooleanHasCrc">
   <owner>gavinp@chromium.org</owner>
   <summary>
@@ -84002,6 +84029,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Synchronous Checksum Failure"/>
 </enum>
 
+<enum name="SimpleCacheStaleIndexQuality" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Missed Entries"/>
+  <int value="2" label="Extra Entries"/>
+  <int value="3" label="Both"/>
+</enum>
+
 <enum name="SimpleCacheSyncCheckEOFResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Read Failure"/>
@@ -88152,6 +88186,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SimpleCache.OpenEntryIndexState"/>
   <affected-histogram name="SimpleCache.ReadIsParallelizable"/>
   <affected-histogram name="SimpleCache.ReadResult"/>
+  <affected-histogram name="SimpleCache.StaleIndexExtraEntryCount"/>
+  <affected-histogram name="SimpleCache.StaleIndexMissedEntryCount"/>
+  <affected-histogram name="SimpleCache.StaleIndexQuality"/>
   <affected-histogram name="SimpleCache.SyncCheckEOFHasCrc"/>
   <affected-histogram name="SimpleCache.SyncCheckEOFResult"/>
   <affected-histogram name="SimpleCache.SyncCloseResult"/>
