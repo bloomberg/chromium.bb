@@ -70,7 +70,7 @@ TEST_F(ServiceWorkerResponseTest, FromFetchResponseData)
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
-    Response* response = Response::create(getExecutionContext(), *webResponse);
+    Response* response = Response::create(getScriptState(), *webResponse);
     ASSERT(response);
     EXPECT_EQ(webResponse->url(), response->url());
     EXPECT_EQ(webResponse->status(), response->status());
@@ -92,7 +92,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseDefault)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeDefault);
-    Response* response = Response::create(getExecutionContext(), *webResponse);
+    Response* response = Response::create(getScriptState(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -106,7 +106,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseBasic)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeBasic);
-    Response* response = Response::create(getExecutionContext(), *webResponse);
+    Response* response = Response::create(getScriptState(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -120,7 +120,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseCORS)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeCORS);
-    Response* response = Response::create(getExecutionContext(), *webResponse);
+    Response* response = Response::create(getScriptState(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -134,7 +134,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeOpaque);
-    Response* response = Response::create(getExecutionContext(), *webResponse);
+    Response* response = Response::create(getScriptState(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -144,7 +144,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque)
     EXPECT_FALSE(exceptionState.hadException());
 }
 
-void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
+void checkResponseStream(ScriptState* scriptState, Response* response, bool checkResponseBodyStreamBuffer)
 {
     BodyStreamBuffer* originalInternal = response->internalBodyBuffer();
     if (checkResponseBodyStreamBuffer) {
@@ -154,7 +154,7 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
     }
 
     TrackExceptionState exceptionState;
-    Response* clonedResponse = response->clone(exceptionState);
+    Response* clonedResponse = response->clone(scriptState, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     if (!response->internalBodyBuffer())
@@ -180,72 +180,72 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
     EXPECT_CALL(*client1, didFetchDataLoadedString(String("Hello, world")));
     EXPECT_CALL(*client2, didFetchDataLoadedString(String("Hello, world")));
 
-    response->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client1);
-    clonedResponse->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client2);
+    response->internalBodyBuffer()->startLoading(FetchDataLoader::createLoaderAsString(), client1);
+    clonedResponse->internalBodyBuffer()->startLoading(FetchDataLoader::createLoaderAsString(), client2);
     blink::testing::runPendingTasks();
 }
 
-BodyStreamBuffer* createHelloWorldBuffer()
+BodyStreamBuffer* createHelloWorldBuffer(ScriptState* scriptState)
 {
     using Command = DataConsumerHandleTestUtil::Command;
     OwnPtr<DataConsumerHandleTestUtil::ReplayingHandle> src(DataConsumerHandleTestUtil::ReplayingHandle::create());
     src->add(Command(Command::Data, "Hello, "));
     src->add(Command(Command::Data, "world"));
     src->add(Command(Command::Done));
-    return new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(src.release()));
+    return new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(src.release()));
 }
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault)
 {
-    BodyStreamBuffer* buffer = createHelloWorldBuffer();
+    BodyStreamBuffer* buffer = createHelloWorldBuffer(getScriptState());
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
-    checkResponseStream(response, true);
+    checkResponseStream(getScriptState(), response, true);
 }
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic)
 {
-    BodyStreamBuffer* buffer = createHelloWorldBuffer();
+    BodyStreamBuffer* buffer = createHelloWorldBuffer(getScriptState());
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createBasicFilteredResponse();
     Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
-    checkResponseStream(response, true);
+    checkResponseStream(getScriptState(), response, true);
 }
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS)
 {
-    BodyStreamBuffer* buffer = createHelloWorldBuffer();
+    BodyStreamBuffer* buffer = createHelloWorldBuffer(getScriptState());
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createCORSFilteredResponse();
     Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
-    checkResponseStream(response, true);
+    checkResponseStream(getScriptState(), response, true);
 }
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque)
 {
-    BodyStreamBuffer* buffer = createHelloWorldBuffer();
+    BodyStreamBuffer* buffer = createHelloWorldBuffer(getScriptState());
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createOpaqueFilteredResponse();
     Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
-    checkResponseStream(response, false);
+    checkResponseStream(getScriptState(), response, false);
 }
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
 {
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     Response* response = Response::create(getExecutionContext(), fetchResponseData);
     TrackExceptionState exceptionState;
-    Response* clonedResponse = response->clone(exceptionState);
+    Response* clonedResponse = response->clone(getScriptState(), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client1 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
@@ -253,8 +253,8 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
     EXPECT_CALL(*client1, didFetchDataLoadFailed());
     EXPECT_CALL(*client2, didFetchDataLoadFailed());
 
-    response->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client1);
-    clonedResponse->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client2);
+    response->internalBodyBuffer()->startLoading(FetchDataLoader::createLoaderAsString(), client1);
+    clonedResponse->internalBodyBuffer()->startLoading(FetchDataLoader::createLoaderAsString(), client2);
     blink::testing::runPendingTasks();
 }
 

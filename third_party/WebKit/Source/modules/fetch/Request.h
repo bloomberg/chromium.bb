@@ -40,8 +40,8 @@ public:
     static Request* create(ScriptState*, const String&, const Dictionary&, ExceptionState&);
     static Request* create(ScriptState*, Request*, ExceptionState&);
     static Request* create(ScriptState*, Request*, const Dictionary&, ExceptionState&);
-    static Request* create(ExecutionContext*, FetchRequestData*);
-    static Request* create(ExecutionContext*, const WebServiceWorkerRequest&);
+    static Request* create(ScriptState*, FetchRequestData*);
+    static Request* create(ScriptState*, const WebServiceWorkerRequest&);
 
     // From Request.idl:
     String method() const;
@@ -55,9 +55,9 @@ public:
     String integrity() const;
 
     // From Request.idl:
-    Request* clone(ExceptionState&);
+    Request* clone(ScriptState*, ExceptionState&);
 
-    FetchRequestData* passRequestData();
+    FetchRequestData* passRequestData(ScriptState*);
     void populateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
     bool hasBody() const;
     BodyStreamBuffer* bodyBuffer() override { return m_request->buffer(); }
@@ -69,9 +69,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    Request(ExecutionContext*, FetchRequestData*);
-    Request(ExecutionContext*, const WebServiceWorkerRequest&);
-    Request(ExecutionContext*, FetchRequestData*, Headers*);
+    Request(ScriptState*, FetchRequestData*, Headers*);
+    Request(ScriptState*, FetchRequestData*);
+    Request(ScriptState*, const WebServiceWorkerRequest&);
 
     const FetchRequestData* request() const { return m_request; }
     static Request* createRequestWithRequestOrString(ScriptState*, Request*, const String&, RequestInit&, ExceptionState&);

@@ -242,13 +242,13 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     response->populateWebServiceWorkerResponse(webResponse);
     BodyStreamBuffer* buffer = response->internalBodyBuffer();
     if (buffer) {
-        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(getExecutionContext(), FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
         if (blobDataHandle) {
             webResponse.setBlobDataHandle(blobDataHandle);
         } else {
             Stream* outStream = Stream::create(getExecutionContext(), "");
             webResponse.setStreamURL(outStream->url());
-            buffer->startLoading(getExecutionContext(), FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
+            buffer->startLoading(FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
         }
     }
     ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID, webResponse);

@@ -34,7 +34,7 @@ namespace blink {
 
 namespace {
 
-FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* executionContext, const WebServiceWorkerResponse& webResponse)
+FetchResponseData* createFetchResponseDataFromWebResponse(ScriptState* scriptState, const WebServiceWorkerResponse& webResponse)
 {
     FetchResponseData* response = nullptr;
     if (webResponse.status() > 0)
@@ -52,7 +52,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* exec
         response->headerList()->append(i->key, i->value);
     }
 
-    response->replaceBodyStreamBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(executionContext, webResponse.blobDataHandle())));
+    response->replaceBodyStreamBuffer(new BodyStreamBuffer(scriptState, FetchBlobDataConsumerHandle::create(scriptState->getExecutionContext(), webResponse.blobDataHandle())));
 
     // Filter the response according to |webResponse|'s ResponseType.
     switch (webResponse.responseType()) {
@@ -109,7 +109,7 @@ bool isValidReasonPhrase(const String& statusText)
 
 Response* Response::create(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    return create(scriptState->getExecutionContext(), nullptr, String(), ResponseInit(), exceptionState);
+    return create(scriptState, nullptr, String(), ResponseInit(), exceptionState);
 }
 
 Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, const Dictionary& init, ExceptionState& exceptionState)
@@ -156,7 +156,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         contentType = "text/plain;charset=UTF-8";
     }
     // TODO(yhirano): Add the URLSearchParams case.
-    Response* response = create(executionContext, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
+    Response* response = create(scriptState, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
     if (!exceptionState.hadException() && !reader.isEmpty()) {
         // Add a hidden reference so that the weak persistent in the
         // ReadableStreamDataConsumerHandle will be valid as long as the
@@ -172,7 +172,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
     return response;
 }
 
-Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)
+Response* Response::create(ScriptState* scriptState, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)
 {
     unsigned short status = init.status;
 
@@ -192,7 +192,7 @@ Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsum
 
     // "3. Let |r| be a new Response object, associated with a new response,
     // Headers object, and Body object."
-    Response* r = new Response(context);
+    Response* r = new Response(scriptState->getExecutionContext());
 
     // "4. Set |r|'s response's status to |init|'s status member."
     r->m_response->setStatus(init.status);
@@ -236,7 +236,7 @@ Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsum
             exceptionState.throwTypeError("Response with null body status cannot have body");
             return nullptr;
         }
-        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(bodyHandle));
+        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(scriptState, bodyHandle));
         if (!contentType.isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", contentType);
     }
@@ -254,10 +254,10 @@ Response* Response::create(ExecutionContext* context, FetchResponseData* respons
     return new Response(context, response);
 }
 
-Response* Response::create(ExecutionContext* context, const WebServiceWorkerResponse& webResponse)
+Response* Response::create(ScriptState* scriptState, const WebServiceWorkerResponse& webResponse)
 {
-    FetchResponseData* responseData = createFetchResponseDataFromWebResponse(context, webResponse);
-    return new Response(context, responseData);
+    FetchResponseData* responseData = createFetchResponseDataFromWebResponse(scriptState, webResponse);
+    return new Response(scriptState->getExecutionContext(), responseData);
 }
 
 Response* Response::error(ExecutionContext* context)
@@ -347,14 +347,14 @@ Headers* Response::headers() const
     return m_headers;
 }
 
-Response* Response::clone(ExceptionState& exceptionState)
+Response* Response::clone(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     if (isBodyLocked() || bodyUsed()) {
         exceptionState.throwTypeError("Response body is already used");
         return nullptr;
     }
 
-    FetchResponseData* response = m_response->clone(getExecutionContext());
+    FetchResponseData* response = m_response->clone(scriptState);
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->getGuard());
     return new Response(getExecutionContext(), response, headers);
@@ -382,24 +382,20 @@ void Response::populateWebServiceWorkerResponse(WebServiceWorkerResponse& respon
     m_response->populateWebServiceWorkerResponse(response);
 }
 
-Response::Response(ExecutionContext* context)
-    : Body(context)
-    , m_response(FetchResponseData::create())
-    , m_headers(Headers::create(m_response->headerList()))
-{
-    m_headers->setGuard(Headers::ResponseGuard);
-}
+Response::Response(ExecutionContext* context) : Response(context, FetchResponseData::create()) {}
 
 Response::Response(ExecutionContext* context, FetchResponseData* response)
-    : Body(context)
-    , m_response(response)
-    , m_headers(Headers::create(m_response->headerList()))
+    : Response(context, response, Headers::create(response->headerList()))
 {
     m_headers->setGuard(Headers::ResponseGuard);
 }
 
 Response::Response(ExecutionContext* context, FetchResponseData* response, Headers* headers)
-    : Body(context) , m_response(response) , m_headers(headers) {}
+    : Body(context)
+    , m_response(response)
+    , m_headers(headers)
+{
+}
 
 bool Response::hasBody() const
 {

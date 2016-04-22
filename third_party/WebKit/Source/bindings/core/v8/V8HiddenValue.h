@@ -37,6 +37,7 @@ class ScriptWrappable;
     V(error) \
     V(event) \
     V(idbCursorRequest) \
+    V(internalBodyStream) \
     V(port1) \
     V(port2) \
     V(readableStreamReaderInResponse) \

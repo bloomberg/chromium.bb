@@ -52,7 +52,7 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(Response::create(m_resolver->getScriptState()->getExecutionContext(), webResponse));
+        m_resolver->resolve(Response::create(m_resolver->getScriptState(), webResponse));
         m_resolver.clear();
     }
 
@@ -84,7 +84,7 @@ public:
             return;
         HeapVector<Member<Response>> responses;
         for (size_t i = 0; i < webResponses.size(); ++i)
-            responses.append(Response::create(m_resolver->getScriptState()->getExecutionContext(), webResponses[i]));
+            responses.append(Response::create(m_resolver->getScriptState(), webResponses[i]));
         m_resolver->resolve(responses);
         m_resolver.clear();
     }
@@ -144,7 +144,7 @@ public:
             return;
         HeapVector<Member<Request>> requests;
         for (size_t i = 0; i < webRequests.size(); ++i)
-            requests.append(Request::create(m_resolver->getScriptState()->getExecutionContext(), webRequests[i]));
+            requests.append(Request::create(m_resolver->getScriptState(), webRequests[i]));
         m_resolver->resolve(requests);
         m_resolver.clear();
     }
@@ -585,7 +585,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
             // If the response has body, read the all data and create
             // the blob handle and dispatch the put batch asynchronously.
             FetchDataLoader* loader = FetchDataLoader::createLoaderAsBlobHandle(responses[i]->internalMIMEType());
-            buffer->startLoading(scriptState->getExecutionContext(), loader, new BlobHandleCallbackForPut(i, barrierCallback, requests[i], responses[i]));
+            buffer->startLoading(loader, new BlobHandleCallbackForPut(i, barrierCallback, requests[i], responses[i]));
             continue;
         }
 

@@ -45,10 +45,9 @@ public:
     ScriptPromise formData(ScriptState*);
     ScriptPromise json(ScriptState*);
     ScriptPromise text(ScriptState*);
-    ReadableByteStream* bodyWithUseCounter();
+    ScriptValue bodyWithUseCounter(ScriptState*);
     virtual BodyStreamBuffer* bodyBuffer() = 0;
     virtual const BodyStreamBuffer* bodyBuffer() const = 0;
-    ScriptValue v8ExtraStreamBody(ScriptState*);
 
     virtual bool bodyUsed();
     bool isBodyLocked();
@@ -62,7 +61,6 @@ public:
     }
 
 private:
-    ReadableByteStream* body();
     virtual String mimeType() const = 0;
 
     // Body consumption algorithms will reject with a TypeError in a number of
