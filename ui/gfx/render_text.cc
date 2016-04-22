@@ -90,6 +90,16 @@ int DetermineBaselineCenteringText(const Rect& display_rect,
   return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
 }
 
+#if !defined(OS_MACOSX)
+// Converts |Font::FontStyle| flags to |SkTypeface::Style| flags.
+SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
+  int skia_style = SkTypeface::kNormal;
+  skia_style |= (font_style & Font::BOLD) ? SkTypeface::kBold : 0;
+  skia_style |= (font_style & Font::ITALIC) ? SkTypeface::kItalic : 0;
+  return static_cast<SkTypeface::Style>(skia_style);
+}
+#endif
+
 int round(float value) {
   return static_cast<int>(floor(value + 0.5f));
 }
@@ -247,6 +257,18 @@ void SkiaTextRenderer::SetTextSize(SkScalar size) {
   paint_.setTextSize(size);
 }
 
+void SkiaTextRenderer::SetFontWithStyle(const Font& font, int style) {
+  skia::RefPtr<SkTypeface> typeface = CreateSkiaTypeface(font, style);
+  if (typeface) {
+    // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
+    SetTypeface(typeface.get());
+
+    // Enable fake bold text if bold style is needed but new typeface does not
+    // have it.
+    paint_.setFakeBoldText((style & Font::BOLD) && !typeface->isBold());
+  }
+}
+
 void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
   paint_.setColor(foreground);
 }
@@ -400,6 +422,14 @@ Line::Line() : preceding_heights(0), baseline(0) {}
 Line::Line(const Line& other) = default;
 
 Line::~Line() {}
+
+#if !defined(OS_MACOSX)
+skia::RefPtr<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
+  SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
+  return skia::AdoptRef(
+      SkTypeface::CreateFromName(font.GetFontName().c_str(), skia_style));
+}
+#endif
 
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,

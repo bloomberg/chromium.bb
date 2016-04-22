@@ -64,6 +64,18 @@ base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
 
 namespace gfx {
 
+namespace internal {
+
+skia::RefPtr<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
+  gfx::Font font_with_style = font.Derive(0, style);
+  if (!font_with_style.GetNativeFont())
+    return nullptr;
+  return skia::AdoptRef(SkCreateTypefaceFromCTFont(
+      static_cast<CTFontRef>(font_with_style.GetNativeFont())));
+}
+
+}  // namespace internal
+
 RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {}
 
 RenderTextMac::~RenderTextMac() {}
@@ -200,9 +212,13 @@ void RenderTextMac::DrawVisualText(internal::SkiaTextRenderer* renderer) {
     CTFontRef ct_font = static_cast<CTFontRef>(run.font.GetNativeFont());
     renderer->SetTextSize(CTFontGetSize(ct_font));
 
-    // The painter adds its own ref. So don't |release()| it from the ref ptr in
-    // TextRun.
-    renderer->SetTypeface(run.typeface.get());
+    int font_style = Font::NORMAL;
+    CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ct_font);
+    if (traits & kCTFontBoldTrait)
+      font_style |= Font::BOLD;
+    if (traits & kCTFontItalicTrait)
+      font_style |= Font::ITALIC;
+    renderer->SetFontWithStyle(run.font, font_style);
 
     renderer->DrawPosText(&run.glyph_positions[0], &run.glyphs[0],
                           run.glyphs.size());
@@ -401,7 +417,6 @@ void RenderTextMac::ComputeRuns() {
     CTFontRef ct_font = base::mac::GetValueFromDictionary<CTFontRef>(
         attributes, kCTFontAttributeName);
     run->font = Font(static_cast<NSFont*>(ct_font));
-    run->typeface.reset(SkCreateTypefaceFromCTFont(ct_font));
 
     const CGColorRef foreground = base::mac::GetValueFromDictionary<CGColorRef>(
         attributes, kCTForegroundColorAttributeName);
