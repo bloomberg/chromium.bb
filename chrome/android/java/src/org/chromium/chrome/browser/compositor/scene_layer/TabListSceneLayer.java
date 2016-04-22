@@ -58,6 +58,11 @@ public class TabListSceneLayer extends SceneLayer {
         int tabsCount = tabs != null ? tabs.length : 0;
 
         nativeBeginBuildingFrame(mNativePtr);
+
+        nativeUpdateLayer(mNativePtr, getTabListBackgroundColor(context), viewport.left,
+                viewport.top, viewport.width(), viewport.height(), layerTitleCache,
+                tabContentManager, resourceManager);
+
         for (int i = 0; i < tabsCount; i++) {
             LayoutTab t = tabs[i];
             assert t.isVisible() : "LayoutTab in that list should be visible";
@@ -70,19 +75,17 @@ public class TabListSceneLayer extends SceneLayer {
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
             // TODO(dtrainor, clholgat): remove "* dpToPx" once the native part fully supports dp.
-            nativePutLayer(mNativePtr, t.getId(), R.id.control_container, closeBtnResource,
+            nativePutTabLayer(mNativePtr, t.getId(), R.id.control_container, closeBtnResource,
                     R.drawable.tabswitcher_border_frame_shadow,
                     R.drawable.tabswitcher_border_frame_decoration, R.drawable.logo_card_back,
                     borderResource, R.drawable.tabswitcher_border_frame_inner_shadow,
                     t.canUseLiveTexture(), t.getBackgroundColor(),
-                    getTabListBackgroundColor(context),
                     ApiCompatibilityUtils.getColor(res, borderColorResource), t.isIncognito(),
                     layout.getOrientation() == Orientation.PORTRAIT, t.getRenderX() * dpToPx,
                     t.getRenderY() * dpToPx, t.getScaledContentWidth() * dpToPx,
                     t.getScaledContentHeight() * dpToPx, t.getOriginalContentWidth() * dpToPx,
-                    t.getOriginalContentHeight() * dpToPx, contentViewport.height(), viewport.left,
-                    viewport.top, viewport.width(), viewport.height(), t.getClippedX() * dpToPx,
-                    t.getClippedY() * dpToPx,
+                    t.getOriginalContentHeight() * dpToPx, contentViewport.height(),
+                    t.getClippedX() * dpToPx, t.getClippedY() * dpToPx,
                     Math.min(t.getClippedWidth(), t.getScaledContentWidth()) * dpToPx,
                     Math.min(t.getClippedHeight(), t.getScaledContentHeight()) * dpToPx,
                     t.getTiltXPivotOffset() * dpToPx, t.getTiltYPivotOffset() * dpToPx,
@@ -94,7 +97,7 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getToolbarBackgroundColor(), t.anonymizeToolbar(), R.drawable.textbox,
                     t.getTextBoxBackgroundColor(), t.getTextBoxAlpha(), t.getToolbarAlpha(),
                     t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(), true,
-                    t.insetBorderVertical(), layerTitleCache, tabContentManager, resourceManager);
+                    t.insetBorderVertical());
         }
         nativeFinishBuildingFrame(mNativePtr);
     }
@@ -128,21 +131,22 @@ public class TabListSceneLayer extends SceneLayer {
     private native void nativeSetContentTree(long nativeTabListSceneLayer, SceneLayer contentTree);
     private native void nativeBeginBuildingFrame(long nativeTabListSceneLayer);
     private native void nativeFinishBuildingFrame(long nativeTabListSceneLayer);
-    private native void nativePutLayer(long nativeTabListSceneLayer, int id, int toolbarResourceId,
-            int closeButtonResourceId, int shadowResourceId, int contourResourceId,
-            int backLogoResourceId, int borderResourceId, int borderInnerShadowResourceId,
-            boolean canUseLiveLayer, int tabBackgroundColor, int backgroundColor, int backLogoColor,
-            boolean incognito, boolean isPortrait, float x, float y, float width, float height,
-            float contentWidth, float contentHeight, float visibleContentHeight, float viewportX,
-            float viewportY, float viewportWidth, float viewportHeight, float shadowX,
-            float shadowY, float shadowWidth, float shadowHeight, float pivotX, float pivotY,
-            float rotationX, float rotationY, float alpha, float borderAlpha,
+    private native void nativeUpdateLayer(long nativeTabListSceneLayer, int backgroundColor,
+            float viewportX, float viewportY, float viewportWidth, float viewportHeight,
+            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
+            ResourceManager resourceManager);
+    private native void nativePutTabLayer(long nativeTabListSceneLayer, int id,
+            int toolbarResourceId, int closeButtonResourceId, int shadowResourceId,
+            int contourResourceId, int backLogoResourceId, int borderResourceId,
+            int borderInnerShadowResourceId, boolean canUseLiveLayer, int tabBackgroundColor,
+            int backLogoColor, boolean incognito, boolean isPortrait, float x, float y, float width,
+            float height, float contentWidth, float contentHeight, float visibleContentHeight,
+            float shadowX, float shadowY, float shadowWidth, float shadowHeight, float pivotX,
+            float pivotY, float rotationX, float rotationY, float alpha, float borderAlpha,
             float borderInnerShadowAlpha, float contourAlpha, float shadowAlpha, float closeAlpha,
             float closeBtnWidth, float staticToViewBlend, float borderScale, float saturation,
             float brightness, boolean showToolbar, int toolbarBackgroundColor,
             boolean anonymizeToolbar, int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
             float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
-            float sideBorderScale, boolean attachContent, boolean insetVerticalBorder,
-            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager);
+            float sideBorderScale, boolean attachContent, boolean insetVerticalBorder);
 }

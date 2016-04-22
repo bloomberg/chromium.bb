@@ -44,8 +44,19 @@ class TabListSceneLayer : public SceneLayer {
                           const base::android::JavaParamRef<jobject>& jobj);
   void FinishBuildingFrame(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj);
+  void UpdateLayer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint background_color,
+      jfloat viewport_x,
+      jfloat viewport_y,
+      jfloat viewport_width,
+      jfloat viewport_height,
+      const base::android::JavaParamRef<jobject>& jlayer_title_cache,
+      const base::android::JavaParamRef<jobject>& jtab_content_manager,
+      const base::android::JavaParamRef<jobject>& jresource_manager);
   // TODO(dtrainor): This method is ridiculous.  Break this apart?
-  void PutLayer(
+  void PutTabLayer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,
       jint id,
@@ -58,7 +69,6 @@ class TabListSceneLayer : public SceneLayer {
       jint border_inner_shadow_resource_id,
       jboolean can_use_live_layer,
       jint tab_background_color,
-      jint background_color,
       jint back_logo_color,
       jboolean incognito,
       jboolean is_portrait,
@@ -69,10 +79,6 @@ class TabListSceneLayer : public SceneLayer {
       jfloat content_width,
       jfloat content_height,
       jfloat visible_content_height,
-      jfloat viewport_x,
-      jfloat viewport_y,
-      jfloat viewport_width,
-      jfloat viewport_height,
       jfloat shadow_x,
       jfloat shadow_y,
       jfloat shadow_width,
@@ -102,10 +108,7 @@ class TabListSceneLayer : public SceneLayer {
       jfloat toolbar_y_offset,
       jfloat side_border_scale,
       jboolean attach_content,
-      jboolean inset_border,
-      const base::android::JavaParamRef<jobject>& jlayer_title_cache,
-      const base::android::JavaParamRef<jobject>& jtab_content_manager,
-      const base::android::JavaParamRef<jobject>& jresource_manager);
+      jboolean inset_border);
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
 

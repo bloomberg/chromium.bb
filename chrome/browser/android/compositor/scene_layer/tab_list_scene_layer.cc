@@ -59,7 +59,35 @@ void TabListSceneLayer::FinishBuildingFrame(JNIEnv* env,
     RemoveTabLayersInRange(write_index_, layers_.size());
 }
 
-void TabListSceneLayer::PutLayer(
+void TabListSceneLayer::UpdateLayer(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    jint background_color,
+    jfloat viewport_x,
+    jfloat viewport_y,
+    jfloat viewport_width,
+    jfloat viewport_height,
+    const JavaParamRef<jobject>& jlayer_title_cache,
+    const JavaParamRef<jobject>& jtab_content_manager,
+    const JavaParamRef<jobject>& jresource_manager) {
+  // TODO(changwan): move these to constructor if possible
+  if (resource_manager_ == nullptr) {
+    resource_manager_ =
+        ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
+  }
+  if (layer_title_cache_ == nullptr)
+    layer_title_cache_ = LayerTitleCache::FromJavaObject(jlayer_title_cache);
+  if (tab_content_manager_ == nullptr) {
+    tab_content_manager_ =
+        TabContentManager::FromJavaObject(jtab_content_manager);
+  }
+
+  background_color_ = background_color;
+  own_tree_->SetPosition(gfx::PointF(viewport_x, viewport_y));
+  own_tree_->SetBounds(gfx::Size(viewport_width, viewport_height));
+}
+
+void TabListSceneLayer::PutTabLayer(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,
     jint id,
@@ -72,7 +100,6 @@ void TabListSceneLayer::PutLayer(
     jint border_inner_shadow_resource_id,
     jboolean can_use_live_layer,
     jint tab_background_color,
-    jint background_color,
     jint back_logo_color,
     jboolean incognito,
     jboolean is_portrait,
@@ -83,10 +110,6 @@ void TabListSceneLayer::PutLayer(
     jfloat content_width,
     jfloat content_height,
     jfloat visible_content_height,
-    jfloat viewport_x,
-    jfloat viewport_y,
-    jfloat viewport_width,
-    jfloat viewport_height,
     jfloat shadow_x,
     jfloat shadow_y,
     jfloat shadow_width,
@@ -116,26 +139,7 @@ void TabListSceneLayer::PutLayer(
     jfloat toolbar_y_offset,
     jfloat side_border_scale,
     jboolean attach_content,
-    jboolean inset_border,
-    const JavaParamRef<jobject>& jlayer_title_cache,
-    const JavaParamRef<jobject>& jtab_content_manager,
-    const JavaParamRef<jobject>& jresource_manager) {
-  // TODO(changwan): move these to constructor if possible
-  if (resource_manager_ == nullptr) {
-    resource_manager_ =
-        ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
-  }
-  if (layer_title_cache_ == nullptr)
-    layer_title_cache_ = LayerTitleCache::FromJavaObject(jlayer_title_cache);
-  if (tab_content_manager_ == nullptr) {
-    tab_content_manager_ =
-        TabContentManager::FromJavaObject(jtab_content_manager);
-  }
-
-  background_color_ = background_color;
-  own_tree_->SetPosition(gfx::PointF(viewport_x, viewport_y));
-  own_tree_->SetBounds(gfx::Size(viewport_width, viewport_height));
-
+    jboolean inset_border) {
   scoped_refptr<TabLayer> layer = GetNextLayer(incognito);
   // https://crbug.com/517314: GetNextLayer() returns null in some corner cases.
   DCHECK(layer);
