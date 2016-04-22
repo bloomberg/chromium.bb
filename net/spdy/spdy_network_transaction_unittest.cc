@@ -3613,7 +3613,7 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_FRAME_SIZE_ERROR,
-      "Framer error: 13 (INVALID_CONTROL_FRAME_SIZE)."));
+      "Framer error: 14 (INVALID_CONTROL_FRAME_SIZE)."));
   MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 2)};
 
   // Read WINDOW_UPDATE with incorrectly-sized payload.

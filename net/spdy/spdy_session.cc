@@ -368,6 +368,8 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_GOAWAY_FRAME_CORRUPT;
     case SpdyFramer::SPDY_RST_STREAM_FRAME_CORRUPT:
       return SPDY_ERROR_RST_STREAM_FRAME_CORRUPT;
+    case SpdyFramer::SPDY_INVALID_PADDING:
+      return SPDY_ERROR_INVALID_PADDING;
     case SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS:
       return SPDY_ERROR_INVALID_DATA_FRAME_FLAGS;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS:
@@ -403,6 +405,8 @@ Error MapFramerErrorToNetError(SpdyFramer::SpdyError err) {
     case SpdyFramer::SPDY_GOAWAY_FRAME_CORRUPT:
       return ERR_SPDY_PROTOCOL_ERROR;
     case SpdyFramer::SPDY_RST_STREAM_FRAME_CORRUPT:
+      return ERR_SPDY_PROTOCOL_ERROR;
+    case SpdyFramer::SPDY_INVALID_PADDING:
       return ERR_SPDY_PROTOCOL_ERROR;
     case SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS:
       return ERR_SPDY_PROTOCOL_ERROR;

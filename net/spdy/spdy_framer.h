@@ -337,6 +337,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_COMPRESS_FAILURE,             // There was an error compressing.
     SPDY_GOAWAY_FRAME_CORRUPT,         // GOAWAY frame could not be parsed.
     SPDY_RST_STREAM_FRAME_CORRUPT,     // RST_STREAM frame could not be parsed.
+    SPDY_INVALID_PADDING,              // HEADERS or DATA frame padding invalid
     SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
     SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
     SPDY_UNEXPECTED_FRAME,             // Frame received out of order.

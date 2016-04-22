@@ -805,6 +805,150 @@ TEST_P(SpdyFramerTest, HeaderStreamDependencyValues) {
   }
 }
 
+// Test that if we receive a DATA frame with padding length larger than the
+// payload length, we set an error of SPDY_INVALID_PADDING
+TEST_P(SpdyFramerTest, OversizedDataPaddingError) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  // DATA frame with invalid padding length.
+  // |kH2FrameData| has to be |unsigned char|, because Chromium on Windows uses
+  // MSVC, where |char| is signed by default, which would not compile because of
+  // the element exceeding 127.
+  unsigned char kH2FrameData[] = {
+      0x00, 0x00, 0x05,        // Length
+      0x00,                    // Type (DATA)
+      0x09,                    // Flags (PADDED, END_STREAM)
+      0x00, 0x00, 0x00, 0x01,  // Stream id
+      0xFF,                    // Padding length (here larger than length)
+      0x00, 0x00, 0x00, 0x00,  // Arbitrary data payload
+  };
+
+  SpdySerializedFrame frame(reinterpret_cast<char*>(kH2FrameData),
+                            sizeof(kH2FrameData), false);
+
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, 1));
+    EXPECT_CALL(visitor, OnStreamPadding(1, 1));
+    EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  }
+  EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_PADDING, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a DATA frame with padding length not larger than the
+// payload length, we do not set an error of SPDY_INVALID_PADDING
+TEST_P(SpdyFramerTest, CorrectlySizedDataPaddingNoError) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  // DATA frame with valid Padding length
+  char kH2FrameData[] = {
+      0x00, 0x00, 0x05,        // Length
+      0x00,                    // Type (DATA)
+      0x08,                    // Flags (PADDED)
+      0x00, 0x00, 0x00, 0x01,  // Stream id
+      0x04,                    // Padding length (here one less than length)
+      0x00, 0x00, 0x00, 0x00,  // Padding bytes
+  };
+
+  SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
+
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, false));
+    EXPECT_CALL(visitor, OnStreamPadding(1, 1));
+    EXPECT_CALL(visitor, OnError(testing::Eq(&framer))).Times(0);
+    // Note that OnStreamFrameData(1, _, 1, false)) is never called
+    // since there is no data, only padding
+    EXPECT_CALL(visitor, OnStreamPadding(1, 4));
+  }
+
+  EXPECT_EQ(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_FALSE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a HEADERS frame with padding length larger than the
+// payload length, we set an error of SPDY_INVALID_PADDING
+TEST_P(SpdyFramerTest, OversizedHeadersPaddingError) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  // HEADERS frame with invalid padding length.
+  // |kH2FrameData| has to be |unsigned char|, because Chromium on Windows uses
+  // MSVC, where |char| is signed by default, which would not compile because of
+  // the element exceeding 127.
+  unsigned char kH2FrameData[] = {
+      0x00, 0x00, 0x05,        // Length
+      0x01,                    // Type (HEADERS)
+      0x08,                    // Flags (PADDED)
+      0x00, 0x00, 0x00, 0x01,  // Stream id
+      0xFF,                    // Padding length (here larger than length)
+      0x00, 0x00, 0x00, 0x00,  // Arbitrary data payload
+  };
+
+  SpdySerializedFrame frame(reinterpret_cast<char*>(kH2FrameData),
+                            sizeof(kH2FrameData), false);
+
+  EXPECT_CALL(visitor, OnHeaders(1, false, 0, 0, false, false, false));
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_EQ(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_PADDING, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test that if we receive a HEADERS frame with padding length not larger
+// than the payload length, we do not set an error of SPDY_INVALID_PADDING
+TEST_P(SpdyFramerTest, CorrectlySizedHeadersPaddingNoError) {
+  if (!IsHttp2()) {
+    return;
+  }
+
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  // HEADERS frame with invalid Padding length
+  char kH2FrameData[] = {
+      0x00, 0x00, 0x05,        // Length
+      0x01,                    // Type (HEADERS)
+      0x08,                    // Flags (PADDED)
+      0x00, 0x00, 0x00, 0x01,  // Stream id
+      0x04,                    // Padding length
+      0x00, 0x00, 0x00, 0x00,  // Padding
+  };
+
+  SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
+
+  EXPECT_CALL(visitor, OnHeaders(1, false, 0, 0, false, false, false));
+
+  EXPECT_EQ(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
+  EXPECT_FALSE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
 // Test that if we receive a SYN_REPLY with stream ID zero, we signal an error
 // (but don't crash).
 TEST_P(SpdyFramerTest, SynReplyWithStreamIdZero) {
@@ -4363,6 +4507,8 @@ TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
   EXPECT_STREQ("COMPRESS_FAILURE",
                SpdyFramer::ErrorCodeToString(
                    SpdyFramer::SPDY_COMPRESS_FAILURE));
+  EXPECT_STREQ("SPDY_INVALID_PADDING",
+               SpdyFramer::ErrorCodeToString(SpdyFramer::SPDY_INVALID_PADDING));
   EXPECT_STREQ("SPDY_INVALID_DATA_FRAME_FLAGS",
                SpdyFramer::ErrorCodeToString(
                    SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS));
@@ -4575,9 +4721,13 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
     }
 
     framer.ProcessInput(frame.data(), frame.size());
-    if ((flags & ~valid_data_flags) || (flags & DATA_FLAG_PADDED)) {
+    if (flags & ~valid_data_flags) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS, framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
+    } else if (flags & DATA_FLAG_PADDED) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_PADDING, framer.error_code())
           << SpdyFramer::ErrorCodeToString(framer.error_code());
     } else {
       EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -4626,9 +4776,13 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4disabled) {
     }
 
     framer.ProcessInput(frame.data(), frame.size());
-    if ((flags & ~valid_data_flags) || (flags & DATA_FLAG_PADDED)) {
+    if (flags & ~valid_data_flags) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS, framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
+    } else if (flags & DATA_FLAG_PADDED) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_PADDING, framer.error_code())
           << SpdyFramer::ErrorCodeToString(framer.error_code());
     } else {
       EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());

@@ -441,6 +441,8 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
       return "DECOMPRESS_FAILURE";
     case SPDY_COMPRESS_FAILURE:
       return "COMPRESS_FAILURE";
+    case SPDY_INVALID_PADDING:
+      return "SPDY_INVALID_PADDING";
     case SPDY_INVALID_DATA_FRAME_FLAGS:
       return "SPDY_INVALID_DATA_FRAME_FLAGS";
     case SPDY_INVALID_CONTROL_FRAME_FLAGS:
@@ -1628,6 +1630,12 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
       current_frame_type_ != CONTINUATION) {
     SPDY_BUG << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
   }
+
+  if (remaining_padding_payload_length_ > remaining_data_length_) {
+    set_error(SPDY_INVALID_PADDING);
+    return data_len;
+  }
+
   size_t process_bytes = std::min(
       data_len, remaining_data_length_ - remaining_padding_payload_length_);
   if (is_hpack_header_block) {
@@ -2132,7 +2140,7 @@ size_t SpdyFramer::ProcessDataFramePaddingLength(const char* data, size_t len) {
   }
 
   if (remaining_padding_payload_length_ > remaining_data_length_) {
-    set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
+    set_error(SPDY_INVALID_PADDING);
     return 0;
   }
   CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
