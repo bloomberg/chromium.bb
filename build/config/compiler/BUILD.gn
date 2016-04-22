@@ -162,11 +162,6 @@ config("compiler") {
     configs += [ "//build/config/mac:compiler" ]
   }
 
-  # Applies to all Posix systems.
-  if (is_posix) {
-    configs += [ "//build/config/posix:compiler" ]
-  }
-
   # See the definitions below.
   configs += [
     ":compiler_cpu_abi",
