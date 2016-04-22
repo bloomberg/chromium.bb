@@ -18,6 +18,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -420,35 +421,40 @@ void GpuWatchdogThread::OnResume() {
 }
 
 #if defined(OS_WIN)
-base::TimeDelta GpuWatchdogThread::GetWatchedThreadTime() {
-  FILETIME creation_time;
-  FILETIME exit_time;
-  FILETIME user_time;
-  FILETIME kernel_time;
-  BOOL result = GetThreadTimes(watched_thread_handle_,
-                               &creation_time,
-                               &exit_time,
-                               &kernel_time,
-                               &user_time);
-  DCHECK(result);
+base::ThreadTicks GpuWatchdogThread::GetWatchedThreadTime() {
+  if (base::ThreadTicks::IsSupported()) {
+    // Convert ThreadTicks::Now() to TimeDelta.
+    return base::ThreadTicks::GetForThread(
+        base::PlatformThreadHandle(watched_thread_handle_));
+  } else {
+    // Use GetThreadTimes as a backup mechanism.
+    FILETIME creation_time;
+    FILETIME exit_time;
+    FILETIME user_time;
+    FILETIME kernel_time;
+    BOOL result = GetThreadTimes(watched_thread_handle_, &creation_time,
+                                 &exit_time, &kernel_time, &user_time);
+    DCHECK(result);
 
-  ULARGE_INTEGER user_time64;
-  user_time64.HighPart = user_time.dwHighDateTime;
-  user_time64.LowPart = user_time.dwLowDateTime;
+    ULARGE_INTEGER user_time64;
+    user_time64.HighPart = user_time.dwHighDateTime;
+    user_time64.LowPart = user_time.dwLowDateTime;
 
-  ULARGE_INTEGER kernel_time64;
-  kernel_time64.HighPart = kernel_time.dwHighDateTime;
-  kernel_time64.LowPart = kernel_time.dwLowDateTime;
+    ULARGE_INTEGER kernel_time64;
+    kernel_time64.HighPart = kernel_time.dwHighDateTime;
+    kernel_time64.LowPart = kernel_time.dwLowDateTime;
 
-  // Time is reported in units of 100 nanoseconds. Kernel and user time are
-  // summed to deal with to kinds of hangs. One is where the GPU process is
-  // stuck in user level, never calling into the kernel and kernel time is
-  // not increasing. The other is where either the kernel hangs and never
-  // returns to user level or where user level code
-  // calls into kernel level repeatedly, giving up its quanta before it is
-  // tracked, for example a loop that repeatedly Sleeps.
-  return base::TimeDelta::FromMilliseconds(static_cast<int64_t>(
-      (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
+    // Time is reported in units of 100 nanoseconds. Kernel and user time are
+    // summed to deal with to kinds of hangs. One is where the GPU process is
+    // stuck in user level, never calling into the kernel and kernel time is
+    // not increasing. The other is where either the kernel hangs and never
+    // returns to user level or where user level code
+    // calls into kernel level repeatedly, giving up its quanta before it is
+    // tracked, for example a loop that repeatedly Sleeps.
+    return base::ThreadTicks() +
+           base::TimeDelta::FromMilliseconds(static_cast<int64_t>(
+               (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
+  }
 }
 #endif
 
