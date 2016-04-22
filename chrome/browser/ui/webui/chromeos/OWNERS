@@ -1,10 +1,9 @@
-zelidrag@chromium.org
-xiyuan@chromium.org
-nkostylev@chromium.org
 achuith@chromium.org
+michaelpg@chromium.org
 satorux@chromium.org
 stevenjb@chromium.org
-michaelpg@chromium.org
+xiyuan@chromium.org
+zelidrag@chromium.org
 
 per-file choose_mobile_network_ui.*=armansito@chromium.org
 per-file network*=stevenjb@chromium.org

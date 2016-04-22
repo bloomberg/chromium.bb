@@ -26,7 +26,6 @@ per-file chrome_android*.gypi=yfriedman@chromium.org
 # Chrome OS OWNERS from chrome/browser/chromeos/OWNERS
 per-file chrome_browser_chromeos.gypi=achuith@chromium.org
 per-file chrome_browser_chromeos.gypi=derat@chromium.org
-per-file chrome_browser_chromeos.gypi=nkostylev@chromium.org
 per-file chrome_browser_chromeos.gypi=oshima@chromium.org
 per-file chrome_browser_chromeos.gypi=satorux@chromium.org
 per-file chrome_browser_chromeos.gypi=stevenjb@chromium.org
