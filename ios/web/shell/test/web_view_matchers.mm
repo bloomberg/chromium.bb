@@ -28,6 +28,14 @@ char kGetDocumentBodyJavaScript[] =
     "document.body ? document.body.textContent : null";
 }
 
+namespace web {
+
+id<GREYMatcher> webViewContainingText(NSString* text) {
+  return [GREYMatchers matcherForWebViewContainingText:text];
+}
+
+}  // namespace web
+
 @implementation GREYMatchers (WebViewAdditions)
 
 + (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text {
@@ -72,11 +80,3 @@ char kGetDocumentBodyJavaScript[] =
 }
 
 @end
-
-#if !(GREY_DISABLE_SHORTHAND)
-
-id<GREYMatcher> shell_webViewContainingText(NSString* text) {
-  return [GREYMatchers matcherForWebViewContainingText:text];
-}
-
-#endif

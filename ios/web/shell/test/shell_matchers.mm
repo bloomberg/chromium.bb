@@ -6,6 +6,22 @@
 
 #import "ios/web/shell/view_controller.h"
 
+namespace web {
+
+id<GREYMatcher> backButton() {
+  return [GREYMatchers matcherForWebShellBackButton];
+}
+
+id<GREYMatcher> forwardButton() {
+  return [GREYMatchers matcherForWebShellForwardButton];
+}
+
+id<GREYMatcher> addressField() {
+  return [GREYMatchers matcherForWebShellAddressField];
+}
+
+}  // namespace web
+
 @implementation GREYMatchers (WebShellAdditions)
 
 + (id<GREYMatcher>)matcherForWebShellBackButton {
@@ -21,19 +37,3 @@
 }
 
 @end
-
-#if !(GREY_DISABLE_SHORTHAND)
-
-id<GREYMatcher> shell_backButton() {
-  return [GREYMatchers matcherForWebShellBackButton];
-}
-
-id<GREYMatcher> shell_forwardButton() {
-  return [GREYMatchers matcherForWebShellForwardButton];
-}
-
-id<GREYMatcher> shell_addressField() {
-  return [GREYMatchers matcherForWebShellAddressField];
-}
-
-#endif

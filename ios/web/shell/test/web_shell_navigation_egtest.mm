@@ -26,7 +26,7 @@
 // Set up called once for the class.
 + (void)setUp {
   [super setUp];
-  [[EarlGrey selectElementWithMatcher:shell_webViewContainingText(@"Chromium")]
+  [[EarlGrey selectElementWithMatcher:web::webViewContainingText(@"Chromium")]
       assertWithMatcher:grey_notNil()];
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   server.StartOrDie();
@@ -64,24 +64,24 @@
 
   web::navigation_test_util::LoadUrl(URL1);
 
-  [[EarlGrey selectElementWithMatcher:shell_webViewContainingText(response1)]
+  [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response1)]
       assertWithMatcher:grey_notNil()];
 
   web::navigation_test_util::LoadUrl(URL2);
 
-  [[EarlGrey selectElementWithMatcher:shell_webViewContainingText(response2)]
+  [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:shell_backButton()]
+  [[EarlGrey selectElementWithMatcher:web::backButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:shell_webViewContainingText(response1)]
+  [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response1)]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:shell_forwardButton()]
+  [[EarlGrey selectElementWithMatcher:web::forwardButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:shell_webViewContainingText(response2)]
+  [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
       assertWithMatcher:grey_notNil()];
 }
 

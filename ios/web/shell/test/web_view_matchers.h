@@ -4,18 +4,16 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+namespace web {
+
+// Shorthand for GREYMatchers::matcherForWebViewContainingText.
+id<GREYMatcher> webViewContainingText(NSString* text);
+
+}  // namespace web
+
 @interface GREYMatchers (WebViewAdditions)
 
 // Matcher for WKWebView containing |text|.
 + (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text;
-
-#if !(GREY_DISABLE_SHORTHAND)
-
-extern "C" {
-// Shorthand for GREYMatchers::matcherForWebViewContainingText.
-GREY_EXPORT id<GREYMatcher> shell_webViewContainingText(NSString* text);
-}
-
-#endif
 
 @end

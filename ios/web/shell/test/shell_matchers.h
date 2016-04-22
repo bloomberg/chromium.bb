@@ -4,6 +4,19 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+namespace web {
+
+// Shorthand for GREYMatchers::matcherForBackButton.
+id<GREYMatcher> backButton();
+
+// Shorthand for GREYMatchers::matcherForForwardButton.
+id<GREYMatcher> forwardButton();
+
+// Shorthand for GREYMatchers::matcherForAddressField.
+id<GREYMatcher> addressField();
+
+}  // namespace web
+
 @interface GREYMatchers (WebShellAdditions)
 
 // Matcher for back button in web shell.
@@ -16,18 +29,3 @@
 + (id<GREYMatcher>)matcherForWebShellAddressField;
 
 @end
-
-#if !(GREY_DISABLE_SHORTHAND)
-
-extern "C" {
-// Shorthand for GREYMatchers::matcherForBackButton.
-id<GREYMatcher> shell_backButton();
-
-// Shorthand for GREYMatchers::matcherForForwardButton.
-id<GREYMatcher> shell_forwardButton();
-
-// Shorthand for GREYMatchers::matcherForAddressField.
-id<GREYMatcher> shell_addressField();
-}
-
-#endif
