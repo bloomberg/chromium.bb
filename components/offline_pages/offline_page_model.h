@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -15,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -52,7 +52,7 @@ class OfflinePageMetadataStore;
 //   }
 //
 //   // In code using the OfflinePagesModel to save a page:
-//   scoped_ptr<ArchiverImpl> archiver(new ArchiverImpl());
+//   std::unique_ptr<ArchiverImpl> archiver(new ArchiverImpl());
 //   // Callback is of type SavePageCallback.
 //   model->SavePage(url, std::move(archiver), callback);
 //
@@ -138,7 +138,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   static base::TimeDelta GetFinalDeletionDelayForTesting();
 
   // All blocking calls/disk access will happen on the provided |task_runner|.
-  OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store,
+  OfflinePageModel(std::unique_ptr<OfflinePageMetadataStore> store,
                    const base::FilePath& archives_dir,
                    const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModel() override;
@@ -150,7 +150,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // is loaded.  Generates a new offline id and returns it.
   void SavePage(const GURL& url,
                 const ClientId& client_id,
-                scoped_ptr<OfflinePageArchiver> archiver,
+                std::unique_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback);
 
   // Marks that the offline page related to the passed |offline_id| has been
@@ -317,7 +317,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void RunWhenLoaded(const base::Closure& job);
 
   // Persistent store for offline page metadata.
-  scoped_ptr<OfflinePageMetadataStore> store_;
+  std::unique_ptr<OfflinePageMetadataStore> store_;
 
   // Location where all of the archive files will be stored.
   base::FilePath archives_dir_;

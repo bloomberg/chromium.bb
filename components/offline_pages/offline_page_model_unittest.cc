@@ -82,12 +82,12 @@ class OfflinePageModelTest
   // OfflinePageMetadataStore callbacks.
   void OnStoreUpdateDone(bool /* success */);
 
-  scoped_ptr<OfflinePageTestArchiver> BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(
       const GURL& url,
       OfflinePageArchiver::ArchiverResult result);
-  scoped_ptr<OfflinePageMetadataStore> BuildStore();
-  scoped_ptr<OfflinePageModel> BuildModel(
-      scoped_ptr<OfflinePageMetadataStore> store);
+  std::unique_ptr<OfflinePageMetadataStore> BuildStore();
+  std::unique_ptr<OfflinePageModel> BuildModel(
+      std::unique_ptr<OfflinePageMetadataStore> store);
   void ResetModel();
 
   // Utility methods.
@@ -139,7 +139,7 @@ class OfflinePageModelTest
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_dir_;
 
-  scoped_ptr<OfflinePageModel> model_;
+  std::unique_ptr<OfflinePageModel> model_;
   GetAllPagesResult all_pages_;
   SavePageResult last_save_result_;
   int64_t last_save_offline_id_;
@@ -220,28 +220,28 @@ void OfflinePageModelTest::OnClearAllDone() {
 void OfflinePageModelTest::OnStoreUpdateDone(bool /* success - ignored */) {
 }
 
-scoped_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
+std::unique_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
-  return scoped_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
+  return std::unique_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
       this, url, result, kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
 }
 
-scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
-  return scoped_ptr<OfflinePageMetadataStore>(
+std::unique_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
+  return std::unique_ptr<OfflinePageMetadataStore>(
       new OfflinePageTestStore(base::ThreadTaskRunnerHandle::Get()));
 }
 
-scoped_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel(
-    scoped_ptr<OfflinePageMetadataStore> store) {
-  return scoped_ptr<OfflinePageModel>(new OfflinePageModel(
+std::unique_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel(
+    std::unique_ptr<OfflinePageMetadataStore> store) {
+  return std::unique_ptr<OfflinePageModel>(new OfflinePageModel(
       std::move(store), temp_dir_.path(), base::ThreadTaskRunnerHandle::Get()));
 }
 
 void OfflinePageModelTest::ResetModel() {
   model_->RemoveObserver(this);
   OfflinePageTestStore* old_store = GetStore();
-  scoped_ptr<OfflinePageMetadataStore> new_store(
+  std::unique_ptr<OfflinePageMetadataStore> new_store(
       new OfflinePageTestStore(*old_store));
   model_ = BuildModel(std::move(new_store));
   model_->AddObserver(this);
@@ -276,7 +276,7 @@ void OfflinePageModelTest::SavePageWithArchiverResult(
     const GURL& url,
     ClientId client_id,
     OfflinePageArchiver::ArchiverResult result) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(url, result));
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(url, result));
   model()->SavePage(
       url, client_id, std::move(archiver),
       base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
@@ -356,7 +356,7 @@ TEST_F(OfflinePageModelTest, SavePageOfflineCreationFailed) {
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverReturnedWrongUrl) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(
       BuildArchiver(GURL("http://other.random.url.com"),
                     OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
@@ -377,14 +377,14 @@ TEST_F(OfflinePageModelTest, SavePageLocalFileFailed) {
   // Don't create archiver since it will not be needed for pages that are not
   // going to be saved.
   model()->SavePage(
-      kFileUrl, kTestClientId1, scoped_ptr<OfflinePageTestArchiver>(),
+      kFileUrl, kTestClientId1, std::unique_ptr<OfflinePageTestArchiver>(),
       base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::SKIPPED, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   // archiver_ptr will be valid until after first PumpLoop() call after
   // CompleteCreateArchive() is called.
@@ -642,7 +642,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
   OfflinePageTestStore* store = GetStore();
 
   // Save 3 pages.
-  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl, kTestClientId1, std::move(archiver),
@@ -650,7 +650,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
   PumpLoop();
   int64_t offline1 = last_save_offline_id();
 
-  scoped_ptr<OfflinePageTestArchiver> archiver2(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver2(BuildArchiver(
       kTestUrl2, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl2, kTestClientId2, std::move(archiver2),
@@ -658,7 +658,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
   PumpLoop();
   int64_t offline2 = last_save_offline_id();
 
-  scoped_ptr<OfflinePageTestArchiver> archiver3(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver3(BuildArchiver(
       kTestUrl3, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl3, kTestClientId3, std::move(archiver3),
@@ -856,7 +856,7 @@ TEST(CommandLineFlagsTest, OfflineBookmarks) {
 
   // Check if feature is correctly enabled by command-line flag.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       offline_pages::kOfflineBookmarksFeature.name, "");
   base::FeatureList::SetInstance(std::move(feature_list));
@@ -867,7 +867,7 @@ TEST(CommandLineFlagsTest, OffliningRecentPages) {
   // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       offline_pages::kOfflineBookmarksFeature.name, "");
   base::FeatureList::SetInstance(std::move(feature_list));
@@ -877,7 +877,7 @@ TEST(CommandLineFlagsTest, OffliningRecentPages) {
 
   // Check if feature is correctly enabled by command-line flag.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list2(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
   feature_list2->InitializeFromCommandLine(
       std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
           offline_pages::kOffliningRecentPagesFeature.name,
@@ -890,7 +890,7 @@ TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
   // Enable offline bookmarks feature first.
   // TODO(dimich): once offline pages are enabled by default, remove this.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       offline_pages::kOfflineBookmarksFeature.name, "");
   base::FeatureList::SetInstance(std::move(feature_list));
@@ -900,7 +900,7 @@ TEST(CommandLineFlagsTest, OfflinePagesBackgroundLoading) {
 
   // Check if feature is correctly enabled by command-line flag.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list2(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
   feature_list2->InitializeFromCommandLine(
       std::string(offline_pages::kOfflineBookmarksFeature.name) + "," +
           offline_pages::kOfflinePagesBackgroundLoadingFeature.name,

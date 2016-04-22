@@ -52,17 +52,16 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
   void LoadContinuation(const LoadCallback& callback, bool success);
   void LoadDone(const LoadCallback& callback,
                 bool success,
-                scoped_ptr<std::vector<OfflinePageEntry>> entries);
+                std::unique_ptr<std::vector<OfflinePageEntry>> entries);
   void NotifyLoadResult(const LoadCallback& callback,
                         LoadStatus status,
                         const std::vector<OfflinePageItem>& result);
 
   // Implements the update.
-  void UpdateEntries(
-      scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
-          entries_to_save,
-      scoped_ptr<std::vector<std::string>> keys_to_remove,
-      const UpdateCallback& callback);
+  void UpdateEntries(std::unique_ptr<leveldb_proto::ProtoDatabase<
+                         OfflinePageEntry>::KeyEntryVector> entries_to_save,
+                     std::unique_ptr<std::vector<std::string>> keys_to_remove,
+                     const UpdateCallback& callback);
 
   void UpdateDone(const OfflinePageMetadataStore::UpdateCallback& callback,
                   bool success);
@@ -79,7 +78,7 @@ class OfflinePageMetadataStoreImpl : public OfflinePageMetadataStore {
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   base::FilePath database_dir_;
-  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>> database_;
+  std::unique_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>> database_;
 
   base::WeakPtrFactory<OfflinePageMetadataStoreImpl> weak_ptr_factory_;
 

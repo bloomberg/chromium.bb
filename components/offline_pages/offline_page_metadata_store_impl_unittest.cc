@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -49,7 +50,7 @@ class OfflinePageMetadataStoreImplTest : public testing::Test {
     PumpLoop();
   }
 
-  scoped_ptr<OfflinePageMetadataStoreImpl> BuildStore();
+  std::unique_ptr<OfflinePageMetadataStoreImpl> BuildStore();
   void PumpLoop();
 
   void LoadCallback(OfflinePageMetadataStore::LoadStatus load_status,
@@ -60,8 +61,8 @@ class OfflinePageMetadataStoreImplTest : public testing::Test {
 
   void UpdateStoreEntries(
       OfflinePageMetadataStoreImpl* store,
-      scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
-          entries_to_save);
+      std::unique_ptr<leveldb_proto::ProtoDatabase<
+          OfflinePageEntry>::KeyEntryVector> entries_to_save);
 
  protected:
   CalledCallback last_called_callback_;
@@ -88,9 +89,9 @@ void OfflinePageMetadataStoreImplTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-scoped_ptr<OfflinePageMetadataStoreImpl>
+std::unique_ptr<OfflinePageMetadataStoreImpl>
 OfflinePageMetadataStoreImplTest::BuildStore() {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(
       new OfflinePageMetadataStoreImpl(base::ThreadTaskRunnerHandle::Get(),
                                        temp_directory_.path()));
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
@@ -123,9 +124,9 @@ void OfflinePageMetadataStoreImplTest::ClearResults() {
 
 void OfflinePageMetadataStoreImplTest::UpdateStoreEntries(
     OfflinePageMetadataStoreImpl* store,
-    scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
-        entries_to_save) {
-  scoped_ptr<std::vector<std::string>> keys_to_remove(
+    std::unique_ptr<leveldb_proto::ProtoDatabase<
+        OfflinePageEntry>::KeyEntryVector> entries_to_save) {
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
   store->UpdateEntries(
       std::move(entries_to_save), std::move(keys_to_remove),
@@ -136,7 +137,7 @@ void OfflinePageMetadataStoreImplTest::UpdateStoreEntries(
 // Loads empty store and makes sure that there are no offline pages stored in
 // it.
 TEST_F(OfflinePageMetadataStoreImplTest, LoadEmptyStore) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(0U, offline_pages_.size());
@@ -145,7 +146,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadEmptyStore) {
 // Adds metadata of an offline page into a store and then opens the store
 // again to make sure that stored metadata survives store restarts.
 TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
                                base::FilePath(kFilePath), kFileSize);
@@ -181,7 +182,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
 // Tests removing offline page metadata from the store, for which it first adds
 // metadata of an offline page.
 TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Add an offline page.
   OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
@@ -235,7 +236,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
 
 // Adds metadata of multiple offline pages into a store and removes some.
 TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Add an offline page.
   OfflinePageItem offline_page_1(GURL(kTestURL), 12345LL, kTestClientId1,
@@ -312,7 +313,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
 
 // Tests updating offline page metadata from the store.
 TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // First, adds a fresh page.
   OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
@@ -377,7 +378,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
 // Needs to be outside of the anonymous namespace in order for FRIEND_TEST
 // to work.
 TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Write one ok page.
   OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
@@ -391,7 +392,8 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
   // Manually write one broken page (no id)
-  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+  std::unique_ptr<
+      leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
       entries_to_save(
           new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
 
@@ -429,10 +431,11 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
 // Needs to be outside of the anonymous namespace in order for FRIEND_TEST
 // to work.
 TEST_F(OfflinePageMetadataStoreImplTest, LoadTotallyCorruptedStore) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Manually write two broken pages (no id)
-  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+  std::unique_ptr<
+      leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
       entries_to_save(
           new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
 
@@ -459,10 +462,11 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadTotallyCorruptedStore) {
 }
 
 TEST_F(OfflinePageMetadataStoreImplTest, UpgradeStoreFromBookmarkIdToClientId) {
-  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+  std::unique_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Manually write a page referring to legacy bookmark id.
-  scoped_ptr<leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
+  std::unique_ptr<
+      leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector>
       entries_to_save(
           new leveldb_proto::ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
 

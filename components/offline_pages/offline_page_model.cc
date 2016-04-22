@@ -107,7 +107,7 @@ bool OfflinePageModel::CanSavePage(const GURL& url) {
 }
 
 OfflinePageModel::OfflinePageModel(
-    scoped_ptr<OfflinePageMetadataStore> store,
+    std::unique_ptr<OfflinePageMetadataStore> store,
     const base::FilePath& archives_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : store_(std::move(store)),
@@ -134,7 +134,7 @@ void OfflinePageModel::RemoveObserver(Observer* observer) {
 
 void OfflinePageModel::SavePage(const GURL& url,
                                 const ClientId& client_id,
-                                scoped_ptr<OfflinePageArchiver> archiver,
+                                std::unique_ptr<OfflinePageArchiver> archiver,
                                 const SavePageCallback& callback) {
   DCHECK(is_loaded_);
 
