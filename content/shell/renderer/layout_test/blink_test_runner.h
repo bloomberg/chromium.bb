@@ -162,9 +162,6 @@ class BlinkTestRunner : public RenderViewObserver,
   // also resets additional state, like the main frame's name and opener.
   void Reset(bool for_new_test);
 
-  void set_proxy(test_runner::WebTestProxyBase* proxy) { proxy_ = proxy; }
-  test_runner::WebTestProxyBase* proxy() const { return proxy_; }
-
   void ReportLeakDetectionResult(const LeakDetectionResult& result);
 
   // Message handlers forwarded by LayoutTestRenderFrameObserver.
@@ -196,8 +193,6 @@ class BlinkTestRunner : public RenderViewObserver,
   mojom::LayoutTestBluetoothFakeAdapterSetter&
   GetBluetoothFakeAdapterSetter();
   mojom::LayoutTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
-
-  test_runner::WebTestProxyBase* proxy_;
 
   test_runner::TestPreferences prefs_;
 

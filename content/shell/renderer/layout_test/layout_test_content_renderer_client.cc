@@ -54,7 +54,6 @@ namespace {
 void WebTestProxyCreated(RenderView* render_view,
                          test_runner::WebTestProxyBase* proxy) {
   BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
-  test_runner->set_proxy(proxy);
   proxy->set_delegate(test_runner);
 
   if (!LayoutTestRenderThreadObserver::GetInstance()->test_delegate()) {
