@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_CACHE_H_
 #define COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_CACHE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -13,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/search_provider_logos/logo_common.h"
 
@@ -52,7 +52,7 @@ class LogoCache {
 
   // Returns the cached logo, or NULL if no logo is cached or the cached logo is
   // corrupt.
-  virtual scoped_ptr<EncodedLogo> GetCachedLogo();
+  virtual std::unique_ptr<EncodedLogo> GetCachedLogo();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LogoCacheSerializationTest, SerializeMetadata);
@@ -64,8 +64,9 @@ class LogoCache {
 
   // Converts string |str| to a LogoMetadata object and returns it. Returns NULL
   // if |str| cannot be converted.
-  static scoped_ptr<LogoMetadata> LogoMetadataFromString(
-      const std::string& str, int* logo_num_bytes);
+  static std::unique_ptr<LogoMetadata> LogoMetadataFromString(
+      const std::string& str,
+      int* logo_num_bytes);
 
   // Converts |metadata| to a string and stores it in |str|.
   static void LogoMetadataToString(const LogoMetadata& metadata,
@@ -79,7 +80,7 @@ class LogoCache {
   base::FilePath GetMetadataPath();
 
   // Updates the in-memory metadata.
-  void UpdateMetadata(scoped_ptr<LogoMetadata> metadata);
+  void UpdateMetadata(std::unique_ptr<LogoMetadata> metadata);
 
   // If the cached logo's metadata isn't available in memory (i.e.
   // |metadata_is_valid_| is false), reads it from disk and stores it in
@@ -107,7 +108,7 @@ class LogoCache {
   // value is meaningful iff |metadata_is_valid_| is true; otherwise, the
   // metadata must be read from file and |metadata_| will be NULL.
   // Note: Once read from file, metadata will be stored in memory indefinitely.
-  scoped_ptr<LogoMetadata> metadata_;
+  std::unique_ptr<LogoMetadata> metadata_;
   bool metadata_is_valid_;
 
   // The number of bytes in the logo file, as recorded in the metadata file.

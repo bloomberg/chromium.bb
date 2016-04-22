@@ -43,17 +43,17 @@ bool IsLogoOkToShow(const LogoMetadata& metadata, base::Time now) {
 
 // Reads the logo from the cache and returns it. Returns NULL if the cache is
 // empty, corrupt, expired, or doesn't apply to the current logo URL.
-scoped_ptr<EncodedLogo> GetLogoFromCacheOnFileThread(LogoCache* logo_cache,
-                                              const GURL& logo_url,
-                                              base::Time now) {
+std::unique_ptr<EncodedLogo> GetLogoFromCacheOnFileThread(LogoCache* logo_cache,
+                                                          const GURL& logo_url,
+                                                          base::Time now) {
   const LogoMetadata* metadata = logo_cache->GetCachedLogoMetadata();
   if (!metadata)
-    return scoped_ptr<EncodedLogo>();
+    return nullptr;
 
   if (metadata->source_url != logo_url.spec() ||
       !IsLogoOkToShow(*metadata, now)) {
     logo_cache->SetCachedLogo(NULL);
-    return scoped_ptr<EncodedLogo>();
+    return nullptr;
   }
 
   return logo_cache->GetCachedLogo();
@@ -70,7 +70,7 @@ LogoTracker::LogoTracker(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     scoped_refptr<base::TaskRunner> background_task_runner,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    scoped_ptr<LogoDelegate> delegate)
+    std::unique_ptr<LogoDelegate> delegate)
     : is_idle_(true),
       is_cached_logo_valid_(false),
       logo_delegate_(std::move(delegate)),
@@ -128,14 +128,14 @@ void LogoTracker::RemoveObserver(LogoObserver* observer) {
   logo_observers_.RemoveObserver(observer);
 }
 
-void LogoTracker::SetLogoCacheForTests(scoped_ptr<LogoCache> cache) {
+void LogoTracker::SetLogoCacheForTests(std::unique_ptr<LogoCache> cache) {
   DCHECK(cache);
   file_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DeleteLogoCacheOnFileThread, logo_cache_));
   logo_cache_ = cache.release();
 }
 
-void LogoTracker::SetClockForTests(scoped_ptr<base::Clock> clock) {
+void LogoTracker::SetClockForTests(std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 
@@ -158,7 +158,7 @@ void LogoTracker::ReturnToIdle(int outcome) {
   logo_observers_.Clear();
 }
 
-void LogoTracker::OnCachedLogoRead(scoped_ptr<EncodedLogo> cached_logo) {
+void LogoTracker::OnCachedLogoRead(std::unique_ptr<EncodedLogo> cached_logo) {
   DCHECK(!is_idle_);
 
   if (cached_logo) {
@@ -187,7 +187,7 @@ void LogoTracker::OnCachedLogoAvailable(const LogoMetadata& metadata,
   FetchLogo();
 }
 
-void LogoTracker::SetCachedLogo(scoped_ptr<EncodedLogo> logo) {
+void LogoTracker::SetCachedLogo(std::unique_ptr<EncodedLogo> logo) {
   file_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LogoCache::SetCachedLogo,
@@ -221,7 +221,7 @@ void LogoTracker::FetchLogo() {
 }
 
 void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
-                                    scoped_ptr<EncodedLogo> logo) {
+                                    std::unique_ptr<EncodedLogo> logo) {
   DCHECK(!is_idle_);
 
   if (logo)
@@ -243,9 +243,10 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
   }
 }
 
-void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
-                                       bool parsing_failed,
-                                       const SkBitmap& image) {
+void LogoTracker::OnFreshLogoAvailable(
+    std::unique_ptr<EncodedLogo> encoded_logo,
+    bool parsing_failed,
+    const SkBitmap& image) {
   DCHECK(!is_idle_);
 
   int download_outcome = kDownloadOutcomeNotTracked;
@@ -263,7 +264,7 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
     // Image decoding failed. Do nothing.
     download_outcome = DOWNLOAD_OUTCOME_DECODING_FAILED;
   } else {
-    scoped_ptr<Logo> logo;
+    std::unique_ptr<Logo> logo;
     // Check if the server returned a valid, non-empty response.
     if (encoded_logo) {
       DCHECK(!image.isNull());
@@ -297,7 +298,7 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
 
 void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!is_idle_);
-  scoped_ptr<net::URLFetcher> cleanup_fetcher(fetcher_.release());
+  std::unique_ptr<net::URLFetcher> cleanup_fetcher(fetcher_.release());
 
   if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200)) {
     ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);
@@ -307,7 +308,7 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   UMA_HISTOGRAM_TIMES("NewTabPage.LogoDownloadTime",
                       base::TimeTicks::Now() - logo_download_start_time_);
 
-  scoped_ptr<std::string> response(new std::string());
+  std::unique_ptr<std::string> response(new std::string());
   source->GetResponseAsString(response.get());
   base::Time response_time = clock_->Now();
 

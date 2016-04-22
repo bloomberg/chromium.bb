@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <vector>
 
 #include "base/base64.h"
@@ -14,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
@@ -242,14 +244,14 @@ class MockLogoCache : public LogoCache {
     metadata_.reset(logo ? new LogoMetadata(logo->metadata) : NULL);
   }
 
-  scoped_ptr<EncodedLogo> GetCachedLogo() override {
+  std::unique_ptr<EncodedLogo> GetCachedLogo() override {
     OnGetCachedLogo();
-    return make_scoped_ptr(logo_ ? new EncodedLogo(*logo_) : NULL);
+    return base::WrapUnique(logo_ ? new EncodedLogo(*logo_) : NULL);
   }
 
  private:
-  scoped_ptr<LogoMetadata> metadata_;
-  scoped_ptr<EncodedLogo> logo_;
+  std::unique_ptr<LogoMetadata> metadata_;
+  std::unique_ptr<EncodedLogo> logo_;
 };
 
 class MockLogoObserver : public LogoObserver {
@@ -324,12 +326,13 @@ class LogoTrackerTest : public ::testing::Test {
                         base::ThreadTaskRunnerHandle::Get(),
                         new net::TestURLRequestContextGetter(
                             base::ThreadTaskRunnerHandle::Get()),
-                        scoped_ptr<LogoDelegate>(new TestLogoDelegate()));
+                        std::unique_ptr<LogoDelegate>(new TestLogoDelegate()));
     logo_tracker_->SetServerAPI(logo_url_, base::Bind(&GoogleParseLogoResponse),
                                 base::Bind(&GoogleAppendQueryparamsToLogoURL),
                                 false);
-    logo_tracker_->SetClockForTests(scoped_ptr<base::Clock>(test_clock_));
-    logo_tracker_->SetLogoCacheForTests(scoped_ptr<LogoCache>(logo_cache_));
+    logo_tracker_->SetClockForTests(std::unique_ptr<base::Clock>(test_clock_));
+    logo_tracker_->SetLogoCacheForTests(
+        std::unique_ptr<LogoCache>(logo_cache_));
   }
 
   virtual void TearDown() {
@@ -362,7 +365,7 @@ class LogoTrackerTest : public ::testing::Test {
   // asynchronous response(s).
   void GetLogo();
 
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   GURL logo_url_;
   base::SimpleTestClock* test_clock_;
   NiceMock<MockLogoCache>* logo_cache_;

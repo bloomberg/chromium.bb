@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_GOOGLE_LOGO_API_H_
 #define COMPONENTS_SEARCH_PROVIDER_LOGOS_GOOGLE_LOGO_API_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/search_provider_logos/logo_common.h"
 #include "url/gurl.h"
@@ -21,8 +21,8 @@ GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
                                       bool wants_cta);
 
 // Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles.
-scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
-    const scoped_ptr<std::string>& response,
+std::unique_ptr<EncodedLogo> GoogleParseLogoResponse(
+    const std::unique_ptr<std::string>& response,
     base::Time response_time,
     bool* parsing_failed);
 
