@@ -38,3 +38,4 @@ Local Modifications:
 - Move bit_cast from base/macros.h to its own header.
 - Replace base/template_util.h with C++11 type_traits.
 - Add std::is_same into compat/non_cxx11_lib/type_traits.
+- Use std::unique_ptr instead of scoped_ptr.

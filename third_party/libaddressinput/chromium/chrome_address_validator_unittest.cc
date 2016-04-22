@@ -54,16 +54,16 @@ using ::i18n::addressinput::USES_P_O_BOX;
 class AddressValidatorTest : public testing::Test, LoadRulesListener {
  protected:
   AddressValidatorTest()
-      : validator_(
-            new AddressValidator(scoped_ptr<Source>(new TestdataSource(true)),
-                                 scoped_ptr<Storage>(new NullStorage),
-                                 this)) {
+      : validator_(new AddressValidator(
+            std::unique_ptr<Source>(new TestdataSource(true)),
+            std::unique_ptr<Storage>(new NullStorage),
+            this)) {
     validator_->LoadRules("US");
   }
 
   virtual ~AddressValidatorTest() {}
 
-  const scoped_ptr<AddressValidator> validator_;
+  const std::unique_ptr<AddressValidator> validator_;
 
  private:
   // LoadRulesListener implementation.
@@ -89,9 +89,8 @@ class LargeAddressValidatorTest : public testing::Test {
 
   static void SetUpTestCase() {
     validator_ =
-        new AddressValidator(scoped_ptr<Source>(new TestdataSource(true)),
-                             scoped_ptr<Storage>(new NullStorage),
-                             NULL);
+        new AddressValidator(std::unique_ptr<Source>(new TestdataSource(true)),
+                             std::unique_ptr<Storage>(new NullStorage), NULL);
     validator_->LoadRules("CN");
     validator_->LoadRules("KR");
     validator_->LoadRules("TW");
@@ -740,8 +739,8 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
   class TestAddressValidator : public AddressValidator {
    public:
     // Takes ownership of |source| and |storage|.
-    TestAddressValidator(scoped_ptr<::i18n::addressinput::Source> source,
-                         scoped_ptr<::i18n::addressinput::Storage> storage,
+    TestAddressValidator(std::unique_ptr<::i18n::addressinput::Source> source,
+                         std::unique_ptr<::i18n::addressinput::Storage> storage,
                          LoadRulesListener* load_rules_listener)
         : AddressValidator(std::move(source),
                            std::move(storage),
@@ -802,15 +801,15 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
   FailingAddressValidatorTest()
       : source_(new FailingSource),
         validator_(
-            new TestAddressValidator(scoped_ptr<Source>(source_),
-                                     scoped_ptr<Storage>(new NullStorage),
+            new TestAddressValidator(std::unique_ptr<Source>(source_),
+                                     std::unique_ptr<Storage>(new NullStorage),
                                      this)),
         load_rules_success_(false) {}
 
   virtual ~FailingAddressValidatorTest() {}
 
   FailingSource* source_;  // Owned by |validator_|.
-  scoped_ptr<AddressValidator> validator_;
+  std::unique_ptr<AddressValidator> validator_;
   bool load_rules_success_;
 
  private:

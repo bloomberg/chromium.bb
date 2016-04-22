@@ -4,9 +4,9 @@
 
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/prefs/writeable_pref_store.h"
 #include "third_party/libaddressinput/chromium/fallback_data_store.h"
@@ -23,8 +23,8 @@ ChromeStorageImpl::~ChromeStorageImpl() {}
 
 void ChromeStorageImpl::Put(const std::string& key, std::string* data) {
   DCHECK(data);
-  scoped_ptr<std::string> owned_data(data);
-  scoped_ptr<base::StringValue> string_value(
+  std::unique_ptr<std::string> owned_data(data);
+  std::unique_ptr<base::StringValue> string_value(
       new base::StringValue(std::string()));
   string_value->GetString()->swap(*owned_data);
   backing_store_->SetValue(key, std::move(string_value),
@@ -56,7 +56,7 @@ void ChromeStorageImpl::DoGet(const std::string& key,
   }
 
   const base::Value* value = NULL;
-  scoped_ptr<std::string> data(new std::string);
+  std::unique_ptr<std::string> data(new std::string);
   if (backing_store_->GetValue(key, &value) && value->GetAsString(data.get())) {
     data_ready(true, key, data.release());
   } else if (FallbackDataStore::Get(key, data.get())) {

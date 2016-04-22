@@ -5,11 +5,11 @@
 #include "third_party/libaddressinput/src/cpp/src/util/json.h"
 
 #include <map>
+#include <memory>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 
@@ -20,14 +20,15 @@ namespace {
 
 // Returns |json| parsed into a JSON dictionary. Sets |parser_error| to true if
 // parsing failed.
-::scoped_ptr<const base::DictionaryValue> Parse(const std::string& json,
-                                                bool* parser_error) {
+::std::unique_ptr<const base::DictionaryValue> Parse(const std::string& json,
+                                                     bool* parser_error) {
   DCHECK(parser_error);
-  ::scoped_ptr<const base::DictionaryValue> result;
+  ::std::unique_ptr<const base::DictionaryValue> result;
 
   // |json| is converted to a |c_str()| here because rapidjson and other parts
   // of the standalone library use char* rather than std::string.
-  ::scoped_ptr<const base::Value> parsed(base::JSONReader::Read(json.c_str()));
+  ::std::unique_ptr<const base::Value> parsed(
+      base::JSONReader::Read(json.c_str()));
   *parser_error = !parsed || !parsed->IsType(base::Value::TYPE_DICTIONARY);
 
   if (*parser_error)
@@ -74,7 +75,7 @@ class Json::JsonImpl {
   explicit JsonImpl(const base::DictionaryValue& dict)
       : parser_error_(false), dict_(dict) {}
 
-  const ::scoped_ptr<const base::DictionaryValue> owned_;
+  const ::std::unique_ptr<const base::DictionaryValue> owned_;
   bool parser_error_;
   const base::DictionaryValue& dict_;
   std::vector<const Json*> sub_dicts_;

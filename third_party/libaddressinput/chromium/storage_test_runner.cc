@@ -35,8 +35,8 @@ void StorageTestRunner::ClearValues() {
   data_.clear();
 }
 
-scoped_ptr<Storage::Callback> StorageTestRunner::BuildCallback() {
-  return scoped_ptr<Storage::Callback>(::i18n::addressinput::BuildCallback(
+std::unique_ptr<Storage::Callback> StorageTestRunner::BuildCallback() {
+  return std::unique_ptr<Storage::Callback>(::i18n::addressinput::BuildCallback(
       this, &StorageTestRunner::OnDataReady));
 }
 
@@ -54,7 +54,7 @@ void StorageTestRunner::OnDataReady(bool success,
 
 void StorageTestRunner::GetWithoutPutReturnsEmptyData() {
   ClearValues();
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
+  std::unique_ptr<Storage::Callback> callback(BuildCallback());
   storage_->Get("key", *callback);
 
   EXPECT_FALSE(success_);
@@ -65,7 +65,7 @@ void StorageTestRunner::GetWithoutPutReturnsEmptyData() {
 void StorageTestRunner::GetReturnsWhatWasPut() {
   ClearValues();
   storage_->Put("key", new std::string("value"));
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
+  std::unique_ptr<Storage::Callback> callback(BuildCallback());
   storage_->Get("key", *callback);
 
   EXPECT_TRUE(success_);
@@ -77,7 +77,7 @@ void StorageTestRunner::SecondPutOverwritesData() {
   ClearValues();
   storage_->Put("key", new std::string("bad-value"));
   storage_->Put("key", new std::string("good-value"));
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
+  std::unique_ptr<Storage::Callback> callback(BuildCallback());
   storage_->Get("key", *callback);
 
   EXPECT_TRUE(success_);

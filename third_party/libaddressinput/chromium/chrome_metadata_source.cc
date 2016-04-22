@@ -4,11 +4,11 @@
 
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -73,7 +73,7 @@ void ChromeMetadataSource::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(request != requests_.end());
 
   bool ok = source->GetResponseCode() == net::HTTP_OK;
-  scoped_ptr<std::string> data(new std::string());
+  std::unique_ptr<std::string> data(new std::string());
   if (ok)
     data->swap(request->second->data);
   request->second->callback(ok, request->second->key, data.release());
@@ -83,7 +83,7 @@ void ChromeMetadataSource::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 ChromeMetadataSource::Request::Request(const std::string& key,
-                                       scoped_ptr<net::URLFetcher> fetcher,
+                                       std::unique_ptr<net::URLFetcher> fetcher,
                                        const Callback& callback)
     : key(key), fetcher(std::move(fetcher)), callback(callback) {}
 
@@ -95,7 +95,7 @@ void ChromeMetadataSource::Download(const std::string& key,
     return;
   }
 
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(resource, net::URLFetcher::GET, this);
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -103,7 +103,7 @@ void ChromeMetadataSource::Download(const std::string& key,
 
   Request* request = new Request(key, std::move(fetcher), downloaded);
   request->fetcher->SaveResponseWithWriter(
-      scoped_ptr<net::URLFetcherResponseWriter>(
+      std::unique_ptr<net::URLFetcherResponseWriter>(
           new UnownedStringWriter(&request->data)));
   requests_[request->fetcher.get()] = request;
   request->fetcher->Start();

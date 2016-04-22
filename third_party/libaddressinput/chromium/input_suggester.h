@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_input_helper.h"
@@ -96,7 +96,7 @@ class InputSuggester {
     int32_t buffer_size() const;
 
     mutable std::vector<uint8_t> buffer_;
-    scoped_ptr<icu::Collator> collator_;
+    std::unique_ptr<icu::Collator> collator_;
 
     DISALLOW_COPY_AND_ASSIGN(StringCanonicalizer);
   };
@@ -116,7 +116,7 @@ class InputSuggester {
   ::i18n::addressinput::AddressValidator validator_;
 
   // The callback for |validator_| to invoke when validation finishes.
-  const scoped_ptr<const ::i18n::addressinput::AddressValidator::Callback>
+  const std::unique_ptr<const ::i18n::addressinput::AddressValidator::Callback>
       validated_;
 
   // A mapping from a COUNTRY level region to a collection of all of its

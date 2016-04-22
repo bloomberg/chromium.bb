@@ -303,7 +303,7 @@ bool ZipReader::ExtractCurrentEntry(WriterDelegate* delegate) const {
     return false;
 
   bool success = true;  // This becomes false when something bad happens.
-  scoped_ptr<char[]> buf(new char[internal::kZipBufSize]);
+  std::unique_ptr<char[]> buf(new char[internal::kZipBufSize]);
   while (true) {
     const int num_bytes_read = unzReadCurrentFile(zip_file_, buf.get(),
                                                   internal::kZipBufSize);

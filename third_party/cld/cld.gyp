@@ -85,7 +85,6 @@
         'base/port.h',
         'base/crash.h',
         'base/dynamic_annotations.h',
-        'base/scoped_ptr.h',
         'base/stl_decl_msvc.h',
         'base/log_severity.h',
         'base/strtoint.h',

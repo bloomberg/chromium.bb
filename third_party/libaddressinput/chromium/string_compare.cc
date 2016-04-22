@@ -4,10 +4,11 @@
 
 #include "third_party/libaddressinput/src/cpp/src/util/string_compare.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace i18n {
@@ -35,10 +36,7 @@ class IcuStringComparer {
   }
 
  private:
-  // ::scoped_ptr is from "base/memory/scoped_ptr.h", which does not interfere
-  // with ::i18n::addressinput::scoped_ptr from
-  // <libaddressinput/util/scoped_ptr.h>.
-  ::scoped_ptr<icu::Collator> collator_;
+  std::unique_ptr<icu::Collator> collator_;
 
   DISALLOW_COPY_AND_ASSIGN(IcuStringComparer);
 };
@@ -48,7 +46,7 @@ static base::LazyInstance<IcuStringComparer> g_comparer =
 
 }  // namespace
 
-// Dummy required for scoped_ptr<Impl>.
+// Dummy required for std::unique_ptr<Impl>.
 class StringCompare::Impl {};
 
 StringCompare::StringCompare() {}

@@ -298,7 +298,7 @@ void ModuleSnapshotWin::GetCrashpadUserMinidumpStreams(
       return;
     }
 
-    scoped_ptr<internal::MemorySnapshotWin> memory(
+    std::unique_ptr<internal::MemorySnapshotWin> memory(
         new internal::MemorySnapshotWin());
     memory->Initialize(
         process_reader_, list_entry.base_address, list_entry.size);

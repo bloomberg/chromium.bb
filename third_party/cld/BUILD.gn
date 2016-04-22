@@ -27,7 +27,6 @@ source_set("cld") {
     "base/logging.h",
     "base/macros.h",
     "base/port.h",
-    "base/scoped_ptr.h",
     "base/stl_decl_msvc.h",
     "base/string_util.h",
     "base/strtoint.h",

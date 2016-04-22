@@ -5,11 +5,12 @@
 #ifndef GOOGLE_CACHEINVALIDATION_DEPS_SCOPED_PTR_H_
 #define GOOGLE_CACHEINVALIDATION_DEPS_SCOPED_PTR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace invalidation {
 
-using ::scoped_ptr;
+template <typename T, typename D = std::default_delete<T>>
+using scoped_ptr = std::unique_ptr<T, D>;
 
 }  // namespace invalidation
 

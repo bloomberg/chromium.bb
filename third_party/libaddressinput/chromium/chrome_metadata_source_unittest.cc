@@ -36,9 +36,9 @@ class ChromeMetadataSourceTest : public testing::Test {
         new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get()));
     ChromeMetadataSource impl(std::string(), getter.get());
-    scoped_ptr< ::i18n::addressinput::Source::Callback> callback(
+    std::unique_ptr<::i18n::addressinput::Source::Callback> callback(
         ::i18n::addressinput::BuildCallback(
-             this, &ChromeMetadataSourceTest::OnDownloaded));
+            this, &ChromeMetadataSourceTest::OnDownloaded));
     impl.Get(url_.spec(), *callback);
     base::MessageLoop::current()->RunUntilIdle();
   }
@@ -66,7 +66,7 @@ class ChromeMetadataSourceTest : public testing::Test {
   net::URLFetcherImplFactory factory_;
   net::FakeURLFetcherFactory fake_factory_;
   GURL url_;
-  scoped_ptr<std::string> data_;
+  std::unique_ptr<std::string> data_;
   bool success_;
 };
 

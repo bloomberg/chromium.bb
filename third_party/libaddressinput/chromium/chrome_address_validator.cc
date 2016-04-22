@@ -38,11 +38,10 @@ static const int kMaxAttemptsNumber = 8;
 
 }  // namespace
 
-AddressValidator::AddressValidator(scoped_ptr<Source> source,
-                                   scoped_ptr<Storage> storage,
+AddressValidator::AddressValidator(std::unique_ptr<Source> source,
+                                   std::unique_ptr<Storage> storage,
                                    LoadRulesListener* load_rules_listener)
-    : supplier_(new PreloadSupplier(source.release(),
-                                    storage.release())),
+    : supplier_(new PreloadSupplier(source.release(), storage.release())),
       input_suggester_(new InputSuggester(supplier_.get())),
       normalizer_(new AddressNormalizer(supplier_.get())),
       validator_(new ::i18n::addressinput::AddressValidator(supplier_.get())),

@@ -4,6 +4,7 @@
 
 #include "third_party/leveldatabase/env_chromium.h"
 
+#include <memory>
 #include <utility>
 
 #if defined(OS_POSIX)
@@ -181,7 +182,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
 
  private:
   std::string filename_;
-  scoped_ptr<base::File> file_;
+  std::unique_ptr<base::File> file_;
   const UMALogger* uma_logger_;
 };
 
@@ -232,7 +233,7 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   leveldb::Status SyncParent();
 
   std::string filename_;
-  scoped_ptr<base::File> file_;
+  std::unique_ptr<base::File> file_;
   const UMALogger* uma_logger_;
   Type file_type_;
   std::string parent_dir_;
@@ -809,7 +810,7 @@ Status ChromiumEnv::GetTestDirectory(std::string* path) {
 Status ChromiumEnv::NewLogger(const std::string& fname,
                               leveldb::Logger** result) {
   FilePath path = FilePath::FromUTF8Unsafe(fname);
-  scoped_ptr<base::File> f(new base::File(
+  std::unique_ptr<base::File> f(new base::File(
       path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
   if (!f->IsValid()) {
     *result = NULL;
@@ -825,7 +826,7 @@ Status ChromiumEnv::NewLogger(const std::string& fname,
 Status ChromiumEnv::NewSequentialFile(const std::string& fname,
                                       leveldb::SequentialFile** result) {
   FilePath path = FilePath::FromUTF8Unsafe(fname);
-  scoped_ptr<base::File> f(
+  std::unique_ptr<base::File> f(
       new base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   if (!f->IsValid()) {
     *result = NULL;
@@ -872,7 +873,7 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
                                     leveldb::WritableFile** result) {
   *result = NULL;
   FilePath path = FilePath::FromUTF8Unsafe(fname);
-  scoped_ptr<base::File> f(new base::File(
+  std::unique_ptr<base::File> f(new base::File(
       path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
   if (!f->IsValid()) {
     RecordErrorAt(kNewWritableFile);
@@ -888,7 +889,7 @@ Status ChromiumEnv::NewAppendableFile(const std::string& fname,
                                       leveldb::WritableFile** result) {
   *result = NULL;
   FilePath path = FilePath::FromUTF8Unsafe(fname);
-  scoped_ptr<base::File> f(new base::File(
+  std::unique_ptr<base::File> f(new base::File(
       path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND));
   if (!f->IsValid()) {
     RecordErrorAt(kNewAppendableFile);

@@ -7,10 +7,10 @@
 
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace autofill {
 
@@ -26,7 +26,7 @@ class StorageTestRunner {
 
  private:
   void ClearValues();
-  scoped_ptr< ::i18n::addressinput::Storage::Callback> BuildCallback();
+  std::unique_ptr<::i18n::addressinput::Storage::Callback> BuildCallback();
   void OnDataReady(bool success, const std::string& key, std::string* data);
 
   // Test suite.

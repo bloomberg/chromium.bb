@@ -53,9 +53,10 @@
 #include <math.h>
 #include <sys/sysctl.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 
 struct SuddenMotionSensor::GenericMacbookSensor {
   // Name of device to be read.
@@ -243,7 +244,7 @@ const SuddenMotionSensor::SensorDescriptor
 
 // Create a SuddenMotionSensor object and return NULL if no valid sensor found.
 SuddenMotionSensor* SuddenMotionSensor::Create() {
-  scoped_ptr<SuddenMotionSensor> accelerometer(new SuddenMotionSensor);
+  std::unique_ptr<SuddenMotionSensor> accelerometer(new SuddenMotionSensor);
   return accelerometer->Init() ? accelerometer.release() : NULL;
 }
 

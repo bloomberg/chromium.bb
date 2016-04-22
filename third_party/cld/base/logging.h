@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+
+#include <memory>
 #include <string>
 #include <strstream>
 #include <vector>
@@ -22,7 +24,6 @@
 #include "base/crash.h"
 #include "base/dynamic_annotations.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_decl_msvc.h"
 #include "base/log_severity.h"
 #include "base/vlog_is_on.h"
@@ -996,7 +997,7 @@ private:
     int preserved_errno_;         // errno at Init() time
     scoped_array<char> buf_;      // buffer space for non FATAL messages
     char* message_text_;          // Complete message text
-    scoped_ptr<LogStream> stream_alloc_;
+    std::unique_ptr<LogStream> stream_alloc_;
     LogStream* stream_;
     char severity_;               // level of LogMessage (ex. I, W, E, F)
     int line_;                    // line number of file that called LOG
@@ -1023,7 +1024,7 @@ private:
   static LogMessageData fatal_msg_data_exclusive_;
   static LogMessageData fatal_msg_data_shared_;
 
-  scoped_ptr<LogMessageData> allocated_;
+  std::unique_ptr<LogMessageData> allocated_;
   LogMessageData* data_;
 
   friend class LogDestination;
