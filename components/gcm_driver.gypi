@@ -250,10 +250,8 @@
         'gcm_driver/crypto/gcm_key_store.h',
         'gcm_driver/crypto/gcm_message_cryptographer.cc',
         'gcm_driver/crypto/gcm_message_cryptographer.h',
-        'gcm_driver/crypto/gcm_message_cryptographer_openssl.cc',
         'gcm_driver/crypto/p256_key_util.cc',
         'gcm_driver/crypto/p256_key_util.h',
-        'gcm_driver/crypto/p256_key_util_openssl.cc',
       ],
     },
     {

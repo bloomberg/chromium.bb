@@ -15,10 +15,8 @@ source_set("crypto") {
     "gcm_key_store.h",
     "gcm_message_cryptographer.cc",
     "gcm_message_cryptographer.h",
-    "gcm_message_cryptographer_openssl.cc",
     "p256_key_util.cc",
     "p256_key_util.h",
-    "p256_key_util_openssl.cc",
   ]
 
   deps = [

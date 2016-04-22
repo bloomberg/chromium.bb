@@ -83,7 +83,7 @@ class GCMMessageCryptographer {
   enum Mode { ENCRYPT, DECRYPT };
 
   // Private implementation of the encryption and decryption routines, provided
-  // by either NSS or BoringSSL depending on the platform.
+  // by BoringSSL.
   bool EncryptDecryptRecordInternal(Mode mode,
                                     const base::StringPiece& input,
                                     const base::StringPiece& key,
