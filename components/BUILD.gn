@@ -354,6 +354,12 @@ if (is_android) {
     resource_dirs = [ "//components/test/android/browsertests_apk/res" ]
     custom_package = "org.chromium.components_browsertests_apk"
   }
+
+  # GYP: //components/components_tests.gyp:components_junit_tests
+  # TODO(GYP): Delete this target once recipes no longer require it.
+  junit_binary("components_junit_tests") {
+    java_files = [ "//testing/android/junit/DummyTest.java" ]
+  }
 }
 
 if (!is_ios) {

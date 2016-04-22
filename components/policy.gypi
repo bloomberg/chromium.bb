@@ -369,6 +369,21 @@
            },
           'includes': [ '../build/jni_generator.gypi' ],
          },
+         {
+           'target_name': 'components_policy_junit_tests',
+           'type': 'none',
+           'dependencies': [
+             '../testing/android/junit/junit_test.gyp:junit_test_support',
+           ],
+           'variables': {
+             'main_class': 'org.chromium.testing.local.JunitTestMain',
+             'src_paths': [
+               '../testing/android/junit/DummyTest.java',
+             ],
+             'wrapper_script_name': 'helper/<(_target_name)',
+           },
+           'includes': [ '../build/host_jar.gypi' ],
+         },
        ],
     }],
     ['OS=="android" and configuration_policy==1', {
