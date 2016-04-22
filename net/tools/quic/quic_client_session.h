@@ -7,6 +7,7 @@
 #ifndef NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_
 #define NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"

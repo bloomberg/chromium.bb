@@ -29,6 +29,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
 #include "net/quic/quic_chromium_connection_helper.h"
@@ -74,10 +75,12 @@ class TestQuicConnection : public QuicConnection {
                      QuicConnectionId connection_id,
                      IPEndPoint address,
                      QuicChromiumConnectionHelper* helper,
+                     QuicChromiumAlarmFactory* alarm_factory,
                      QuicPacketWriter* writer)
       : QuicConnection(connection_id,
                        address,
                        helper,
+                       alarm_factory,
                        writer,
                        true /* owns_writer */,
                        Perspective::IS_CLIENT,
@@ -218,11 +221,14 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
-    helper_.reset(new QuicChromiumConnectionHelper(runner_.get(), &clock_,
-                                                   &random_generator_));
-    connection_ = new TestQuicConnection(
-        SupportedVersions(GetParam()), connection_id_, peer_addr_,
-        helper_.get(), new QuicChromiumPacketWriter(socket.get()));
+    helper_.reset(
+        new QuicChromiumConnectionHelper(&clock_, &random_generator_));
+    alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
+
+    connection_ =
+        new TestQuicConnection(SupportedVersions(GetParam()), connection_id_,
+                               peer_addr_, helper_.get(), alarm_factory_.get(),
+                               new QuicChromiumPacketWriter(socket.get()));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
 
@@ -429,6 +435,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   MockClock clock_;
   TestQuicConnection* connection_;
   std::unique_ptr<QuicChromiumConnectionHelper> helper_;
+  std::unique_ptr<QuicChromiumAlarmFactory> alarm_factory_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
   std::unique_ptr<QuicHttpStream> stream_;
   TransportSecurityState transport_security_state_;

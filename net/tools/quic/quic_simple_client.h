@@ -28,6 +28,7 @@
 namespace net {
 
 struct HttpRequestInfo;
+class QuicChromiumAlarmFactory;
 class QuicChromiumConnectionHelper;
 class UDPClientSocket;
 
@@ -166,6 +167,7 @@ class QuicSimpleClient : public QuicClientBase,
   const std::string& latest_response_body() const;
 
  protected:
+  virtual QuicChromiumAlarmFactory* CreateQuicAlarmFactory();
   virtual QuicChromiumConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 

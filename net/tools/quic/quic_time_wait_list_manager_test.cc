@@ -5,6 +5,7 @@
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
 #include <errno.h>
+#include <memory>
 
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/null_encrypter.h"
@@ -18,6 +19,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/tools/quic/quic_epoll_alarm_factory.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 #include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
@@ -95,7 +97,8 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
  protected:
   QuicTimeWaitListManagerTest()
       : helper_(&epoll_server_, QuicAllocator::BUFFER_POOL),
-        time_wait_list_manager_(&writer_, &visitor_, &helper_),
+        alarm_factory_(&epoll_server_),
+        time_wait_list_manager_(&writer_, &visitor_, &helper_, &alarm_factory_),
         connection_id_(45),
         client_address_(net::test::TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
@@ -151,6 +154,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
 
   NiceMock<MockFakeTimeEpollServer> epoll_server_;
   QuicEpollConnectionHelper helper_;
+  QuicEpollAlarmFactory alarm_factory_;
   StrictMock<MockPacketWriter> writer_;
   StrictMock<MockQuicServerSessionVisitor> visitor_;
   QuicTimeWaitListManager time_wait_list_manager_;

@@ -5,6 +5,8 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_SERVER_THREAD_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "net/base/ip_endpoint.h"

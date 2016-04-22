@@ -7,6 +7,8 @@
 #include <dirent.h>
 #include <stdio.h>
 
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"

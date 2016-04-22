@@ -24,6 +24,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
 #include "net/quic/quic_chromium_connection_helper.h"
@@ -329,10 +330,11 @@ class BidirectionalStreamQuicImplTest
         socket_data_.get(), net_log().bound().net_log()));
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
-    helper_.reset(new QuicChromiumConnectionHelper(runner_.get(), &clock_,
-                                                   &random_generator_));
+    helper_.reset(
+        new QuicChromiumConnectionHelper(&clock_, &random_generator_));
+    alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
     connection_ = new QuicConnection(
-        connection_id_, peer_addr_, helper_.get(),
+        connection_id_, peer_addr_, helper_.get(), alarm_factory_.get(),
         new QuicChromiumPacketWriter(socket.get()), true /* owns_writer */,
         Perspective::IS_CLIENT, SupportedVersions(GetParam()));
 
@@ -472,6 +474,7 @@ class BidirectionalStreamQuicImplTest
   MockClock clock_;
   QuicConnection* connection_;
   std::unique_ptr<QuicChromiumConnectionHelper> helper_;
+  std::unique_ptr<QuicChromiumAlarmFactory> alarm_factory_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<QuicChromiumClientSession> session_;
   QuicCryptoClientConfig crypto_config_;

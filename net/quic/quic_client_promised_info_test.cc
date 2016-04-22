@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_client_promised_info.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/scoped_ptr.h"
 #include "net/gfe2/balsa_headers.h"
@@ -70,8 +72,9 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
   class StreamVisitor;
 
   QuicClientPromisedInfoTest()
-      : connection_(
-            new StrictMock<MockConnection>(&helper_, Perspective::IS_CLIENT)),
+      : connection_(new StrictMock<MockConnection>(&helper_,
+                                                   &alarm_factory_,
+                                                   Perspective::IS_CLIENT)),
         session_(connection_, &push_promise_index_),
         body_("hello world"),
         promise_id_(gfe_quic::test::kServerDataStreamId1) {
@@ -142,6 +145,7 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
   }
 
   MockConnectionHelper helper_;
+  MockAlarmFactory alarm_factory_;
   StrictMock<MockConnection>* connection_;
   QuicClientPushPromiseIndex push_promise_index_;
 
@@ -176,7 +180,7 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseCleanupAlarm) {
   // Fire the alarm that will cancel the promised stream.
   EXPECT_CALL(*connection_,
               SendRstStream(promise_id_, QUIC_STREAM_CANCELLED, 0));
-  helper_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(promised));
+  alarm_factory_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(promised));
 
   // Verify that the promise is gone after the alarm fires.
   EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);

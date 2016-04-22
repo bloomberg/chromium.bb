@@ -23,6 +23,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
+#include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
@@ -63,7 +64,8 @@ class QuicChromiumClientSessionTest
         socket_data_(
             new SequencedSocketData(default_read_.get(), 1, nullptr, 0)),
         random_(0),
-        helper_(base::ThreadTaskRunnerHandle::Get().get(), &clock_, &random_),
+        helper_(&clock_, &random_),
+        alarm_factory_(base::ThreadTaskRunnerHandle::Get().get(), &clock_),
         maker_(GetParam(), 0, &clock_, kServerHostname) {
     // Advance the time, because timers do not like uninitialized times.
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
@@ -79,8 +81,8 @@ class QuicChromiumClientSessionTest
     QuicChromiumPacketWriter* writer =
         new net::QuicChromiumPacketWriter(socket.get());
     QuicConnection* connection = new QuicConnection(
-        0, kIpEndPoint, &helper_, writer, true, Perspective::IS_CLIENT,
-        SupportedVersions(GetParam()));
+        0, kIpEndPoint, &helper_, &alarm_factory_, writer, true,
+        Perspective::IS_CLIENT, SupportedVersions(GetParam()));
     writer->SetConnection(connection);
     session_.reset(new QuicChromiumClientSession(
         connection, std::move(socket),
@@ -127,6 +129,7 @@ class QuicChromiumClientSessionTest
   MockClock clock_;
   MockRandom random_;
   QuicChromiumConnectionHelper helper_;
+  QuicChromiumAlarmFactory alarm_factory_;
   TransportSecurityState transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::unique_ptr<QuicChromiumClientSession> session_;

@@ -94,7 +94,8 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
 
   void Initialize() {
     session_.reset();
-    connection_ = new PacketSavingConnection(&helper_, Perspective::IS_CLIENT,
+    connection_ = new PacketSavingConnection(&helper_, &alarm_factory_,
+                                             Perspective::IS_CLIENT,
                                              SupportedVersions(GetParam()));
     session_.reset(new TestQuicClientSession(
         DefaultQuicConfig(), connection_,
@@ -114,12 +115,13 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
     QuicCryptoClientStream* stream =
         static_cast<QuicCryptoClientStream*>(session_->GetCryptoStream());
     CryptoTestUtils::FakeServerOptions options;
-    CryptoTestUtils::HandshakeWithFakeServer(&helper_, connection_, stream,
-                                             options);
+    CryptoTestUtils::HandshakeWithFakeServer(&helper_, &alarm_factory_,
+                                             connection_, stream, options);
   }
 
   QuicCryptoClientConfig crypto_config_;
   MockConnectionHelper helper_;
+  MockAlarmFactory alarm_factory_;
   PacketSavingConnection* connection_;
   std::unique_ptr<TestQuicClientSession> session_;
   QuicClientPushPromiseIndex push_promise_index_;

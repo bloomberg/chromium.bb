@@ -2030,6 +2030,7 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorRemote) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_ignore_invalid_error_code, false);
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,

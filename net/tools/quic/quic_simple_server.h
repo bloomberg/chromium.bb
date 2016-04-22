@@ -15,6 +15,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
+#include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_config.h"
@@ -72,6 +73,9 @@ class QuicSimpleServer {
 
   // Used to manage the message loop. Owned by dispatcher_.
   QuicChromiumConnectionHelper* helper_;
+
+  // Used to manage the message loop. Owned by dispatcher_.
+  QuicChromiumAlarmFactory* alarm_factory_;
 
   // Listening socket. Also used for outbound client communication.
   std::unique_ptr<UDPServerSocket> socket_;

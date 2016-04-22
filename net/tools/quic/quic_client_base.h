@@ -16,6 +16,7 @@
 #include "net/log/net_log.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/quic_crypto_client_config.h"
+#include "net/quic/quic_alarm_factory.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_client_push_promise_index.h"
 #include "net/quic/quic_config.h"
@@ -36,6 +37,7 @@ class QuicClientBase {
                  const QuicVersionVector& supported_versions,
                  const QuicConfig& config,
                  QuicConnectionHelperInterface* helper,
+                 QuicAlarmFactory* alarm_factory,
                  ProofVerifier* proof_verifier);
 
   ~QuicClientBase();
@@ -181,6 +183,8 @@ class QuicClientBase {
 
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
+  QuicAlarmFactory* alarm_factory() { return alarm_factory_.get(); }
+
   void set_num_sent_client_hellos(int num_sent_client_hellos) {
     num_sent_client_hellos_ = num_sent_client_hellos;
   }
@@ -200,6 +204,9 @@ class QuicClientBase {
 
   // Helper to be used by created connections. Needs to outlive |session_|.
   std::unique_ptr<QuicConnectionHelperInterface> helper_;
+
+  // Helper to be used by created connections. Needs to outlive |session_|.
+  std::unique_ptr<QuicAlarmFactory> alarm_factory_;
 
   // Writer used to actually send packets to the wire. Needs to outlive
   // |session_|.

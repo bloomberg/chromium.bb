@@ -8,8 +8,7 @@
 #ifndef NET_TOOLS_QUIC_QUIC_CLIENT_H_
 #define NET_TOOLS_QUIC_QUIC_CLIENT_H_
 
-#include <stddef.h>
-
+#include <cstdint>
 #include <memory>
 #include <string>
 

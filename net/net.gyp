@@ -1294,6 +1294,8 @@
             'tools/quic/quic_client.h',
             'tools/quic/quic_default_packet_writer.cc',
             'tools/quic/quic_default_packet_writer.h',
+            'tools/quic/quic_epoll_alarm_factory.cc',
+            'tools/quic/quic_epoll_alarm_factory.h',
             'tools/quic/quic_epoll_clock.cc',
             'tools/quic/quic_epoll_clock.h',
             'tools/quic/quic_epoll_connection_helper.cc',

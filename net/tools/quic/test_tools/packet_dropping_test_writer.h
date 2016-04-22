@@ -45,6 +45,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   // |on_can_write| will be triggered when fake-unblocking; ownership will be
   // assumed.
   void Initialize(QuicConnectionHelperInterface* helper,
+                  QuicAlarmFactory* alarm_factory,
                   Delegate* on_can_write);
 
   // QuicPacketWriter methods:

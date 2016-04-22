@@ -4,6 +4,8 @@
 
 #include "net/tools/quic/test_tools/quic_test_client.h"
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -184,9 +186,7 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                      config,
                                      supported_versions,
                                      &epoll_server_)),
-      allow_bidirectional_data_(false),
-      num_requests_(0),
-      num_responses_(0) {
+      allow_bidirectional_data_(false) {
   Initialize();
 }
 
@@ -204,6 +204,8 @@ void QuicTestClient::Initialize() {
   connect_attempted_ = false;
   auto_reconnect_ = false;
   buffer_body_ = true;
+  num_requests_ = 0;
+  num_responses_ = 0;
   ClearPerRequestState();
   // As chrome will generally do this, we want it to be the default when it's
   // not overridden.

@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "net/quic/quic_header_list.h"
 #include "net/quic/quic_headers_stream.h"

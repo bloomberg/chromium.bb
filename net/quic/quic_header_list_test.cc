@@ -16,11 +16,7 @@ TEST(QuicHeaderListTest, OnHeader) {
   headers.OnHeader("april", "fools");
   headers.OnHeader("beep", "");
 
-  std::string accumulator;
-  for (const auto& p : headers) {
-    accumulator.append("(" + p.first + ", " + p.second + ") ");
-  }
-  EXPECT_EQ("(foo, bar) (april, fools) (beep, ) ", accumulator);
+  EXPECT_EQ("{ foo=bar, april=fools, beep=, }", headers.DebugString());
 }
 
 // This test verifies that QuicHeaderList is copyable and assignable.
@@ -33,17 +29,8 @@ TEST(QuicHeaderListTest, IsCopyableAndAssignable) {
   QuicHeaderList headers2(headers);
   QuicHeaderList headers3 = headers;
 
-  std::string accumulator;
-  for (const auto& p : headers2) {
-    accumulator.append("(" + p.first + ", " + p.second + ") ");
-  }
-  EXPECT_EQ("(foo, bar) (april, fools) (beep, ) ", accumulator);
-
-  accumulator.clear();
-  for (const auto& p : headers3) {
-    accumulator.append("(" + p.first + ", " + p.second + ") ");
-  }
-  EXPECT_EQ("(foo, bar) (april, fools) (beep, ) ", accumulator);
+  EXPECT_EQ("{ foo=bar, april=fools, beep=, }", headers2.DebugString());
+  EXPECT_EQ("{ foo=bar, april=fools, beep=, }", headers3.DebugString());
 }
 
 }  // namespace net

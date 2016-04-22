@@ -18,6 +18,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/p2p/quic_p2p_crypto_config.h"
 #include "net/quic/p2p/quic_p2p_stream.h"
+#include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
@@ -196,9 +197,9 @@ class QuicP2PSessionTest : public ::testing::Test {
 
  protected:
   QuicP2PSessionTest()
-      : quic_helper_(base::ThreadTaskRunnerHandle::Get().get(),
-                     &quic_clock_,
-                     QuicRandom::GetInstance()) {
+      : quic_helper_(&quic_clock_, QuicRandom::GetInstance()),
+        alarm_factory_(base::ThreadTaskRunnerHandle::Get().get(),
+                       &quic_clock_) {
     // Simulate out-of-bound config handshake.
     CryptoHandshakeMessage hello_message;
     config_.ToHandshakeMessage(&hello_message);
@@ -230,8 +231,9 @@ class QuicP2PSessionTest : public ::testing::Test {
     QuicChromiumPacketWriter* writer =
         new QuicChromiumPacketWriter(socket.get());
     std::unique_ptr<QuicConnection> quic_connection1(new QuicConnection(
-        0, IPEndPoint(IPAddress::IPv4AllZeros(), 0), &quic_helper_, writer,
-        true /* owns_writer */, perspective, QuicSupportedVersions()));
+        0, IPEndPoint(IPAddress::IPv4AllZeros(), 0), &quic_helper_,
+        &alarm_factory_, writer, true /* owns_writer */, perspective,
+        QuicSupportedVersions()));
     writer->SetConnection(quic_connection1.get());
 
     std::unique_ptr<QuicP2PSession> result(
@@ -247,6 +249,7 @@ class QuicP2PSessionTest : public ::testing::Test {
 
   QuicClock quic_clock_;
   QuicChromiumConnectionHelper quic_helper_;
+  QuicChromiumAlarmFactory alarm_factory_;
   QuicConfig config_;
 
   base::WeakPtr<FakeP2PDatagramSocket> socket1_;

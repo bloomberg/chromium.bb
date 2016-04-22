@@ -44,14 +44,11 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                           QuicBlockedWriterInterfacePtrHash>
       WriteBlockedList;
 
-  // Due to the way delete_sessions_closure_ is registered, the Dispatcher must
-  // live until server Shutdown. |supported_versions| specifies the std::list
-  // of supported QUIC versions. Takes ownership of |packet_writer_factory|,
-  // which is used to create per-connection writers.
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig* crypto_config,
                  const QuicVersionVector& supported_versions,
-                 QuicConnectionHelperInterface* helper);
+                 std::unique_ptr<QuicConnectionHelperInterface> helper,
+                 std::unique_ptr<QuicAlarmFactory> alarm_factory);
 
   ~QuicDispatcher() override;
 
@@ -196,6 +193,8 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
+  QuicAlarmFactory* alarm_factory() { return alarm_factory_.get(); }
+
   QuicPacketWriter* writer() { return writer_.get(); }
 
   // Creates per-connection packet writers out of the QuicDispatcher's shared
@@ -241,6 +240,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   // The helper used for all connections.
   std::unique_ptr<QuicConnectionHelperInterface> helper_;
+
+  // Creates alarms.
+  std::unique_ptr<QuicAlarmFactory> alarm_factory_;
 
   // An alarm which deletes closed sessions.
   std::unique_ptr<QuicAlarm> delete_sessions_alarm_;

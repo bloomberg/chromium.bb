@@ -49,6 +49,7 @@ class CTVerifier;
 class HostResolver;
 class HttpServerProperties;
 class QuicClock;
+class QuicChromiumAlarmFactory;
 class QuicChromiumClientSession;
 class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
@@ -303,6 +304,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   QuicChromiumConnectionHelper* helper() { return helper_.get(); }
 
+  QuicChromiumAlarmFactory* alarm_factory() { return alarm_factory_.get(); }
+
   bool enable_port_selection() const { return enable_port_selection_; }
 
   bool has_quic_server_info_factory() {
@@ -427,6 +430,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // The helper used for all connections.
   std::unique_ptr<QuicChromiumConnectionHelper> helper_;
+
+  // The alarm factory used for all connections.
+  std::unique_ptr<QuicChromiumAlarmFactory> alarm_factory_;
 
   // Contains owning pointers to all sessions that currently exist.
   SessionIdMap all_sessions_;

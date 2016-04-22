@@ -32,7 +32,9 @@ class QuicConnectionLoggerPeer {
 class QuicConnectionLoggerTest : public ::testing::Test {
  protected:
   QuicConnectionLoggerTest()
-      : session_(new MockConnection(&helper_, Perspective::IS_CLIENT)),
+      : session_(new MockConnection(&helper_,
+                                    &alarm_factory_,
+                                    Perspective::IS_CLIENT)),
         logger_(&session_,
                 "CONNECTION_UNKNOWN",
                 /*socket_performance_watcher=*/nullptr,
@@ -40,6 +42,7 @@ class QuicConnectionLoggerTest : public ::testing::Test {
 
   BoundNetLog net_log_;
   MockConnectionHelper helper_;
+  MockAlarmFactory alarm_factory_;
   MockQuicSpdySession session_;
   QuicConnectionLogger logger_;
 };

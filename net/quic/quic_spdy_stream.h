@@ -52,6 +52,10 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
     // Called when the stream is closed.
     virtual void OnClose(QuicSpdyStream* stream) = 0;
 
+    // Allows subclasses to override and do work.
+    virtual void OnPromiseHeadersComplete(QuicStreamId promised_id,
+                                          size_t frame_len) {}
+
    protected:
     virtual ~Visitor() {}
 
@@ -136,7 +140,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   void MarkTrailersConsumed(size_t bytes_consumed);
 
   // Clears |header_list_|.
-  void ConsumeHeaderList() { header_list_.Clear(); }
+  void ConsumeHeaderList();
 
   // This block of functions wraps the sequencer's functions of the same
   // name.  These methods return uncompressed data until that has

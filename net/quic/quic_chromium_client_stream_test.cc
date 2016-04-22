@@ -144,6 +144,7 @@ class QuicChromiumClientStreamTest
   QuicChromiumClientStreamTest()
       : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         session_(new MockConnection(&helper_,
+                                    &alarm_factory_,
                                     Perspective::IS_CLIENT,
                                     SupportedVersions(GetParam())),
                  &push_promise_index_) {
@@ -194,6 +195,7 @@ class QuicChromiumClientStreamTest
   QuicCryptoClientConfig crypto_config_;
   testing::StrictMock<MockDelegate> delegate_;
   MockConnectionHelper helper_;
+  MockAlarmFactory alarm_factory_;
   MockQuicClientSessionBase session_;
   QuicChromiumClientStream* stream_;
   SpdyHeaderBlock headers_;
