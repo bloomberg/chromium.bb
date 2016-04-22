@@ -115,6 +115,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['win'], bug=483282)
 
+    # Failing because ANGLE using a different interpretation of the spec for
+    # CopyTexImage2D so that for example a copy from RGBA8 to R8 fails.
     self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-r8-red-unsigned_byte.html',
         ['win'], bug=483282)
@@ -391,6 +393,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # We want to mark this Flaky for all of Linux however we currently skip
     # all the tests on Intel. Tag this with AMD and Nvidia to avoid an
     # expectation conflict that would make this test run on Intel.
+    # Flaky because the virtual gl contexts implementation calls glUseProgram
+    # while a transform feedback is active.
     self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
         ['linux', 'amd', 'nvidia'], bug=483282)
 
