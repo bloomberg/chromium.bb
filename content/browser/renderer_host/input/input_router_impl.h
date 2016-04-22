@@ -100,14 +100,15 @@ class CONTENT_EXPORT InputRouterImpl
       const GestureEventWithLatencyInfo& gesture_event) override;
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                          InputEventAckState ack_result) override;
-  void ForwardGestureEvent(
-      const blink::WebGestureEvent& gesture_event) override;
 
   // MouseWheelEventQueueClient
   void SendMouseWheelEventImmediately(
       const MouseWheelEventWithLatencyInfo& touch_event) override;
   void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                             InputEventAckState ack_result) override;
+  void ForwardGestureEventWithLatencyInfo(
+      const blink::WebGestureEvent& gesture_event,
+      const ui::LatencyInfo& latency_info) override;
 
   bool SendMoveCaret(std::unique_ptr<IPC::Message> message);
   bool SendSelectMessage(std::unique_ptr<IPC::Message> message);

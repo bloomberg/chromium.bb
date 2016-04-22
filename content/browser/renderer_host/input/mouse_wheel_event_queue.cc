@@ -171,8 +171,13 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         SendScrollBegin(scroll_update, true);
       }
 
-      if (needs_update)
-        client_->ForwardGestureEvent(scroll_update);
+      if (needs_update) {
+        ui::LatencyInfo latency = ui::LatencyInfo();
+        latency.AddLatencyNumber(
+            ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
+            0);
+        client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
+      }
 
       if (current_phase_ended) {
         // Non-synthetic GSEs are sent when the current phase is canceled or
@@ -253,7 +258,7 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
     if (scroll_end_timer_.IsRunning())
       scroll_end_timer_.Reset();
   }
-  client_->ForwardGestureEvent(scroll_end);
+  client_->ForwardGestureEventWithLatencyInfo(scroll_end, ui::LatencyInfo());
 }
 
 void MouseWheelEventQueue::SendScrollBegin(
@@ -276,7 +281,7 @@ void MouseWheelEventQueue::SendScrollBegin(
 
   needs_scroll_begin_ = false;
   needs_scroll_end_ = true;
-  client_->ForwardGestureEvent(scroll_begin);
+  client_->ForwardGestureEventWithLatencyInfo(scroll_begin, ui::LatencyInfo());
 }
 
 }  // namespace content

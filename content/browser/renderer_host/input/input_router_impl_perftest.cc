@@ -88,7 +88,9 @@ class NullInputRouterClient : public InputRouterClient {
   void DidFlush() override {}
   void DidOverscroll(const DidOverscrollParams& params) override {}
   void DidStopFlinging() override {}
-  void ForwardGestureEvent(const blink::WebGestureEvent& event) override {}
+  void ForwardGestureEventWithLatencyInfo(
+      const blink::WebGestureEvent& event,
+      const ui::LatencyInfo& latency_info) override {}
 };
 
 class NullIPCSender : public IPC::Sender {

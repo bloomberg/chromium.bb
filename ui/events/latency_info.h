@@ -67,6 +67,9 @@ enum LatencyComponentType {
   // Timestamp of when the gpu service began swap buffers, unlike
   // INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT which measures after.
   INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT,
+  // Timestamp of when the gesture scroll update is generated from a mouse wheel
+  // event.
+  INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL,
   // ---------------------------TERMINAL COMPONENT-----------------------------
   // TERMINAL COMPONENT is when we show the latency end in chrome://tracing.
   // Timestamp when the mouse event is acked from renderer and it does not
@@ -79,10 +82,10 @@ enum LatencyComponentType {
   // cause any rendering scheduled.
   INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT,
   // Timestamp when the touch event is acked from renderer and it does not
-  // cause any rendering schedueld and does not generate any gesture event.
+  // cause any rendering scheduled and does not generate any gesture event.
   INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT,
   // Timestamp when the gesture event is acked from renderer, and it does not
-  // cause any rendering schedueld.
+  // cause any rendering scheduled.
   INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT,
   // Timestamp when the frame is swapped (i.e. when the rendering caused by
   // input event actually takes effect).
@@ -97,7 +100,7 @@ enum LatencyComponentType {
   // but the swap failed.
   INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
   LATENCY_COMPONENT_TYPE_LAST =
-    INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
+      INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
 };
 
 class EVENTS_BASE_EXPORT LatencyInfo {

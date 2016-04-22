@@ -427,6 +427,16 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
 
 void RenderWidgetHostLatencyTracker::OnFrameSwapped(
     const LatencyInfo& latency) {
+  // Don't report frame latency on wheel events. Previously they were only
+  // reported on touch metrics and we need to be consistent across reporting
+  // metrics.
+  LatencyInfo::LatencyComponent mouse_wheel_scroll_update_component;
+  if (latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
+          &mouse_wheel_scroll_update_component)) {
+    return;
+  }
+
   LatencyInfo::LatencyComponent gpu_swap_end_component;
   if (!latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0,

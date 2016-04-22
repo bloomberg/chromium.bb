@@ -31,7 +31,9 @@ class CONTENT_EXPORT MouseWheelEventQueueClient {
 
   virtual void SendMouseWheelEventImmediately(
       const MouseWheelEventWithLatencyInfo& event) = 0;
-  virtual void ForwardGestureEvent(const blink::WebGestureEvent& event) = 0;
+  virtual void ForwardGestureEventWithLatencyInfo(
+      const blink::WebGestureEvent& event,
+      const ui::LatencyInfo& latency_info) = 0;
   virtual void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                     InputEventAckState ack_result) = 0;
 };

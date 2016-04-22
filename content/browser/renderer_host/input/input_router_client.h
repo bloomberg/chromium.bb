@@ -57,8 +57,9 @@ class CONTENT_EXPORT InputRouterClient {
   // Called when the input router generates an event. It is intended that the
   // client will do some processing on |gesture_event| and then send it back
   // to the InputRouter via SendGestureEvent.
-  virtual void ForwardGestureEvent(
-      const blink::WebGestureEvent& gesture_event) = 0;
+  virtual void ForwardGestureEventWithLatencyInfo(
+      const blink::WebGestureEvent& gesture_event,
+      const ui::LatencyInfo& latency_info) = 0;
 };
 
 } // namespace content
