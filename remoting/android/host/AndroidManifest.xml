@@ -8,10 +8,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.chromoting.host">
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application android:label="CRD Host"
         android:name="org.chromium.chromoting.host.RemotingApplication"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:allowBackup="false">
+        <meta-data
+                android:name="com.google.android.gms.version"
+                android:value="@integer/google_play_services_version"/>
         <activity android:name="org.chromium.chromoting.host.MainActivity"
             android:launchMode="singleTask">
             <intent-filter>
