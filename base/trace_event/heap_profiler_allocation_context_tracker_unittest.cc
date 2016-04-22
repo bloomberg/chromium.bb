@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/pending_task.h"
+#include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"
@@ -276,6 +277,19 @@ TEST_F(AllocationContextTrackerTest, TrackTaskContext) {
       AllocationContextTracker::GetInstanceForCurrentThread()
           ->GetContextSnapshot();
   ASSERT_FALSE(ctx.type_name);
+}
+
+TEST_F(AllocationContextTrackerTest, IgnoreAllocationTest) {
+  TRACE_EVENT0("Testing", kCupcake);
+  TRACE_EVENT0("Testing", kDonut);
+  HEAP_PROFILER_SCOPED_IGNORE;
+  AllocationContext ctx =
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->GetContextSnapshot();
+  const StringPiece kTracingOverhead("tracing_overhead");
+  ASSERT_EQ(kTracingOverhead,
+            static_cast<const char*>(ctx.backtrace.frames[0].value));
+  ASSERT_EQ(1u, ctx.backtrace.frame_count);
 }
 
 }  // namespace trace_event

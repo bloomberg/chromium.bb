@@ -22,6 +22,7 @@ const size_t kMaxStackDepth = 128u;
 const size_t kMaxTaskDepth = 16u;
 AllocationContextTracker* const kInitializingSentinel =
     reinterpret_cast<AllocationContextTracker*>(-1);
+const char kTracingOverhead[] = "tracing_overhead";
 
 ThreadLocalStorage::StaticSlot g_tls_alloc_ctx_tracker = TLS_INITIALIZER;
 
@@ -50,7 +51,8 @@ AllocationContextTracker::GetInstanceForCurrentThread() {
   return tracker;
 }
 
-AllocationContextTracker::AllocationContextTracker() : thread_name_(nullptr) {
+AllocationContextTracker::AllocationContextTracker()
+    : thread_name_(nullptr), ignore_scope_depth_(0) {
   pseudo_stack_.reserve(kMaxStackDepth);
   task_contexts_.reserve(kMaxTaskDepth);
 }
@@ -119,6 +121,13 @@ void AllocationContextTracker::PopCurrentTaskContext(const char* context) {
 // static
 AllocationContext AllocationContextTracker::GetContextSnapshot() {
   AllocationContext ctx;
+
+  if (ignore_scope_depth_) {
+    ctx.backtrace.frames[0] = StackFrame::FromTraceEventName(kTracingOverhead);
+    ctx.type_name = kTracingOverhead;
+    ctx.backtrace.frame_count = 1;
+    return ctx;
+  }
 
   // Fill the backtrace.
   {
