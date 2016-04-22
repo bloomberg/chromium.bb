@@ -230,7 +230,6 @@
         'web_state/ui/crw_swipe_recognizer_provider.h',
         'web_state/ui/crw_touch_tracking_recognizer.h',
         'web_state/ui/crw_touch_tracking_recognizer.mm',
-        'web_state/ui/crw_web_controller+protected.h',
         'web_state/ui/crw_web_controller.h',
         'web_state/ui/crw_web_controller.mm',
         'web_state/ui/crw_web_controller_container_view.h',
