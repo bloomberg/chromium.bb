@@ -26,7 +26,7 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
     if (!document)
         return;
 
-    if (!frame->view())
+    if (!frame->view() || frame->view()->shouldThrottleRendering())
         return;
 
     DCHECK(!frame->view()->needsLayout());
