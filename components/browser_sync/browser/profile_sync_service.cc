@@ -269,7 +269,7 @@ void ProfileSyncService::Initialize() {
       base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                  startup_controller_weak_factory_.GetWeakPtr())));
-  scoped_ptr<browser_sync::LocalSessionEventRouter> router(
+  std::unique_ptr<browser_sync::LocalSessionEventRouter> router(
       sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter());
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
@@ -541,7 +541,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       this, std::move(sync_thread_), db_thread_, file_thread_,
       GetJsEventHandler(), sync_service_url_, local_device_->GetSyncUserAgent(),
       credentials, delete_stale_data,
-      scoped_ptr<syncer::SyncManagerFactory>(
+      std::unique_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory()),
       MakeWeakHandle(weak_factory_.GetWeakPtr()),
       base::Bind(browser_sync::ChromeReportUnrecoverableError, channel_),
@@ -795,7 +795,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
 
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
-  scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
+  std::unique_ptr<SyncBackendHost> doomed_backend(backend_.release());
   if (doomed_backend) {
     sync_thread_ = doomed_backend->Shutdown(reason);
     doomed_backend.reset();
@@ -1856,7 +1856,7 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
 }
 
 base::Value* ProfileSyncService::GetTypeStatusMap() const {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
 
   if (!backend_.get() || !backend_initialized_) {
     return result.release();
@@ -1880,7 +1880,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
   SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
   ModelTypeSet& throttled_types(detailed_status.throttled_types);
   ModelTypeSet registered = GetRegisteredDataTypes();
-  scoped_ptr<base::DictionaryValue> type_status_header(
+  std::unique_ptr<base::DictionaryValue> type_status_header(
       new base::DictionaryValue());
 
   type_status_header->SetString("name", "Model Type");
@@ -1890,7 +1890,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
   type_status_header->SetString("num_live", "Live Entries");
   result->Append(type_status_header.release());
 
-  scoped_ptr<base::DictionaryValue> type_status;
+  std::unique_ptr<base::DictionaryValue> type_status;
   for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
     ModelType type = it.Get();
 
@@ -2208,7 +2208,7 @@ class GetAllNodesRequestHelper
  public:
   GetAllNodesRequestHelper(
       syncer::ModelTypeSet requested_types,
-      const base::Callback<void(scoped_ptr<base::ListValue>)>& callback);
+      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback);
 
   void OnReceivedNodesForTypes(
       const std::vector<syncer::ModelType>& types,
@@ -2218,15 +2218,15 @@ class GetAllNodesRequestHelper
   friend class base::RefCountedThreadSafe<GetAllNodesRequestHelper>;
   virtual ~GetAllNodesRequestHelper();
 
-  scoped_ptr<base::ListValue> result_accumulator_;
+  std::unique_ptr<base::ListValue> result_accumulator_;
 
   syncer::ModelTypeSet awaiting_types_;
-  base::Callback<void(scoped_ptr<base::ListValue>)> callback_;
+  base::Callback<void(std::unique_ptr<base::ListValue>)> callback_;
 };
 
 GetAllNodesRequestHelper::GetAllNodesRequestHelper(
     syncer::ModelTypeSet requested_types,
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback)
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
     : result_accumulator_(new base::ListValue()),
       awaiting_types_(requested_types),
       callback_(callback) {}
@@ -2258,7 +2258,8 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
     base::ListValue* node_list = node_lists[i];
 
     // Add these results to our list.
-    scoped_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> type_dict(
+        new base::DictionaryValue());
     type_dict->SetString("type", ModelTypeToString(type));
     type_dict->Set("nodes", node_list);
     result_accumulator_->Append(type_dict.release());
@@ -2276,7 +2277,7 @@ void GetAllNodesRequestHelper::OnReceivedNodesForTypes(
 }  // namespace
 
 void ProfileSyncService::GetAllNodes(
-    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
+    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
   // TODO(stanisc): crbug.com/328606: Make this work for USS datatypes.
   ModelTypeSet all_types = GetRegisteredDataTypes();
   all_types.PutAll(syncer::ControlTypes());
@@ -2436,7 +2437,7 @@ ProfileSyncService::GetSyncTokenStatus() const {
 }
 
 void ProfileSyncService::OverrideNetworkResourcesForTest(
-    scoped_ptr<syncer::NetworkResources> network_resources) {
+    std::unique_ptr<syncer::NetworkResources> network_resources) {
   network_resources_ = std::move(network_resources);
 }
 

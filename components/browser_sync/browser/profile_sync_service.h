@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_H_
 #define COMPONENTS_BROWSER_SYNC_BROWSER_PROFILE_SYNC_SERVICE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -16,7 +17,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -238,8 +238,8 @@ class ProfileSyncService : public sync_driver::SyncService,
     ~InitParams();
     InitParams(InitParams&& other);  // NOLINT
 
-    scoped_ptr<sync_driver::SyncClient> sync_client;
-    scoped_ptr<SigninManagerWrapper> signin_wrapper;
+    std::unique_ptr<sync_driver::SyncClient> sync_client;
+    std::unique_ptr<SigninManagerWrapper> signin_wrapper;
     ProfileOAuth2TokenService* oauth2_token_service = nullptr;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     StartBehavior start_behavior = MANUAL_START;
@@ -327,7 +327,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   void RemoveTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   base::WeakPtr<syncer::JsController> GetJsController() override;
-  void GetAllNodes(const base::Callback<void(scoped_ptr<base::ListValue>)>&
+  void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
 
   // Add a sync type preference provider. Each provider may only be added once.
@@ -566,7 +566,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Overrides the NetworkResources used for Sync connections.
   // This function takes ownership of |network_resources|.
   void OverrideNetworkResourcesForTest(
-      scoped_ptr<syncer::NetworkResources> network_resources);
+      std::unique_ptr<syncer::NetworkResources> network_resources);
 
   virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
@@ -624,7 +624,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
-  scoped_ptr<browser_sync::SyncBackendHost> backend_;
+  std::unique_ptr<browser_sync::SyncBackendHost> backend_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
@@ -803,7 +803,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.
-  scoped_ptr<sync_driver::SyncClient> sync_client_;
+  std::unique_ptr<sync_driver::SyncClient> sync_client_;
 
   // The class that handles getting, setting, and persisting sync
   // preferences.
@@ -860,7 +860,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
-  const scoped_ptr<SigninManagerWrapper> signin_;
+  const std::unique_ptr<SigninManagerWrapper> signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;
@@ -868,7 +868,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   tracked_objects::Location unrecoverable_error_location_;
 
   // Manages the start and stop of the data types.
-  scoped_ptr<sync_driver::DataTypeManager> data_type_manager_;
+  std::unique_ptr<sync_driver::DataTypeManager> data_type_manager_;
 
   base::ObserverList<sync_driver::SyncServiceObserver> observers_;
   base::ObserverList<browser_sync::ProtocolEventObserver>
@@ -905,14 +905,14 @@ class ProfileSyncService : public sync_driver::SyncService,
   // if they e.g. don't remember their explicit passphrase.
   bool encryption_pending_;
 
-  scoped_ptr<browser_sync::BackendMigrator> migrator_;
+  std::unique_ptr<browser_sync::BackendMigrator> migrator_;
 
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
   syncer::SyncProtocolError last_actionable_error_;
 
   // Exposes sync errors to the UI.
-  scoped_ptr<SyncErrorController> sync_error_controller_;
+  std::unique_ptr<SyncErrorController> sync_error_controller_;
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
@@ -932,7 +932,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   //     * Created when backend starts for the first time.
   //     * If sync is disabled, PSS claims ownership from backend.
   //     * If sync is reenabled, PSS passes ownership to new backend.
-  scoped_ptr<base::Thread> sync_thread_;
+  std::unique_ptr<base::Thread> sync_thread_;
 
   // ProfileSyncService uses this service to get access tokens.
   ProfileOAuth2TokenService* const oauth2_token_service_;
@@ -943,7 +943,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // ProfileSyncService needs to hold reference to access_token_request_ for
   // the duration of request in order to receive callbacks.
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
 
   // If RequestAccessToken fails with transient error then retry requesting
   // access token with exponential backoff.
@@ -962,30 +962,31 @@ class ProfileSyncService : public sync_driver::SyncService,
   // when the user signs out of the content area.
   GaiaCookieManagerService* const gaia_cookie_manager_service_;
 
-  scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 
   // Locally owned SyncableService and ModelTypeService implementations.
-  scoped_ptr<browser_sync::SessionsSyncManager> sessions_sync_manager_;
-  scoped_ptr<sync_driver::DeviceInfoSyncService> device_info_sync_service_;
-  scoped_ptr<sync_driver_v2::DeviceInfoService> device_info_service_;
+  std::unique_ptr<browser_sync::SessionsSyncManager> sessions_sync_manager_;
+  std::unique_ptr<sync_driver::DeviceInfoSyncService> device_info_sync_service_;
+  std::unique_ptr<sync_driver_v2::DeviceInfoService> device_info_service_;
 
-  scoped_ptr<syncer::NetworkResources> network_resources_;
+  std::unique_ptr<syncer::NetworkResources> network_resources_;
 
   StartBehavior start_behavior_;
-  scoped_ptr<browser_sync::StartupController> startup_controller_;
+  std::unique_ptr<browser_sync::StartupController> startup_controller_;
 
   // The full path to the sync data directory.
   base::FilePath directory_path_;
 
-  scoped_ptr<browser_sync::SyncStoppedReporter> sync_stopped_reporter_;
+  std::unique_ptr<browser_sync::SyncStoppedReporter> sync_stopped_reporter_;
 
   // Listens for the system being under memory pressure.
-  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Nigori state after user switching to custom passphrase, saved until
   // transition steps complete. It will be injected into new backend after sync
   // restart.
-  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state_;
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+      saved_nigori_state_;
 
   // When BeginConfigureCatchUpBeforeClear is called it will set
   // catch_up_configure_in_progress_ to true. This is needed to detect that call

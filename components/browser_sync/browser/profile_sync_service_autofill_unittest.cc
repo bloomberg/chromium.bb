@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,8 +16,8 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -333,7 +334,7 @@ class WebDataServiceFake : public AutofillWebDataService {
   WebDatabase* web_database_;
   AutocompleteSyncableService* autocomplete_syncable_service_;
   AutofillProfileSyncableService* autofill_profile_syncable_service_;
-  scoped_ptr<autofill::AutofillWebDataBackend> backend_;
+  std::unique_ptr<autofill::AutofillWebDataBackend> backend_;
 
   WaitableEvent syncable_service_created_or_destroyed_;
 
@@ -385,7 +386,7 @@ class ProfileSyncServiceAutofillTest
         data_type_thread()->task_runner());
 
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
-    web_data_wrapper_ = make_scoped_ptr(new MockWebDataServiceWrapper(
+    web_data_wrapper_ = base::WrapUnique(new MockWebDataServiceWrapper(
         new WebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
                                data_type_thread()->task_runner()),
         new TokenWebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
@@ -394,7 +395,7 @@ class ProfileSyncServiceAutofillTest
         web_data_wrapper_->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
-    personal_data_manager_ = make_scoped_ptr(new MockPersonalDataManager());
+    personal_data_manager_ = base::WrapUnique(new MockPersonalDataManager());
 
     EXPECT_CALL(personal_data_manager(), LoadProfiles());
     EXPECT_CALL(personal_data_manager(), LoadCreditCards());
@@ -628,16 +629,16 @@ class ProfileSyncServiceAutofillTest
   }
 
   AutofillTableMock autofill_table_;
-  scoped_ptr<WebDatabaseFake> web_database_;
-  scoped_ptr<MockWebDataServiceWrapper> web_data_wrapper_;
+  std::unique_ptr<WebDatabaseFake> web_database_;
+  std::unique_ptr<MockWebDataServiceWrapper> web_data_wrapper_;
   scoped_refptr<WebDataServiceFake> web_data_service_;
-  scoped_ptr<MockPersonalDataManager> personal_data_manager_;
+  std::unique_ptr<MockPersonalDataManager> personal_data_manager_;
   syncer::DataTypeAssociationStats association_stats_;
   base::WeakPtrFactory<DataTypeDebugInfoListener> debug_ptr_factory_;
   // |sync_client_owned_| keeps the created client until it is passed to the
   // created ProfileSyncService. |sync_client_| just keeps a weak reference to
   // the client the whole time.
-  scoped_ptr<sync_driver::FakeSyncClient> sync_client_owned_;
+  std::unique_ptr<sync_driver::FakeSyncClient> sync_client_owned_;
   sync_driver::FakeSyncClient* sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceAutofillTest);
@@ -1225,8 +1226,9 @@ TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
   ASSERT_TRUE(create_root.success());
 
   // (true, false) means we have to reset after |Signal|, init to unsignaled.
-  scoped_ptr<WaitableEvent> wait_for_start(new WaitableEvent(true, false));
-  scoped_ptr<WaitableEvent> wait_for_syncapi(new WaitableEvent(true, false));
+  std::unique_ptr<WaitableEvent> wait_for_start(new WaitableEvent(true, false));
+  std::unique_ptr<WaitableEvent> wait_for_syncapi(
+      new WaitableEvent(true, false));
   scoped_refptr<FakeServerUpdater> updater(new FakeServerUpdater(
       sync_service(), wait_for_start.get(), wait_for_syncapi.get(),
       data_type_thread()->task_runner()));

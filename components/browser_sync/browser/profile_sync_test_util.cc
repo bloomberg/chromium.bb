@@ -4,6 +4,7 @@
 
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -214,9 +215,9 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetBookmarkModelCallback(
   get_bookmark_model_callback_ = get_bookmark_model_callback;
 }
 
-scoped_ptr<sync_driver::FakeSyncClient>
+std::unique_ptr<sync_driver::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
-  return make_scoped_ptr(new BundleSyncClient(
+  return base::WrapUnique(new BundleSyncClient(
       bundle_->component_factory(), bundle_->pref_service(),
       bundle_->sync_sessions_client(), personal_data_manager_,
       get_syncable_service_callback_, get_sync_service_callback_,
@@ -250,13 +251,13 @@ ProfileSyncServiceBundle::~ProfileSyncServiceBundle() {}
 
 ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
     ProfileSyncService::StartBehavior start_behavior,
-    scoped_ptr<sync_driver::SyncClient> sync_client) {
+    std::unique_ptr<sync_driver::SyncClient> sync_client) {
   ProfileSyncService::InitParams init_params;
 
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
   init_params.signin_wrapper =
-      make_scoped_ptr(new SigninManagerWrapper(signin_manager()));
+      base::WrapUnique(new SigninManagerWrapper(signin_manager()));
   init_params.oauth2_token_service = auth_service();
   init_params.network_time_update_callback =
       base::Bind(&EmptyNetworkTimeUpdate);

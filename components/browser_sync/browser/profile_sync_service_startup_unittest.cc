@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -155,7 +155,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
-  scoped_ptr<ProfileSyncService> sync_service_;
+  std::unique_ptr<ProfileSyncService> sync_service_;
   SyncServiceObserverMock observer_;
   sync_driver::DataTypeStatusTable data_type_status_table_;
   SyncApiComponentFactoryMock* component_factory_ = nullptr;

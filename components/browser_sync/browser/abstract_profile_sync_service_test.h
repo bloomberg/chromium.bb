@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_message_loop.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -55,7 +55,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // SyncManagerForProfileSyncTest to be used by NotifyInitializationSuccess.
   // |sync_client| is passed to the service. The created service is stored in
   // |sync_service_|.
-  void CreateSyncService(scoped_ptr<sync_driver::SyncClient> sync_client,
+  void CreateSyncService(std::unique_ptr<sync_driver::SyncClient> sync_client,
                          const base::Closure& initialization_success_callback);
 
   base::Thread* data_type_thread() { return &data_type_thread_; }
@@ -77,7 +77,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   base::TestMessageLoop message_loop_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
-  scoped_ptr<TestProfileSyncService> sync_service_;
+  std::unique_ptr<TestProfileSyncService> sync_service_;
 
   base::ScopedTempDir temp_dir_;  // To pass to the backend host.
 

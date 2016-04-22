@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/browser_sync/browser/profile_sync_service.h"
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -9,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,7 +20,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -109,7 +110,7 @@ class TestSyncServiceObserver : public sync_driver::SyncServiceObserver {
 class SyncBackendHostNoReturn : public SyncBackendHostMock {
   void Initialize(
       sync_driver::SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
+      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -117,13 +118,13 @@ class SyncBackendHostNoReturn : public SyncBackendHostMock {
       const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
-      override {}
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state) override {}
 };
 
 class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
@@ -134,7 +135,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
 
   void Initialize(
       sync_driver::SyncFrontend* frontend,
-      scoped_ptr<base::Thread> sync_thread,
+      std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -142,13 +143,13 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
       const std::string& sync_user_agent,
       const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
           unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
-      override {
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state) override {
     delete_dir_param_->push_back(delete_sync_data_folder);
     SyncBackendHostMock::Initialize(
         frontend, std::move(sync_thread), db_thread, file_thread, event_handler,
@@ -384,7 +385,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
  private:
   base::MessageLoop message_loop_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
-  scoped_ptr<ProfileSyncService> service_;
+  std::unique_ptr<ProfileSyncService> service_;
 
   // The current component factory used by sync. May be null if the server
   // hasn't been created yet.

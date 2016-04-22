@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/browser_sync/browser/test_http_bridge_factory.h"
 #include "components/browser_sync/browser/test_profile_sync_service.h"
@@ -52,7 +53,8 @@ class SyncBackendHostForProfileSyncTest
       const base::Closure& retry_callback) override;
 
  protected:
-  void InitCore(scoped_ptr<browser_sync::DoInitializeOptions> options) override;
+  void InitCore(
+      std::unique_ptr<browser_sync::DoInitializeOptions> options) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -82,9 +84,10 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
 void SyncBackendHostForProfileSyncTest::InitCore(
-    scoped_ptr<browser_sync::DoInitializeOptions> options) {
-  options->http_bridge_factory = scoped_ptr<syncer::HttpPostProviderFactory>(
-      new browser_sync::TestHttpBridgeFactory());
+    std::unique_ptr<browser_sync::DoInitializeOptions> options) {
+  options->http_bridge_factory =
+      std::unique_ptr<syncer::HttpPostProviderFactory>(
+          new browser_sync::TestHttpBridgeFactory());
   options->sync_manager_factory.reset(
       new syncer::SyncManagerFactoryForProfileSyncTest(callback_));
   options->credentials.email = "testuser@gmail.com";
@@ -181,14 +184,14 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
 }
 
 void AbstractProfileSyncServiceTest::CreateSyncService(
-    scoped_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<sync_driver::SyncClient> sync_client,
     const base::Closure& initialization_success_callback) {
   DCHECK(sync_client);
   ProfileSyncService::InitParams init_params =
       profile_sync_service_bundle_.CreateBasicInitParams(
           ProfileSyncService::AUTO_START, std::move(sync_client));
   sync_service_ =
-      make_scoped_ptr(new TestProfileSyncService(std::move(init_params)));
+      base::WrapUnique(new TestProfileSyncService(std::move(init_params)));
 
   SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();

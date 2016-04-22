@@ -91,7 +91,7 @@ void SigninConfirmationHelper::CheckHasTypedURLs() {
     return;
   }
   history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(new HasTypedURLsTask(base::Bind(
+      std::unique_ptr<history::HistoryDBTask>(new HasTypedURLsTask(base::Bind(
           &SigninConfirmationHelper::ReturnResult, base::Unretained(this)))),
       &task_tracker_);
 }
