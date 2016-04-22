@@ -8394,6 +8394,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DirectWrite.Fonts.Proxy.Fallback.CacheSize" units="Count">
+  <owner>kulshin@chromium.org</owner>
+  <summary>Records how many font families are in the fallback cache.</summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Proxy.FallbackResult"
+    enum="DirectWriteFontFallbackResult">
+  <owner>kulshin@chromium.org</owner>
+  <summary>
+    Measures the effectiveness of the font fallback proxy. This tracks if we
+    were able to find a suitable font to render the character, and whether an
+    IPC was necessary.
+  </summary>
+</histogram>
+
 <histogram name="DirectWrite.Fonts.Proxy.LoaderType"
     enum="DirectWriteFontLoaderType">
   <owner>kulshin@chromium.org</owner>
@@ -65616,6 +65631,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="DirectoryDatabaseRepairResult" type="int">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Failed"/>
+</enum>
+
+<enum name="DirectWriteFontFallbackResult" type="int">
+  <int value="0" label="Failed: no font matched"/>
+  <int value="1" label="Success: mapped from cache"/>
+  <int value="2" label="Success: mapped using IPC"/>
 </enum>
 
 <enum name="DirectWriteFontLoaderType" type="int">

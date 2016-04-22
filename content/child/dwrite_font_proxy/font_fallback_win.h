@@ -9,6 +9,9 @@
 #include <dwrite_2.h>
 #include <wrl.h>
 
+#include <list>
+#include <map>
+
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
@@ -44,9 +47,27 @@ class CONTENT_EXPORT FontFallback
  protected:
   ~FontFallback() override;
 
+  bool GetCachedFont(const base::string16& text,
+                     const wchar_t* base_family_name,
+                     DWRITE_FONT_WEIGHT base_weight,
+                     DWRITE_FONT_STYLE base_style,
+                     DWRITE_FONT_STRETCH base_stretch,
+                     IDWriteFont** mapped_font,
+                     uint32_t* mapped_length);
+
+  void AddCachedFamily(Microsoft::WRL::ComPtr<IDWriteFontFamily> family,
+                       const wchar_t* base_family_name);
+
  private:
   IPC::Sender* sender_override_;
   Microsoft::WRL::ComPtr<DWriteFontCollectionProxy> collection_;
+
+  // |fallback_family_cache_| keeps a mapping from base family name to a list
+  // of font families that matched a character on a previous call. The list is
+  // capped in size and maintained in MRU order. This gives us a good chance of
+  // returning a suitable fallback font without having to do an IPC.
+  std::map<base::string16, std::list<Microsoft::WRL::ComPtr<IDWriteFontFamily>>>
+      fallback_family_cache_;
 
   DISALLOW_ASSIGN(FontFallback);
 };
