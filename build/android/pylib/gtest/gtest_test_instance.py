@@ -12,6 +12,7 @@ from pylib import constants
 from pylib.constants import host_paths
 from pylib.base import base_test_result
 from pylib.base import test_instance
+from pylib.utils import isolator
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import unittest_util # pylint: disable=import-error
@@ -196,7 +197,8 @@ class GtestTestInstance(test_instance.TestInstance):
         args.isolate_file_path = os.path.join(
             host_paths.DIR_SOURCE_ROOT, default_isolate_file_path)
 
-    if args.isolate_file_path:
+    if (args.isolate_file_path and
+        not isolator.IsIsolateEmpty(args.isolate_file_path)):
       self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
       self._isolate_delegate = isolate_delegate
       self._isolated_abs_path = os.path.join(
