@@ -81,12 +81,25 @@ static inline bool isMultiColumnContainer(const LayoutObject& object)
     return toLayoutBlockFlow(object).multiColumnFlowThread();
 }
 
+// Return true if there's nothing that prevents the specified object from being in the ancestor
+// chain between some column spanner and its containing multicol container. A column spanner needs
+// the multicol container to be its containing block, so that the spanner is able to escape the flow
+// thread. (Everything contained by the flow thread is split into columns, but this is precisely
+// what shouldn't be done to a spanner, since it's supposed to span all columns.)
+//
+// We require that the parent of the spanner participate in the block formatting context established
+// by the multicol container (i.e. that there are no BFCs or other formatting contexts
+// in-between). We also require that there be no transforms, since transforms insist on being in the
+// containing block chain for everything inside it, which conflicts with a spanners's need to have
+// the multicol container as its direct containing block. We may also not put spanners inside
+// objects that don't support fragmentation.
 static inline bool canContainSpannerInParentFragmentationContext(const LayoutObject& object)
 {
     if (!object.isLayoutBlockFlow())
         return false;
     const LayoutBlockFlow& blockFlow = toLayoutBlockFlow(object);
     return !blockFlow.createsNewFormattingContext()
+        && !blockFlow.hasTransformRelatedProperty()
         && blockFlow.getPaginationBreakability() != LayoutBox::ForbidBreaks
         && !isMultiColumnContainer(blockFlow);
 }
