@@ -8,70 +8,67 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
 namespace base {
 namespace {
 
-// A helper class for tracking callbacks and ensuring thread-safety.
-class Callbacks {
- public:
-  Callbacks() {}
-
-  // Records the |action|.
-  void Record(const std::string& action) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    for (size_t i = 0; i < callbacks_.size(); ++i) {
-      callbacks_[i].Run(action);
-    }
-  }
-
-  // Adds |callback| to the list of |callbacks_|.
-  void AddCallback(const ActionCallback& callback) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    callbacks_.push_back(callback);
-  }
-
-  // Removes the first instance of |callback| from the list of |callbacks_|, if
-  // there is one.
-  void RemoveCallback(const ActionCallback& callback) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    for (size_t i = 0; i < callbacks_.size(); ++i) {
-      if (callbacks_[i].Equals(callback)) {
-        callbacks_.erase(callbacks_.begin() + i);
-        return;
-      }
-    }
-  }
-
- private:
-  base::ThreadChecker thread_checker_;
-  std::vector<ActionCallback> callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(Callbacks);
-};
-
-base::LazyInstance<Callbacks> g_callbacks = LAZY_INSTANCE_INITIALIZER;
+LazyInstance<std::vector<ActionCallback>> g_callbacks =
+    LAZY_INSTANCE_INITIALIZER;
+LazyInstance<scoped_refptr<SingleThreadTaskRunner>> g_task_runner =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 void RecordAction(const UserMetricsAction& action) {
-  g_callbacks.Get().Record(action.str_);
+  RecordComputedAction(action.str_);
 }
 
 void RecordComputedAction(const std::string& action) {
-  g_callbacks.Get().Record(action);
+  if (!g_task_runner.Get()) {
+    DCHECK(g_callbacks.Get().empty());
+    return;
+  }
+
+  if (!g_task_runner.Get()->BelongsToCurrentThread()) {
+    g_task_runner.Get()->PostTask(FROM_HERE,
+                                  Bind(&RecordComputedAction, action));
+    return;
+  }
+
+  for (const ActionCallback& callback : g_callbacks.Get()) {
+    callback.Run(action);
+  }
 }
 
 void AddActionCallback(const ActionCallback& callback) {
-  g_callbacks.Get().AddCallback(callback);
+  // Only allow adding a callback if the task runner is set.
+  DCHECK(g_task_runner.Get());
+  DCHECK(g_task_runner.Get()->BelongsToCurrentThread());
+  g_callbacks.Get().push_back(callback);
 }
 
 void RemoveActionCallback(const ActionCallback& callback) {
-  g_callbacks.Get().RemoveCallback(callback);
+  DCHECK(g_task_runner.Get());
+  DCHECK(g_task_runner.Get()->BelongsToCurrentThread());
+  std::vector<ActionCallback>* callbacks = g_callbacks.Pointer();
+  for (size_t i = 0; i < callbacks->size(); ++i) {
+    if ((*callbacks)[i].Equals(callback)) {
+      callbacks->erase(callbacks->begin() + i);
+      return;
+    }
+  }
+}
 
+void SetRecordActionTaskRunner(
+    scoped_refptr<SingleThreadTaskRunner> task_runner) {
+  DCHECK(task_runner->BelongsToCurrentThread());
+  DCHECK(!g_task_runner.Get() || g_task_runner.Get()->BelongsToCurrentThread());
+  g_task_runner.Get() = task_runner;
 }
 
 }  // namespace base

@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/metrics/user_metrics.h"
 #include "base/threading/platform_thread.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_log.h"
@@ -72,6 +73,7 @@ class TestMetricsLog : public MetricsLog {
 class MetricsServiceTest : public testing::Test {
  public:
   MetricsServiceTest() : is_metrics_reporting_enabled_(false) {
+    base::SetRecordActionTaskRunner(message_loop.task_runner());
     MetricsService::RegisterPrefs(testing_local_state_.registry());
     metrics_state_manager_ = MetricsStateManager::Create(
         GetLocalState(),
@@ -158,6 +160,7 @@ class MetricsServiceTest : public testing::Test {
   TestingPrefServiceSimple testing_local_state_;
   std::unique_ptr<MetricsStateManager> metrics_state_manager_;
   base::MessageLoop message_loop;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
 };

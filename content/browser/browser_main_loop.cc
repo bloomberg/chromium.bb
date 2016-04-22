@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
@@ -592,6 +593,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     system_stats_monitor_.reset(
         new base::trace_event::TraceEventSystemStatsMonitor(
             base::ThreadTaskRunnerHandle::Get()));
+  }
+
+  {
+    base::SetRecordActionTaskRunner(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
   }
 
 #if defined(OS_WIN)

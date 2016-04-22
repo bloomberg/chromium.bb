@@ -13,23 +13,13 @@
 
 namespace web {
 
+// TODO(beaudoin): Get rid of these methods now that the base:: version does
+// thread hopping. Tracked in crbug.com/601483.
 void RecordAction(const base::UserMetricsAction& action) {
-  if (!WebThread::CurrentlyOn(WebThread::UI)) {
-    WebThread::PostTask(WebThread::UI, FROM_HERE,
-                        base::Bind(&web::RecordAction, action));
-    return;
-  }
-
   base::RecordAction(action);
 }
 
 void RecordComputedAction(const std::string& action) {
-  if (!WebThread::CurrentlyOn(WebThread::UI)) {
-    WebThread::PostTask(WebThread::UI, FROM_HERE,
-                        base::Bind(&web::RecordComputedAction, action));
-    return;
-  }
-
   base::RecordComputedAction(action);
 }
 

@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/single_thread_task_runner.h"
 
 namespace base {
 
@@ -17,7 +18,8 @@ namespace base {
 // the user metrics system.
 
 // Record that the user performed an action.
-// This method *must* be called from the main thread.
+// This function must be called after the task runner has been set with
+// SetRecordActionTaskRunner().
 //
 // "Action" here means a user-generated event:
 //   good: "Reload", "CloseTab", and "IMEInvoked"
@@ -38,22 +40,30 @@ namespace base {
 // for review!
 //
 // For more complicated situations (like when there are many different
-// possible actions), see RecordComputedAction.
+// possible actions), see RecordComputedAction().
 BASE_EXPORT void RecordAction(const UserMetricsAction& action);
 
-// This function has identical input and behavior to RecordAction, but is
+// This function has identical input and behavior to RecordAction(), but is
 // not automatically found by the action-processing scripts.  It can be used
 // when it's a pain to enumerate all possible actions, but if you use this
 // you need to also update the rules for extracting known actions in
 // tools/metrics/actions/extract_actions.py.
+// This function must be called after the task runner has been set with
+// SetRecordActionTaskRunner().
 BASE_EXPORT void RecordComputedAction(const std::string& action);
 
 // Called with the action string.
-typedef base::Callback<void(const std::string&)> ActionCallback;
+typedef Callback<void(const std::string&)> ActionCallback;
 
 // Add/remove action callbacks (see above).
+// These functions must be called after the task runner has been set with
+// SetRecordActionTaskRunner().
 BASE_EXPORT void AddActionCallback(const ActionCallback& callback);
 BASE_EXPORT void RemoveActionCallback(const ActionCallback& callback);
+
+// Set the task runner on which to record actions.
+BASE_EXPORT void SetRecordActionTaskRunner(
+    scoped_refptr<SingleThreadTaskRunner> task_runner);
 
 }  // namespace base
 

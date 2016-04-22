@@ -13,26 +13,10 @@
 namespace content {
 
 void RecordAction(const base::UserMetricsAction& action) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&RecordAction, action));
-    return;
-  }
-
   base::RecordAction(action);
 }
 
 void RecordComputedAction(const std::string& action) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&RecordComputedAction, action));
-    return;
-  }
-
   base::RecordComputedAction(action);
 }
 

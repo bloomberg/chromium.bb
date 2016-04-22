@@ -36,6 +36,9 @@ class UserActionTester {
   // A map that tracks the number of times a user action has occurred.
   UserActionCountMap count_map_;
 
+  // A test task runner used by user metrics.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   // The callback that is added to the global action callback list.
   base::ActionCallback action_callback_;
 

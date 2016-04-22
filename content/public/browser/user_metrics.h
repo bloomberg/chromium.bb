@@ -13,6 +13,8 @@
 
 namespace content {
 
+// TODO(beaudoin): Get rid of these methods now that the base:: version does
+// thread hopping. Tracked in crbug.com/601483.
 // Wrappers around functions defined in base/metrics/user_metrics.h, refer to
 // that header for full documentation. These wrappers can be called from any
 // thread (they will post back to the UI thread to do the recording).

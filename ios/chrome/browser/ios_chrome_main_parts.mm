@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/time/default_tick_clock.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -189,6 +190,9 @@ void IOSChromeMainParts::PostDestroyThreads() {
 
 // This will be called after the command-line has been mutated by about:flags
 void IOSChromeMainParts::SetUpMetricsAndFieldTrials() {
+  base::SetRecordActionTaskRunner(
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+
   // Must initialize metrics after labs have been converted into switches,
   // but before field trials are set up (so that client ID is available for
   // one-time randomized field trials).
