@@ -12,6 +12,7 @@ import org.chromium.chromoting.host.jni.Host;
 public class RemotingApplication extends Application {
     @Override
     public void onCreate() {
+        super.onCreate();
         Host.loadLibrary(this);
     }
 }
