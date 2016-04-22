@@ -1852,6 +1852,10 @@ destroy_surface(struct wl_resource *resource)
 	 * dangling pointer if the surface was refcounted and survives
 	 * the weston_surface_destroy() call. */
 	surface->resource = NULL;
+
+	if (surface->viewport_resource)
+		wl_resource_set_user_data(surface->viewport_resource, NULL);
+
 	weston_surface_destroy(surface);
 }
 
@@ -4219,6 +4223,9 @@ destroy_viewport(struct wl_resource *resource)
 	struct weston_surface *surface =
 		wl_resource_get_user_data(resource);
 
+	if (!surface)
+		return;
+
 	surface->viewport_resource = NULL;
 	surface->pending.buffer_viewport.buffer.src_width =
 		wl_fixed_from_int(-1);
@@ -4244,7 +4251,14 @@ viewport_set_source(struct wl_client *client,
 	struct weston_surface *surface =
 		wl_resource_get_user_data(resource);
 
-	assert(surface->viewport_resource != NULL);
+	if (!surface) {
+		wl_resource_post_error(resource,
+			WP_VIEWPORT_ERROR_NO_SURFACE,
+			"wl_surface for this viewport is no longer exists");
+		return;
+	}
+
+	assert(surface->viewport_resource == resource);
 
 	if (src_width == wl_fixed_from_int(-1) &&
 	    src_height == wl_fixed_from_int(-1)) {
@@ -4280,7 +4294,14 @@ viewport_set_destination(struct wl_client *client,
 	struct weston_surface *surface =
 		wl_resource_get_user_data(resource);
 
-	assert(surface->viewport_resource != NULL);
+	if (!surface) {
+		wl_resource_post_error(resource,
+			WP_VIEWPORT_ERROR_NO_SURFACE,
+			"wl_surface for this viewport no longer exists");
+		return;
+	}
+
+	assert(surface->viewport_resource == resource);
 
 	if (dst_width == -1 && dst_height == -1) {
 		/* unset destination size */
