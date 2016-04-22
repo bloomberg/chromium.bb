@@ -275,7 +275,7 @@ void InMemoryURLIndex::Shutdown() {
 void InMemoryURLIndex::ScheduleRebuildFromHistory() {
   DCHECK(history_service_);
   history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
+      std::unique_ptr<history::HistoryDBTask>(
           new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(
               this, scheme_whitelist_)),
       &cache_reader_tracker_);

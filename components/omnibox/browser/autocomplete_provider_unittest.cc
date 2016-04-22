@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -271,7 +273,7 @@ class AutocompleteProviderTest : public testing::Test {
   void ResetControllerWithType(int type);
 
   base::MessageLoop message_loop_;
-  scoped_ptr<AutocompleteController> controller_;
+  std::unique_ptr<AutocompleteController> controller_;
   // Owned by |controller_|.
   AutocompleteProviderClientWithClosure* client_;
   // Used to ensure that |client_| ownership has been passed to |controller_|
@@ -285,7 +287,7 @@ AutocompleteProviderTest::AutocompleteProviderTest()
     : client_(new AutocompleteProviderClientWithClosure()),
       client_owned_(false) {
   client_->set_template_url_service(
-      make_scoped_ptr(new TemplateURLService(nullptr, 0)));
+      base::WrapUnique(new TemplateURLService(nullptr, 0)));
 }
 
 AutocompleteProviderTest::~AutocompleteProviderTest() {
@@ -419,7 +421,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
 void AutocompleteProviderTest::ResetControllerWithType(int type) {
   EXPECT_FALSE(client_owned_);
   controller_.reset(
-      new AutocompleteController(make_scoped_ptr(client_), nullptr, type));
+      new AutocompleteController(base::WrapUnique(client_), nullptr, type));
   client_owned_ = true;
 }
 

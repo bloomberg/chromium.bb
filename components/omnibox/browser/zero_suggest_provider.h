@@ -9,9 +9,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_ZERO_SUGGEST_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_ZERO_SUGGEST_PROVIDER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/base_search_provider.h"
@@ -136,7 +137,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   base::string16 permanent_text_;
 
   // Fetcher used to retrieve results.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   // Suggestion for the current URL.
   AutocompleteMatch current_url_match_;

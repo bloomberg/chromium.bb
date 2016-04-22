@@ -11,13 +11,13 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_SEARCH_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_SEARCH_PROVIDER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -216,7 +216,7 @@ class SearchProvider : public BaseSearchProvider,
   void StartOrStopSuggestQuery(bool minimal_changes);
 
   // Stops |fetcher| if it's running.  This includes resetting the scoped_ptr.
-  void CancelFetcher(scoped_ptr<net::URLFetcher>* fetcher);
+  void CancelFetcher(std::unique_ptr<net::URLFetcher>* fetcher);
 
   // Returns true when the current query can be sent to at least one suggest
   // service.  This will be false for example when suggest is disabled.  In
@@ -246,7 +246,7 @@ class SearchProvider : public BaseSearchProvider,
 
   // Starts a new URLFetcher requesting suggest results from |template_url|;
   // callers own the returned URLFetcher, which is NULL for invalid providers.
-  scoped_ptr<net::URLFetcher> CreateSuggestFetcher(
+  std::unique_ptr<net::URLFetcher> CreateSuggestFetcher(
       int id,
       const TemplateURL* template_url,
       const AutocompleteInput& input);
@@ -390,8 +390,8 @@ class SearchProvider : public BaseSearchProvider,
   // Fetchers used to retrieve results for the keyword and default providers.
   // After a fetcher's results are returned, it gets reset, so a non-null
   // fetcher indicates that fetcher is still in flight.
-  scoped_ptr<net::URLFetcher> keyword_fetcher_;
-  scoped_ptr<net::URLFetcher> default_fetcher_;
+  std::unique_ptr<net::URLFetcher> keyword_fetcher_;
+  std::unique_ptr<net::URLFetcher> default_fetcher_;
 
   // Results from the default and keyword search providers.
   SearchSuggestionParser::Results default_results_;

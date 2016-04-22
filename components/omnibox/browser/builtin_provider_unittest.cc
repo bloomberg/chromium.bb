@@ -117,7 +117,7 @@ class BuiltinProviderTest : public testing::Test {
     }
   }
 
-  scoped_ptr<FakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<BuiltinProvider> provider_;
 
  private:

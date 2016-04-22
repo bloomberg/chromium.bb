@@ -66,7 +66,7 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
 
 ShortcutsBackend::ShortcutsBackend(
     TemplateURLService* template_url_service,
-    scoped_ptr<SearchTermsData> search_terms_data,
+    std::unique_ptr<SearchTermsData> search_terms_data,
     history::HistoryService* history_service,
     scoped_refptr<base::SequencedTaskRunner> db_runner,
     base::FilePath database_path,

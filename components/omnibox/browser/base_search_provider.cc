@@ -9,6 +9,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -48,7 +49,7 @@ class SuggestionDeletionHandler : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  scoped_ptr<net::URLFetcher> deletion_fetcher_;
+  std::unique_ptr<net::URLFetcher> deletion_fetcher_;
   DeletionCompletedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
@@ -125,7 +126,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
-    deletion_handlers_.push_back(make_scoped_ptr(new SuggestionDeletionHandler(
+    deletion_handlers_.push_back(base::WrapUnique(new SuggestionDeletionHandler(
         match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
         client_->GetRequestContext(),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
@@ -483,7 +484,7 @@ void BaseSearchProvider::OnDeletionComplete(
   RecordDeletionResult(success);
   deletion_handlers_.erase(std::remove_if(
       deletion_handlers_.begin(), deletion_handlers_.end(),
-      [handler](const scoped_ptr<SuggestionDeletionHandler>& elem) {
-          return elem.get() == handler;
+      [handler](const std::unique_ptr<SuggestionDeletionHandler>& elem) {
+        return elem.get() == handler;
       }));
 }

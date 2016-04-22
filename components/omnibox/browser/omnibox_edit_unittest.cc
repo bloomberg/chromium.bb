@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -144,10 +145,10 @@ class TestingOmniboxClient : public OmniboxClient {
   ~TestingOmniboxClient() override;
 
   // OmniboxClient:
-  scoped_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
+  std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
       override;
 
-  scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+  std::unique_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
       const base::string16& text,
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternate_nav_match) override {
@@ -214,29 +215,30 @@ class TestingOmniboxClient : public OmniboxClient {
 
 TestingOmniboxClient::TestingOmniboxClient()
     : autocomplete_classifier_(
-          make_scoped_ptr(new AutocompleteController(
+          base::WrapUnique(new AutocompleteController(
               CreateAutocompleteProviderClient(),
               nullptr,
               AutocompleteClassifier::kDefaultOmniboxProviders)),
-          make_scoped_ptr(new TestingSchemeClassifier())) {}
+          base::WrapUnique(new TestingSchemeClassifier())) {}
 
 TestingOmniboxClient::~TestingOmniboxClient() {
   autocomplete_classifier_.Shutdown();
 }
 
-scoped_ptr<AutocompleteProviderClient>
+std::unique_ptr<AutocompleteProviderClient>
 TestingOmniboxClient::CreateAutocompleteProviderClient() {
-  scoped_ptr<MockAutocompleteProviderClient> provider_client(
+  std::unique_ptr<MockAutocompleteProviderClient> provider_client(
       new MockAutocompleteProviderClient());
   EXPECT_CALL(*provider_client.get(), GetBuiltinURLs())
       .WillRepeatedly(testing::Return(std::vector<base::string16>()));
   EXPECT_CALL(*provider_client.get(), GetSchemeClassifier())
       .WillRepeatedly(testing::ReturnRef(scheme_classifier_));
 
-  scoped_ptr<TemplateURLService> template_url_service(new TemplateURLService(
-      nullptr, scoped_ptr<SearchTermsData>(new SearchTermsData), nullptr,
-      scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
-      base::Closure()));
+  std::unique_ptr<TemplateURLService> template_url_service(
+      new TemplateURLService(
+          nullptr, std::unique_ptr<SearchTermsData>(new SearchTermsData),
+          nullptr, std::unique_ptr<TemplateURLServiceClient>(), nullptr,
+          nullptr, base::Closure()));
   provider_client->set_template_url_service(std::move(template_url_service));
 
   return std::move(provider_client);
@@ -310,7 +312,7 @@ TEST_F(OmniboxEditTest, AdjustTextForCopy) {
   TestingOmniboxEditController controller(toolbar_model());
   TestingOmniboxView view(&controller);
   OmniboxEditModel model(&view, &controller,
-                         make_scoped_ptr(new TestingOmniboxClient()));
+                         base::WrapUnique(new TestingOmniboxClient()));
 
   for (size_t i = 0; i < arraysize(input); ++i) {
     toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
@@ -335,7 +337,7 @@ TEST_F(OmniboxEditTest, InlineAutocompleteText) {
   TestingOmniboxEditController controller(toolbar_model());
   TestingOmniboxView view(&controller);
   OmniboxEditModel model(&view, &controller,
-                         make_scoped_ptr(new TestingOmniboxClient()));
+                         base::WrapUnique(new TestingOmniboxClient()));
 
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view.inline_autocomplete_text());

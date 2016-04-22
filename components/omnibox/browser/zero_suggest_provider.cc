@@ -236,7 +236,7 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   bool results_updated = false;
   if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
     std::string json_data = SearchSuggestionParser::ExtractJsonData(source);
-    scoped_ptr<base::Value> data(
+    std::unique_ptr<base::Value> data(
         SearchSuggestionParser::DeserializeJsonData(json_data));
     if (data) {
       if (StoreSuggestionResponse(json_data, *data))
@@ -463,7 +463,7 @@ void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
   std::string json_data =
       client()->GetPrefs()->GetString(omnibox::kZeroSuggestCachedResults);
   if (!json_data.empty()) {
-    scoped_ptr<base::Value> data(
+    std::unique_ptr<base::Value> data(
         SearchSuggestionParser::DeserializeJsonData(json_data));
     if (data && ParseSuggestResults(
             *data, kDefaultZeroSuggestRelevance, false, &results_)) {

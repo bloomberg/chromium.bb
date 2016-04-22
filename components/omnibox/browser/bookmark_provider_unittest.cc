@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -172,8 +172,8 @@ class BookmarkProviderTest : public testing::Test {
   void SetUp() override;
 
   base::MessageLoop message_loop_;
-  scoped_ptr<MockAutocompleteProviderClient> provider_client_;
-  scoped_ptr<BookmarkModel> model_;
+  std::unique_ptr<MockAutocompleteProviderClient> provider_client_;
+  std::unique_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
   TestSchemeClassifier classifier_;
 

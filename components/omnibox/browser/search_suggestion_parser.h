@@ -120,7 +120,7 @@ class SearchSuggestionParser {
                   const base::string16& annotation,
                   const base::string16& answer_contents,
                   const base::string16& answer_type,
-                  scoped_ptr<SuggestionAnswer> answer,
+                  std::unique_ptr<SuggestionAnswer> answer,
                   const std::string& suggest_query_params,
                   const std::string& deletion_url,
                   bool from_keyword_provider,
@@ -186,7 +186,7 @@ class SearchSuggestionParser {
     base::string16 answer_type_;
 
     // Optional short answer to the input that produced this suggestion.
-    scoped_ptr<SuggestionAnswer> answer_;
+    std::unique_ptr<SuggestionAnswer> answer_;
 
     // Should this result be prefetched?
     bool should_prefetch_;
@@ -285,7 +285,7 @@ class SearchSuggestionParser {
   // Parses JSON response received from the provider, stripping XSSI
   // protection if needed. Returns the parsed data if successful, NULL
   // otherwise.
-  static scoped_ptr<base::Value> DeserializeJsonData(
+  static std::unique_ptr<base::Value> DeserializeJsonData(
       base::StringPiece json_data);
 
   // Parses results from the suggest server and updates the appropriate suggest

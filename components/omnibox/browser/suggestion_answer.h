@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_SUGGESTION_ANSWER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_SUGGESTION_ANSWER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -115,8 +116,8 @@ class SuggestionAnswer {
     ImageLine& operator=(const ImageLine&);
 
     TextFields text_fields_;
-    scoped_ptr<TextField> additional_text_;
-    scoped_ptr<TextField> status_text_;
+    std::unique_ptr<TextField> additional_text_;
+    std::unique_ptr<TextField> status_text_;
     GURL image_url_;
 
     FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
@@ -129,14 +130,15 @@ class SuggestionAnswer {
   // Parses |answer_json| and returns a SuggestionAnswer containing the
   // contents.  If the supplied data is not well formed or is missing required
   // elements, returns nullptr instead.
-  static scoped_ptr<SuggestionAnswer> ParseAnswer(
-        const base::DictionaryValue* answer_json);
+  static std::unique_ptr<SuggestionAnswer> ParseAnswer(
+      const base::DictionaryValue* answer_json);
 
   // TODO(jdonnelly): Once something like std::optional<T> is available in base/
   // (see discussion at http://goo.gl/zN2GNy) remove this in favor of having
   // SuggestResult and AutocompleteMatch use optional<SuggestionAnswer>.
-  static scoped_ptr<SuggestionAnswer> copy(const SuggestionAnswer* source) {
-    return make_scoped_ptr(source ? new SuggestionAnswer(*source) : nullptr);
+  static std::unique_ptr<SuggestionAnswer> copy(
+      const SuggestionAnswer* source) {
+    return base::WrapUnique(source ? new SuggestionAnswer(*source) : nullptr);
   }
 
   const ImageLine& first_line() const { return first_line_; }

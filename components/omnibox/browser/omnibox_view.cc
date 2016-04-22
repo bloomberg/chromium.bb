@@ -176,7 +176,7 @@ void OmniboxView::OnMatchOpened(AutocompleteMatch::Type match_type) {
 }
 
 OmniboxView::OmniboxView(OmniboxEditController* controller,
-                         scoped_ptr<OmniboxClient> client)
+                         std::unique_ptr<OmniboxClient> client)
     : controller_(controller) {
   // |client| can be null in tests.
   if (client) {

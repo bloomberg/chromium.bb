@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -211,18 +211,18 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     return in_memory_url_index_.get();
   }
 
-  void set_in_memory_url_index(scoped_ptr<InMemoryURLIndex> index) {
+  void set_in_memory_url_index(std::unique_ptr<InMemoryURLIndex> index) {
     in_memory_url_index_ = std::move(index);
   }
 
  private:
   base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir history_dir_;
-  scoped_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   TestSchemeClassifier scheme_classifier_;
   SearchTermsData search_terms_data_;
-  scoped_ptr<InMemoryURLIndex> in_memory_url_index_;
-  scoped_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<InMemoryURLIndex> in_memory_url_index_;
+  std::unique_ptr<history::HistoryService> history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
@@ -287,7 +287,7 @@ class HistoryQuickProviderTest : public testing::Test {
   bool GetURLProxy(const GURL& url);
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
@@ -468,7 +468,7 @@ bool HistoryQuickProviderTest::GetURLProxy(const GURL& url) {
   base::CancelableTaskTracker task_tracker;
   bool result = false;
   client_->GetHistoryService()->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(new GetURLTask(url, &result)),
+      std::unique_ptr<history::HistoryDBTask>(new GetURLTask(url, &result)),
       &task_tracker);
   // Run the message loop until GetURLTask::DoneRunOnMainThread stops it.  If
   // the test hangs, DoneRunOnMainThread isn't being invoked correctly.

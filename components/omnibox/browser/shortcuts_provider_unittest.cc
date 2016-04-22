@@ -15,6 +15,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -183,7 +184,7 @@ class FakeAutocompleteProviderClient
   FakeAutocompleteProviderClient()
       : db_thread_("Test DB thread"), pool_owner_(3, "Background Pool") {
     set_template_url_service(
-        make_scoped_ptr(new TemplateURLService(nullptr, 0)));
+        base::WrapUnique(new TemplateURLService(nullptr, 0)));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(history_dir_.path(),
                                                        true);
@@ -191,7 +192,7 @@ class FakeAutocompleteProviderClient
 
     db_thread_.Start();
     shortcuts_backend_ = new ShortcutsBackend(
-        GetTemplateURLService(), make_scoped_ptr(new SearchTermsData()),
+        GetTemplateURLService(), base::WrapUnique(new SearchTermsData()),
         history_service_.get(), db_thread_.task_runner(), base::FilePath(),
         true);
     shortcuts_backend_->Init();
@@ -215,7 +216,7 @@ class FakeAutocompleteProviderClient
   base::Thread db_thread_;
   base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir history_dir_;
-  scoped_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<history::HistoryService> history_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
@@ -267,7 +268,7 @@ class ShortcutsProviderTest : public testing::Test {
                      int max_relevance);
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ShortcutsProvider> provider_;
 };
 

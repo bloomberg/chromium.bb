@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EVENT_GLOBAL_TRACKER_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 template <typename T>
@@ -30,8 +31,8 @@ class OmniboxEventGlobalTracker {
   static OmniboxEventGlobalTracker* GetInstance();
 
   // Registers |cb| to be invoked when user open an URL from the omnibox.
-  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
-      RegisterCallback(const OnURLOpenedCallback& cb);
+  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+  RegisterCallback(const OnURLOpenedCallback& cb);
 
   // Called to notify all registered callbacks that an URL was opened from
   // the omnibox.

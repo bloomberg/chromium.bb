@@ -170,7 +170,7 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
 }  // namespace
 
 AutocompleteController::AutocompleteController(
-    scoped_ptr<AutocompleteProviderClient> provider_client,
+    std::unique_ptr<AutocompleteProviderClient> provider_client,
     AutocompleteControllerDelegate* delegate,
     int provider_types)
     : delegate_(delegate),

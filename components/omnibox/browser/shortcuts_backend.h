@@ -6,6 +6,7 @@
 #define COMPONENTS_OMNIBOX_BROWSER_SHORTCUTS_BACKEND_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
@@ -52,7 +52,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
   // For unit testing, set |suppress_db| to true to prevent creation
   // of the database, in which case all operations are performed in memory only.
   ShortcutsBackend(TemplateURLService* template_url_service,
-                   scoped_ptr<SearchTermsData> search_terms_data,
+                   std::unique_ptr<SearchTermsData> search_terms_data,
                    history::HistoryService* history_service,
                    scoped_refptr<base::SequencedTaskRunner> db_runner,
                    base::FilePath database_path,
@@ -154,7 +154,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
   bool DeleteAllShortcuts();
 
   TemplateURLService* template_url_service_;
-  scoped_ptr<SearchTermsData> search_terms_data_;
+  std::unique_ptr<SearchTermsData> search_terms_data_;
 
   CurrentState current_state_;
   base::ObserverList<ShortcutsBackendObserver> observer_list_;
@@ -163,8 +163,8 @@ class ShortcutsBackend : public RefcountedKeyedService,
   // The |temp_shortcuts_map_| and |temp_guid_map_| used for temporary storage
   // between InitInternal() and InitComplete() to avoid doing a potentially huge
   // copy.
-  scoped_ptr<ShortcutMap> temp_shortcuts_map_;
-  scoped_ptr<GuidMap> temp_guid_map_;
+  std::unique_ptr<ShortcutMap> temp_shortcuts_map_;
+  std::unique_ptr<GuidMap> temp_guid_map_;
 
   ShortcutMap shortcuts_map_;
   // This is a helper map for quick access to a shortcut by guid.

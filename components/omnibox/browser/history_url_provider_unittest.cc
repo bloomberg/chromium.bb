@@ -7,10 +7,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -158,7 +159,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient(bool create_history_db) {
     set_template_url_service(
-        make_scoped_ptr(new TemplateURLService(nullptr, 0)));
+        base::WrapUnique(new TemplateURLService(nullptr, 0)));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ = history::CreateHistoryService(
           history_dir_.path(), create_history_db);
@@ -181,7 +182,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   TestSchemeClassifier scheme_classifier_;
   SearchTermsData search_terms_data_;
   base::ScopedTempDir history_dir_;
-  scoped_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<history::HistoryService> history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
@@ -242,7 +243,7 @@ class HistoryURLProviderTest : public testing::Test,
 
   base::MessageLoop message_loop_;
   ACMatches matches_;
-  scoped_ptr<FakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
   // Should the matches be sorted and duplicates removed?
   bool sort_matches_;

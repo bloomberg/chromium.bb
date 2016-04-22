@@ -174,7 +174,7 @@ OmniboxEditModel::State::~State() {
 
 OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
-                                   scoped_ptr<OmniboxClient> client)
+                                   std::unique_ptr<OmniboxClient> client)
     : client_(std::move(client)),
       view_(view),
       controller_(controller),
@@ -647,7 +647,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // clear why this happens.
       client_->CurrentPageExists() ? client_->GetURL() : GURL(), ClassifyPage(),
       false, false, true, true, false, client_->GetSchemeClassifier());
-  scoped_ptr<OmniboxNavigationObserver> observer(
+  std::unique_ptr<OmniboxNavigationObserver> observer(
       client_->CreateOmniboxNavigationObserver(
           input_text, match,
           autocomplete_controller()->history_url_provider()->SuggestExactInput(

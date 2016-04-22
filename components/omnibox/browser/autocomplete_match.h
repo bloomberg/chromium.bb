@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
@@ -362,7 +362,7 @@ struct AutocompleteMatch {
   // A rich-format version of the display for the dropdown.
   base::string16 answer_contents;
   base::string16 answer_type;
-  scoped_ptr<SuggestionAnswer> answer;
+  std::unique_ptr<SuggestionAnswer> answer;
 
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set
@@ -380,7 +380,7 @@ struct AutocompleteMatch {
   // line for this match, and tab/shift-tab will toggle in and out of keyword
   // mode without disturbing the rest of the popup.  See also
   // OmniboxPopupModel::SetSelectedLineState().
-  scoped_ptr<AutocompleteMatch> associated_keyword;
+  std::unique_ptr<AutocompleteMatch> associated_keyword;
 
   // The keyword of the TemplateURL the match originated from.  This is nonempty
   // for both explicit "keyword mode" matches as well as matches for the default
@@ -405,7 +405,7 @@ struct AutocompleteMatch {
   // after the complete set of matches in the AutocompleteResult has been chosen
   // and sorted.  Most providers will leave this as NULL, which will cause the
   // AutocompleteController to do no additional transformations.
-  scoped_ptr<TemplateURLRef::SearchTermsArgs> search_terms_args;
+  std::unique_ptr<TemplateURLRef::SearchTermsArgs> search_terms_args;
 
   // Information dictionary into which each provider can optionally record a
   // property and associated value and which is presented in chrome://omnibox.

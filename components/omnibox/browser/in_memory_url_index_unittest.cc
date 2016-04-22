@@ -157,9 +157,9 @@ class InMemoryURLIndexTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir history_dir_;
-  scoped_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<history::HistoryService> history_service_;
   history::HistoryDatabase* history_database_;
-  scoped_ptr<InMemoryURLIndex> url_index_;
+  std::unique_ptr<InMemoryURLIndex> url_index_;
 };
 
 InMemoryURLIndexTest::InMemoryURLIndexTest()
@@ -1270,7 +1270,7 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<InMemoryURLIndex> url_index_;
+  std::unique_ptr<InMemoryURLIndex> url_index_;
 };
 
 InMemoryURLIndexCacheTest::InMemoryURLIndexCacheTest()

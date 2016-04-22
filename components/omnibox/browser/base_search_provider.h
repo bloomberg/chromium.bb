@@ -10,13 +10,13 @@
 #define COMPONENTS_OMNIBOX_BROWSER_BASE_SEARCH_PROVIDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -101,7 +101,7 @@ class BaseSearchProvider : public AutocompleteProvider {
 
   typedef std::pair<base::string16, std::string> MatchKey;
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
-  typedef std::vector<scoped_ptr<SuggestionDeletionHandler>>
+  typedef std::vector<std::unique_ptr<SuggestionDeletionHandler>>
       SuggestionDeletionHandlers;
 
   // Returns an AutocompleteMatch with the given |autocomplete_provider|

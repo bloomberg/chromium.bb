@@ -514,9 +514,9 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // Create the data structure for the autocomplete passes.  We'll save this off
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
-  scoped_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
-      fixed_up_input, trim_http, what_you_typed_match,
-      default_search_provider, client()->GetSearchTermsData()));
+  std::unique_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
+      fixed_up_input, trim_http, what_you_typed_match, default_search_provider,
+      client()->GetSearchTermsData()));
   // Note that we use the non-fixed-up input here, since fixup may strip
   // trailing whitespace.
   params->prevent_inline_autocomplete = PreventInlineAutocomplete(input);
@@ -842,7 +842,7 @@ void HistoryURLProvider::QueryComplete(
     HistoryURLProviderParams* params_gets_deleted) {
   TRACE_EVENT0("omnibox", "HistoryURLProvider::QueryComplete");
   // Ensure |params_gets_deleted| gets deleted on exit.
-  scoped_ptr<HistoryURLProviderParams> params(params_gets_deleted);
+  std::unique_ptr<HistoryURLProviderParams> params(params_gets_deleted);
 
   // If the user hasn't already started another query, clear our member pointer
   // so we can't write into deleted memory.

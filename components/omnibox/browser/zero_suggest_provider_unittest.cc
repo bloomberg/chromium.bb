@@ -150,7 +150,7 @@ class FakeAutocompleteProviderClient
   }
 
  private:
-  scoped_ptr<TemplateURLService> template_url_service_;
+  std::unique_ptr<TemplateURLService> template_url_service_;
   scoped_refptr<history::TopSites> top_sites_;
   TestingPrefServiceSimple pref_service_;
   TestSchemeClassifier scheme_classifier_;
@@ -179,10 +179,10 @@ class ZeroSuggestProviderTest : public testing::Test,
   base::MessageLoop message_loop_;
 
   // Needed for OmniboxFieldTrial::ActivateStaticTrials().
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   net::TestURLFetcherFactory test_factory_;
-  scoped_ptr<FakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ZeroSuggestProvider> provider_;
   TemplateURL* default_t_url_;
 

@@ -36,8 +36,8 @@ const int AutocompleteClassifier::kDefaultOmniboxProviders =
     AutocompleteProvider::TYPE_SEARCH;
 
 AutocompleteClassifier::AutocompleteClassifier(
-    scoped_ptr<AutocompleteController> controller,
-    scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier)
+    std::unique_ptr<AutocompleteController> controller,
+    std::unique_ptr<AutocompleteSchemeClassifier> scheme_classifier)
     : controller_(std::move(controller)),
       scheme_classifier_(std::move(scheme_classifier)),
       inside_classify_(false) {}

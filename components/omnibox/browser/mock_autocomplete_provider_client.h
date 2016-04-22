@@ -43,7 +43,7 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   const TemplateURLService* GetTemplateURLService() const override {
     return template_url_service_.get();
   }
-  scoped_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
+  std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
       KeywordProvider* keyword_provider) override {
     return nullptr;
   }
@@ -77,12 +77,12 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
                void(history::KeywordID keyword_id, const base::string16& term));
   MOCK_METHOD1(PrefetchImage, void(const GURL& url));
 
-  void set_template_url_service(scoped_ptr<TemplateURLService> service) {
+  void set_template_url_service(std::unique_ptr<TemplateURLService> service) {
     template_url_service_ = std::move(service);
   }
 
  private:
-  scoped_ptr<TemplateURLService> template_url_service_;
+  std::unique_ptr<TemplateURLService> template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);
 };

@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CONTROLLER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
@@ -82,7 +83,7 @@ class OmniboxController : public AutocompleteControllerDelegate {
 
   OmniboxPopupModel* popup_;
 
-  scoped_ptr<AutocompleteController> autocomplete_controller_;
+  std::unique_ptr<AutocompleteController> autocomplete_controller_;
 
   // TODO(beaudoin): This AutocompleteMatch is used to let the OmniboxEditModel
   // know what it should display. Not every field is required for that purpose,

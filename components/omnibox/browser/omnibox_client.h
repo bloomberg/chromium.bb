@@ -37,12 +37,13 @@ class OmniboxClient {
   virtual ~OmniboxClient() {}
 
   // Returns an AutocompleteProviderClient specific to the embedder context.
-  virtual scoped_ptr<AutocompleteProviderClient>
+  virtual std::unique_ptr<AutocompleteProviderClient>
   CreateAutocompleteProviderClient() = 0;
 
   // Returns an OmniboxNavigationObserver specific to the embedder context. May
   // return null if the embedder has no need to observe omnibox navigations.
-  virtual scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+  virtual std::unique_ptr<OmniboxNavigationObserver>
+  CreateOmniboxNavigationObserver(
       const base::string16& text,
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternate_nav_match) = 0;

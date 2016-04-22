@@ -35,7 +35,8 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
   void RecordOmniboxOpenedURL(const OmniboxLog& log);
 
   // Subscription for receiving Omnibox event callbacks.
-  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription> subscription_;
+  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+      subscription_;
 
   // Saved cache of generated Omnibox event protos, to be copied into the UMA
   // proto when ProvideGeneralMetrics() is called.

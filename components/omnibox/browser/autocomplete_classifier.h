@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_CLASSIFIER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_CLASSIFIER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -25,8 +26,8 @@ class AutocompleteClassifier : public KeyedService {
   static const int kDefaultOmniboxProviders;
 
   AutocompleteClassifier(
-      scoped_ptr<AutocompleteController> controller_,
-      scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier);
+      std::unique_ptr<AutocompleteController> controller_,
+      std::unique_ptr<AutocompleteSchemeClassifier> scheme_classifier);
   ~AutocompleteClassifier() override;
 
   // KeyedService:
@@ -57,8 +58,8 @@ class AutocompleteClassifier : public KeyedService {
                 GURL* alternate_nav_url);
 
  private:
-  scoped_ptr<AutocompleteController> controller_;
-  scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier_;
+  std::unique_ptr<AutocompleteController> controller_;
+  std::unique_ptr<AutocompleteSchemeClassifier> scheme_classifier_;
 
   // Are we currently in Classify? Used to verify Classify isn't invoked
   // recursively, since this can corrupt state and cause crashes.

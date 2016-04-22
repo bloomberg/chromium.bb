@@ -404,8 +404,9 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 
   bool results_updated = false;
   if (request_succeeded) {
-    scoped_ptr<base::Value> data(SearchSuggestionParser::DeserializeJsonData(
-        SearchSuggestionParser::ExtractJsonData(source)));
+    std::unique_ptr<base::Value> data(
+        SearchSuggestionParser::DeserializeJsonData(
+            SearchSuggestionParser::ExtractJsonData(source)));
     if (data) {
       SearchSuggestionParser::Results* results =
           is_keyword ? &keyword_results_ : &default_results_;
@@ -718,7 +719,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
                           query_is_private));
 }
 
-void SearchProvider::CancelFetcher(scoped_ptr<net::URLFetcher>* fetcher) {
+void SearchProvider::CancelFetcher(std::unique_ptr<net::URLFetcher>* fetcher) {
   if (*fetcher) {
     LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
     fetcher->reset();
@@ -847,7 +848,7 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
   }
 }
 
-scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
+std::unique_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURL* template_url,
     const AutocompleteInput& input) {
@@ -888,7 +889,7 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
 
   LogOmniboxSuggestRequest(REQUEST_SENT);
 
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
@@ -930,7 +931,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // verbatim, and if so, copy over answer contents.
     base::string16 answer_contents;
     base::string16 answer_type;
-    scoped_ptr<SuggestionAnswer> answer;
+    std::unique_ptr<SuggestionAnswer> answer;
     base::string16 trimmed_verbatim_lower =
         base::i18n::ToLower(trimmed_verbatim);
     for (ACMatches::iterator it = matches_.begin(); it != matches_.end();

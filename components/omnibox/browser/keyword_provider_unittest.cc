@@ -83,9 +83,9 @@ class KeywordProviderTest : public testing::Test {
  protected:
   static const TemplateURLService::Initializer kTestData[];
 
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<KeywordProvider> kw_provider_;
-  scoped_ptr<MockAutocompleteProviderClient> client_;
+  std::unique_ptr<MockAutocompleteProviderClient> client_;
 };
 
 // static
@@ -110,7 +110,7 @@ const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
 };
 
 void KeywordProviderTest::SetUpClientAndKeywordProvider() {
-  scoped_ptr<TemplateURLService> template_url_service(
+  std::unique_ptr<TemplateURLService> template_url_service(
       new TemplateURLService(kTestData, arraysize(kTestData)));
   client_.reset(new MockAutocompleteProviderClient());
   client_->set_template_url_service(std::move(template_url_service));

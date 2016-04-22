@@ -13,11 +13,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -150,7 +150,7 @@ class KeywordProvider : public AutocompleteProvider {
 
   // Delegate to handle the extensions-only logic for KeywordProvider.
   // NULL when extensions are not enabled. May be NULL for tests.
-  scoped_ptr<KeywordExtensionsDelegate> extensions_delegate_;
+  std::unique_ptr<KeywordExtensionsDelegate> extensions_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordProvider);
 };

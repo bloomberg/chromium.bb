@@ -5,10 +5,11 @@
 #include "components/omnibox/browser/scored_history_match.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/search_terms_data.h"
@@ -270,10 +271,10 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
 }
 
 TEST_F(ScoredHistoryMatchTest, CullSearchResults) {
-  scoped_ptr<TemplateURLService> template_url_service =
-      make_scoped_ptr(new TemplateURLService(
-          nullptr, make_scoped_ptr(new SearchTermsData), nullptr,
-          scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
+  std::unique_ptr<TemplateURLService> template_url_service =
+      base::WrapUnique(new TemplateURLService(
+          nullptr, base::WrapUnique(new SearchTermsData), nullptr,
+          std::unique_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
           base::Closure()));
 
   // We use NowFromSystemTime() because MakeURLRow uses the same function

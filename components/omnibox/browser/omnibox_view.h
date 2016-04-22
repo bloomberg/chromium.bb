@@ -243,7 +243,7 @@ class OmniboxView {
 
  protected:
   OmniboxView(OmniboxEditController* controller,
-              scoped_ptr<OmniboxClient> client);
+              std::unique_ptr<OmniboxClient> client);
 
   // Internally invoked whenever the text changes in some way.
   virtual void TextChanged();
@@ -264,7 +264,7 @@ class OmniboxView {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ShowURL);
 
   // |model_| can be NULL in tests.
-  scoped_ptr<OmniboxEditModel> model_;
+  std::unique_ptr<OmniboxEditModel> model_;
   OmniboxEditController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxView);

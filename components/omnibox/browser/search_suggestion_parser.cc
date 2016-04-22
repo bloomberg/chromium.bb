@@ -76,7 +76,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& annotation,
     const base::string16& answer_contents,
     const base::string16& answer_type,
-    scoped_ptr<SuggestionAnswer> answer,
+    std::unique_ptr<SuggestionAnswer> answer,
     const std::string& suggest_query_params,
     const std::string& deletion_url,
     bool from_keyword_provider,
@@ -365,7 +365,7 @@ std::string SearchSuggestionParser::ExtractJsonData(
 }
 
 // static
-scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
+std::unique_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     base::StringPiece json_data) {
   // The JSON response should be an array.
   for (size_t response_start_index = json_data.find("["), i = 0;
@@ -377,11 +377,12 @@ scoped_ptr<base::Value> SearchSuggestionParser::DeserializeJsonData(
     JSONStringValueDeserializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
-    scoped_ptr<base::Value> data = deserializer.Deserialize(&error_code, NULL);
+    std::unique_ptr<base::Value> data =
+        deserializer.Deserialize(&error_code, NULL);
     if (error_code == 0)
       return data;
   }
-  return scoped_ptr<base::Value>();
+  return std::unique_ptr<base::Value>();
 }
 
 // static
@@ -503,7 +504,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       base::string16 annotation;
       base::string16 answer_contents;
       base::string16 answer_type_str;
-      scoped_ptr<SuggestionAnswer> answer;
+      std::unique_ptr<SuggestionAnswer> answer;
       std::string suggest_query_params;
 
       if (suggestion_details) {

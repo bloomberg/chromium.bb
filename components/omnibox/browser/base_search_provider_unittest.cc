@@ -69,10 +69,11 @@ class BaseSearchProviderTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    scoped_ptr<TemplateURLService> template_url_service(new TemplateURLService(
-        nullptr, scoped_ptr<SearchTermsData>(new SearchTermsData), nullptr,
-        scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
-        base::Closure()));
+    std::unique_ptr<TemplateURLService> template_url_service(
+        new TemplateURLService(
+            nullptr, std::unique_ptr<SearchTermsData>(new SearchTermsData),
+            nullptr, std::unique_ptr<TemplateURLServiceClient>(), nullptr,
+            nullptr, base::Closure()));
     client_.reset(new NiceMock<MockAutocompleteProviderClient>());
     client_->set_template_url_service(std::move(template_url_service));
     provider_ = new NiceMock<TestBaseSearchProvider>(
@@ -80,19 +81,19 @@ class BaseSearchProviderTest : public testing::Test {
   }
 
   scoped_refptr<NiceMock<TestBaseSearchProvider> > provider_;
-  scoped_ptr<NiceMock<MockAutocompleteProviderClient>> client_;
+  std::unique_ptr<NiceMock<MockAutocompleteProviderClient>> client_;
 };
 
 TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   TemplateURLData data;
   data.SetURL("http://foo.com/url?bar={searchTerms}");
-  scoped_ptr<TemplateURL> template_url(new TemplateURL(data));
+  std::unique_ptr<TemplateURL> template_url(new TemplateURL(data));
 
   TestBaseSearchProvider::MatchMap map;
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
   base::string16 answer_contents = base::ASCIIToUTF16("some answer content");
   base::string16 answer_type = base::ASCIIToUTF16("2334");
-  scoped_ptr<SuggestionAnswer> answer(new SuggestionAnswer());
+  std::unique_ptr<SuggestionAnswer> answer(new SuggestionAnswer());
   answer->set_type(2334);
 
   EXPECT_CALL(*provider_, GetInput(_))
@@ -138,7 +139,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   map.clear();
   base::string16 answer_contents2 = base::ASCIIToUTF16("different answer");
   base::string16 answer_type2 = base::ASCIIToUTF16("8242");
-  scoped_ptr<SuggestionAnswer> answer2(new SuggestionAnswer());
+  std::unique_ptr<SuggestionAnswer> answer2(new SuggestionAnswer());
   answer2->set_type(8242);
   more_relevant = SearchSuggestionParser::SuggestResult(
       query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -179,9 +180,9 @@ SuggestionAnswer::SuggestionAnswer(const SuggestionAnswer& answer)
 SuggestionAnswer::~SuggestionAnswer() {}
 
 // static
-scoped_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
+std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
     const base::DictionaryValue* answer_json) {
-  auto result = make_scoped_ptr(new SuggestionAnswer);
+  auto result = base::WrapUnique(new SuggestionAnswer);
 
   const base::ListValue* lines_json;
   if (!answer_json->GetList(kAnswerJsonLines, &lines_json) ||

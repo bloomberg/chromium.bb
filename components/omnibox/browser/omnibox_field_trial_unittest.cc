@@ -4,9 +4,10 @@
 
 #include "components/omnibox/browser/omnibox_field_trial.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -77,7 +78,7 @@ class OmniboxFieldTrialTest : public testing::Test {
       int expected_delay_ms);
 
  private:
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxFieldTrialTest);
 };

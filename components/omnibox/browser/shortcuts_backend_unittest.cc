@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,8 +62,8 @@ class ShortcutsBackendTest : public testing::Test,
   base::MessageLoop message_loop_;
   base::Thread db_thread_;
   base::ScopedTempDir profile_dir_;
-  scoped_ptr<TemplateURLService> template_url_service_;
-  scoped_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<TemplateURLService> template_url_service_;
+  std::unique_ptr<history::HistoryService> history_service_;
 
   scoped_refptr<ShortcutsBackend> backend_;
 
@@ -118,7 +119,7 @@ void ShortcutsBackendTest::SetUp() {
   base::FilePath shortcuts_database_path =
       profile_dir_.path().Append(kShortcutsDatabaseName);
   backend_ = new ShortcutsBackend(
-      template_url_service_.get(), make_scoped_ptr(new SearchTermsData()),
+      template_url_service_.get(), base::WrapUnique(new SearchTermsData()),
       history_service_.get(), db_thread_.task_runner(), shortcuts_database_path,
       false);
   ASSERT_TRUE(backend_.get());
