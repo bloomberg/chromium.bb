@@ -30,6 +30,14 @@ var KeyPairImpl = function(publicKeySpki, algorithm, usages) {
                             false /* not extractable */);
 };
 
-exports.KeyPair = utils.expose('KeyPair',
-                               KeyPairImpl,
-                               {readonly:['publicKey', 'privateKey']});
+function KeyPair() {
+  privates(KeyPair).constructPrivate(this, arguments);
+}
+utils.expose(KeyPair, KeyPairImpl, {
+  readonly: [
+    'publicKey',
+    'privateKey',
+  ],
+});
+
+exports.$set('KeyPair', KeyPair);

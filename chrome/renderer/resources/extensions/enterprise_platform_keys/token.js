@@ -15,5 +15,14 @@ var TokenImpl = function(id) {
   this.subtleCrypto = new SubtleCrypto(id);
 };
 
-exports.Token =
-    utils.expose('Token', TokenImpl, {readonly:['id', 'subtleCrypto']});
+function Token() {
+  privates(Token).constructPrivate(this, arguments);
+}
+utils.expose(Token, TokenImpl, {
+  readonly: [
+    'id',
+    'subtleCrypto',
+  ],
+});
+
+exports.$set('Token', Token);

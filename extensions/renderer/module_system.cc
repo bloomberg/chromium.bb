@@ -618,6 +618,10 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
           ToV8StringUnsafe(GetIsolate(), "Failed to create privates"));
       return;
     }
+    v8::Maybe<bool> maybe =
+        privates.As<v8::Object>()->SetPrototype(context()->v8_context(),
+                                                v8::Null(args.GetIsolate()));
+    CHECK(maybe.IsJust() && maybe.FromJust());
     SetPrivate(obj, "privates", privates);
   }
   args.GetReturnValue().Set(privates);

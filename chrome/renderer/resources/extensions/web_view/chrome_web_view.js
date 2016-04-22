@@ -12,7 +12,7 @@ var CreateEvent = require('guestViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var idGeneratorNatives = requireNative('id_generator');
-var Utils = require('utils');
+var utils = require('utils');
 var WebViewImpl = require('webView').WebViewImpl;
 
 // This is the only "webViewInternal.onClicked" named event for this renderer.
@@ -122,9 +122,17 @@ WebViewContextMenusImpl.prototype.update = function() {
   return $Function.apply(ChromeWebView.contextMenusUpdate, null, args);
 };
 
-var WebViewContextMenus = Utils.expose(
-    'WebViewContextMenus', WebViewContextMenusImpl,
-    { functions: ['create', 'remove', 'removeAll', 'update'] });
+function WebViewContextMenus() {
+  privates(WebViewContextMenus).constructPrivate(this, arguments);
+}
+utils.expose(WebViewContextMenus, WebViewContextMenusImpl, {
+  functions: [
+    'create',
+    'remove',
+    'removeAll',
+    'update',
+  ],
+});
 
 // -----------------------------------------------------------------------------
 
@@ -132,7 +140,7 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
   if (!this.contextMenusOnContextMenuEvent_) {
     var eventName = 'chromeWebViewInternal.onContextMenuShow';
     var eventSchema =
-        Utils.lookup(ChromeWebViewSchema.events, 'name', 'onShow');
+        utils.lookup(ChromeWebViewSchema.events, 'name', 'onShow');
     var eventOptions = {supportsListeners: true};
     this.contextMenusOnContextMenuEvent_ = new ContextMenusOnContextMenuEvent(
         this.viewInstanceId, eventName, eventSchema, eventOptions);
@@ -152,7 +160,7 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
           if (!this.contextMenusOnClickedEvent_) {
             var eventName = 'chromeWebViewInternal.onClicked';
             var eventSchema =
-                Utils.lookup(ChromeWebViewSchema.events, 'name', 'onClicked');
+                utils.lookup(ChromeWebViewSchema.events, 'name', 'onClicked');
             var eventOptions = {supportsListeners: true};
             var onClickedEvent = new ContextMenusOnClickedEvent(
                 this.viewInstanceId, eventName, eventSchema, eventOptions);

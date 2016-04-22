@@ -29,16 +29,22 @@ function testSuperClass() {
     subFunc: function() { return 'subFunc'; }
   };
 
-  var SuperClass = utils.expose('SuperClass',
-                                SuperClassImpl,
-                                { functions: ['func', 'superFunc'],
-                                  properties: ['attrA', 'attrB'] });
+  function SuperClass() {
+    privates(SuperClass).constructPrivate(this, arguments);
+  }
+  utils.expose(SuperClass, SuperClassImpl, {
+    functions: ['func', 'superFunc'],
+    properties: ['attrA', 'attrB'],
+  });
 
-  var SubClass = utils.expose('SubClass',
-                              SubClassImpl,
-                              { superclass: SuperClass,
-                                functions: ['subFunc'],
-                                properties: ['attrC'] });
+  function SubClass() {
+    privates(SubClass).constructPrivate(this, arguments);
+  }
+  utils.expose(SubClass, SubClassImpl, {
+    superclass: SuperClass,
+    functions: ['subFunc'],
+    properties: ['attrC'],
+  });
 
   var supe = new SuperClass();
   AssertTrue(supe.attrA == 'aSuper');
@@ -63,12 +69,16 @@ function testSuperClass() {
 
   function SubSubClassImpl() {}
   SubSubClassImpl.prototype = Object.create(SubClassImpl.prototype);
-  SubSubClassImpl.prototype.subSubFunc = function() { return 'subsub'; }
+  SubSubClassImpl.prototype.subSubFunc = function() { return 'subsub'; };
 
-  var SubSubClass = utils.expose('SubSubClass',
-                                 SubSubClassImpl,
-                                 { superclass: SubClass,
-                                   functions: ['subSubFunc'] });
+  function SubSubClass() {
+    privates(SubSubClass).constructPrivate(this, arguments);
+  }
+  utils.expose(SubSubClass, SubSubClassImpl, {
+    superclass: SubClass,
+    functions: ['subSubFunc'],
+  });
+
   var subsub = new SubSubClass();
   AssertTrue(subsub.attrA == 'aSub');
   AssertTrue(subsub.attrB == 'bSuper');

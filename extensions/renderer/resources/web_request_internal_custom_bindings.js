@@ -175,17 +175,20 @@ binding.registerCustomHook(function(api) {
   });
 });
 
-var WebRequestEvent = utils.expose('WebRequestEvent',
-                                   WebRequestEventImpl,
-                                   { functions: [
-  'hasListener',
-  'hasListeners',
-  'addListener',
-  'removeListener',
-  'addRules',
-  'removeRules',
-  'getRules'
-] });
+function WebRequestEvent() {
+  privates(WebRequestEvent).constructPrivate(this, arguments);
+}
+utils.expose(WebRequestEvent, WebRequestEventImpl, {
+  functions: [
+    'hasListener',
+    'hasListeners',
+    'addListener',
+    'removeListener',
+    'addRules',
+    'removeRules',
+    'getRules',
+  ],
+});
 
 webRequestInternal = binding.generate();
 exports.$set('binding', webRequestInternal);

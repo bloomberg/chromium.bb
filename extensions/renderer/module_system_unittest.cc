@@ -505,4 +505,14 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleSystem) {
   RunResolvedPromises();
 }
 
+TEST_F(ModuleSystemTest, TestPrivatesIsPrivate) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule(
+      "test",
+      "var v = privates({});"
+      "requireNative('assert').AssertFalse(v instanceof Object);");
+  env()->module_system()->Require("test");
+}
+
 }  // namespace extensions

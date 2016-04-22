@@ -71,7 +71,7 @@ const char kScript[] =
     "            ['hasOwnProperty'],\n"
     "            ['create', 'defineProperty', 'freeze',\n"
     "             'getOwnPropertyDescriptor', 'getPrototypeOf', 'keys',\n"
-    "             'assign']);\n"
+    "             'assign', 'setPrototypeOf']);\n"
     "saveBuiltin(Function,\n"
     "            ['apply', 'bind', 'call']);\n"
     "saveBuiltin(Array,\n"

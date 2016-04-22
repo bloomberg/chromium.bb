@@ -110,10 +110,16 @@ SubtleCryptoImpl.prototype.exportKey = function(format, key) {
   });
 };
 
-// Required for subclassing.
-exports.SubtleCryptoImpl = SubtleCryptoImpl
+function SubtleCrypto() {
+  privates(SubtleCrypto).constructPrivate(this, arguments);
+}
+utils.expose(SubtleCrypto, SubtleCryptoImpl, {
+  functions: [
+    'sign',
+    'exportKey',
+  ],
+});
 
-exports.SubtleCrypto =
-    utils.expose('SubtleCrypto',
-                 SubtleCryptoImpl,
-                 {functions:['sign', 'exportKey']});
+// Required for subclassing.
+exports.$set('SubtleCryptoImpl', SubtleCryptoImpl);
+exports.$set('SubtleCrypto', SubtleCrypto);

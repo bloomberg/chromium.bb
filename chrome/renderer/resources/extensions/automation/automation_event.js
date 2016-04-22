@@ -19,8 +19,18 @@ AutomationEventImpl.prototype = {
   }
 };
 
-exports.AutomationEvent = utils.expose(
-    'AutomationEvent',
-    AutomationEventImpl,
-    { functions: ['stopPropagation'],
-      readonly: ['type', 'target', 'eventPhase'] });
+function AutomationEvent() {
+  privates(AutomationEvent).constructPrivate(this, arguments);
+}
+utils.expose(AutomationEvent, AutomationEventImpl, {
+  functions: [
+    'stopPropagation',
+  ],
+  readonly: [
+    'type',
+    'target',
+    'eventPhase',
+  ],
+});
+
+exports.$set('AutomationEvent', AutomationEvent);

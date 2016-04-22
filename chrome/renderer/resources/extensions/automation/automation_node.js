@@ -939,46 +939,57 @@ AutomationRootNodeImpl.prototype = {
   },
 };
 
-var AutomationNode = utils.expose('AutomationNode',
-                                  AutomationNodeImpl,
-                                  { functions: ['doDefault',
-                                                'find',
-                                                'findAll',
-                                                'focus',
-                                                'makeVisible',
-                                                'matches',
-                                                'setSelection',
-                                                'showContextMenu',
-                                                'addEventListener',
-                                                'removeEventListener',
-                                                'domQuerySelector',
-                                                'toString',
-                                                'boundsForRange'],
-                                    readonly: publicAttributes.concat(
-                                              ['parent',
-                                               'firstChild',
-                                               'lastChild',
-                                               'children',
-                                               'previousSibling',
-                                               'nextSibling',
-                                               'isRootNode',
-                                               'role',
-                                               'state',
-                                               'location',
-                                               'indexInParent',
-                                               'root']) });
+function AutomationNode() {
+  privates(AutomationNode).constructPrivate(this, arguments);
+}
+utils.expose(AutomationNode, AutomationNodeImpl, {
+  functions: [
+    'doDefault',
+    'find',
+    'findAll',
+    'focus',
+    'makeVisible',
+    'matches',
+    'setSelection',
+    'showContextMenu',
+    'addEventListener',
+    'removeEventListener',
+    'domQuerySelector',
+    'toString',
+    'boundsForRange',
+  ],
+  readonly: $Array.concat(publicAttributes, [
+      'parent',
+      'firstChild',
+      'lastChild',
+      'children',
+      'previousSibling',
+      'nextSibling',
+      'isRootNode',
+      'role',
+      'state',
+      'location',
+      'indexInParent',
+      'root',
+  ]),
+});
 
-var AutomationRootNode = utils.expose('AutomationRootNode',
-                                      AutomationRootNodeImpl,
-                                      { superclass: AutomationNode,
-                                        readonly: ['docTitle',
-                                                   'docUrl',
-                                                   'docLoaded',
-                                                   'docLoadingProgress',
-                                                   'anchorObject',
-                                                   'anchorOffset',
-                                                   'focusObject',
-                                                   'focusOffset'] });
+function AutomationRootNode() {
+  privates(AutomationRootNode).constructPrivate(this, arguments);
+}
+utils.expose(AutomationRootNode, AutomationRootNodeImpl, {
+  superclass: AutomationNode,
+  readonly: [
+    'docTitle',
+    'docUrl',
+    'docLoaded',
+    'docLoadingProgress',
+    'anchorObject',
+    'anchorOffset',
+    'focusObject',
+    'focusOffset',
+  ],
+});
 
 AutomationRootNode.get = function(treeID) {
   return AutomationRootNodeImpl.get(treeID);

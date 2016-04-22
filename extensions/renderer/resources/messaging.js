@@ -400,15 +400,20 @@
     return alignedArgs;
   }
 
-var Port = utils.expose('Port', PortImpl, { functions: [
-    'disconnect',
-    'postMessage'
-  ],
-  properties: [
-    'name',
-    'onDisconnect',
-    'onMessage'
-  ] });
+  function Port() {
+    privates(Port).constructPrivate(this, arguments);
+  }
+  utils.expose(Port, PortImpl, {
+    functions: [
+      'disconnect',
+      'postMessage',
+    ],
+    properties: [
+      'name',
+      'onDisconnect',
+      'onMessage',
+    ],
+  });
 
 exports.$set('kRequestChannel', kRequestChannel);
 exports.$set('kMessageChannel', kMessageChannel);

@@ -490,17 +490,22 @@
       ruleFunctionSchemas.getRules.parameters);
   }
 
-  var Event = utils.expose('Event', EventImpl, { functions: [
-    'addListener',
-    'removeListener',
-    'hasListener',
-    'hasListeners',
-    'dispatchToListener',
-    'dispatch',
-    'addRules',
-    'removeRules',
-    'getRules'
-  ] });
+  function Event() {
+    privates(Event).constructPrivate(this, arguments);
+  }
+  utils.expose(Event, EventImpl, {
+    functions: [
+      'addListener',
+      'removeListener',
+      'hasListener',
+      'hasListeners',
+      'dispatchToListener',
+      'dispatch',
+      'addRules',
+      'removeRules',
+      'getRules',
+    ],
+  });
 
   // NOTE: Event is (lazily) exposed as chrome.Event from dispatcher.cc.
   exports.$set('Event', Event);

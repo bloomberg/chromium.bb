@@ -49,10 +49,17 @@ Object.defineProperty(KeyBase.prototype, 'algorithm', {
   }
 });
 
-var Key = utils.expose(
-    'Key',
-    KeyImpl,
-    {superclass: KeyBase, readonly: ['extractable', 'type', 'usages']});
+function Key() {
+  privates(Key).constructPrivate(this, arguments);
+}
+utils.expose(Key, KeyImpl, {
+  superclass: KeyBase,
+  readonly: [
+    'extractable',
+    'type',
+    'usages',
+  ],
+});
 
 /**
  * Returns |key|'s Subject Public Key Info. Throws an exception if |key| is not

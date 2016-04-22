@@ -6,7 +6,6 @@ var utils = require('utils');
 var internalAPI = require('enterprise.platformKeys.internalAPI');
 var intersect = require('platformKeys.utils').intersect;
 var subtleCryptoModule = require('platformKeys.SubtleCrypto');
-var SubtleCrypto = subtleCryptoModule.SubtleCrypto;
 var SubtleCryptoImpl = subtleCryptoModule.SubtleCryptoImpl;
 var KeyPair = require('enterprise.platformKeys.KeyPair').KeyPair;
 var KeyUsage = require('platformKeys.Key').KeyUsage;
@@ -133,11 +132,15 @@ EnterpriseSubtleCryptoImpl.prototype.generateKey =
   });
 };
 
-exports.SubtleCrypto =
-    utils.expose('SubtleCrypto',
-                 EnterpriseSubtleCryptoImpl,
-                 {
-                   superclass: SubtleCrypto,
-                   functions: ['generateKey']
-                   // ['sign', 'exportKey'] are exposed by the base class
-                 });
+function SubtleCrypto() {
+  privates(SubtleCrypto).constructPrivate(this, arguments);
+}
+utils.expose(SubtleCrypto, EnterpriseSubtleCryptoImpl, {
+  superclass: subtleCryptoModule.SubtleCrypto,
+  functions: [
+    'generateKey',
+    // 'sign', 'exportKey' are exposed by the base class
+  ],
+});
+
+exports.$set('SubtleCrypto', SubtleCrypto);
