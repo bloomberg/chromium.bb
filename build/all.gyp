@@ -56,7 +56,10 @@
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_common_unittests',
             '../mojo/mojo_edk.gyp:mojo_system_impl',
-            '../mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
+            # TODO(crbug.com/605508): http://crrev.com/1832703002 introduced
+            # a dependency on //third_party/WebKit that cause build failures
+            # when using Xcode version of clang (loading clang plugin fails).
+            # '../mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_system_unittests',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
