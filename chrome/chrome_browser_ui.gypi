@@ -3372,6 +3372,7 @@
             '../components/components.gyp:feedback_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             'chrome_features.gyp:chrome_common_features',
+            'profile_reset_report_proto',
           ],
           'sources': [
             '<@(chrome_browser_ui_non_mobile_sources)',

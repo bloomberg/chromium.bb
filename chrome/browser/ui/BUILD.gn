@@ -194,6 +194,7 @@ source_set("ui") {
                     ".",
                     "//chrome")
     deps += [
+      "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common:features",
       "//components/copresence",
       "//components/feedback/proto",
