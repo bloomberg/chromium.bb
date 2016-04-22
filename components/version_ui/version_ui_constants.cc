@@ -18,6 +18,7 @@ const char kReturnVariationInfo[] = "returnVariationInfo";
 
 // Strings.
 const char kApplicationLabel[] = "application_label";
+const char kARC[] = "arc_label";
 const char kBlinkVersion[] = "blink_version";
 const char kBuildID[] = "build_id";
 const char kBuildIDName[] = "build_id_name";

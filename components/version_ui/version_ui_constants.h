@@ -22,6 +22,7 @@ extern const char kReturnVariationInfo[];
 // Strings.
 // Must match the constants used in the resource files.
 extern const char kApplicationLabel[];
+extern const char kARC[];
 extern const char kBlinkVersion[];
 extern const char kBuildID[];
 extern const char kBuildIDName[];

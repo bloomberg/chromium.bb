@@ -505,6 +505,18 @@ cr.define('help', function() {
     },
 
     /**
+     * @param {string} version Version of ARC.
+     * @private
+     */
+    setARCVersion_: function(version) {
+      if (!cr.isChromeOS)
+        console.error('ARC version unsupported on non-CrOS');
+
+      $('arc-version').parentNode.hidden = (version == '');
+      $('arc-version').textContent = version;
+    },
+
+    /**
      * @param {string} firmware Firmware on Chrome OS.
      * @private
      */
@@ -668,6 +680,10 @@ cr.define('help', function() {
 
   HelpPage.setOSVersion = function(version) {
     HelpPage.getInstance().setOSVersion_(version);
+  };
+
+  HelpPage.setARCVersion = function(version) {
+    HelpPage.getInstance().setARCVersion_(version);
   };
 
   HelpPage.setOSFirmware = function(firmware) {

@@ -99,6 +99,7 @@ class HelpHandler : public content::WebUIMessageHandler,
 #if defined(OS_CHROMEOS)
   // Callbacks from VersionLoader.
   void OnOSVersion(const std::string& version);
+  void OnARCVersion(const std::string& firmware);
   void OnOSFirmware(const std::string& firmware);
   void OnCurrentChannel(const std::string& channel);
   void OnTargetChannel(const std::string& channel);

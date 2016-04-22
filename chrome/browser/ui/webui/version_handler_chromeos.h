@@ -22,8 +22,9 @@ class VersionHandlerChromeOS : public VersionHandler {
   // VersionHandler overrides:
   void HandleRequestVersionInfo(const base::ListValue* args) override;
 
-  // Callback from chromeos::VersionLoader giving the version.
+  // Callbacks from chromeos::VersionLoader.
   void OnVersion(const std::string& version);
+  void OnARCVersion(const std::string& version);
 
  private:
   base::WeakPtrFactory<VersionHandlerChromeOS> weak_factory_;

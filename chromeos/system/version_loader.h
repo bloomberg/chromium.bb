@@ -24,6 +24,10 @@ enum VersionFormat {
 // Must be run on a blocking thread pool.
 CHROMEOS_EXPORT std::string GetVersion(VersionFormat format);
 
+// Gets the ARC version.
+// Must be run on a blocking thread pool.
+CHROMEOS_EXPORT std::string GetARCVersion();
+
 // Gets the firmware info.
 // Must be run on a blocking thread pool.
 CHROMEOS_EXPORT std::string GetFirmware();

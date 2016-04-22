@@ -253,6 +253,7 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
     {"reportAnIssue", IDS_REPORT_AN_ISSUE},
 #if defined(OS_CHROMEOS)
     {"platform", IDS_PLATFORM_LABEL},
+    {"arcVersion", IDS_ARC_VERSION_LABEL},
     {"firmware", IDS_ABOUT_PAGE_FIRMWARE},
     {"showMoreInfo", IDS_SHOW_MORE_INFO},
     {"hideMoreInfo", IDS_HIDE_MORE_INFO},
@@ -476,6 +477,12 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
+      base::Bind(&chromeos::version_loader::GetARCVersion),
+      base::Bind(&HelpHandler::OnARCVersion,
+                 weak_factory_.GetWeakPtr()));
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
       base::Bind(&chromeos::version_loader::GetFirmware),
       base::Bind(&HelpHandler::OnOSFirmware,
                  weak_factory_.GetWeakPtr()));
@@ -688,6 +695,11 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 void HelpHandler::OnOSVersion(const std::string& version) {
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSVersion",
                                    base::StringValue(version));
+}
+
+void HelpHandler::OnARCVersion(const std::string& firmware) {
+  web_ui()->CallJavascriptFunction("help.HelpPage.setARCVersion",
+                                   base::StringValue(firmware));
 }
 
 void HelpHandler::OnOSFirmware(const std::string& firmware) {

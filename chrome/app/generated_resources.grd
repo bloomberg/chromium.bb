@@ -9232,8 +9232,14 @@ I don't think this site should be blocked!
         <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON" desc="The label for the button for cancelling channel change.">
           Cancel
         </message>
+        <message name="IDS_ARC_VERSION_LABEL" desc="Label for ARC version">
+          ARC Version
+        </message>
       </if> <!-- chromeos -->
 
+      <message name="IDS_ARC_LABEL" desc="Label for ARC">
+        ARC
+      </message>
       <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
         Platform
       </message>
