@@ -5,6 +5,7 @@
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/command_line.h"
@@ -149,6 +150,15 @@ scoped_ptr<base::ListValue> SnippetsToListValue(
     list->Append(std::move(dict));
   }
   return list;
+}
+
+bool ContainsSnippet(const NTPSnippetsService::NTPSnippetStorage& haystack,
+                     const scoped_ptr<NTPSnippet>& needle) {
+  const GURL& url = needle->url();
+  return std::find_if(haystack.begin(), haystack.end(),
+                      [&url](const scoped_ptr<NTPSnippet>& snippet) {
+                        return snippet->url() == url;
+                      }) != haystack.end();
 }
 
 }  // namespace
@@ -349,12 +359,18 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
   NTPSnippetStorage new_snippets;
   if (!AddSnippetsFromListValue(list, &new_snippets))
     return false;
-  for (scoped_ptr<NTPSnippet>& snippet : new_snippets) {
-    // If this snippet has previously been discarded, don't add it again.
-    if (HasDiscardedSnippet(snippet->url()))
-      continue;
 
-    // If the snippet has no publish/expiry dates, fill in defaults.
+  // Remove new snippets that we already have, or that have been discarded.
+  new_snippets.erase(
+      std::remove_if(new_snippets.begin(), new_snippets.end(),
+                     [this](const scoped_ptr<NTPSnippet>& snippet) {
+                       return ContainsSnippet(discarded_snippets_, snippet) ||
+                              ContainsSnippet(snippets_, snippet);
+                     }),
+      new_snippets.end());
+
+  // Fill in default publish/expiry dates where required.
+  for (scoped_ptr<NTPSnippet>& snippet : new_snippets) {
     if (snippet->publish_date().is_null())
       snippet->set_publish_date(base::Time::Now());
     if (snippet->expiry_date().is_null()) {
@@ -362,19 +378,12 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
           snippet->publish_date() +
           base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
     }
-
-    // Check if we already have a snippet with the same URL. If so, replace it
-    // rather than adding a duplicate.
-    const GURL& url = snippet->url();
-    auto it = std::find_if(snippets_.begin(), snippets_.end(),
-                           [&url](const scoped_ptr<NTPSnippet>& old_snippet) {
-                             return old_snippet->url() == url;
-                           });
-    if (it != snippets_.end())
-      *it = std::move(snippet);
-    else
-      snippets_.push_back(std::move(snippet));
   }
+
+  // Insert the new snippets at the front.
+  snippets_.insert(snippets_.begin(),
+                   std::make_move_iterator(new_snippets.begin()),
+                   std::make_move_iterator(new_snippets.end()));
 
   // Immediately remove any already-expired snippets. This will also notify our
   // observers and schedule the expiry timer.
@@ -423,14 +432,6 @@ void NTPSnippetsService::StoreSnippetHostsToPrefs(
   for (const std::string& host : hosts)
     list.AppendString(host);
   pref_service_->Set(prefs::kSnippetHosts, list);
-}
-
-bool NTPSnippetsService::HasDiscardedSnippet(const GURL& url) const {
-  auto it = std::find_if(discarded_snippets_.begin(), discarded_snippets_.end(),
-                         [&url](const scoped_ptr<NTPSnippet>& snippet) {
-                           return snippet->url() == url;
-                         });
-  return it != discarded_snippets_.end();
 }
 
 void NTPSnippetsService::RemoveExpiredSnippets() {

@@ -190,7 +190,7 @@ TEST_F(NTPSnippetsServiceDisabledTest, Unschedule) {
 TEST_F(NTPSnippetsServiceTest, Loop) {
   std::string json_str(
       "{ \"recos\": [ "
-      "{ \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
+      "  { \"contentInfo\": { \"url\" : \"http://localhost/foobar\" }}"
       "]}");
   LoadFromJSONString(json_str);
 
@@ -234,6 +234,26 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
 
   service()->ClearSnippets();
   EXPECT_EQ(service()->size(), 0u);
+}
+
+TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
+  std::string json_str(
+      "{ \"recos\": [ "
+      "  { \"contentInfo\": { \"url\" : \"http://first\" }}"
+      "]}");
+  LoadFromJSONString(json_str);
+  ASSERT_EQ(service()->size(), 1u);
+
+  std::string json_str2(
+      "{ \"recos\": [ "
+      "  { \"contentInfo\": { \"url\" : \"http://second\" }}"
+      "]}");
+  LoadFromJSONString(json_str2);
+  ASSERT_EQ(service()->size(), 2u);
+
+  // The snippet loaded last should be at the first position in the list now.
+  const NTPSnippet& first_snippet = *service()->begin();
+  EXPECT_EQ(first_snippet.url(), GURL("http://second"));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {

@@ -148,8 +148,6 @@ class NTPSnippetsService : public KeyedService {
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
-  bool HasDiscardedSnippet(const GURL& url) const;
-
   void RemoveExpiredSnippets();
 
   bool enabled_;
