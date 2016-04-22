@@ -97,10 +97,10 @@ layer at (0,0) size 785x2619 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 517x14
           text run at (0,0) width 517: "This sentence should have a normal line-height, because negative values are not permitted for this property."
       LayoutBlockFlow {P} at (0,1299) size 769x150
-        LayoutInline {SPAN} at (0,0) size 760x89 [bgcolor=#C0C0C0]
-          LayoutText {#text} at (0,30) size 760x89
-            text run at (0,30) width 760: "This sentence should have a line-height of two centimeters, which should cause extra spacing between the lines. The text has a background color of silver, but"
-            text run at (0,105) width 694: "no padding or border. The background color has been set on an inline element and should therefore only cover the text, not the interline spacing."
+        LayoutInline {SPAN} at (0,0) size 759x89 [bgcolor=#C0C0C0]
+          LayoutText {#text} at (0,30) size 759x89
+            text run at (0,30) width 759: "This sentence should have a line-height of two centimeters, which should cause extra spacing between the lines. The text has a background color of silver, but"
+            text run at (0,105) width 693: "no padding or border. The background color has been set on an inline element and should therefore only cover the text, not the interline spacing."
         LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,1461) size 769x1142 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x1140

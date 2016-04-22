@@ -9,9 +9,9 @@ layer at (0,0) size 800x600
           text run at (449,0) width 298: "Just its contents should be removed during the"
           text run at (0,18) width 51: "replace."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
-        LayoutText {#text} at (297,0) size 240x18
-          text run at (297,0) width 240: "This shouldn't be in the bordered div."
-        LayoutBlockFlow (floating) {DIV} at (0,0) size 297.52x20 [border: (1px solid #0000FF)]
-          LayoutText {#text} at (1,1) size 296x18
-            text run at (1,1) width 296: "This should be in a floating blue bordered div."
+        LayoutText {#text} at (296,0) size 239x18
+          text run at (296,0) width 239: "This shouldn't be in the bordered div."
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 296.47x20 [border: (1px solid #0000FF)]
+          LayoutText {#text} at (1,1) size 295x18
+            text run at (1,1) width 295: "This should be in a floating blue bordered div."
 caret: position 47 of child 0 {#text} of child 1 {DIV} of child 2 {DIV} of body

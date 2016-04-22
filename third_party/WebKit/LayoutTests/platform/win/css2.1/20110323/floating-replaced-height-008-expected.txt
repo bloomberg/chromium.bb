@@ -19,8 +19,8 @@ layer at (0,0) size 800x186
         LayoutInline {STRONG} at (0,0) size 59x17
           LayoutText {#text} at (0,18) size 59x17
             text run at (0,18) width 59: "identical"
-        LayoutText {#text} at (58,18) size 456x17
-          text run at (58,18) width 456: " to each other. This should still remain true even after a window resize."
+        LayoutText {#text} at (58,18) size 455x17
+          text run at (58,18) width 455: " to each other. This should still remain true even after a window resize."
       LayoutBlockFlow {DIV} at (0,52) size 784x0
         LayoutImage (floating) {IMG} at (0,0) size 117.59x117.59
         LayoutImage (floating) {IMG} at (117.59,0) size 5x5

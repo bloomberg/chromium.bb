@@ -7,8 +7,8 @@ layer at (0,0) size 800x88
         LayoutText {#text} at (0,0) size 228x19
           text run at (0,0) width 228: "This sentence should have no border. "
         LayoutInline {SPAN} at (0,0) size 263x29 [border: (5px solid #00FF00)]
-          LayoutText {#text} at (233,0) size 253x19
-            text run at (233,0) width 253: "This sentence should have a green border."
+          LayoutText {#text} at (232,0) size 253x19
+            text run at (232,0) width 253: "This sentence should have a green border."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutInline {SPAN} at (0,0) size 357x35 [bgcolor=#FF0000]

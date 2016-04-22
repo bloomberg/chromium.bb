@@ -45,7 +45,7 @@ layer at (0,0) size 800x247
         LayoutText {#text} at (615,13) size 781x43
           text run at (615,13) width 166: ". If this precise combination"
           text run at (0,37) width 98: "does not occur, "
-          text run at (98,37) width 225: "then the user agent has failed this test."
+          text run at (97,37) width 226: "then the user agent has failed this test."
       LayoutBlockFlow {P} at (0,129) size 784x86
         LayoutInline {<pseudo:first-letter>} at (0,0) size 58x64 [color=#008000]
           LayoutTextFragment (anonymous) at (0,1) size 58x64

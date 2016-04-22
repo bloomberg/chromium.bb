@@ -17,7 +17,7 @@ layer at (0,0) size 800x425
             text run at (390,0) width 39: "green"
         LayoutText {#text} at (428,0) size 779x108
           text run at (428,0) width 184: ". If this precise combination "
-          text run at (611,0) width 153: "does not occur, then the"
+          text run at (611,0) width 152: "does not occur, then the"
           text run at (0,18) width 267: "user agent has failed this test. Remember "
           text run at (266,18) width 395: "that in order to ensure a complete test, the paragraph must be "
           text run at (660,18) width 119: "displayed on more"
@@ -49,7 +49,7 @@ layer at (0,0) size 800x425
             text run at (181,37) width 39: "green"
         LayoutText {#text} at (219,37) size 766x108
           text run at (219,37) width 285: ". If this precise combination does not occur, "
-          text run at (503,37) width 245: "then the user agent has failed this test."
+          text run at (503,37) width 244: "then the user agent has failed this test."
           text run at (0,55) width 173: "Remember that in order to "
           text run at (172,55) width 419: "ensure a complete test, the paragraph must be displayed on more "
           text run at (590,55) width 176: "than one line. Dummy text."

@@ -46,14 +46,14 @@ layer at (0,0) size 785x4227 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (277,2) width 475: "Its font-size should be 150% the base font size, and its line-height"
           text run at (0,29) width 418: "should 150% of that value (18px and 27px, respectively). "
           text run at (417,29) width 347: "Extra text is included for the purposes of testing"
-          text run at (0,56) width 154: "this more effectively."
+          text run at (0,56) width 152: "this more effectively."
       LayoutBlockFlow {P} at (0,388.33) size 769x81
         LayoutText {#text} at (0,3) size 761x75
           text run at (0,3) width 349: "This element should be in a sans-serif font. "
           text run at (348,3) width 413: "Its font-size should be 150% the base font size, and"
           text run at (0,30) width 569: "its line-height should 150% of that value (18px and 27px, respectively). "
           text run at (568,30) width 193: "Extra text is included for"
-          text run at (0,57) width 351: "the purposes of testing this more effectively."
+          text run at (0,57) width 350: "the purposes of testing this more effectively."
       LayoutBlockFlow {P} at (0,487.33) size 769x78
         LayoutText {#text} at (0,2) size 756x47
           text run at (0,2) width 608: "This element should be in a cursive font, 'small' in size, with a line-height 200% the height of the text's actual size. "
@@ -104,13 +104,13 @@ layer at (0,0) size 785x4227 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (40,43) width 666: "Its font-size should be 18 pixels, and its line-height should be 36px (200% this"
           text run at (0,79) width 177: "element's font size). "
           text run at (176,79) width 501: "Extra text is included for the purposes of testing this more"
-          text run at (0,115) width 94: "effectively."
+          text run at (0,115) width 92: "effectively."
       LayoutBlockFlow {P} at (0,1519.33) size 769x46
         LayoutText {#text} at (0,6) size 742x33
           text run at (0,6) width 276: "This element should be in a sans-serif font, with a weight of 400. "
           text run at (275,6) width 417: "Its font-size should be 80% of 12px, or 9.6px, and its line-height shoud be 2.5 times that, or 24px. "
           text run at (691,6) width 51: "Extra text is"
-          text run at (0,29) width 240: "included for the purposes of testing this more effectively."
+          text run at (0,29) width 239: "included for the purposes of testing this more effectively."
       LayoutBlockFlow {P} at (0,1583.33) size 769x216
         LayoutInline {SPAN} at (0,0) size 765x183 [bgcolor=#C0C0C0]
           LayoutText {#text} at (0,16) size 765x183
@@ -147,7 +147,7 @@ layer at (0,0) size 785x4227 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,40) width 688: "font size, and its line-height should 150% of that value (18px and 27px,"
                   text run at (0,76) width 136: "respectively). "
                   text run at (135,76) width 559: "Extra text is included for the purposes of testing this more"
-                  text run at (0,112) width 109: "effectively."
+                  text run at (0,112) width 107: "effectively."
               LayoutBlockFlow {P} at (4,269.33) size 747x144
                 LayoutText {#text} at (0,4) size 741x136
                   text run at (0,4) width 465: "This element should be in a sans-serif font. "
@@ -155,7 +155,7 @@ layer at (0,0) size 785x4227 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,40) width 741: "150% the base font size, and its line-height should 150% of that value"
                   text run at (0,76) width 327: "(18px and 27px, respectively). "
                   text run at (326,76) width 403: "Extra text is included for the purposes"
-                  text run at (0,112) width 323: "of testing this more effectively."
+                  text run at (0,112) width 321: "of testing this more effectively."
               LayoutBlockFlow {P} at (4,437.33) size 747x78
                 LayoutText {#text} at (0,2) size 737x47
                   text run at (0,2) width 608: "This element should be in a cursive font, 'small' in size, with a line-height 200% the height of the text's actual size. "
@@ -209,13 +209,13 @@ layer at (0,0) size 785x4227 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (62,43) width 666: "Its font-size should be 18 pixels, and its line-height should be 36px (200% this"
                   text run at (0,79) width 177: "element's font size). "
                   text run at (176,79) width 501: "Extra text is included for the purposes of testing this more"
-                  text run at (0,115) width 94: "effectively."
+                  text run at (0,115) width 92: "effectively."
               LayoutBlockFlow {P} at (4,1844.33) size 747x62
                 LayoutText {#text} at (0,8) size 728x46
                   text run at (0,8) width 368: "This element should be in a sans-serif font, with a weight of 400. "
                   text run at (367,8) width 361: "Its font-size should be 80% of 12px, or 9.6px, and its line-height"
                   text run at (0,39) width 190: "shoud be 2.5 times that, or 24px. "
-                  text run at (189,39) width 391: "Extra text is included for the purposes of testing this more effectively."
+                  text run at (189,39) width 390: "Extra text is included for the purposes of testing this more effectively."
               LayoutBlockFlow {P} at (4,1930.33) size 747x432
                 LayoutInline {SPAN} at (0,0) size 739x388 [bgcolor=#C0C0C0]
                   LayoutText {#text} at (0,22) size 739x388

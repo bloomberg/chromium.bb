@@ -65,7 +65,7 @@ layer at (0,0) size 785x1369 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,693) size 769x50 [border: (5px double #800080) (5px groove #800080) (5px ridge #800080) (5px inset #800080)]
         LayoutText {#text} at (5,5) size 747x39
           text run at (5,5) width 673: "This paragraph should have, in clockwise order from the top, a double, grooved, ridged, and inset thick border. "
-          text run at (678,5) width 74: "The color of"
+          text run at (677,5) width 75: "The color of"
           text run at (5,25) width 242: "all four sides should be based on purple."
       LayoutBlockFlow {P} at (0,759) size 769x20
         LayoutText {#text} at (0,0) size 265x19
@@ -114,7 +114,7 @@ layer at (0,0) size 785x1369 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (4,438) size 747x50 [border: (5px double #800080) (5px groove #800080) (5px ridge #800080) (5px inset #800080)]
                 LayoutText {#text} at (5,5) size 731x39
                   text run at (5,5) width 673: "This paragraph should have, in clockwise order from the top, a double, grooved, ridged, and inset thick border. "
-                  text run at (678,5) width 58: "The color"
+                  text run at (677,5) width 59: "The color"
                   text run at (5,25) width 258: "of all four sides should be based on purple."
               LayoutBlockFlow {P} at (4,504) size 747x20
                 LayoutText {#text} at (0,0) size 265x19

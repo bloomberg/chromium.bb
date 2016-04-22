@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 773x35
           text run at (0,0) width 613: "This tests to make sure that a drag-selecting through a -webkit-user-select:ignore region works. "
           text run at (612,0) width 161: "The selection should end"
-          text run at (0,18) width 272: "somewhere inside the word 'World' below."
+          text run at (0,18) width 271: "somewhere inside the word 'World' below."
       LayoutBlockFlow {DIV} at (0,52) size 784x18
         LayoutInline {SPAN} at (0,0) size 36x17
           LayoutText {#text} at (0,0) size 36x17

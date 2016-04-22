@@ -53,7 +53,7 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutListItem {LI} at (25,18) size 744x54 [bgcolor=#FFFFFF]
           LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (25,0) size 714x54
-            text run at (25,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
+            text run at (25,0) width 669: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
             text run at (25,18) width 61: "checked. "
             text run at (85,18) width 654: "This list item has its left padding also set to 25 pixels, which should combine with the list's padding to"
             text run at (25,36) width 168: "make 50 pixels of margin."
@@ -106,8 +106,8 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,18) width 27: "test."
                 LayoutListItem {LI} at (25,36) size 722x54 [bgcolor=#FFFFFF]
                   LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
-                  LayoutText {#text} at (25,0) size 670x54
-                    text run at (25,0) width 670: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
+                  LayoutText {#text} at (25,0) size 669x54
+                    text run at (25,0) width 669: "Another list item might not be such a bad idea, either, considering that such things do need to be double-"
                     text run at (25,18) width 61: "checked. "
                     text run at (85,18) width 582: "This list item has its left padding also set to 25 pixels, which should combine with the list's"
                     text run at (25,36) width 240: "padding to make 50 pixels of margin."

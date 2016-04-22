@@ -4,8 +4,8 @@ layer at (0,0) size 800x350
   LayoutBlockFlow {HTML} at (0,0) size 800x350
     LayoutBlockFlow {BODY} at (8,16) size 784x326
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 498x18
-          text run at (0,0) width 498: "You should see a reflected video below, rather than the red video background."
+        LayoutText {#text} at (0,0) size 497x18
+          text run at (0,0) width 497: "You should see a reflected video below, rather than the red video background."
 layer at (8,50) size 300x292
   LayoutBlockFlow {DIV} at (0,34) size 300x292
     LayoutText {#text} at (0,0) size 0x0

@@ -62,11 +62,11 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (179,18) size 5x17
           text run at (179,18) width 5: "."
       LayoutBlockFlow {P} at (0,547) size 769x18
-        LayoutText {#text} at (0,0) size 680x17
-          text run at (0,0) width 680: "This sentence should have normal word-spacing, since percentage values are not allowed on this property."
+        LayoutText {#text} at (0,0) size 679x17
+          text run at (0,0) width 679: "This sentence should have normal word-spacing, since percentage values are not allowed on this property."
       LayoutBlockFlow {P} at (0,581) size 769x18
-        LayoutText {#text} at (0,0) size 717x17
-          text run at (0,0) width 717: "This words in this sentence should have reduced space between them, since negative values are allowed on this property."
+        LayoutText {#text} at (0,0) size 716x17
+          text run at (0,0) width 716: "This words in this sentence should have reduced space between them, since negative values are allowed on this property."
       LayoutTable {TABLE} at (0,615) size 769x378 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x376
           LayoutTableRow {TR} at (0,0) size 767x26
@@ -110,8 +110,8 @@ layer at (0,0) size 785x1009 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (243,18) size 5x17
                   text run at (243,18) width 5: "."
               LayoutBlockFlow {P} at (4,294) size 747x18
-                LayoutText {#text} at (0,0) size 680x17
-                  text run at (0,0) width 680: "This sentence should have normal word-spacing, since percentage values are not allowed on this property."
+                LayoutText {#text} at (0,0) size 679x17
+                  text run at (0,0) width 679: "This sentence should have normal word-spacing, since percentage values are not allowed on this property."
               LayoutBlockFlow {P} at (4,328) size 747x18
-                LayoutText {#text} at (0,0) size 717x17
-                  text run at (0,0) width 717: "This words in this sentence should have reduced space between them, since negative values are allowed on this property."
+                LayoutText {#text} at (0,0) size 716x17
+                  text run at (0,0) width 716: "This words in this sentence should have reduced space between them, since negative values are allowed on this property."

@@ -50,8 +50,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {TT} at (0,0) size 96x16
           LayoutText {#text} at (333,3) size 96x16
             text run at (333,3) width 96: "border-style"
-        LayoutText {#text} at (429,0) size 307x19
-          text run at (429,0) width 307: " was not set, and it should not be offset in any way."
+        LayoutText {#text} at (429,0) size 306x19
+          text run at (429,0) width 306: " was not set, and it should not be offset in any way."
       LayoutBlockFlow {P} at (0,495) size 769x26 [border: (3px double #800000)]
         LayoutText {#text} at (3,3) size 508x19
           text run at (3,3) width 508: "This paragraph should have a medium maroon double border around it, even though "
@@ -79,7 +79,7 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (5,5) size 757x46 [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
               LayoutText {#text} at (3,3) size 746x39
                 text run at (3,3) width 384: "Every cell in this table should have a 2-pixel solid green border. "
-                text run at (387,3) width 362: "This is also true of the table-testing section in the second half"
+                text run at (386,3) width 363: "This is also true of the table-testing section in the second half"
                 text run at (3,23) width 96: "of the test page."
           LayoutTableRow {TR} at (0,56) size 767x58
             LayoutTableCell {TD} at (5,72) size 191x26 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
@@ -133,8 +133,8 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutInline {TT} at (0,0) size 96x16
                   LayoutText {#text} at (333,3) size 96x16
                     text run at (333,3) width 96: "border-style"
-                LayoutText {#text} at (429,0) size 307x19
-                  text run at (429,0) width 307: " was not set, and it should not be offset in any way."
+                LayoutText {#text} at (429,0) size 306x19
+                  text run at (429,0) width 306: " was not set, and it should not be offset in any way."
               LayoutBlockFlow {P} at (5,289) size 743x26 [border: (3px double #800000)]
                 LayoutText {#text} at (3,3) size 508x19
                   text run at (3,3) width 508: "This paragraph should have a medium maroon double border around it, even though "
@@ -162,7 +162,7 @@ layer at (0,0) size 785x1395 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableCell {TD} at (5,5) size 731x46 [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
                       LayoutText {#text} at (3,3) size 721x39
                         text run at (3,3) width 384: "Every cell in this table should have a 2-pixel solid green border. "
-                        text run at (387,3) width 337: "This is also true of the table-testing section in the second"
+                        text run at (386,3) width 338: "This is also true of the table-testing section in the second"
                         text run at (3,23) width 121: "half of the test page."
                   LayoutTableRow {TR} at (0,56) size 741x58
                     LayoutTableCell {TD} at (5,72) size 185x26 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]

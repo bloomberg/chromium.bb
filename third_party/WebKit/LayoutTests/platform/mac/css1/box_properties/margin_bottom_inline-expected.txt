@@ -14,34 +14,34 @@ layer at (0,0) size 800x600
           text run at (405,15) width 1: " "
       LayoutBlockFlow {HR} at (0,77) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,95) size 784x54 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 491x18
-          text run at (0,0) width 401: "This element is unstyled save for a background color of gray.. "
-          text run at (400,0) width 91: "It contains an "
-        LayoutInline {SPAN} at (0,0) size 777x36 [bgcolor=#00FFFF]
-          LayoutText {#text} at (490,0) size 149x18
-            text run at (490,0) width 149: "inline element of class "
-          LayoutInline {TT} at (0,0) size 24x15
-            LayoutText {#text} at (638,2) size 24x15
-              text run at (638,2) width 24: "one"
-          LayoutText {#text} at (661,0) size 777x36
-            text run at (661,0) width 116: ", giving it an aqua"
+        LayoutText {#text} at (0,0) size 490x18
+          text run at (0,0) width 400: "This element is unstyled save for a background color of gray.. "
+          text run at (399,0) width 91: "It contains an "
+        LayoutInline {SPAN} at (0,0) size 776x36 [bgcolor=#00FFFF]
+          LayoutText {#text} at (489,0) size 148x18
+            text run at (489,0) width 148: "inline element of class "
+          LayoutInline {TT} at (0,0) size 25x15
+            LayoutText {#text} at (636,2) size 25x15
+              text run at (636,2) width 25: "one"
+          LayoutText {#text} at (660,0) size 776x36
+            text run at (660,0) width 116: ", giving it an aqua"
             text run at (0,18) width 249: "background and a 25px bottom margin"
         LayoutText {#text} at (248,18) size 775x36
           text run at (248,18) width 9: ". "
           text run at (256,18) width 519: "Margins on inline elements does not affect line-height calculations, so all lines in"
           text run at (0,36) width 297: "this element should have the same line-height."
       LayoutBlockFlow {P} at (0,165) size 784x54 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 491x18
-          text run at (0,0) width 401: "This element is unstyled save for a background color of gray.. "
-          text run at (400,0) width 91: "It contains an "
-        LayoutInline {SPAN} at (0,0) size 777x36 [bgcolor=#00FFFF]
-          LayoutText {#text} at (490,0) size 149x18
-            text run at (490,0) width 149: "inline element of class "
-          LayoutInline {TT} at (0,0) size 24x15
-            LayoutText {#text} at (638,2) size 24x15
-              text run at (638,2) width 24: "two"
-          LayoutText {#text} at (661,0) size 777x36
-            text run at (661,0) width 116: ", giving it an aqua"
+        LayoutText {#text} at (0,0) size 490x18
+          text run at (0,0) width 400: "This element is unstyled save for a background color of gray.. "
+          text run at (399,0) width 91: "It contains an "
+        LayoutInline {SPAN} at (0,0) size 776x36 [bgcolor=#00FFFF]
+          LayoutText {#text} at (489,0) size 148x18
+            text run at (489,0) width 148: "inline element of class "
+          LayoutInline {TT} at (0,0) size 25x15
+            LayoutText {#text} at (636,2) size 25x15
+              text run at (636,2) width 25: "two"
+          LayoutText {#text} at (660,0) size 776x36
+            text run at (660,0) width 116: ", giving it an aqua"
             text run at (0,18) width 254: "background and a -10px bottom margin"
         LayoutText {#text} at (253,18) size 781x36
           text run at (253,18) width 9: ". "
@@ -60,34 +60,34 @@ layer at (0,0) size 800x600
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x132 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 762x54 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 491x18
-                  text run at (0,0) width 401: "This element is unstyled save for a background color of gray.. "
-                  text run at (400,0) width 91: "It contains an "
-                LayoutInline {SPAN} at (0,0) size 743x36 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (490,0) size 149x18
-                    text run at (490,0) width 149: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 24x15
-                    LayoutText {#text} at (638,2) size 24x15
-                      text run at (638,2) width 24: "one"
-                  LayoutText {#text} at (661,0) size 743x36
-                    text run at (661,0) width 82: ", giving it an"
+                LayoutText {#text} at (0,0) size 490x18
+                  text run at (0,0) width 400: "This element is unstyled save for a background color of gray.. "
+                  text run at (399,0) width 91: "It contains an "
+                LayoutInline {SPAN} at (0,0) size 742x36 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (489,0) size 148x18
+                    text run at (489,0) width 148: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 25x15
+                    LayoutText {#text} at (636,2) size 25x15
+                      text run at (636,2) width 25: "one"
+                  LayoutText {#text} at (660,0) size 742x36
+                    text run at (660,0) width 82: ", giving it an"
                     text run at (0,18) width 283: "aqua background and a 25px bottom margin"
                 LayoutText {#text} at (282,18) size 759x36
                   text run at (282,18) width 9: ". "
                   text run at (290,18) width 469: "Margins on inline elements does not affect line-height calculations, so all"
                   text run at (0,36) width 348: "lines in this element should have the same line-height."
               LayoutBlockFlow {P} at (4,74) size 762x54 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 491x18
-                  text run at (0,0) width 401: "This element is unstyled save for a background color of gray.. "
-                  text run at (400,0) width 91: "It contains an "
-                LayoutInline {SPAN} at (0,0) size 743x36 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (490,0) size 149x18
-                    text run at (490,0) width 149: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 24x15
-                    LayoutText {#text} at (638,2) size 24x15
-                      text run at (638,2) width 24: "two"
-                  LayoutText {#text} at (661,0) size 743x36
-                    text run at (661,0) width 82: ", giving it an"
+                LayoutText {#text} at (0,0) size 490x18
+                  text run at (0,0) width 400: "This element is unstyled save for a background color of gray.. "
+                  text run at (399,0) width 91: "It contains an "
+                LayoutInline {SPAN} at (0,0) size 742x36 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (489,0) size 148x18
+                    text run at (489,0) width 148: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 25x15
+                    LayoutText {#text} at (636,2) size 25x15
+                      text run at (636,2) width 25: "two"
+                  LayoutText {#text} at (660,0) size 742x36
+                    text run at (660,0) width 82: ", giving it an"
                     text run at (0,18) width 288: "aqua background and a -10px bottom margin"
                 LayoutText {#text} at (287,18) size 744x36
                   text run at (287,18) width 9: ". "

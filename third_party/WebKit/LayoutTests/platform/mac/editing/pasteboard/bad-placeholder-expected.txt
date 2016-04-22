@@ -8,13 +8,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 767x36
-          text run at (0,0) width 767: "This is a test to make sure that a placeholder, even one without our special class on it, is removed only when it has been"
+        LayoutText {#text} at (0,0) size 766x36
+          text run at (0,0) width 766: "This is a test to make sure that a placeholder, even one without our special class on it, is removed only when it has been"
           text run at (0,18) width 411: "collapsed away or when it has been displaced by pasted content."
       LayoutBlockFlow {P} at (0,52) size 784x36
         LayoutText {#text} at (0,0) size 778x36
-          text run at (0,0) width 710: "Placeholders with our special class can, through bugs in deletion, be inserted into the document unnecessarily. "
-          text run at (709,0) width 63: "Once that"
+          text run at (0,0) width 709: "Placeholders with our special class can, through bugs in deletion, be inserted into the document unnecessarily. "
+          text run at (708,0) width 63: "Once that"
           text run at (0,18) width 778: "happens, we don't want to make matters worse by removing them if they are acting as line breaks instead of placeholders."
       LayoutBlockFlow {DIV} at (0,104) size 784x36
         LayoutText {#text} at (0,0) size 102x18

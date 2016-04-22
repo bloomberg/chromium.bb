@@ -4,8 +4,8 @@ layer at (0,0) size 800x474
   LayoutBlockFlow {HTML} at (0,0) size 800x474
     LayoutBlockFlow {BODY} at (8,16) size 784x450
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 451x17
-          text run at (0,0) width 451: "There should be no red below, just two 300x200 pixel lime rectangles."
+        LayoutText {#text} at (0,0) size 450x17
+          text run at (0,0) width 450: "There should be no red below, just two 300x200 pixel lime rectangles."
 layer at (8,50) size 300x200
   LayoutBlockFlow (relative positioned) {DIV} at (0,34) size 300x200 [bgcolor=#FF0000]
     LayoutBlockFlow {DIV} at (0,0) size 300x100 [bgcolor=#00FF00]

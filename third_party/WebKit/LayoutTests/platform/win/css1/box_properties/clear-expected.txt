@@ -19,8 +19,8 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {HR} at (0,111) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutImage (floating) {IMG} at (0,121) size 15x50
       LayoutBlockFlow {P} at (0,129) size 769x18
-        LayoutText {#text} at (18,0) size 607x17
-          text run at (18,0) width 607: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
+        LayoutText {#text} at (18,0) size 606x17
+          text run at (18,0) width 606: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
       LayoutBlockFlow (anonymous) at (0,163) size 769x18
         LayoutBR {BR} at (18,0) size 0x17
         LayoutImage (floating) {IMG} at (0,18) size 15x50
@@ -61,8 +61,8 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             LayoutTableCell {TD} at (12,26) size 679x400 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutImage (floating) {IMG} at (4,4) size 15x50
               LayoutBlockFlow {P} at (4,4) size 671x18
-                LayoutText {#text} at (18,0) size 607x17
-                  text run at (18,0) width 607: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
+                LayoutText {#text} at (18,0) size 606x17
+                  text run at (18,0) width 606: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
               LayoutBlockFlow (anonymous) at (4,38) size 671x18
                 LayoutBR {BR} at (18,0) size 0x17
                 LayoutImage (floating) {IMG} at (0,18) size 15x50

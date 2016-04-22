@@ -17,10 +17,10 @@ layer at (0,0) size 800x600
           text run at (0,48) width 0: " "
       LayoutBlockFlow {HR} at (0,113) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,131) size 784x100
-        LayoutText {#text} at (0,0) size 544x99
+        LayoutText {#text} at (0,0) size 543x99
           text run at (0,0) width 0: " "
-          text run at (0,20) width 544: "This sentence should     show extra space  where there    would ordinarily         not be any."
-          text run at (544,20) width 0: " "
+          text run at (0,20) width 543: "This sentence should     show extra space  where there    would ordinarily         not be any."
+          text run at (542,20) width 1: " "
           text run at (0,40) width 284: "     There should also be preservation of returns"
           text run at (284,40) width 0: " "
           text run at (0,60) width 93: "as this sentence"
@@ -54,10 +54,10 @@ layer at (0,0) size 800x600
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,28) size 860x200 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 852x100
-                LayoutText {#text} at (0,0) size 544x99
+                LayoutText {#text} at (0,0) size 543x99
                   text run at (0,0) width 0: " "
-                  text run at (0,20) width 544: "This sentence should     show extra space  where there    would ordinarily         not be any."
-                  text run at (544,20) width 0: " "
+                  text run at (0,20) width 543: "This sentence should     show extra space  where there    would ordinarily         not be any."
+                  text run at (542,20) width 1: " "
                   text run at (0,40) width 284: "     There should also be preservation of returns"
                   text run at (284,40) width 0: " "
                   text run at (0,60) width 93: "as this sentence"

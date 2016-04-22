@@ -73,7 +73,7 @@ layer at (0,0) size 785x1703 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 730: "This element has a top margin of -10px, which should cause it to be shifted \"upward\" on the page, and no bottom margin. "
           text run at (729,0) width 21: "No"
           text run at (0,20) width 444: "other styles have been applied to it besides a light blue background color. "
-          text run at (444,20) width 305: "In all other respects, the element should be normal."
+          text run at (443,20) width 306: "In all other respects, the element should be normal."
       LayoutTable {TABLE} at (0,909.25) size 769x778 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x776
           LayoutTableRow {TR} at (0,0) size 767x28
@@ -133,5 +133,5 @@ layer at (0,0) size 785x1703 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 726x59
                   text run at (0,0) width 726: "This element has a top margin of -10px, which should cause it to be shifted \"upward\" on the page, and no bottom margin."
                   text run at (0,20) width 468: "No other styles have been applied to it besides a light blue background color. "
-                  text run at (468,20) width 256: "In all other respects, the element should be"
+                  text run at (467,20) width 257: "In all other respects, the element should be"
                   text run at (0,40) width 45: "normal."

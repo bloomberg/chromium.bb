@@ -26,11 +26,11 @@ layer at (0,0) size 785x821 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {P} at (0,0) size 458x17
           LayoutText {#text} at (0,0) size 458x17
             text run at (0,0) width 458: "This sentence should be part of an inline element, as are the next three. "
-        LayoutInline {P} at (0,0) size 749x53
-          LayoutText {#text} at (457,0) size 749x53
+        LayoutInline {P} at (0,0) size 748x53
+          LayoutText {#text} at (457,0) size 748x53
             text run at (457,0) width 280: "This sentence and the next two are part of a"
             text run at (0,18) width 148: "second inline element. "
-            text run at (147,18) width 602: "They should therefore appear, along with the sentence above, to be all one paragraph which is"
+            text run at (147,18) width 601: "They should therefore appear, along with the sentence above, to be all one paragraph which is"
             text run at (0,36) width 133: "four sentences long. "
             text run at (132,36) width 256: "If this is not the case, then the keyword "
           LayoutInline {CODE} at (0,0) size 49x16
@@ -50,7 +50,7 @@ layer at (0,0) size 785x821 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (177,18) size 689x35
           text run at (177,18) width 369: " is supported, there will be a square for the item marker). "
           text run at (545,18) width 144: "A 3em left margin has"
-          text run at (0,36) width 473: "been applied in order to ensure that there is space for the list-item marker."
+          text run at (0,36) width 472: "been applied in order to ensure that there is space for the list-item marker."
       LayoutBlockFlow {P} at (0,319) size 769x18
         LayoutText {#text} at (0,0) size 467x17
           text run at (0,0) width 467: "The next paragraph should be invisible (if it's visible, you'll see red text)."
@@ -111,7 +111,7 @@ layer at (0,0) size 785x821 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (177,18) size 689x35
                   text run at (177,18) width 369: " is supported, there will be a square for the item marker). "
                   text run at (545,18) width 144: "A 3em left margin has"
-                  text run at (0,36) width 473: "been applied in order to ensure that there is space for the list-item marker."
+                  text run at (0,36) width 472: "been applied in order to ensure that there is space for the list-item marker."
               LayoutBlockFlow {P} at (4,178) size 747x18
                 LayoutText {#text} at (0,0) size 467x17
                   text run at (0,0) width 467: "The next paragraph should be invisible (if it's visible, you'll see red text)."

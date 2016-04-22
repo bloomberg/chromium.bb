@@ -4,9 +4,9 @@ layer at (0,0) size 785x660 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x660
     LayoutBlockFlow {BODY} at (8,16) size 769x636
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 399x19
+        LayoutText {#text} at (0,0) size 398x19
           text run at (0,0) width 358: "The blue text should not go past the 50% mark on the ruler "
-          text run at (358,0) width 41: "below."
+          text run at (358,0) width 40: "below."
       LayoutBlockFlow {DIV} at (0,36) size 384.50x560 [color=#0000FF]
         LayoutText {#text} at (0,0) size 375x559
           text run at (0,0) width 367: "a bit of dummy text a bit of dummy text a bit of dummy text a"

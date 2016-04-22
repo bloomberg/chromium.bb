@@ -21,17 +21,17 @@ layer at (0,0) size 800x600
         LayoutInline {TT} at (0,0) size 25x15
           LayoutText {#text} at (178,27) size 25x15
             text run at (178,27) width 25: "one"
-        LayoutText {#text} at (202,25) size 165x18
+        LayoutText {#text} at (202,25) size 164x18
           text run at (202,25) width 9: ". "
-          text run at (210,25) width 157: "However, it contains an "
+          text run at (210,25) width 156: "However, it contains an "
         LayoutInline {SPAN} at (0,0) size 178x22 [border: (1px solid #000000) (3px solid #000000)]
-          LayoutText {#text} at (369,25) size 148x18
-            text run at (369,25) width 148: "inline element of class "
-          LayoutInline {TT} at (0,0) size 25x15
-            LayoutText {#text} at (516,27) size 25x15
-              text run at (516,27) width 25: "two"
-        LayoutText {#text} at (543,25) size 766x54
-          text run at (543,25) width 226: ", which should result in a thin solid"
+          LayoutText {#text} at (368,25) size 149x18
+            text run at (368,25) width 149: "inline element of class "
+          LayoutInline {TT} at (0,0) size 24x15
+            LayoutText {#text} at (516,27) size 24x15
+              text run at (516,27) width 24: "two"
+        LayoutText {#text} at (542,25) size 765x54
+          text run at (542,25) width 226: ", which should result in a thin solid"
           text run at (3,43) width 706: "border on the top side of each box in the inline element (and the UA's default border on the other three sides). "
           text run at (708,43) width 53: "There is"
           text run at (3,61) width 49: "also an "
@@ -62,17 +62,17 @@ layer at (0,0) size 800x600
                 LayoutInline {TT} at (0,0) size 25x15
                   LayoutText {#text} at (178,27) size 25x15
                     text run at (178,27) width 25: "one"
-                LayoutText {#text} at (202,25) size 165x18
+                LayoutText {#text} at (202,25) size 164x18
                   text run at (202,25) width 9: ". "
-                  text run at (210,25) width 157: "However, it contains an "
+                  text run at (210,25) width 156: "However, it contains an "
                 LayoutInline {SPAN} at (0,0) size 178x22 [border: (1px solid #000000) (3px solid #000000)]
-                  LayoutText {#text} at (369,25) size 148x18
-                    text run at (369,25) width 148: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 25x15
-                    LayoutText {#text} at (516,27) size 25x15
-                      text run at (516,27) width 25: "two"
-                LayoutText {#text} at (543,25) size 737x54
-                  text run at (543,25) width 190: ", which should result in a thin"
+                  LayoutText {#text} at (368,25) size 149x18
+                    text run at (368,25) width 149: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 24x15
+                    LayoutText {#text} at (516,27) size 24x15
+                      text run at (516,27) width 24: "two"
+                LayoutText {#text} at (542,25) size 737x54
+                  text run at (542,25) width 191: ", which should result in a thin"
                   text run at (3,43) width 737: "solid border on the top side of each box in the inline element (and the UA's default border on the other three sides)."
                   text run at (3,61) width 105: "There is also an "
                 LayoutInline {SPAN} at (0,0) size 188x18

@@ -210,12 +210,12 @@ layer at (0,0) size 785x4501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (490,238) size 4.50x15
         LayoutText {#text} at (494,238) size 6x21
           text run at (494,238) width 6: " "
-        LayoutInline {BIG} at (0,0) size 153x23
-          LayoutText {#text} at (499,236) size 153x23
-            text run at (499,236) width 153: "the images appear."
-        LayoutText {#text} at (651,238) size 6x21
-          text run at (651,238) width 6: " "
-        LayoutImage {IMG} at (656.50,238) size 27x90
+        LayoutInline {BIG} at (0,0) size 152x23
+          LayoutText {#text} at (499,236) size 152x23
+            text run at (499,236) width 152: "the images appear."
+        LayoutText {#text} at (650,238) size 6x21
+          text run at (650,238) width 6: " "
+        LayoutImage {IMG} at (655.31,238) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1829.31) size 769x40
         LayoutText {#text} at (0,0) size 751x39
@@ -280,12 +280,12 @@ layer at (0,0) size 785x4501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (180,180) size 4.50x15
         LayoutText {#text} at (184,176) size 5x19
           text run at (184,176) width 5: " "
-        LayoutInline {BIG} at (0,0) size 153x23
-          LayoutText {#text} at (188,173) size 153x23
-            text run at (188,173) width 153: "the images appear."
-        LayoutText {#text} at (340,176) size 5x19
-          text run at (340,176) width 5: " "
-        LayoutImage {IMG} at (344.50,143) size 27x90
+        LayoutInline {BIG} at (0,0) size 152x23
+          LayoutText {#text} at (188,173) size 152x23
+            text run at (188,173) width 152: "the images appear."
+        LayoutText {#text} at (339,176) size 5x19
+          text run at (339,176) width 5: " "
+        LayoutImage {IMG} at (343.31,143) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,2134.31) size 769x40
         LayoutText {#text} at (0,0) size 753x39
@@ -368,10 +368,10 @@ layer at (0,0) size 785x4501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {BIG} at (0,0) size 720x88
           LayoutText {#text} at (568,48) size 720x88
             text run at (568,48) width 152: "whichever line the"
-            text run at (0,113) width 137: "elements appear."
-        LayoutText {#text} at (137,113) size 4x19
-          text run at (137,113) width 4: " "
-        LayoutImage {IMG} at (141,113) size 27x90
+            text run at (0,113) width 136: "elements appear."
+        LayoutText {#text} at (135,113) size 5x19
+          text run at (135,113) width 5: " "
+        LayoutImage {IMG} at (139.81,113) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,2409.31) size 769x2076 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x2074
@@ -550,12 +550,12 @@ layer at (0,0) size 785x4501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (490,238) size 4.50x15
                 LayoutText {#text} at (494,238) size 6x21
                   text run at (494,238) width 6: " "
-                LayoutInline {BIG} at (0,0) size 153x23
-                  LayoutText {#text} at (499,236) size 153x23
-                    text run at (499,236) width 153: "the images appear."
-                LayoutText {#text} at (651,238) size 6x21
-                  text run at (651,238) width 6: " "
-                LayoutImage {IMG} at (656.50,238) size 27x90
+                LayoutInline {BIG} at (0,0) size 152x23
+                  LayoutText {#text} at (499,236) size 152x23
+                    text run at (499,236) width 152: "the images appear."
+                LayoutText {#text} at (650,238) size 6x21
+                  text run at (650,238) width 6: " "
+                LayoutImage {IMG} at (655.31,238) size 27x90
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,1478.31) size 747x40
                 LayoutText {#text} at (0,0) size 705x39
@@ -620,12 +620,12 @@ layer at (0,0) size 785x4501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (199,180) size 4.50x15
                 LayoutText {#text} at (203,176) size 5x19
                   text run at (203,176) width 5: " "
-                LayoutInline {BIG} at (0,0) size 153x23
-                  LayoutText {#text} at (207,173) size 153x23
-                    text run at (207,173) width 153: "the images appear."
-                LayoutText {#text} at (359,176) size 5x19
-                  text run at (359,176) width 5: " "
-                LayoutImage {IMG} at (363.50,143) size 27x90
+                LayoutInline {BIG} at (0,0) size 152x23
+                  LayoutText {#text} at (207,173) size 152x23
+                    text run at (207,173) width 152: "the images appear."
+                LayoutText {#text} at (358,176) size 5x19
+                  text run at (358,176) width 5: " "
+                LayoutImage {IMG} at (362.31,143) size 27x90
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,1783.31) size 747x40
                 LayoutText {#text} at (0,0) size 740x39
@@ -709,8 +709,8 @@ layer at (0,0) size 785x4501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutInline {BIG} at (0,0) size 713x88
                   LayoutText {#text} at (627,48) size 713x88
                     text run at (627,48) width 86: "whichever"
-                    text run at (0,113) width 203: "line the elements appear."
-                LayoutText {#text} at (203,113) size 4x19
-                  text run at (203,113) width 4: " "
-                LayoutImage {IMG} at (207,113) size 27x90
+                    text run at (0,113) width 202: "line the elements appear."
+                LayoutText {#text} at (201,113) size 5x19
+                  text run at (201,113) width 5: " "
+                LayoutImage {IMG} at (205.81,113) size 27x90
                 LayoutText {#text} at (0,0) size 0x0

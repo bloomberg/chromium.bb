@@ -4,8 +4,8 @@ layer at (0,0) size 800x255
   LayoutBlockFlow {HTML} at (0,0) size 800x255
     LayoutBlockFlow {BODY} at (8,16) size 784x189
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 770x35
-          text run at (0,0) width 770: "There should be four identical white boxes in the teal block below, all the same size, each one a little lower down on the"
+        LayoutText {#text} at (0,0) size 769x35
+          text run at (0,0) width 769: "There should be four identical white boxes in the teal block below, all the same size, each one a little lower down on the"
           text run at (0,18) width 138: "line, in a step pattern."
       LayoutBlockFlow {DIV} at (50,86) size 684x103 [color=#FFFFFF] [bgcolor=#008080]
         LayoutInline {SPAN} at (0,0) size 51x51

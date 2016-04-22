@@ -18,22 +18,22 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,115) size 784x60 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 627x19
           text run at (0,0) width 627: "This is an unstyled element, save for the background color, and it contains inline elements with classes of "
-        LayoutInline {SPAN} at (0,0) size 65x29 [border: (5px dashed #000000)]
-          LayoutText {#text} at (632,0) size 55x19
-            text run at (632,0) width 55: "class one"
-        LayoutText {#text} at (692,0) size 759x39
-          text run at (692,0) width 67: ", which will"
+        LayoutInline {SPAN} at (0,0) size 66x29 [border: (5px dashed #000000)]
+          LayoutText {#text} at (631,0) size 56x19
+            text run at (631,0) width 56: "class one"
+        LayoutText {#text} at (691,0) size 759x39
+          text run at (691,0) width 68: ", which will"
           text run at (0,20) width 227: "result in a dashed thick black border; "
         LayoutInline {SPAN} at (0,0) size 66x29 [border: (5px groove #FF0000)]
           LayoutText {#text} at (232,20) size 56x19
             text run at (232,20) width 56: "class two"
         LayoutText {#text} at (293,20) size 355x19
           text run at (293,20) width 355: ", which should result in a grooved thick purple border, and "
-        LayoutInline {SPAN} at (0,0) size 63x19
-          LayoutText {#text} at (648,20) size 63x19
-            text run at (648,20) width 63: "class three"
-        LayoutText {#text} at (711,20) size 754x39
-          text run at (711,20) width 43: ", which"
+        LayoutInline {SPAN} at (0,0) size 64x19
+          LayoutText {#text} at (647,20) size 64x19
+            text run at (647,20) width 64: "class three"
+        LayoutText {#text} at (710,20) size 754x39
+          text run at (710,20) width 44: ", which"
           text run at (0,40) width 193: "should result in no border at all. "
           text run at (193,40) width 406: "The line-height of the parent element should not change, on any line."
       LayoutTable {TABLE} at (0,191) size 784x98 [border: (1px outset #808080)]
@@ -51,21 +51,21 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {P} at (4,4) size 762x60 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 627x19
                   text run at (0,0) width 627: "This is an unstyled element, save for the background color, and it contains inline elements with classes of "
-                LayoutInline {SPAN} at (0,0) size 65x29 [border: (5px dashed #000000)]
-                  LayoutText {#text} at (632,0) size 55x19
-                    text run at (632,0) width 55: "class one"
-                LayoutText {#text} at (692,0) size 759x39
-                  text run at (692,0) width 67: ", which will"
+                LayoutInline {SPAN} at (0,0) size 66x29 [border: (5px dashed #000000)]
+                  LayoutText {#text} at (631,0) size 56x19
+                    text run at (631,0) width 56: "class one"
+                LayoutText {#text} at (691,0) size 759x39
+                  text run at (691,0) width 68: ", which will"
                   text run at (0,20) width 227: "result in a dashed thick black border; "
                 LayoutInline {SPAN} at (0,0) size 66x29 [border: (5px groove #FF0000)]
                   LayoutText {#text} at (232,20) size 56x19
                     text run at (232,20) width 56: "class two"
                 LayoutText {#text} at (293,20) size 355x19
                   text run at (293,20) width 355: ", which should result in a grooved thick purple border, and "
-                LayoutInline {SPAN} at (0,0) size 63x19
-                  LayoutText {#text} at (648,20) size 63x19
-                    text run at (648,20) width 63: "class three"
-                LayoutText {#text} at (711,20) size 754x39
-                  text run at (711,20) width 43: ", which"
+                LayoutInline {SPAN} at (0,0) size 64x19
+                  LayoutText {#text} at (647,20) size 64x19
+                    text run at (647,20) width 64: "class three"
+                LayoutText {#text} at (710,20) size 754x39
+                  text run at (710,20) width 44: ", which"
                   text run at (0,40) width 193: "should result in no border at all. "
                   text run at (193,40) width 406: "The line-height of the parent element should not change, on any line."

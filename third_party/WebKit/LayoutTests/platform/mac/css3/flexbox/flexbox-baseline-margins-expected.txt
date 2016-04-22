@@ -50,15 +50,15 @@ layer at (0,0) size 800x491
           text run at (0,85) width 166: "Should align with the top "
         LayoutBlockFlow {DIV} at (165.77,8) size 146x162 [bgcolor=#FFC0CB] [border: (11px solid #FFC0CB)]
           LayoutFlexibleBox {DIV} at (24,32) size 98x98 [border: (11px solid #FFC0CB)]
-        LayoutText {#text} at (311,85) size 175x18
-          text run at (311,85) width 175: " of the horizontal scrollbar."
+        LayoutText {#text} at (311,85) size 174x18
+          text run at (311,85) width 174: " of the horizontal scrollbar."
       LayoutBlockFlow {DIV} at (0,425) size 784x50
         LayoutText {#text} at (0,11) size 188x18
           text run at (0,11) width 188: "Should align 10px above the "
         LayoutBlockFlow {DIV} at (187.08,0) size 50x50 [bgcolor=#FFC0CB]
           LayoutFlexibleBox {DIV} at (0,0) size 50x50
-        LayoutText {#text} at (237,11) size 240x18
-          text run at (237,11) width 240: " horizontal scrollbar, if one is visible."
+        LayoutText {#text} at (237,11) size 239x18
+          text run at (237,11) width 239: " horizontal scrollbar, if one is visible."
 layer at (222,323) size 50x46 clip at (222,332) size 35x22
   LayoutBlockFlow {DIV} at (24,28) size 50x46 [bgcolor=#D3D3D3] [border: (9px solid #FFC0CB) none]
 layer at (195,433) size 50x50 clip at (195,433) size 35x35

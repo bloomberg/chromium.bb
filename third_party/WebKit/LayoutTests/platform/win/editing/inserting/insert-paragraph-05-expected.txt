@@ -10,11 +10,11 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 618x17
           text run at (0,0) width 618: "This tests inserting a paragraph separator before a special element at the start of an editable root."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 626x17
-          text run at (0,0) width 626: "Visually, it should leave a blank line before the link, and the caret selection at the start of the link."
+        LayoutText {#text} at (0,0) size 625x17
+          text run at (0,0) width 625: "Visually, it should leave a blank line before the link, and the caret selection at the start of the link."
       LayoutBlockFlow {P} at (0,68) size 784x36
-        LayoutText {#text} at (0,0) size 730x35
-          text run at (0,0) width 730: "Structurally, the empty paragraph element should go before the anchor element, rather than inside of it. See Radar"
+        LayoutText {#text} at (0,0) size 729x35
+          text run at (0,0) width 729: "Structurally, the empty paragraph element should go before the anchor element, rather than inside of it. See Radar"
           text run at (0,18) width 68: "#5452675."
       LayoutBlockFlow {DIV} at (0,120) size 784x36
         LayoutBlockFlow {DIV} at (0,0) size 784x18

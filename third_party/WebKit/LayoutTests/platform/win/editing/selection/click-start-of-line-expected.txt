@@ -18,9 +18,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (421,18) size 5x17
           text run at (421,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 747x17
-          text run at (0,0) width 563: "To test interactively, click the left side of the W on the second line. The caret should be "
-          text run at (562,0) width 185: "move to the start of that line."
+        LayoutText {#text} at (0,0) size 746x17
+          text run at (0,0) width 562: "To test interactively, click the left side of the W on the second line. The caret should be "
+          text run at (561,0) width 185: "move to the start of that line."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,96) size 250x110
         LayoutText {#text} at (0,1) size 234x108

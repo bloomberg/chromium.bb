@@ -53,7 +53,7 @@ layer at (0,0) size 800x600
             text run at (303,14) width 110: "our fathers "
             text run at (412,14) width 340: "f upon this continent, a new nation,"
             text run at (751,14) width 7: " "
-            text run at (14,42) width 229: "conceived    in Liberty, "
-            text run at (242,42) width 381: "and dedicated to the proposition that all"
+            text run at (14,42) width 228: "conceived    in Liberty, "
+            text run at (241,42) width 380: "and dedicated to the proposition that all"
         LayoutText {#text} at (0,0) size 0x0
 caret: position 7 of child 2 {#text} of child 1 {SPAN} of child 1 {DIV} of body

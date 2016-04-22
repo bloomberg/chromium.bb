@@ -32,8 +32,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          LayoutText {#text} at (0,28) size 752x56
-            text run at (0,28) width 752: "Should see two lines of text below, self-documenting themselves as \"line one\""
+          LayoutText {#text} at (0,28) size 750x56
+            text run at (0,28) width 750: "Should see two lines of text below, self-documenting themselves as \"line one\""
             text run at (0,56) width 656: "and \"line two\". The insertion point must be at the start of \"line two\"."
       LayoutBlockFlow {DIV} at (0,236) size 784x60
         LayoutBlockFlow {DIV} at (0,0) size 784x60 [border: (2px solid #FF0000)]

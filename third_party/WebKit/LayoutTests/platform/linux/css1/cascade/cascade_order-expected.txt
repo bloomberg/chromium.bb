@@ -43,8 +43,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutBlockFlow {UL} at (0,20) size 729x60
             LayoutListItem {LI} at (40,0) size 689x20 [color=#808080]
               LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-              LayoutText {#text} at (0,0) size 178x19
-                text run at (0,0) width 178: "This list item should be gray..."
+              LayoutText {#text} at (0,0) size 177x19
+                text run at (0,0) width 177: "This list item should be gray..."
             LayoutListItem {LI} at (40,20) size 689x20 [color=#808080]
               LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutText {#text} at (0,0) size 108x19
@@ -104,8 +104,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutBlockFlow {UL} at (0,20) size 612x60
                     LayoutListItem {LI} at (40,0) size 572x20 [color=#808080]
                       LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
-                      LayoutText {#text} at (0,0) size 178x19
-                        text run at (0,0) width 178: "This list item should be gray..."
+                      LayoutText {#text} at (0,0) size 177x19
+                        text run at (0,0) width 177: "This list item should be gray..."
                     LayoutListItem {LI} at (40,20) size 572x20 [color=#808080]
                       LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutText {#text} at (0,0) size 108x19

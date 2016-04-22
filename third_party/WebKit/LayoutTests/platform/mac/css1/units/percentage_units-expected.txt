@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (196,280) size 588x36
         LayoutText {#text} at (0,0) size 560x36
           text run at (0,0) width 560: "This paragraph should have a left margin of 25% the width of its parent element, which"
-          text run at (0,18) width 367: "should require some extra text in order to test effectively."
+          text run at (0,18) width 366: "should require some extra text in order to test effectively."
       LayoutTable {TABLE} at (0,332) size 784x212 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x210
           LayoutTableRow {TR} at (0,0) size 782x26
@@ -63,4 +63,4 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {P} at (194.50,144) size 571.50x36
                 LayoutText {#text} at (0,0) size 560x36
                   text run at (0,0) width 560: "This paragraph should have a left margin of 25% the width of its parent element, which"
-                  text run at (0,18) width 367: "should require some extra text in order to test effectively."
+                  text run at (0,18) width 366: "should require some extra text in order to test effectively."

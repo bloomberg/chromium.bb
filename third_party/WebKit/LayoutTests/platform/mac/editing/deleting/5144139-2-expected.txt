@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 720x36
+        LayoutText {#text} at (0,0) size 718x36
           text run at (0,0) width 711: "This tests to see that deleting a selection that starts just before a table and ends inside the table does not insert a"
-          text run at (0,18) width 192: "placeholder br unnecessarily. "
-          text run at (191,18) width 255: "You should see two ToDos, one empty. "
-          text run at (445,18) width 275: "The caret should be just before the second."
+          text run at (0,18) width 190: "placeholder br unnecessarily. "
+          text run at (189,18) width 255: "You should see two ToDos, one empty. "
+          text run at (443,18) width 275: "The caret should be just before the second."
       LayoutBlockFlow {DIV} at (0,52) size 784x50
         LayoutTable {TABLE} at (0,0) size 132x25
           LayoutTableSection {TBODY} at (0,0) size 132x25

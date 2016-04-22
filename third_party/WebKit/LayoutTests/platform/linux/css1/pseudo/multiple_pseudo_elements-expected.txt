@@ -33,7 +33,7 @@ layer at (0,0) size 785x1069 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (9,0) width 727: "he first letter of this paragraph, and only that one, should be maroon (dark red), while the entire first line should be green. "
           text run at (736,0) width 33: "If this"
           text run at (0,20) width 451: "precise combination does not occur, then the user agent has failed this test. "
-          text run at (451,20) width 301: "Remember that in order to ensure a complete test,"
+          text run at (450,20) width 302: "Remember that in order to ensure a complete test,"
           text run at (0,40) width 332: "the paragraph must be displayed on more than one line."
       LayoutBlockFlow {P} at (0,255) size 769x192
         LayoutInline {<pseudo:first-letter>} at (0,0) size 69x127 [color=#800000]
@@ -77,7 +77,7 @@ layer at (0,0) size 785x1069 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (9,0) width 727: "he first letter of this paragraph, and only that one, should be maroon (dark red), while the entire first line should be green. "
                   text run at (736,0) width 9: "If"
                   text run at (0,20) width 475: "this precise combination does not occur, then the user agent has failed this test. "
-                  text run at (475,20) width 272: "Remember that in order to ensure a complete"
+                  text run at (474,20) width 273: "Remember that in order to ensure a complete"
                   text run at (0,40) width 361: "test, the paragraph must be displayed on more than one line."
               LayoutBlockFlow {P} at (4,80) size 747x192
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 69x127 [color=#800000]

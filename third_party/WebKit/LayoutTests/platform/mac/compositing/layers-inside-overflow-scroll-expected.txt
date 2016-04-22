@@ -4,8 +4,8 @@ layer at (0,0) size 800x428
   LayoutBlockFlow {HTML} at (0,0) size 800x428
     LayoutBlockFlow {BODY} at (8,16) size 784x402
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 444x18
-          text run at (0,0) width 444: "The red box in the overflow:scroll div should be scrolled out of view."
+        LayoutText {#text} at (0,0) size 443x18
+          text run at (0,0) width 443: "The red box in the overflow:scroll div should be scrolled out of view."
       LayoutBlockFlow {DIV} at (10,34) size 302x206 [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
 layer at (19,51) size 300x200

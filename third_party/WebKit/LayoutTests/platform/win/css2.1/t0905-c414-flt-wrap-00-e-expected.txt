@@ -4,8 +4,8 @@ layer at (0,0) size 800x193
   LayoutBlockFlow {HTML} at (0,0) size 800x192.63
     LayoutBlockFlow {BODY} at (8,16) size 784x160.63
       LayoutBlockFlow {P} at (0,0) size 784x18 [color=#000080]
-        LayoutText {#text} at (0,0) size 265x17
-          text run at (0,0) width 265: "The word \"fail\" should not appear below."
+        LayoutText {#text} at (0,0) size 264x17
+          text run at (0,0) width 264: "The word \"fail\" should not appear below."
       LayoutBlockFlow {DIV} at (16,34) size 240x126.63 [color=#FFFFFF] [bgcolor=#FFFFFF]
         LayoutBlockFlow (floating) {P} at (0,0) size 42.19x18.31 [color=#000080]
           LayoutText {#text} at (0,0) size 43x17

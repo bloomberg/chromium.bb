@@ -22,11 +22,11 @@ layer at (0,0) size 800x388
         LayoutText {#text} at (10,10) size 126x17
           text run at (10,10) width 126: "Orange and double."
       LayoutBlockFlow {P} at (0,270) size 784x18 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 70x17
-          text run at (0,0) width 70: "No border."
+        LayoutText {#text} at (0,0) size 69x17
+          text run at (0,0) width 69: "No border."
       LayoutBlockFlow {P} at (0,304) size 784x18 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 70x17
-          text run at (0,0) width 70: "No border."
+        LayoutText {#text} at (0,0) size 69x17
+          text run at (0,0) width 69: "No border."
       LayoutBlockFlow {P} at (0,338) size 784x18 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 70x17
-          text run at (0,0) width 70: "No border."
+        LayoutText {#text} at (0,0) size 69x17
+          text run at (0,0) width 69: "No border."

@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,27) size 719x55
             text run at (0,27) width 719: "Pasting black (document default color) text into a block of text with a non-"
-            text run at (0,55) width 128: "default color."
+            text run at (0,55) width 127: "default color."
         LayoutBlockFlow {DIV} at (14,113) size 756x55
           LayoutText {#text} at (0,0) size 189x26
             text run at (0,0) width 189: "Expected Results: "

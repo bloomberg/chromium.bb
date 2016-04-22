@@ -4,9 +4,9 @@ layer at (0,0) size 800x308
   LayoutBlockFlow {HTML} at (0,0) size 800x308
     LayoutBlockFlow {BODY} at (8,16) size 784x276 [color=#0000FF]
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 701x19
-          text run at (0,0) width 337: "There should be a solid line to the left of the text below, "
-          text run at (337,0) width 364: "having three segments each of a different colour as indicated."
+        LayoutText {#text} at (0,0) size 700x19
+          text run at (0,0) width 336: "There should be a solid line to the left of the text below, "
+          text run at (335,0) width 365: "having three segments each of a different colour as indicated."
       LayoutBlockFlow {UL} at (0,36) size 784x240
         LayoutListItem {LI} at (40,0) size 744x80 [border: none (3px solid #FFA500)]
           LayoutBlockFlow (anonymous) at (3,0) size 741x20
@@ -49,4 +49,4 @@ layer at (0,0) size 800x308
             text run at (3,100) width 129: "yellow yellow yellow "
             text run at (132,100) width 387: "yellow yellow yellow yellow yellow yellow yellow yellow yellow "
             text run at (519,100) width 211: "yellow yellow yellow yellow yellow"
-            text run at (3,120) width 129: "yellow yellow yellow."
+            text run at (3,120) width 128: "yellow yellow yellow."

@@ -16,7 +16,7 @@ layer at (8,8) size 150x244 layerType: foreground only
           text run at (0,18) width 125: "green square below"
           text run at (0,36) width 148: "this line, exactly fitting"
           text run at (0,54) width 110: "inside a 2px lime"
-          text run at (0,72) width 46: "border."
+          text run at (0,72) width 45: "border."
       LayoutBlockFlow {P} at (0,90) size 150x154
 layer at (8,98) size 300x150
   LayoutEmbeddedObject {OBJECT} at (0,0) size 300x150

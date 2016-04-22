@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 766x39
+        LayoutText {#text} at (0,0) size 765x39
           text run at (0,0) width 555: "This tests for a bug when a selection is replaced by content with selectReplacement == true. "
-          text run at (555,0) width 211: "Below, you should see 'A new link'"
+          text run at (555,0) width 210: "Below, you should see 'A new link'"
           text run at (0,20) width 26: "and "
           text run at (26,20) width 146: "'link' should be selected."
       LayoutBlockFlow {DIV} at (0,56) size 784x20

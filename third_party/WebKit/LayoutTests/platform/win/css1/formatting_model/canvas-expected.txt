@@ -14,11 +14,11 @@ layer at (0,0) size 800x600
           text run at (552,16) width 0: " "
       LayoutBlockFlow {HR} at (0,79) size 750x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,97) size 750x54
-        LayoutText {#text} at (0,0) size 750x53
+        LayoutText {#text} at (0,0) size 748x53
           text run at (0,0) width 392: "The body of this document should have a green background. "
           text run at (391,0) width 316: "It also has a margin of 25 pixels, so the light blue"
-          text run at (0,18) width 436: "background set for the HTML element should surround the BODY. "
-          text run at (435,18) width 315: "If the BODY content is significantly shorter than"
+          text run at (0,18) width 434: "background set for the HTML element should surround the BODY. "
+          text run at (433,18) width 315: "If the BODY content is significantly shorter than"
           text run at (0,36) width 528: "the browser's window height, then the bottom border may be larger than 25 pixels."
       LayoutTable {TABLE} at (0,167) size 750x90 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 748x88
@@ -33,9 +33,9 @@ layer at (0,0) size 800x600
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 736x62 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 728x54
-                LayoutText {#text} at (0,0) size 718x53
+                LayoutText {#text} at (0,0) size 716x53
                   text run at (0,0) width 392: "The body of this document should have a green background. "
                   text run at (391,0) width 316: "It also has a margin of 25 pixels, so the light blue"
-                  text run at (0,18) width 436: "background set for the HTML element should surround the BODY. "
-                  text run at (435,18) width 283: "If the BODY content is significantly shorter"
+                  text run at (0,18) width 434: "background set for the HTML element should surround the BODY. "
+                  text run at (433,18) width 283: "If the BODY content is significantly shorter"
                   text run at (0,36) width 559: "than the browser's window height, then the bottom border may be larger than 25 pixels."

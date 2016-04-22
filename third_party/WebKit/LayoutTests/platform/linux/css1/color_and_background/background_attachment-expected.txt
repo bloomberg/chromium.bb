@@ -21,7 +21,7 @@ layer at (0,0) size 800x1239 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (102,40) width 663: "In addition, the default Test Suite background should NOT appear, as it's been overridden by the styles shown"
           text run at (0,60) width 45: "above. "
           text run at (45,60) width 619: "I'll have to add a lot of extra text to the page in order to make all this something we can actually check. "
-          text run at (664,60) width 95: "Don't worry, I'll"
+          text run at (664,60) width 94: "Don't worry, I'll"
           text run at (0,80) width 113: "think of something."
       LayoutBlockFlow {P} at (0,215) size 784x20
         LayoutText {#text} at (0,0) size 484x19
@@ -85,8 +85,8 @@ layer at (0,0) size 800x1239 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutInline {EM} at (0,0) size 72x19
           LayoutText {#text} at (0,0) size 72x19
             text run at (0,0) width 72: "CSS1 core:"
-        LayoutText {#text} at (71,0) size 761x39
-          text run at (71,0) width 690: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the HTML"
+        LayoutText {#text} at (71,0) size 759x39
+          text run at (71,0) width 688: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the HTML"
           text run at (0,20) width 728: "and BODY elements, since there is no way for an author to provide an image only for those browsers that support 'fixed'."
       LayoutTable {TABLE} at (0,649.53) size 784x573 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x571
@@ -109,7 +109,7 @@ layer at (0,0) size 800x1239 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (166,40) width 583: "In addition, the default Test Suite background should NOT appear, as it's been overridden by the"
                   text run at (0,60) width 125: "styles shown above. "
                   text run at (125,60) width 615: "I'll have to add a lot of extra text to the page in order to make all this something we can actually check."
-                  text run at (0,80) width 212: "Don't worry, I'll think of something."
+                  text run at (0,80) width 211: "Don't worry, I'll think of something."
               LayoutBlockFlow {P} at (4,120) size 762x20
                 LayoutText {#text} at (0,0) size 484x19
                   text run at (0,0) width 397: "In fact, why not the relevant section from the CSS1 specification? "
@@ -172,6 +172,6 @@ layer at (0,0) size 800x1239 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutInline {EM} at (0,0) size 72x19
                   LayoutText {#text} at (0,0) size 72x19
                     text run at (0,0) width 72: "CSS1 core:"
-                LayoutText {#text} at (71,0) size 761x39
-                  text run at (71,0) width 690: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the HTML"
+                LayoutText {#text} at (71,0) size 759x39
+                  text run at (71,0) width 688: " UAs may treat 'fixed' as 'scroll'. However, it is recommended they interpret 'fixed' correctly, at least on the HTML"
                   text run at (0,20) width 728: "and BODY elements, since there is no way for an author to provide an image only for those browsers that support 'fixed'."

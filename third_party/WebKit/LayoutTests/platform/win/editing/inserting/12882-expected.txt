@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 768x35
           text run at (0,0) width 568: "This tests for a bug where images with align right/left would fail to be inserted on paste. "
           text run at (567,0) width 201: "You should see a picture of abe"
-          text run at (0,18) width 316: "in the editable region below, aligned to the right. "
-        LayoutInline {B} at (0,0) size 743x35
-          LayoutText {#text} at (315,18) size 743x35
-            text run at (315,18) width 428: "This demonstrates a bug: the focus halo for the editable region"
+          text run at (0,18) width 315: "in the editable region below, aligned to the right. "
+        LayoutInline {B} at (0,0) size 742x35
+          LayoutText {#text} at (314,18) size 742x35
+            text run at (314,18) width 428: "This demonstrates a bug: the focus halo for the editable region"
             text run at (0,36) width 333: "doesn't expand to fit an image with align='right'."
       LayoutBlockFlow {DIV} at (0,70) size 784x36
         LayoutText {#text} at (0,0) size 201x17

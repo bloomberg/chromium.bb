@@ -4,8 +4,8 @@ layer at (0,0) size 800x266
   LayoutBlockFlow {HTML} at (0,0) size 800x266
     LayoutBlockFlow {BODY} at (8,16) size 784x242
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 580x18
-          text run at (0,0) width 580: "You should see 4 green squares each with one rounded corner. You should not see any red."
+        LayoutText {#text} at (0,0) size 579x18
+          text run at (0,0) width 579: "You should see 4 green squares each with one rounded corner. You should not see any red."
       LayoutBlockFlow (anonymous) at (0,34) size 784x208
         LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
         LayoutText {#text} at (100,86) size 4x18

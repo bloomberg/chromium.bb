@@ -40,8 +40,8 @@ layer at (0,0) size 785x1057 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {UL} at (25,363) size 744x100 [bgcolor=#808080]
         LayoutListItem {LI} at (40,0) size 704x20
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-          LayoutText {#text} at (0,0) size 656x19
-            text run at (0,0) width 656: "The left margin on this unordered list has been set to 25 pixels, and its background color has been set to gray."
+          LayoutText {#text} at (0,0) size 655x19
+            text run at (0,0) width 655: "The left margin on this unordered list has been set to 25 pixels, and its background color has been set to gray."
         LayoutListItem {LI} at (65,20) size 679x60 [bgcolor=#FFFFFF]
           LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 644x59
@@ -61,8 +61,8 @@ layer at (0,0) size 785x1057 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 746: "This paragraph has a left margin of -10px, which should cause it to be wider than it might otherwise be, and it has a light blue"
           text run at (0,20) width 80: "background. "
           text run at (80,20) width 369: "In all other respects, however, the element should be normal. "
-          text run at (449,20) width 321: "No styles have been applied to it besides the negative"
-          text run at (0,40) width 225: "left margin and the background color."
+          text run at (448,20) width 322: "No styles have been applied to it besides the negative"
+          text run at (0,40) width 224: "left margin and the background color."
       LayoutTable {TABLE} at (0,591) size 769x450 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x448
           LayoutTableRow {TR} at (0,0) size 767x28
@@ -94,8 +94,8 @@ layer at (0,0) size 785x1057 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {UL} at (29,204) size 722x100 [bgcolor=#808080]
                 LayoutListItem {LI} at (40,0) size 682x20
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
-                  LayoutText {#text} at (0,0) size 656x19
-                    text run at (0,0) width 656: "The left margin on this unordered list has been set to 25 pixels, and its background color has been set to gray."
+                  LayoutText {#text} at (0,0) size 655x19
+                    text run at (0,0) width 655: "The left margin on this unordered list has been set to 25 pixels, and its background color has been set to gray."
                 LayoutListItem {LI} at (65,20) size 657x60 [bgcolor=#FFFFFF]
                   LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                   LayoutText {#text} at (0,0) size 644x59
@@ -115,5 +115,5 @@ layer at (0,0) size 785x1057 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 746: "This paragraph has a left margin of -10px, which should cause it to be wider than it might otherwise be, and it has a light blue"
                   text run at (0,20) width 80: "background. "
                   text run at (80,20) width 369: "In all other respects, however, the element should be normal. "
-                  text run at (449,20) width 268: "No styles have been applied to it besides the"
-                  text run at (0,40) width 278: "negative left margin and the background color."
+                  text run at (448,20) width 269: "No styles have been applied to it besides the"
+                  text run at (0,40) width 277: "negative left margin and the background color."

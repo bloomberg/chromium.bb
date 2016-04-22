@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
 layer at (11,107) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 107x13
-      text run at (0,0) width 107: "http://www.ibm.com/"
+    LayoutText {#text} at (0,0) size 106x13
+      text run at (0,0) width 106: "http://www.ibm.com/"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body
 selection end:   position 19 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 7 {INPUT} of body

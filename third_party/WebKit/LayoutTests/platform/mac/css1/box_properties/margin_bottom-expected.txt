@@ -72,8 +72,8 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 761x54
           text run at (0,0) width 761: "This paragraph has a bottom margin of -10px, which should cause elements after it to be shifted \"upward\" on the page,"
           text run at (0,18) width 125: "and no top margin. "
-          text run at (124,18) width 498: "No other styles have been applied to it besides a light blue background color. "
-          text run at (621,18) width 131: "In all other respects,"
+          text run at (124,18) width 497: "No other styles have been applied to it besides a light blue background color. "
+          text run at (620,18) width 131: "In all other respects,"
           text run at (0,36) width 194: "the element should be normal."
       LayoutBlockFlow {P} at (0,901.25) size 769x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x18
@@ -136,11 +136,11 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 304x18
                     text run at (0,0) width 304: "This list item has no special styles applied to it."
               LayoutBlockFlow {P} at (4,663.75) size 747x54 [bgcolor=#00FFFF]
-                LayoutText {#text} at (0,0) size 731x54
+                LayoutText {#text} at (0,0) size 730x54
                   text run at (0,0) width 722: "This paragraph has a bottom margin of -10px, which should cause elements after it to be shifted \"upward\" on the"
                   text run at (0,18) width 163: "page, and no top margin. "
                   text run at (162,18) width 498: "No other styles have been applied to it besides a light blue background color. "
-                  text run at (659,18) width 72: "In all other"
+                  text run at (659,18) width 71: "In all other"
                   text run at (0,36) width 253: "respects, the element should be normal."
               LayoutBlockFlow {P} at (4,707.75) size 747x18 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 208x18

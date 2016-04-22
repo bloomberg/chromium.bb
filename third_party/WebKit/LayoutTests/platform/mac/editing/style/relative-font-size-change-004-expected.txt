@@ -40,7 +40,7 @@ layer at (0,0) size 800x600
           text run at (722,14) width 7: " "
           text run at (14,42) width 682: "24px. This test checks removing font size tags when they are no longer"
           text run at (695,42) width 7: " "
-          text run at (14,70) width 100: "necessary."
+          text run at (14,70) width 98: "necessary."
       LayoutBlockFlow {DIV} at (0,136) size 784x28
         LayoutText {#text} at (0,0) size 116x28
           text run at (0,0) width 116: "Size check: "

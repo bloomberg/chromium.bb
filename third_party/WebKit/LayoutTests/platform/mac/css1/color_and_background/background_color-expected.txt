@@ -36,9 +36,9 @@ layer at (0,0) size 800x600
         LayoutInline {CODE} at (0,0) size 87x15
           LayoutText {#text} at (186,38) size 87x15
             text run at (186,38) width 87: "transparent"
-        LayoutText {#text} at (272,36) size 404x18
+        LayoutText {#text} at (272,36) size 403x18
           text run at (272,36) width 9: ". "
-          text run at (280,36) width 396: "If the document background is visible, the browser is in error."
+          text run at (280,36) width 395: "If the document background is visible, the browser is in error."
       LayoutBlockFlow {P} at (0,263) size 784x18
         LayoutText {#text} at (0,0) size 754x18
           text run at (0,0) width 469: "This element should allow the document background to \"shine through.\" "
@@ -74,9 +74,9 @@ layer at (0,0) size 800x600
                 LayoutInline {CODE} at (0,0) size 87x15
                   LayoutText {#text} at (186,38) size 87x15
                     text run at (186,38) width 87: "transparent"
-                LayoutText {#text} at (272,36) size 404x18
+                LayoutText {#text} at (272,36) size 403x18
                   text run at (272,36) width 9: ". "
-                  text run at (280,36) width 396: "If the document background is visible, the browser is in error."
+                  text run at (280,36) width 395: "If the document background is visible, the browser is in error."
               LayoutBlockFlow {P} at (4,142) size 762x18
                 LayoutText {#text} at (0,0) size 754x18
                   text run at (0,0) width 469: "This element should allow the document background to \"shine through.\" "

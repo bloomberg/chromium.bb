@@ -16,13 +16,13 @@ layer at (0,0) size 800x600
           text run at (728,32) width 0: " "
       LayoutBlockFlow {HR} at (0,95) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,113) size 784x72 [bgcolor=#C0C0C0]
-        LayoutText {#text} at (0,0) size 692x17
-          text run at (0,0) width 692: "This is an unstyled element, save for the background color, and containing inline elements with a classes of "
+        LayoutText {#text} at (0,0) size 691x17
+          text run at (0,0) width 691: "This is an unstyled element, save for the background color, and containing inline elements with a classes of "
         LayoutInline {SPAN} at (0,0) size 65x23 [border: (3px solid #800080)]
-          LayoutText {#text} at (694,0) size 59x17
-            text run at (694,0) width 59: "class one"
-        LayoutText {#text} at (755,0) size 5x17
-          text run at (755,0) width 5: ","
+          LayoutText {#text} at (693,0) size 59x17
+            text run at (693,0) width 59: "class one"
+        LayoutText {#text} at (754,0) size 5x17
+          text run at (754,0) width 5: ","
         LayoutInline {SPAN} at (0,0) size 66x23 [border: (3px solid #800080)]
           LayoutText {#text} at (3,18) size 60x17
             text run at (3,18) width 60: "class two"
@@ -50,13 +50,13 @@ layer at (0,0) size 800x600
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x80 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 762x72 [bgcolor=#C0C0C0]
-                LayoutText {#text} at (0,0) size 692x17
-                  text run at (0,0) width 692: "This is an unstyled element, save for the background color, and containing inline elements with a classes of "
+                LayoutText {#text} at (0,0) size 691x17
+                  text run at (0,0) width 691: "This is an unstyled element, save for the background color, and containing inline elements with a classes of "
                 LayoutInline {SPAN} at (0,0) size 65x23 [border: (3px solid #800080)]
-                  LayoutText {#text} at (694,0) size 59x17
-                    text run at (694,0) width 59: "class one"
-                LayoutText {#text} at (755,0) size 5x17
-                  text run at (755,0) width 5: ","
+                  LayoutText {#text} at (693,0) size 59x17
+                    text run at (693,0) width 59: "class one"
+                LayoutText {#text} at (754,0) size 5x17
+                  text run at (754,0) width 5: ","
                 LayoutInline {SPAN} at (0,0) size 66x23 [border: (3px solid #800080)]
                   LayoutText {#text} at (3,18) size 60x17
                     text run at (3,18) width 60: "class two"

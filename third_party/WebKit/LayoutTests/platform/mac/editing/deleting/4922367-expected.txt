@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 758x36
+        LayoutText {#text} at (0,0) size 757x36
           text run at (0,0) width 395: "This tests selecting and deleting the paragraph before a table. "
-          text run at (394,0) width 364: "You should see only a table in the editable region below,"
+          text run at (394,0) width 363: "You should see only a table in the editable region below,"
           text run at (0,18) width 176: "with the caret just before it."
       LayoutBlockFlow {DIV} at (0,52) size 784x28
         LayoutBlockFlow {DIV} at (0,0) size 784x28

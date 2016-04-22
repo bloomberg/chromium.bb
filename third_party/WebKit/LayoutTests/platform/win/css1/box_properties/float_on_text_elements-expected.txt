@@ -13,7 +13,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (384,18) width 385: "box which contains the previous paragraph. Since the text"
           text run at (0,36) width 769: "of this element is much longer than the text in the previous element, the text will wrap around the yellow box. There is"
           text run at (0,54) width 769: "no padding, border or margins on this and the previous element, so the text of the two elements should be very close to"
-          text run at (0,72) width 71: "each other."
+          text run at (0,72) width 70: "each other."
       LayoutBlockFlow (anonymous) at (0,90) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutBlockFlow {HR} at (0,116) size 769x2 [border: (1px inset #EEEEEE)]
@@ -49,7 +49,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 384: "This paragraph is floated to the right (using a STYLE"
             text run at (0,18) width 384: "attribute) and the orange square image should appear to the"
             text run at (0,36) width 384: "left of the paragraph. This paragraph has a yellow"
-            text run at (0,54) width 385: "background and no padding, margin or border. The left"
+            text run at (0,54) width 384: "background and no padding, margin or border. The left"
             text run at (0,72) width 385: "edge of this yellow box should be horizonally aligned with"
             text run at (0,90) width 251: "the right edge of the yellow box above."
         LayoutImage {IMG} at (0,0) size 15x15
@@ -63,8 +63,8 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 22: "T"
         LayoutText {#text} at (48,0) size 769x71
           text run at (48,0) width 721: "he first letter (a \"T\") of this paragraph should float left and be twice the font-size of the rest of the paragraph, as"
-          text run at (48,18) width 530: "well as bold, with a content width of 1.5em and a background-color of silver. "
-          text run at (577,18) width 192: "The top of the big letter \"T\""
+          text run at (48,18) width 529: "well as bold, with a content width of 1.5em and a background-color of silver. "
+          text run at (576,18) width 193: "The top of the big letter \"T\""
           text run at (48,36) width 721: "should be vertically aligned with the top of the first line of this paragraph. This is commonly known as \"drop-"
           text run at (0,54) width 33: "cap\"."
       LayoutBlockFlow (anonymous) at (0,559) size 769x18
@@ -89,8 +89,8 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 413: "textual content of the paragraph should appear on the left side of"
           text run at (0,36) width 230: "the yellow \"sidebar\" on the right. "
           text run at (229,36) width 184: "The content of this element"
-          text run at (0,54) width 274: "should flow around the floated element. "
-          text run at (273,54) width 140: "However, the floated"
+          text run at (0,54) width 275: "should flow around the floated element. "
+          text run at (274,54) width 139: "However, the floated"
           text run at (0,72) width 413: "element may or may not be obscured by the blue background of"
           text run at (0,90) width 413: "this element, as the specification does not say which is drawn"
           text run at (0,108) width 64: "\"on top.\" "
@@ -166,8 +166,8 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (0,54) width 224: "element as a child. It has a yellow "
               text run at (223,54) width 354: "background color and is floated to the right. Since it is"
               text run at (0,72) width 12: "a "
-              text run at (11,72) width 411: "child of the blue DIV, the yellow DIV should appear inside the "
-              text run at (421,72) width 156: "blue rectangle. Due to it"
+              text run at (11,72) width 410: "child of the blue DIV, the yellow DIV should appear inside the "
+              text run at (420,72) width 157: "blue rectangle. Due to it"
               text run at (0,90) width 253: "being floated to the right and having "
               text run at (252,90) width 325: "a 10px right margin, the yellow rectange should"
               text run at (0,108) width 113: "have a 10px blue "
@@ -196,7 +196,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (373,18) width 374: "box which contains the previous paragraph. Since the text"
                   text run at (0,36) width 747: "of this element is much longer than the text in the previous element, the text will wrap around the yellow box. There"
                   text run at (0,54) width 747: "is no padding, border or margins on this and the previous element, so the text of the two elements should be very"
-                  text run at (0,72) width 124: "close to each other."
+                  text run at (0,72) width 123: "close to each other."
               LayoutBlockFlow (anonymous) at (4,94) size 747x18
                 LayoutBR {BR} at (0,0) size 0x17
               LayoutBlockFlow {HR} at (4,120) size 747x2 [border: (1px inset #EEEEEE)]
@@ -218,7 +218,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,0) width 373: "This paragraph is floated to the left and the orange square"
                     text run at (0,18) width 373: "image should appear to the right of the paragraph. This"
                     text run at (0,36) width 374: "paragraph has a yellow background and no padding,"
-                    text run at (0,54) width 374: "margin or border. The right edge of this yellow box"
+                    text run at (0,54) width 373: "margin or border. The right edge of this yellow box"
                     text run at (0,72) width 373: "should be horizontally aligned with the left edge of the"
                     text run at (0,90) width 156: "yellow box undernearth."
                 LayoutImage {IMG} at (373.50,0) size 15x15
@@ -232,7 +232,7 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (0,0) width 373: "This paragraph is floated to the right (using a STYLE"
                     text run at (0,18) width 374: "attribute) and the orange square image should appear to"
                     text run at (0,36) width 374: "the left of the paragraph. This paragraph has a yellow"
-                    text run at (0,54) width 374: "background and no padding, margin or border. The left"
+                    text run at (0,54) width 373: "background and no padding, margin or border. The left"
                     text run at (0,72) width 373: "edge of this yellow box should be horizonally aligned"
                     text run at (0,90) width 284: "with the right edge of the yellow box above."
                 LayoutImage {IMG} at (0,0) size 15x15
@@ -272,8 +272,8 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,18) width 391: "textual content of the paragraph should appear on the left"
                   text run at (0,36) width 269: "side of the yellow \"sidebar\" on the right. "
                   text run at (268,36) width 123: "The content of this"
-                  text run at (0,54) width 328: "element should flow around the floated element. "
-                  text run at (327,54) width 64: "However,"
+                  text run at (0,54) width 329: "element should flow around the floated element. "
+                  text run at (328,54) width 63: "However,"
                   text run at (0,72) width 391: "the floated element may or may not be obscured by the blue"
                   text run at (0,90) width 391: "background of this element, as the specification does not say"
                   text run at (0,108) width 183: "which is drawn \"on top.\" "
@@ -349,8 +349,8 @@ layer at (0,0) size 785x2786 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       text run at (427,36) width 133: "element has another"
                       text run at (0,54) width 268: "DIV element as a child. It has a yellow "
                       text run at (267,54) width 294: "background color and is floated to the right."
-                      text run at (0,72) width 90: "Since it is a "
-                      text run at (89,72) width 444: "child of the blue DIV, the yellow DIV should appear inside the "
+                      text run at (0,72) width 91: "Since it is a "
+                      text run at (90,72) width 443: "child of the blue DIV, the yellow DIV should appear inside the "
                       text run at (532,72) width 29: "blue"
                       text run at (0,90) width 395: "rectangle. Due to it being floated to the right and having "
                       text run at (394,90) width 166: "a 10px right margin, the"

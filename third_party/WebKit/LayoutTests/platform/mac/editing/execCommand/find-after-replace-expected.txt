@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 771x36
+        LayoutText {#text} at (0,0) size 770x36
           text run at (0,0) width 337: "This tests find and replace inside an editable iframe. "
-          text run at (336,0) width 435: "You should see 'A B A B' below. With bug 4462420, you would see"
+          text run at (336,0) width 434: "You should see 'A B A B' below. With bug 4462420, you would see"
           text run at (0,18) width 67: "'A B B A'."
       LayoutBlockFlow (anonymous) at (0,52) size 784x154
         LayoutText {#text} at (0,0) size 0x0

@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 66x28
             text run at (0,0) width 66: "Tests: "
           LayoutBR {BR} at (0,0) size 0x0
-          LayoutText {#text} at (0,28) size 344x28
-            text run at (0,28) width 344: "Multiple ctrl-k presses then a ctrl-y."
+          LayoutText {#text} at (0,28) size 343x28
+            text run at (0,28) width 343: "Multiple ctrl-k presses then a ctrl-y."
         LayoutBlockFlow {DIV} at (14,86) size 756x112
           LayoutBlockFlow (anonymous) at (0,0) size 756x28
             LayoutText {#text} at (0,0) size 190x28

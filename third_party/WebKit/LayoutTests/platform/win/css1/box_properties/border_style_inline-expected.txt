@@ -18,17 +18,17 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,113) size 784x54 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 679x17
           text run at (0,0) width 679: "This is an unstyled element, save for the background color, and it contains inline elements with classes of "
-        LayoutInline {SPAN} at (0,0) size 70x27 [border: (5px dashed #000000)]
-          LayoutText {#text} at (683,0) size 60x17
-            text run at (683,0) width 60: "class one"
-        LayoutText {#text} at (747,0) size 752x35
-          text run at (747,0) width 5: ","
+        LayoutInline {SPAN} at (0,0) size 69x27 [border: (5px dashed #000000)]
+          LayoutText {#text} at (683,0) size 59x17
+            text run at (683,0) width 59: "class one"
+        LayoutText {#text} at (746,0) size 751x35
+          text run at (746,0) width 5: ","
           text run at (0,18) width 313: "which will result in a dashed thick black border; "
         LayoutInline {SPAN} at (0,0) size 70x27 [border: (5px groove #FF0000)]
           LayoutText {#text} at (317,18) size 60x17
             text run at (317,18) width 60: "class two"
-        LayoutText {#text} at (381,18) size 376x17
-          text run at (381,18) width 376: ", which should result in a grooved thick purple border, and"
+        LayoutText {#text} at (381,18) size 375x17
+          text run at (381,18) width 375: ", which should result in a grooved thick purple border, and"
         LayoutInline {SPAN} at (0,0) size 68x17
           LayoutText {#text} at (0,36) size 68x17
             text run at (0,36) width 68: "class three"
@@ -50,17 +50,17 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {P} at (4,4) size 762x72 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 679x17
                   text run at (0,0) width 679: "This is an unstyled element, save for the background color, and it contains inline elements with classes of "
-                LayoutInline {SPAN} at (0,0) size 70x27 [border: (5px dashed #000000)]
-                  LayoutText {#text} at (683,0) size 60x17
-                    text run at (683,0) width 60: "class one"
-                LayoutText {#text} at (747,0) size 752x35
-                  text run at (747,0) width 5: ","
+                LayoutInline {SPAN} at (0,0) size 69x27 [border: (5px dashed #000000)]
+                  LayoutText {#text} at (683,0) size 59x17
+                    text run at (683,0) width 59: "class one"
+                LayoutText {#text} at (746,0) size 751x35
+                  text run at (746,0) width 5: ","
                   text run at (0,18) width 313: "which will result in a dashed thick black border; "
                 LayoutInline {SPAN} at (0,0) size 70x27 [border: (5px groove #FF0000)]
                   LayoutText {#text} at (317,18) size 60x17
                     text run at (317,18) width 60: "class two"
-                LayoutText {#text} at (381,18) size 376x17
-                  text run at (381,18) width 376: ", which should result in a grooved thick purple border, and"
+                LayoutText {#text} at (381,18) size 375x17
+                  text run at (381,18) width 375: ", which should result in a grooved thick purple border, and"
                 LayoutInline {SPAN} at (0,0) size 68x17
                   LayoutText {#text} at (0,36) size 68x17
                     text run at (0,36) width 68: "class three"

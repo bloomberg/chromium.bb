@@ -33,14 +33,14 @@ layer at (0,0) size 800x600
         LayoutInline {CODE} at (0,0) size 33x16
           LayoutText {#text} at (59,20) size 33x16
             text run at (59,20) width 33: "none"
-        LayoutText {#text} at (91,18) size 176x17
-          text run at (91,18) width 171: " is interpreted incorrectly. "
-          text run at (261,18) width 6: "("
+        LayoutText {#text} at (91,18) size 175x17
+          text run at (91,18) width 170: " is interpreted incorrectly. "
+          text run at (260,18) width 6: "("
         LayoutInline {CODE} at (0,0) size 33x16
-          LayoutText {#text} at (266,20) size 33x16
-            text run at (266,20) width 33: "none"
-        LayoutText {#text} at (298,18) size 766x53
-          text run at (298,18) width 468: " means that the element has no background image, allowing the parent to"
+          LayoutText {#text} at (265,20) size 33x16
+            text run at (265,20) width 33: "none"
+        LayoutText {#text} at (297,18) size 765x53
+          text run at (297,18) width 468: " means that the element has no background image, allowing the parent to"
           text run at (0,36) width 763: "\"shine through\" by default; since the parent of the words \"in this sentence\" is the paragraph, then the paragraph's image"
           text run at (0,54) width 118: "should be visible.)"
       LayoutBlockFlow {P} at (0,253) size 784x36
@@ -78,14 +78,14 @@ layer at (0,0) size 800x600
                 LayoutInline {CODE} at (0,0) size 33x16
                   LayoutText {#text} at (59,20) size 33x16
                     text run at (59,20) width 33: "none"
-                LayoutText {#text} at (91,18) size 176x17
-                  text run at (91,18) width 171: " is interpreted incorrectly. "
-                  text run at (261,18) width 6: "("
+                LayoutText {#text} at (91,18) size 175x17
+                  text run at (91,18) width 170: " is interpreted incorrectly. "
+                  text run at (260,18) width 6: "("
                 LayoutInline {CODE} at (0,0) size 33x16
-                  LayoutText {#text} at (266,20) size 33x16
-                    text run at (266,20) width 33: "none"
-                LayoutText {#text} at (298,18) size 750x53
-                  text run at (298,18) width 452: " means that the element has no background image, allowing the parent"
+                  LayoutText {#text} at (265,20) size 33x16
+                    text run at (265,20) width 33: "none"
+                LayoutText {#text} at (297,18) size 749x53
+                  text run at (297,18) width 452: " means that the element has no background image, allowing the parent"
                   text run at (0,36) width 737: "to \"shine through\" by default; since the parent of the words \"in this sentence\" is the paragraph, then the paragraph's"
                   text run at (0,54) width 161: "image should be visible.)"
               LayoutBlockFlow {P} at (4,144) size 762x36

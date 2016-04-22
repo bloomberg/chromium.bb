@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 761x36
           text run at (0,0) width 416: "This tests for a hang when indenting a fully selected table twice. "
           text run at (415,0) width 346: "You should see a twice indented table, with four cells,"
-          text run at (0,18) width 44: "below."
+          text run at (0,18) width 43: "below."
       LayoutBlockFlow {DIV} at (0,52) size 784x52
         LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 744x52
           LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 704x52

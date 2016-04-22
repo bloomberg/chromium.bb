@@ -25,13 +25,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x112 [border: (2px solid #FF0000)]
-        LayoutInline {SPAN} at (0,0) size 202x84
+        LayoutInline {SPAN} at (0,0) size 199x84
           LayoutText {#text} at (14,14) size 16x28
             text run at (14,14) width 16: "s "
           LayoutBR {BR} at (29,36) size 1x0
           LayoutBR {BR} at (14,42) size 0x28
-          LayoutText {#text} at (14,70) size 202x28
-            text run at (14,70) width 92: " war. We "
-            text run at (105,70) width 111: "of that war."
+          LayoutText {#text} at (14,70) size 199x28
+            text run at (14,70) width 91: " war. We "
+            text run at (104,70) width 109: "of that war."
         LayoutText {#text} at (0,0) size 0x0
 caret: position 0 of child 4 {#text} of child 1 {SPAN} of child 1 {DIV} of body

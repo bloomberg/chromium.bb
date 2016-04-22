@@ -81,9 +81,9 @@ layer at (0,0) size 800x2645 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 789x54
           text run at (0,0) width 772: "This paragraph has an overall margin of -10px, which should make it wider than usual as well as shift it upward and pull"
           text run at (0,18) width 376: "subsequent text up toward it, and a light blue background. "
-          text run at (375,18) width 395: "In all other respects, however, the element should be normal. "
-          text run at (769,18) width 20: "No"
-          text run at (0,36) width 539: "styles have been applied to it besides the negative margin and the background color."
+          text run at (375,18) width 394: "In all other respects, however, the element should be normal. "
+          text run at (768,18) width 21: "No"
+          text run at (0,36) width 538: "styles have been applied to it besides the negative margin and the background color."
       LayoutBlockFlow {P} at (0,1360) size 784x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x18
           text run at (0,0) width 208: "This element has a class of zero."
@@ -159,8 +159,8 @@ layer at (0,0) size 800x2645 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 772x54
                   text run at (0,0) width 772: "This paragraph has an overall margin of -10px, which should make it wider than usual as well as shift it upward and pull"
                   text run at (0,18) width 376: "subsequent text up toward it, and a light blue background. "
-                  text run at (375,18) width 391: "In all other respects, however, the element should be normal."
-                  text run at (0,36) width 562: "No styles have been applied to it besides the negative margin and the background color."
+                  text run at (375,18) width 390: "In all other respects, however, the element should be normal."
+                  text run at (0,36) width 561: "No styles have been applied to it besides the negative margin and the background color."
               LayoutBlockFlow {P} at (4,1201) size 762x18 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 208x18
                   text run at (0,0) width 208: "This element has a class of zero."

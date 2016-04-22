@@ -21,9 +21,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          LayoutText {#text} at (0,28) size 728x84
+          LayoutText {#text} at (0,28) size 726x84
             text run at (0,28) width 725: "Should see the three lines in the red box. First line should be \"A\". Next two"
-            text run at (0,56) width 728: "lines should be empty. Insertion point should be blinking on the second line"
+            text run at (0,56) width 726: "lines should be empty. Insertion point should be blinking on the second line"
             text run at (0,84) width 195: "(the first blank one)."
       LayoutBlockFlow {DIV} at (0,264) size 784x88
         LayoutBlockFlow {DIV} at (0,0) size 784x88 [border: (2px solid #FF0000)]

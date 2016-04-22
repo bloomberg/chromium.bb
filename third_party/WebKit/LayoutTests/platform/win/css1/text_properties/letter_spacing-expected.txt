@@ -74,10 +74,10 @@ layer at (0,0) size 785x1389 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,711) size 769x36
         LayoutText {#text} at (0,0) size 746x35
           text run at (0,0) width 746: "This letters in this sentence should have normal space between them, since percentage values are not allowed on this"
-          text run at (0,18) width 59: "property."
+          text run at (0,18) width 58: "property."
       LayoutBlockFlow {P} at (0,763) size 769x18
-        LayoutText {#text} at (0,0) size 581x17
-          text run at (0,0) width 581: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."
+        LayoutText {#text} at (0,0) size 580x17
+          text run at (0,0) width 580: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."
       LayoutTable {TABLE} at (0,797) size 769x576 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x574
           LayoutTableRow {TR} at (0,0) size 767x26
@@ -133,7 +133,7 @@ layer at (0,0) size 785x1389 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (4,474) size 747x36
                 LayoutText {#text} at (0,0) size 746x35
                   text run at (0,0) width 746: "This letters in this sentence should have normal space between them, since percentage values are not allowed on this"
-                  text run at (0,18) width 59: "property."
+                  text run at (0,18) width 58: "property."
               LayoutBlockFlow {P} at (4,526) size 747x18
-                LayoutText {#text} at (0,0) size 581x17
-                  text run at (0,0) width 581: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."
+                LayoutText {#text} at (0,0) size 580x17
+                  text run at (0,0) width 580: "This letters in this sentence should have reduced space between them, since negative values are allowed on this property."

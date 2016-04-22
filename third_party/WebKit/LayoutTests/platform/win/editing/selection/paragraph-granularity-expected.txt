@@ -8,14 +8,14 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 713x17
+        LayoutText {#text} at (0,0) size 712x17
           text run at (0,0) width 379: "This tests modifying a selection created with a triple click. "
-          text run at (378,0) width 335: "The new selection should use paragraph granularity."
+          text run at (378,0) width 334: "The new selection should use paragraph granularity."
       LayoutBlockFlow {P} at (0,34) size 784x54 [color=#008000]
         LayoutText {#text} at (0,0) size 767x53
-          text run at (0,0) width 230: "This test does not run interactively. "
-          text run at (229,0) width 360: "It uses the testRunners eventSender to do mouse clicks. "
-          text run at (588,0) width 171: "To run it manually, double"
+          text run at (0,0) width 229: "This test does not run interactively. "
+          text run at (228,0) width 360: "It uses the testRunners eventSender to do mouse clicks. "
+          text run at (587,0) width 170: "To run it manually, double"
           text run at (0,18) width 322: "click on the blue 'g', then drag down to the red 'g'. "
           text run at (321,18) width 446: "As you drag, watch the selection that is created, it should always start"
           text run at (0,36) width 217: "and end on paragraph boundaries."

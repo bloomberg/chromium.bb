@@ -42,7 +42,7 @@ layer at (0,0) size 800x454
           LayoutText {#text} at (471,183) size 26x17
             text run at (471,183) width 26: "teal"
         LayoutText {#text} at (496,183) size 778x53
-          text run at (496,183) width 282: ". If this precise combination does not occur,"
+          text run at (496,183) width 281: ". If this precise combination does not occur,"
           text run at (0,201) width 421: "then the user agent has failed this test. Remember that in order to "
           text run at (420,201) width 358: "ensure a complete test, the paragraph must be displayed"
           text run at (0,219) width 57: "on more "
@@ -109,11 +109,11 @@ layer at (0,0) size 800x454
         LayoutInline {STRONG} at (0,0) size 26x17
           LayoutText {#text} at (674,0) size 26x17
             text run at (674,0) width 26: "teal"
-        LayoutText {#text} at (699,0) size 771x53
+        LayoutText {#text} at (699,0) size 770x53
           text run at (699,0) width 24: ". If "
           text run at (722,0) width 24: "this"
-          text run at (0,18) width 385: "precise combination does not occur, then the user agent has "
-          text run at (384,18) width 387: "failed this test. Remember that in order to ensure a complete"
+          text run at (0,18) width 384: "precise combination does not occur, then the user agent has "
+          text run at (383,18) width 387: "failed this test. Remember that in order to ensure a complete"
           text run at (0,36) width 31: "test, "
           text run at (30,36) width 416: "the paragraph must be displayed on more than one line. (TEST3)"
       LayoutBlockFlow {DIV} at (0,412) size 784x18

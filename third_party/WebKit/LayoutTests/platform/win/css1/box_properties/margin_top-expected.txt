@@ -69,11 +69,11 @@ layer at (0,0) size 785x1647 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 208x17
           text run at (0,0) width 208: "This element has a class of zero."
       LayoutBlockFlow {P} at (0,837.25) size 769x54 [bgcolor=#00FFFF]
-        LayoutText {#text} at (0,0) size 759x53
+        LayoutText {#text} at (0,0) size 758x53
           text run at (0,0) width 725: "This element has a top margin of -10px, which should cause it to be shifted \"upward\" on the page, and no bottom"
           text run at (0,18) width 54: "margin. "
-          text run at (53,18) width 498: "No other styles have been applied to it besides a light blue background color. "
-          text run at (550,18) width 209: "In all other respects, the element"
+          text run at (53,18) width 497: "No other styles have been applied to it besides a light blue background color. "
+          text run at (549,18) width 209: "In all other respects, the element"
           text run at (0,36) width 116: "should be normal."
       LayoutTable {TABLE} at (0,891.25) size 769x740 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x738
@@ -133,6 +133,6 @@ layer at (0,0) size 785x1647 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 725x53
                   text run at (0,0) width 725: "This element has a top margin of -10px, which should cause it to be shifted \"upward\" on the page, and no bottom"
                   text run at (0,18) width 54: "margin. "
-                  text run at (53,18) width 498: "No other styles have been applied to it besides a light blue background color. "
-                  text run at (550,18) width 154: "In all other respects, the"
+                  text run at (53,18) width 497: "No other styles have been applied to it besides a light blue background color. "
+                  text run at (549,18) width 154: "In all other respects, the"
                   text run at (0,36) width 170: "element should be normal."

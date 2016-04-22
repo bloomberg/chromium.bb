@@ -41,8 +41,8 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 299x23
             text run at (0,0) width 299: "This sentence should be in a cursive font."
         LayoutBlockFlow {P} at (0,146) size 769x20
-          LayoutText {#text} at (0,0) size 267x20
-            text run at (0,0) width 267: "This sentence should be in a fantasy font."
+          LayoutText {#text} at (0,0) size 268x20
+            text run at (0,0) width 268: "This sentence should be in a fantasy font."
         LayoutBlockFlow {P} at (0,182) size 769x16
           LayoutText {#text} at (0,0) size 352x16
             text run at (0,0) width 352: "This sentence should be in a monospace font."
@@ -69,8 +69,8 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (0,0) size 299x23
             text run at (0,0) width 299: "This sentence should be in a cursive font."
         LayoutBlockFlow {P} at (0,158) size 769x20
-          LayoutText {#text} at (0,0) size 267x20
-            text run at (0,0) width 267: "This sentence should be in a fantasy font."
+          LayoutText {#text} at (0,0) size 268x20
+            text run at (0,0) width 268: "This sentence should be in a fantasy font."
         LayoutBlockFlow {P} at (0,194) size 769x16
           LayoutText {#text} at (0,0) size 352x16
             text run at (0,0) width 352: "This sentence should be in a monospace font."
@@ -100,8 +100,8 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 299x23
                     text run at (0,0) width 299: "This sentence should be in a cursive font."
                 LayoutBlockFlow {P} at (0,146) size 747x20
-                  LayoutText {#text} at (0,0) size 267x20
-                    text run at (0,0) width 267: "This sentence should be in a fantasy font."
+                  LayoutText {#text} at (0,0) size 268x20
+                    text run at (0,0) width 268: "This sentence should be in a fantasy font."
                 LayoutBlockFlow {P} at (0,182) size 747x16
                   LayoutText {#text} at (0,0) size 352x16
                     text run at (0,0) width 352: "This sentence should be in a monospace font."
@@ -128,8 +128,8 @@ layer at (0,0) size 785x1324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (0,0) size 299x23
                     text run at (0,0) width 299: "This sentence should be in a cursive font."
                 LayoutBlockFlow {P} at (0,158) size 747x20
-                  LayoutText {#text} at (0,0) size 267x20
-                    text run at (0,0) width 267: "This sentence should be in a fantasy font."
+                  LayoutText {#text} at (0,0) size 268x20
+                    text run at (0,0) width 268: "This sentence should be in a fantasy font."
                 LayoutBlockFlow {P} at (0,194) size 747x16
                   LayoutText {#text} at (0,0) size 352x16
                     text run at (0,0) width 352: "This sentence should be in a monospace font."

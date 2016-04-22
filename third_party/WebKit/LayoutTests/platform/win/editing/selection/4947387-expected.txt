@@ -12,13 +12,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x72
-        LayoutText {#text} at (0,0) size 777x71
+        LayoutText {#text} at (0,0) size 776x71
           text run at (0,0) width 423: "This tests moveTo{Beginning, End}OfLineAndModifySelection. "
           text run at (422,0) width 350: "It should operate on line boundaries and not paragraph"
           text run at (0,18) width 79: "boundaries. "
-          text run at (78,18) width 699: "To run it manually, click inside the first line of the editable region below and do Command+Shift+Left/Right"
-          text run at (0,36) width 620: "Arrow, the selection should extend to the start/end of the line, not the start/end of the paragraph. "
-          text run at (619,36) width 35: "Also,"
+          text run at (78,18) width 698: "To run it manually, click inside the first line of the editable region below and do Command+Shift+Left/Right"
+          text run at (0,36) width 619: "Arrow, the selection should extend to the start/end of the line, not the start/end of the paragraph. "
+          text run at (618,36) width 35: "Also,"
           text run at (0,54) width 473: "moveTo{Beginning, End}OfParagraphAndModifySelection should work."
       LayoutBlockFlow {DIV} at (0,88) size 200x36
         LayoutText {#text} at (0,0) size 191x35

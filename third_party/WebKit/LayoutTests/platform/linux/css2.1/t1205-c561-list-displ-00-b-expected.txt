@@ -4,8 +4,8 @@ layer at (0,0) size 800x220
   LayoutBlockFlow {HTML} at (0,0) size 800x220
     LayoutBlockFlow {BODY} at (8,16) size 784x196
       LayoutBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 713x19
-          text run at (0,0) width 713: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
+        LayoutText {#text} at (0,0) size 712x19
+          text run at (0,0) width 712: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
       LayoutListItem {DIV} at (0,36) size 784x20 [color=#000080]
         LayoutListMarker (anonymous) at (0,0) size 16x19: "1"
         LayoutText {#text} at (16,0) size 141x19

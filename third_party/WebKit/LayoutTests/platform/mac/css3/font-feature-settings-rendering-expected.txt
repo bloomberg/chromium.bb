@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 756x36
-          text run at (0,0) width 250: "Test for font-feature-settings property. "
-          text run at (249,0) width 507: "The first word of the following three words should be displayed like \"WebKit\","
+        LayoutText {#text} at (0,0) size 755x36
+          text run at (0,0) width 248: "Test for font-feature-settings property. "
+          text run at (247,0) width 508: "The first word of the following three words should be displayed like \"WebKit\","
           text run at (0,18) width 312: "while others should be displayed as black boxes."
       LayoutBlockFlow {DIV} at (0,52) size 784x17
         LayoutText {#text} at (0,0) size 31x16

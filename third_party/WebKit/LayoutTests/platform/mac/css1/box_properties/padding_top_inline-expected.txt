@@ -15,36 +15,36 @@ layer at (0,0) size 800x600
           text run at (0,30) width 0: " "
       LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,110) size 784x72 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 487x18
-          text run at (0,0) width 397: "This element is unstyled save for a background color of gray. "
-          text run at (396,0) width 91: "It contains an "
-        LayoutInline {SPAN} at (0,0) size 773x61 [bgcolor=#00FFFF]
-          LayoutText {#text} at (486,0) size 149x18
-            text run at (486,0) width 149: "inline element of class "
-          LayoutInline {TT} at (0,0) size 24x15
-            LayoutText {#text} at (634,2) size 24x15
-              text run at (634,2) width 24: "one"
-          LayoutText {#text} at (657,0) size 773x36
-            text run at (657,0) width 116: ", giving it an aqua"
+        LayoutText {#text} at (0,0) size 486x18
+          text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
+          text run at (395,0) width 91: "It contains an "
+        LayoutInline {SPAN} at (0,0) size 772x61 [bgcolor=#00FFFF]
+          LayoutText {#text} at (485,0) size 148x18
+            text run at (485,0) width 148: "inline element of class "
+          LayoutInline {TT} at (0,0) size 25x15
+            LayoutText {#text} at (632,2) size 25x15
+              text run at (632,2) width 25: "one"
+          LayoutText {#text} at (656,0) size 772x36
+            text run at (656,0) width 116: ", giving it an aqua"
             text run at (0,18) width 230: "background and a 25px top padding"
         LayoutText {#text} at (229,18) size 784x54
           text run at (229,18) width 9: ". "
           text run at (237,18) width 547: "Padding on inline elements does not affect line-height calculations, so all lines in this"
           text run at (0,36) width 274: "element should have the same line-height. "
           text run at (273,36) width 499: "There may be implementation-specific limits on how much of the padding the"
-          text run at (0,54) width 182: "user agent is able to display."
+          text run at (0,54) width 181: "user agent is able to display."
       LayoutBlockFlow {P} at (0,198) size 784x54 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 487x18
-          text run at (0,0) width 397: "This element is unstyled save for a background color of gray. "
-          text run at (396,0) width 91: "It contains an "
-        LayoutInline {SPAN} at (0,0) size 773x36 [bgcolor=#00FFFF]
-          LayoutText {#text} at (486,0) size 149x18
-            text run at (486,0) width 149: "inline element of class "
-          LayoutInline {TT} at (0,0) size 24x15
-            LayoutText {#text} at (634,2) size 24x15
-              text run at (634,2) width 24: "two"
-          LayoutText {#text} at (657,0) size 773x36
-            text run at (657,0) width 116: ", giving it an aqua"
+        LayoutText {#text} at (0,0) size 486x18
+          text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
+          text run at (395,0) width 91: "It contains an "
+        LayoutInline {SPAN} at (0,0) size 772x36 [bgcolor=#00FFFF]
+          LayoutText {#text} at (485,0) size 148x18
+            text run at (485,0) width 148: "inline element of class "
+          LayoutInline {TT} at (0,0) size 25x15
+            LayoutText {#text} at (632,2) size 25x15
+              text run at (632,2) width 25: "two"
+          LayoutText {#text} at (656,0) size 772x36
+            text run at (656,0) width 116: ", giving it an aqua"
             text run at (0,18) width 505: "background and no top padding, since negative padding values are not allowed"
         LayoutText {#text} at (504,18) size 745x36
           text run at (504,18) width 9: ". "
@@ -63,36 +63,36 @@ layer at (0,0) size 800x600
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 770x150 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 762x72 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 487x18
-                  text run at (0,0) width 397: "This element is unstyled save for a background color of gray. "
-                  text run at (396,0) width 91: "It contains an "
-                LayoutInline {SPAN} at (0,0) size 739x61 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (486,0) size 149x18
-                    text run at (486,0) width 149: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 24x15
-                    LayoutText {#text} at (634,2) size 24x15
-                      text run at (634,2) width 24: "one"
-                  LayoutText {#text} at (657,0) size 739x36
-                    text run at (657,0) width 82: ", giving it an"
+                LayoutText {#text} at (0,0) size 486x18
+                  text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
+                  text run at (395,0) width 91: "It contains an "
+                LayoutInline {SPAN} at (0,0) size 738x61 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (485,0) size 148x18
+                    text run at (485,0) width 148: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 25x15
+                    LayoutText {#text} at (632,2) size 25x15
+                      text run at (632,2) width 25: "one"
+                  LayoutText {#text} at (656,0) size 738x36
+                    text run at (656,0) width 82: ", giving it an"
                     text run at (0,18) width 264: "aqua background and a 25px top padding"
                 LayoutText {#text} at (263,18) size 747x54
                   text run at (263,18) width 9: ". "
                   text run at (271,18) width 469: "Padding on inline elements does not affect line-height calculations, so all"
                   text run at (0,36) width 352: "lines in this element should have the same line-height. "
                   text run at (351,36) width 396: "There may be implementation-specific limits on how much of"
-                  text run at (0,54) width 284: "the padding the user agent is able to display."
+                  text run at (0,54) width 283: "the padding the user agent is able to display."
               LayoutBlockFlow {P} at (4,92) size 762x54 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 487x18
-                  text run at (0,0) width 397: "This element is unstyled save for a background color of gray. "
-                  text run at (396,0) width 91: "It contains an "
-                LayoutInline {SPAN} at (0,0) size 739x36 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (486,0) size 149x18
-                    text run at (486,0) width 149: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 24x15
-                    LayoutText {#text} at (634,2) size 24x15
-                      text run at (634,2) width 24: "two"
-                  LayoutText {#text} at (657,0) size 739x36
-                    text run at (657,0) width 82: ", giving it an"
+                LayoutText {#text} at (0,0) size 486x18
+                  text run at (0,0) width 396: "This element is unstyled save for a background color of gray. "
+                  text run at (395,0) width 91: "It contains an "
+                LayoutInline {SPAN} at (0,0) size 738x36 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (485,0) size 148x18
+                    text run at (485,0) width 148: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 25x15
+                    LayoutText {#text} at (632,2) size 25x15
+                      text run at (632,2) width 25: "two"
+                  LayoutText {#text} at (656,0) size 738x36
+                    text run at (656,0) width 82: ", giving it an"
                     text run at (0,18) width 539: "aqua background and no top padding, since negative padding values are not allowed"
                 LayoutText {#text} at (538,18) size 755x36
                   text run at (538,18) width 9: ". "

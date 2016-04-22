@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 772x36
-          text run at (0,0) width 553: "This is an automatic pixel test. To test interactively, drag selected text onto the iframe "
-          text run at (552,0) width 216: "below and verify that a drag caret"
-          text run at (767,0) width 5: " "
+        LayoutText {#text} at (0,0) size 770x36
+          text run at (0,0) width 551: "This is an automatic pixel test. To test interactively, drag selected text onto the iframe "
+          text run at (551,0) width 215: "below and verify that a drag caret"
+          text run at (766,0) width 4: " "
           text run at (0,18) width 160: "appears inside the frame."
       LayoutBlockFlow (anonymous) at (0,52) size 784x152
         LayoutText {#text} at (0,0) size 0x0

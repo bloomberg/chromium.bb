@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 755x39
           text run at (0,0) width 663: "This tests for a bug where content pasted at the end of a paragraph would be inserted into the next paragraph. "
           text run at (663,0) width 92: "You should see"
-          text run at (0,20) width 114: "'helloworld' below."
+          text run at (0,20) width 113: "'helloworld' below."
       LayoutBlockFlow {DIV} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 63x19
           text run at (0,0) width 63: "helloworld"

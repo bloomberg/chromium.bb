@@ -52,7 +52,7 @@ layer at (0,0) size 785x1441 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (353,2) width 97: "border-style"
         LayoutText {#text} at (449,0) size 743x35
           text run at (449,0) width 294: " was not set, and it should not be offset in any"
-          text run at (0,18) width 31: "way."
+          text run at (0,18) width 30: "way."
       LayoutBlockFlow {P} at (0,497) size 769x42 [border: (3px double #800000)]
         LayoutText {#text} at (3,3) size 543x17
           text run at (3,3) width 543: "This paragraph should have a medium maroon double border around it, even though "
@@ -79,9 +79,9 @@ layer at (0,0) size 785x1441 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TBODY} at (1,1) size 767x111
           LayoutTableRow {TR} at (0,5) size 767x42
             LayoutTableCell {TD} at (5,5) size 757x42 [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (3,3) size 729x35
-                text run at (3,3) width 414: "Every cell in this table should have a 2-pixel solid green border. "
-                text run at (416,3) width 316: "This is also true of the table-testing section in the"
+              LayoutText {#text} at (3,3) size 728x35
+                text run at (3,3) width 413: "Every cell in this table should have a 2-pixel solid green border. "
+                text run at (415,3) width 316: "This is also true of the table-testing section in the"
                 text run at (3,21) width 179: "second half of the test page."
           LayoutTableRow {TR} at (0,52) size 767x54
             LayoutTableCell {TD} at (5,67) size 192x24 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
@@ -137,7 +137,7 @@ layer at (0,0) size 785x1441 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (353,2) width 97: "border-style"
                 LayoutText {#text} at (449,0) size 743x35
                   text run at (449,0) width 294: " was not set, and it should not be offset in any"
-                  text run at (0,18) width 31: "way."
+                  text run at (0,18) width 30: "way."
               LayoutBlockFlow {P} at (5,293) size 743x42 [border: (3px double #800000)]
                 LayoutText {#text} at (3,3) size 543x17
                   text run at (3,3) width 543: "This paragraph should have a medium maroon double border around it, even though "
@@ -165,16 +165,16 @@ layer at (0,0) size 785x1441 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutTableSection {TBODY} at (1,1) size 741x111
                   LayoutTableRow {TR} at (0,5) size 741x42
                     LayoutTableCell {TD} at (5,5) size 731x42 [border: (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
-                      LayoutText {#text} at (3,3) size 706x35
-                        text run at (3,3) width 414: "Every cell in this table should have a 2-pixel solid green border. "
-                        text run at (416,3) width 293: "This is also true of the table-testing section in"
+                      LayoutText {#text} at (3,3) size 705x35
+                        text run at (3,3) width 413: "Every cell in this table should have a 2-pixel solid green border. "
+                        text run at (415,3) width 293: "This is also true of the table-testing section in"
                         text run at (3,21) width 203: "the second half of the test page."
                   LayoutTableRow {TR} at (0,52) size 741x54
-                    LayoutTableCell {TD} at (5,67) size 186x24 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
+                    LayoutTableCell {TD} at (5,67) size 185x24 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
                       LayoutText {#text} at (3,3) size 54x17
                         text run at (3,3) width 54: "Cell one"
-                    LayoutTableCell {TD} at (196,52) size 540x54 [border: (2px solid #008000)] [r=1 c=1 rs=1 cs=1]
-                      LayoutBlockFlow (anonymous) at (3,3) size 534x18
+                    LayoutTableCell {TD} at (195,52) size 541x54 [border: (2px solid #008000)] [r=1 c=1 rs=1 cs=1]
+                      LayoutBlockFlow (anonymous) at (3,3) size 535x18
                         LayoutText {#text} at (0,0) size 55x17
                           text run at (0,0) width 55: "Cell two"
                       LayoutTable {TABLE} at (3,21) size 168x30 [border: (1px outset #808080)]

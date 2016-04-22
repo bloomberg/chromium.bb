@@ -39,7 +39,7 @@ layer at (0,0) size 785x1391 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (233,63) width 40: "width"
         LayoutText {#text} at (273,60) size 377x39
           text run at (273,60) width 104: " property without"
-          text run at (0,80) width 304: "the need for the user to resize the viewing window."
+          text run at (0,80) width 303: "the need for the user to resize the viewing window."
       LayoutTable {TABLE} at (0,762) size 384x613 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 382x611
           LayoutTableRow {TR} at (0,0) size 382x28
@@ -82,4 +82,4 @@ layer at (0,0) size 785x1391 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,160) size 176x59
                   text run at (0,160) width 176: "property without the need for"
                   text run at (0,180) width 172: "the user to resize the viewing"
-                  text run at (0,200) width 52: "window."
+                  text run at (0,200) width 51: "window."

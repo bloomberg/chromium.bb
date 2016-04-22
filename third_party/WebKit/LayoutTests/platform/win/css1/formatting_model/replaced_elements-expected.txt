@@ -35,8 +35,8 @@ layer at (0,0) size 785x2347 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 498: "The above image should be a 15px square with the same left edge as this text."
       LayoutImage {IMG} at (377,293) size 15x15
       LayoutBlockFlow {P} at (0,324) size 769x18
-        LayoutText {#text} at (0,0) size 407x17
-          text run at (0,0) width 407: "The above image should be a 15px square aligned at the center."
+        LayoutText {#text} at (0,0) size 406x17
+          text run at (0,0) width 406: "The above image should be a 15px square aligned at the center."
       LayoutImage {IMG} at (192.25,358) size 384.50x384.50
       LayoutBlockFlow {P} at (0,758.50) size 769x36
         LayoutText {#text} at (0,0) size 738x35
@@ -71,8 +71,8 @@ layer at (0,0) size 785x2347 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 498: "The above image should be a 15px square with the same left edge as this text."
               LayoutImage {IMG} at (370,104) size 15x15
               LayoutBlockFlow {P} at (4,135) size 747x18
-                LayoutText {#text} at (0,0) size 407x17
-                  text run at (0,0) width 407: "The above image should be a 15px square aligned at the center."
+                LayoutText {#text} at (0,0) size 406x17
+                  text run at (0,0) width 406: "The above image should be a 15px square aligned at the center."
               LayoutImage {IMG} at (190.75,169) size 373.50x373.50
               LayoutBlockFlow {P} at (4,558.50) size 747x36
                 LayoutText {#text} at (0,0) size 738x35

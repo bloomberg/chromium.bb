@@ -10,8 +10,8 @@ layer at (0,0) size 800x600
         LayoutInline {U} at (0,0) size 46x18
           LayoutText {#text} at (656,0) size 46x18
             text run at (656,0) width 46: "World!"
-        LayoutText {#text} at (701,0) size 51x18
-          text run at (701,0) width 51: "' below."
+        LayoutText {#text} at (701,0) size 50x18
+          text run at (701,0) width 50: "' below."
       LayoutBlockFlow {DIV} at (0,34) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 40x18

@@ -34,9 +34,9 @@ layer at (0,0) size 785x1205 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 316x19
           text run at (0,0) width 316: "This sentence should have stricken text (linethrough)."
       LayoutBlockFlow {P} at (0,303) size 769x20
-        LayoutText {#text} at (0,0) size 560x19
+        LayoutText {#text} at (0,0) size 559x19
           text run at (0,0) width 195: "This element should be blinking. "
-          text run at (195,0) width 365: "(It is not required, however, that UAs support this behavior.)"
+          text run at (195,0) width 364: "(It is not required, however, that UAs support this behavior.)"
       LayoutBlockFlow {P} at (0,339) size 769x40
         LayoutText {#text} at (0,0) size 478x19
           text run at (0,0) width 273: "The text in this element should be underlined. "
@@ -126,9 +126,9 @@ layer at (0,0) size 785x1205 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 316x19
                   text run at (0,0) width 316: "This sentence should have stricken text (linethrough)."
               LayoutBlockFlow {P} at (4,112) size 747x20
-                LayoutText {#text} at (0,0) size 560x19
+                LayoutText {#text} at (0,0) size 559x19
                   text run at (0,0) width 195: "This element should be blinking. "
-                  text run at (195,0) width 365: "(It is not required, however, that UAs support this behavior.)"
+                  text run at (195,0) width 364: "(It is not required, however, that UAs support this behavior.)"
               LayoutBlockFlow {P} at (4,148) size 747x40
                 LayoutText {#text} at (0,0) size 478x19
                   text run at (0,0) width 273: "The text in this element should be underlined. "

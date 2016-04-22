@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x26
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,21) size 1x0
-          LayoutText {#text} at (0,27) size 740x53
-            text run at (0,27) width 740: "The pasted letter should match the style of the preexisting bold letter. Should"
+          LayoutText {#text} at (0,27) size 738x53
+            text run at (0,27) width 738: "The pasted letter should match the style of the preexisting bold letter. Should"
             text run at (0,54) width 364: "see this content in the red box below: "
           LayoutBR {BR} at (363,75) size 1x0
           LayoutInline {B} at (0,0) size 26x26

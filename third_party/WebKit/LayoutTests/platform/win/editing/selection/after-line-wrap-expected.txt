@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
             text run at (107,0) width 373: "REGRESSION: Selection includes spaces that it shouldn't"
         LayoutText {#text} at (479,0) size 768x35
           text run at (479,0) width 289: ". The test makes sure that a word that is right"
-          text run at (0,18) width 292: "after a line wrap can be selected successfully."
+          text run at (0,18) width 291: "after a line wrap can be selected successfully."
       LayoutBlockFlow {P} at (0,104) size 784x0
       LayoutBlockFlow {DIV} at (16,104) size 752x74 [border: (1px solid #000000)]
         LayoutText {#text} at (1,1) size 748x53

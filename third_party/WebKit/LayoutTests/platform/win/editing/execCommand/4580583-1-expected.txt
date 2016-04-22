@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 782x35
+        LayoutText {#text} at (0,0) size 781x35
           text run at (0,0) width 486: "This tests to make sure that breaking a quoted list doesn't renumber the list. "
-          text run at (485,0) width 297: "You should see a list broken in two below, the"
+          text run at (485,0) width 296: "You should see a list broken in two below, the"
           text run at (0,18) width 191: "list items numbered 1, 2, 3, 4."
       LayoutBlockFlow {DIV} at (0,52) size 784x122
         LayoutBlockFlow {BLOCKQUOTE} at (2,0) size 742x36 [color=#0000FF] [border: none (2px solid #0000FF)]

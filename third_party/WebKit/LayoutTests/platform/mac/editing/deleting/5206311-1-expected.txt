@@ -64,8 +64,8 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,2) size 8x18
                   text run at (2,2) width 8: "9"
       LayoutBlockFlow {P} at (0,246) size 784x18
-        LayoutText {#text} at (0,0) size 311x18
-          text run at (0,0) width 311: "This empties the first row, it should be removed."
+        LayoutText {#text} at (0,0) size 310x18
+          text run at (0,0) width 310: "This empties the first row, it should be removed."
       LayoutBlockFlow {DIV} at (0,280) size 784x70
         LayoutBlockFlow {DIV} at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 40x18

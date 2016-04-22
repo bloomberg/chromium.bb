@@ -50,11 +50,11 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (0,0) size 748x54
                   text run at (0,0) width 627: "This paragraph should have a white background, but NO image should appear in the background. "
                   text run at (626,0) width 122: "If an image, in this"
-                  text run at (0,18) width 723: "case a red square-- or, indeed, any red at all-- is seen there, then the browser has incorrectly interpreted a URL in"
+                  text run at (0,18) width 722: "case a red square-- or, indeed, any red at all-- is seen there, then the browser has incorrectly interpreted a URL in"
                   text run at (0,36) width 370: "relation to the document's URL, not the stylesheet's URL."
               LayoutBlockFlow {P} at (4,108) size 762x54 [bgcolor=#FFFFFF]
                 LayoutText {#text} at (0,0) size 748x54
                   text run at (0,0) width 627: "This paragraph should have a white background, but NO image should appear in the background. "
                   text run at (626,0) width 122: "If an image, in this"
-                  text run at (0,18) width 723: "case a red square-- or, indeed, any red at all-- is seen there, then the browser has incorrectly interpreted a URL in"
+                  text run at (0,18) width 722: "case a red square-- or, indeed, any red at all-- is seen there, then the browser has incorrectly interpreted a URL in"
                   text run at (0,36) width 370: "relation to the document's URL, not the stylesheet's URL."

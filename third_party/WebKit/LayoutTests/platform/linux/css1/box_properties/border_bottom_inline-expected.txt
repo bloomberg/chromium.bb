@@ -17,18 +17,18 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,115) size 784x60 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 627x19
           text run at (0,0) width 627: "This is an unstyled element, save for the background color, and containing inline elements with classes of "
-        LayoutInline {SPAN} at (0,0) size 55x29 [border: none (10px double #800080) none]
-          LayoutText {#text} at (627,0) size 55x19
-            text run at (627,0) width 55: "class one"
-        LayoutText {#text} at (682,0) size 768x39
-          text run at (682,0) width 86: ", which should"
+        LayoutInline {SPAN} at (0,0) size 56x29 [border: none (10px double #800080) none]
+          LayoutText {#text} at (626,0) size 56x19
+            text run at (626,0) width 56: "class one"
+        LayoutText {#text} at (681,0) size 768x39
+          text run at (681,0) width 87: ", which should"
           text run at (0,20) width 306: "have a 10-pixel purple double bottom border; and "
         LayoutInline {SPAN} at (0,0) size 56x20 [border: none (1px solid #800080) none]
           LayoutText {#text} at (306,20) size 56x19
             text run at (306,20) width 56: "class two"
         LayoutText {#text} at (362,20) size 778x39
           text run at (362,20) width 328: ", which should have a thin solid purple bottom border. "
-          text run at (690,20) width 88: "The line-height"
+          text run at (689,20) width 89: "The line-height"
           text run at (0,40) width 310: "of the parent element should not change on any line."
       LayoutTable {TABLE} at (0,191) size 784x98 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x96
@@ -45,16 +45,16 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {P} at (4,4) size 762x60 [bgcolor=#C0C0C0]
                 LayoutText {#text} at (0,0) size 627x19
                   text run at (0,0) width 627: "This is an unstyled element, save for the background color, and containing inline elements with classes of "
-                LayoutInline {SPAN} at (0,0) size 55x29 [border: none (10px double #800080) none]
-                  LayoutText {#text} at (627,0) size 55x19
-                    text run at (627,0) width 55: "class one"
-                LayoutText {#text} at (682,0) size 725x39
-                  text run at (682,0) width 43: ", which"
+                LayoutInline {SPAN} at (0,0) size 56x29 [border: none (10px double #800080) none]
+                  LayoutText {#text} at (626,0) size 56x19
+                    text run at (626,0) width 56: "class one"
+                LayoutText {#text} at (681,0) size 725x39
+                  text run at (681,0) width 44: ", which"
                   text run at (0,20) width 349: "should have a 10-pixel purple double bottom border; and "
                 LayoutInline {SPAN} at (0,0) size 56x20 [border: none (1px solid #800080) none]
                   LayoutText {#text} at (349,20) size 56x19
                     text run at (349,20) width 56: "class two"
                 LayoutText {#text} at (405,20) size 756x39
                   text run at (405,20) width 328: ", which should have a thin solid purple bottom border. "
-                  text run at (733,20) width 23: "The"
+                  text run at (732,20) width 24: "The"
                   text run at (0,40) width 375: "line-height of the parent element should not change on any line."

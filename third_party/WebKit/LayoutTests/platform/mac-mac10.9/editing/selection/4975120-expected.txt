@@ -4,10 +4,10 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 772x54
+        LayoutText {#text} at (0,0) size 770x54
           text run at (0,0) width 768: "This tests for a bug that caused the parent of an active frame to paint as though it were active when its window becomes"
-          text run at (0,18) width 32: "key. "
-          text run at (31,18) width 741: "To run manually, make another window active and then make this window active. Only the subframe should appear"
+          text run at (0,18) width 31: "key. "
+          text run at (30,18) width 740: "To run manually, make another window active and then make this window active. Only the subframe should appear"
           text run at (0,36) width 43: "active."
       LayoutBlockFlow (anonymous) at (0,70) size 784x173
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]

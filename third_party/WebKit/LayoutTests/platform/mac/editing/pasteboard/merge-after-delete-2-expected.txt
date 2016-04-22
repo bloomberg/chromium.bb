@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 752x54
           text run at (0,0) width 752: "When ReplaceSelectionCommand deletes the current selection, it should request that the deletion do a merge in some"
-          text run at (0,18) width 745: "cases (normally, though, it should ask that a merge not be done, because a merge will cause information about block"
+          text run at (0,18) width 744: "cases (normally, though, it should ask that a merge not be done, because a merge will cause information about block"
           text run at (0,36) width 123: "nesting to be lost). "
           text run at (122,36) width 375: "It wasn't requesting a merge in cases where it should have."
       LayoutBlockFlow {P} at (0,70) size 784x72

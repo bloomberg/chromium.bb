@@ -37,8 +37,8 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 196x17
           text run at (0,0) width 196: "This sentence should be black."
       LayoutBlockFlow {P} at (0,291) size 769x18 [color=#008800]
-        LayoutText {#text} at (0,0) size 519x17
-          text run at (0,0) width 519: "This sentence should be green, although slightly different from those that follow."
+        LayoutText {#text} at (0,0) size 518x17
+          text run at (0,0) width 518: "This sentence should be green, although slightly different from those that follow."
       LayoutBlockFlow {P} at (0,325) size 769x18 [color=#008000]
         LayoutText {#text} at (0,0) size 197x17
           text run at (0,0) width 197: "This sentence should be green."
@@ -63,20 +63,20 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (462,0) size 68x17
           text run at (462,0) width 68: " is invalid."
       LayoutBlockFlow {P} at (0,529) size 769x36 [color=#0080FF]
-        LayoutText {#text} at (0,0) size 738x35
-          text run at (0,0) width 738: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the next"
+        LayoutText {#text} at (0,0) size 737x35
+          text run at (0,0) width 737: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the next"
           text run at (0,18) width 68: "paragraph."
       LayoutBlockFlow {P} at (0,581) size 769x36 [color=#0080FF]
-        LayoutText {#text} at (0,0) size 766x35
-          text run at (0,0) width 766: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the previous"
+        LayoutText {#text} at (0,0) size 765x35
+          text run at (0,0) width 765: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the previous"
           text run at (0,18) width 68: "paragraph."
       LayoutBlockFlow {P} at (0,633) size 769x36 [color=#800099]
-        LayoutText {#text} at (0,0) size 711x35
-          text run at (0,0) width 711: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the next"
+        LayoutText {#text} at (0,0) size 709x35
+          text run at (0,0) width 709: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the next"
           text run at (0,18) width 68: "paragraph."
       LayoutBlockFlow {P} at (0,685) size 769x36 [color=#800099]
-        LayoutText {#text} at (0,0) size 738x35
-          text run at (0,0) width 738: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the previous"
+        LayoutText {#text} at (0,0) size 737x35
+          text run at (0,0) width 737: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the previous"
           text run at (0,18) width 68: "paragraph."
       LayoutBlockFlow {P} at (0,737) size 769x18
         LayoutText {#text} at (0,0) size 196x17
@@ -145,8 +145,8 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 196x17
                   text run at (0,0) width 196: "This sentence should be black."
               LayoutBlockFlow {P} at (4,38) size 747x18 [color=#008800]
-                LayoutText {#text} at (0,0) size 519x17
-                  text run at (0,0) width 519: "This sentence should be green, although slightly different from those that follow."
+                LayoutText {#text} at (0,0) size 518x17
+                  text run at (0,0) width 518: "This sentence should be green, although slightly different from those that follow."
               LayoutBlockFlow {P} at (4,72) size 747x18 [color=#008000]
                 LayoutText {#text} at (0,0) size 197x17
                   text run at (0,0) width 197: "This sentence should be green."
@@ -171,20 +171,20 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (462,0) size 68x17
                   text run at (462,0) width 68: " is invalid."
               LayoutBlockFlow {P} at (4,276) size 747x36 [color=#0080FF]
-                LayoutText {#text} at (0,0) size 738x35
-                  text run at (0,0) width 738: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the next"
+                LayoutText {#text} at (0,0) size 737x35
+                  text run at (0,0) width 737: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the next"
                   text run at (0,18) width 68: "paragraph."
               LayoutBlockFlow {P} at (4,328) size 747x36 [color=#0080FF]
-                LayoutText {#text} at (0,0) size 706x35
-                  text run at (0,0) width 706: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the"
+                LayoutText {#text} at (0,0) size 705x35
+                  text run at (0,0) width 705: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the"
                   text run at (0,18) width 128: "previous paragraph."
               LayoutBlockFlow {P} at (4,380) size 747x36 [color=#800099]
-                LayoutText {#text} at (0,0) size 711x35
-                  text run at (0,0) width 711: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the next"
+                LayoutText {#text} at (0,0) size 709x35
+                  text run at (0,0) width 709: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the next"
                   text run at (0,18) width 68: "paragraph."
               LayoutBlockFlow {P} at (4,432) size 747x36 [color=#800099]
-                LayoutText {#text} at (0,0) size 738x35
-                  text run at (0,0) width 738: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the previous"
+                LayoutText {#text} at (0,0) size 737x35
+                  text run at (0,0) width 737: "This sentence should be a shade of purple which, on a typical RGB computer display, exactly matches the previous"
                   text run at (0,18) width 68: "paragraph."
               LayoutBlockFlow {P} at (4,484) size 747x18
                 LayoutText {#text} at (0,0) size 196x17

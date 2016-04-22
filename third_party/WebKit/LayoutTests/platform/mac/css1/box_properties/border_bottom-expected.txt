@@ -23,25 +23,25 @@ layer at (0,0) size 785x995 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (672,0) width 75: "This border"
           text run at (0,18) width 373: "applies only to the cells, not the rows which contain them."
       LayoutBlockFlow {P} at (0,177) size 769x28 [border: none (10px double #800080) none]
-        LayoutText {#text} at (0,0) size 446x18
-          text run at (0,0) width 446: "This paragraph should have a purple, double, 10-pixel bottom border."
+        LayoutText {#text} at (0,0) size 445x18
+          text run at (0,0) width 445: "This paragraph should have a purple, double, 10-pixel bottom border."
       LayoutBlockFlow {P} at (0,221) size 769x19 [border: none (1px solid #800080) none]
-        LayoutText {#text} at (0,0) size 362x18
-          text run at (0,0) width 362: "This paragraph should have a thin purple bottom border."
+        LayoutText {#text} at (0,0) size 361x18
+          text run at (0,0) width 361: "This paragraph should have a thin purple bottom border."
       LayoutTable {TABLE} at (0,256) size 769x110 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x108
           LayoutTableRow {TR} at (0,5) size 767x41
             LayoutTableCell {TD} at (5,5) size 757x41 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,2) size 739x36
+              LayoutText {#text} at (2,2) size 738x36
                 text run at (2,2) width 463: "Every cell in this table should have a 2-pixel solid green bottom border. "
-                text run at (464,2) width 277: "This is also true of the table-testing section"
+                text run at (464,2) width 276: "This is also true of the table-testing section"
                 text run at (2,20) width 219: "in the second half of the test page."
           LayoutTableRow {TR} at (0,51) size 767x52
-            LayoutTableCell {TD} at (5,65) size 191x23 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (5,65) size 190x23 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 54x18
                 text run at (2,2) width 54: "Cell one"
-            LayoutTableCell {TD} at (201,51) size 561x52 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow (anonymous) at (2,2) size 557x18
+            LayoutTableCell {TD} at (200,51) size 562x52 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (2,2) size 558x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"
               LayoutTable {TABLE} at (2,20) size 166x29 [border: (1px outset #808080)]
@@ -101,25 +101,25 @@ layer at (0,0) size 785x995 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (672,0) width 75: "This border"
                   text run at (0,18) width 373: "applies only to the cells, not the rows which contain them."
               LayoutBlockFlow {P} at (4,56) size 747x28 [border: none (10px double #800080) none]
-                LayoutText {#text} at (0,0) size 446x18
-                  text run at (0,0) width 446: "This paragraph should have a purple, double, 10-pixel bottom border."
+                LayoutText {#text} at (0,0) size 445x18
+                  text run at (0,0) width 445: "This paragraph should have a purple, double, 10-pixel bottom border."
               LayoutBlockFlow {P} at (4,100) size 747x19 [border: none (1px solid #800080) none]
-                LayoutText {#text} at (0,0) size 362x18
-                  text run at (0,0) width 362: "This paragraph should have a thin purple bottom border."
+                LayoutText {#text} at (0,0) size 361x18
+                  text run at (0,0) width 361: "This paragraph should have a thin purple bottom border."
               LayoutTable {TABLE} at (4,135) size 747x110 [border: (1px outset #808080)]
                 LayoutTableSection {TBODY} at (1,1) size 745x108
                   LayoutTableRow {TR} at (0,5) size 745x41
                     LayoutTableCell {TD} at (5,5) size 735x41 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-                      LayoutText {#text} at (2,2) size 689x36
+                      LayoutText {#text} at (2,2) size 688x36
                         text run at (2,2) width 463: "Every cell in this table should have a 2-pixel solid green bottom border. "
-                        text run at (464,2) width 227: "This is also true of the table-testing"
+                        text run at (464,2) width 226: "This is also true of the table-testing"
                         text run at (2,20) width 268: "section in the second half of the test page."
                   LayoutTableRow {TR} at (0,51) size 745x52
-                    LayoutTableCell {TD} at (5,65) size 185x23 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+                    LayoutTableCell {TD} at (5,65) size 184x23 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
                       LayoutText {#text} at (2,2) size 54x18
                         text run at (2,2) width 54: "Cell one"
-                    LayoutTableCell {TD} at (195,51) size 545x52 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-                      LayoutBlockFlow (anonymous) at (2,2) size 541x18
+                    LayoutTableCell {TD} at (194,51) size 546x52 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+                      LayoutBlockFlow (anonymous) at (2,2) size 542x18
                         LayoutText {#text} at (0,0) size 55x18
                           text run at (0,0) width 55: "Cell two"
                       LayoutTable {TABLE} at (2,20) size 166x29 [border: (1px outset #808080)]

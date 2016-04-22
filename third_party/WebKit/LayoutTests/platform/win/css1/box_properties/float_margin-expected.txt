@@ -30,8 +30,8 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 724x91
           text run at (0,0) width 656: "This paragraph should have a white background which extends to the edges of the"
           text run at (0,23) width 120: "element's box. "
-          text run at (119,23) width 438: "There is no padding set on this paragraph whatsoever. "
-          text run at (556,23) width 165: "If the background of"
+          text run at (119,23) width 437: "There is no padding set on this paragraph whatsoever. "
+          text run at (555,23) width 164: "If the background of"
           text run at (0,46) width 724: "the entire box is not white, this may cause problems with the following tests; at any rate, it"
           text run at (0,69) width 220: "must be taken into account."
       LayoutBlockFlow {P} at (30,325) size 729x115 [bgcolor=#FFFFFF]
@@ -44,16 +44,16 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (252,46) width 449: "This paragraph should have a white background, first of"
           text run at (0,69) width 422: "all, which extends to the edges of the element's box. "
           text run at (421,69) width 246: "There is no padding set on this"
-          text run at (0,92) width 182: "paragraph whatsoever."
+          text run at (0,92) width 180: "paragraph whatsoever."
       LayoutBlockFlow {P} at (30,460) size 729x115 [bgcolor=#FFFFFF]
         LayoutImage (floating) {IMG} at (30,30) size 60x60
-        LayoutText {#text} at (90,0) size 724x114
+        LayoutText {#text} at (90,0) size 723x114
           text run at (90,0) width 608: "The image in the upper left corner of this paragraph should be pushed down"
           text run at (90,23) width 601: "and to the right 30 pixels each from the upper left corner of the paragraph's"
-          text run at (90,46) width 399: "box, and displace the paragraph text accordingly. "
-          text run at (488,46) width 236: "This paragraph should have a"
+          text run at (90,46) width 397: "box, and displace the paragraph text accordingly. "
+          text run at (486,46) width 237: "This paragraph should have a"
           text run at (90,69) width 629: "white background, first of all, which extends to the edges of the element's box."
-          text run at (0,92) width 432: "There is no padding set on this paragraph whatsoever."
+          text run at (0,92) width 431: "There is no padding set on this paragraph whatsoever."
       LayoutBlockFlow {P} at (30,595) size 729x115 [bgcolor=#FFFFFF]
         LayoutImage (floating) {IMG} at (-30,-30) size 60x60
         LayoutText {#text} at (30,0) size 729x114
@@ -63,30 +63,30 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (572,46) width 122: "This paragraph"
           text run at (0,69) width 704: "should have a white background, first of all, which extends to the edges of the element's"
           text run at (0,92) width 40: "box. "
-          text run at (40,92) width 432: "There is no padding set on this paragraph whatsoever."
+          text run at (40,92) width 431: "There is no padding set on this paragraph whatsoever."
       LayoutBlockFlow {P} at (30,730) size 729x138 [bgcolor=#FFFFFF]
         LayoutImage (floating) {IMG} at (0,0) size 60x60
         LayoutText {#text} at (90,0) size 722x137
           text run at (90,0) width 627: "The image in the upper left corner of this paragraph should be floated left, and"
           text run at (90,23) width 632: "the edges of the white background should line up with the top and left edges of"
           text run at (90,46) width 89: "the image. "
-          text run at (178,46) width 533: "However, there should be 30 pixels of space between the right and"
+          text run at (178,46) width 532: "However, there should be 30 pixels of space between the right and"
           text run at (90,69) width 483: "bottom edges of the image and the paragraph text around it. "
           text run at (572,69) width 121: "This paragraph"
           text run at (0,92) width 704: "should have a white background, first of all, which extends to the edges of the element's"
           text run at (0,115) width 40: "box. "
-          text run at (40,115) width 432: "There is no padding set on this paragraph whatsoever."
+          text run at (40,115) width 431: "There is no padding set on this paragraph whatsoever."
       LayoutBlockFlow {P} at (30,888) size 729x138 [bgcolor=#FFFFFF]
         LayoutImage (floating) {IMG} at (0,0) size 60x60
         LayoutText {#text} at (30,0) size 722x137
           text run at (30,0) width 657: "The image in the upper left corner of this paragraph should be floated left, and the"
           text run at (30,23) width 691: "edges of the white background should line up with the top and left edges of the image."
-          text run at (0,46) width 696: "However, the text should overlap the image's right and bottom sides, lining up with the"
+          text run at (0,46) width 695: "However, the text should overlap the image's right and bottom sides, lining up with the"
           text run at (0,69) width 238: "thick gray lines in the image. "
           text run at (237,69) width 479: "This paragraph should have a white background, first of all,"
           text run at (0,92) width 392: "which extends to the edges of the element's box. "
           text run at (391,92) width 331: "There is no padding set on this paragraph"
-          text run at (0,115) width 97: "whatsoever."
+          text run at (0,115) width 95: "whatsoever."
       LayoutTable {TABLE} at (0,1046) size 769x849 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 767x847
           LayoutTableRow {TR} at (0,0) size 767x26
@@ -100,11 +100,11 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 755x821 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (34,4) size 707x92 [bgcolor=#FFFFFF]
-                LayoutText {#text} at (0,0) size 699x91
+                LayoutText {#text} at (0,0) size 698x91
                   text run at (0,0) width 656: "This paragraph should have a white background which extends to the edges of the"
                   text run at (0,23) width 120: "element's box. "
-                  text run at (119,23) width 438: "There is no padding set on this paragraph whatsoever. "
-                  text run at (556,23) width 143: "If the background"
+                  text run at (119,23) width 437: "There is no padding set on this paragraph whatsoever. "
+                  text run at (555,23) width 143: "If the background"
                   text run at (0,46) width 690: "of the entire box is not white, this may cause problems with the following tests; at any"
                   text run at (0,69) width 276: "rate, it must be taken into account."
               LayoutBlockFlow {P} at (34,116) size 707x115 [bgcolor=#FFFFFF]
@@ -117,17 +117,17 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (286,46) width 390: "This paragraph should have a white background,"
                   text run at (0,69) width 481: "first of all, which extends to the edges of the element's box. "
                   text run at (480,69) width 212: "There is no padding set on"
-                  text run at (0,92) width 215: "this paragraph whatsoever."
+                  text run at (0,92) width 214: "this paragraph whatsoever."
               LayoutBlockFlow {P} at (34,251) size 707x115 [bgcolor=#FFFFFF]
                 LayoutImage (floating) {IMG} at (30,30) size 60x60
                 LayoutText {#text} at (90,0) size 698x114
                   text run at (90,0) width 608: "The image in the upper left corner of this paragraph should be pushed down"
                   text run at (90,23) width 601: "and to the right 30 pixels each from the upper left corner of the paragraph's"
-                  text run at (90,46) width 399: "box, and displace the paragraph text accordingly. "
-                  text run at (488,46) width 180: "This paragraph should"
+                  text run at (90,46) width 397: "box, and displace the paragraph text accordingly. "
+                  text run at (486,46) width 180: "This paragraph should"
                   text run at (90,69) width 566: "have a white background, first of all, which extends to the edges of the"
                   text run at (0,92) width 120: "element's box. "
-                  text run at (119,92) width 433: "There is no padding set on this paragraph whatsoever."
+                  text run at (119,92) width 432: "There is no padding set on this paragraph whatsoever."
               LayoutBlockFlow {P} at (34,386) size 707x115 [bgcolor=#FFFFFF]
                 LayoutImage (floating) {IMG} at (-30,-30) size 60x60
                 LayoutText {#text} at (30,0) size 697x114
@@ -137,7 +137,7 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (652,46) width 37: "This"
                   text run at (0,69) width 680: "paragraph should have a white background, first of all, which extends to the edges of"
                   text run at (0,92) width 150: "the element's box. "
-                  text run at (149,92) width 432: "There is no padding set on this paragraph whatsoever."
+                  text run at (149,92) width 431: "There is no padding set on this paragraph whatsoever."
               LayoutBlockFlow {P} at (34,521) size 707x138 [bgcolor=#FFFFFF]
                 LayoutImage (floating) {IMG} at (0,0) size 60x60
                 LayoutText {#text} at (90,0) size 706x137
@@ -149,16 +149,16 @@ layer at (0,0) size 785x1911 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (648,69) width 37: "This"
                   text run at (0,92) width 680: "paragraph should have a white background, first of all, which extends to the edges of"
                   text run at (0,115) width 150: "the element's box. "
-                  text run at (149,115) width 432: "There is no padding set on this paragraph whatsoever."
+                  text run at (149,115) width 431: "There is no padding set on this paragraph whatsoever."
               LayoutBlockFlow {P} at (34,679) size 707x138 [bgcolor=#FFFFFF]
                 LayoutImage (floating) {IMG} at (0,0) size 60x60
                 LayoutText {#text} at (30,0) size 697x137
                   text run at (30,0) width 657: "The image in the upper left corner of this paragraph should be floated left, and the"
                   text run at (30,23) width 632: "edges of the white background should line up with the top and left edges of the"
                   text run at (0,46) width 59: "image. "
-                  text run at (58,46) width 627: "However, the text should overlap the image's right and bottom sides, lining up"
+                  text run at (58,46) width 626: "However, the text should overlap the image's right and bottom sides, lining up"
                   text run at (0,69) width 308: "with the thick gray lines in the image. "
                   text run at (307,69) width 390: "This paragraph should have a white background,"
                   text run at (0,92) width 481: "first of all, which extends to the edges of the element's box. "
                   text run at (480,92) width 212: "There is no padding set on"
-                  text run at (0,115) width 215: "this paragraph whatsoever."
+                  text run at (0,115) width 214: "this paragraph whatsoever."

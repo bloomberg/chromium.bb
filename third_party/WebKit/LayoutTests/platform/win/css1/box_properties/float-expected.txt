@@ -16,18 +16,18 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {HR} at (0,95) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutImage (floating) {IMG} at (0,105) size 15x50
       LayoutBlockFlow {P} at (0,113) size 784x36
-        LayoutText {#text} at (15,0) size 738x35
-          text run at (15,0) width 611: "This text should be flowing past a tall orange rectangle on the left side of the browser window. "
-          text run at (625,0) width 128: "In this case, it is the"
+        LayoutText {#text} at (15,0) size 737x35
+          text run at (15,0) width 610: "This text should be flowing past a tall orange rectangle on the left side of the browser window. "
+          text run at (624,0) width 128: "In this case, it is the"
           text run at (15,18) width 260: "image which has been floated to the left."
       LayoutBlockFlow (anonymous) at (0,165) size 784x18
         LayoutBR {BR} at (0,0) size 0x17
       LayoutBlockFlow {HR} at (0,191) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutImage (floating) {IMG} at (769,201) size 15x50
       LayoutBlockFlow {P} at (0,209) size 784x36
-        LayoutText {#text} at (0,0) size 747x35
-          text run at (0,0) width 619: "This text should be flowing past a tall orange rectangle on the right side of the browser window. "
-          text run at (618,0) width 129: "In this case, it is the"
+        LayoutText {#text} at (0,0) size 745x35
+          text run at (0,0) width 618: "This text should be flowing past a tall orange rectangle on the right side of the browser window. "
+          text run at (617,0) width 128: "In this case, it is the"
           text run at (0,18) width 269: "image which has been floated to the right."
       LayoutTable {TABLE} at (0,261) size 784x174 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x172
@@ -43,16 +43,16 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (12,26) size 770x146 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutImage (floating) {IMG} at (4,4) size 15x50
               LayoutBlockFlow {P} at (4,4) size 762x36
-                LayoutText {#text} at (15,0) size 738x35
-                  text run at (15,0) width 611: "This text should be flowing past a tall orange rectangle on the left side of the browser window. "
-                  text run at (625,0) width 128: "In this case, it is the"
+                LayoutText {#text} at (15,0) size 737x35
+                  text run at (15,0) width 610: "This text should be flowing past a tall orange rectangle on the left side of the browser window. "
+                  text run at (624,0) width 128: "In this case, it is the"
                   text run at (15,18) width 260: "image which has been floated to the left."
               LayoutBlockFlow (anonymous) at (4,56) size 762x18
                 LayoutBR {BR} at (0,0) size 0x17
               LayoutBlockFlow {HR} at (4,82) size 762x2 [border: (1px inset #EEEEEE)]
               LayoutImage (floating) {IMG} at (751,92) size 15x50
               LayoutBlockFlow {P} at (4,100) size 762x36
-                LayoutText {#text} at (0,0) size 747x35
-                  text run at (0,0) width 619: "This text should be flowing past a tall orange rectangle on the right side of the browser window. "
-                  text run at (618,0) width 129: "In this case, it is the"
+                LayoutText {#text} at (0,0) size 745x35
+                  text run at (0,0) width 618: "This text should be flowing past a tall orange rectangle on the right side of the browser window. "
+                  text run at (617,0) width 128: "In this case, it is the"
                   text run at (0,18) width 269: "image which has been floated to the right."

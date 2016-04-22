@@ -20,17 +20,17 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 193x19
           text run at (0,0) width 193: "This element has a class of zero."
       LayoutBlockFlow {P} at (0,167) size 769x120 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 453x19
-          text run at (0,0) width 369: "This element is unstyled save for a background color of gray. "
-          text run at (369,0) width 84: "It contains an "
-        LayoutInline {SPAN} at (0,0) size 739x89 [bgcolor=#00FFFF]
-          LayoutText {#text} at (478,0) size 133x19
-            text run at (478,0) width 133: "inline element of class "
-          LayoutInline {TT} at (0,0) size 24x16
-            LayoutText {#text} at (611,3) size 24x16
-              text run at (611,3) width 24: "one"
-          LayoutText {#text} at (635,0) size 739x39
-            text run at (635,0) width 104: ", giving it an aqua"
+        LayoutText {#text} at (0,0) size 452x19
+          text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+          text run at (367,0) width 85: "It contains an "
+        LayoutInline {SPAN} at (0,0) size 738x89 [bgcolor=#00FFFF]
+          LayoutText {#text} at (476,0) size 134x19
+            text run at (476,0) width 134: "inline element of class "
+          LayoutInline {TT} at (0,0) size 25x16
+            LayoutText {#text} at (609,3) size 25x16
+              text run at (609,3) width 25: "one"
+          LayoutText {#text} at (633,0) size 738x39
+            text run at (633,0) width 105: ", giving it an aqua"
             text run at (0,20) width 196: "background and a 25px padding"
         LayoutText {#text} at (221,20) size 739x99
           text run at (221,20) width 8: ". "
@@ -45,17 +45,17 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 193x19
           text run at (0,0) width 193: "This element has a class of zero."
       LayoutBlockFlow {P} at (0,339) size 769x60 [bgcolor=#808080]
-        LayoutText {#text} at (0,0) size 453x19
-          text run at (0,0) width 369: "This element is unstyled save for a background color of gray. "
-          text run at (369,0) width 84: "It contains an "
-        LayoutInline {SPAN} at (0,0) size 714x39 [bgcolor=#00FFFF]
-          LayoutText {#text} at (453,0) size 133x19
-            text run at (453,0) width 133: "inline element of class "
-          LayoutInline {TT} at (0,0) size 24x16
-            LayoutText {#text} at (586,3) size 24x16
-              text run at (586,3) width 24: "two"
-          LayoutText {#text} at (610,0) size 714x39
-            text run at (610,0) width 104: ", giving it an aqua"
+        LayoutText {#text} at (0,0) size 452x19
+          text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+          text run at (367,0) width 85: "It contains an "
+        LayoutInline {SPAN} at (0,0) size 713x39 [bgcolor=#00FFFF]
+          LayoutText {#text} at (451,0) size 134x19
+            text run at (451,0) width 134: "inline element of class "
+          LayoutInline {TT} at (0,0) size 25x16
+            LayoutText {#text} at (584,3) size 25x16
+              text run at (584,3) width 25: "two"
+          LayoutText {#text} at (608,0) size 713x39
+            text run at (608,0) width 105: ", giving it an aqua"
             text run at (0,20) width 450: "background and no padding, since negative padding values are not allowed"
         LayoutText {#text} at (450,20) size 739x39
           text run at (450,20) width 8: ". "
@@ -80,17 +80,17 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 193x19
                   text run at (0,0) width 193: "This element has a class of zero."
               LayoutBlockFlow {P} at (4,40) size 747x120 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 453x19
-                  text run at (0,0) width 369: "This element is unstyled save for a background color of gray. "
-                  text run at (369,0) width 84: "It contains an "
-                LayoutInline {SPAN} at (0,0) size 739x89 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (478,0) size 133x19
-                    text run at (478,0) width 133: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 24x16
-                    LayoutText {#text} at (611,3) size 24x16
-                      text run at (611,3) width 24: "one"
-                  LayoutText {#text} at (635,0) size 739x39
-                    text run at (635,0) width 104: ", giving it an aqua"
+                LayoutText {#text} at (0,0) size 452x19
+                  text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+                  text run at (367,0) width 85: "It contains an "
+                LayoutInline {SPAN} at (0,0) size 738x89 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (476,0) size 134x19
+                    text run at (476,0) width 134: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 25x16
+                    LayoutText {#text} at (609,3) size 25x16
+                      text run at (609,3) width 25: "one"
+                  LayoutText {#text} at (633,0) size 738x39
+                    text run at (633,0) width 105: ", giving it an aqua"
                     text run at (0,20) width 196: "background and a 25px padding"
                 LayoutText {#text} at (221,20) size 739x99
                   text run at (221,20) width 8: ". "
@@ -105,17 +105,17 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 193x19
                   text run at (0,0) width 193: "This element has a class of zero."
               LayoutBlockFlow {P} at (4,212) size 747x60 [bgcolor=#808080]
-                LayoutText {#text} at (0,0) size 453x19
-                  text run at (0,0) width 369: "This element is unstyled save for a background color of gray. "
-                  text run at (369,0) width 84: "It contains an "
-                LayoutInline {SPAN} at (0,0) size 714x39 [bgcolor=#00FFFF]
-                  LayoutText {#text} at (453,0) size 133x19
-                    text run at (453,0) width 133: "inline element of class "
-                  LayoutInline {TT} at (0,0) size 24x16
-                    LayoutText {#text} at (586,3) size 24x16
-                      text run at (586,3) width 24: "two"
-                  LayoutText {#text} at (610,0) size 714x39
-                    text run at (610,0) width 104: ", giving it an aqua"
+                LayoutText {#text} at (0,0) size 452x19
+                  text run at (0,0) width 368: "This element is unstyled save for a background color of gray. "
+                  text run at (367,0) width 85: "It contains an "
+                LayoutInline {SPAN} at (0,0) size 713x39 [bgcolor=#00FFFF]
+                  LayoutText {#text} at (451,0) size 134x19
+                    text run at (451,0) width 134: "inline element of class "
+                  LayoutInline {TT} at (0,0) size 25x16
+                    LayoutText {#text} at (584,3) size 25x16
+                      text run at (584,3) width 25: "two"
+                  LayoutText {#text} at (608,0) size 713x39
+                    text run at (608,0) width 105: ", giving it an aqua"
                     text run at (0,20) width 450: "background and no padding, since negative padding values are not allowed"
                 LayoutText {#text} at (450,20) size 739x39
                   text run at (450,20) width 8: ". "

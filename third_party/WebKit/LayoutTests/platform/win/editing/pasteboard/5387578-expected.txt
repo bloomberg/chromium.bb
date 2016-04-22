@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 383: "This tests for a crash when pasting content into a table cell. "
           text run at (382,0) width 387: "The table cell has some collapsed whitespace at the end of it"
           text run at (0,18) width 141: "that tickled the crash. "
-          text run at (140,18) width 337: "You should see 'Hello World' in the table cell below."
+          text run at (140,18) width 336: "You should see 'Hello World' in the table cell below."
       LayoutBlockFlow {DIV} at (0,52) size 784x28
         LayoutTable {TABLE} at (0,0) size 90x28 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 88x26

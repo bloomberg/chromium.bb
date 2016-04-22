@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 776x35
           text run at (0,0) width 653: "This tests that inserting a newline at the beginning of quoted content doesn't add an extra quoted line. "
           text run at (652,0) width 124: "The test has passed"
-          text run at (0,18) width 422: "if there are no empty lines (quoted or unquoted) in the box below."
+          text run at (0,18) width 421: "if there are no empty lines (quoted or unquoted) in the box below."
       LayoutBlockFlow {DIV} at (0,52) size 784x90
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 60x17

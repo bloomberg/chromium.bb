@@ -10,8 +10,8 @@ layer at (0,0) size 800x600
         LayoutInline {B} at (0,0) size 21x19
           LayoutText {#text} at (571,0) size 21x19
             text run at (571,0) width 21: "foo"
-        LayoutText {#text} at (592,0) size 138x19
-          text run at (592,0) width 138: " should be bold below."
+        LayoutText {#text} at (592,0) size 137x19
+          text run at (592,0) width 137: " should be bold below."
       LayoutBlockFlow {DIV} at (0,36) size 784x50
         LayoutBlockFlow {DIV} at (0,0) size 784x20
           LayoutInline {B} at (0,0) size 21x19

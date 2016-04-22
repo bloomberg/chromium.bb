@@ -27,9 +27,9 @@ layer at (0,0) size 800x600
           text run at (491,0) width 274: "Creating an upstream caret with the mouse"
           text run at (0,18) width 632: "was impossible if the upstream and downstream carets were separated only by unrendered content."
       LayoutBlockFlow {P} at (0,114) size 784x36
-        LayoutText {#text} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 783x36
           text run at (0,0) width 325: "This test uses the eventSender to do mouse clicks. "
-          text run at (324,0) width 460: "To run it manually, click in the space after all the text on the first line in"
+          text run at (324,0) width 459: "To run it manually, click in the space after all the text on the first line in"
           text run at (0,18) width 170: "the above editable region. "
           text run at (169,18) width 394: "Clicking should create a caret after the first space after the 'e'."
 caret: position 1 of child 2 {#text} of child 1 {DIV} of body

@@ -4,8 +4,8 @@ layer at (0,0) size 800x112
   LayoutBlockFlow {HTML} at (0,0) size 800x112
     LayoutBlockFlow {BODY} at (8,16) size 784x88 [color=#0000FF]
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 662x18
-          text run at (0,0) width 662: "There should be three solid bars of colour below, each longer than the last, each of the colour specified."
+        LayoutText {#text} at (0,0) size 661x18
+          text run at (0,0) width 661: "There should be three solid bars of colour below, each longer than the last, each of the colour specified."
       LayoutBlockFlow {DIV} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 39x18
           text run at (0,0) width 39: "Blue: "

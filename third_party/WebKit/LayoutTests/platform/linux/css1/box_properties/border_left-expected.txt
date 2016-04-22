@@ -40,7 +40,7 @@ layer at (0,0) size 785x1103 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TD} at (5,5) size 757x44 [border: (1px inset #808080) (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
               LayoutText {#text} at (3,2) size 743x39
                 text run at (3,2) width 406: "Every cell in this table should have a 2-pixel solid green left border. "
-                text run at (409,2) width 337: "This is also true of the table-testing section in the second"
+                text run at (408,2) width 338: "This is also true of the table-testing section in the second"
                 text run at (3,22) width 121: "half of the test page."
           LayoutTableRow {TR} at (0,54) size 767x54
             LayoutTableCell {TD} at (5,69) size 191x24 [border: (1px inset #808080) (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
@@ -115,7 +115,7 @@ layer at (0,0) size 785x1103 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     LayoutTableCell {TD} at (5,5) size 733x44 [border: (1px inset #808080) (2px solid #008000)] [r=0 c=0 rs=1 cs=2]
                       LayoutText {#text} at (3,2) size 696x39
                         text run at (3,2) width 406: "Every cell in this table should have a 2-pixel solid green left border. "
-                        text run at (409,2) width 290: "This is also true of the table-testing section in the"
+                        text run at (408,2) width 291: "This is also true of the table-testing section in the"
                         text run at (3,22) width 168: "second half of the test page."
                   LayoutTableRow {TR} at (0,54) size 743x54
                     LayoutTableCell {TD} at (5,69) size 185x24 [border: (1px inset #808080) (2px solid #008000)] [r=1 c=0 rs=1 cs=1]

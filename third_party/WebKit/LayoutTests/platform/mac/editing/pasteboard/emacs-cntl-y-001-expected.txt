@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 190x28
             text run at (0,0) width 190: "Expected Results: "
           LayoutBR {BR} at (189,22) size 1x0
-          LayoutText {#text} at (0,28) size 286x28
-            text run at (0,28) width 286: "Deletes a character, yielding: "
-          LayoutBR {BR} at (285,50) size 1x0
+          LayoutText {#text} at (0,28) size 285x28
+            text run at (0,28) width 285: "Deletes a character, yielding: "
+          LayoutBR {BR} at (284,50) size 1x0
           LayoutText {#text} at (0,56) size 165x28
             text run at (0,56) width 165: "one tw three four"
       LayoutBlockFlow {DIV} at (0,208) size 784x32

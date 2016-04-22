@@ -48,8 +48,8 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (170,18) size 740x36
           text run at (170,18) width 328: " is '0% 0%' and that property is not declared here). "
           text run at (497,18) width 243: "This is extra text included for the sole"
-          text run at (0,36) width 265: "purpose of making the paragraph longer. "
-          text run at (264,36) width 224: "Thank you for your understanding."
+          text run at (0,36) width 264: "purpose of making the paragraph longer. "
+          text run at (263,36) width 224: "Thank you for your understanding."
       LayoutBlockFlow {P} at (0,360) size 784x54
         LayoutText {#text} at (0,0) size 779x36
           text run at (0,0) width 779: "This sentence should have an orange stripe repeated in the \"x\" direction, starting at the upper left corner (since the default"
@@ -60,8 +60,8 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (170,18) size 740x36
           text run at (170,18) width 328: " is '0% 0%' and that property is not declared here). "
           text run at (497,18) width 243: "This is extra text included for the sole"
-          text run at (0,36) width 265: "purpose of making the paragraph longer. "
-          text run at (264,36) width 224: "Thank you for your understanding."
+          text run at (0,36) width 264: "purpose of making the paragraph longer. "
+          text run at (263,36) width 224: "Thank you for your understanding."
       LayoutBlockFlow {P} at (0,430) size 784x54
         LayoutText {#text} at (0,0) size 712x18
           text run at (0,0) width 712: "This sentence should have a single orange square behind it, placed at the upper left corner (since the default for"
@@ -71,8 +71,8 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (148,18) size 772x36
           text run at (148,18) width 327: " is '0% 0%' and that property is not declared here). "
           text run at (474,18) width 298: "This is extra text included for the sole purpose"
-          text run at (0,36) width 210: "of making the paragraph longer. "
-          text run at (209,36) width 225: "Thank you for your understanding."
+          text run at (0,36) width 209: "of making the paragraph longer. "
+          text run at (208,36) width 225: "Thank you for your understanding."
       LayoutBlockFlow {P} at (0,500) size 784x72
         LayoutText {#text} at (0,0) size 778x36
           text run at (0,0) width 778: "This sentence should have a green-hatch stripe running vertically down the center of the paragraph, with the origin image"
@@ -138,22 +138,22 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,18) width 283: "the exact center of the top of the paragraph. "
           text run at (282,18) width 460: "I'll fill it with extra text to make the conformance (or lack thereof) more"
           text run at (0,36) width 59: "obvious. "
-          text run at (58,36) width 670: "A background color is present, although if it is visible, then the image may not have been tiled correctly."
+          text run at (58,36) width 669: "A background color is present, although if it is visible, then the image may not have been tiled correctly."
       LayoutBlockFlow {P} at (0,764) size 784x54 [bgcolor=#FF0000]
         LayoutText {#text} at (0,0) size 770x54
           text run at (0,0) width 499: "This sentence should have a fully tiled background which starts at its top left. "
           text run at (498,0) width 228: "I'll fill it with extra text to make the"
           text run at (0,18) width 291: "conformance (or lack thereof) more obvious. "
           text run at (290,18) width 480: "A background color is present, although if it is visible, then the image may"
-          text run at (0,36) width 187: "not have been tiled correctly."
+          text run at (0,36) width 186: "not have been tiled correctly."
       LayoutBlockFlow {P} at (0,834) size 784x72 [bgcolor=#FF0000]
         LayoutText {#text} at (0,0) size 778x72
           text run at (0,0) width 778: "This sentence should have a fully tiled background which starts at its bottom right; in other words, a complete instance of"
-          text run at (0,18) width 703: "the image should be anchored in the bottom right corner, with the tiled background extending out from there. "
-          text run at (702,18) width 52: "I'll fill it"
+          text run at (0,18) width 702: "the image should be anchored in the bottom right corner, with the tiled background extending out from there. "
+          text run at (701,18) width 53: "I'll fill it"
           text run at (0,36) width 467: "with extra text to make the conformance (or lack thereof) more obvious. "
           text run at (466,36) width 299: "A background color is present, although if it is"
-          text run at (0,54) width 367: "visible, then the image may not have been tiled correctly."
+          text run at (0,54) width 366: "visible, then the image may not have been tiled correctly."
       LayoutBlockFlow {P} at (0,922) size 784x108 [bgcolor=#FF0000]
         LayoutText {#text} at (0,0) size 782x108
           text run at (0,0) width 737: "This sentence should have a fully tiled background which starts at its center and is tiled in all directions; that is, the"
@@ -166,7 +166,7 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,72) width 162: "use in this circumstance. "
           text run at (161,72) width 245: "This ought to be enough text, though. "
           text run at (405,72) width 350: "A background color is present, although if it is visible,"
-          text run at (0,90) width 316: "then the image may not have been tiled correctly."
+          text run at (0,90) width 315: "then the image may not have been tiled correctly."
       LayoutTable {TABLE} at (0,1046) size 784x776 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 782x774
           LayoutTableRow {TR} at (0,0) size 782x26
@@ -189,8 +189,8 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (219,18) size 759x36
                   text run at (219,18) width 327: " is '0% 0%' and that property is not declared here). "
                   text run at (545,18) width 214: "This is extra text included for the"
-                  text run at (0,36) width 295: "sole purpose of making the paragraph longer. "
-                  text run at (294,36) width 224: "Thank you for your understanding."
+                  text run at (0,36) width 294: "sole purpose of making the paragraph longer. "
+                  text run at (293,36) width 224: "Thank you for your understanding."
               LayoutBlockFlow {P} at (4,74) size 762x54
                 LayoutText {#text} at (0,0) size 731x36
                   text run at (0,0) width 731: "This sentence should have an orange stripe repeated in the \"x\" direction, starting at the upper left corner (since the"
@@ -201,8 +201,8 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (219,18) size 759x36
                   text run at (219,18) width 327: " is '0% 0%' and that property is not declared here). "
                   text run at (545,18) width 214: "This is extra text included for the"
-                  text run at (0,36) width 295: "sole purpose of making the paragraph longer. "
-                  text run at (294,36) width 224: "Thank you for your understanding."
+                  text run at (0,36) width 294: "sole purpose of making the paragraph longer. "
+                  text run at (293,36) width 224: "Thank you for your understanding."
               LayoutBlockFlow {P} at (4,144) size 762x54
                 LayoutText {#text} at (0,0) size 712x18
                   text run at (0,0) width 712: "This sentence should have a single orange square behind it, placed at the upper left corner (since the default for"
@@ -212,8 +212,8 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutText {#text} at (148,18) size 717x36
                   text run at (148,18) width 327: " is '0% 0%' and that property is not declared here). "
                   text run at (474,18) width 243: "This is extra text included for the sole"
-                  text run at (0,36) width 265: "purpose of making the paragraph longer. "
-                  text run at (264,36) width 224: "Thank you for your understanding."
+                  text run at (0,36) width 264: "purpose of making the paragraph longer. "
+                  text run at (263,36) width 224: "Thank you for your understanding."
               LayoutBlockFlow {P} at (4,214) size 762x72
                 LayoutText {#text} at (0,0) size 734x36
                   text run at (0,0) width 734: "This sentence should have a green-hatch stripe running vertically down the center of the paragraph, with the origin"
@@ -279,22 +279,22 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (0,18) width 302: "be the exact center of the top of the paragraph. "
                   text run at (301,18) width 460: "I'll fill it with extra text to make the conformance (or lack thereof) more"
                   text run at (0,36) width 59: "obvious. "
-                  text run at (58,36) width 670: "A background color is present, although if it is visible, then the image may not have been tiled correctly."
+                  text run at (58,36) width 669: "A background color is present, although if it is visible, then the image may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,478) size 762x54 [bgcolor=#FF0000]
                 LayoutText {#text} at (0,0) size 738x54
                   text run at (0,0) width 499: "This sentence should have a fully tiled background which starts at its top left. "
                   text run at (498,0) width 228: "I'll fill it with extra text to make the"
                   text run at (0,18) width 291: "conformance (or lack thereof) more obvious. "
                   text run at (290,18) width 448: "A background color is present, although if it is visible, then the image"
-                  text run at (0,36) width 218: "may not have been tiled correctly."
+                  text run at (0,36) width 217: "may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,548) size 762x72 [bgcolor=#FF0000]
                 LayoutText {#text} at (0,0) size 760x72
                   text run at (0,0) width 760: "This sentence should have a fully tiled background which starts at its bottom right; in other words, a complete instance"
-                  text run at (0,18) width 720: "of the image should be anchored in the bottom right corner, with the tiled background extending out from there. "
-                  text run at (719,18) width 40: "I'll fill"
+                  text run at (0,18) width 719: "of the image should be anchored in the bottom right corner, with the tiled background extending out from there. "
+                  text run at (718,18) width 40: "I'll fill"
                   text run at (0,36) width 479: "it with extra text to make the conformance (or lack thereof) more obvious. "
                   text run at (478,36) width 272: "A background color is present, although if"
-                  text run at (0,54) width 395: "it is visible, then the image may not have been tiled correctly."
+                  text run at (0,54) width 394: "it is visible, then the image may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,636) size 762x108 [bgcolor=#FF0000]
                 LayoutText {#text} at (0,0) size 761x108
                   text run at (0,0) width 737: "This sentence should have a fully tiled background which starts at its center and is tiled in all directions; that is, the"
@@ -307,4 +307,4 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (0,72) width 213: "want to use in this circumstance. "
                   text run at (212,72) width 245: "This ought to be enough text, though. "
                   text run at (456,72) width 299: "A background color is present, although if it is"
-                  text run at (0,90) width 367: "visible, then the image may not have been tiled correctly."
+                  text run at (0,90) width 366: "visible, then the image may not have been tiled correctly."

@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 775x54
           text run at (0,0) width 775: "This tests to see that clicking on content outside of an editable region with -webkit-user-select: ignore doesn't remove the"
-          text run at (0,18) width 477: "selection from the editable region. To run it manually, click on the button. "
-          text run at (476,18) width 298: "The editable region should not be focused, but"
+          text run at (0,18) width 476: "selection from the editable region. To run it manually, click on the button. "
+          text run at (475,18) width 298: "The editable region should not be focused, but"
           text run at (0,36) width 246: "the text inside of it should be selected."
       LayoutBlockFlow (anonymous) at (0,70) size 784x18
         LayoutButton {INPUT} at (0,0) size 78.98x18 [bgcolor=#C0C0C0]

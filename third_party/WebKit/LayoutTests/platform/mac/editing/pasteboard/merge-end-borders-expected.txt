@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 780: "This is a test for the merge that paste does of the last paragraph of the incoming fragment with content after the end of the"
           text run at (0,18) width 179: "selection being pasted into. "
           text run at (178,18) width 597: "A fragment that ends in with paragraph surrounded by a blue border is pasted into a selection"
-          text run at (0,36) width 325: "ending in a paragraph surrounded by a red border. "
-          text run at (324,36) width 175: "The red border should win."
+          text run at (0,36) width 324: "ending in a paragraph surrounded by a red border. "
+          text run at (323,36) width 175: "The red border should win."
       LayoutBlockFlow {P} at (0,70) size 784x18
         LayoutInline {B} at (0,0) size 589x18
           LayoutText {#text} at (0,0) size 589x18
@@ -28,6 +28,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 98x18
             text run at (0,0) width 98: "First paragraph"
         LayoutBlockFlow {DIV} at (0,18) size 784x20 [border: (1px solid #FF0000)]
-          LayoutText {#text} at (1,1) size 304x18
-            text run at (1,1) width 304: "This text should be surrounded by a red border."
+          LayoutText {#text} at (1,1) size 303x18
+            text run at (1,1) width 303: "This text should be surrounded by a red border."
 caret: position 4 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body
