@@ -11,8 +11,9 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_SERVICE_RUNTIME_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_SERVICE_RUNTIME_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "ipc/ipc_sync_channel.h"
@@ -57,8 +58,8 @@ class ServiceRuntime {
 
   bool main_service_runtime() const { return main_service_runtime_; }
 
-  scoped_ptr<IPC::SyncChannel> TakeTranslatorChannel() {
-    return scoped_ptr<IPC::SyncChannel>(translator_channel_.release());
+  std::unique_ptr<IPC::SyncChannel> TakeTranslatorChannel() {
+    return std::unique_ptr<IPC::SyncChannel>(translator_channel_.release());
   }
 
  private:
@@ -67,7 +68,7 @@ class ServiceRuntime {
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
 
-  scoped_ptr<IPC::SyncChannel> translator_channel_;
+  std::unique_ptr<IPC::SyncChannel> translator_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
 };

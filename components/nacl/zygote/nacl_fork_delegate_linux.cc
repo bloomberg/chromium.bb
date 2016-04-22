@@ -10,6 +10,7 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 
+#include <memory>
 #include <set>
 
 #include "base/command_line.h"
@@ -18,7 +19,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
@@ -150,7 +150,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
   }
 
   // TODO(rickyz): Make IsSuidSandboxChild a static function.
-  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
+  std::unique_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client(
       sandbox::SetuidSandboxClient::Create());
   const bool using_setuid_sandbox = setuid_sandbox_client->IsSuidSandboxChild();
   const bool using_namespace_sandbox =
@@ -161,7 +161,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     CHECK(using_setuid_sandbox || using_namespace_sandbox);
   }
 
-  scoped_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
+  std::unique_ptr<sandbox::SetuidSandboxHost> setuid_sandbox_host(
       sandbox::SetuidSandboxHost::Create());
 
   // For communications between the NaCl loader process and
@@ -444,7 +444,7 @@ bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
 // static
 void NaClForkDelegate::AddPassthroughEnvToOptions(
     base::LaunchOptions* options) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string pass_through_string;
   std::vector<std::string> pass_through_vars;
   if (env->GetVar(kNaClEnvPassthrough, &pass_through_string)) {

@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,7 +25,6 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -441,7 +441,7 @@ int main(int argc, char* argv[]) {
   CheckRDebug(argv[0]);
 #endif
 
-  scoped_ptr<nacl::NaClSandbox> nacl_sandbox(new nacl::NaClSandbox);
+  std::unique_ptr<nacl::NaClSandbox> nacl_sandbox(new nacl::NaClSandbox);
   // Make sure that the early initialization did not start any spurious
   // threads.
 #if !defined(THREAD_SANITIZER)

@@ -4,6 +4,7 @@
 
 #include "components/nacl/loader/sandbox_linux/nacl_bpf_sandbox_linux.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -22,7 +23,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -62,7 +62,7 @@ class NaClBPFSandboxPolicy : public sandbox::bpf_dsl::Policy {
   }
 
  private:
-  scoped_ptr<sandbox::bpf_dsl::Policy> baseline_policy_;
+  std::unique_ptr<sandbox::bpf_dsl::Policy> baseline_policy_;
   bool enable_nacl_debug_;
   const pid_t policy_pid_;
 
@@ -168,7 +168,7 @@ void RunSandboxSanityChecks() {
 bool InitializeBPFSandbox(base::ScopedFD proc_fd) {
 #if defined(USE_SECCOMP_BPF)
   bool sandbox_is_initialized = content::InitializeSandbox(
-      scoped_ptr<sandbox::bpf_dsl::Policy>(new NaClBPFSandboxPolicy),
+      std::unique_ptr<sandbox::bpf_dsl::Policy>(new NaClBPFSandboxPolicy),
       std::move(proc_fd));
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();

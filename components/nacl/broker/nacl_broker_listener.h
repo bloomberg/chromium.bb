@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "components/nacl/common/nacl_types.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -44,7 +45,7 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   void OnStopBroker();
 
   base::Process browser_process_;
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerListener);
 };

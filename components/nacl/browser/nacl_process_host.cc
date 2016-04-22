@@ -611,7 +611,7 @@ bool NaClProcessHost::LaunchSelLdr() {
     // x86 CRT DLLs are in e.g. out\Debug for chrome.exe etc., so the x64 ones
     // are put in out\Debug\x64 which we add to the PATH here so that loader
     // can find them. See http://crbug.com/346034.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     static const char kPath[] = "PATH";
     std::string old_path;
     base::FilePath module_path;
@@ -633,7 +633,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   }
 #endif
 
-  scoped_ptr<base::CommandLine> cmd_line(new base::CommandLine(exe_path));
+  std::unique_ptr<base::CommandLine> cmd_line(new base::CommandLine(exe_path));
   CopyNaClCommandLineArguments(cmd_line.get());
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
@@ -1088,7 +1088,7 @@ bool NaClProcessHost::StartPPAPIProxy(ScopedChannelHandle channel_handle) {
   }
 
   ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
-      scoped_ptr<ppapi::host::HostFactory>(
+      std::unique_ptr<ppapi::host::HostFactory>(
           NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
               ppapi_host_.get())));
 

@@ -13,8 +13,9 @@
 
 #include <stdarg.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
 
 namespace plugin {
@@ -39,7 +40,7 @@ class NaClSubprocess {
 
  private:
   // The service runtime representing the NaCl module instance.
-  scoped_ptr<ServiceRuntime> service_runtime_;
+  std::unique_ptr<ServiceRuntime> service_runtime_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClSubprocess);
 };

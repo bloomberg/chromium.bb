@@ -32,8 +32,7 @@ static const int kTranslationCacheInitializationDelayMs = 20;
 void CloseBaseFile(base::File auto_file_closer) {
 }
 
-void CloseScopedFile(scoped_ptr<base::File> auto_file_closer) {
-}
+void CloseScopedFile(std::unique_ptr<base::File> auto_file_closer) {}
 
 }  // namespace
 
@@ -41,16 +40,17 @@ namespace pnacl {
 
 class FileProxy {
  public:
-  FileProxy(scoped_ptr<base::File> file, base::WeakPtr<pnacl::PnaclHost> host);
+  FileProxy(std::unique_ptr<base::File> file,
+            base::WeakPtr<pnacl::PnaclHost> host);
   int Write(scoped_refptr<net::DrainableIOBuffer> buffer);
   void WriteDone(const PnaclHost::TranslationID& id, int result);
 
  private:
-  scoped_ptr<base::File> file_;
+  std::unique_ptr<base::File> file_;
   base::WeakPtr<pnacl::PnaclHost> host_;
 };
 
-FileProxy::FileProxy(scoped_ptr<base::File> file,
+FileProxy::FileProxy(std::unique_ptr<base::File> file,
                      base::WeakPtr<pnacl::PnaclHost> host)
     : file_(std::move(file)), host_(host) {}
 
@@ -385,7 +385,7 @@ void PnaclHost::CheckCacheQueryReady(
     return;
   }
 
-  scoped_ptr<base::File> file(pt->nexe_fd);
+  std::unique_ptr<base::File> file(pt->nexe_fd);
   pt->nexe_fd = NULL;
   pt->got_nexe_fd = false;
   FileProxy* proxy(new FileProxy(std::move(file), weak_factory_.GetWeakPtr()));
@@ -417,7 +417,7 @@ void PnaclHost::ReturnMiss(const PendingTranslationMap::iterator& entry) {
 // On error, just return a null refptr.
 // static
 scoped_refptr<net::DrainableIOBuffer> PnaclHost::CopyFileToBuffer(
-    scoped_ptr<base::File> file) {
+    std::unique_ptr<base::File> file) {
   base::File::Info info;
   scoped_refptr<net::DrainableIOBuffer> buffer;
   bool error = false;
@@ -468,7 +468,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
       !success || !TranslationMayBeCached(entry)) {
     store_nexe = false;
   } else {
-    scoped_ptr<base::File> file(entry->second.nexe_fd);
+    std::unique_ptr<base::File> file(entry->second.nexe_fd);
     entry->second.nexe_fd = NULL;
     entry->second.got_nexe_fd = false;
 
@@ -486,7 +486,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
   if (!store_nexe) {
     // If store_nexe is true, the fd will be closed by CopyFileToBuffer.
     if (entry->second.got_nexe_fd) {
-      scoped_ptr<base::File> file(entry->second.nexe_fd);
+      std::unique_ptr<base::File> file(entry->second.nexe_fd);
       entry->second.nexe_fd = NULL;
       BrowserThread::PostBlockingPoolTask(
           FROM_HERE,
@@ -567,7 +567,7 @@ void PnaclHost::RequeryMatchingTranslations(const std::string& key) {
 //////////////////// GetNexeFd hit path
 
 void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
-                                         scoped_ptr<base::File> file,
+                                         std::unique_ptr<base::File> file,
                                          int file_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
@@ -605,7 +605,7 @@ void PnaclHost::RendererClosing(int render_process_id) {
     PendingTranslationMap::iterator to_erase(it++);
     if (to_erase->first.first == render_process_id) {
       // Clean up the open files.
-      scoped_ptr<base::File> file(to_erase->second.nexe_fd);
+      std::unique_ptr<base::File> file(to_erase->second.nexe_fd);
       to_erase->second.nexe_fd = NULL;
       BrowserThread::PostBlockingPoolTask(
           FROM_HERE,

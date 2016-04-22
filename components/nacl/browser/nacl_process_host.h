@@ -233,14 +233,14 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   IPC::Message* reply_msg_;
 #if defined(OS_WIN)
   bool debug_exception_handler_requested_;
-  scoped_ptr<IPC::Message> attach_debug_exception_handler_reply_msg_;
+  std::unique_ptr<IPC::Message> attach_debug_exception_handler_reply_msg_;
 #endif
 
   // The file path to the manifest is passed to nacl-gdb when it is used to
   // debug the NaCl loader.
   base::FilePath manifest_path_;
 
-  scoped_ptr<content::BrowserChildProcessHost> process_;
+  std::unique_ptr<content::BrowserChildProcessHost> process_;
 
   bool uses_nonsfi_mode_;
 
@@ -252,9 +252,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   const base::FilePath profile_directory_;
 
   // Channel proxy to terminate the NaCl-Browser PPAPI channel.
-  scoped_ptr<IPC::ChannelProxy> ipc_proxy_channel_;
+  std::unique_ptr<IPC::ChannelProxy> ipc_proxy_channel_;
   // Browser host for plugin process.
-  scoped_ptr<content::BrowserPpapiHost> ppapi_host_;
+  std::unique_ptr<content::BrowserPpapiHost> ppapi_host_;
 
   int render_view_id_;
 

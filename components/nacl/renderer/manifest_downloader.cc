@@ -17,7 +17,7 @@
 namespace nacl {
 
 ManifestDownloader::ManifestDownloader(
-    scoped_ptr<blink::WebURLLoader> url_loader,
+    std::unique_ptr<blink::WebURLLoader> url_loader,
     bool is_installed,
     Callback cb)
     : url_loader_(std::move(url_loader)),

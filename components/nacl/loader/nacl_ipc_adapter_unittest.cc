@@ -8,7 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
@@ -31,7 +32,7 @@ class NaClIPCAdapterTest : public testing::Test {
     // Takes ownership of the sink_ pointer. Note we provide the current message
     // loop instead of using a real IO thread. This should work OK since we do
     // not need real IPC for the tests.
-    adapter_ = new NaClIPCAdapter(scoped_ptr<IPC::Channel>(sink_),
+    adapter_ = new NaClIPCAdapter(std::unique_ptr<IPC::Channel>(sink_),
                                   base::ThreadTaskRunnerHandle::Get().get());
   }
   void TearDown() override {

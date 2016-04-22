@@ -9,13 +9,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #if defined(OS_POSIX)
 #include <unistd.h>
 #endif
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"

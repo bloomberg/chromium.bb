@@ -33,7 +33,7 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
   friend class base::RefCounted<NaClTrustedListener>;
   ~NaClTrustedListener() override;
   IPC::ChannelHandle channel_handle_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClTrustedListener);
 };

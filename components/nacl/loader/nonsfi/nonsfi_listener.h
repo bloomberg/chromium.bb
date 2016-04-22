@@ -6,12 +6,11 @@
 #define COMPONENTS_NACL_LOADER_NONSFI_NONSFI_LISTENER_H_
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/nacl/common/nacl_types.h"
@@ -46,10 +45,10 @@ class NonSfiListener : public IPC::Listener {
 
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
   scoped_refptr<NaClTrustedListener> trusted_listener_;
 
-  scoped_ptr<std::map<std::string, int>> key_fd_map_;
+  std::unique_ptr<std::map<std::string, int>> key_fd_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NonSfiListener);
 };

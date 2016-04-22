@@ -6,13 +6,14 @@
 
 #include <limits.h>
 #include <string.h>
+
+#include <memory>
 #include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/task_runner_util.h"
 #include "base/tuple.h"
@@ -229,20 +230,21 @@ class NaClDescWrapper {
   DISALLOW_COPY_AND_ASSIGN(NaClDescWrapper);
 };
 
-scoped_ptr<NaClDescWrapper> MakeShmNaClDesc(
+std::unique_ptr<NaClDescWrapper> MakeShmNaClDesc(
     const base::SharedMemoryHandle& handle,
     size_t size) {
 #if defined(OS_MACOSX)
-  return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(
+  return std::unique_ptr<NaClDescWrapper>(new NaClDescWrapper(
       NaClDescImcShmMachMake(handle.GetMemoryObject(), size)));
 #else
-  return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(NaClDescImcShmMake(
+  return std::unique_ptr<NaClDescWrapper>(
+      new NaClDescWrapper(NaClDescImcShmMake(
 #if defined(OS_WIN)
-      handle.GetHandle(),
+          handle.GetHandle(),
 #else
-      base::SharedMemory::GetFdFromSharedMemoryHandle(handle),
+          base::SharedMemory::GetFdFromSharedMemoryHandle(handle),
 #endif
-      size)));
+          size)));
 #endif
 }
 
@@ -268,7 +270,7 @@ class NaClIPCAdapter::RewrittenMessage
   friend class base::RefCounted<RewrittenMessage>;
   ~RewrittenMessage() {}
 
-  scoped_ptr<char[]> data_;
+  std::unique_ptr<char[]> data_;
   size_t data_len_;
 
   // Offset into data where the next read will happen. This will be equal to
@@ -358,12 +360,9 @@ NaClIPCAdapter::NaClIPCAdapter(const IPC::ChannelHandle& handle,
   // ref-count.
 }
 
-NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
+NaClIPCAdapter::NaClIPCAdapter(std::unique_ptr<IPC::Channel> channel,
                                base::TaskRunner* runner)
-    : lock_(),
-      cond_var_(&lock_),
-      task_runner_(runner),
-      locked_data_() {
+    : lock_(), cond_var_(&lock_), task_runner_(runner), locked_data_() {
   io_thread_data_.channel_ = std::move(channel);
 }
 
@@ -549,7 +548,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
 
     typedef std::vector<ppapi::proxy::SerializedHandle> Handles;
     Handles handles;
-    scoped_ptr<IPC::Message> new_msg;
+    std::unique_ptr<IPC::Message> new_msg;
 
     if (!locked_data_.nacl_msg_scanner_.ScanMessage(
             msg, type, &handles, &new_msg))
@@ -560,7 +559,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
     for (Handles::const_iterator iter = handles.begin();
          iter != handles.end();
          ++iter) {
-      scoped_ptr<NaClDescWrapper> nacl_desc;
+      std::unique_ptr<NaClDescWrapper> nacl_desc;
       switch (iter->type()) {
         case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
           nacl_desc =
@@ -615,15 +614,13 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
   return true;
 }
 
-scoped_ptr<IPC::Message> CreateOpenResourceReply(
+std::unique_ptr<IPC::Message> CreateOpenResourceReply(
     const IPC::Message& orig_msg,
     ppapi::proxy::SerializedHandle sh) {
   // The creation of new_msg must be kept in sync with
   // SyncMessage::WriteSyncHeader.
-  scoped_ptr<IPC::Message> new_msg(new IPC::Message(
-      orig_msg.routing_id(),
-      orig_msg.type(),
-      IPC::Message::PRIORITY_NORMAL));
+  std::unique_ptr<IPC::Message> new_msg(new IPC::Message(
+      orig_msg.routing_id(), orig_msg.type(), IPC::Message::PRIORITY_NORMAL));
   new_msg->set_reply();
   new_msg->WriteInt(IPC::SyncMessage::GetMessageId(orig_msg));
 
@@ -665,10 +662,10 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     // The file token didn't resolve successfully, so we give the
     // original FD to the client without making a validated NaClDesc.
     // However, we must rewrite the message to clear the file tokens.
-    scoped_ptr<IPC::Message> new_msg =
+    std::unique_ptr<IPC::Message> new_msg =
         CreateOpenResourceReply(orig_msg, orig_sh);
 
-    scoped_ptr<NaClDescWrapper> desc_wrapper(
+    std::unique_ptr<NaClDescWrapper> desc_wrapper(
         new NaClDescWrapper(NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
             orig_sh.descriptor().GetHandle(),
@@ -694,7 +691,7 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
 
   ppapi::proxy::SerializedHandle sh;
   sh.set_file_handle(ipc_fd, PP_FILEOPENFLAG_READ, 0);
-  scoped_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
+  std::unique_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
   scoped_refptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
 
   struct NaClDesc* desc =
@@ -752,9 +749,8 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
 
   // We actually discard the flags and only copy the ones we care about. This
   // is just because message doesn't have a constructor that takes raw flags.
-  scoped_ptr<IPC::Message> msg(
-      new IPC::Message(header->routing, header->type,
-                       IPC::Message::PRIORITY_NORMAL));
+  std::unique_ptr<IPC::Message> msg(new IPC::Message(
+      header->routing, header->type, IPC::Message::PRIORITY_NORMAL));
   if (header->flags & IPC::Message::SYNC_BIT)
     msg->set_sync();
   if (header->flags & IPC::Message::REPLY_BIT)
@@ -779,7 +775,7 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
   }
 
   // Scan all untrusted messages.
-  scoped_ptr<IPC::Message> new_msg;
+  std::unique_ptr<IPC::Message> new_msg;
   locked_data_.nacl_msg_scanner_.ScanUntrustedMessage(*msg, &new_msg);
   if (new_msg)
     msg.reset(new_msg.release());
@@ -808,7 +804,8 @@ void NaClIPCAdapter::CloseChannelOnIOThread() {
   io_thread_data_.channel_->Close();
 }
 
-void NaClIPCAdapter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
+void NaClIPCAdapter::SendMessageOnIOThread(
+    std::unique_ptr<IPC::Message> message) {
   int id = IPC::SyncMessage::GetMessageId(*message.get());
   DCHECK(io_thread_data_.pending_sync_msgs_.find(id) ==
          io_thread_data_.pending_sync_msgs_.end());

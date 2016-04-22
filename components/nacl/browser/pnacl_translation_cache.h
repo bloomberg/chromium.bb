@@ -6,11 +6,11 @@
 #define COMPONENTS_NACL_BROWSER_PNACL_TRANSLATION_CACHE_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
@@ -91,7 +91,7 @@ class PnaclTranslationCache
 
   void OnCreateBackendComplete(int rv);
 
-  scoped_ptr<disk_cache::Backend> disk_cache_;
+  std::unique_ptr<disk_cache::Backend> disk_cache_;
   CompletionCallback init_callback_;
   bool in_memory_;
   std::map<void*, scoped_refptr<PnaclTranslationCacheEntry> > open_entries_;

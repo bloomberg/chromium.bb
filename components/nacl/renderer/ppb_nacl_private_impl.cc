@@ -141,15 +141,15 @@ class NaClPluginInstance {
   }
 
   NexeLoadManager nexe_load_manager;
-  scoped_ptr<JsonManifest> json_manifest;
-  scoped_ptr<InstanceInfo> instance_info;
+  std::unique_ptr<JsonManifest> json_manifest;
+  std::unique_ptr<InstanceInfo> instance_info;
 
   // When translation is complete, this records the size of the pexe in
   // bytes so that it can be reported in a later load event.
   uint64_t pexe_size;
 };
 
-typedef base::ScopedPtrHashMap<PP_Instance, scoped_ptr<NaClPluginInstance>>
+typedef base::ScopedPtrHashMap<PP_Instance, std::unique_ptr<NaClPluginInstance>>
     InstanceMap;
 base::LazyInstance<InstanceMap> g_instance_map = LAZY_INSTANCE_INITIALIZER;
 
@@ -408,14 +408,14 @@ void PPBNaClPrivate::LaunchSelLdr(
     const PP_NaClFileInfo* nexe_file_info,
     PP_Bool uses_nonsfi_mode,
     PP_NaClAppProcessType pp_process_type,
-    scoped_ptr<IPC::SyncChannel>* translator_channel,
+    std::unique_ptr<IPC::SyncChannel>* translator_channel,
     PP_CompletionCallback callback) {
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
   NaClAppProcessType process_type = PP_ToNaClAppProcessType(pp_process_type);
   // Create the manifest service proxy here, so on error case, it will be
   // destructed (without passing it to ManifestServiceChannel).
-  scoped_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
+  std::unique_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
       new ManifestServiceProxy(instance, process_type));
 
   IPC::Sender* sender = content::RenderThread::Get();
@@ -551,12 +551,10 @@ void PPBNaClPrivate::LaunchSelLdr(
   // Create the trusted plugin channel.
   if (IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
     bool is_helper_nexe = !PP_ToBool(main_service_runtime);
-    scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
+    std::unique_ptr<TrustedPluginChannel> trusted_plugin_channel(
         new TrustedPluginChannel(
-            load_manager,
-            launch_result.trusted_ipc_channel_handle,
-            content::RenderThread::Get()->GetShutdownEvent(),
-            is_helper_nexe));
+            load_manager, launch_result.trusted_ipc_channel_handle,
+            content::RenderThread::Get()->GetShutdownEvent(), is_helper_nexe));
     load_manager->set_trusted_plugin_channel(std::move(trusted_plugin_channel));
   } else {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);
@@ -565,7 +563,7 @@ void PPBNaClPrivate::LaunchSelLdr(
 
   // Create the manifest service handle as well.
   if (IsValidChannelHandle(launch_result.manifest_service_ipc_channel_handle)) {
-    scoped_ptr<ManifestServiceChannel> manifest_service_channel(
+    std::unique_ptr<ManifestServiceChannel> manifest_service_channel(
         new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
             base::Bind(&PostPPCompletionCallback, callback),
@@ -596,7 +594,7 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
     DLOG(ERROR) << "Could not find instance ID";
     return PP_FALSE;
   }
-  scoped_ptr<InstanceInfo> instance_info =
+  std::unique_ptr<InstanceInfo> instance_info =
       std::move(nacl_plugin_instance->instance_info);
 
   PP_ExternalPluginResult result = plugin_instance->SwitchToOutOfProcessProxy(
@@ -879,7 +877,8 @@ void PPBNaClPrivate::ReportLoadError(PP_Instance instance,
 void PPBNaClPrivate::InstanceCreated(PP_Instance instance) {
   InstanceMap& map = g_instance_map.Get();
   CHECK(map.find(instance) == map.end()); // Sanity check.
-  scoped_ptr<NaClPluginInstance> new_instance(new NaClPluginInstance(instance));
+  std::unique_ptr<NaClPluginInstance> new_instance(
+      new NaClPluginInstance(instance));
   map.add(instance, std::move(new_instance));
 }
 
@@ -893,7 +892,7 @@ void PPBNaClPrivate::InstanceDestroyed(PP_Instance instance) {
   // the NexeLoadManager (e.g., by calling ReportLoadError). Passing out the
   // NexeLoadManager to a local scoped_ptr just ensures that its entry is gone
   // from the map prior to the destructor being invoked.
-  scoped_ptr<NaClPluginInstance> temp(map.take(instance));
+  std::unique_ptr<NaClPluginInstance> temp(map.take(instance));
   map.erase(iter);
 }
 
@@ -1029,7 +1028,7 @@ void DownloadManifestToBuffer(PP_Instance instance,
       plugin_instance->GetContainer()->element().document();
 
   const GURL& gurl = load_manager->manifest_base_url();
-  scoped_ptr<blink::WebURLLoader> url_loader(
+  std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   blink::WebURLRequest request = CreateWebURLRequest(document, gurl);
 
@@ -1107,12 +1106,9 @@ bool CreateJsonManifest(PP_Instance instance,
   else
     isa_type = GetSandboxArch();
 
-  scoped_ptr<nacl::JsonManifest> j(
-      new nacl::JsonManifest(
-          manifest_url.c_str(),
-          isa_type,
-          IsNonSFIModeEnabled(),
-          PP_ToBool(NaClDebugEnabledForURL(manifest_url.c_str()))));
+  std::unique_ptr<nacl::JsonManifest> j(new nacl::JsonManifest(
+      manifest_url.c_str(), isa_type, IsNonSFIModeEnabled(),
+      PP_ToBool(NaClDebugEnabledForURL(manifest_url.c_str()))));
   JsonManifest::ErrorInfo error_info;
   if (j->Init(manifest_data.c_str(), &error_info)) {
     GetNaClPluginInstance(instance)->json_manifest.reset(j.release());
@@ -1244,7 +1240,7 @@ PP_Bool PPBNaClPrivate::GetPnaclResourceInfo(PP_Instance instance,
     return PP_FALSE;
   }
 
-  scoped_ptr<char[]> buffer(new char[file_info.size + 1]);
+  std::unique_ptr<char[]> buffer(new char[file_info.size + 1]);
   if (buffer.get() == NULL) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
@@ -1268,10 +1264,8 @@ PP_Bool PPBNaClPrivate::GetPnaclResourceInfo(PP_Instance instance,
   base::JSONReader json_reader;
   int json_read_error_code;
   std::string json_read_error_msg;
-  scoped_ptr<base::Value> json_data(json_reader.ReadAndReturnError(
-      buffer.get(),
-      base::JSON_PARSE_RFC,
-      &json_read_error_code,
+  std::unique_ptr<base::Value> json_data(json_reader.ReadAndReturnError(
+      buffer.get(), base::JSON_PARSE_RFC, &json_read_error_code,
       &json_read_error_msg));
   if (!json_data) {
     load_manager->ReportLoadError(
@@ -1402,7 +1396,7 @@ void PPBNaClPrivate::DownloadNexe(PP_Instance instance,
   }
   const blink::WebDocument& document =
       plugin_instance->GetContainer()->element().document();
-  scoped_ptr<blink::WebURLLoader> url_loader(
+  std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
 
@@ -1553,7 +1547,7 @@ void DownloadFile(PP_Instance instance,
   }
   const blink::WebDocument& document =
       plugin_instance->GetContainer()->element().document();
-  scoped_ptr<blink::WebURLLoader> url_loader(
+  std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
 
@@ -1608,7 +1602,7 @@ namespace {
 class PexeDownloader : public blink::WebURLLoaderClient {
  public:
   PexeDownloader(PP_Instance instance,
-                 scoped_ptr<blink::WebURLLoader> url_loader,
+                 std::unique_ptr<blink::WebURLLoader> url_loader,
                  const std::string& pexe_url,
                  int32_t pexe_opt_level,
                  bool use_subzero,
@@ -1724,7 +1718,7 @@ class PexeDownloader : public blink::WebURLLoaderClient {
   }
 
   PP_Instance instance_;
-  scoped_ptr<blink::WebURLLoader> url_loader_;
+  std::unique_ptr<blink::WebURLLoader> url_loader_;
   std::string pexe_url_;
   int32_t pexe_opt_level_;
   bool use_subzero_;
@@ -1756,7 +1750,7 @@ void PPBNaClPrivate::StreamPexe(PP_Instance instance,
   GURL gurl(pexe_url);
   const blink::WebDocument& document =
       plugin_instance->GetContainer()->element().document();
-  scoped_ptr<blink::WebURLLoader> url_loader(
+  std::unique_ptr<blink::WebURLLoader> url_loader(
       CreateWebURLLoader(document, gurl));
   PexeDownloader* downloader =
       new PexeDownloader(instance, std::move(url_loader), pexe_url, opt_level,

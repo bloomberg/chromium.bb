@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
@@ -141,7 +141,7 @@ class PnaclCoordinator {
                                 pp::ThreadSafeThreadTraits> callback_factory_;
 
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
-  scoped_ptr<PnaclResources> resources_;
+  std::unique_ptr<PnaclResources> resources_;
   NaClSubprocess compiler_subprocess_;
   NaClSubprocess ld_subprocess_;
 
@@ -179,7 +179,7 @@ class PnaclCoordinator {
   // The helper thread used to do translations via SRPC.
   // It accesses fields of PnaclCoordinator so it must have a
   // shorter lifetime.
-  scoped_ptr<PnaclTranslateThread> translate_thread_;
+  std::unique_ptr<PnaclTranslateThread> translate_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
 };

@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_NACL_RENDERER_JSON_MANIFEST_H
 #define COMPONENTS_NACL_RENDERER_JSON_MANIFEST_H
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 
@@ -74,7 +74,7 @@ class JsonManifest {
   bool pnacl_debug_;
 
   // The dictionary of manifest information parsed in Init().
-  scoped_ptr<base::DictionaryValue> dictionary_;
+  std::unique_ptr<base::DictionaryValue> dictionary_;
 };
 
 }  // namespace nacl

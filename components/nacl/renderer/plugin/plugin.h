@@ -12,10 +12,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/pnacl_coordinator.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
@@ -130,7 +130,7 @@ class Plugin : public pp::Instance {
 
   pp::CompletionCallbackFactory<Plugin> callback_factory_;
 
-  scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
+  std::unique_ptr<PnaclCoordinator> pnacl_coordinator_;
 
   int exit_status_;
 

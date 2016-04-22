@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_NACL_RENDERER_TRUSTED_PLUGIN_CHANNEL_H_
 #define COMPONENTS_NACL_RENDERER_TRUSTED_PLUGIN_CHANNEL_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_instance.h"
@@ -46,7 +47,7 @@ class TrustedPluginChannel : public IPC::Listener {
   // Non-owning pointer. This is safe because the TrustedPluginChannel is owned
   // by the NexeLoadManager pointed to here.
   NexeLoadManager* nexe_load_manager_;
-  scoped_ptr<IPC::SyncChannel> channel_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
   bool is_helper_nexe_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustedPluginChannel);

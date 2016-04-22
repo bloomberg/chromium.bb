@@ -419,7 +419,7 @@ bool JsonManifest::Init(const std::string& manifest_json_data,
   base::JSONReader json_reader;
   int json_read_error_code;
   std::string json_read_error_msg;
-  scoped_ptr<base::Value> json_data(json_reader.ReadAndReturnError(
+  std::unique_ptr<base::Value> json_data(json_reader.ReadAndReturnError(
       manifest_json_data, base::JSON_PARSE_RFC, &json_read_error_code,
       &json_read_error_msg));
   if (!json_data) {

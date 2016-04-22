@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
@@ -32,7 +32,7 @@ class ManifestDownloader : public blink::WebURLLoaderClient {
   // for the null termination character.
   static const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
 
-  ManifestDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
+  ManifestDownloader(std::unique_ptr<blink::WebURLLoader> url_loader,
                      bool is_installed,
                      Callback cb);
   ~ManifestDownloader() override;
@@ -55,7 +55,7 @@ class ManifestDownloader : public blink::WebURLLoaderClient {
   void didFail(blink::WebURLLoader* loader,
                const blink::WebURLError& error) override;
 
-  scoped_ptr<blink::WebURLLoader> url_loader_;
+  std::unique_ptr<blink::WebURLLoader> url_loader_;
   bool is_installed_;
   Callback cb_;
   std::string buffer_;

@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_NACL_LOADER_SANDBOX_LINUX_NACL_SANDBOX_LINUX_H_
 #define COMPONENTS_NACL_LOADER_SANDBOX_LINUX_NACL_SANDBOX_LINUX_H_
 
+#include <memory>
+
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace sandbox {
 class SetuidSandboxClient;
@@ -77,7 +78,7 @@ class NaClSandbox {
   // |proc_fd_| must be released before the layer-1 sandbox is considered
   // enforcing.
   base::ScopedFD proc_fd_;
-  scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
+  std::unique_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
   DISALLOW_COPY_AND_ASSIGN(NaClSandbox);
 };
 

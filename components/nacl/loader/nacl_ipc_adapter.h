@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -113,7 +113,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   // Initializes with a given channel that's already created for testing
   // purposes. This function will take ownership of the given channel.
-  NaClIPCAdapter(scoped_ptr<IPC::Channel> channel, base::TaskRunner* runner);
+  NaClIPCAdapter(std::unique_ptr<IPC::Channel> channel,
+                 base::TaskRunner* runner);
 
   // Connect the channel. This must be called after the constructor that accepts
   // an IPC::ChannelHandle, and causes the Channel to be connected on the IO
@@ -180,7 +181,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     IOThreadData();
     ~IOThreadData();
 
-    scoped_ptr<IPC::Channel> channel_;
+    std::unique_ptr<IPC::Channel> channel_;
 
     // When we send a synchronous message (from untrusted to trusted), we store
     // its type here, so that later we can associate the reply with its type
@@ -210,7 +211,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
   void ConnectChannelOnIOThread();
   void CloseChannelOnIOThread();
-  void SendMessageOnIOThread(scoped_ptr<IPC::Message> message);
+  void SendMessageOnIOThread(std::unique_ptr<IPC::Message> message);
 
   // Saves the message to forward to NaCl. This method assumes that the caller
   // holds the lock for locked_data_.

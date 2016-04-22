@@ -36,7 +36,7 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   base::MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
-  scoped_ptr<base::PowerMonitorSource> power_monitor_source(
+  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
   base::PowerMonitor power_monitor(std::move(power_monitor_source));
   base::HighResolutionTimerManager hi_res_timer_manager;

@@ -4,15 +4,16 @@
 
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 
+#include <memory>
+
 #include "base/environment.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace nacl {
 
 TEST(NaClForkDelegateLinuxTest, EnvPassthrough) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   const char passthrough1[] = "HELPER_PASSTHROUGH1";
   const char passthrough2[] = "HELPER_PASSTHROUGH2";
   const char passthrough3[] = "HELPER_PASSTHROUGH3";

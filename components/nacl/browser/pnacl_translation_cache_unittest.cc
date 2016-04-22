@@ -48,7 +48,7 @@ class PnaclTranslationCacheTest : public testing::Test {
   void StoreNexe(const std::string& key, const std::string& nexe);
   std::string GetNexe(const std::string& key);
 
-  scoped_ptr<PnaclTranslationCache> cache_;
+  std::unique_ptr<PnaclTranslationCache> cache_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 };

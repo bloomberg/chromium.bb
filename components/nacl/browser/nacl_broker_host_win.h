@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 
@@ -55,7 +55,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   // BrowserChildProcessHostDelegate implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  scoped_ptr<content::BrowserChildProcessHost> process_;
+  std::unique_ptr<content::BrowserChildProcessHost> process_;
   bool is_terminating_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerHost);

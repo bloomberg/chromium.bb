@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -155,7 +155,7 @@ class PnaclHost {
   // GetNexeFd miss path
   void ReturnMiss(const PendingTranslationMap::iterator& entry);
   static scoped_refptr<net::DrainableIOBuffer> CopyFileToBuffer(
-      scoped_ptr<base::File> file);
+      std::unique_ptr<base::File> file);
   void StoreTranslatedNexe(TranslationID id,
                            scoped_refptr<net::DrainableIOBuffer>);
   void OnTranslatedNexeStored(const TranslationID& id, int net_error);
@@ -163,7 +163,7 @@ class PnaclHost {
 
   // GetNexeFd hit path
   void OnBufferCopiedToTempFile(const TranslationID& id,
-                                scoped_ptr<base::File> file,
+                                std::unique_ptr<base::File> file,
                                 int file_error);
 
   void OnEntriesDoomed(const base::Closure& callback, int net_error);
@@ -175,7 +175,7 @@ class PnaclHost {
   int pending_backend_operations_;
   CacheState cache_state_;
   base::FilePath temp_dir_;
-  scoped_ptr<pnacl::PnaclTranslationCache> disk_cache_;
+  std::unique_ptr<pnacl::PnaclTranslationCache> disk_cache_;
   PendingTranslationMap pending_translations_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<PnaclHost> weak_factory_;

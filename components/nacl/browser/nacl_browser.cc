@@ -247,9 +247,10 @@ void NaClBrowser::EnsureIrtAvailable() {
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
     // TODO(ncbray) use blocking pool.
-    scoped_ptr<base::FileProxy> file_proxy(new base::FileProxy(
+    std::unique_ptr<base::FileProxy> file_proxy(new base::FileProxy(
         content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::FILE).get()));
+            content::BrowserThread::FILE)
+            .get()));
     base::FileProxy* proxy = file_proxy.get();
     if (!proxy->CreateOrOpen(irt_filepath_,
                              base::File::FLAG_OPEN | base::File::FLAG_READ,
@@ -262,7 +263,7 @@ void NaClBrowser::EnsureIrtAvailable() {
   }
 }
 
-void NaClBrowser::OnIrtOpened(scoped_ptr<base::FileProxy> file_proxy,
+void NaClBrowser::OnIrtOpened(std::unique_ptr<base::FileProxy> file_proxy,
                               base::File::Error error_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK_EQ(irt_state_, NaClResourceRequested);

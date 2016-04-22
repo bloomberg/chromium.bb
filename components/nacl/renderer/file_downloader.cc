@@ -15,7 +15,7 @@
 
 namespace nacl {
 
-FileDownloader::FileDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
+FileDownloader::FileDownloader(std::unique_ptr<blink::WebURLLoader> url_loader,
                                base::File file,
                                StatusCallback status_cb,
                                ProgressCallback progress_cb)

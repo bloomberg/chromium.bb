@@ -36,7 +36,7 @@ class FileDownloader : public blink::WebURLLoaderClient {
   // received.
   typedef base::Callback<void(int64_t, int64_t)> ProgressCallback;
 
-  FileDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
+  FileDownloader(std::unique_ptr<blink::WebURLLoader> url_loader,
                  base::File file,
                  StatusCallback status_cb,
                  ProgressCallback progress_cb);
@@ -59,7 +59,7 @@ class FileDownloader : public blink::WebURLLoaderClient {
   void didFail(blink::WebURLLoader* loader,
                const blink::WebURLError& error) override;
 
-  scoped_ptr<blink::WebURLLoader> url_loader_;
+  std::unique_ptr<blink::WebURLLoader> url_loader_;
   base::File file_;
   StatusCallback status_cb_;
   ProgressCallback progress_cb_;
