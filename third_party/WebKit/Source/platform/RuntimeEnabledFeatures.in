@@ -52,7 +52,7 @@ CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
 CSSPaintAPI status=test, depends_on=Worklet
-CSSPropertyD status=experimental
+CSSPropertyD status=stable
 CSSSnapSize status=experimental
 CSSStickyPosition status=experimental
 CSSTouchActionPanDirections status=experimental

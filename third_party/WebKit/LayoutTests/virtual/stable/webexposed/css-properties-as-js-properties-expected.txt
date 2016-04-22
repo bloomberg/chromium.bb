@@ -97,6 +97,7 @@ cssText
 cursor
 cx
 cy
+d
 direction
 display
 dominantBaseline
