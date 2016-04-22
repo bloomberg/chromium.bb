@@ -49,7 +49,7 @@ class CCMessagesPerfTest : public testing::Test {
       }
 
       base::TimeTicks now = base::TimeTicks::Now();
-      if (now - start < min_time || min_time == base::TimeDelta())
+      if (now - start < min_time || min_time.is_zero())
         min_time = now - start;
       start = base::TimeTicks::Now();
     }

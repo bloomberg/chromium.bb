@@ -20,12 +20,12 @@ const char kTestMimeType[] = "text/plain";
 
 class TestLogUploader : public LogUploader {
  public:
-  TestLogUploader(net::URLRequestContextGetter* request_context) :
+  explicit TestLogUploader(net::URLRequestContextGetter* request_context) :
       LogUploader(GURL(kTestServerURL), kTestMimeType, request_context) {
     Start();
   }
 
-  base::TimeDelta last_interval_set() const { return last_interval_set_; };
+  base::TimeDelta last_interval_set() const { return last_interval_set_; }
 
   void StartUpload() {
     last_interval_set_ = base::TimeDelta();
@@ -38,7 +38,7 @@ class TestLogUploader : public LogUploader {
 
  protected:
   bool IsUploadScheduled() const override {
-    return last_interval_set() != base::TimeDelta();
+    return !last_interval_set().is_zero();
   }
 
   // Schedules a future call to StartScheduledUpload if one isn't already
@@ -50,6 +50,7 @@ class TestLogUploader : public LogUploader {
 
   base::TimeDelta last_interval_set_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(TestLogUploader);
 };
 
@@ -68,6 +69,7 @@ class LogUploaderTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::FakeURLFetcherFactory factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(LogUploaderTest);
 };
 

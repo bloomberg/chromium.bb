@@ -145,7 +145,7 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
 
   // |arc_time_offset| is the effective amount of time one would have to wait
   // for the "spinning" sweep to match |waiting_sweep|. Brute force calculation.
-  if (waiting_state->arc_time_offset == base::TimeDelta()) {
+  if (waiting_state->arc_time_offset.is_zero()) {
     for (int64_t arc_time_it = 0; arc_time_it <= kArcTimeMs; ++arc_time_it) {
       double arc_size_progress = static_cast<double>(arc_time_it) / kArcTimeMs;
       if (kMaxArcSize * Tween::CalculateValue(Tween::FAST_OUT_SLOW_IN,

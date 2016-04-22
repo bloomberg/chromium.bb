@@ -134,7 +134,7 @@ void ImageTransportSurfaceOverlayMac::BufferPresented(
     const base::TimeDelta& vsync_interval) {
   vsync_timebase_ = vsync_timebase;
   vsync_interval_ = vsync_interval;
-  vsync_parameters_valid_ = (vsync_interval_ != base::TimeDelta());
+  vsync_parameters_valid_ = !vsync_interval_.is_zero();
 
   // Compute |vsync_timebase_| to be the first vsync after time zero.
   if (vsync_parameters_valid_) {

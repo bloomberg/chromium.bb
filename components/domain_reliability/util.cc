@@ -152,7 +152,7 @@ void GetUploadResultFromResponseDetails(
 
   if (net_error == net::OK &&
       http_response_code == 503 &&
-      retry_after != base::TimeDelta()) {
+      !retry_after.is_zero()) {
     result->status = DomainReliabilityUploader::UploadResult::RETRY_AFTER;
     result->retry_after = retry_after;
     return;

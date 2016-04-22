@@ -49,7 +49,7 @@ class MockProxyResolver : public ProxyResolver {
                      const CompletionCallback& callback,
                      RequestHandle* request,
                      const BoundNetLog& net_log) override {
-    if (resolve_latency_ != base::TimeDelta())
+    if (!resolve_latency_.is_zero())
       base::PlatformThread::Sleep(resolve_latency_);
 
     CheckIsOnWorkerThread();

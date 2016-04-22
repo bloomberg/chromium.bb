@@ -265,7 +265,7 @@ base::TimeDelta AnimatedContentSampler::ComputeSamplingPeriod(
     base::TimeDelta target_sampling_period,
     base::TimeDelta min_capture_period) {
   // If the animation rate is unknown, return the ideal sampling period.
-  if (animation_period == base::TimeDelta()) {
+  if (animation_period.is_zero()) {
     return std::max(target_sampling_period, min_capture_period);
   }
 

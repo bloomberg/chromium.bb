@@ -126,7 +126,7 @@ std::vector<JobDetails> PrinterJobQueueHandler::GetJobsFromQueue(
     JobDetails job_details_current = ConstructJobDetailsFromJson(*job_data);
     job_details_current.time_remaining_ =
         ComputeBackoffTime(job_details_current.job_id_);
-    if (job_details_current.time_remaining_ == base::TimeDelta()) {
+    if (job_details_current.time_remaining_.is_zero()) {
       jobs.push_back(job_details_current);
     } else {
       jobs_with_timeouts.push_back(job_details_current);

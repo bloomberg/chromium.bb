@@ -963,7 +963,7 @@ ValidationType HttpResponseHeaders::RequiresValidation(
     const Time& response_time,
     const Time& current_time) const {
   FreshnessLifetimes lifetimes = GetFreshnessLifetimes(response_time);
-  if (lifetimes.freshness == TimeDelta() && lifetimes.staleness == TimeDelta())
+  if (lifetimes.freshness.is_zero() && lifetimes.staleness.is_zero())
     return VALIDATION_SYNCHRONOUS;
 
   TimeDelta age = GetCurrentAge(request_time, response_time, current_time);

@@ -259,7 +259,7 @@ void GCMAccountTracker::SanitizeTokens() {
 }
 
 bool GCMAccountTracker::IsTokenReportingRequired() const {
-  if (GetTimeToNextTokenReporting() == base::TimeDelta())
+  if (GetTimeToNextTokenReporting().is_zero())
     return true;
 
   bool reporting_required = false;

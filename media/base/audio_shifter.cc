@@ -175,7 +175,7 @@ void AudioShifter::Pull(AudioBus* output,
     // the entire queue will be in the past. Since we cannot
     // play audio in the past. We add one buffer size to the
     // bias to avoid buffer underruns in the future.
-    if (bias_ == base::TimeDelta()) {
+    if (bias_.is_zero()) {
       bias_ = playout_time - stream_time +
           clock_accuracy_ +
           base::TimeDelta::FromSeconds(output->frames()) / rate_;

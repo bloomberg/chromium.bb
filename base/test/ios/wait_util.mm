@@ -23,7 +23,7 @@ TimeDelta TimeUntilCondition(ProceduralBlock action,
   ElapsedTimer timer;
   if (action)
     action();
-  if (timeout == TimeDelta())
+  if (timeout.is_zero())
     timeout = TestTimeouts::action_timeout();
   const TimeDelta spin_delay(TimeDelta::FromMilliseconds(10));
   while (timer.Elapsed() < timeout && (!condition || !condition())) {

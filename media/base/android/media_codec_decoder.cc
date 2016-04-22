@@ -29,7 +29,8 @@ const int kInputBufferTimeout = 20;
 
 // Timeout for dequeuing an output buffer from MediaCodec in milliseconds.
 const int kOutputBufferTimeout = 20;
-}
+
+}  // namespace
 
 MediaCodecDecoder::MediaCodecDecoder(
     const char* decoder_thread_name,
@@ -180,7 +181,7 @@ bool MediaCodecDecoder::NotCompletedAndNeedsPreroll() const {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   return HasStream() && !completed_ &&
-         (!is_prepared_ || preroll_timestamp_ != base::TimeDelta());
+         (!is_prepared_ || !preroll_timestamp_.is_zero());
 }
 
 void MediaCodecDecoder::SetPrerollTimestamp(base::TimeDelta preroll_timestamp) {
@@ -326,7 +327,7 @@ bool MediaCodecDecoder::Start(base::TimeDelta start_timestamp) {
   // We only synchronize video stream.
   AssociateCurrentTimeWithPTS(start_timestamp);
 
-  DCHECK(preroll_timestamp_ == base::TimeDelta());
+  DCHECK(preroll_timestamp_.is_zero());
 
   // Start the decoder thread
   if (!decoder_thread_.IsRunning()) {
@@ -933,7 +934,6 @@ bool MediaCodecDecoder::DepleteOutputBufferQueue() {
         NOTREACHED();
         break;
     }
-
   } while (status != MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER &&
            status != MEDIA_CODEC_ERROR && !eos_encountered);
 

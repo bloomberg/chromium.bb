@@ -204,7 +204,7 @@ class MotionEventBufferTest : public testing::Test,
           EXPECT_GE(dt.ToInternalValue(), 0);
           // A time delta of 0 is possible if the flush rate is greater than the
           // event rate, in which case we can simply skip forward.
-          if (dt == base::TimeDelta())
+          if (dt.is_zero())
             continue;
 
           const float dx =
@@ -225,7 +225,7 @@ class MotionEventBufferTest : public testing::Test,
             EXPECT_NEAR(dy, last_dy, kDeltaEpsilon);
 
           // The timestamp delta should remain constant.
-          if (last_dt != base::TimeDelta())
+          if (!last_dt.is_zero())
             EXPECT_TRUE((dt - last_dt).InMillisecondsF() < kDeltaEpsilon);
 
           last_dx = dx;
@@ -821,10 +821,6 @@ TEST_F(MotionEventBufferTest, ExtrapolationHorizonLimited) {
   EXPECT_EVENT_IGNORING_HISTORY_EQ(*events.front(), extrapolated_event);
   EXPECT_EVENT_HISTORY_EQ(*events.front(), 0, move0);
   EXPECT_EVENT_HISTORY_EQ(*events.front(), 1, move1);
-}
-
-TEST_F(MotionEventBufferTest, ResamplingWithReorderedPointers) {
-
 }
 
 TEST_F(MotionEventBufferTest, Resampling30to60) {

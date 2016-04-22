@@ -12,7 +12,7 @@
 namespace ui {
 
 class FarApartTapsTouchNoiseFilter : public TouchNoiseFilter {
-public:
+ public:
   FarApartTapsTouchNoiseFilter() {}
   ~FarApartTapsTouchNoiseFilter() override {}
 
@@ -21,13 +21,13 @@ public:
               base::TimeDelta time,
               std::bitset<kNumTouchEvdevSlots>* slots_with_noise) override;
 
-private:
+ private:
   struct Tap {
     Tap() : x(0), y(0) {}
     Tap(base::TimeDelta start, int x, int y)
         : start(start), x(x), y(y) {}
 
-    bool is_valid() const { return start != base::TimeDelta(); }
+    bool is_valid() const { return !start.is_zero(); }
     void Invalidate() { start = base::TimeDelta(); }
 
     base::TimeDelta start;

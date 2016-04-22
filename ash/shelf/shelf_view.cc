@@ -1863,7 +1863,7 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 }
 
 bool ShelfView::IsRepostEvent(const ui::Event& event) {
-  if (closing_event_time_ == base::TimeDelta())
+  if (closing_event_time_.is_zero())
     return false;
 
   base::TimeDelta delta =

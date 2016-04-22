@@ -332,7 +332,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
   }
   ~ThreadedLayerAnimationElement() override {}
 
-  bool IsThreaded() const override { return (duration() != base::TimeDelta()); }
+  bool IsThreaded() const override { return !duration().is_zero(); }
 
  protected:
   explicit ThreadedLayerAnimationElement(const LayerAnimationElement& element)

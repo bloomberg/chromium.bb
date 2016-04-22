@@ -138,7 +138,7 @@ base::TimeDelta NudgeTracker::RecordLocalChange(ModelTypeSet types) {
     // Only if the type tracker has a valid delay (non-zero) that is shorter
     // than the calculated delay do we update the calculated delay.
     base::TimeDelta type_delay = tracker_it->second->RecordLocalChange();
-    if (type_delay == base::TimeDelta()) {
+    if (type_delay.is_zero()) {
       type_delay = GetDefaultDelayForType(type_it.Get(),
                                           minimum_local_nudge_delay_);
     }

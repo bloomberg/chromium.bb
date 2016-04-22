@@ -85,7 +85,7 @@ void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
 
 class DisplayConfiguratorObserver : public ui::DisplayConfigurator::Observer {
  public:
-  DisplayConfiguratorObserver(base::RunLoop* loop) : loop_(loop) {}
+  explicit DisplayConfiguratorObserver(base::RunLoop* loop) : loop_(loop) {}
   ~DisplayConfiguratorObserver() override {}
 
  private:
@@ -485,7 +485,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
 
-  if (frame_duration_ != base::TimeDelta()) {
+  if (!frame_duration_.is_zero()) {
     int warm_up_iterations = params.warm_up_iterations;
 #if defined(USE_OZONE)
     // On Ozone the VSyncProvider can't provide a vsync interval until
@@ -508,11 +508,12 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   // VSync providers rely on the underlying CRTC to get the timing. In headless
   // mode the surface isn't associated with a CRTC so the vsync provider can not
   // get the timing, meaning it will not call UpdateVsyncParameters() ever.
-  if (!ignore_vsync_ && vsync_provider && frame_duration_ != base::TimeDelta())
+  if (!ignore_vsync_ && vsync_provider && !frame_duration_.is_zero()) {
     vsync_provider->GetVSyncParameters(base::Bind(
         &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
-  else
+  } else {
     done->Signal();
+  }
 }
 
 // The rendering for the first few frames is slow (e.g., 100ms on Peach Pit).
@@ -881,15 +882,15 @@ void RenderingHelper::ScheduleNextRenderContent() {
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks target;
 
-  if (vsync_interval_ != base::TimeDelta()) {
+  if (vsync_interval_.is_zero()) {
+    target = std::max(now, scheduled_render_time_);
+  } else {
     // Schedules the next RenderContent() at latest VSYNC before the
     // |scheduled_render_time_|.
     target = std::max(now + vsync_interval_, scheduled_render_time_);
 
     int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
     target = vsync_timebase_ + intervals * vsync_interval_;
-  } else {
-    target = std::max(now, scheduled_render_time_);
   }
 
   // When the rendering falls behind, drops frames.

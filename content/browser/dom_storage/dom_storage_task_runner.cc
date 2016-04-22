@@ -40,7 +40,7 @@ bool DOMStorageWorkerPoolTaskRunner::PostDelayedTask(
   // Note base::TaskRunner implements PostTask in terms of PostDelayedTask
   // with a delay of zero, we detect that usage and avoid the unecessary
   // trip thru the message loop.
-  if (delay == base::TimeDelta()) {
+  if (delay.is_zero()) {
     return sequenced_worker_pool_->PostSequencedWorkerTaskWithShutdownBehavior(
         primary_sequence_token_, from_here, task,
         base::SequencedWorkerPool::BLOCK_SHUTDOWN);

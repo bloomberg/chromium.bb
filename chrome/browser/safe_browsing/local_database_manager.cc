@@ -612,7 +612,7 @@ void LocalSafeBrowsingDatabaseManager::HandleGetHashResults(
   OnHandleGetHashResults(check, full_hashes);  // 'check' is deleted here.
 
   // Cache the GetHash results.
-  if (cache_lifetime != base::TimeDelta() && MakeDatabaseAvailable())
+  if (!cache_lifetime.is_zero() && MakeDatabaseAvailable())
     database_->CacheHashResults(prefixes, full_hashes, cache_lifetime);
 }
 

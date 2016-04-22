@@ -180,7 +180,7 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   }
 
   int frames_to_fill = 0;
-  if (delta != base::TimeDelta())
+  if (!delta.is_zero())
     frames_to_fill = output_timestamp_helper_.GetFramesToTarget(timestamp);
 
   if (frames_to_fill == 0 || std::abs(frames_to_fill) < kMinGapSize) {

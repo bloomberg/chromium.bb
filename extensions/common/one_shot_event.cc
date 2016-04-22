@@ -76,10 +76,10 @@ void OneShotEvent::Signal() {
   // the order doesn't matter...
   for (size_t i = 0; i < tasks_.size(); ++i) {
     const TaskInfo& task = tasks_[i];
-    if (task.delay != base::TimeDelta())
-      task.runner->PostDelayedTask(task.from_here, task.task, task.delay);
-    else
+    if (task.delay.is_zero())
       task.runner->PostTask(task.from_here, task.task);
+    else
+      task.runner->PostDelayedTask(task.from_here, task.task, task.delay);
   }
 }
 
@@ -90,10 +90,10 @@ void OneShotEvent::PostImpl(const tracked_objects::Location& from_here,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (is_signaled()) {
-    if (delay != base::TimeDelta())
-      runner->PostDelayedTask(from_here, task, delay);
-    else
+    if (delay.is_zero())
       runner->PostTask(from_here, task);
+    else
+      runner->PostDelayedTask(from_here, task, delay);
   } else {
     tasks_.push_back(TaskInfo(from_here, runner, task, delay));
   }

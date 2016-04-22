@@ -295,7 +295,7 @@ void ProxyImpl::CommitVSyncParameters(base::TimeTicks timebase,
   if (!synthetic_begin_frame_source_)
     return;
 
-  if (interval == base::TimeDelta()) {
+  if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = BeginFrameArgs::DefaultInterval();
   }

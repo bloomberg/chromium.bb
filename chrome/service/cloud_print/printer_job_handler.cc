@@ -309,7 +309,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
     std::vector<JobDetails> jobs =
         job_queue_handler_.GetJobsFromQueue(*json_data);
     if (!jobs.empty()) {
-      if (jobs[0].time_remaining_ == base::TimeDelta()) {
+      if (jobs[0].time_remaining_.is_zero()) {
         job_available = true;
         job_details_ = jobs[0];
         job_start_time_ = base::Time::Now();

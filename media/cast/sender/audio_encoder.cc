@@ -70,7 +70,7 @@ class AudioEncoder::ImplBase
     // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
     const int kMaxSamplesTimesChannelsPerFrame = 48 * 2 * 100;
     if (num_channels_ <= 0 || samples_per_frame_ <= 0 ||
-        frame_duration_ == base::TimeDelta() ||
+        frame_duration_.is_zero() ||
         samples_per_frame_ * num_channels_ > kMaxSamplesTimesChannelsPerFrame) {
       operational_status_ = STATUS_INVALID_CONFIGURATION;
     }

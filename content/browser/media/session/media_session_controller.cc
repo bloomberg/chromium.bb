@@ -61,9 +61,8 @@ bool MediaSessionController::Initialize(bool has_audio,
   }
 
   const MediaSession::Type media_session_type =
-      duration == base::TimeDelta() ||
-              duration >
-                  base::TimeDelta::FromSeconds(kMinimumDurationForContentSecs)
+      (duration.is_zero() ||
+       duration > base::TimeDelta::FromSeconds(kMinimumDurationForContentSecs))
           ? MediaSession::Type::Content
           : MediaSession::Type::Transient;
 

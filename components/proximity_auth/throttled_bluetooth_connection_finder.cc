@@ -32,7 +32,7 @@ void ThrottledBluetoothConnectionFinder::Find(
   const base::TimeDelta delay = throttler_->GetDelay();
 
   // Wait, if needed.
-  if (delay != base::TimeDelta()) {
+  if (!delay.is_zero()) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ThrottledBluetoothConnectionFinder::Find,

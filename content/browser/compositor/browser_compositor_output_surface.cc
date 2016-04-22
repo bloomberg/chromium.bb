@@ -101,7 +101,7 @@ bool BrowserCompositorOutputSurface::BindToClient(
 void BrowserCompositorOutputSurface::UpdateVSyncParametersInternal(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  if (interval == base::TimeDelta()) {
+  if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = cc::BeginFrameArgs::DefaultInterval();
   }

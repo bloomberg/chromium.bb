@@ -718,7 +718,7 @@ void RecordNetworkBlockage(base::TimeDelta resource_handler_lifetime,
                            base::TimeDelta resource_handler_blocked_time) {
   int percentage = 0;
   // Avoid division by zero errors.
-  if (resource_handler_blocked_time != base::TimeDelta()) {
+  if (!resource_handler_blocked_time.is_zero()) {
     percentage =
         resource_handler_blocked_time * 100 / resource_handler_lifetime;
   }

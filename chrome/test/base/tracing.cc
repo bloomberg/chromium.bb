@@ -92,7 +92,7 @@ class InProcessTraceController {
     if (watch_notification_count_ == 0)
       return true;
 
-    if (timeout != base::TimeDelta()) {
+    if (!timeout.is_zero()) {
       timer_.Start(FROM_HERE, timeout, this,
                    &InProcessTraceController::Timeout);
     }

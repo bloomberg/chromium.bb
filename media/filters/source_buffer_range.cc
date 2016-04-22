@@ -553,7 +553,7 @@ DecodeTimestamp SourceBufferRange::GetEndTimestamp() const {
 DecodeTimestamp SourceBufferRange::GetBufferedEndTimestamp() const {
   DCHECK(!buffers_.empty());
   base::TimeDelta duration = buffers_.back()->duration();
-  if (duration == kNoTimestamp() || duration == base::TimeDelta())
+  if (duration == kNoTimestamp() || duration.is_zero())
     duration = GetApproximateDuration();
   return GetEndTimestamp() + duration;
 }

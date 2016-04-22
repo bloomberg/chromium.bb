@@ -178,13 +178,13 @@ bool AudioDiscardHelper::ProcessBuffers(
     if (frames_to_discard == decoded_frames) {
       // The buffer should not have been marked with end discard if the front
       // discard removes everything.
-      DCHECK(current_discard_padding.second == base::TimeDelta());
+      DCHECK(current_discard_padding.second.is_zero());
       return false;
     }
 
     decoded_buffer->TrimRange(discard_start, discard_start + frames_to_discard);
   } else {
-    DCHECK(current_discard_padding.first == base::TimeDelta());
+    DCHECK(current_discard_padding.first.is_zero());
   }
 
   // Handle end discard padding.
@@ -226,7 +226,7 @@ bool AudioDiscardHelper::ProcessBuffers(
       decoded_buffer->TrimEnd(end_frames_to_discard);
     }
   } else {
-    DCHECK(current_discard_padding.second == base::TimeDelta());
+    DCHECK(current_discard_padding.second.is_zero());
   }
 
   // Assign timestamp to the buffer.

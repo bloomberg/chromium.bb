@@ -481,9 +481,9 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
 
 void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
                                               base::TimeDelta interval) {
-  if (authoritative_vsync_interval_ != base::TimeDelta()) {
+  if (!authoritative_vsync_interval_.is_zero()) {
     interval = authoritative_vsync_interval_;
-  } else if (interval == base::TimeDelta()) {
+  } else if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = BeginFrameArgs::DefaultInterval();
   }

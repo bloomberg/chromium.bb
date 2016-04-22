@@ -874,7 +874,7 @@ void ChunkDemuxer::Shutdown() {
 
   ChangeState_Locked(SHUTDOWN);
 
-  if(!seek_cb_.is_null())
+  if (!seek_cb_.is_null())
     base::ResetAndReturn(&seek_cb_).Run(PIPELINE_ERROR_ABORT);
 }
 
@@ -947,7 +947,7 @@ void ChunkDemuxer::OnSourceInitDone(
     return;
   }
 
-  if (params.duration != TimeDelta() && duration_ == kNoTimestamp())
+  if (!params.duration.is_zero() && duration_ == kNoTimestamp())
     UpdateDuration(params.duration);
 
   if (!params.timeline_offset.is_null()) {
@@ -1084,7 +1084,7 @@ void ChunkDemuxer::DecreaseDurationIfNecessary() {
                             itr->second->GetMaxBufferedDuration());
   }
 
-  if (max_duration == TimeDelta())
+  if (max_duration.is_zero())
     return;
 
   if (max_duration < duration_)

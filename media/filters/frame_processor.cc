@@ -545,7 +545,7 @@ bool FrameProcessor::ProcessFrame(
     }
 
     // 5. If timestampOffset is not 0, then run the following steps:
-    if (*timestamp_offset != base::TimeDelta()) {
+    if (!timestamp_offset->is_zero()) {
       // 5.1. Add timestampOffset to the presentation timestamp.
       // Note: |frame| PTS is only updated if it survives discontinuity
       // processing.

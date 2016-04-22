@@ -30,7 +30,7 @@ const int kTimerTaskEstimationSampleCount = 1000;
 const double kTimerTaskEstimationPercentile = 99;
 const int kShortIdlePeriodDurationSampleCount = 10;
 const double kShortIdlePeriodDurationPercentile = 50;
-}
+}  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
@@ -665,7 +665,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // and |touchstart_expected_flag_valid_for_duration| unless one is zero in
   // which case we choose the other.
   base::TimeDelta new_policy_duration = expected_use_case_duration;
-  if (new_policy_duration == base::TimeDelta() ||
+  if (new_policy_duration.is_zero() ||
       (touchstart_expected_flag_valid_for_duration > base::TimeDelta() &&
        new_policy_duration > touchstart_expected_flag_valid_for_duration)) {
     new_policy_duration = touchstart_expected_flag_valid_for_duration;

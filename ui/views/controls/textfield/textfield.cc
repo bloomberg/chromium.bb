@@ -1476,7 +1476,7 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
   DoInsertChar(ch);
 
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
-      password_reveal_duration_ != base::TimeDelta()) {
+      !password_reveal_duration_.is_zero()) {
     const size_t change_offset = model_->GetCursorPosition();
     DCHECK_GT(change_offset, 0u);
     RevealPasswordChar(change_offset - 1);

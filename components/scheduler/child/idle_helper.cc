@@ -246,7 +246,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
           base::TimeDelta(), state_.idle_period_deadline() -
                                  helper_->scheduler_tqm_delegate()->NowTicks());
     }
-    if (next_long_idle_period_delay == base::TimeDelta()) {
+    if (next_long_idle_period_delay.is_zero()) {
       EnableLongIdlePeriod();
     } else {
       helper_->ControlTaskRunner()->PostDelayedTask(

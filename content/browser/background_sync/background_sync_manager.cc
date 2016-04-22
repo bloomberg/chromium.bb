@@ -862,8 +862,7 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
   }
 
   // Try firing again after the wakeup delta.
-  if (!soonest_wakeup_delta.is_max() &&
-      soonest_wakeup_delta != base::TimeDelta()) {
+  if (!soonest_wakeup_delta.is_max() && !soonest_wakeup_delta.is_zero()) {
     delayed_sync_task_.Reset(base::Bind(&BackgroundSyncManager::FireReadyEvents,
                                         weak_ptr_factory_.GetWeakPtr()));
     ScheduleDelayedTask(delayed_sync_task_.callback(), soonest_wakeup_delta);

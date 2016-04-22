@@ -229,7 +229,7 @@ class AutomaticRebootManagerTest
 
 void SaveUptimeToFile(const base::FilePath& path,
                       const base::TimeDelta& uptime) {
-  if (path.empty() || uptime == base::TimeDelta())
+  if (path.empty() || uptime.is_zero())
     return;
 
   const std::string uptime_seconds = base::DoubleToString(uptime.InSecondsF());
@@ -386,7 +386,7 @@ void AutomaticRebootManagerBasicTest::SetUptimeLimit(
     const base::TimeDelta& limit,
     bool expect_reboot) {
   uptime_limit_ = limit;
-  if (limit == base::TimeDelta()) {
+  if (limit.is_zero()) {
     local_state_.RemoveManagedPref(prefs::kUptimeLimit);
   } else {
     local_state_.SetManagedPref(

@@ -393,7 +393,7 @@ void DataReductionProxyCompressionStats::Init() {
   connection_type_ =
       StoredConnectionType(net::NetworkChangeNotifier::GetConnectionType());
 
-  if (delay_ == base::TimeDelta())
+  if (delay_.is_zero())
     return;
 
   // Init all int64_t prefs.
@@ -482,7 +482,7 @@ void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
 }
 
 int64_t DataReductionProxyCompressionStats::GetInt64(const char* pref_path) {
-  if (delay_ == base::TimeDelta())
+  if (delay_.is_zero())
     return pref_service_->GetInt64(pref_path);
 
   DataReductionProxyPrefMap::iterator iter = pref_map_.find(pref_path);
@@ -491,7 +491,7 @@ int64_t DataReductionProxyCompressionStats::GetInt64(const char* pref_path) {
 
 void DataReductionProxyCompressionStats::SetInt64(const char* pref_path,
                                                   int64_t pref_value) {
-  if (delay_ == base::TimeDelta()) {
+  if (delay_.is_zero()) {
     pref_service_->SetInt64(pref_path, pref_value);
     return;
   }
@@ -508,7 +508,7 @@ void DataReductionProxyCompressionStats::IncreaseInt64Pref(
 
 base::ListValue* DataReductionProxyCompressionStats::GetList(
     const char* pref_path) {
-  if (delay_ == base::TimeDelta())
+  if (delay_.is_zero())
     return ListPrefUpdate(pref_service_, pref_path).Get();
 
   DelayedWritePrefs();
@@ -517,7 +517,7 @@ base::ListValue* DataReductionProxyCompressionStats::GetList(
 
 void DataReductionProxyCompressionStats::WritePrefs() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (delay_ == base::TimeDelta())
+  if (delay_.is_zero())
     return;
 
   for (DataReductionProxyPrefMap::iterator iter = pref_map_.begin();

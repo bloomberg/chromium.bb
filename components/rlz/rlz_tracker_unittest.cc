@@ -188,7 +188,7 @@ class TestRLZTracker : public RLZTracker {
   void ScheduleDelayedInit(base::TimeDelta delay) override {
     // If the delay is 0, invoke the delayed init now. Otherwise,
     // don't schedule anything, it will be manually called during tests.
-    if (delay == base::TimeDelta())
+    if (delay.is_zero())
       DelayedInit();
   }
 

@@ -471,7 +471,7 @@ void PerfProvider::LoginObserver::LoggedInStateChanged() {
 void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
   // A zero value for the suspend duration indicates that the suspend was
   // canceled. Do not collect anything if that's the case.
-  if (sleep_duration == base::TimeDelta())
+  if (sleep_duration.is_zero())
     return;
 
   // Do not collect a profile unless logged in. The system behavior when closing

@@ -32,7 +32,6 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
       jid_(jid),
       last_id_(0),
       weak_factory_(this) {
-
 }
 
 FakeSignalStrategy::~FakeSignalStrategy() {
@@ -103,18 +102,17 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
 
   stanza->SetAttr(buzz::QN_FROM, jid_);
 
-  if (!peer_callback_.is_null()) {
-    if (send_delay_ != base::TimeDelta()) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(peer_callback_, base::Passed(&stanza)),
-          send_delay_);
-    } else {
-      peer_callback_.Run(std::move(stanza));
-    }
-    return true;
-  } else {
+  if (peer_callback_.is_null())
     return false;
+
+  if (send_delay_.is_zero()) {
+    peer_callback_.Run(std::move(stanza));
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(peer_callback_, base::Passed(&stanza)),
+        send_delay_);
   }
+  return true;
 }
 
 std::string FakeSignalStrategy::GetNextId() {

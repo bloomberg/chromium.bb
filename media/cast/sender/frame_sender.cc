@@ -45,11 +45,10 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       ssrc_(ssrc),
-      min_playout_delay_(min_playout_delay == base::TimeDelta()
-                             ? max_playout_delay
-                             : min_playout_delay),
+      min_playout_delay_(min_playout_delay.is_zero() ? max_playout_delay
+                                                     : min_playout_delay),
       max_playout_delay_(max_playout_delay),
-      animated_playout_delay_(animated_playout_delay == base::TimeDelta()
+      animated_playout_delay_(animated_playout_delay.is_zero()
                                   ? max_playout_delay
                                   : animated_playout_delay),
       send_target_playout_delay_(false),
