@@ -192,26 +192,6 @@ typedef NativeImageType* NativeImage;
 // See comment at the top of the file for usage.
 typedef intptr_t NativeViewId;
 
-// PluginWindowHandle is an abstraction wrapping "the types of windows
-// used by NPAPI plugins". On Windows it's an HWND, on X it's an X
-// window id.
-#if defined(OS_WIN)
-  typedef HWND PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = NULL;
-#elif defined(USE_X11)
-  typedef unsigned long PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = 0;
-#elif defined(OS_ANDROID)
-  typedef uint32_t PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = 0;
-#elif defined(USE_OZONE)
-  typedef intptr_t PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = 0;
-#else
-  typedef uint32_t PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = 0;
-#endif
-
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;

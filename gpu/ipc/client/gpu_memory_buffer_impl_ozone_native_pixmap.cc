@@ -69,7 +69,8 @@ base::Closure GpuMemoryBufferImplOzoneNativePixmap::AllocateForTesting(
   scoped_refptr<ui::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(gfx::kNullPluginWindow, size, format, usage);
+          ->CreateNativePixmap(gfx::kNullAcceleratedWidget, size, format,
+                               usage);
   handle->type = gfx::OZONE_NATIVE_PIXMAP;
   handle->native_pixmap_handle = pixmap->ExportHandle();
   return base::Bind(&FreeNativePixmapForTesting, pixmap);

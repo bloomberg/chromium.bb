@@ -101,6 +101,11 @@ class WebGraphicsContext3DCommandBufferImpl
     virtual ~WebGraphicsContextLostCallback() {}
   };
 
+  // If surface_handle is not kNullSurfaceHandle, this creates a
+  // CommandBufferProxy that renders directly to a view. The view and
+  // the associated window must not be destroyed until the returned
+  // CommandBufferProxy has been destroyed, otherwise the GPU process might
+  // attempt to render to an invalid window handle.
   CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl(
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
@@ -152,19 +157,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   void Destroy();
 
-  // Create a CommandBufferProxy that renders directly to a view. The view and
-  // the associated window must not be destroyed until the returned
-  // CommandBufferProxy has been destroyed, otherwise the GPU process might
-  // attempt to render to an invalid window handle.
-  //
-  // NOTE: on Mac OS X, this entry point is only used to set up the
-  // accelerated compositor's output. On this platform, we actually pass
-  // a gpu::SurfaceHandle in place of the gfx::NativeViewId,
-  // because the facility to allocate a fake PluginWindowHandle is
-  // already in place. We could add more entry points and messages to
-  // allocate both fake PluginWindowHandles and NativeViewIds and map
-  // from fake NativeViewIds to PluginWindowHandles, but this seems like
-  // unnecessary complexity at the moment.
   bool CreateContext(const gpu::SharedMemoryLimits& memory_limits);
 
   void OnContextLost();

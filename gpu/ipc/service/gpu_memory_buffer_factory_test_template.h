@@ -41,7 +41,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
       gfx::GpuMemoryBufferHandle handle =
           TestFixture::factory_.CreateGpuMemoryBuffer(kBufferId, buffer_size,
                                                       format, usage, kClientId,
-                                                      gfx::kNullPluginWindow);
+                                                      gpu::kNullSurfaceHandle);
       EXPECT_NE(handle.type, gfx::EMPTY_BUFFER);
       TestFixture::factory_.DestroyGpuMemoryBuffer(kBufferId, kClientId);
     }
@@ -74,7 +74,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryImportTest,
     gfx::GpuMemoryBufferHandle handle1 =
         TestFixture::factory_.CreateGpuMemoryBuffer(
             kBufferId1, buffer_size, format, gfx::BufferUsage::GPU_READ,
-            kClientId, gfx::kNullPluginWindow);
+            kClientId, gpu::kNullSurfaceHandle);
     EXPECT_NE(handle1.type, gfx::EMPTY_BUFFER);
 
     // Create new buffer from |handle1|.
