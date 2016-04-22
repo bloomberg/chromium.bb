@@ -6,23 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-@class CRUContextMenuHolder;
-
-// A protocol implemented by a provider of labels and actions for a context
-// menu.
-@protocol CRWContextMenuProvider<NSObject>
-
-// Returns a CRUContextMenuHolder with the titles and actions associated with
-// each menu item. The "Cancel" item is automatically added when constructing
-// the menu for presentation, therefore it should not be added to the list.
-// Each CRWContextMenuProvider might have different requirements for the
-// |contextDictionary|. On a web page |kContextLinkURLString| and
-// |kContextImageURLString| might both be set whereas on a recently visited
-// entry some other identifier will be passed on.
-- (CRUContextMenuHolder*)contextMenuForDictionary:(NSDictionary*)context;
-
-@end
-
 namespace web {
 
 // Keys for the contextDictionary.

@@ -168,10 +168,6 @@ component("base") {
     "dragdrop/os_exchange_data_provider_win.cc",
     "dragdrop/os_exchange_data_provider_win.h",
     "hit_test.h",
-    "ios/cru_context_menu_controller.h",
-    "ios/cru_context_menu_controller.mm",
-    "ios/cru_context_menu_holder.h",
-    "ios/cru_context_menu_holder.mm",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -732,7 +728,6 @@ bundle_data("ui_base_unittests_bundle_data") {
 test("ui_base_unittests") {
   sources = [
     "clipboard/clipboard_util_mac_unittest.mm",
-    "ios/cru_context_menu_controller_unittest.mm",
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",
     "l10n/l10n_util_win_unittest.cc",
