@@ -67,23 +67,6 @@ namespace blink {
 // http://www.unicode.org/reports/tr51/proposed.html#Emoji_Script
 static const char* kAndroidColorEmojiLocale = "und-Zsye";
 
-// SkFontMgr requires script-based locale names, like "zh-Hant" and "zh-Hans",
-// instead of "zh-CN" and "zh-TW".
-static CString toSkFontMgrLocale(const String& locale)
-{
-    if (!locale.startsWith("zh", TextCaseInsensitive))
-        return locale.ascii();
-
-    switch (localeToScriptCodeForFontSelection(locale)) {
-    case USCRIPT_SIMPLIFIED_HAN:
-        return "zh-Hans";
-    case USCRIPT_TRADITIONAL_HAN:
-        return "zh-Hant";
-    default:
-        return locale.ascii();
-    }
-}
-
 // This function is called on android or when we are emulating android fonts on linux and the
 // embedder has overriden the default fontManager with WebFontRendering::setSkiaFontMgr.
 // static
@@ -171,25 +154,6 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
 }
 
-#if OS(WIN) || OS(LINUX)
-static inline SkFontStyle fontStyle(const FontDescription& fontDescription)
-{
-    int width = static_cast<int>(fontDescription.stretch());
-    int weight = (fontDescription.weight() - FontWeight100 + 1) * 100;
-    SkFontStyle::Slant slant = fontDescription.style() == FontStyleItalic
-        ? SkFontStyle::kItalic_Slant
-        : SkFontStyle::kUpright_Slant;
-    return SkFontStyle(weight, width, slant);
-}
-
-static_assert(static_cast<int>(FontStretchUltraCondensed) == static_cast<int>(SkFontStyle::kUltraCondensed_Width),
-    "FontStretchUltraCondensed should map to kUltraCondensed_Width");
-static_assert(static_cast<int>(FontStretchNormal) == static_cast<int>(SkFontStyle::kNormal_Width),
-    "FontStretchNormal should map to kNormal_Width");
-static_assert(static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltaExpanded_Width),
-    "FontStretchUltraExpanded should map to kUltaExpanded_Width");
-#endif
-
 PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, CString& name)
 {
 #if !OS(WIN) && !OS(ANDROID)
@@ -220,9 +184,8 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 
     if (m_fontManager) {
         return adoptRef(useDirectWrite()
-            ? m_fontManager->matchFamilyStyle(name.data(), fontStyle(fontDescription))
-            : m_fontManager->legacyCreateTypeface(name.data(), fontStyle(fontDescription))
-            );
+            ? m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle())
+            : m_fontManager->legacyCreateTypeface(name.data(), fontDescription.skiaFontStyle()));
     }
 #endif
 
@@ -231,7 +194,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     // provided font Manager rather than calling SkTypeface::CreateFromName which may redirect the
     // call to the default font Manager.
     if (m_fontManager)
-        return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontStyle(fontDescription)));
+        return adoptRef(m_fontManager->matchFamilyStyle(name.data(), fontDescription.skiaFontStyle()));
 #endif
 
     // FIXME: Use m_fontManager, SkFontStyle and matchFamilyStyle instead of

@@ -28,6 +28,6 @@
 
 𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏
 #egyptian_hieroglyphs:
-"Arial" : 16
+"Segoe UI Historic" : 16
 
 

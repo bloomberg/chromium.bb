@@ -33,6 +33,7 @@
 
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
+#include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
@@ -140,6 +141,37 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     if (family) {
         FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
         data = getFontPlatformData(fontDescription, createByFamily);
+    }
+
+    if ((!data || !data->fontContainsCharacter(character)) && s_useSkiaFontFallback) {
+        const char* bcp47Locale = nullptr;
+        int localeCount = 0;
+        CString fontLocale;
+        // If the font description has a locale, use that. Otherwise, Skia will
+        // fall back on the user's default locale.
+        // TODO(kulshin): extract locale fallback logic from
+        //   FontCacheAndroid.cpp and share that code
+        if (!fontDescription.locale().isEmpty()) {
+            fontLocale = toSkFontMgrLocale(fontDescription.locale());
+            bcp47Locale = fontLocale.data();
+            localeCount = 1;
+        }
+
+        CString familyName = fontDescription.family().family().utf8();
+
+        SkTypeface* typeface = m_fontManager->matchFamilyStyleCharacter(
+            familyName.data(),
+            fontDescription.skiaFontStyle(),
+            &bcp47Locale,
+            localeCount,
+            character);
+        if (typeface) {
+            SkString skiaFamily;
+            typeface->getFamilyName(&skiaFamily);
+            FontFaceCreationParams createByFamily(
+                AtomicString(skiaFamily.c_str()));
+            data = getFontPlatformData(fontDescription, createByFamily);
+        }
     }
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty

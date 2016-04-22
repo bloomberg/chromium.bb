@@ -278,4 +278,22 @@ unsigned FontDescription::styleHashWithoutFamilyList() const
     return hash;
 }
 
+SkFontStyle FontDescription::skiaFontStyle() const
+{
+    int width = static_cast<int>(stretch());
+    SkFontStyle::Slant slant = style() == FontStyleItalic
+        ? SkFontStyle::kItalic_Slant
+        : SkFontStyle::kUpright_Slant;
+    return SkFontStyle(numericFontWeight(weight()), width, slant);
+    static_assert(
+        static_cast<int>(FontStretchUltraCondensed) == static_cast<int>(SkFontStyle::kUltraCondensed_Width),
+        "FontStretchUltraCondensed should map to kUltraCondensed_Width");
+    static_assert(
+        static_cast<int>(FontStretchNormal) == static_cast<int>(SkFontStyle::kNormal_Width),
+        "FontStretchNormal should map to kNormal_Width");
+    static_assert(
+        static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltaExpanded_Width),
+        "FontStretchUltraExpanded should map to kUltaExpanded_Width");
+}
+
 } // namespace blink
