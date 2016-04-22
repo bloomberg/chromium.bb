@@ -34,11 +34,11 @@ void RootWindowLayoutManager::OnWindowResized() {
   // Resize both our immediate children (the containers-of-containers animated
   // by PowerButtonController) and their children (the actual containers).
   aura::WindowTracker children_tracker(owner_->children());
-  while (children_tracker.has_windows()) {
+  while (!children_tracker.windows().empty()) {
     aura::Window* child = children_tracker.Pop();
     child->SetBounds(fullscreen_bounds);
     aura::WindowTracker grandchildren_tracker(child->children());
-    while (grandchildren_tracker.has_windows())
+    while (!grandchildren_tracker.windows().empty())
       grandchildren_tracker.Pop()->SetBounds(fullscreen_bounds);
   }
   RootWindowController* root_window_controller =

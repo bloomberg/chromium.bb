@@ -439,6 +439,7 @@
             ['exclude', 'clipboard/clipboard_mac.mm'],
             ['exclude', 'layout_mac.mm'],
             ['exclude', 'work_area_watcher_observer.h'],
+            ['include', 'window_tracker_template.h'],
           ],
         }, {  # use_aura!=1
           'sources!': [

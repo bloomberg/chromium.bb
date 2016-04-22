@@ -71,7 +71,7 @@ void ArcImeService::SetInputMethodForTesting(
 ui::InputMethod* ArcImeService::GetInputMethod() {
   if (test_input_method_)
     return test_input_method_;
-  if (!focused_arc_window_.has_windows())
+  if (focused_arc_window_.windows().empty())
     return nullptr;
   return focused_arc_window_.windows().front()->GetHost()->GetInputMethod();
 }
@@ -206,7 +206,7 @@ ui::TextInputType ArcImeService::GetTextInputType() const {
 }
 
 gfx::Rect ArcImeService::GetCaretBounds() const {
-  if (!focused_arc_window_.has_windows())
+  if (focused_arc_window_.windows().empty())
     return gfx::Rect();
   aura::Window* window = focused_arc_window_.windows().front();
 

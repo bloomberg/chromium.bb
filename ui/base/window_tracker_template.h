@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_COMMON_WINDOW_TRACKER_H_
-#define COMPONENTS_MUS_COMMON_WINDOW_TRACKER_H_
+#ifndef UI_BASE_WINDOW_TRACKER_TEMPLATE_H_
+#define UI_BASE_WINDOW_TRACKER_TEMPLATE_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/stl_util.h"
 
-namespace mus {
+namespace ui {
 
+// This class is used to track an ordered list of objects that support an
+// observer interface with the function OnWindowDestroying(). When the object
+// is destroyed it is removed from the ordered list of objects.
+// Examples of T include aura::Window and its corresponding
+// aura::WindowObserver interface.
 template <class T, class TObserver>
 class WindowTrackerTemplate : public TObserver {
  public:
@@ -20,6 +25,10 @@ class WindowTrackerTemplate : public TObserver {
   // added.
   using WindowList = std::vector<T*>;
 
+  explicit WindowTrackerTemplate(const WindowList& windows) {
+    for (T* window : windows)
+      Add(window);
+  }
   WindowTrackerTemplate() {}
   ~WindowTrackerTemplate() override {
     for (T* window : windows_)
@@ -47,6 +56,13 @@ class WindowTrackerTemplate : public TObserver {
     }
   }
 
+  T* Pop() {
+    DCHECK(!windows_.empty());
+    T* result = windows_[0];
+    Remove(result);
+    return result;
+  }
+
   // Returns true if |window| was previously added and has not been removed or
   // deleted.
   bool Contains(T* window) const { return ContainsValue(windows_, window); }
@@ -63,6 +79,6 @@ class WindowTrackerTemplate : public TObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowTrackerTemplate);
 };
 
-}  // namespace mus
+}  // namespace ui
 
-#endif  // COMPONENTS_MUS_COMMON_WINDOW_TRACKER_H_
+#endif  // UI_BASE_WINDOW_TRACKER_TEMPLATE_H_

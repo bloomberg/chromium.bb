@@ -34,6 +34,7 @@
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/touch/selection_bound.h"
@@ -46,7 +47,6 @@
 struct ViewHostMsg_TextInputState_Params;
 
 namespace aura {
-class WindowTracker;
 namespace client {
 class ScopedTooltipDisabler;
 }

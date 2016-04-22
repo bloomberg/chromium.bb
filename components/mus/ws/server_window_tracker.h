@@ -9,15 +9,15 @@
 #include <set>
 
 #include "base/macros.h"
-#include "components/mus/common/window_tracker.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
+#include "ui/base/window_tracker_template.h"
 
 namespace mus {
 namespace ws {
 
 using ServerWindowTracker =
-    WindowTrackerTemplate<ServerWindow, ServerWindowObserver>;
+    ui::WindowTrackerTemplate<ServerWindow, ServerWindowObserver>;
 
 }  // namespace ws
 }  // namespace mus

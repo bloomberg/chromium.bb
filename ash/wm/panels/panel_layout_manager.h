@@ -19,13 +19,13 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class Window;
-class WindowTracker;
 }
 
 namespace gfx {

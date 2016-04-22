@@ -99,7 +99,6 @@
         'window_observer.h',
         'window_targeter.cc',
         'window_targeter.h',
-        'window_tracker.cc',
         'window_tracker.h',
         'window_tree_host.cc',
         'window_tree_host.h',

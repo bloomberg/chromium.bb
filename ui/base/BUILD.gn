@@ -407,6 +407,7 @@ component("base") {
 
   if (use_aura) {
     deps += [ "//ui/events" ]
+    sources += [ "window_tracker_template.h" ]
   } else {
     sources -= [
       "cursor/cursor.cc",

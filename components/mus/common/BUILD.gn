@@ -15,7 +15,6 @@ component("mus_common") {
     "transient_window_utils.h",
     "types.h",
     "util.h",
-    "window_tracker.h",
   ]
 
   defines = [ "MUS_IPC_IMPLEMENTATION" ]
@@ -27,6 +26,10 @@ component("mus_common") {
     "//mojo/public/c/system:for_component",
     "//ui/events:events",
     "//ui/gfx/ipc",
+  ]
+
+  public_deps = [
+    "//ui/base",
   ]
 }
 
