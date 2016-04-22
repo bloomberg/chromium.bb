@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_UPDATE_CLIENT_INTERNAL_H_
 #define COMPONENTS_UPDATE_CLIENT_UPDATE_CLIENT_INTERNAL_H_
 
-#include "components/update_client/update_client.h"
-
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -14,11 +13,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/crx_downloader.h"
 #include "components/update_client/update_checker.h"
+#include "components/update_client/update_client.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -36,7 +35,7 @@ class UpdateEngine;
 class UpdateClientImpl : public UpdateClient {
  public:
   UpdateClientImpl(const scoped_refptr<Configurator>& config,
-                   scoped_ptr<PingManager> ping_manager,
+                   std::unique_ptr<PingManager> ping_manager,
                    UpdateChecker::Factory update_checker_factory,
                    CrxDownloader::Factory crx_downloader_factory);
 
@@ -60,7 +59,7 @@ class UpdateClientImpl : public UpdateClient {
  private:
   ~UpdateClientImpl() override;
 
-  void RunTask(scoped_ptr<Task> task);
+  void RunTask(std::unique_ptr<Task> task);
   void OnTaskComplete(const CompletionCallback& completion_callback,
                       Task* task,
                       int error);
@@ -88,8 +87,8 @@ class UpdateClientImpl : public UpdateClient {
   std::set<Task*> tasks_;
 
   // TODO(sorin): try to make the ping manager an observer of the service.
-  scoped_ptr<PingManager> ping_manager_;
-  scoped_ptr<UpdateEngine> update_engine_;
+  std::unique_ptr<PingManager> ping_manager_;
+  std::unique_ptr<UpdateEngine> update_engine_;
 
   base::ObserverList<Observer> observer_list_;
 

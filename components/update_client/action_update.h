@@ -6,11 +6,11 @@
 #define COMPONENTS_UPDATE_CLIENT_ACTION_UPDATE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/version.h"
 #include "components/update_client/action.h"
@@ -85,7 +85,7 @@ class ActionUpdate : public Action, protected ActionImpl {
                       int extended_error);
 
   // Downloads updates for one CRX id only.
-  scoped_ptr<CrxDownloader> crx_downloader_;
+  std::unique_ptr<CrxDownloader> crx_downloader_;
 
   // Unpacks one CRX.
   scoped_refptr<ComponentUnpacker> unpacker_;
@@ -95,7 +95,7 @@ class ActionUpdate : public Action, protected ActionImpl {
 
 class ActionUpdateDiff : public ActionUpdate {
  public:
-  static scoped_ptr<Action> Create();
+  static std::unique_ptr<Action> Create();
 
  private:
   ActionUpdateDiff();
@@ -123,7 +123,7 @@ class ActionUpdateDiff : public ActionUpdate {
 
 class ActionUpdateFull : public ActionUpdate {
  public:
-  static scoped_ptr<Action> Create();
+  static std::unique_ptr<Action> Create();
 
  private:
   ActionUpdateFull();

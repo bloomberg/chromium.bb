@@ -129,12 +129,12 @@ std::string BuildProtocolRequest(const std::string& browser_version,
   return request;
 }
 
-scoped_ptr<net::URLFetcher> SendProtocolRequest(
+std::unique_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,
     const std::string& protocol_request,
     net::URLFetcherDelegate* url_fetcher_delegate,
     net::URLRequestContextGetter* url_request_context_getter) {
-  scoped_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
+  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, url_fetcher_delegate);
   if (!url_fetcher.get())
     return url_fetcher;
@@ -221,7 +221,7 @@ bool VerifyFileHash256(const base::FilePath& filepath,
     return false;
 
   uint8_t actual_hash[crypto::kSHA256Length] = {0};
-  scoped_ptr<crypto::SecureHash> hasher(
+  std::unique_ptr<crypto::SecureHash> hasher(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   hasher->Update(mmfile.data(), mmfile.length());
   hasher->Finish(actual_hash, sizeof(actual_hash));

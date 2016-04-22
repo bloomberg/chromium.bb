@@ -20,7 +20,7 @@
 namespace update_client {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
-    scoped_ptr<CrxDownloader> successor,
+    std::unique_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : CrxDownloader(task_runner, std::move(successor)),

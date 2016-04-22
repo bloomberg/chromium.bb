@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -100,8 +100,8 @@ class RequestSender : public net::URLFetcherDelegate {
 
   std::string public_key_;
   std::vector<GURL>::const_iterator cur_url_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_ptr<client_update_protocol::Ecdsa> signer_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<client_update_protocol::Ecdsa> signer_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };

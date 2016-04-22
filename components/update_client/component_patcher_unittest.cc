@@ -81,7 +81,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
       test_file("binary_output.bin"),
       input_dir_.path().Append(FILE_PATH_LITERAL("binary_output.bin"))));
 
-  scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args(
+      new base::DictionaryValue());
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "create");
@@ -108,7 +109,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
       test_file("binary_output.bin"),
       installed_dir_.path().Append(FILE_PATH_LITERAL("binary_output.bin"))));
 
-  scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args(
+      new base::DictionaryValue());
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "copy");
@@ -139,7 +141,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
                              input_dir_.path().Append(FILE_PATH_LITERAL(
                                  "binary_courgette_patch.bin"))));
 
-  scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args(
+      new base::DictionaryValue());
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "courgette");
@@ -172,7 +175,8 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
       test_file("binary_bsdiff_patch.bin"),
       input_dir_.path().Append(FILE_PATH_LITERAL("binary_bsdiff_patch.bin"))));
 
-  scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args(
+      new base::DictionaryValue());
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "courgette");

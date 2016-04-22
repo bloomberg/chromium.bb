@@ -6,6 +6,7 @@
 #define COMPONENTS_UPDATE_CLIENT_UPDATE_ENGINE_H_
 
 #include <list>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -14,7 +15,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/action.h"
 #include "components/update_client/component_patcher_operation.h"
@@ -140,7 +140,7 @@ struct UpdateContext {
 
   PingManager* ping_manager;  // Not owned by this class.
 
-  scoped_ptr<Action> current_action;
+  std::unique_ptr<Action> current_action;
 
   // TODO(sorin): use a map instead of vector.
   std::vector<CrxUpdateItem*> update_items;

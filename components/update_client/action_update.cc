@@ -185,13 +185,13 @@ ActionUpdateDiff::~ActionUpdateDiff() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-scoped_ptr<Action> ActionUpdateDiff::Create() {
-  return scoped_ptr<Action>(new ActionUpdateDiff);
+std::unique_ptr<Action> ActionUpdateDiff::Create() {
+  return std::unique_ptr<Action>(new ActionUpdateDiff);
 }
 
 void ActionUpdateDiff::TryUpdateFull() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<Action> update_action(ActionUpdateFull::Create());
+  std::unique_ptr<Action> update_action(ActionUpdateFull::Create());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&Action::Run, base::Unretained(update_action.get()),
@@ -286,8 +286,8 @@ ActionUpdateFull::~ActionUpdateFull() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-scoped_ptr<Action> ActionUpdateFull::Create() {
-  return scoped_ptr<Action>(new ActionUpdateFull);
+std::unique_ptr<Action> ActionUpdateFull::Create() {
+  return std::unique_ptr<Action>(new ActionUpdateFull);
 }
 
 bool ActionUpdateFull::IsBackgroundDownload(const CrxUpdateItem* item) {

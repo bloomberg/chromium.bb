@@ -70,7 +70,7 @@ CrxComponent::~CrxComponent() {
 // including any thread objects that might execute callbacks bound to it.
 UpdateClientImpl::UpdateClientImpl(
     const scoped_refptr<Configurator>& config,
-    scoped_ptr<PingManager> ping_manager,
+    std::unique_ptr<PingManager> ping_manager,
     UpdateChecker::Factory update_checker_factory,
     CrxDownloader::Factory crx_downloader_factory)
     : is_stopped_(false),
@@ -110,8 +110,8 @@ void UpdateClientImpl::Install(const std::string& id,
   // argument is available when the task completes, along with the task itself.
   const auto callback =
       base::Bind(&UpdateClientImpl::OnTaskComplete, this, completion_callback);
-  scoped_ptr<TaskUpdate> task(new TaskUpdate(update_engine_.get(), true, ids,
-                                             crx_data_callback, callback));
+  std::unique_ptr<TaskUpdate> task(new TaskUpdate(
+      update_engine_.get(), true, ids, crx_data_callback, callback));
 
   // Install tasks are run concurrently and never queued up.
   RunTask(std::move(task));
@@ -124,8 +124,8 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
 
   const auto callback =
       base::Bind(&UpdateClientImpl::OnTaskComplete, this, completion_callback);
-  scoped_ptr<TaskUpdate> task(new TaskUpdate(update_engine_.get(), false, ids,
-                                             crx_data_callback, callback));
+  std::unique_ptr<TaskUpdate> task(new TaskUpdate(
+      update_engine_.get(), false, ids, crx_data_callback, callback));
 
   // If no other tasks are running at the moment, run this update task.
   // Otherwise, queue the task up.
@@ -136,7 +136,7 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
   }
 }
 
-void UpdateClientImpl::RunTask(scoped_ptr<Task> task) {
+void UpdateClientImpl::RunTask(std::unique_ptr<Task> task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&Task::Run, base::Unretained(task.get())));
@@ -167,7 +167,7 @@ void UpdateClientImpl::OnTaskComplete(
   // Pick up a task from the queue if the queue has pending tasks and no other
   // task is running.
   if (tasks_.empty() && !task_queue_.empty()) {
-    RunTask(scoped_ptr<Task>(task_queue_.front()));
+    RunTask(std::unique_ptr<Task>(task_queue_.front()));
     task_queue_.pop();
   }
 }
@@ -250,7 +250,7 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 
 scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
-  scoped_ptr<PingManager> ping_manager(new PingManager(config));
+  std::unique_ptr<PingManager> ping_manager(new PingManager(config));
   return new UpdateClientImpl(config, std::move(ping_manager),
                               &UpdateChecker::Create, &CrxDownloader::Create);
 }

@@ -93,13 +93,13 @@ void UpdateEngine::Update(
     return;
   }
 
-  scoped_ptr<UpdateContext> update_context(new UpdateContext(
+  std::unique_ptr<UpdateContext> update_context(new UpdateContext(
       config_, is_foreground, ids, crx_data_callback,
       notify_observers_callback_, callback, update_checker_factory_,
       crx_downloader_factory_, ping_manager_));
 
   CrxUpdateItem update_item;
-  scoped_ptr<ActionUpdateCheck> update_check_action(new ActionUpdateCheck(
+  std::unique_ptr<ActionUpdateCheck> update_check_action(new ActionUpdateCheck(
       (*update_context->update_checker_factory)(config_, metadata_.get()),
       config_->GetBrowserVersion(), config_->ExtraRequestParams()));
 

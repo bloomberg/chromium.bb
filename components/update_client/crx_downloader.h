@@ -6,6 +6,8 @@
 #define COMPONENTS_UPDATE_CLIENT_CRX_DOWNLOADER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "url/gurl.h"
@@ -96,7 +97,7 @@ class CrxDownloader {
   // bytes is not guaranteed to monotonically increment over time.
   using ProgressCallback = base::Callback<void(const Result& result)>;
 
-  using Factory = scoped_ptr<CrxDownloader> (*)(
+  using Factory = std::unique_ptr<CrxDownloader> (*)(
       bool,
       net::URLRequestContextGetter*,
       const scoped_refptr<base::SequencedTaskRunner>&);
@@ -106,7 +107,7 @@ class CrxDownloader {
   // background downloader be used, if the platform supports it.
   // |task_runner| should be a task runner able to run blocking
   // code such as file IO operations.
-  static scoped_ptr<CrxDownloader> Create(
+  static std::unique_ptr<CrxDownloader> Create(
       bool is_background_download,
       net::URLRequestContextGetter* context_getter,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
@@ -130,7 +131,7 @@ class CrxDownloader {
 
  protected:
   CrxDownloader(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-                scoped_ptr<CrxDownloader> successor);
+                std::unique_ptr<CrxDownloader> successor);
 
   // Handles the fallback in the case of multiple urls and routing of the
   // download to the following successor in the chain. Derived classes must call
@@ -181,7 +182,7 @@ class CrxDownloader {
 
   // The SHA256 hash of the download payload in hexadecimal format.
   std::string expected_hash_;
-  scoped_ptr<CrxDownloader> successor_;
+  std::unique_ptr<CrxDownloader> successor_;
   DownloadCallback download_callback_;
   ProgressCallback progress_callback_;
 

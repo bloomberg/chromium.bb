@@ -27,10 +27,11 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_H_
 #define COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/update_client/component_unpacker.h"
 
@@ -89,7 +90,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   scoped_refptr<CrxInstaller> installer_;
   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
   ComponentUnpacker::Callback callback_;
-  scoped_ptr<base::ListValue> commands_;
+  std::unique_ptr<base::ListValue> commands_;
   base::ValueVector::const_iterator next_command_;
   scoped_refptr<DeltaUpdateOp> current_operation_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

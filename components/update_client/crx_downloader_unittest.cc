@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/update_client/crx_downloader.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/update_client/crx_downloader.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
@@ -59,9 +61,9 @@ class CrxDownloaderTest : public testing::Test {
   void DownloadProgress(int crx_context, const CrxDownloader::Result& result);
 
  protected:
-  scoped_ptr<CrxDownloader> crx_downloader_;
+  std::unique_ptr<CrxDownloader> crx_downloader_;
 
-  scoped_ptr<GetInterceptor> get_interceptor_;
+  std::unique_ptr<GetInterceptor> get_interceptor_;
 
   CrxDownloader::DownloadCallback callback_;
   CrxDownloader::ProgressCallback progress_callback_;

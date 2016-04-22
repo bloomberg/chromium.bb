@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_TASK_H_
 #define COMPONENTS_UPDATE_CLIENT_TASK_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/update_client/update_client.h"
 
 namespace update_client {

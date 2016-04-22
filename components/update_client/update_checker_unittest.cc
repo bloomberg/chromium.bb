@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/update_client/update_checker.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -16,7 +19,6 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/test_configurator.h"
-#include "components/update_client/update_checker.h"
 #include "components/update_client/url_request_post_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,9 +66,9 @@ class UpdateCheckerTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_;
   std::unique_ptr<PersistedData> metadata_;
 
-  scoped_ptr<UpdateChecker> update_checker_;
+  std::unique_ptr<UpdateChecker> update_checker_;
 
-  scoped_ptr<InterceptorFactory> interceptor_factory_;
+  std::unique_ptr<InterceptorFactory> interceptor_factory_;
   URLRequestPostInterceptor* post_interceptor_;  // Owned by the factory.
 
   int error_;

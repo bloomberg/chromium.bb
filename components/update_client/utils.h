@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_UTILS_H_
 #define COMPONENTS_UPDATE_CLIENT_UTILS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -61,7 +61,7 @@ std::string BuildProtocolRequest(const std::string& browser_version,
 // Sends a protocol request to the the service endpoint specified by |url|.
 // The body of the request is provided by |protocol_request| and it is
 // expected to contain XML data. The caller owns the returned object.
-scoped_ptr<net::URLFetcher> SendProtocolRequest(
+std::unique_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,
     const std::string& protocol_request,
     net::URLFetcherDelegate* url_fetcher_delegate,

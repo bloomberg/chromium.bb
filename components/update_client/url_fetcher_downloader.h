@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/update_client/crx_downloader.h"
@@ -32,7 +33,7 @@ class UrlFetcherDownloader : public CrxDownloader,
  protected:
   friend class CrxDownloader;
   UrlFetcherDownloader(
-      scoped_ptr<CrxDownloader> successor,
+      std::unique_ptr<CrxDownloader> successor,
       net::URLRequestContextGetter* context_getter,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~UrlFetcherDownloader() override;
@@ -46,7 +47,7 @@ class UrlFetcherDownloader : public CrxDownloader,
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
                                   int64_t total) override;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_;
 
   base::Time download_start_time_;

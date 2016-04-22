@@ -4,9 +4,10 @@
 
 #include "components/update_client/url_request_post_interceptor.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "components/update_client/test_configurator.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -147,7 +148,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
   void Register() {
     DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        scheme_, hostname_, scoped_ptr<net::URLRequestInterceptor>(this));
+        scheme_, hostname_, std::unique_ptr<net::URLRequestInterceptor>(this));
   }
 
   void Unregister() {

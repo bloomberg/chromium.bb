@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -10,8 +11,8 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -159,7 +160,7 @@ class UpdateClientTest : public testing::Test {
   base::RunLoop runloop_;
   base::Closure quit_closure_;
 
-  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
 
   scoped_refptr<update_client::Configurator> config_;
   std::unique_ptr<TestingPrefServiceSimple> pref_;
@@ -225,10 +226,10 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -244,11 +245,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -266,7 +267,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -332,10 +333,10 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -386,11 +387,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -443,7 +444,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -518,10 +519,10 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -599,11 +600,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -681,7 +682,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -766,10 +767,10 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -847,11 +848,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -929,7 +930,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1017,10 +1018,10 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -1120,11 +1121,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -1202,7 +1203,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1309,10 +1310,10 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -1362,11 +1363,11 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -1419,7 +1420,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1493,10 +1494,10 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -1596,11 +1597,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -1694,7 +1695,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1783,10 +1784,10 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -1802,11 +1803,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -1824,7 +1825,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -1883,10 +1884,10 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -1936,11 +1937,11 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -1997,7 +1998,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -2070,10 +2071,10 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -2089,11 +2090,11 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -2111,7 +2112,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<FakePingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -2164,10 +2165,10 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   };
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -2180,11 +2181,11 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -2196,7 +2197,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   };
 
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
-      config(), make_scoped_ptr(new FakePingManagerImpl(config())),
+      config(), base::WrapUnique(new FakePingManagerImpl(config())),
       &FakeUpdateChecker::Create, &FakeCrxDownloader::Create));
 
   std::vector<std::string> empty_id_list;
@@ -2210,7 +2211,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 TEST_F(UpdateClientTest, SendUninstallPing) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
       return nullptr;
@@ -2226,7 +2227,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
@@ -2255,7 +2256,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
@@ -2308,10 +2309,10 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class FakeUpdateChecker : public UpdateChecker {
    public:
-    static scoped_ptr<UpdateChecker> Create(
+    static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+      return std::unique_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
     bool CheckForUpdates(
@@ -2338,11 +2339,11 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class FakeCrxDownloader : public CrxDownloader {
    public:
-    static scoped_ptr<CrxDownloader> Create(
+    static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter,
         const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+      return std::unique_ptr<CrxDownloader>(new FakeCrxDownloader());
     }
 
    private:
@@ -2360,7 +2361,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  std::unique_ptr<PingManager> ping_manager(new FakePingManager(config()));
   scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));

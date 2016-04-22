@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
@@ -116,16 +116,17 @@ class UpdateCheckerImpl : public UpdateChecker {
       const UpdateCheckCallback& update_check_callback) override;
 
  private:
-  void OnRequestSenderComplete(scoped_ptr<std::vector<std::string>> ids_checked,
-                               int error,
-                               const std::string& response,
-                               int retry_after_sec);
+  void OnRequestSenderComplete(
+      std::unique_ptr<std::vector<std::string>> ids_checked,
+      int error,
+      const std::string& response,
+      int retry_after_sec);
   base::ThreadChecker thread_checker_;
 
   const scoped_refptr<Configurator> config_;
   PersistedData* metadata_;
   UpdateCheckCallback update_check_callback_;
-  scoped_ptr<RequestSender> request_sender_;
+  std::unique_ptr<RequestSender> request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
@@ -199,10 +200,11 @@ void UpdateCheckerImpl::OnRequestSenderComplete(
 
 }  // namespace
 
-scoped_ptr<UpdateChecker> UpdateChecker::Create(
+std::unique_ptr<UpdateChecker> UpdateChecker::Create(
     const scoped_refptr<Configurator>& config,
     PersistedData* persistent) {
-  return scoped_ptr<UpdateChecker>(new UpdateCheckerImpl(config, persistent));
+  return std::unique_ptr<UpdateChecker>(
+      new UpdateCheckerImpl(config, persistent));
 }
 
 }  // namespace update_client

@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_CONFIGURATOR_H_
 #define COMPONENTS_UPDATE_CLIENT_CONFIGURATOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 class PrefService;

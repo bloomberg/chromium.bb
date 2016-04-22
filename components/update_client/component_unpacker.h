@@ -6,6 +6,8 @@
 #define COMPONENTS_UPDATE_CLIENT_COMPONENT_UNPACKER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +16,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 
 namespace update_client {
@@ -24,7 +25,7 @@ class ComponentPatcher;
 class OutOfProcessPatcher;
 
 // Deserializes the CRX manifest. The top level must be a dictionary.
-scoped_ptr<base::DictionaryValue> ReadManifest(
+std::unique_ptr<base::DictionaryValue> ReadManifest(
     const base::FilePath& unpack_path);
 
 // In charge of unpacking the component CRX package and verifying that it is

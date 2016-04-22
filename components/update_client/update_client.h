@@ -6,12 +6,13 @@
 #define COMPONENTS_UPDATE_CLIENT_UPDATE_CLIENT_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 
 // The UpdateClient class is a facade with a simple interface. The interface
@@ -48,7 +49,7 @@
 // of this code has already implemented the observer interface as needed, and
 // can provide an installer, as described below.
 //
-//    scoped_ptr<UpdateClient> update_client(UpdateClientFactory(...));
+//    std::unique_ptr<UpdateClient> update_client(UpdateClientFactory(...));
 //    update_client->AddObserver(&observer);
 //    std::vector<std::string> ids;
 //    ids.push_back(...));

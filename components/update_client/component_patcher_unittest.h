@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_UNITTEST_H_
 #define COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_UNITTEST_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"

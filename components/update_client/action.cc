@@ -123,7 +123,7 @@ void ActionImpl::UpdateCrx() {
   CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
-  scoped_ptr<Action> update_action(
+  std::unique_ptr<Action> update_action(
       CanTryDiffUpdate(item, update_context_->config)
           ? ActionUpdateDiff::Create()
           : ActionUpdateFull::Create());
@@ -147,7 +147,7 @@ void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
     // to be injected at the call site of update_client::UpdateClient::Update.
     const int wait_sec = update_context_->config->UpdateDelay();
 
-    scoped_ptr<ActionWait> action_wait(
+    std::unique_ptr<ActionWait> action_wait(
         new ActionWait(base::TimeDelta::FromSeconds(wait_sec)));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(

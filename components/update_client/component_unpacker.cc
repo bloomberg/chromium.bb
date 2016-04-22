@@ -55,20 +55,20 @@ ComponentUnpacker::ComponentUnpacker(
 // TODO(cpu): add a specific attribute check to a component json that the
 // extension unpacker will reject, so that a component cannot be installed
 // as an extension.
-scoped_ptr<base::DictionaryValue> ReadManifest(
+std::unique_ptr<base::DictionaryValue> ReadManifest(
     const base::FilePath& unpack_path) {
   base::FilePath manifest =
       unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
   if (!base::PathExists(manifest))
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
-  scoped_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
   if (!root.get())
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   if (!root->IsType(base::Value::TYPE_DICTIONARY))
-    return scoped_ptr<base::DictionaryValue>();
-  return scoped_ptr<base::DictionaryValue>(
+    return std::unique_ptr<base::DictionaryValue>();
+  return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(root.release()));
 }
 
@@ -106,7 +106,7 @@ bool ComponentUnpacker::Verify() {
   // the public key hash matches the expected hash. If they do we fully
   // trust this CRX.
   uint8_t hash[crypto::kSHA256Length] = {};
-  scoped_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
+  std::unique_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
   sha256->Update(public_key_bytes.data(), public_key_bytes.size());
   sha256->Finish(hash, arraysize(hash));
 
@@ -188,7 +188,7 @@ void ComponentUnpacker::Install() {
     error_ = kFingerprintWriteFailed;
     return;
   }
-  scoped_ptr<base::DictionaryValue> manifest(ReadManifest(unpack_path_));
+  std::unique_ptr<base::DictionaryValue> manifest(ReadManifest(unpack_path_));
   if (!manifest.get()) {
     error_ = kBadManifest;
     return;

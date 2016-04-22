@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/update_client/request_sender.h"
+
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/update_client/request_sender.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/url_request_post_interceptor.h"
 #include "net/url_request/url_fetcher.h"
@@ -55,8 +57,8 @@ class RequestSenderTest : public testing::Test {
   void RunThreadsUntilIdle();
 
   scoped_refptr<TestConfigurator> config_;
-  scoped_ptr<RequestSender> request_sender_;
-  scoped_ptr<InterceptorFactory> interceptor_factory_;
+  std::unique_ptr<RequestSender> request_sender_;
+  std::unique_ptr<InterceptorFactory> interceptor_factory_;
 
   URLRequestPostInterceptor* post_interceptor_1_;  // Owned by the factory.
   URLRequestPostInterceptor* post_interceptor_2_;  // Owned by the factory.
