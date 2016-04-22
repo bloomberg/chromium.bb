@@ -91,6 +91,7 @@ Polymer({
     this.loading_ = false;
 
     if (this.searchTerm != searchTerm) {
+      this.resultLoadingDisabled_ = false;
       if (this.historyData)
         this.splice('historyData', 0, this.historyData.length);
       this.searchTerm = searchTerm;
