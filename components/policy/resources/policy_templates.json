@@ -7679,15 +7679,15 @@
         'items': {
           'type': 'string',
           'enum': [
-            'ShowModalDialog_EffectiveUntil20150430'
+            'ExampleDeprecatedFeature_EffectiveUntil20080902'
           ],
         },
       },
       'items': [
         {
-          'name': 'ShowModalDialog',
-          'value': 'ShowModalDialog_EffectiveUntil20150430',
-          'caption': '''Enable ShowModalDialog API through 2015.04.30''',
+          'name': 'ExampleDeprecatedFeature',
+          'value': 'ExampleDeprecatedFeature_EffectiveUntil20080902',
+          'caption': '''Enable ExampleDeprecatedFeature API through 2008/09/02''',
         }
       ],
       'supported_on': ['chrome.*:37-', 'chrome_os:37-', 'android:37-'],
@@ -7695,7 +7695,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['ShowModalDialog_EffectiveUntil20150430'],
+      'example_value': ['ExampleDeprecatedFeature_EffectiveUntil20080902'],
       'id': 270,
       'caption': '''Enable deprecated web platform features for a limited time''',
       'tags': ['system-security'],
