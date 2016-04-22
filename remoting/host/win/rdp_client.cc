@@ -11,8 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/registry.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/win/rdp_client_window.h"
@@ -143,11 +145,8 @@ void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
     server_port = kDefaultRdpPort;
   }
 
-  net::IPAddressNumber server_address(
-      kRdpLoopbackAddress,
-      kRdpLoopbackAddress + arraysize(kRdpLoopbackAddress));
-  net::IPEndPoint server_endpoint(server_address,
-                                  static_cast<uint16_t>(server_port));
+  net::IPEndPoint server_endpoint(net::IPAddress(kRdpLoopbackAddress),
+                                  base::checked_cast<uint16_t>(server_port));
 
   // Create the ActiveX control window.
   rdp_client_window_.reset(new RdpClientWindow(server_endpoint, terminal_id,
