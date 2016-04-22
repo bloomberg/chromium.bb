@@ -11,7 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/layer_animation_controller.h"
+#include "cc/animation/element_animations.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
@@ -311,7 +311,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
     for (const auto& it :
-         animation_host()->active_animation_controllers_for_testing()) {
+         animation_host()->active_element_animations_for_testing()) {
       if (it.second->HasActiveAnimation()) {
         has_unfinished_animation = true;
         break;

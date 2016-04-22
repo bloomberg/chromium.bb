@@ -7,7 +7,7 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/animation/layer_animation_controller.h"
+#include "cc/animation/element_animations.h"
 
 namespace cc {
 
@@ -80,9 +80,9 @@ void AnimationPlayer::RegisterPlayer() {
   DCHECK(animation_host_);
   DCHECK(!element_animations_);
 
-  // Create LAC or re-use existing.
+  // Create ElementAnimations or re-use existing.
   animation_host_->RegisterPlayerForLayer(layer_id_, this);
-  // Get local reference to shared LAC.
+  // Get local reference to shared ElementAnimations.
   BindElementAnimations();
 }
 
@@ -92,7 +92,7 @@ void AnimationPlayer::UnregisterPlayer() {
   DCHECK(element_animations_);
 
   UnbindElementAnimations();
-  // Destroy LAC or release it if it's still needed.
+  // Destroy ElementAnimations or release it if it's still needed.
   animation_host_->UnregisterPlayerForLayer(layer_id_, this);
 }
 
@@ -102,7 +102,7 @@ void AnimationPlayer::BindElementAnimations() {
       animation_host_->GetElementAnimationsForLayerId(layer_id_);
   DCHECK(element_animations_);
 
-  // Pass all accumulated animations to LAC.
+  // Pass all accumulated animations to ElementAnimations.
   for (auto& animation : animations_) {
     element_animations_->AddAnimation(std::move(animation));
   }

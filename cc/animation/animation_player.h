@@ -22,14 +22,12 @@ class AnimationDelegate;
 class AnimationHost;
 class AnimationTimeline;
 class ElementAnimations;
-class LayerAnimationController;
 enum class LayerTreeType;
 
 // An AnimationPlayer owns all animations to be run on particular CC Layer.
 // Multiple AnimationPlayers can be attached to one layer. In this case,
-// they share common LayerAnimationController (temp solution) so the
-// LayerAnimationController-to-Layer relationship stays the same (1:1, LACs
-// have same IDs as their respective Layers).
+// they share common ElementAnimations so the
+// ElementAnimations-to-Layer relationship is 1:1.
 // For now, the blink logic is responsible for handling of conflicting
 // same-property animations.
 // Each AnimationPlayer has its copy on the impl thread.
@@ -92,7 +90,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
                                double animation_start_time,
                                std::unique_ptr<AnimationCurve> curve);
 
-  // Whether this player has animations waiting to get sent to LAC.
+  // Whether this player has animations waiting to get sent to ElementAnimations
   bool has_pending_animations_for_testing() const {
     return !animations_.empty();
   }

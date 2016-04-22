@@ -28,7 +28,6 @@ class AnimationEvents;
 class AnimationPlayer;
 class AnimationTimeline;
 class ElementAnimations;
-class LayerAnimationController;
 class LayerTreeHost;
 
 enum class ThreadInstance { MAIN, IMPL };
@@ -43,8 +42,8 @@ enum class ThreadInstance { MAIN, IMPL };
 // LayerTreeMutatorsClient interface.
 class CC_EXPORT AnimationHost {
  public:
-  using AnimationControllerMap =
-      std::unordered_map<int, LayerAnimationController*>;
+  using LayerToElementAnimationsMap =
+      std::unordered_map<int, scoped_refptr<ElementAnimations>>;
 
   static std::unique_ptr<AnimationHost> Create(ThreadInstance thread_instance);
   ~AnimationHost();
@@ -63,9 +62,6 @@ class CC_EXPORT AnimationHost {
 
   scoped_refptr<ElementAnimations> GetElementAnimationsForLayerId(
       int layer_id) const;
-
-  // TODO(loyso): Get rid of LayerAnimationController.
-  LayerAnimationController* GetControllerForLayerId(int layer_id) const;
 
   // Parent LayerTreeHost or LayerTreeHostImpl.
   MutatorHostClient* mutator_host_client() { return mutator_host_client_; }
@@ -149,27 +145,27 @@ class CC_EXPORT AnimationHost {
 
   void ScrollAnimationAbort(bool needs_completion);
 
-  // If an animation has been registered for the given id, return it. Otherwise
-  // creates a new one and returns a scoped_refptr to it.
-  scoped_refptr<LayerAnimationController> GetAnimationControllerForId(int id);
+  // Registers the given element animations as active. An active element
+  // animations is one that has a running animation that needs to be ticked.
+  void DidActivateElementAnimations(ElementAnimations* element_animations);
 
-  // Registers the given animation controller as active. An active animation
-  // controller is one that has a running animation that needs to be ticked.
-  void DidActivateAnimationController(LayerAnimationController* controller);
+  // Unregisters the given element animations. When this happens, the
+  // element animations will no longer be ticked (since it's not active).
+  void DidDeactivateElementAnimations(ElementAnimations* element_animations);
 
-  // Unregisters the given animation controller. When this happens, the
-  // animation controller will no longer be ticked (since it's not active). It
-  // is not an error to call this function with a deactivated controller.
-  void DidDeactivateAnimationController(LayerAnimationController* controller);
+  // Registers the given ElementAnimations as alive.
+  void RegisterElementAnimations(ElementAnimations* element_animations);
+  // Unregisters the given ElementAnimations as alive.
+  void UnregisterElementAnimations(ElementAnimations* element_animations);
 
-  // Registers the given controller as alive.
-  void RegisterAnimationController(LayerAnimationController* controller);
-  // Unregisters the given controller as alive.
-  void UnregisterAnimationController(LayerAnimationController* controller);
-
-  const AnimationControllerMap& active_animation_controllers_for_testing()
+  const LayerToElementAnimationsMap& active_element_animations_for_testing()
       const;
-  const AnimationControllerMap& all_animation_controllers_for_testing() const;
+  const LayerToElementAnimationsMap& all_element_animations_for_testing() const;
+
+  bool animation_waiting_for_deletion() const {
+    return animation_waiting_for_deletion_;
+  }
+  void OnAnimationWaitingForDeletion();
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
@@ -180,19 +176,13 @@ class CC_EXPORT AnimationHost {
 
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
-  // AnimationPlayers share ElementAnimations object if they are attached to the
-  // same element(layer). Note that Element can contain many Layers.
-  using LayerToElementAnimationsMap =
-      std::unordered_map<int, scoped_refptr<ElementAnimations>>;
   LayerToElementAnimationsMap layer_to_element_animations_map_;
+  LayerToElementAnimationsMap active_element_animations_map_;
 
   // A list of all timelines which this host owns.
   using IdToTimelineMap =
       std::unordered_map<int, scoped_refptr<AnimationTimeline>>;
   IdToTimelineMap id_to_timeline_map_;
-
-  AnimationControllerMap active_animation_controllers_;
-  AnimationControllerMap all_animation_controllers_;
 
   MutatorHostClient* mutator_host_client_;
 
@@ -202,6 +192,7 @@ class CC_EXPORT AnimationHost {
   const ThreadInstance thread_instance_;
 
   bool supports_scroll_animations_;
+  bool animation_waiting_for_deletion_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

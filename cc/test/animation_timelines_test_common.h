@@ -23,12 +23,13 @@ class TestLayer {
 
   void ClearMutatedProperties();
 
-  int transform_x() const { return transform_x_; }
-  int transform_y() const { return transform_y_; }
+  int transform_x() const;
+  int transform_y() const;
+  float brightness() const;
 
-  void set_transform(int transform_x, int transform_y) {
-    transform_x_ = transform_x;
-    transform_y_ = transform_y;
+  const gfx::Transform& transform() const { return transform_; }
+  void set_transform(const gfx::Transform& transform) {
+    transform_ = transform;
     mutated_properties_[TargetProperty::TRANSFORM] = true;
   }
 
@@ -38,9 +39,9 @@ class TestLayer {
     mutated_properties_[TargetProperty::OPACITY] = true;
   }
 
-  float brightness() const { return brightness_; }
-  void set_brightness(float brightness) {
-    brightness_ = brightness;
+  FilterOperations filters() const { return filters_; }
+  void set_filters(const FilterOperations& filters) {
+    filters_ = filters;
     mutated_properties_[TargetProperty::FILTER] = true;
   }
 
@@ -50,6 +51,11 @@ class TestLayer {
     mutated_properties_[TargetProperty::SCROLL_OFFSET] = true;
   }
 
+  bool transform_is_animating() const { return transform_is_animating_; }
+  void set_transform_is_animating(bool is_animating) {
+    transform_is_animating_ = is_animating;
+  }
+
   bool is_property_mutated(TargetProperty::Type property) const {
     return mutated_properties_[property];
   }
@@ -57,12 +63,11 @@ class TestLayer {
  private:
   TestLayer();
 
-  int transform_x_;
-  int transform_y_;
-
+  gfx::Transform transform_;
   float opacity_;
-  float brightness_;
+  FilterOperations filters_;
   gfx::ScrollOffset scroll_offset_;
+  bool transform_is_animating_;
 
   bool mutated_properties_[TargetProperty::LAST_TARGET_PROPERTY + 1];
 };
@@ -98,10 +103,11 @@ class TestHostClient : public MutatorHostClient {
 
   void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
                                                    LayerTreeType tree_type,
-                                                   bool is_animating) override {
-  }
+                                                   bool is_animating) override;
 
   void ScrollOffsetAnimationFinished() override {}
+
+  void SetScrollOffsetForAnimation(const gfx::ScrollOffset& scroll_offset);
   gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
 
   bool mutators_need_commit() const { return mutators_need_commit_; }
@@ -118,6 +124,13 @@ class TestHostClient : public MutatorHostClient {
   bool IsPropertyMutated(int layer_id,
                          LayerTreeType tree_type,
                          TargetProperty::Type property) const;
+
+  FilterOperations GetFilters(int layer_id, LayerTreeType tree_type) const;
+  float GetOpacity(int layer_id, LayerTreeType tree_type) const;
+  gfx::Transform GetTransform(int layer_id, LayerTreeType tree_type) const;
+  gfx::ScrollOffset GetScrollOffset(int layer_id,
+                                    LayerTreeType tree_type) const;
+  bool GetTransformIsAnimating(int layer_id, LayerTreeType tree_type) const;
 
   void ExpectFilterPropertyMutated(int layer_id,
                                    LayerTreeType tree_type,
@@ -140,6 +153,7 @@ class TestHostClient : public MutatorHostClient {
   LayerIdToTestLayer layers_in_active_tree_;
   LayerIdToTestLayer layers_in_pending_tree_;
 
+  gfx::ScrollOffset scroll_offset_;
   bool mutators_need_commit_;
 };
 
@@ -155,14 +169,28 @@ class TestAnimationDelegate : public AnimationDelegate {
                                int group) override;
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
-                              int group) override {}
+                              int group) override;
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                double animation_start_time,
-                               std::unique_ptr<AnimationCurve> curve) override {
-  }
+                               std::unique_ptr<AnimationCurve> curve) override;
+
+  bool started() { return started_; }
+
+  bool finished() { return finished_; }
+
+  bool aborted() { return aborted_; }
+
+  bool takeover() { return takeover_; }
+
+  base::TimeTicks start_time() { return start_time_; }
+
+ private:
   bool started_;
   bool finished_;
+  bool aborted_;
+  bool takeover_;
+  base::TimeTicks start_time_;
 };
 
 class AnimationTimelinesTest : public testing::Test {
@@ -175,6 +203,17 @@ class AnimationTimelinesTest : public testing::Test {
   void TearDown() override;
 
   void GetImplTimelineAndPlayerByID();
+
+  void CreateTestLayer(bool needs_active_value_observations,
+                       bool needs_pending_value_observations);
+  void AttachTimelinePlayerLayer();
+  void CreateImplTimelineAndPlayer();
+
+  void CreateTestMainLayer();
+  void CreateTestImplLayer(LayerTreeType layer_tree_type);
+
+  scoped_refptr<ElementAnimations> element_animations() const;
+  scoped_refptr<ElementAnimations> element_animations_impl() const;
 
   void ReleaseRefPtrs();
 

@@ -13,7 +13,6 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"

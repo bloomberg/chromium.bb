@@ -108,13 +108,9 @@ void Animation::SetRunState(RunState run_state,
                  old_run_state_name,
                  new_run_state_name);
 
-  TRACE_EVENT_INSTANT2("cc",
-                       "LayerAnimationController::SetRunState",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "Name",
-                       TRACE_STR_COPY(name_buffer),
-                       "State",
-                       TRACE_STR_COPY(state_buffer));
+  TRACE_EVENT_INSTANT2(
+      "cc", "ElementAnimations::SetRunState", TRACE_EVENT_SCOPE_THREAD, "Name",
+      TRACE_STR_COPY(name_buffer), "State", TRACE_STR_COPY(state_buffer));
 }
 
 void Animation::Suspend(base::TimeTicks monotonic_time) {

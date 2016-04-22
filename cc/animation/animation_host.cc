@@ -16,7 +16,6 @@
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -155,7 +154,8 @@ std::unique_ptr<AnimationHost> AnimationHost::Create(
 AnimationHost::AnimationHost(ThreadInstance thread_instance)
     : mutator_host_client_(nullptr),
       thread_instance_(thread_instance),
-      supports_scroll_animations_(false) {
+      supports_scroll_animations_(false),
+      animation_waiting_for_deletion_(false) {
   if (thread_instance_ == ThreadInstance::IMPL)
     scroll_offset_animations_ =
         base::WrapUnique(new ScrollOffsetAnimations(this));
@@ -167,11 +167,6 @@ AnimationHost::~AnimationHost() {
   ClearTimelines();
   DCHECK(!mutator_host_client());
   DCHECK(layer_to_element_animations_map_.empty());
-
-  AnimationControllerMap copy = all_animation_controllers_;
-  for (AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end();
-       ++iter)
-    (*iter).second->SetAnimationHost(nullptr);
 }
 
 AnimationTimeline* AnimationHost::GetTimelineById(int timeline_id) const {
@@ -227,13 +222,16 @@ void AnimationHost::RegisterPlayerForLayer(int layer_id,
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForLayerId(layer_id);
   if (!element_animations) {
-    element_animations = ElementAnimations::Create(this);
-    layer_to_element_animations_map_[layer_id] = element_animations;
-
-    element_animations->CreateLayerAnimationController(layer_id);
+    element_animations = ElementAnimations::Create();
+    element_animations->SetLayerId(layer_id);
+    RegisterElementAnimations(element_animations.get());
   }
 
-  DCHECK(element_animations);
+  if (element_animations->animation_host() != this) {
+    element_animations->SetAnimationHost(this);
+    element_animations->InitValueObservations();
+  }
+
   element_animations->AddPlayer(player);
 }
 
@@ -248,8 +246,9 @@ void AnimationHost::UnregisterPlayerForLayer(int layer_id,
   element_animations->RemovePlayer(player);
 
   if (element_animations->IsEmpty()) {
-    element_animations->DestroyLayerAnimationController();
-    layer_to_element_animations_map_.erase(layer_id);
+    element_animations->ClearValueObservations();
+    UnregisterElementAnimations(element_animations.get());
+    element_animations->SetAnimationHost(nullptr);
   }
 }
 
@@ -274,6 +273,7 @@ void AnimationHost::PushPropertiesTo(AnimationHost* host_impl) {
   PushTimelinesToImplThread(host_impl);
   RemoveTimelinesFromImplThread(host_impl);
   PushPropertiesToImplThread(host_impl);
+  animation_waiting_for_deletion_ = false;
 }
 
 void AnimationHost::PushTimelinesToImplThread(AnimationHost* host_impl) const {
@@ -306,8 +306,7 @@ void AnimationHost::RemoveTimelinesFromImplThread(
 }
 
 void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
-  // Firstly, sync all players with impl thread to create ElementAnimations and
-  // layer animation controllers.
+  // Firstly, sync all players with impl thread to create ElementAnimations.
   for (auto& kv : id_to_timeline_map_) {
     AnimationTimeline* timeline = kv.second.get();
     AnimationTimeline* timeline_impl =
@@ -316,7 +315,7 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
       timeline->PushPropertiesTo(timeline_impl);
   }
 
-  // Secondly, sync properties for created layer animation controllers.
+  // Secondly, sync properties for created ElementAnimations.
   for (auto& kv : layer_to_element_animations_map_) {
     const auto& element_animations = kv.second;
     auto element_animations_impl =
@@ -324,16 +323,6 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
     if (element_animations_impl)
       element_animations->PushPropertiesTo(std::move(element_animations_impl));
   }
-}
-
-LayerAnimationController* AnimationHost::GetControllerForLayerId(
-    int layer_id) const {
-  const scoped_refptr<ElementAnimations> element_animations =
-      GetElementAnimationsForLayerId(layer_id);
-  if (!element_animations)
-    return nullptr;
-
-  return element_animations->layer_animation_controller_.get();
 }
 
 scoped_refptr<ElementAnimations> AnimationHost::GetElementAnimationsForLayerId(
@@ -354,7 +343,7 @@ bool AnimationHost::SupportsScrollAnimations() const {
 }
 
 bool AnimationHost::NeedsAnimateLayers() const {
-  return !active_animation_controllers_.empty();
+  return !active_element_animations_map_.empty();
 }
 
 bool AnimationHost::ActivateAnimations() {
@@ -362,9 +351,9 @@ bool AnimationHost::ActivateAnimations() {
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
-  AnimationControllerMap active_controllers_copy =
-      active_animation_controllers_;
-  for (auto& it : active_controllers_copy)
+  LayerToElementAnimationsMap active_element_animations_map_copy =
+      active_element_animations_map_;
+  for (auto& it : active_element_animations_map_copy)
     it.second->ActivateAnimations();
 
   return true;
@@ -375,8 +364,9 @@ bool AnimationHost::AnimateLayers(base::TimeTicks monotonic_time) {
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::AnimateLayers");
-  AnimationControllerMap controllers_copy = active_animation_controllers_;
-  for (auto& it : controllers_copy)
+  LayerToElementAnimationsMap active_element_animations_map_copy =
+      active_element_animations_map_;
+  for (auto& it : active_element_animations_map_copy)
     it.second->Animate(monotonic_time);
 
   return true;
@@ -388,9 +378,9 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::UpdateAnimationState");
-  AnimationControllerMap active_controllers_copy =
-      active_animation_controllers_;
-  for (auto& it : active_controllers_copy)
+  LayerToElementAnimationsMap active_element_animations_map_copy =
+      active_element_animations_map_;
+  for (auto& it : active_element_animations_map_copy)
     it.second->UpdateState(start_ready_animations, events);
 
   return true;
@@ -406,12 +396,13 @@ void AnimationHost::SetAnimationEvents(
        ++event_index) {
     int event_layer_id = events->events_[event_index].layer_id;
 
-    // Use the map of all controllers, not just active ones, since non-active
-    // controllers may still receive events for impl-only animations.
-    const AnimationControllerMap& animation_controllers =
-        all_animation_controllers_;
-    auto iter = animation_controllers.find(event_layer_id);
-    if (iter != animation_controllers.end()) {
+    // Use the map of all ElementAnimations, not just active ones, since
+    // non-active ElementAnimations may still receive events for impl-only
+    // animations.
+    const LayerToElementAnimationsMap& all_element_animations =
+        layer_to_element_animations_map_;
+    auto iter = all_element_animations.find(event_layer_id);
+    if (iter != all_element_animations.end()) {
       switch (events->events_[event_index].type) {
         case AnimationEvent::STARTED:
           (*iter).second->NotifyAnimationStarted(events->events_[event_index]);
@@ -439,32 +430,33 @@ void AnimationHost::SetAnimationEvents(
 }
 
 bool AnimationHost::ScrollOffsetAnimationWasInterrupted(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->scroll_offset_animation_was_interrupted()
-                    : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->scroll_offset_animation_was_interrupted()
+             : false;
 }
 
-static LayerAnimationController::ObserverType ObserverTypeFromTreeType(
+static ElementAnimations::ObserverType ObserverTypeFromTreeType(
     LayerTreeType tree_type) {
   return tree_type == LayerTreeType::ACTIVE
-             ? LayerAnimationController::ObserverType::ACTIVE
-             : LayerAnimationController::ObserverType::PENDING;
+             ? ElementAnimations::ObserverType::ACTIVE
+             : ElementAnimations::ObserverType::PENDING;
 }
 
 bool AnimationHost::IsAnimatingFilterProperty(int layer_id,
                                               LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->IsCurrentlyAnimatingProperty(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->IsCurrentlyAnimatingProperty(
                    TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
              : false;
 }
 
 bool AnimationHost::IsAnimatingOpacityProperty(int layer_id,
                                                LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->IsCurrentlyAnimatingProperty(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->IsCurrentlyAnimatingProperty(
                    TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
              : false;
 }
@@ -472,9 +464,9 @@ bool AnimationHost::IsAnimatingOpacityProperty(int layer_id,
 bool AnimationHost::IsAnimatingTransformProperty(
     int layer_id,
     LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->IsCurrentlyAnimatingProperty(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->IsCurrentlyAnimatingProperty(
                    TargetProperty::TRANSFORM,
                    ObserverTypeFromTreeType(tree_type))
              : false;
@@ -483,9 +475,9 @@ bool AnimationHost::IsAnimatingTransformProperty(
 bool AnimationHost::HasPotentiallyRunningFilterAnimation(
     int layer_id,
     LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->IsPotentiallyAnimatingProperty(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->IsPotentiallyAnimatingProperty(
                    TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
              : false;
 }
@@ -493,9 +485,9 @@ bool AnimationHost::HasPotentiallyRunningFilterAnimation(
 bool AnimationHost::HasPotentiallyRunningOpacityAnimation(
     int layer_id,
     LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->IsPotentiallyAnimatingProperty(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->IsPotentiallyAnimatingProperty(
                    TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
              : false;
 }
@@ -503,9 +495,9 @@ bool AnimationHost::HasPotentiallyRunningOpacityAnimation(
 bool AnimationHost::HasPotentiallyRunningTransformAnimation(
     int layer_id,
     LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->IsPotentiallyAnimatingProperty(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->IsPotentiallyAnimatingProperty(
                    TargetProperty::TRANSFORM,
                    ObserverTypeFromTreeType(tree_type))
              : false;
@@ -514,107 +506,118 @@ bool AnimationHost::HasPotentiallyRunningTransformAnimation(
 bool AnimationHost::HasAnyAnimationTargetingProperty(
     int layer_id,
     TargetProperty::Type property) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  if (!element_animations)
     return false;
 
-  return !!controller->GetAnimation(property);
+  return !!element_animations->GetAnimation(property);
 }
 
 bool AnimationHost::FilterIsAnimatingOnImplOnly(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  if (!element_animations)
     return false;
 
-  Animation* animation = controller->GetAnimation(TargetProperty::FILTER);
+  Animation* animation =
+      element_animations->GetAnimation(TargetProperty::FILTER);
   return animation && animation->is_impl_only();
 }
 
 bool AnimationHost::OpacityIsAnimatingOnImplOnly(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  if (!element_animations)
     return false;
 
-  Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
+  Animation* animation =
+      element_animations->GetAnimation(TargetProperty::OPACITY);
   return animation && animation->is_impl_only();
 }
 
 bool AnimationHost::ScrollOffsetIsAnimatingOnImplOnly(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  if (!element_animations)
     return false;
 
   Animation* animation =
-      controller->GetAnimation(TargetProperty::SCROLL_OFFSET);
+      element_animations->GetAnimation(TargetProperty::SCROLL_OFFSET);
   return animation && animation->is_impl_only();
 }
 
 bool AnimationHost::TransformIsAnimatingOnImplOnly(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  if (!controller)
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  if (!element_animations)
     return false;
 
-  Animation* animation = controller->GetAnimation(TargetProperty::TRANSFORM);
+  Animation* animation =
+      element_animations->GetAnimation(TargetProperty::TRANSFORM);
   return animation && animation->is_impl_only();
 }
 
 bool AnimationHost::HasFilterAnimationThatInflatesBounds(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->HasFilterAnimationThatInflatesBounds()
-                    : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->HasFilterAnimationThatInflatesBounds()
+             : false;
 }
 
 bool AnimationHost::HasTransformAnimationThatInflatesBounds(
     int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->HasTransformAnimationThatInflatesBounds()
-                    : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->HasTransformAnimationThatInflatesBounds()
+             : false;
 }
 
 bool AnimationHost::HasAnimationThatInflatesBounds(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->HasAnimationThatInflatesBounds() : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->HasAnimationThatInflatesBounds()
+             : false;
 }
 
 bool AnimationHost::FilterAnimationBoundsForBox(int layer_id,
                                                 const gfx::BoxF& box,
                                                 gfx::BoxF* bounds) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->FilterAnimationBoundsForBox(box, bounds)
-                    : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->FilterAnimationBoundsForBox(box, bounds)
+             : false;
 }
 
 bool AnimationHost::TransformAnimationBoundsForBox(int layer_id,
                                                    const gfx::BoxF& box,
                                                    gfx::BoxF* bounds) const {
   *bounds = gfx::BoxF();
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->TransformAnimationBoundsForBox(box, bounds)
-                    : true;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->TransformAnimationBoundsForBox(box, bounds)
+             : true;
 }
 
 bool AnimationHost::HasOnlyTranslationTransforms(
     int layer_id,
     LayerTreeType tree_type) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->HasOnlyTranslationTransforms(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->HasOnlyTranslationTransforms(
                    ObserverTypeFromTreeType(tree_type))
              : true;
 }
 
 bool AnimationHost::AnimationsPreserveAxisAlignment(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->AnimationsPreserveAxisAlignment() : true;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->AnimationsPreserveAxisAlignment()
+             : true;
 }
 
 bool AnimationHost::MaximumTargetScale(int layer_id,
                                        LayerTreeType tree_type,
                                        float* max_scale) const {
   *max_scale = 0.f;
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->MaximumTargetScale(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->MaximumTargetScale(
                    ObserverTypeFromTreeType(tree_type), max_scale)
              : true;
 }
@@ -623,21 +626,21 @@ bool AnimationHost::AnimationStartScale(int layer_id,
                                         LayerTreeType tree_type,
                                         float* start_scale) const {
   *start_scale = 0.f;
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller
-             ? controller->AnimationStartScale(
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations
+             ? element_animations->AnimationStartScale(
                    ObserverTypeFromTreeType(tree_type), start_scale)
              : true;
 }
 
 bool AnimationHost::HasAnyAnimation(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->has_any_animation() : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations ? element_animations->has_any_animation() : false;
 }
 
 bool AnimationHost::HasActiveAnimationForTesting(int layer_id) const {
-  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->HasActiveAnimation() : false;
+  auto element_animations = GetElementAnimationsForLayerId(layer_id);
+  return element_animations ? element_animations->HasActiveAnimation() : false;
 }
 
 void AnimationHost::ImplOnlyScrollAnimationCreate(
@@ -664,50 +667,45 @@ void AnimationHost::ScrollAnimationAbort(bool needs_completion) {
   return scroll_offset_animations_->ScrollAnimationAbort(needs_completion);
 }
 
-scoped_refptr<LayerAnimationController>
-AnimationHost::GetAnimationControllerForId(int id) {
-  scoped_refptr<LayerAnimationController> to_return;
-  if (!ContainsKey(all_animation_controllers_, id)) {
-    to_return = LayerAnimationController::Create(id);
-    to_return->SetAnimationHost(this);
-    all_animation_controllers_[id] = to_return.get();
-  } else {
-    to_return = all_animation_controllers_[id];
-  }
-  return to_return;
+void AnimationHost::DidActivateElementAnimations(
+    ElementAnimations* element_animations) {
+  DCHECK(element_animations->layer_id());
+  active_element_animations_map_[element_animations->layer_id()] =
+      element_animations;
 }
 
-void AnimationHost::DidActivateAnimationController(
-    LayerAnimationController* controller) {
-  active_animation_controllers_[controller->id()] = controller;
+void AnimationHost::DidDeactivateElementAnimations(
+    ElementAnimations* element_animations) {
+  DCHECK(element_animations->layer_id());
+  active_element_animations_map_.erase(element_animations->layer_id());
 }
 
-void AnimationHost::DidDeactivateAnimationController(
-    LayerAnimationController* controller) {
-  if (ContainsKey(active_animation_controllers_, controller->id()))
-    active_animation_controllers_.erase(controller->id());
+void AnimationHost::RegisterElementAnimations(
+    ElementAnimations* element_animations) {
+  DCHECK(element_animations->layer_id());
+  layer_to_element_animations_map_[element_animations->layer_id()] =
+      element_animations;
 }
 
-void AnimationHost::RegisterAnimationController(
-    LayerAnimationController* controller) {
-  all_animation_controllers_[controller->id()] = controller;
+void AnimationHost::UnregisterElementAnimations(
+    ElementAnimations* element_animations) {
+  DCHECK(element_animations->layer_id());
+  layer_to_element_animations_map_.erase(element_animations->layer_id());
+  DidDeactivateElementAnimations(element_animations);
 }
 
-void AnimationHost::UnregisterAnimationController(
-    LayerAnimationController* controller) {
-  if (ContainsKey(all_animation_controllers_, controller->id()))
-    all_animation_controllers_.erase(controller->id());
-  DidDeactivateAnimationController(controller);
+const AnimationHost::LayerToElementAnimationsMap&
+AnimationHost::active_element_animations_for_testing() const {
+  return active_element_animations_map_;
 }
 
-const AnimationHost::AnimationControllerMap&
-AnimationHost::active_animation_controllers_for_testing() const {
-  return active_animation_controllers_;
+const AnimationHost::LayerToElementAnimationsMap&
+AnimationHost::all_element_animations_for_testing() const {
+  return layer_to_element_animations_map_;
 }
 
-const AnimationHost::AnimationControllerMap&
-AnimationHost::all_animation_controllers_for_testing() const {
-  return all_animation_controllers_;
+void AnimationHost::OnAnimationWaitingForDeletion() {
+  animation_waiting_for_deletion_ = true;
 }
 
 }  // namespace cc

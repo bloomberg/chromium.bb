@@ -1467,7 +1467,7 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
 
   RectToProto(update_rect_, base->mutable_update_rect());
 
-  // TODO(nyquist): Figure out what to do with LayerAnimationController.
+  // TODO(nyquist): Figure out what to do with ElementAnimations.
   // See crbug.com/570376.
 
   update_rect_ = gfx::Rect();

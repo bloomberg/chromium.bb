@@ -12,7 +12,6 @@
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
@@ -231,7 +230,7 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
     bool have_animations = !host_impl->animation_host()
-                                ->active_animation_controllers_for_testing()
+                                ->active_element_animations_for_testing()
                                 .empty();
     if (!started_animating_ && have_animations) {
       started_animating_ = true;
@@ -245,8 +244,8 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                int group) override {
-    // Animations on the impl-side controller only get deleted during a commit,
-    // so we need to schedule a commit.
+    // Animations on the impl-side ElementAnimations only get deleted during
+    // a commit, so we need to schedule a commit.
     layer_tree_host()->SetNeedsCommit();
   }
 
@@ -1164,10 +1163,10 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     // start times.
     if (host_impl->active_tree()->source_frame_number() < 2)
       return;
-    AnimationHost::AnimationControllerMap controllers_copy =
-        host_impl->animation_host()->active_animation_controllers_for_testing();
-    EXPECT_EQ(2u, controllers_copy.size());
-    for (auto& it : controllers_copy) {
+    AnimationHost::LayerToElementAnimationsMap element_animations_copy =
+        host_impl->animation_host()->active_element_animations_for_testing();
+    EXPECT_EQ(2u, element_animations_copy.size());
+    for (auto& it : element_animations_copy) {
       int id = it.first;
       if (id == host_impl->RootLayer()->id()) {
         Animation* anim = it.second->GetAnimation(TargetProperty::TRANSFORM);
@@ -1476,7 +1475,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestNotifyAnimationFinished);
 
 // Check that SetTransformIsPotentiallyAnimatingChanged is called
-// if we destroy LayerAnimationController and ElementAnimations.
+// if we destroy ElementAnimations.
 class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
     : public LayerTreeHostAnimationTest {
  public:

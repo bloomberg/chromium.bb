@@ -16,7 +16,6 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -8944,7 +8943,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
       root_ptr->id(), player.get());
   host_impl.active_tree()
       ->animation_host()
-      ->GetControllerForLayerId(root_ptr->id())
+      ->GetElementAnimationsForLayerId(root_ptr->id())
       ->AddAnimation(std::move(transform_animation));
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   child_ptr->SetScrollClipLayer(root_ptr->id());
@@ -9000,7 +8999,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
   host_impl()
       ->active_tree()
       ->animation_host()
-      ->GetControllerForLayerId(grand_child->id())
+      ->GetElementAnimationsForLayerId(grand_child->id())
       ->AddAnimation(std::move(transform_animation));
 
   ExecuteCalculateDrawProperties(root);
@@ -9070,7 +9069,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
       root_ptr->id(), player.get());
   host_impl.active_tree()
       ->animation_host()
-      ->GetControllerForLayerId(root_ptr->id())
+      ->GetElementAnimationsForLayerId(root_ptr->id())
       ->AddAnimation(std::move(animation));
   root_ptr->SetOpacity(0);
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());

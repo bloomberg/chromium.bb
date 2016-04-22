@@ -206,27 +206,27 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
 
-  EXPECT_FALSE(delegate1.started_);
-  EXPECT_FALSE(delegate1.finished_);
+  EXPECT_FALSE(delegate1.started());
+  EXPECT_FALSE(delegate1.finished());
 
-  EXPECT_FALSE(delegate2.started_);
-  EXPECT_FALSE(delegate2.finished_);
+  EXPECT_FALSE(delegate2.started());
+  EXPECT_FALSE(delegate2.finished());
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
   AnimateLayersTransferEvents(time, 2u);
 
-  EXPECT_TRUE(delegate1.started_);
-  EXPECT_FALSE(delegate1.finished_);
+  EXPECT_TRUE(delegate1.started());
+  EXPECT_FALSE(delegate1.finished());
 
-  EXPECT_TRUE(delegate2.started_);
-  EXPECT_FALSE(delegate2.finished_);
+  EXPECT_TRUE(delegate2.started());
+  EXPECT_FALSE(delegate2.finished());
 
   time += base::TimeDelta::FromSecondsD(duration);
   AnimateLayersTransferEvents(time, 2u);
 
-  EXPECT_TRUE(delegate1.finished_);
-  EXPECT_TRUE(delegate2.finished_);
+  EXPECT_TRUE(delegate1.finished());
+  EXPECT_TRUE(delegate2.finished());
 
   client_.ExpectOpacityPropertyMutated(layer_id_, LayerTreeType::ACTIVE,
                                        end_opacity);

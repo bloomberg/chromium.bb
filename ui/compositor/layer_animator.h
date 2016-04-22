@@ -26,8 +26,8 @@ namespace cc {
 class Animation;
 class AnimationPlayer;
 class AnimationTimeline;
+class ElementAnimations;
 class Layer;
-class LayerAnimationController;
 }
 
 namespace gfx {
@@ -408,10 +408,10 @@ class COMPOSITOR_EXPORT LayerAnimator
   // aborted.
   base::ObserverList<LayerAnimationObserver> observers_;
 
-  // We store a state of LayerAnimationController here to save it in
+  // We store a state of ElementAnimations here to save it in
   // ResetCompositor/SetCompositor scope.
   // TODO(loyso): Remove it. crbug.com/592873.
-  scoped_refptr<cc::LayerAnimationController> animation_controller_state_;
+  scoped_refptr<cc::ElementAnimations> element_animations_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };

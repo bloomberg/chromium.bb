@@ -15,7 +15,6 @@
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/output/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -136,8 +135,8 @@ void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
 }
 
 void LayerAnimator::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
-  // Release LAC state for old layer.
-  animation_controller_state_ = nullptr;
+  // Release ElementAnimations state for old layer.
+  element_animations_state_ = nullptr;
 
   if (delegate_)
     DetachLayerFromAnimationPlayer();
@@ -153,21 +152,22 @@ void LayerAnimator::SetCompositor(Compositor* compositor) {
 
   DCHECK(delegate_->GetCcLayer());
 
-  // Register LAC so ElementAnimations picks it up via
-  // AnimationRegistrar::GetAnimationControllerForId.
-  if (animation_controller_state_) {
-    DCHECK_EQ(animation_controller_state_->id(),
+  // Register ElementAnimations so it will be picked up by
+  // AnimationHost::RegisterPlayerForLayer via
+  // AnimationHost::GetElementAnimationsForLayerId.
+  if (element_animations_state_) {
+    DCHECK_EQ(element_animations_state_->layer_id(),
               delegate_->GetCcLayer()->id());
-    timeline->animation_host()
-        ->RegisterAnimationController(animation_controller_state_.get());
+    timeline->animation_host()->RegisterElementAnimations(
+        element_animations_state_.get());
   }
 
   timeline->AttachPlayer(animation_player_);
 
   AttachLayerToAnimationPlayer(delegate_->GetCcLayer()->id());
 
-  // Release LAC (it is referenced in ElementAnimations).
-  animation_controller_state_ = nullptr;
+  // Release ElementAnimations state.
+  element_animations_state_ = nullptr;
 }
 
 void LayerAnimator::ResetCompositor(Compositor* compositor) {
@@ -178,10 +178,11 @@ void LayerAnimator::ResetCompositor(Compositor* compositor) {
 
   const int layer_id = animation_player_->layer_id();
 
-  // Store a reference to LAC if any so it may be picked up in SetCompositor.
+  // Store a reference to ElementAnimations (if any)
+  // so it may be picked up in LayerAnimator::SetCompositor.
   if (layer_id) {
-    animation_controller_state_ =
-        timeline->animation_host()->GetControllerForLayerId(layer_id);
+    element_animations_state_ =
+        timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
   }
 
   DetachLayerFromAnimationPlayer();

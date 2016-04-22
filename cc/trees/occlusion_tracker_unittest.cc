@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"

@@ -8,8 +8,8 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
+#include "cc/animation/element_animations.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/time_util.h"
 #include "cc/layers/layer.h"
@@ -211,94 +211,31 @@ float FakeFloatTransition::GetValue(base::TimeDelta time) const {
   return (1.0 - progress) * from_ + progress * to_;
 }
 
-gfx::ScrollOffset FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
-    const {
-  return scroll_offset_;
-}
-
-FakeLayerAnimationValueObserver::FakeLayerAnimationValueObserver()
-    : animation_waiting_for_deletion_(false) {
-  opacity_[ToIndex(LayerTreeType::ACTIVE)] = 0.0f;
-  opacity_[ToIndex(LayerTreeType::PENDING)] = 0.0f;
-
-  transform_is_animating_[ToIndex(LayerTreeType::ACTIVE)] = false;
-  transform_is_animating_[ToIndex(LayerTreeType::PENDING)] = false;
-}
-
-FakeLayerAnimationValueObserver::~FakeLayerAnimationValueObserver() {}
-
-int FakeLayerAnimationValueObserver::ToIndex(LayerTreeType tree_type) {
-  int index = static_cast<int>(tree_type);
-  DCHECK_GE(index, 0);
-  DCHECK_LE(index, 1);
-  return index;
-}
-
-void FakeLayerAnimationValueObserver::OnFilterAnimated(
-    LayerTreeType tree_type,
-    const FilterOperations& filters) {
-  filters_[ToIndex(tree_type)] = filters;
-}
-
-void FakeLayerAnimationValueObserver::OnOpacityAnimated(LayerTreeType tree_type,
-                                                        float opacity) {
-  opacity_[ToIndex(tree_type)] = opacity;
-}
-
-void FakeLayerAnimationValueObserver::OnTransformAnimated(
-    LayerTreeType tree_type,
-    const gfx::Transform& transform) {
-  transform_[ToIndex(tree_type)] = transform;
-}
-
-void FakeLayerAnimationValueObserver::OnScrollOffsetAnimated(
-    LayerTreeType tree_type,
-    const gfx::ScrollOffset& scroll_offset) {
-  scroll_offset_[ToIndex(tree_type)] = scroll_offset;
-}
-
-void FakeLayerAnimationValueObserver::OnAnimationWaitingForDeletion() {
-  animation_waiting_for_deletion_ = true;
-}
-
-void FakeLayerAnimationValueObserver::OnTransformIsPotentiallyAnimatingChanged(
-    LayerTreeType tree_type,
-    bool is_animating) {
-  transform_is_animating_[ToIndex(tree_type)] = is_animating;
-}
-
 std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
   return base::WrapUnique(new FakeFloatTransition(*this));
 }
 
-int AddOpacityTransitionToController(LayerAnimationController* controller,
-                                     double duration,
-                                     float start_opacity,
-                                     float end_opacity,
-                                     bool use_timing_function) {
-  return AddOpacityTransition(controller,
-                              duration,
-                              start_opacity,
-                              end_opacity,
+int AddOpacityTransitionToElementAnimations(ElementAnimations* target,
+                                            double duration,
+                                            float start_opacity,
+                                            float end_opacity,
+                                            bool use_timing_function) {
+  return AddOpacityTransition(target, duration, start_opacity, end_opacity,
                               use_timing_function);
 }
 
-int AddAnimatedTransformToController(LayerAnimationController* controller,
-                                     double duration,
-                                     int delta_x,
-                                     int delta_y) {
-  return AddAnimatedTransform(controller,
-                              duration,
-                              delta_x,
-                              delta_y);
+int AddAnimatedTransformToElementAnimations(ElementAnimations* target,
+                                            double duration,
+                                            int delta_x,
+                                            int delta_y) {
+  return AddAnimatedTransform(target, duration, delta_x, delta_y);
 }
 
-int AddAnimatedFilterToController(LayerAnimationController* controller,
-                                  double duration,
-                                  float start_brightness,
-                                  float end_brightness) {
-  return AddAnimatedFilter(
-      controller, duration, start_brightness, end_brightness);
+int AddAnimatedFilterToElementAnimations(ElementAnimations* target,
+                                         double duration,
+                                         float start_brightness,
+                                         float end_brightness) {
+  return AddAnimatedFilter(target, duration, start_brightness, end_brightness);
 }
 
 int AddAnimatedTransformToPlayer(AnimationPlayer* player,
@@ -331,11 +268,11 @@ int AddAnimatedFilterToPlayer(AnimationPlayer* player,
   return AddAnimatedFilter(player, duration, start_brightness, end_brightness);
 }
 
-int AddOpacityStepsToController(LayerAnimationController* target,
-                                double duration,
-                                float start_opacity,
-                                float end_opacity,
-                                int num_steps) {
+int AddOpacityStepsToElementAnimations(ElementAnimations* target,
+                                       double duration,
+                                       float start_opacity,
+                                       float end_opacity,
+                                       int num_steps) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
 
@@ -373,30 +310,30 @@ void AddAnimationToLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
     std::unique_ptr<Animation> animation) {
-  LayerAnimationController* controller =
-      timeline->animation_host()->GetControllerForLayerId(layer_id);
-  DCHECK(controller);
-  controller->AddAnimation(std::move(animation));
+  scoped_refptr<ElementAnimations> element_animations =
+      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+  DCHECK(element_animations);
+  element_animations->AddAnimation(std::move(animation));
 }
 
 void RemoveAnimationFromLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id) {
-  LayerAnimationController* controller =
-      timeline->animation_host()->GetControllerForLayerId(layer_id);
-  DCHECK(controller);
-  controller->RemoveAnimation(animation_id);
+  scoped_refptr<ElementAnimations> element_animations =
+      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+  DCHECK(element_animations);
+  element_animations->RemoveAnimation(animation_id);
 }
 
 Animation* GetAnimationFromLayerWithExistingPlayer(
     int layer_id,
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id) {
-  LayerAnimationController* controller =
-      timeline->animation_host()->GetControllerForLayerId(layer_id);
-  DCHECK(controller);
-  return controller->GetAnimationById(animation_id);
+  scoped_refptr<ElementAnimations> element_animations =
+      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+  DCHECK(element_animations);
+  return element_animations->GetAnimationById(animation_id);
 }
 
 int AddAnimatedFilterToLayerWithPlayer(
@@ -462,10 +399,10 @@ int AddOpacityTransitionToLayerWithPlayer(
 void AbortAnimationsOnLayerWithPlayer(int layer_id,
                                       scoped_refptr<AnimationTimeline> timeline,
                                       TargetProperty::Type target_property) {
-  LayerAnimationController* controller =
-      timeline->animation_host()->GetControllerForLayerId(layer_id);
-  DCHECK(controller);
-  controller->AbortAnimations(target_property);
+  scoped_refptr<ElementAnimations> element_animations =
+      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+  DCHECK(element_animations);
+  element_animations->AbortAnimations(target_property);
 }
 
 }  // namespace cc
