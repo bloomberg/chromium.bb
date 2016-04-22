@@ -386,6 +386,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // The profiles we have registered with the bluetooth daemon.
   std::map<device::BluetoothUUID, BluetoothAdapterProfileBlueZ*> profiles_;
 
+  // Profiles that have been released and are pending removal.
+  std::map<device::BluetoothUUID, BluetoothAdapterProfileBlueZ*>
+      released_profiles_;
+
   // Queue of delegates waiting for a profile to register.
   std::map<device::BluetoothUUID, std::vector<RegisterProfileCompletionPair>*>
       profile_queues_;

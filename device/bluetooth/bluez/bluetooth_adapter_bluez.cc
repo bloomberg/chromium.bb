@@ -123,9 +123,16 @@ void BluetoothAdapterBlueZ::Shutdown() {
   if (IsPresent())
     RemoveAdapter();  // Also deletes devices_.
   DCHECK(devices_.empty());
-  // profiles_ is empty because all BluetoothSockets have been notified
+
+  // profiles_ must be empty because all BluetoothSockets have been notified
   // that this adapter is disappearing.
   DCHECK(profiles_.empty());
+
+  // Some profiles may have been released but not yet removed; it is safe to
+  // delete them.
+  for (auto& it : released_profiles_)
+    delete it.second;
+  released_profiles_.clear();
 
   for (auto& it : profile_queues_)
     delete it.second;
@@ -1009,18 +1016,29 @@ void BluetoothAdapterBlueZ::ReleaseProfile(
     BluetoothAdapterProfileBlueZ* profile) {
   VLOG(2) << "Releasing Profile: " << profile->uuid().canonical_value()
           << " from " << device_path.value();
-  profile->RemoveDelegate(
-      device_path, base::Bind(&BluetoothAdapterBlueZ::RemoveProfile,
-                              weak_ptr_factory_.GetWeakPtr(), profile->uuid()));
+  BluetoothUUID uuid = profile->uuid();
+  auto iter = profiles_.find(uuid);
+  if (iter == profiles_.end()) {
+    LOG(ERROR) << "Profile not found for: " << uuid.canonical_value();
+    return;
+  }
+  released_profiles_[uuid] = iter->second;
+  profiles_.erase(iter);
+  profile->RemoveDelegate(device_path,
+                          base::Bind(&BluetoothAdapterBlueZ::RemoveProfile,
+                                     weak_ptr_factory_.GetWeakPtr(), uuid));
 }
 
 void BluetoothAdapterBlueZ::RemoveProfile(const BluetoothUUID& uuid) {
   VLOG(2) << "Remove Profile: " << uuid.canonical_value();
 
-  if (profiles_.find(uuid) != profiles_.end()) {
-    delete profiles_[uuid];
-    profiles_.erase(uuid);
+  auto iter = released_profiles_.find(uuid);
+  if (iter == released_profiles_.end()) {
+    LOG(ERROR) << "Released Profile not found: " << uuid.canonical_value();
+    return;
   }
+  delete iter->second;
+  released_profiles_.erase(iter);
 }
 
 void BluetoothAdapterBlueZ::AddLocalGattService(
