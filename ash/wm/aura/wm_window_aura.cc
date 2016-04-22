@@ -115,6 +115,14 @@ WmGlobals* WmWindowAura::GetGlobals() const {
   return WmGlobalsAura::Get();
 }
 
+void WmWindowAura::SetName(const std::string& name) {
+  window_->SetName(name);
+}
+
+void WmWindowAura::SetShellWindowId(int id) {
+  window_->set_id(id);
+}
+
 int WmWindowAura::GetShellWindowId() {
   return window_->id();
 }

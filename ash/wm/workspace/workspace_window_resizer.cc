@@ -952,8 +952,8 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   }
 
   if (!snap_phantom_window_controller_) {
-    snap_phantom_window_controller_.reset(new PhantomWindowController(
-        wm::WmWindowAura::GetAuraWindow(GetTarget())));
+    snap_phantom_window_controller_.reset(
+        new PhantomWindowController(GetTarget()));
   }
   snap_phantom_window_controller_->Show(
       GetTarget()->GetParent()->ConvertRectToScreen(phantom_bounds));

@@ -57,6 +57,10 @@ class ASH_EXPORT WmWindow {
   // TODO(sky): fix constness.
   virtual WmGlobals* GetGlobals() const = 0;
 
+  // Used for debugging.
+  virtual void SetName(const std::string& name) = 0;
+
+  virtual void SetShellWindowId(int id) = 0;
   virtual int GetShellWindowId() = 0;
   virtual WmWindow* GetChildByShellWindowId(int id) = 0;
 
