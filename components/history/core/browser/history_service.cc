@@ -233,34 +233,6 @@ URLDatabase* HistoryService::InMemoryDatabase() {
   return in_memory_backend_ ? in_memory_backend_->db() : nullptr;
 }
 
-bool HistoryService::GetTypedCountForURL(const GURL& url, int* typed_count) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  URLRow url_row;
-  if (!GetRowForURL(url, &url_row))
-    return false;
-  *typed_count = url_row.typed_count();
-  return true;
-}
-
-bool HistoryService::GetLastVisitTimeForURL(const GURL& url,
-                                            base::Time* last_visit) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  URLRow url_row;
-  if (!GetRowForURL(url, &url_row))
-    return false;
-  *last_visit = url_row.last_visit();
-  return true;
-}
-
-bool HistoryService::GetVisitCountForURL(const GURL& url, int* visit_count) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  URLRow url_row;
-  if (!GetRowForURL(url, &url_row))
-    return false;
-  *visit_count = url_row.visit_count();
-  return true;
-}
-
 TypedUrlSyncableService* HistoryService::GetTypedUrlSyncableService() const {
   return history_backend_->GetTypedUrlSyncableService();
 }
@@ -1075,12 +1047,6 @@ void HistoryService::OnDBLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   backend_loaded_ = true;
   NotifyHistoryServiceLoaded();
-}
-
-bool HistoryService::GetRowForURL(const GURL& url, URLRow* url_row) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  URLDatabase* db = InMemoryDatabase();
-  return db && (db->GetRowForURL(url, url_row) != 0);
 }
 
 void HistoryService::NotifyURLVisited(ui::PageTransition transition,
