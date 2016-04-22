@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -149,10 +150,10 @@ TEST_F(AssociatedInterfaceTest, InterfacesAtBothEnds) {
   // at different ends. Test that the two don't interfere with each other.
 
   MessagePipe pipe;
-  scoped_refptr<MultiplexRouter> router0(
-      new MultiplexRouter(true, std::move(pipe.handle0)));
-  scoped_refptr<MultiplexRouter> router1(
-      new MultiplexRouter(false, std::move(pipe.handle1)));
+  scoped_refptr<MultiplexRouter> router0(new MultiplexRouter(
+      true, std::move(pipe.handle0), base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<MultiplexRouter> router1(new MultiplexRouter(
+      false, std::move(pipe.handle1), base::ThreadTaskRunnerHandle::Get()));
 
   AssociatedInterfaceRequest<IntegerSender> request;
   IntegerSenderAssociatedPtrInfo ptr_info;
@@ -361,10 +362,10 @@ TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
 
   const int32_t kMaxValue = 1000;
   MessagePipe pipe;
-  scoped_refptr<MultiplexRouter> router0(
-      new MultiplexRouter(true, std::move(pipe.handle0)));
-  scoped_refptr<MultiplexRouter> router1(
-      new MultiplexRouter(false, std::move(pipe.handle1)));
+  scoped_refptr<MultiplexRouter> router0(new MultiplexRouter(
+      true, std::move(pipe.handle0), base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<MultiplexRouter> router1(new MultiplexRouter(
+      false, std::move(pipe.handle1), base::ThreadTaskRunnerHandle::Get()));
 
   AssociatedInterfaceRequest<IntegerSender> requests[4];
   IntegerSenderAssociatedPtrInfo ptr_infos[4];
@@ -450,10 +451,10 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
 
   const int32_t kMaxValue = 100;
   MessagePipe pipe;
-  scoped_refptr<MultiplexRouter> router0(
-      new MultiplexRouter(true, std::move(pipe.handle0)));
-  scoped_refptr<MultiplexRouter> router1(
-      new MultiplexRouter(false, std::move(pipe.handle1)));
+  scoped_refptr<MultiplexRouter> router0(new MultiplexRouter(
+      true, std::move(pipe.handle0), base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<MultiplexRouter> router1(new MultiplexRouter(
+      false, std::move(pipe.handle1), base::ThreadTaskRunnerHandle::Get()));
 
   AssociatedInterfaceRequest<IntegerSender> requests[4];
   IntegerSenderAssociatedPtrInfo ptr_infos[4];

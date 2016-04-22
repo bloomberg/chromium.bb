@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/lib/value_traits.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,6 +117,8 @@ TEST_F(EqualsTest, Map) {
 TEST_F(EqualsTest, InterfacePtr) {
   using InterfaceValueTraits = mojo::internal::ValueTraits<SomeInterfacePtr>;
 
+  base::MessageLoop message_loop;
+
   SomeInterfacePtr inf1;
   SomeInterfacePtr inf2;
 
@@ -137,6 +140,8 @@ TEST_F(EqualsTest, InterfacePtr) {
 TEST_F(EqualsTest, InterfaceRequest) {
   using RequestValueTraits =
       mojo::internal::ValueTraits<InterfaceRequest<SomeInterface>>;
+
+  base::MessageLoop message_loop;
 
   InterfaceRequest<SomeInterface> req1;
   InterfaceRequest<SomeInterface> req2;

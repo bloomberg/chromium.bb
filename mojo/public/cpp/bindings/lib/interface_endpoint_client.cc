@@ -12,10 +12,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
@@ -40,18 +38,24 @@ void DCheckIfInvalid(const base::WeakPtr<InterfaceEndpointClient>& client,
 class ResponderThunk : public MessageReceiverWithStatus {
  public:
   explicit ResponderThunk(
-      const base::WeakPtr<InterfaceEndpointClient>& endpoint_client)
-      : endpoint_client_(endpoint_client), accept_was_invoked_(false),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+      const base::WeakPtr<InterfaceEndpointClient>& endpoint_client,
+      scoped_refptr<base::SingleThreadTaskRunner> runner)
+      : endpoint_client_(endpoint_client),
+        accept_was_invoked_(false),
+        task_runner_(std::move(runner)) {}
   ~ResponderThunk() override {
     if (!accept_was_invoked_) {
       // The Mojo application handled a message that was expecting a response
       // but did not send a response.
+      // We raise an error to signal the calling application that an error
+      // condition occurred. Without this the calling application would have no
+      // way of knowing it should stop waiting for a response.
       if (task_runner_->RunsTasksOnCurrentThread()) {
+        // Please note that even if this code is run from a different task
+        // runner on the same thread as |task_runner_|, it is okay to directly
+        // call InterfaceEndpointClient::RaiseError(), because it will raise
+        // error from the correct task runner asynchronously.
         if (endpoint_client_) {
-          // We raise an error to signal the calling application that an error
-          // condition occurred. Without this the calling application would have
-          // no way of knowing it should stop waiting for a response.
           endpoint_client_->RaiseError();
         }
       } else {
@@ -129,13 +133,15 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     ScopedInterfaceEndpointHandle handle,
     MessageReceiverWithResponderStatus* receiver,
     std::unique_ptr<MessageFilter> payload_validator,
-    bool expect_sync_requests)
+    bool expect_sync_requests,
+    scoped_refptr<base::SingleThreadTaskRunner> runner)
     : handle_(std::move(handle)),
       incoming_receiver_(receiver),
       payload_validator_(std::move(payload_validator)),
       thunk_(this),
       next_request_id_(1),
       encountered_error_(false),
+      task_runner_(std::move(runner)),
       weak_ptr_factory_(this) {
   DCHECK(handle_.is_valid());
   DCHECK(handle_.is_local());
@@ -144,7 +150,8 @@ InterfaceEndpointClient::InterfaceEndpointClient(
   // directly is a little awkward.
   payload_validator_->set_sink(&thunk_);
 
-  controller_ = handle_.router()->AttachEndpointClient(handle_, this);
+  controller_ =
+      handle_.router()->AttachEndpointClient(handle_, this, task_runner_);
   if (expect_sync_requests)
     controller_->AllowWokenUpBySyncWatchOnSameThread();
 }
@@ -268,7 +275,7 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
       return false;
 
     MessageReceiverWithStatus* responder =
-        new ResponderThunk(weak_ptr_factory_.GetWeakPtr());
+        new ResponderThunk(weak_ptr_factory_.GetWeakPtr(), task_runner_);
     bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
     if (!ok)
       delete responder;

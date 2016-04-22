@@ -13,6 +13,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -79,7 +81,8 @@ class AssociatedInterfacePtrState {
     swap(other->version_, version_);
   }
 
-  void Bind(AssociatedInterfacePtrInfo<Interface> info) {
+  void Bind(AssociatedInterfacePtrInfo<Interface> info,
+            scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!endpoint_client_);
     DCHECK(!proxy_);
     DCHECK_EQ(0u, version_);
@@ -88,7 +91,8 @@ class AssociatedInterfacePtrState {
     version_ = info.version();
     endpoint_client_.reset(new InterfaceEndpointClient(
         AssociatedInterfacePtrInfoHelper::PassHandle(&info), nullptr,
-        base::WrapUnique(new typename Interface::ResponseValidator_()), false));
+        base::WrapUnique(new typename Interface::ResponseValidator_()), false,
+        std::move(runner)));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->router = endpoint_client_->router();
   }

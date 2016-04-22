@@ -10,6 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -21,6 +24,14 @@ namespace mojo {
 
 // Represents the implementation side of an associated interface. It is similar
 // to Binding, except that it doesn't own a message pipe handle.
+//
+// When you bind this class to a request, optionally you can specify a
+// base::SingleThreadTaskRunner. This task runner must belong to the same
+// thread. It will be used to dispatch incoming method calls and connection
+// error notification. It is useful when you attach multiple task runners to a
+// single thread for the purposes of task scheduling. Please note that incoming
+// synchrounous method calls may not be run from this task runner, when they
+// reenter outgoing synchrounous calls on the same thread.
 template <typename Interface>
 class AssociatedBinding {
  public:
@@ -38,17 +49,21 @@ class AssociatedBinding {
   // pointer. |impl| must outlive this object.
   AssociatedBinding(Interface* impl,
                     AssociatedInterfacePtrInfo<Interface>* ptr_info,
-                    AssociatedGroup* associated_group)
+                    AssociatedGroup* associated_group,
+                    scoped_refptr<base::SingleThreadTaskRunner> runner =
+                        base::ThreadTaskRunnerHandle::Get())
       : AssociatedBinding(impl) {
-    Bind(ptr_info, associated_group);
+    Bind(ptr_info, associated_group, std::move(runner));
   }
 
   // Constructs a completed associated binding of |impl|. |impl| must outlive
   // the binding.
   AssociatedBinding(Interface* impl,
-                    AssociatedInterfaceRequest<Interface> request)
+                    AssociatedInterfaceRequest<Interface> request,
+                    scoped_refptr<base::SingleThreadTaskRunner> runner =
+                        base::ThreadTaskRunnerHandle::Get())
       : AssociatedBinding(impl) {
-    Bind(std::move(request));
+    Bind(std::move(request), std::move(runner));
   }
 
   ~AssociatedBinding() {}
@@ -58,15 +73,19 @@ class AssociatedBinding {
   // message pipe endpoint referred to by |associated_group| to setup the
   // corresponding asssociated interface pointer.
   void Bind(AssociatedInterfacePtrInfo<Interface>* ptr_info,
-            AssociatedGroup* associated_group) {
+            AssociatedGroup* associated_group,
+            scoped_refptr<base::SingleThreadTaskRunner> runner =
+                base::ThreadTaskRunnerHandle::Get()) {
     AssociatedInterfaceRequest<Interface> request;
     associated_group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_PTR,
                                                 ptr_info, &request);
-    Bind(std::move(request));
+    Bind(std::move(request), std::move(runner));
   }
 
   // Sets up this object as the implementation side of an associated interface.
-  void Bind(AssociatedInterfaceRequest<Interface> request) {
+  void Bind(AssociatedInterfaceRequest<Interface> request,
+            scoped_refptr<base::SingleThreadTaskRunner> runner =
+                base::ThreadTaskRunnerHandle::Get()) {
     internal::ScopedInterfaceEndpointHandle handle =
         internal::AssociatedInterfaceRequestHelper::PassHandle(&request);
 
@@ -82,7 +101,7 @@ class AssociatedBinding {
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         std::move(handle), &stub_,
         base::WrapUnique(new typename Interface::RequestValidator_()),
-        Interface::HasSyncMethods_));
+        Interface::HasSyncMethods_, std::move(runner)));
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
 

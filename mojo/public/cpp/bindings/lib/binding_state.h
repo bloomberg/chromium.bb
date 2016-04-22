@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -48,14 +49,16 @@ class BindingState<Interface, false> {
       Close();
   }
 
-  void Bind(ScopedMessagePipeHandle handle) {
+  void Bind(ScopedMessagePipeHandle handle,
+            scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!router_);
     internal::FilterChain filters;
     filters.Append<internal::MessageHeaderValidator>();
     filters.Append<typename Interface::RequestValidator_>();
 
-    router_ = new internal::Router(std::move(handle), std::move(filters),
-                                   Interface::HasSyncMethods_);
+    router_ =
+        new internal::Router(std::move(handle), std::move(filters),
+                             Interface::HasSyncMethods_, std::move(runner));
     router_->set_incoming_receiver(&stub_);
     router_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
@@ -142,16 +145,17 @@ class BindingState<Interface, true> {
       Close();
   }
 
-  void Bind(ScopedMessagePipeHandle handle) {
+  void Bind(ScopedMessagePipeHandle handle,
+            scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!router_);
 
-    router_ = new internal::MultiplexRouter(false, std::move(handle));
+    router_ = new internal::MultiplexRouter(false, std::move(handle), runner);
     stub_.serialization_context()->router = router_;
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(internal::kMasterInterfaceId),
         &stub_, base::WrapUnique(new typename Interface::RequestValidator_()),
-        Interface::HasSyncMethods_));
+        Interface::HasSyncMethods_, std::move(runner)));
 
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });

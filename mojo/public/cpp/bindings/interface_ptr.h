@@ -10,6 +10,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
@@ -68,10 +71,17 @@ class InterfacePtr {
   // Calling with an invalid |info| (containing an invalid message pipe handle)
   // has the same effect as reset(). In this case, the InterfacePtr is not
   // considered as bound.
-  void Bind(InterfacePtrInfo<Interface> info) {
+  //
+  // |runner| must belong to the same thread. It will be used to dispatch all
+  // callbacks and connection error notification. It is useful when you attach
+  // multiple task runners to a single thread for the purposes of task
+  // scheduling.
+  void Bind(InterfacePtrInfo<Interface> info,
+            scoped_refptr<base::SingleThreadTaskRunner> runner =
+                base::ThreadTaskRunnerHandle::Get()) {
     reset();
     if (info.is_valid())
-      internal_state_.Bind(std::move(info));
+      internal_state_.Bind(std::move(info), std::move(runner));
   }
 
   // Returns whether or not this InterfacePtr is bound to a message pipe.
@@ -208,10 +218,13 @@ class InterfacePtr {
 // If |info| is valid (containing a valid message pipe handle), returns an
 // InterfacePtr bound to it. Otherwise, returns an unbound InterfacePtr.
 template <typename Interface>
-InterfacePtr<Interface> MakeProxy(InterfacePtrInfo<Interface> info) {
+InterfacePtr<Interface> MakeProxy(
+    InterfacePtrInfo<Interface> info,
+    scoped_refptr<base::SingleThreadTaskRunner> runner =
+        base::ThreadTaskRunnerHandle::Get()) {
   InterfacePtr<Interface> ptr;
   if (info.is_valid())
-    ptr.Bind(std::move(info));
+    ptr.Bind(std::move(info), std::move(runner));
   return std::move(ptr);
 }
 

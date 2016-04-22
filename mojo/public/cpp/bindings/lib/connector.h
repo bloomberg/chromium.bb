@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
@@ -43,7 +44,9 @@ class Connector : public MessageReceiver {
   };
 
   // The Connector takes ownership of |message_pipe|.
-  Connector(ScopedMessagePipeHandle message_pipe, ConnectorConfig config);
+  Connector(ScopedMessagePipeHandle message_pipe,
+            ConnectorConfig config,
+            scoped_refptr<base::SingleThreadTaskRunner> runner);
   ~Connector() override;
 
   // Sets the receiver to handle messages read from the message pipe.  The
@@ -140,6 +143,10 @@ class Connector : public MessageReceiver {
     return sync_handle_watcher_callback_count_ > 0;
   }
 
+  base::SingleThreadTaskRunner* task_runner() const {
+    return task_runner_.get();
+  }
+
  private:
   // Callback of mojo::Watcher.
   void OnWatcherHandleReady(MojoResult result);
@@ -171,6 +178,7 @@ class Connector : public MessageReceiver {
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Watcher handle_watcher_;
 
   bool error_;

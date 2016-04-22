@@ -59,6 +59,7 @@
         'public/cpp/bindings/tests/array_common_test.h',
         'public/cpp/bindings/tests/array_unittest.cc',
         'public/cpp/bindings/tests/associated_interface_unittest.cc',
+        'public/cpp/bindings/tests/bind_task_runner_unittest.cc',
         'public/cpp/bindings/tests/binding_callback_unittest.cc',
         'public/cpp/bindings/tests/binding_unittest.cc',
         'public/cpp/bindings/tests/bounds_checker_unittest.cc',

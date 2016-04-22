@@ -12,7 +12,9 @@
 #include <queue>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/connector.h"
@@ -27,7 +29,8 @@ class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,
-         bool expects_sync_requests);
+         bool expects_sync_requests,
+         scoped_refptr<base::SingleThreadTaskRunner> runner);
   ~Router() override;
 
   // Sets the receiver to handle messages read from the message pipe that do

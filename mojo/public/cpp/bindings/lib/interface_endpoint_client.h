@@ -12,7 +12,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
@@ -38,7 +40,8 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   InterfaceEndpointClient(ScopedInterfaceEndpointHandle handle,
                           MessageReceiverWithResponderStatus* receiver,
                           std::unique_ptr<MessageFilter> payload_validator,
-                          bool expect_sync_requests);
+                          bool expect_sync_requests,
+                          scoped_refptr<base::SingleThreadTaskRunner> runner);
   ~InterfaceEndpointClient() override;
 
   // Sets the error handler to receive notifications when an error is
@@ -138,6 +141,8 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
 
   Closure error_handler_;
   bool encountered_error_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::ThreadChecker thread_checker_;
 

@@ -10,6 +10,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -52,10 +55,17 @@ class AssociatedInterfacePtr {
   // Calling with an invalid |info| has the same effect as reset(). In this
   // case, the AssociatedInterfacePtr is not considered as bound.
   //
+  // |runner| must belong to the same thread. It will be used to dispatch all
+  // callbacks and connection error notification. It is useful when you attach
+  // multiple task runners to a single thread for the purposes of task
+  // scheduling.
+  //
   // NOTE: Please see the comments of
   // AssociatedGroup.CreateAssociatedInterface() about when you can use this
   // object to make calls.
-  void Bind(AssociatedInterfacePtrInfo<Interface> info) {
+  void Bind(AssociatedInterfacePtrInfo<Interface> info,
+            scoped_refptr<base::SingleThreadTaskRunner> runner =
+                base::ThreadTaskRunnerHandle::Get()) {
     reset();
 
     bool is_local =
@@ -65,7 +75,7 @@ class AssociatedInterfacePtr {
                         "at the other side of the message pipe.";
 
     if (info.is_valid() && is_local)
-      internal_state_.Bind(std::move(info));
+      internal_state_.Bind(std::move(info), std::move(runner));
   }
 
   bool is_bound() const { return internal_state_.is_bound(); }
@@ -181,13 +191,15 @@ class AssociatedInterfacePtr {
 template <typename Interface>
 AssociatedInterfaceRequest<Interface> GetProxy(
     AssociatedInterfacePtr<Interface>* ptr,
-    AssociatedGroup* group) {
+    AssociatedGroup* group,
+    scoped_refptr<base::SingleThreadTaskRunner> runner =
+        base::ThreadTaskRunnerHandle::Get()) {
   AssociatedInterfaceRequest<Interface> request;
   AssociatedInterfacePtrInfo<Interface> ptr_info;
   group->CreateAssociatedInterface(AssociatedGroup::WILL_PASS_REQUEST,
                                    &ptr_info, &request);
 
-  ptr->Bind(std::move(ptr_info));
+  ptr->Bind(std::move(ptr_info), std::move(runner));
   return request;
 }
 

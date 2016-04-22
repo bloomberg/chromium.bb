@@ -11,6 +11,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
@@ -113,9 +114,11 @@ class ConnectorTest : public testing::Test {
 
 TEST_F(ConnectorTest, Basic) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 
@@ -142,9 +145,11 @@ TEST_F(ConnectorTest, Basic) {
 
 TEST_F(ConnectorTest, Basic_Synchronous) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 
@@ -170,9 +175,11 @@ TEST_F(ConnectorTest, Basic_Synchronous) {
 
 TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   base::RunLoop run_loop;
   MessageAccumulator accumulator(run_loop.QuitClosure());
@@ -199,9 +206,11 @@ TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
 
 TEST_F(ConnectorTest, Basic_TwoMessages) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
 
@@ -234,9 +243,11 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
 
 TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
 
@@ -266,7 +277,8 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
 
 TEST_F(ConnectorTest, WriteToClosedPipe) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 
@@ -296,9 +308,11 @@ TEST_F(ConnectorTest, WriteToClosedPipe) {
 
 TEST_F(ConnectorTest, MessageWithHandles) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 
@@ -338,9 +352,11 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   // |smph| now owns this handle.
 
   internal::Connector connector_received(
-      std::move(smph), internal::Connector::SINGLE_THREADED_SEND);
+      std::move(smph), internal::Connector::SINGLE_THREADED_SEND,
+      base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector_original(
-      std::move(pipe.handle1), internal::Connector::SINGLE_THREADED_SEND);
+      std::move(pipe.handle1), internal::Connector::SINGLE_THREADED_SEND,
+      base::ThreadTaskRunnerHandle::Get());
 
   Message message2;
   AllocMessage(kText, &message2);
@@ -362,7 +378,8 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   // Close the other end of the pipe.
   handle1_.reset();
   ASSERT_FALSE(connector0.WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE));
@@ -370,9 +387,11 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithError) {
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector* connector1 = new internal::Connector(
-      std::move(handle1_), internal::Connector::SINGLE_THREADED_SEND);
+      std::move(handle1_), internal::Connector::SINGLE_THREADED_SEND,
+      base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 
@@ -399,9 +418,11 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
 
 TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
 
@@ -437,7 +458,8 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
 TEST_F(ConnectorTest, RaiseError) {
   base::RunLoop run_loop, run_loop2;
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called0 = false;
   connector0.set_connection_error_handler(
       [&error_handler_called0, &run_loop]() {
@@ -446,7 +468,8 @@ TEST_F(ConnectorTest, RaiseError) {
       });
 
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called1 = false;
   connector1.set_connection_error_handler(
       [&error_handler_called1, &run_loop2]() {
@@ -496,9 +519,11 @@ TEST_F(ConnectorTest, RaiseError) {
 
 TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 
@@ -527,9 +552,11 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
 
 TEST_F(ConnectorTest, ProcessWhenNested) {
   internal::Connector connector0(std::move(handle0_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
   internal::Connector connector1(std::move(handle1_),
-                                 internal::Connector::SINGLE_THREADED_SEND);
+                                 internal::Connector::SINGLE_THREADED_SEND,
+                                 base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
 

@@ -7,6 +7,8 @@
 
 #include <utility>
 
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace mojo {
@@ -111,9 +113,13 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 //   CreateSource(std::move(source_request));  // Create implementation locally.
 //
 template <typename Interface>
-InterfaceRequest<Interface> GetProxy(InterfacePtr<Interface>* ptr) {
+InterfaceRequest<Interface> GetProxy(
+    InterfacePtr<Interface>* ptr,
+    scoped_refptr<base::SingleThreadTaskRunner> runner =
+        base::ThreadTaskRunnerHandle::Get()) {
   MessagePipe pipe;
-  ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
+  ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u),
+            std::move(runner));
   return MakeRequest<Interface>(std::move(pipe.handle1));
 }
 

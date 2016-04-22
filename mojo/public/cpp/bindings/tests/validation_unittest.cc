@@ -12,6 +12,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -238,7 +239,8 @@ class ValidationIntegrationTest : public ValidationTest {
                         ScopedMessagePipeHandle handle)
         : owner_(owner),
           connector_(std::move(handle),
-                     mojo::internal::Connector::SINGLE_THREADED_SEND) {
+                     mojo::internal::Connector::SINGLE_THREADED_SEND,
+                     base::ThreadTaskRunnerHandle::Get()) {
       connector_.set_enforce_errors_from_incoming_receiver(false);
     }
     ~TestMessageReceiver() override {}

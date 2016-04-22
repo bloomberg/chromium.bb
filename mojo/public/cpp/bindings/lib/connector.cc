@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
 
 namespace mojo {
@@ -46,9 +45,12 @@ class MayAutoLock {
 // ----------------------------------------------------------------------------
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
-                     ConnectorConfig config)
+                     ConnectorConfig config,
+                     scoped_refptr<base::SingleThreadTaskRunner> runner)
     : message_pipe_(std::move(message_pipe)),
       incoming_receiver_(nullptr),
+      task_runner_(std::move(runner)),
+      handle_watcher_(task_runner_),
       error_(false),
       drop_writes_(false),
       enforce_errors_from_incoming_receiver_(true),
@@ -250,7 +252,7 @@ void Connector::WaitToReadMore() {
   if (rv != MOJO_RESULT_OK) {
     // If the watch failed because the handle is invalid or its conditions can
     // no longer be met, we signal the error asynchronously to avoid reentry.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Connector::OnWatcherHandleReady, weak_self_, rv));
   }

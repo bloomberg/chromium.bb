@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "mojo/public/c/system/functions.h"
 
 namespace mojo {
@@ -28,8 +27,10 @@ class Watcher::MessageLoopObserver
   // base::MessageLoop::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     StopObservingIfNecessary();
-    if (watcher_->IsWatching())
+    if (watcher_->IsWatching()) {
+      // TODO(yzshen): Remove this notification. crbug.com/604762
       watcher_->OnHandleReady(MOJO_RESULT_ABORTED);
+    }
   }
 
   void StopObservingIfNecessary() {
@@ -45,9 +46,12 @@ class Watcher::MessageLoopObserver
   DISALLOW_COPY_AND_ASSIGN(MessageLoopObserver);
 };
 
-Watcher::Watcher()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+Watcher::Watcher(scoped_refptr<base::SingleThreadTaskRunner> runner)
+    : task_runner_(std::move(runner)),
+      is_default_task_runner_(task_runner_ ==
+                              base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   weak_self_ = weak_factory_.GetWeakPtr();
 }
 
@@ -130,7 +134,11 @@ void Watcher::CallOnHandleReady(uintptr_t context,
   // Current HandleWatcher users have no need for it, so it's omitted here.
   Watcher* watcher = reinterpret_cast<Watcher*>(context);
   if ((flags & MOJO_WATCH_NOTIFICATION_FLAG_FROM_SYSTEM) &&
-      watcher->task_runner_->RunsTasksOnCurrentThread()) {
+      watcher->task_runner_->RunsTasksOnCurrentThread() &&
+      watcher->is_default_task_runner_) {
+    // System notifications will trigger from the task runner passed to
+    // mojo::edk::InitIPCSupport(). In Chrome this happens to always be the
+    // default task runner for the IO thread.
     watcher->OnHandleReady(result);
   } else {
     watcher->task_runner_->PostTask(
