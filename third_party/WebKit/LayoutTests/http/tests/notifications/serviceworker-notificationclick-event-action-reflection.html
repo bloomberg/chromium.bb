@@ -13,8 +13,9 @@
       // Service Worker accurately reflects which action was activated, if any.
 
       async_test(function(test) {
-          var scope = 'resources/scope/' + location.pathname,
-              script = 'resources/instrumentation-service-worker.js';
+          var scope = 'resources/scope/' + location.pathname;
+          var script = 'instrumentation-service-worker.js';
+          var port;
 
           var options = {
               actions: []
@@ -22,40 +23,34 @@
 
           var expectedActions = [];
           for (var i = 0; i < Notification.maxActions; ++i) {
-              var action = { action: "action" + i, title: "Action " + i };
+              var action = { action: 'action' + i, title: 'Action ' + i };
               options.actions.push(action);
               expectedActions.push(action.action);
           }
           // Expect empty string when main body of notification is activated.
-          expectedActions.push("");
+          expectedActions.push('');
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
+              port = info.port;
               // (1) Tell the Service Worker to display a Web Notification.
-              workerInfo.port.postMessage({
+              return sendCommand(port, {
                   command: 'show',
 
                   title: scope,
                   options: options
               });
+          }).then(function(data) {
+              // (2) Confirm that the service worker displayed the notification successfully.
+              assert_true(data.success, 'The notification must have been displayed.');
 
-              workerInfo.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'object' || !event.data.command) {
-                      assert_unreached('Invalid message from the Service Worker.');
-                      return;
-                  }
+              // (3) Simulate a click on each button and on the notification body.
+              for (var i = 0; i < options.actions.length; ++i)
+                  testRunner.simulateWebNotificationClick(scope, i);
+              testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
 
-                  // (2) Listen for confirmation from the Service Worker that the
-                  // notification's display promise has been resolved.
-                  if (event.data.command == 'show') {
-                      assert_true(event.data.success, 'The notification must have been displayed.');
-                      for (var i = 0; i < options.actions.length; ++i)
-                          testRunner.simulateWebNotificationClick(scope, i);
-                      testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
-                      return;
-                  }
-
-                  // (3) Listen for confirmation from the Service Worker that the
+              port.addEventListener('message', function(event) {
+                  // (4) Listen for confirmation from the Service Worker that the
                   // notification has been clicked on. Make sure that the action
                   // property set on the NotificationEvent object is as expected.
                   assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');

@@ -14,7 +14,7 @@
       // one of them reflects when getting the notifications again.
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname,
-              script = 'resources/instrumentation-service-worker.js';
+              script = 'instrumentation-service-worker.js';
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
 

@@ -14,41 +14,33 @@
       // click on it, and the notification can then be closed. This test requires
       // the test runner.
       async_test(function(test) {
-          var scope = 'resources/scope/serviceworkerregistration-document-close',
-              script = 'resources/instrumentation-service-worker.js';
+          var scope = 'resources/scope/serviceworkerregistration-document-close';
+          var script = 'instrumentation-service-worker.js';
+          var port;
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
 
-          var workerInfo = null;
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
-              workerInfo = info;
+              port = info.port;
 
-              // (1) Display a Web Notification from the document.
-              assert_inherits(workerInfo.registration, 'showNotification', 'showNotification() must be exposed.');
-              return workerInfo.registration.showNotification(scope, {
+              // (1) Show a notification from the document. It will be closed by the service worker.
+              assert_inherits(info.registration, 'showNotification', 'showNotification() must be exposed.');
+              return info.registration.showNotification(scope, {
                   body: 'ACTION:CLOSE',
                   icon: '/icon.png'
               });
           }).then(function() {
               // (2) Simulate a click on the notification that has been displayed.
-              testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
+              return simulateNotificationClick(scope, -1 /* action_index */, port);
+          }).then(function(data) {
+              // (3) Verify that the correct notification was closed.
+              assert_equals(event.data.notification.title, scope);
+              return sendCommand(port, { command: 'get' });
+          }).then(function(data) {
+              // (4) Verify there are no more open notifications.
+              assert_equals(data.notifications.length, 0);
 
-              workerInfo.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'object' || !event.data.command) {
-                      assert_unreached('Received an invalid message from the Service Worker.');
-                      return;
-                  }
-
-                  // (3) Verify that the click event was received by the Service Worker.
-                  assert_equals(event.data.command, 'click');
-                  assert_equals(event.data.notification.title, scope);
-
-                  // FIXME: The notification has now been closed by the Service Worker. In
-                  // order to verify that this works correctly, we need to support the
-                  // Notification.get() getter, which is not implemented yet.
-
-                  test.done();
-              });
+              test.done();
           }).catch(unreached_rejection(test));
 
       }, 'Clicking on a notification displayed through showNotification() fires a Service Worker event, and can be closed there.');

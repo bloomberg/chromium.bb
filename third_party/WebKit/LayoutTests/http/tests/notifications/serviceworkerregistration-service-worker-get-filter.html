@@ -14,7 +14,7 @@
       // the same Service Worker registration id.
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname,
-              script = 'resources/instrumentation-service-worker.js';
+              script = 'instrumentation-service-worker.js';
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
 
@@ -33,33 +33,25 @@
                 tag: 'strawberry',
               });
           }).then(function() {
-              // (2) Request the Service Worker to give us all notifications.
-              info.port.postMessage({
+              // (2) Request the Service Worker to give us a filtered list of notifications.
+              return sendCommand(info.port, {
                   command: 'get',
                   filter: {
                     tag: 'strawberry',
                   }
               });
+          }).then(function(data) {
+              // (3) Confirm that the Service Worker was able to get the one matching notification.
+              assert_true(data.success);
 
-              info.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'object' || !event.data.command) {
-                      assert_unreached('Invalid message from the Service Worker.');
-                      return;
-                  }
+              var notifications = data.notifications;
 
-                  // (3) Confirm that the Service Worker was able to read both of them.
-                  assert_equals(event.data.command, 'get');
-                  assert_true(event.data.success);
+              assert_equals(notifications.length, 1);
 
-                  var notifications = event.data.notifications;
+              assert_equals(notifications[0].title, 'Hello again, world!');
+              assert_equals(notifications[0].body, 'Second notification');
 
-                  assert_equals(notifications.length, 1);
-
-                  assert_equals(notifications[0].title, 'Hello again, world!');
-                  assert_equals(notifications[0].body, 'Second notification');
-
-                  test.done();
-              });
+              test.done();
           }).catch(unreached_rejection(test));
 
       }, 'ServiceWorkerRegistration.getNotifications() returns the opened notifications within a Service Worker with a filter.');

@@ -25,8 +25,10 @@
       }
 
       async_test(function(test) {
-          var scope = 'resources/scope/' + location.pathname,
-              script = 'resources/instrumentation-service-worker.js';
+          var scope = 'resources/scope/' + location.pathname;
+          var script = 'instrumentation-service-worker.js';
+          var port;
+          var registration;
 
           var options = {
               title: scope,
@@ -65,9 +67,11 @@
           if (window.testRunner) {
               testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           }
-          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
+              port = info.port;
+              registration = info.registration;
               // (1) Tell the Service Worker to display a Web Notification.
-              workerInfo.port.postMessage({
+              var showPromise = sendCommand(port, {
                   command: 'show',
 
                   title: scope,
@@ -76,49 +80,33 @@
 
               // Now limit actions to the number that we expect to be reflected on notifications.
               options.actions = options.actions.slice(0, Notification.maxActions);
+              return showPromise;
+          }).then(function(data) {
+              // (2) Confirm that the service worker displayed the notification successfully.
+              assert_true(data.success, 'The notification must have been displayed.');
+              return simulateNotificationClick(scope, -1 /* action_index */, port);
+          }).then(function(data) {
+              // (3) Confirm that all properties set on the cloned Notification object are as expected.
+              assert_object_is_superset(data.notification, options, 'The Notification object properties must be the same in notificationclick events.');
+              return registration.getNotifications();
+          }).then(function(notifications) {
+              // (4) Check that the properties are also set correctly on the non-cloned Notification
+              // object from getNotifications.
+              assert_equals(notifications.length, 1);
+              assert_object_is_superset(notifications[0], options, 'The Notification object properties must be the same in getNotifications.');
 
-              workerInfo.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'object' || !event.data.command) {
-                      assert_unreached('Invalid message from the Service Worker.');
-                      return;
-                  }
+              notifications[0].actions.foo = 'bar';
+              notifications[0].actions.push({ title: 'Foo' });
+              if (notifications[0].actions.length) {
+                  notifications[0].actions[0].title = 'Changed';
+                  notifications[0].actions[0].foo = 'bar';
+              }
+              assert_object_equals(notifications[0].actions, options.actions, 'The actions field should be immutable.');
 
-                  // (2) Listen for confirmation from the Service Worker that the
-                  // notification's display promise has been resolved.
-                  if (event.data.command == 'show') {
-                      assert_true(event.data.success, 'The notification must have been displayed.');
-                      if (window.testRunner) {
-                          testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
-                      }
-                      return;
-                  }
+              // TODO(johnme): This should pass before shipping Notification.actions; this is blocked on https://crbug.com/515920.
+              //assert_equals(notifications[0].actions, notifications[0].actions, 'The actions field should === itself.');
 
-                  // (3) Listen for confirmation from the Service Worker that the
-                  // notification has been clicked on. Make sure that all properties
-                  // set on the cloned Notification object are as expected.
-                  assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
-                  assert_object_is_superset(event.data.notification, options, 'The Notification object properties must be the same in notificationclick events.');
-
-                  // (4) Check that the properties are also set correctly on the
-                  // non-cloned Notification object from getNotifications.
-                  workerInfo.registration.getNotifications().then(function(notifications) {
-                      assert_equals(notifications.length, 1);
-                      assert_object_is_superset(notifications[0], options, 'The Notification object properties must be the same in getNotifications.');
-
-                      notifications[0].actions.foo = 'bar';
-                      notifications[0].actions.push({ title: 'Foo' });
-                      if (notifications[0].actions.length) {
-                          notifications[0].actions[0].title = 'Changed';
-                          notifications[0].actions[0].foo = 'bar';
-                      }
-                      assert_object_equals(notifications[0].actions, options.actions, 'The actions field should be immutable.');
-
-                      // TODO(johnme): This should pass before shipping Notification.actions; this is blocked on https://crbug.com/515920.
-                      //assert_equals(notifications[0].actions, notifications[0].actions, 'The actions field should === itself.');
-
-                      test.done();
-                  });
-              });
+              test.done();
           }).catch(unreached_rejection(test));
 
       }, 'Clicking on a notification displayed by a Service Worker the notificationclick event.');

@@ -13,7 +13,7 @@
       // notifications returns a promise that gets resolved with an empty array.
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname,
-              script = 'resources/instrumentation-service-worker.js';
+              script = 'instrumentation-service-worker.js';
 
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
               return workerInfo.registration.getNotifications();

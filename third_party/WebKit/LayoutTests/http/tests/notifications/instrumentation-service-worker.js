@@ -25,11 +25,22 @@ function cloneNotification(notification) {
 // Allows a document to exercise the Notifications API within a service worker by sending commands.
 var messagePort = null;
 
-addEventListener('message', function(workerEvent) {
+// All urls of requests that have been routed through the fetch event handler.
+var fetchHistory = [];
+
+addEventListener('install', event => {
+    event.waitUntil(skipWaiting());
+});
+
+addEventListener('activate', event => {
+    event.waitUntil(clients.claim());
+});
+
+addEventListener('message', workerEvent => {
     messagePort = workerEvent.data;
 
     // Listen to incoming commands on the message port.
-    messagePort.onmessage = function(event) {
+    messagePort.onmessage = event => {
         if (typeof event.data != 'object' || !event.data.command)
             return;
 
@@ -40,14 +51,19 @@ addEventListener('message', function(workerEvent) {
                 break;
 
             case 'show':
-                registration.showNotification(event.data.title, event.data.options).then(function() {
+                registration.showNotification(event.data.title, event.data.options).then(() => {
                     messagePort.postMessage({ command: event.data.command,
                                               success: true });
-                }, function(error) {
+                }, error => {
                     messagePort.postMessage({ command: event.data.command,
                                               success: false,
                                               message: error.message });
                 });
+                break;
+
+            case 'get-fetch-history':
+                messagePort.postMessage({ command: event.data.command,
+                                          fetchHistory: fetchHistory });
                 break;
 
             case 'get':
@@ -55,7 +71,7 @@ addEventListener('message', function(workerEvent) {
                 if (typeof (event.data.filter) !== 'undefined')
                     filter = event.data.filter;
 
-                registration.getNotifications(filter).then(function(notifications) {
+                registration.getNotifications(filter).then(notifications => {
                     var clonedNotifications = [];
                     for (var notification of notifications)
                         clonedNotifications.push(cloneNotification(notification));
@@ -63,7 +79,7 @@ addEventListener('message', function(workerEvent) {
                     messagePort.postMessage({ command: event.data.command,
                                               success: true,
                                               notifications: clonedNotifications });
-                }, function(error) {
+                }, error => {
                     messagePort.postMessage({ command: event.data.command,
                                               success: false,
                                               message: error.message });
@@ -85,7 +101,7 @@ addEventListener('message', function(workerEvent) {
     messagePort.postMessage('ready');
 });
 
-addEventListener('notificationclick', function(event) {
+addEventListener('notificationclick', event => {
     var notificationCopy = cloneNotification(event.notification);
 
     // Notifications containing "ACTION:CLOSE" in their message will be closed
@@ -103,8 +119,13 @@ addEventListener('notificationclick', function(event) {
                               action: event.action });
 });
 
-addEventListener('notificationclose', function(event) {
+addEventListener('notificationclose', event => {
     var notificationCopy = cloneNotification(event.notification);
     messagePort.postMessage({ command: 'close',
                               notification: notificationCopy });
+});
+
+addEventListener('fetch', event => {
+    fetchHistory.push(event.request.url);
+    event.respondWith(fetch(event.request));
 });

@@ -14,44 +14,29 @@
       // we simulate a click on it. This test requires the test runner.
 
       async_test(function(test) {
-          var scope = 'resources/scope/serviceworkerregistration-service-worker-click',
-              script = 'resources/instrumentation-service-worker.js';
+          var scope = 'resources/scope/serviceworkerregistration-service-worker-click';
+          var script = 'instrumentation-service-worker.js';
+          var port;
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
+              port = info.port;
               // (1) Tell the Service Worker to display a Web Notification.
-              workerInfo.port.postMessage({
+              return sendCommand(port, {
                   command: 'show',
 
                   title: scope,
                   options: { body: 'Hello, world!' }
               });
+          }).then(function(data) {
+              // (2) Confirm that the service worker displayed the notification successfully.
+              assert_true(data.success, 'The notification must have been displayed.');
+              return simulateNotificationClick(scope, -1 /* action_index */, port);
+          }).then(function(data) {
+              // (3) Confirm that the service worker handled the click on the correct notification.
+              assert_equals(data.notification.title, scope, 'The right notification must have been clicked.');
 
-              workerInfo.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'object' || !event.data.command) {
-                      assert_unreached('Invalid message from the Service Worker.');
-                      return;
-                  }
-
-                  // (2) Listen for confirmation from the Service Worker that the
-                  // notification's display promise has been resolved.
-                  if (event.data.command == 'show') {
-                      assert_true(event.data.success, 'The notification must have been displayed.');
-                      testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
-                      return;
-                  }
-
-                  // (3) Listen for confirmation from the Service Worker that the
-                  // notification has been clicked on.
-                  if (event.data.command == 'click') {
-                      assert_equals(event.data.notification.title, scope, 'The right notification must have been clicked.');
-
-                      test.done();
-                      return;
-                  }
-
-                  assert_unreached('Unexpected message from the Service Worker: ' + event.data.command);
-              });
+              test.done();
           }).catch(unreached_rejection(test));
 
       }, 'Clicking on a notification displayed by a Service Worker the notificationclick event.');

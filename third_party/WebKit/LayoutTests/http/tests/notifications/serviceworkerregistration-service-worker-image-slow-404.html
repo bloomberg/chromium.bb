@@ -14,33 +14,24 @@
 
       async_test(function(test) {
           var scope = 'resources/scope/' + location.pathname,
-              script = 'resources/instrumentation-service-worker.js';
+              script = 'instrumentation-service-worker.js';
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
               // (1) Display a Web Notification through the Service Worker with
               // an image that 404s after a 200ms redirect to load.
-              info.port.postMessage({
+              return sendCommand(info.port, {
                   command: 'show',
 
                   title: 'My Notification',
                   options: { body: 'Hello, world!',
                              icon: '/resources/slow-image.php?redirect_name=not_there.png&mimeType=image/png&sleep=200' }
               });
+          }).then(function(data) {
+              // (2) Confirm that the service worker displayed the notification successfully.
+              assert_true(data.success);
 
-              info.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'object' || !event.data.command) {
-                      assert_unreached('Invalid message from the Service Worker.');
-                      return;
-                  }
-
-                  // (2) Listen for confirmation from the Service Worker that the
-                  // notification could be displayed as expected.
-                  assert_equals(event.data.command, 'show');
-                  assert_true(event.data.success);
-
-                  test.done();
-              });
+              test.done();
           }).catch(unreached_rejection(test));
 
       }, 'Displaying a notification with an image that 404s after a slow redirect still resolves the promise.');

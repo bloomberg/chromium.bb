@@ -3,7 +3,7 @@
 // notification was created in the document.
 function runNotificationDataReflectionTest(test, notificationOperation) {
     var scope = 'resources/scope/' + location.pathname,
-        script = 'resources/instrumentation-service-worker.js';
+        script = 'instrumentation-service-worker.js';
 
     // Set notification's data of several types to a structured clone of options's data.
     var notificationDataList = new Array(
