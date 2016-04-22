@@ -162,6 +162,7 @@ do
       CERT_TYPE=intermediate \
       try openssl ca \
         -batch \
+        -extensions user_cert \
         -in out/$key_type-ee-by-$signer_key_type-intermediate.csr \
         -out out/$key_type-ee-by-$signer_key_type-intermediate.pem \
         -config ca.cnf

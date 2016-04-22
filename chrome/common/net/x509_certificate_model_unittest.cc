@@ -425,11 +425,11 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
     ASSERT_TRUE(cert.get());
 
     EXPECT_EQ(
-        "04 DB 98 07 BC 61 DD 2D E6 B3 CC F7 D5 EA F7 A1\n"
-        "0D 28 DE F2 7C 26 97 CA EB D1 DB A3 1E C1 8F E9\n"
-        "E0 1E FE 31 BB AA 4A 5C 85 37 A6 FF 9E 2E 96 23\n"
-        "22 B8 30 5F 8F 22 AE B9 8B 6D 4F BD 4E F3 52 12\n"
-        "D4",
+        "04 D5 C1 4A 32 95 95 C5 88 FA 01 FA C5 9E DC E2\n"
+        "99 62 EB 13 E5 35 42 B3 7A FC 46 C0 FA 29 12 C8\n"
+        "2D EA 30 0F D2 9A 47 97 2C 7E 89 E6 EF 49 55 06\n"
+        "C9 37 C7 99 56 16 B2 2B C9 7C 69 8E 10 7A DD 1F\n"
+        "42",
         x509_certificate_model::ProcessSubjectPublicKeyInfo(
             cert->os_cert_handle()));
   }
