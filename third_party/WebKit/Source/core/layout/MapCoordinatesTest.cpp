@@ -575,21 +575,29 @@ TEST_F(MapCoordinatesTest, NestedMulticolWithBlock)
 
     FloatPoint mappedPoint = mapLocalToAncestor(target, outerMulticol, FloatPoint());
     EXPECT_EQ(FloatPoint(435, 115), mappedPoint);
-
-    // TODO(mstensho): Add mapAncestorToLocal() tests when it starts working in nested multicol.
+    mappedPoint = mapAncestorToLocal(target, outerMulticol, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
 
     // Walk each ancestor in the chain separately, to verify each step on the way.
     mappedPoint = mapLocalToAncestor(target, innerFlowThread, FloatPoint());
     EXPECT_EQ(FloatPoint(0, 630), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, innerFlowThread, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
 
-    mappedPoint = mapLocalToAncestor(innerFlowThread, innerMulticol, mappedPoint);
+    mappedPoint = mapLocalToAncestor(innerFlowThread, innerMulticol, FloatPoint(0, 630));
+    EXPECT_EQ(FloatPoint(140, 305), mappedPoint);
+    mappedPoint = mapAncestorToLocal(innerFlowThread, innerMulticol, mappedPoint);
+    EXPECT_EQ(FloatPoint(0, 630), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(innerMulticol, outerFlowThread, FloatPoint(140, 305));
+    EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
+    mappedPoint = mapAncestorToLocal(innerMulticol, outerFlowThread, mappedPoint);
     EXPECT_EQ(FloatPoint(140, 305), mappedPoint);
 
-    mappedPoint = mapLocalToAncestor(innerMulticol, outerFlowThread, mappedPoint);
-    EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
-
-    mappedPoint = mapLocalToAncestor(outerFlowThread, outerMulticol, mappedPoint);
+    mappedPoint = mapLocalToAncestor(outerFlowThread, outerMulticol, FloatPoint(140, 315));
     EXPECT_EQ(FloatPoint(435, 115), mappedPoint);
+    mappedPoint = mapAncestorToLocal(outerFlowThread, outerMulticol, mappedPoint);
+    EXPECT_EQ(FloatPoint(140, 315), mappedPoint);
 }
 
 TEST_F(MapCoordinatesTest, MulticolWithAbsPosInRelPos)

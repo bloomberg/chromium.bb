@@ -64,10 +64,16 @@ unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(LayoutU
     return m_fragmentainerGroups.size() - 1;
 }
 
-const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtVisualPoint(const LayoutPoint&) const
+const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtVisualPoint(const LayoutPoint& visualPoint) const
 {
-    // FIXME: implement this, once we have support for multiple rows.
-    return m_fragmentainerGroups.first();
+    ASSERT(m_fragmentainerGroups.size() > 0);
+    LayoutUnit blockOffset = isHorizontalWritingMode() ? visualPoint.y() : visualPoint.x();
+    for (unsigned index = 0; index < m_fragmentainerGroups.size(); index++) {
+        const auto& row = m_fragmentainerGroups[index];
+        if (row.logicalTop() + row.logicalHeight() > blockOffset)
+            return row;
+    }
+    return m_fragmentainerGroups.last();
 }
 
 LayoutUnit LayoutMultiColumnSet::pageLogicalHeightForOffset(LayoutUnit offsetInFlowThread) const
