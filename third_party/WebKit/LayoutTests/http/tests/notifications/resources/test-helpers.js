@@ -101,3 +101,15 @@ function simulateNotificationClick(title, actionIndex, port)
         });
     });
 }
+
+// Sets up a listener for events of |type| on |target|. The listener is removed the first time the
+// event fires. Returns a promise that resolves with the fired event.
+function listenOnce(target, type)
+{
+    return new Promise((resolve, reject) => {
+        target.addEventListener(type, function listener(event) {
+            target.removeEventListener(type, listener);
+            resolve(event);
+        });
+    });
+}
