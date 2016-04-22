@@ -4,6 +4,9 @@
 
 #include "components/password_manager/core/browser/export/password_exporter.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
@@ -21,14 +24,15 @@ class PasswordExporterTest : public testing::Test {
   PasswordExporterTest() {}
 
  protected:
-  std::vector<scoped_ptr<autofill::PasswordForm>> ConstructTestPasswordForms() {
-    scoped_ptr<autofill::PasswordForm> password_form_(
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  ConstructTestPasswordForms() {
+    std::unique_ptr<autofill::PasswordForm> password_form_(
         new autofill::PasswordForm());
     password_form_->origin = GURL("http://accounts.google.com/a/LoginAuth");
     password_form_->username_value = base::ASCIIToUTF16("test@gmail.com");
     password_form_->password_value = base::ASCIIToUTF16("test1");
 
-    std::vector<scoped_ptr<autofill::PasswordForm>> password_forms;
+    std::vector<std::unique_ptr<autofill::PasswordForm>> password_forms;
     password_forms.push_back(std::move(password_form_));
     return password_forms;
   }
@@ -36,7 +40,7 @@ class PasswordExporterTest : public testing::Test {
   void StartExportAndWaitUntilCompleteThenReadOutput(
       const base::FilePath::StringType& provided_extension,
       const base::FilePath::StringType& expected_extension,
-      std::vector<scoped_ptr<autofill::PasswordForm>> passwords,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> passwords,
       std::string* output) {
     base::FilePath temporary_dir;
     ASSERT_TRUE(base::CreateNewTempDirectory(base::FilePath::StringType(),

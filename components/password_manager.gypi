@@ -57,6 +57,8 @@
         'password_manager/core/browser/credentials_filter.h',
         'password_manager/core/browser/export/csv_writer.cc',
         'password_manager/core/browser/export/csv_writer.h',
+        'password_manager/core/browser/export/password_csv_writer.cc',
+        'password_manager/core/browser/export/password_csv_writer.h',
         'password_manager/core/browser/export/password_exporter.cc',
         'password_manager/core/browser/export/password_exporter.h',
         'password_manager/core/browser/facet_manager.cc',
