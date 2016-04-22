@@ -122,6 +122,7 @@ component("base") {
 'sources': [
   'a.cc',
   'b.cc',
+  'c.cc',
 ],
 'dependencies': [
   '<(DEPTH)/base/base.gyp:foo',
@@ -149,21 +150,25 @@ component("base") {
 
 ```
 sources = [
-  "a.cc",
-  "b.cc",
+  "c.cc",
 ]
 deps = [
   "//base:foo",
 ]
 
 if (is_win) {
-  sources -= [ "a.cc" ]
-  sources += [ "foo.cc" ]
+  sources += [
+    "b.cc",
+    "foo.cc',
+  ]
   deps += [ "//base:bar" ]
 } else {
-  sources -= [ "b.cc" ]
+  sources += [ "a.cc" ]
 }
 ```
+
+Note that in GN we prefer to only add files when needed, and don't add all of
+them at first only to remove them later like in gyp.
 
 ## Variable mappings
 
