@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "content/public/common/features.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
@@ -31,6 +32,9 @@ class CONTENT_EXPORT VideoTrackRecorder
   enum class CodecId {
     VP8,
     VP9,
+#if BUILDFLAG(RTC_USE_H264)
+    H264,
+#endif
   };
   class Encoder;
 
@@ -61,7 +65,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   blink::WebMediaStreamTrack track_;
 
   // Inner class to encode using whichever codec is configured.
-  const scoped_refptr<Encoder> encoder_;
+  scoped_refptr<Encoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorder);
 };

@@ -41,7 +41,12 @@ ACTION_P(RunClosure, closure) {
 }
 
 const VideoTrackRecorder::CodecId kTrackRecorderTestCodec[] = {
-    VideoTrackRecorder::CodecId::VP8, VideoTrackRecorder::CodecId::VP9};
+    VideoTrackRecorder::CodecId::VP8,
+    VideoTrackRecorder::CodecId::VP9
+#if BUILDFLAG(RTC_USE_H264)
+    , VideoTrackRecorder::CodecId::H264
+#endif
+};
 
 class VideoTrackRecorderTest
     : public TestWithParam<VideoTrackRecorder::CodecId> {
@@ -165,7 +170,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
 
   run_loop.Run();
 
-  const size_t kEncodedSizeThreshold = 18;
+  const size_t kEncodedSizeThreshold = 14;
   EXPECT_GE(first_frame_encoded_data.size(), kEncodedSizeThreshold);
   EXPECT_GE(second_frame_encoded_data.size(), kEncodedSizeThreshold);
   EXPECT_GE(third_frame_encoded_data.size(), kEncodedSizeThreshold);

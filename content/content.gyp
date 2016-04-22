@@ -288,9 +288,9 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'includes': [
             'content_renderer.gypi',
+            '../third_party/webrtc/build/common.gypi',
           ],
           'dependencies': [
-            '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
             'common_features',
             'content_child',
             'content_common',
@@ -304,6 +304,12 @@
             ['chromium_enable_vtune_jit_for_v8==1', {
               'dependencies': [
                 '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
+              ],
+            }],
+            ['rtc_use_h264==1', {
+              'dependencies': [
+                  '../third_party/openh264/openh264.gyp:openh264_encoder',
+                  '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
               ],
             }],
           ],
@@ -332,7 +338,6 @@
           'type': 'shared_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
-            '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
             'common_features',
             'content_resources',
           ],
@@ -340,6 +345,12 @@
             ['chromium_enable_vtune_jit_for_v8==1', {
               'dependencies': [
                 '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
+              ],
+            }],
+            ['rtc_use_h264==1', {
+              'dependencies': [
+                  '../third_party/openh264/openh264.gyp:openh264_encoder',
+                  '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
               ],
             }],
           ],
@@ -352,6 +363,7 @@
             'content_ppapi_plugin.gypi',
             'content_renderer.gypi',
             'content_utility.gypi',
+            '../third_party/webrtc/build/common.gypi',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

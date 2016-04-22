@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/renderer/renderer.gni")
 import("//media/media_options.gni")
+import("//third_party/webrtc/build/webrtc.gni")
 
 source_set("renderer") {
   # Only the public target should depend on this. All other targets (even
@@ -173,6 +174,9 @@ source_set("renderer") {
       "//third_party/webrtc/modules/video_coding:webrtc_h264",
       "//third_party/webrtc/system_wrappers",
     ]
+    if (rtc_use_h264) {
+      deps += [ "//third_party/openh264:encoder" ]
+    }
   } else {
     sources += [
       "media/webrtc_logging.h",
