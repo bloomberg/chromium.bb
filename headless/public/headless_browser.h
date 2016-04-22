@@ -86,6 +86,10 @@ struct HeadlessBrowser::Options {
   // Optional message pump that overrides the default. Must outlive the browser.
   base::MessagePump* message_pump;
 
+  // Comma-separated list of rules that control how hostnames are mapped. See
+  // chrome::switches::kHostRules for a description for the format.
+  std::string host_resolver_rules;
+
  private:
   Options(int argc, const char** argv);
 };
@@ -100,6 +104,7 @@ class HeadlessBrowser::Options::Builder {
   Builder& EnableDevToolsServer(const net::IPEndPoint& endpoint);
   Builder& SetMessagePump(base::MessagePump* message_pump);
   Builder& SetProxyServer(const net::HostPortPair& proxy_server);
+  Builder& SetHostResolverRules(const std::string& host_resolver_rules);
 
   Options Build();
 

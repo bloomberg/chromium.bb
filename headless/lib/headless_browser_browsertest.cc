@@ -78,4 +78,17 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
   EXPECT_TRUE(browser()->GetAllWebContents().empty());
 }
 
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetHostResolverRules) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  HeadlessBrowser::Options::Builder builder;
+  builder.SetHostResolverRules("MAP not-an-actual-domain.tld 127.0.0.1");
+  SetBrowserOptions(builder.Build());
+
+  // Load a page which doesn't actually exist, but which is turned into a valid
+  // address by our host resolver rules.
+  HeadlessWebContents* web_contents = browser()->CreateWebContents(
+      GURL("http://not-an-actual-domain.tld/hello.html"), gfx::Size(800, 600));
+  EXPECT_TRUE(WaitForLoad(web_contents));
+}
+
 }  // namespace headless

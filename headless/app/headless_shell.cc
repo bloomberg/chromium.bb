@@ -127,6 +127,11 @@ int main(int argc, const char** argv) {
     builder.SetProxyServer(parsed_proxy_server);
   }
 
+  if (command_line.HasSwitch(switches::kHostResolverRules)) {
+    builder.SetHostResolverRules(
+        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+  }
+
   return HeadlessBrowserMain(
       builder.Build(),
       base::Bind(&HeadlessShell::OnStart, base::Unretained(&shell)));

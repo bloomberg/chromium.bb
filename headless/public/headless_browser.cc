@@ -52,6 +52,11 @@ Builder& Builder::SetProxyServer(const net::HostPortPair& proxy_server) {
   return *this;
 }
 
+Builder& Builder::SetHostResolverRules(const std::string& host_resolver_rules) {
+  options_.host_resolver_rules = host_resolver_rules;
+  return *this;
+}
+
 Options Builder::Build() {
   return options_;
 }

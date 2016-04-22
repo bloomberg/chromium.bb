@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/worker_pool.h"
@@ -105,9 +104,6 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!url_request_context_) {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->set_net_log(net_log_);
     network_delegate_ = CreateNetworkDelegate();
@@ -162,11 +158,10 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     network_session_params.net_log = url_request_context_->net_log();
     network_session_params.ignore_certificate_errors =
         ignore_certificate_errors_;
-    if (command_line.HasSwitch(switches::kHostResolverRules)) {
+    if (!options_.host_resolver_rules.empty()) {
       std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));
-      mapped_host_resolver->SetRulesFromString(
-          command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+      mapped_host_resolver->SetRulesFromString(options_.host_resolver_rules);
       host_resolver = std::move(mapped_host_resolver);
     }
 
