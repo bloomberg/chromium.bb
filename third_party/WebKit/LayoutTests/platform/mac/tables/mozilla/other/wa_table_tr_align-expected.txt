@@ -35,18 +35,18 @@ layer at (0,0) size 785x1309 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (397,0) size 751x54
           text run at (397,0) width 184: " attribute which controls the "
           text run at (580,0) width 171: "horizontal alignment of all"
-          text run at (0,18) width 504: "the cells in a row. This cause the contents of each cell in the row to be aligned "
-          text run at (503,18) width 229: "either LEFT|CENTER|RIGHT with"
-          text run at (0,36) width 432: "respect to the current left and right margins of the display window. "
-          text run at (431,36) width 30: "The "
-        LayoutInline {B} at (0,0) size 51x18
-          LayoutText {#text} at (460,36) size 51x18
-            text run at (460,36) width 51: "Header"
-        LayoutText {#text} at (510,36) size 182x18
-          text run at (510,36) width 182: " cells by default are aligned "
-        LayoutInline {B} at (0,0) size 67x18
-          LayoutText {#text} at (691,36) size 67x18
-            text run at (691,36) width 67: "CENTER"
+          text run at (0,18) width 503: "the cells in a row. This cause the contents of each cell in the row to be aligned "
+          text run at (502,18) width 229: "either LEFT|CENTER|RIGHT with"
+          text run at (0,36) width 431: "respect to the current left and right margins of the display window. "
+          text run at (430,36) width 29: "The "
+        LayoutInline {B} at (0,0) size 52x18
+          LayoutText {#text} at (458,36) size 52x18
+            text run at (458,36) width 52: "Header"
+        LayoutText {#text} at (509,36) size 181x18
+          text run at (509,36) width 181: " cells by default are aligned "
+        LayoutInline {B} at (0,0) size 68x18
+          LayoutText {#text} at (689,36) size 68x18
+            text run at (689,36) width 68: "CENTER"
         LayoutText {#text} at (0,54) size 64x18
           text run at (0,54) width 64: "while the "
         LayoutInline {B} at (0,0) size 33x18

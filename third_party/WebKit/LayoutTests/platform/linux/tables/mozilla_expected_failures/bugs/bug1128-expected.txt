@@ -28,7 +28,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 768: "This means the first column should be 50 pixels wide. The remaining width should be divided among the three remaining columns"
           text run at (0,20) width 777: "according to the proportional width statements into six (2+1+3) parts. Since the Table is 350 pixels wide, and the remaining width"
           text run at (0,40) width 660: "is 300 pixels (350-50), the remaining columns should be 100 (2*50), 50 (1*50) and 150 (3*50) pixels wide, "
-          text run at (660,40) width 75: "respectively."
+          text run at (660,40) width 74: "respectively."
       LayoutTable {TABLE} at (0,238.91) size 350x56 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

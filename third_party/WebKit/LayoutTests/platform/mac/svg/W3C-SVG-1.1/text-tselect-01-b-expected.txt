@@ -6,25 +6,25 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (10,6) size 302x18 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 302x18
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 46 width 301.49: "Test single line and multiline text selection."
-      LayoutSVGContainer {g} at (25,51) size 362x217
+      LayoutSVGContainer {g} at (25,51) size 361x217
         LayoutSVGText {text} at (25,51) size 255x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 255x17
             chunk 1 text run 1 at (25.00,65.00) startOffset 0 endOffset 37 width 254.24: "Here is a stand-alone 'text' element."
-        LayoutSVGText {text} at (25,76) size 298x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 298x18
-            chunk 1 text run 1 at (25.00,90.00) startOffset 0 endOffset 43 width 297.81: "Here is a second 'text' element just below."
+        LayoutSVGText {text} at (25,76) size 297x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 297x18
+            chunk 1 text run 1 at (25.00,90.00) startOffset 0 endOffset 43 width 296.93: "Here is a second 'text' element just below."
         LayoutSVGText {text} at (25,101) size 343x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 343x18
             chunk 1 text run 1 at (25.00,115.00) startOffset 0 endOffset 48 width 342.30: "Because these are four separate 'text' elements,"
         LayoutSVGText {text} at (25,126) size 324x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 324x18
             chunk 1 text run 1 at (25.00,140.00) startOffset 0 endOffset 47 width 323.74: "text selection should not go across lines here."
-        LayoutSVGText {text} at (25,176) size 362x92 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 357x18
-            LayoutSVGInlineText {#text} at (0,0) size 357x18
-              chunk 1 text run 1 at (25.00,190.00) startOffset 0 endOffset 50 width 356.64: "However, these lines of text are achieved by using"
-          LayoutSVGInlineText {#text} at (356,0) size 5x17
-            chunk 1 text run 1 at (381.64,190.00) startOffset 0 endOffset 1 width 4.45: " "
+        LayoutSVGText {text} at (25,176) size 361x92 contains 1 chunk(s)
+          LayoutSVGTSpan {tspan} at (0,0) size 356x18
+            LayoutSVGInlineText {#text} at (0,0) size 356x18
+              chunk 1 text run 1 at (25.00,190.00) startOffset 0 endOffset 50 width 355.76: "However, these lines of text are achieved by using"
+          LayoutSVGInlineText {#text} at (355,0) size 5x17
+            chunk 1 text run 1 at (380.76,190.00) startOffset 0 endOffset 1 width 4.45: " "
           LayoutSVGTSpan {tspan} at (0,0) size 348x18
             LayoutSVGInlineText {#text} at (0,25) size 348x18
               chunk 1 text run 1 at (25.00,215.00) startOffset 0 endOffset 51 width 347.66: "one 'tspan' per line, all contained within the same"

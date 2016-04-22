@@ -4,11 +4,11 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 778x35
+        LayoutText {#text} at (0,0) size 777x35
           text run at (0,0) width 406: "This page tests using attributes to set style on embed elements. "
-          text run at (405,0) width 373: "Previous versions of WebKit supported valign and border,"
+          text run at (405,0) width 372: "Previous versions of WebKit supported valign and border,"
           text run at (0,18) width 44: "which "
-          text run at (43,18) width 459: "didn't match IE and FF. The only special support should be for 'hidden.'"
+          text run at (43,18) width 458: "didn't match IE and FF. The only special support should be for 'hidden.'"
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,62) size 784x0
       LayoutBlockFlow {DIV} at (0,62) size 784x104

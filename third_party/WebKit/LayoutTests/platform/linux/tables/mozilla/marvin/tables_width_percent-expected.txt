@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x40
-        LayoutText {#text} at (0,0) size 748x39
-          text run at (0,0) width 658: "This test case shows how WIDTH can set the width of the table to a fixed size using PERCENT. PERCENT "
-          text run at (658,0) width 90: "is based on the"
+        LayoutText {#text} at (0,0) size 747x39
+          text run at (0,0) width 657: "This test case shows how WIDTH can set the width of the table to a fixed size using PERCENT. PERCENT "
+          text run at (656,0) width 91: "is based on the"
           text run at (0,20) width 402: "percentage of the space between the current left and right margins. "
           text run at (401,20) width 242: "This first table has a width of 80 percent"
       LayoutTable {TABLE} at (0,40) size 627x50

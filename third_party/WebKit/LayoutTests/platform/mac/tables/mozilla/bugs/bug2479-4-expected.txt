@@ -25,15 +25,15 @@ layer at (0,0) size 785x2582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 104x28
           text run at (0,0) width 104: "0. Control"
       LayoutBlockFlow {P} at (0,196.25) size 769x18
-        LayoutText {#text} at (0,0) size 412x18
-          text run at (0,0) width 412: "The following four tests should look identical, namely, like this:"
+        LayoutText {#text} at (0,0) size 410x18
+          text run at (0,0) width 410: "The following four tests should look identical, namely, like this:"
       LayoutBlockFlow {DIV} at (0,230.25) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         LayoutText {#text} at (0,0) size 761x74
           text run at (0,0) width 761: "This text should be white on black, bold, twice the"
           text run at (0,37) width 523: "size of normal text, and sans serif."
       LayoutBlockFlow {P} at (0,320.25) size 769x72
         LayoutText {#text} at (0,0) size 768x72
-          text run at (0,0) width 757: "There are some minor exceptions, however. The x.1 tests should fill the viewport width, the other tests need not. Also,"
+          text run at (0,0) width 756: "There are some minor exceptions, however. The x.1 tests should fill the viewport width, the other tests need not. Also,"
           text run at (0,18) width 766: "browsers attempting to have backwards compatability with the buggy behaviour of legacy browsers may omit to inherit"
           text run at (0,36) width 768: "the color and font-size in 1.1, which will make 1.1 (but only 1.1) unreadable. That is the problem with not following the"
           text run at (0,54) width 39: "specs."
@@ -184,10 +184,10 @@ layer at (0,0) size 785x2582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {P} at (0,0) size 769x38
           LayoutText {#text} at (0,0) size 267x18
             text run at (0,0) width 267: "How does your browser fare on this test? "
-          LayoutMenuList {SELECT} at (266.59,1) size 459x18 [bgcolor=#F8F8F8]
-            LayoutBlockFlow (anonymous) at (0,0) size 459x18
-              LayoutText (anonymous) at (8,2) size 428x13
-                text run at (8,2) width 428: "The tests all render identically, and this browser may or may not grok CSS2 tables."
+          LayoutMenuList {SELECT} at (266.59,1) size 458x18 [bgcolor=#F8F8F8]
+            LayoutBlockFlow (anonymous) at (0,0) size 458x18
+              LayoutText (anonymous) at (8,2) size 427x13
+                text run at (8,2) width 427: "The tests all render identically, and this browser may or may not grok CSS2 tables."
           LayoutText {#text} at (0,0) size 0x0
           LayoutInline {LABEL} at (0,0) size 203x18
             LayoutText {#text} at (0,19) size 72x18

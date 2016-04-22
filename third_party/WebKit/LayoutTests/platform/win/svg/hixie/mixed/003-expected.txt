@@ -6,8 +6,8 @@ layer at (0,0) size 800x300
       LayoutBlockFlow {p} at (0,0) size 784x22
         LayoutTextControl {input} at (0,0) size 383x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBlockFlow {p} at (0,38) size 784x18
-        LayoutText {#text} at (0,0) size 466x17
-          text run at (0,0) width 466: "It should say \"PASSED\" above and there should be a green circle below."
+        LayoutText {#text} at (0,0) size 465x17
+          text run at (0,0) width 465: "It should say \"PASSED\" above and there should be a green circle below."
       LayoutBlockFlow (anonymous) at (0,72) size 784x204
         LayoutSVGRoot {svg} at (8,88) size 100x100
           LayoutSVGEllipse {circle} at (8,88) size 100x100 [fill={[type=SOLID] [color=#008000]}] [cx=50.00] [cy=50.00] [r=50.00]

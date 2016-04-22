@@ -11,7 +11,7 @@ layer at (0,0) size 800x810 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,58) width 97: "changes"
             text run at (0,88) width 102: "properly"
             text run at (0,118) width 163: "invalidate the"
-            text run at (0,148) width 169: "text autosizer."
+            text run at (0,148) width 167: "text autosizer."
             text run at (0,178) width 187: "This test passes"
             text run at (0,208) width 195: "if this text is not"
             text run at (0,238) width 144: "overlapping"

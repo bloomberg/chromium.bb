@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {H4} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 156x18
           text run at (0,0) width 156: "Testcase distilled from "
-        LayoutInline {A} at (0,0) size 509x18 [color=#0000EE]
-          LayoutText {#text} at (156,0) size 509x18
-            text run at (156,0) width 509: "http://www.download.com/pc/list/0,339,0-b-0-0-a-1,00.html?st.dl.fd.ag.new"
+        LayoutInline {A} at (0,0) size 508x18 [color=#0000EE]
+          LayoutText {#text} at (156,0) size 508x18
+            text run at (156,0) width 508: "http://www.download.com/pc/list/0,339,0-b-0-0-a-1,00.html?st.dl.fd.ag.new"
       LayoutBlockFlow {H4} at (0,39.27) size 784x18
-        LayoutText {#text} at (0,0) size 517x18
-          text run at (0,0) width 517: "Resize the width of the window and watch the Buy and Pick columns below."
+        LayoutText {#text} at (0,0) size 516x18
+          text run at (0,0) width 516: "Resize the width of the window and watch the Buy and Pick columns below."
       LayoutTable {TABLE} at (0,78.53) size 784x64
         LayoutTableSection {TBODY} at (0,0) size 784x64
           LayoutTableRow {TR} at (0,2) size 784x20 [bgcolor=#CCCCCC]
@@ -34,9 +34,9 @@ layer at (0,0) size 800x600
                 text run at (33,1) width 5: " "
           LayoutTableRow {TR} at (0,24) size 784x38
             LayoutTableCell {TD} at (2,24) size 704x38 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 680x36
+              LayoutText {#text} at (1,1) size 679x36
                 text run at (1,1) width 446: "Norton AntiVirus Definitions Update 10/21/99 Update your NAV for "
-                text run at (446,1) width 235: "Windows 95/98/NT, Lotus Notes, or"
+                text run at (446,1) width 234: "Windows 95/98/NT, Lotus Notes, or"
                 text run at (1,19) width 269: "Exchange with the latest virus definitions."
             LayoutTableCell {TD} at (708,33) size 33x20 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 4x18
@@ -63,9 +63,9 @@ layer at (0,0) size 800x600
                 text run at (1,1) width 37: " Pick "
           LayoutTableRow {TR} at (0,24) size 784x38
             LayoutTableCell {TD} at (2,24) size 704x38 [r=1 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 680x36
+              LayoutText {#text} at (1,1) size 679x36
                 text run at (1,1) width 446: "Norton AntiVirus Definitions Update 10/21/99 Update your NAV for "
-                text run at (446,1) width 235: "Windows 95/98/NT, Lotus Notes, or"
+                text run at (446,1) width 234: "Windows 95/98/NT, Lotus Notes, or"
                 text run at (1,19) width 269: "Exchange with the latest virus definitions."
             LayoutTableCell {TD} at (708,33) size 33x20 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 4x18

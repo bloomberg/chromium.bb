@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 723x19
-          text run at (0,0) width 723: "There are two boxes inside a container that is rotated 180\x{B0} in Y. box2 has backface-visibility: hidden, so you can't see it."
+        LayoutText {#text} at (0,0) size 721x19
+          text run at (0,0) width 721: "There are two boxes inside a container that is rotated 180\x{B0} in Y. box2 has backface-visibility: hidden, so you can't see it."
       LayoutBlockFlow {DIV} at (0,238) size 784x40
         LayoutText {#text} at (0,0) size 183x19
           text run at (0,0) width 183: "Found container on left: PASS"

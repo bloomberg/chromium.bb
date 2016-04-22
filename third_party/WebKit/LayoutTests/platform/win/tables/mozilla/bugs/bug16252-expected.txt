@@ -209,9 +209,9 @@ layer at (0,0) size 800x600
                                       LayoutText {#text} at (2,2) size 27x13
                                         text run at (2,2) width 27: "64-65"
                                   LayoutTableCell {TD} at (31,102) size 70x17 [r=6 c=1 rs=1 cs=1]
-                                    LayoutInline {FONT} at (0,0) size 47x13
-                                      LayoutText {#text} at (2,2) size 47x13
-                                        text run at (2,2) width 47: "S.F.-Phila"
+                                    LayoutInline {FONT} at (0,0) size 46x13
+                                      LayoutText {#text} at (2,2) size 46x13
+                                        text run at (2,2) width 46: "S.F.-Phila"
                                   LayoutTableCell {TD} at (101,102) size 28x17 [r=6 c=2 rs=1 cs=1]
                                     LayoutInline {FONT} at (0,0) size 12x13
                                       LayoutText {#text} at (14,2) size 12x13
@@ -492,7 +492,7 @@ layer at (0,0) size 800x600
                             LayoutBlockFlow {HR} at (2,282) size 250x1 [border: (1px inset #EEEEEE) none (1px inset #EEEEEE)]
                     LayoutText {#text} at (0,0) size 179x215
                       text run at (0,0) width 167: "Known as ``Wilt the Stilt''"
-                      text run at (0,18) width 172: "and ``The Big Dipper,'' the"
+                      text run at (0,18) width 171: "and ``The Big Dipper,'' the"
                       text run at (0,36) width 140: "7-foot-1 Chamberlain"
                       text run at (0,54) width 164: "dominated the NBA from"
                       text run at (0,72) width 165: "1959 through 1973, when"
@@ -502,7 +502,7 @@ layer at (0,0) size 800x600
                       text run at (0,144) width 160: "76ers and the Lakers. He"
                       text run at (0,162) width 179: "scored 31,419 points during"
                       text run at (0,180) width 165: "his career, averaging 30.1"
-                      text run at (0,198) width 132: "points for his career."
+                      text run at (0,198) width 131: "points for his career."
                   LayoutBlockFlow {P} at (0,232) size 440x54
                     LayoutText {#text} at (0,0) size 158x53
                       text run at (0,0) width 158: "He also led the league in"
@@ -519,4 +519,4 @@ layer at (0,0) size 800x600
                     LayoutText {#text} at (0,0) size 439x53
                       text run at (0,0) width 406: "One of his most famous records is the 100 points he scored in a"
                       text run at (0,18) width 439: "single game in the Philadelphia Warriors' 169-147 defeat of the New"
-                      text run at (0,36) width 305: "York Knicks on March 2, 1962, in Hershey, Pa."
+                      text run at (0,36) width 304: "York Knicks on March 2, 1962, in Hershey, Pa."

@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 43x17
                 text run at (0,0) width 43: "Empty"
       LayoutBlockFlow {P} at (0,110) size 784x18
-        LayoutText {#text} at (0,0) size 386x17
-          text run at (0,0) width 386: "If we fill either empty out with text, the problem goes away."
+        LayoutText {#text} at (0,0) size 385x17
+          text run at (0,0) width 385: "If we fill either empty out with text, the problem goes away."
       LayoutTable {TABLE} at (0,144) size 566x74 [bgcolor=#00FFFF]
         LayoutTableSection {TBODY} at (0,0) size 566x74
           LayoutTableRow {TR} at (0,0) size 566x54

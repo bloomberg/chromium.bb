@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         LayoutInline {B} at (0,0) size 768x36
           LayoutText {#text} at (747,18) size 768x36
             text run at (747,18) width 21: "5.0"
-            text run at (0,36) width 151: "renders this correctly."
+            text run at (0,36) width 150: "renders this correctly."
       LayoutTable {TABLE} at (0,70) size 784x28 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -49,9 +49,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 758: "(3) Table with 2 columns. Relative width value for first column is \"0*\" and for column 2 is \"3*\". Table width is 100%."
           text run at (0,18) width 753: "The first column should span the minimum width necessary to hold the column's contents. The second column should"
           text run at (0,36) width 29: "????"
-        LayoutInline {B} at (0,0) size 737x18
-          LayoutText {#text} at (28,36) size 737x18
-            text run at (28,36) width 737: "The first column is rendered properly, but there seems to be a problem with the width of the second column."
+        LayoutInline {B} at (0,0) size 736x18
+          LayoutText {#text} at (28,36) size 736x18
+            text run at (28,36) width 736: "The first column is rendered properly, but there seems to be a problem with the width of the second column."
       LayoutTable {TABLE} at (0,352) size 784x28 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

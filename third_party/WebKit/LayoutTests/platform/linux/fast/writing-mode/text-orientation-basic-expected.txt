@@ -8,7 +8,7 @@ layer at (0,0) size 800x672 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,0) width 668: "This test exercises the vertical text rendering feature of Blink's shaping code, and checks for errors in font code "
           text run at (668,0) width 85: "path selection:"
           text run at (0,20) width 568: "Vertical text should always go through the shaper. It exercises glyph orientation difficulties with "
-          text run at (567,20) width 114: "two different fonts."
+          text run at (567,20) width 113: "two different fonts."
       LayoutBlockFlow {DIV} at (0,56) size 348x600
         LayoutBlockFlow {DIV} at (0,0) size 174x453 [border: (1px solid #008000)]
           LayoutInline {SPAN} at (0,0) size 41x170

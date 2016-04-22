@@ -222,8 +222,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 66: "Table III:"
         LayoutText {#text} at (65,0) size 784x53
           text run at (65,0) width 719: " is Table II, but cells (2,3),(3,3) and (4,3) now have 'empty' contents; the resulting table is still OK. Note that the"
-          text run at (0,18) width 783: "height of (2,3) and (4,3) is determined by cells (2,1) and (4,2) respectively, whereas (3,3) has ~0 height since no 'effective'"
-          text run at (0,36) width 648: "cell in the row has any definite height requirement (except for border, margin, padding if applicable)."
+          text run at (0,18) width 782: "height of (2,3) and (4,3) is determined by cells (2,1) and (4,2) respectively, whereas (3,3) has ~0 height since no 'effective'"
+          text run at (0,36) width 647: "cell in the row has any definite height requirement (except for border, margin, padding if applicable)."
       LayoutBlockFlow {P} at (0,400) size 784x36
         LayoutInline {B} at (0,0) size 64x17
           LayoutText {#text} at (0,0) size 64x17

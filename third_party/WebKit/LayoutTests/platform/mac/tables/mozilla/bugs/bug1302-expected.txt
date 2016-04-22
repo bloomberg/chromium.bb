@@ -195,12 +195,12 @@ layer at (0,0) size 785x904 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,170) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {P} at (0,204) size 769x90
-        LayoutText {#text} at (0,0) size 769x90
+        LayoutText {#text} at (0,0) size 768x90
           text run at (0,0) width 325: "This is a table colspan counting problem (IMHO). "
           text run at (324,0) width 388: "The oversize <TABLE> has two rows: one has *two* <TD>"
           text run at (0,18) width 755: "\"requesting\" total of 3 columns to span; second row has *one* <TD> \"requesting\" total of 3 columns to span. In other"
-          text run at (0,36) width 566: "words, it's asking for one more column than the max number of 'real' elements in a row. "
-          text run at (565,36) width 204: "Here's the simple case (first one"
+          text run at (0,36) width 565: "words, it's asking for one more column than the max number of 'real' elements in a row. "
+          text run at (564,36) width 204: "Here's the simple case (first one"
           text run at (0,54) width 262: "shows the problem; the other adjusts the "
           text run at (261,54) width 481: "colspan values and it works) (Dec 19 Nightly Win 95): All the elements in "
           text run at (741,54) width 21: "the"
@@ -230,26 +230,26 @@ layer at (0,0) size 785x904 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,382) size 769x36
         LayoutBR {BR} at (0,0) size 0x18
         LayoutBR {BR} at (0,18) size 0x18
-      LayoutTable {TABLE} at (0,418) size 523x54 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 521x52
-          LayoutTableRow {TR} at (0,0) size 521x26
+      LayoutTable {TABLE} at (0,418) size 522x54 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 520x52
+          LayoutTableRow {TR} at (0,0) size 520x26
             LayoutTableCell {TD} at (0,0) size 195x26 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 187x18
                 LayoutInline {B} at (0,0) size 118x18
                   LayoutText {#text} at (0,0) size 118x18
                     text run at (0,0) width 118: "This is colspan=1"
-            LayoutTableCell {TD} at (195,0) size 326x26 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (195,0) size 325x26 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 202x18
                 text run at (4,4) width 202: "Blah Blah Blah Blah Blah Blah"
-          LayoutTableRow {TR} at (0,26) size 521x26
-            LayoutTableCell {TD} at (0,26) size 521x26 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
-              LayoutBlockFlow {P} at (4,4) size 513x18
+          LayoutTableRow {TR} at (0,26) size 520x26
+            LayoutTableCell {TD} at (0,26) size 520x26 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=2]
+              LayoutBlockFlow {P} at (4,4) size 512x18
                 LayoutInline {B} at (0,0) size 118x18
                   LayoutText {#text} at (0,0) size 118x18
                     text run at (0,0) width 118: "This is colspan=2"
-                LayoutText {#text} at (117,0) size 396x18
+                LayoutText {#text} at (117,0) size 395x18
                   text run at (117,0) width 163: " blah blah blah blah blah "
-                  text run at (279,0) width 234: "--- this cell spans the table correctly."
+                  text run at (279,0) width 233: "--- this cell spans the table correctly."
       LayoutBlockFlow (anonymous) at (0,472) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {P} at (0,506) size 769x18

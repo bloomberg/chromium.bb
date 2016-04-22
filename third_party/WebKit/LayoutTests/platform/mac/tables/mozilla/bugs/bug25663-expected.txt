@@ -29,4 +29,4 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,38) size 104x54
                 text run at (2,38) width 104: "Buy some smart"
                 text run at (2,56) width 65: "stuff from"
-                text run at (2,74) width 84: "Andover.Net"
+                text run at (2,74) width 83: "Andover.Net"

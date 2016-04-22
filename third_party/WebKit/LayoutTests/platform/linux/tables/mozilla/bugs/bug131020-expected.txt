@@ -33,9 +33,9 @@ layer at (18,18) size 790x564 backgroundClip at (0,0) size 800x600 clip at (0,0)
                       LayoutText {#text} at (314,1) size 96x19
                         text run at (314,1) width 96: "11. M\x{E4}rz 2002"
                     LayoutBR {BR} at (409,16) size 1x0
-                    LayoutText {#text} at (64,21) size 596x19
-                      text run at (64,21) width 466: "nun gibt es auch eine kommerzielle Version vom PopUp-Manager, mehr Info "
-                      text run at (529,21) width 131: "unter komerz. Scripte"
+                    LayoutText {#text} at (65,21) size 594x19
+                      text run at (65,21) width 464: "nun gibt es auch eine kommerzielle Version vom PopUp-Manager, mehr Info "
+                      text run at (528,21) width 131: "unter komerz. Scripte"
                 LayoutTableRow {TR} at (0,64) size 724x42
                   LayoutTableCell {TD} at (0,64) size 724x42 [border: (1px solid #000000)] [r=2 c=0 rs=1 cs=1]
                     LayoutInline {B} at (0,0) size 92x19
@@ -65,10 +65,10 @@ layer at (18,18) size 790x564 backgroundClip at (0,0) size 800x600 clip at (0,0)
                     LayoutText {#text} at (111,61) size 502x19
                       text run at (111,61) width 502: "The Real Topsites, Sponsor Manager, Download Manager und Password Manager"
                     LayoutBR {BR} at (612,76) size 1x0
-                    LayoutText {#text} at (128,81) size 468x19
-                      text run at (128,81) width 409: "abgeschafft, brauchte 2 Tage daf\x{FC}r, dabei lag der Fehler vor meiner "
-                      text run at (536,81) width 60: "Nase ! :-)"
-                    LayoutBR {BR} at (595,96) size 1x0
+                    LayoutText {#text} at (129,81) size 466x19
+                      text run at (129,81) width 407: "abgeschafft, brauchte 2 Tage daf\x{FC}r, dabei lag der Fehler vor meiner "
+                      text run at (535,81) width 60: "Nase ! :-)"
+                    LayoutBR {BR} at (594,96) size 1x0
                     LayoutText {#text} at (1,101) size 722x79
                       text run at (1,101) width 359: "F\x{FC}r Euch hei\x{DF}t es, wenn Ihr eines der Scripte benutzt, ladet "
                       text run at (360,101) width 363: "Euch die admin.cgi runter und vereinbart unbedingt ein neues"
@@ -243,8 +243,8 @@ layer at (18,18) size 790x564 backgroundClip at (0,0) size 800x600 clip at (0,0)
                     LayoutText {#text} at (239,61) size 246x19
                       text run at (239,61) width 246: "Mehr Info unter \"Perl Scripte\" im Men\x{FC}. "
                     LayoutBR {BR} at (484,76) size 1x0
-                    LayoutText {#text} at (162,81) size 400x19
-                      text run at (162,81) width 400: "P.S. den Umstieg auf die Version3.3 kann ich Euch nur empfehlen!"
+                    LayoutText {#text} at (163,81) size 398x19
+                      text run at (163,81) width 398: "P.S. den Umstieg auf die Version3.3 kann ich Euch nur empfehlen!"
                 LayoutTableRow {TR} at (0,1292) size 724x82
                   LayoutTableCell {TD} at (0,1292) size 724x82 [border: (1px solid #000000)] [r=18 c=0 rs=1 cs=1]
                     LayoutText {#text} at (320,1) size 84x19

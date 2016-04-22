@@ -62,10 +62,10 @@ layer at (0,0) size 785x4680 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       LayoutInline {SPAN} at (0,0) size 1x16
                         LayoutInline {O:P} at (0,0) size 1x16
                 LayoutBlockFlow {P} at (8.19,18) size 90x17
-                  LayoutInline {B} at (0,0) size 50x15
-                    LayoutInline {SPAN} at (0,0) size 50x16
-                      LayoutText {#text} at (20,0) size 50x16
-                        text run at (20,0) width 50: "thingy.-"
+                  LayoutInline {B} at (0,0) size 48x15
+                    LayoutInline {SPAN} at (0,0) size 48x16
+                      LayoutText {#text} at (21,0) size 48x16
+                        text run at (21,0) width 48: "thingy.-"
             LayoutTableRow {TR} at (0,57) size 472x33
               LayoutTableCell {TD} at (0,57) size 98x17 [border: (1px none #808080) none] [r=2 c=0 rs=1 cs=1]
                 LayoutBlockFlow {P} at (8.19,1) size 83x16

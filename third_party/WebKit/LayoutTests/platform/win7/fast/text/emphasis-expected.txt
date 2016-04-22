@@ -18,7 +18,7 @@ layer at (0,0) size 800x547
         LayoutText {#text} at (112,70) size 334x66
           text run at (112,70) width 13: ", "
           text run at (124,70) width 213: "lobortis eu iaculis vel,"
-          text run at (3,110) width 209: "scelerisque nec dolor."
+          text run at (3,110) width 208: "scelerisque nec dolor."
       LayoutText {#text} at (374,114) size 6x26
         text run at (374,114) width 6: " "
       LayoutBlockFlow {DIV} at (384,4) size 366x140 [border: (3px solid #000000)]
@@ -97,7 +97,7 @@ layer at (0,0) size 800x547
         LayoutText {#text} at (198,105) size 334x53
           text run at (198,105) width 7: " "
           text run at (204,105) width 133: "eu iaculis vel,"
-          text run at (3,132) width 209: "scelerisque nec dolor."
+          text run at (3,132) width 208: "scelerisque nec dolor."
       LayoutText {#text} at (374,291) size 6x26
         text run at (374,291) width 6: " "
       LayoutBlockFlow {DIV} at (384,152) size 366x156 [border: (3px solid #000000)]
@@ -156,7 +156,7 @@ layer at (0,0) size 800x547
         LayoutText {#text} at (248,3) size 80x146
           text run at (248,3) width 133: "eu iaculis vel,"
           text run at (275,3) width 146: "scelerisque nec"
-          text run at (302,3) width 57: "dolor."
+          text run at (302,3) width 56: "dolor."
       LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (4,329) size 366x198 [border: (3px solid #000000)]
         LayoutText {#text} at (3,14) size 273x26
@@ -173,7 +173,7 @@ layer at (0,0) size 800x547
         LayoutText {#text} at (112,110) size 334x74
           text run at (112,110) width 13: ", "
           text run at (124,110) width 213: "lobortis eu iaculis vel,"
-          text run at (3,158) width 209: "scelerisque nec dolor."
+          text run at (3,158) width 208: "scelerisque nec dolor."
       LayoutText {#text} at (374,487) size 6x26
         text run at (374,487) width 6: " "
       LayoutBlockFlow {DIV} at (384,377) size 366x140 [border: (3px solid #000000)]
@@ -191,7 +191,7 @@ layer at (0,0) size 800x547
         LayoutText {#text} at (112,70) size 334x66
           text run at (112,70) width 13: ", "
           text run at (124,70) width 213: "lobortis eu iaculis vel,"
-          text run at (3,110) width 209: "scelerisque nec dolor."
+          text run at (3,110) width 208: "scelerisque nec dolor."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 selection start: position 10 of child 0 {#text} of child 1 {SPAN} of child 10 {DIV} of body

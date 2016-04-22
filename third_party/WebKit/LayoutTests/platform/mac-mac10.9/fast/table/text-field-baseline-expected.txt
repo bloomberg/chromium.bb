@@ -17,9 +17,9 @@ layer at (0,0) size 800x391
         LayoutText {#text} at (311,18) size 5x18
           text run at (311,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x36
-        LayoutText {#text} at (0,0) size 753x36
-          text run at (0,0) width 753: "Type something in the text field. Resize the window. The text field should not jump down. Delete what you typed and"
-          text run at (0,18) width 325: "resize the window. The text field should not move."
+        LayoutText {#text} at (0,0) size 752x36
+          text run at (0,0) width 752: "Type something in the text field. Resize the window. The text field should not jump down. Delete what you typed and"
+          text run at (0,18) width 324: "resize the window. The text field should not move."
       LayoutBlockFlow {FORM} at (0,104) size 784x255
         LayoutTable {DL} at (0,0) size 148x19
           LayoutTableSection (anonymous) at (0,0) size 148x19

@@ -93,7 +93,7 @@ layer at (8,8) size 769x1410 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (1,1) size 452x108
                 text run at (1,1) width 450: "This document should have two cells, side by side: one on the left, the"
                 text run at (1,19) width 452: "other on the right. The one on the left should be red with white writing"
-                text run at (1,37) width 445: "and a thick white border. It should contain four dotted lines separated"
+                text run at (1,37) width 444: "and a thick white border. It should contain four dotted lines separated"
                 text run at (1,55) width 419: "by a blank line, followed by a dotted bordered box containing the"
                 text run at (1,73) width 403: "document title, and another dotted bordered box containing the"
                 text run at (1,91) width 191: "stylesheet, also shown below:"
@@ -115,7 +115,7 @@ layer at (8,8) size 769x1410 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutBlockFlow {P} at (21,752) size 456x74 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 443x72
                 text run at (1,1) width 443: "The right cell should look similar to the left cell in formatting -- each"
-                text run at (1,19) width 443: "box of text should have a yellow dotted border, and there should be a"
+                text run at (1,19) width 442: "box of text should have a yellow dotted border, and there should be a"
                 text run at (1,37) width 420: "blank line between each such box. No box should be nested -- the"
                 text run at (1,55) width 356: "dotted boxes should always be distinct from each other."
             LayoutBlockFlow {P} at (21,842) size 456x38 [border: (1px dotted #FFFF00)]

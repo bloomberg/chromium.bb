@@ -349,10 +349,10 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {SPAN} at (0,0) size 291x48
                   LayoutText {#text} at (4,231) size 291x48
                     text run at (4,231) width 165: "Get tomorrow's news today. "
-                    text run at (169,231) width 125: "FREE weekday email"
+                    text run at (168,231) width 126: "FREE weekday email"
                     text run at (4,247) width 291: "report of the top stories in business & finance from"
-                    text run at (4,263) width 205: "BLOOMBERG NEWS at 5pm EST."
-              LayoutBR {BR} at (209,276) size 0x0
+                    text run at (4,263) width 204: "BLOOMBERG NEWS at 5pm EST."
+              LayoutBR {BR} at (207,276) size 1x0
               LayoutInline {A} at (0,0) size 182x19
                 LayoutInline {FONT} at (0,0) size 182x16
                   LayoutInline {SPAN} at (0,0) size 182x16
@@ -366,24 +366,24 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutText {#text} at (4,295) size 283x32
                     text run at (4,295) width 283: "For Y2K information on BLOOMBERG, download"
                     text run at (4,311) width 147: "our customer letters now."
-              LayoutBR {BR} at (151,324) size 0x0
+              LayoutBR {BR} at (150,324) size 1x0
       LayoutBlockFlow {P} at (0,679) size 769x13
-        LayoutInline {FONT} at (0,0) size 434x13
-          LayoutText {#text} at (0,0) size 200x13
-            text run at (0,0) width 200: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
-          LayoutInline {A} at (0,0) size 79x13
-            LayoutText {#text} at (200,0) size 79x13
-              text run at (200,0) width 79: "Terms of Service"
-          LayoutText {#text} at (278,0) size 7x13
-            text run at (278,0) width 7: ", "
+        LayoutInline {FONT} at (0,0) size 433x13
+          LayoutText {#text} at (0,0) size 199x13
+            text run at (0,0) width 199: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
+          LayoutInline {A} at (0,0) size 80x13
+            LayoutText {#text} at (198,0) size 80x13
+              text run at (198,0) width 80: "Terms of Service"
+          LayoutText {#text} at (277,0) size 7x13
+            text run at (277,0) width 7: ", "
           LayoutInline {A} at (0,0) size 69x13
-            LayoutText {#text} at (284,0) size 69x13
-              text run at (284,0) width 69: "Privacy Policy"
-          LayoutText {#text} at (352,0) size 25x13
-            text run at (352,0) width 25: " and "
+            LayoutText {#text} at (283,0) size 69x13
+              text run at (283,0) width 69: "Privacy Policy"
+          LayoutText {#text} at (351,0) size 25x13
+            text run at (351,0) width 25: " and "
           LayoutInline {A} at (0,0) size 55x13
-            LayoutText {#text} at (376,0) size 55x13
-              text run at (376,0) width 55: "Trademarks"
-          LayoutText {#text} at (430,0) size 4x13
-            text run at (430,0) width 4: "."
+            LayoutText {#text} at (375,0) size 55x13
+              text run at (375,0) width 55: "Trademarks"
+          LayoutText {#text} at (429,0) size 4x13
+            text run at (429,0) width 4: "."
         LayoutText {#text} at (0,0) size 0x0

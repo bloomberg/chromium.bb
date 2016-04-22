@@ -23,7 +23,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (40,24) size 342x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 342x15
             chunk 1 text run 1 at (40.00,36.00) startOffset 0 endOffset 11 width 57.00: "This tests "
-            chunk 1 text run 1 at (97.00,36.00) startOffset 0 endOffset 53 width 285.00: "ancestor, immediate-sibling and first-child selectors"
+            chunk 1 text run 1 at (97.00,36.00) startOffset 0 endOffset 53 width 284.34: "ancestor, immediate-sibling and first-child selectors"
         LayoutSVGContainer {g} at (130,220) size 260x60
           LayoutSVGEllipse {circle} at (130,220) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=160.00] [cy=100.00] [r=30.00]
           LayoutSVGRect {rect} at (220,230) size 60x40 [fill={[type=SOLID] [color=#FF0000]}] [x=220.00] [y=80.00] [width=60.00] [height=40.00]

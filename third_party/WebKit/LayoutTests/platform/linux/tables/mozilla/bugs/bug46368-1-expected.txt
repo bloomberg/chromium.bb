@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
                         text run at (298,35) width 139: " code available under a"
                         text run at (2,59) width 146: "dual MPL/GPL license. "
                         text run at (148,59) width 229: "See the for more info. We're gathering"
-                        text run at (2,79) width 243: "contributor input now, in the newsgroup."
-                      LayoutBR {BR} at (245,94) size 0x0
+                        text run at (2,79) width 242: "contributor input now, in the newsgroup."
+                      LayoutBR {BR} at (243,94) size 1x0
             LayoutTableCell {TD} at (459,25) size 321x64 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 302x59
                 text run at (2,2) width 251: "This status update contains information on"

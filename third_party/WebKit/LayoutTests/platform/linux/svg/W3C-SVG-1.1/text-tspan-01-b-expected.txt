@@ -39,9 +39,9 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (238,180) size 191x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 191x18
             chunk 1 text run 1 at (238.00,195.00) startOffset 0 endOffset 28 width 190.23: "Text: \"But you are a peach!\""
-        LayoutSVGText {text} at (238,197) size 222x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 222x18
-            chunk 1 text run 1 at (238.00,212.25) startOffset 0 endOffset 34 width 222.00: "Using dx,dy, 'tspan' raises \"are\","
+        LayoutSVGText {text} at (238,197) size 221x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 221x18
+            chunk 1 text run 1 at (238.00,212.25) startOffset 0 endOffset 34 width 220.81: "Using dx,dy, 'tspan' raises \"are\","
         LayoutSVGText {text} at (238,214) size 170x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 170x18
             chunk 1 text run 1 at (238.00,229.50) startOffset 0 endOffset 25 width 170.00: "'tspan' lowers \"a peach!\""
@@ -58,18 +58,18 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (147.50,200.00) startOffset 0 endOffset 1 width 8.00: "n"
               chunk 1 text run 1 at (166.25,200.00) startOffset 0 endOffset 2 width 13.00: "d "
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-          LayoutSVGTSpan {tspan} at (0,0) size 87x19
-            LayoutSVGInlineText {#text} at (28,30) size 86x18
+          LayoutSVGTSpan {tspan} at (0,0) size 85x19
+            LayoutSVGInlineText {#text} at (28,30) size 85x18
               chunk 1 text run 1 at (63.13,230.50) startOffset 0 endOffset 1 width 4.00: "f"
               chunk 1 text run 1 at (81.88,230.50) startOffset 0 endOffset 1 width 8.00: "u"
               chunk 1 text run 1 at (100.63,230.50) startOffset 0 endOffset 1 width 7.00: "z"
               chunk 1 text run 1 at (119.38,230.50) startOffset 0 endOffset 1 width 7.00: "z"
-              chunk 1 text run 1 at (138.13,230.50) startOffset 0 endOffset 2 width 11.00: "y."
+              chunk 1 text run 1 at (138.13,230.50) startOffset 0 endOffset 2 width 9.81: "y."
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGRect {rect} at (17,244) size 337x55 [stroke={[type=SOLID] [color=#000000]}] [x=17.50] [y=244.75] [width=335.50] [height=53.50]
-        LayoutSVGText {text} at (25,243) size 152x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 152x18
-            chunk 1 text run 1 at (25.25,258.00) startOffset 0 endOffset 23 width 151.23: "Text: \"Cute and fuzzy.\""
+        LayoutSVGText {text} at (25,243) size 151x18 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 151x18
+            chunk 1 text run 1 at (25.25,258.00) startOffset 0 endOffset 23 width 150.04: "Text: \"Cute and fuzzy.\""
         LayoutSVGText {text} at (25,260) size 311x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 310x18
             chunk 1 text run 1 at (25.25,275.25) startOffset 0 endOffset 45 width 310.00: "'tspan' char-by-char placement of \"Cute and\","

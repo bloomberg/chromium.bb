@@ -140,8 +140,8 @@ layer at (0,0) size 785x946 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 145x18
                   text run at (0,0) width 145: "Table 1, Row 3, Cell 4"
       LayoutBlockFlow {P} at (0,489.88) size 769x18
-        LayoutText {#text} at (0,0) size 724x18
-          text run at (0,0) width 724: "Note: table-header-group and table-footer-group are tested only in their HTML order, and they only appear once."
+        LayoutText {#text} at (0,0) size 723x18
+          text run at (0,0) width 723: "Note: table-header-group and table-footer-group are tested only in their HTML order, and they only appear once."
       LayoutBlockFlow {DIV} at (0,523.88) size 769x90
         LayoutTable (anonymous) at (0,0) size 580x90
           LayoutTableSection {SPAN} at (0,0) size 580x18 [bgcolor=#00FFFF]

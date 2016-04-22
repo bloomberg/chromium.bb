@@ -14,8 +14,8 @@ layer at (0,0) size 800x600
       LayoutListItem {LI} at (0,36) size 784x490
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
           LayoutListMarker (anonymous) at (-1,0) size 7x18: bullet
-          LayoutText {#text} at (14,0) size 184x18
-            text run at (14,0) width 184: "\"width:x%\" works correctly."
+          LayoutText {#text} at (14,0) size 183x18
+            text run at (14,0) width 183: "\"width:x%\" works correctly."
         LayoutBlockFlow {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
         LayoutTable {TABLE} at (0,36) size 784x100
           LayoutTableSection {TBODY} at (0,0) size 784x100

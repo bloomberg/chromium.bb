@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 767: "The table below should be sized so that each word of text wraps to its own line, and if the font size is not too large, then"
           text run at (0,18) width 272: "the table will not be wider than the screen."
       LayoutBlockFlow {P} at (0,52) size 784x72
-        LayoutText {#text} at (0,0) size 782x72
-          text run at (0,0) width 782: "Previously, the table would be incredibly wide, wide enough so that the entire paragraph of text was on one line. That was"
+        LayoutText {#text} at (0,0) size 781x72
+          text run at (0,0) width 781: "Previously, the table would be incredibly wide, wide enough so that the entire paragraph of text was on one line. That was"
           text run at (0,18) width 777: "because the \"maxElementSize\" of the cell was including margins calculated from the desired size of the text (in this case,"
           text run at (0,36) width 764: "19x the desired width of the paragraph). The fix was to calculate the margin for the \"maxElementSize\" of the cell using"
           text run at (0,54) width 667: "the \"maxElementSize\" of the contained block itself, which in this case is the maximum width of a word."

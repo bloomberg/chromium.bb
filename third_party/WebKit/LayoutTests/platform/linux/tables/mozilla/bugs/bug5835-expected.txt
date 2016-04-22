@@ -4,9 +4,9 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x716
     LayoutBlockFlow {BODY} at (8,8) size 769x692
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 731x19
+        LayoutText {#text} at (0,0) size 730x19
           text run at (0,0) width 394: "This first table is the simple test case. Colspan confuses the width "
-          text run at (394,0) width 337: "allocation when there is an image in the colspanned row."
+          text run at (394,0) width 336: "allocation when there is an image in the colspanned row."
       LayoutTable {TABLE} at (0,36) size 620x96 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 618x94
           LayoutTableRow {TR} at (0,2) size 618x24
@@ -21,9 +21,9 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutImage {IMG} at (2,2) size 468x60
               LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,148) size 769x20
-        LayoutText {#text} at (0,0) size 607x19
+        LayoutText {#text} at (0,0) size 606x19
           text run at (0,0) width 355: "This second table is the same as the first, minus the second "
-          text run at (355,0) width 252: "'colspan=2' row. Widths are now correct."
+          text run at (355,0) width 251: "'colspan=2' row. Widths are now correct."
       LayoutTable {TABLE} at (0,184) size 620x30 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 618x28
           LayoutTableRow {TR} at (0,2) size 618x24
@@ -34,11 +34,11 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (2,2) size 20x19
                 text run at (2,2) width 20: "bar"
       LayoutBlockFlow {P} at (0,230) size 769x60
-        LayoutText {#text} at (0,0) size 764x59
+        LayoutText {#text} at (0,0) size 763x59
           text run at (0,0) width 351: "An observation: Note that as the image-width approaches "
           text run at (351,0) width 369: "the table-width, the two columns approach equal width (error"
           text run at (0,20) width 68: "increases). "
-          text run at (68,20) width 696: "Conversely, below some threshold image-width (which is about 390px or 30px less than the TD WIDTH=420), the"
+          text run at (68,20) width 695: "Conversely, below some threshold image-width (which is about 390px or 30px less than the TD WIDTH=420), the"
           text run at (0,40) width 154: "error is (apparently) zero."
       LayoutBlockFlow {P} at (0,306) size 769x20
         LayoutText {#text} at (0,0) size 165x19

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 800x20
-        LayoutText {#text} at (0,0) size 431x19
-          text run at (0,0) width 431: "Two green 16x16 pixel squares should appear below stacked vertically."
+        LayoutText {#text} at (0,0) size 430x19
+          text run at (0,0) width 430: "Two green 16x16 pixel squares should appear below stacked vertically."
       LayoutBlockFlow {DIV} at (0,20) size 16x16 [bgcolor=#FF0000]
         LayoutImage {IMG} at (0,0) size 16x16
         LayoutText {#text} at (0,0) size 0x0

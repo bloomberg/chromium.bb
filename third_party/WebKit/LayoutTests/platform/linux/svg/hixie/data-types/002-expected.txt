@@ -4,8 +4,8 @@ layer at (0,0) size 800x233
   LayoutBlockFlow {html} at (0,0) size 800x233
     LayoutBlockFlow {body} at (8,16) size 784x209
       LayoutBlockFlow {p} at (0,0) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 252x19
-          text run at (0,0) width 252: "There should be two identical bars below."
+        LayoutText {#text} at (0,0) size 251x19
+          text run at (0,0) width 251: "There should be two identical bars below."
       LayoutBlockFlow {p} at (0,36) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 54x19
           text run at (0,0) width 54: "First bar:"

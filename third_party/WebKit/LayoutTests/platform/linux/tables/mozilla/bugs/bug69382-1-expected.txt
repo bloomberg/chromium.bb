@@ -55,11 +55,11 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,2) size 16x19
                   text run at (2,2) width 16: "**"
               LayoutTableCell {TD} at (101,116) size 526x24 [border: (1px inset #808080)] [r=3 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 238x19
-                  text run at (2,2) width 238: "Learning Red Hat Linux / Bill McCarty."
+                LayoutText {#text} at (2,2) size 237x19
+                  text run at (2,2) width 237: "Learning Red Hat Linux / Bill McCarty."
               LayoutTableCell {TD} at (629,106) size 110x44 [border: (1px inset #808080)] [r=3 c=3 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 86x39
-                  text run at (2,2) width 86: "McCarty, Bill,"
+                LayoutText {#text} at (2,2) size 85x39
+                  text run at (2,2) width 85: "McCarty, Bill,"
                   text run at (2,22) width 38: "1953-"
               LayoutTableCell {TD} at (741,116) size 37x24 [border: (1px inset #808080)] [r=3 c=4 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 32x19
@@ -80,11 +80,11 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,2) size 16x19
                   text run at (2,2) width 16: "**"
               LayoutTableCell {TD} at (101,194) size 526x24 [border: (1px inset #808080)] [r=5 c=2 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 264x19
-                  text run at (2,2) width 264: "Learning Debian GNU/Linux / Bill Mccarty."
+                LayoutText {#text} at (2,2) size 263x19
+                  text run at (2,2) width 263: "Learning Debian GNU/Linux / Bill Mccarty."
               LayoutTableCell {TD} at (629,184) size 110x44 [border: (1px inset #808080)] [r=5 c=3 rs=1 cs=1]
-                LayoutText {#text} at (2,2) size 86x39
-                  text run at (2,2) width 86: "McCarty, Bill,"
+                LayoutText {#text} at (2,2) size 85x39
+                  text run at (2,2) width 85: "McCarty, Bill,"
                   text run at (2,22) width 38: "1953-"
               LayoutTableCell {TD} at (741,194) size 37x24 [border: (1px inset #808080)] [r=5 c=4 rs=1 cs=1]
                 LayoutText {#text} at (2,2) size 32x19

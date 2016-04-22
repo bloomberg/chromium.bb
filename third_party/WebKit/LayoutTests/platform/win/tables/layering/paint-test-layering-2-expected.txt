@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
-        LayoutText {#text} at (0,0) size 769x35
-          text run at (0,0) width 769: "This test checks the renderer's ability to layer multiple cells in a table on top of one another. This test has three cells that"
+        LayoutText {#text} at (0,0) size 768x35
+          text run at (0,0) width 768: "This test checks the renderer's ability to layer multiple cells in a table on top of one another. This test has three cells that"
           text run at (0,18) width 222: "span multiple table grid slots. The "
         LayoutInline {SPAN} at (0,0) size 24x17 [color=#FF0000]
           LayoutText {#text} at (221,18) size 24x17

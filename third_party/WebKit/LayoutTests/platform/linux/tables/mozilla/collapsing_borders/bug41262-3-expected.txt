@@ -92,11 +92,11 @@ layer at (0,0) size 800x680 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow {P} at (0,460) size 784x44
         LayoutText {#text} at (0,0) size 337x19
           text run at (0,0) width 337: "This is an example rendering for the previous table from "
-        LayoutInline {A} at (0,0) size 392x19 [color=#0000EE]
-          LayoutText {#text} at (337,0) size 392x19
-            text run at (337,0) width 392: "http://www.w3.org/TR/REC-CSS2/images/tbl-border-conflict.gif"
-        LayoutText {#text} at (728,0) size 8x19
-          text run at (728,0) width 8: ": "
+        LayoutInline {A} at (0,0) size 391x19 [color=#0000EE]
+          LayoutText {#text} at (337,0) size 391x19
+            text run at (337,0) width 391: "http://www.w3.org/TR/REC-CSS2/images/tbl-border-conflict.gif"
+        LayoutText {#text} at (727,0) size 8x19
+          text run at (727,0) width 8: ": "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutBlockFlow {IMG} at (0,20) size 220.72x24
         LayoutText {#text} at (0,0) size 0x0

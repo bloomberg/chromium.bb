@@ -12,16 +12,16 @@ layer at (0,0) size 785x3163 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (121,0) size 5x18
           text run at (121,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 769x36
-        LayoutText {#text} at (0,0) size 754x36
-          text run at (0,0) width 754: "To test manually, scroll down until you find the input element. Select some text. If the bug occurs, the page will scroll"
+        LayoutText {#text} at (0,0) size 753x36
+          text run at (0,0) width 753: "To test manually, scroll down until you find the input element. Select some text. If the bug occurs, the page will scroll"
           text run at (0,18) width 119: "back up to the top."
       LayoutBlockFlow {DIV} at (0,86) size 769x3000
       LayoutBlockFlow (anonymous) at (0,3086) size 769x19
         LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,3121) size 769x18
-        LayoutText {#text} at (0,0) size 412x18
-          text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
+        LayoutText {#text} at (0,0) size 411x18
+          text run at (0,0) width 411: "If the bug does not occur, you'll be left down here at the bottom."
 layer at (11,3097) size 125x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 116x13

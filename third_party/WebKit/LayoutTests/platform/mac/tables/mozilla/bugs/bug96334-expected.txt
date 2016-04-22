@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (214,2) size 756x40 [border: (1px solid #C0C0C0)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 752x36
                 text run at (2,2) width 752: "KEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLEooKEEPoTHEoTEXToHEREoASoLONGoASoPOSSIBLE"
-                text run at (2,20) width 605: "THIS SIMULATES THE PROBLEM ON THE WWW.MAPBLAST.COM/ \"CREATE MAP\""
+                text run at (2,20) width 602: "THIS SIMULATES THE PROBLEM ON THE WWW.MAPBLAST.COM/ \"CREATE MAP\""
 layer at (29,29) size 125x13 scrollWidth 132
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 131x13

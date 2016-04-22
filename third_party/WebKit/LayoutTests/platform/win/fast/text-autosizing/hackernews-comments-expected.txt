@@ -94,11 +94,11 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                                   LayoutText {#text} at (0,0) size 0x0
                                 LayoutBlockFlow (anonymous) at (1,26) size 580x330
                                   LayoutBR {BR} at (0,0) size 0x33
-                                  LayoutInline {SPAN} at (0,0) size 551x297
+                                  LayoutInline {SPAN} at (0,0) size 549x297
                                     LayoutText {#text} at (0,0) size 0x0
-                                    LayoutInline {FONT} at (0,0) size 551x297
-                                      LayoutText {#text} at (0,33) size 551x297
-                                        text run at (0,33) width 551: "Contrary to popular belief, blah blah blah"
+                                    LayoutInline {FONT} at (0,0) size 549x297
+                                      LayoutText {#text} at (0,33) size 549x297
+                                        text run at (0,33) width 549: "Contrary to popular belief, blah blah blah"
                                         text run at (0,66) width 518: "blah blah blah blah blah blah blah blah"
                                         text run at (0,99) width 518: "blah blah blah blah blah blah blah blah"
                                         text run at (0,132) width 518: "blah blah blah blah blah blah blah blah"

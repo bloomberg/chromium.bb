@@ -348,11 +348,11 @@ layer at (0,0) size 785x669 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutInline {FONT} at (0,0) size 290x45
                 LayoutInline {SPAN} at (0,0) size 290x45
                   LayoutText {#text} at (4,219) size 290x45
-                    text run at (4,219) width 165: "Get tomorrow's news today. "
-                    text run at (168,219) width 125: "FREE weekday email"
+                    text run at (4,219) width 164: "Get tomorrow's news today. "
+                    text run at (167,219) width 125: "FREE weekday email"
                     text run at (4,234) width 290: "report of the top stories in business & finance from"
-                    text run at (4,249) width 203: "BLOOMBERG NEWS at 5pm EST."
-              LayoutBR {BR} at (206,261) size 1x0
+                    text run at (4,249) width 201: "BLOOMBERG NEWS at 5pm EST."
+              LayoutBR {BR} at (204,261) size 1x0
               LayoutInline {A} at (0,0) size 180x18
                 LayoutInline {FONT} at (0,0) size 180x15
                   LayoutInline {SPAN} at (0,0) size 180x15
@@ -368,22 +368,22 @@ layer at (0,0) size 785x669 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     text run at (4,294) width 146: "our customer letters now."
               LayoutBR {BR} at (149,306) size 1x0
       LayoutBlockFlow {P} at (0,633) size 769x12
-        LayoutInline {FONT} at (0,0) size 410x12
-          LayoutText {#text} at (0,0) size 190x12
-            text run at (0,0) width 190: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
-          LayoutInline {A} at (0,0) size 76x12
-            LayoutText {#text} at (189,0) size 76x12
-              text run at (189,0) width 76: "Terms of Service"
-          LayoutText {#text} at (264,0) size 6x12
-            text run at (264,0) width 6: ", "
+        LayoutInline {FONT} at (0,0) size 409x12
+          LayoutText {#text} at (0,0) size 189x12
+            text run at (0,0) width 189: "\x{A9}1999 Bloomberg L.P. All rights reserved. "
+          LayoutInline {A} at (0,0) size 75x12
+            LayoutText {#text} at (188,0) size 75x12
+              text run at (188,0) width 75: "Terms of Service"
+          LayoutText {#text} at (262,0) size 7x12
+            text run at (262,0) width 7: ", "
           LayoutInline {A} at (0,0) size 63x12
-            LayoutText {#text} at (269,0) size 63x12
-              text run at (269,0) width 63: "Privacy Policy"
-          LayoutText {#text} at (331,0) size 24x12
-            text run at (331,0) width 24: " and "
+            LayoutText {#text} at (268,0) size 63x12
+              text run at (268,0) width 63: "Privacy Policy"
+          LayoutText {#text} at (330,0) size 23x12
+            text run at (330,0) width 23: " and "
           LayoutInline {A} at (0,0) size 54x12
-            LayoutText {#text} at (354,0) size 54x12
-              text run at (354,0) width 54: "Trademarks"
-          LayoutText {#text} at (407,0) size 3x12
-            text run at (407,0) width 3: "."
+            LayoutText {#text} at (352,0) size 54x12
+              text run at (352,0) width 54: "Trademarks"
+          LayoutText {#text} at (405,0) size 4x12
+            text run at (405,0) width 4: "."
         LayoutText {#text} at (0,0) size 0x0

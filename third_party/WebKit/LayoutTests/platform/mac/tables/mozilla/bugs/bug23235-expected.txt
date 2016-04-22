@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 149x18
           text run at (0,0) width 149: "Testcase distilled from "
-        LayoutInline {A} at (0,0) size 190x18 [color=#0000EE]
-          LayoutText {#text} at (148,0) size 190x18
-            text run at (148,0) width 190: "http://webdeveloper.com/xml"
+        LayoutInline {A} at (0,0) size 189x18 [color=#0000EE]
+          LayoutText {#text} at (148,0) size 189x18
+            text run at (148,0) width 189: "http://webdeveloper.com/xml"
       LayoutTable {TABLE} at (0,34) size 644x102 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 642x100
           LayoutTableRow {TR} at (0,0) size 642x100

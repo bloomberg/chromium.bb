@@ -4,13 +4,13 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584 [bgcolor=#FFFFFF]
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutInline {B} at (0,0) size 434x36
+        LayoutInline {B} at (0,0) size 433x36
           LayoutText {#text} at (0,0) size 156x18
             text run at (0,0) width 156: "Testcase distilled from "
-          LayoutInline {A} at (0,0) size 278x18 [color=#0000EE]
-            LayoutText {#text} at (156,0) size 278x18
-              text run at (156,0) width 278: "http://www.linuxplanet.com/linuxplanet/"
-          LayoutBR {BR} at (433,14) size 1x0
+          LayoutInline {A} at (0,0) size 277x18 [color=#0000EE]
+            LayoutText {#text} at (156,0) size 277x18
+              text run at (156,0) width 277: "http://www.linuxplanet.com/linuxplanet/"
+          LayoutBR {BR} at (432,14) size 1x0
           LayoutText {#text} at (0,18) size 147x18
             text run at (0,18) width 147: "First cell is coded as: "
         LayoutInline {CODE} at (0,0) size 282x15

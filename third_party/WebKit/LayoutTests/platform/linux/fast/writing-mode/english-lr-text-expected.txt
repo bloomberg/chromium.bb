@@ -22,12 +22,12 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (42,419) size 20x5
           text run at (42,419) width 5: " "
         LayoutBR {BR} at (46,424) size 0x0
-        LayoutInline {SPAN} at (0,0) size 20x443
-          LayoutText {#text} at (63,0) size 20x443
-            text run at (63,0) width 443: "This text should have a red shadow that is offset horizontally."
-        LayoutText {#text} at (63,442) size 20x6
-          text run at (63,442) width 5: " "
-        LayoutBR {BR} at (67,447) size 0x1
+        LayoutInline {SPAN} at (0,0) size 20x442
+          LayoutText {#text} at (63,0) size 20x442
+            text run at (63,0) width 442: "This text should have a red shadow that is offset horizontally."
+        LayoutText {#text} at (63,441) size 20x6
+          text run at (63,441) width 5: " "
+        LayoutBR {BR} at (67,446) size 0x1
         LayoutBR {BR} at (84,0) size 20x0
         LayoutInline {SPAN} at (0,0) size 20x452
           LayoutText {#text} at (105,0) size 20x452

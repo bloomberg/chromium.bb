@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
                 text run at (119,20) width 348: "portfolios and other personalized content can't be viewed "
                 text run at (466,20) width 16: "by"
                 text run at (0,40) width 330: "others using this computer, sign out of Netcenter when "
-                text run at (330,40) width 138: "you are finished. When"
+                text run at (329,40) width 139: "you are finished. When"
                 text run at (0,60) width 217: "you want to view your personalized "
                 text run at (217,60) width 264: "content again, all you have to do is sign in to"
                 text run at (0,80) width 64: "Netcenter."

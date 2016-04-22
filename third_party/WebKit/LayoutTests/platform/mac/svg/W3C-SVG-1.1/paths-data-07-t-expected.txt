@@ -4,15 +4,15 @@ layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (68,34) size 368x204
       LayoutSVGContainer {g} at (68,34) size 368x204 [transform={m=((1.80,0.00)(0.00,1.80)) t=(-360.00,-270.00)}]
-        LayoutSVGText {text} at (288,168) size 50x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 50x14
-            chunk 1 text run 1 at (288.00,180.00) startOffset 0 endOffset 10 width 49.32: "m, h, v, h"
-        LayoutSVGText {text} at (288,182) size 46x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 46x14
-            chunk 1 text run 1 at (288.00,194.00) startOffset 0 endOffset 10 width 45.33: "v, h, v, h"
-        LayoutSVGText {text} at (304,196) size 19x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 19x14
-            chunk 1 text run 1 at (304.00,208.00) startOffset 0 endOffset 4 width 18.66: "v, z"
+        LayoutSVGText {text} at (288,168) size 49x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 49x14
+            chunk 1 text run 1 at (288.00,180.00) startOffset 0 endOffset 10 width 48.43: "m, h, v, h"
+        LayoutSVGText {text} at (288,182) size 44x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 44x14
+            chunk 1 text run 1 at (288.00,194.00) startOffset 0 endOffset 10 width 43.55: "v, h, v, h"
+        LayoutSVGText {text} at (304,196) size 18x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 18x14
+            chunk 1 text run 1 at (304.00,208.00) startOffset 0 endOffset 4 width 17.77: "v, z"
         LayoutSVGPath {path} at (71,71) size 164x164 [stroke={[type=SOLID] [color=#000000]}] [data="m 240 190 h 30 v 30 h 30 v 30 h 30 v 30 h -90 v -90 Z"]
         LayoutSVGRect {rect} at (68,68) size 8x8 [fill={[type=SOLID] [color=#0000FF]}] [x=238.00] [y=188.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (122,68) size 8x8 [fill={[type=SOLID] [color=#0000FF]}] [x=268.00] [y=188.00] [width=4.00] [height=4.00]

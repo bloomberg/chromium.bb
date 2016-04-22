@@ -39,9 +39,9 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (208,2) width 62: "text links"
       LayoutBlockFlow {HR} at (0,273) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,291) size 769x20
-        LayoutInline {B} at (0,0) size 461x19
-          LayoutText {#text} at (0,0) size 461x19
-            text run at (0,0) width 461: "Now, nuke the IMG (two of which are colspan=3) -- the table lines up."
+        LayoutInline {B} at (0,0) size 460x19
+          LayoutText {#text} at (0,0) size 460x19
+            text run at (0,0) width 460: "Now, nuke the IMG (two of which are colspan=3) -- the table lines up."
       LayoutTable {TABLE} at (0,327) size 590x189 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 588x187
           LayoutTableRow {TR} at (0,2) size 588x24
@@ -107,9 +107,9 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,0) width 68: "etc., etc. ..."
       LayoutBlockFlow {HR} at (0,767) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,785) size 769x20
-        LayoutInline {B} at (0,0) size 509x19
-          LayoutText {#text} at (0,0) size 509x19
-            text run at (0,0) width 509: "Simpler comparison -- nuke the IMG (replace with text) -- tables line up now."
+        LayoutInline {B} at (0,0) size 508x19
+          LayoutText {#text} at (0,0) size 508x19
+            text run at (0,0) width 508: "Simpler comparison -- nuke the IMG (replace with text) -- tables line up now."
       LayoutTable {TABLE} at (0,821) size 590x128 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 588x126
           LayoutTableRow {TR} at (0,2) size 588x24

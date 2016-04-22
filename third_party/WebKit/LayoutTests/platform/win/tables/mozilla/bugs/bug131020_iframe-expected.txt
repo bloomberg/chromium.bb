@@ -69,9 +69,9 @@ layer at (0,0) size 785x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (315,1) size 113x17
                   text run at (315,1) width 113: "22. Oktober 2001"
                 LayoutBR {BR} at (427,15) size 1x0
-                LayoutText {#text} at (128,19) size 487x17
-                  text run at (128,19) width 439: "Download-Bereich ist vorrerst geschlo\x{DF}en, kommen Sie bitte sp\x{E4}ter "
-                  text run at (566,19) width 49: "wieder."
+                LayoutText {#text} at (129,19) size 485x17
+                  text run at (129,19) width 438: "Download-Bereich ist vorrerst geschlo\x{DF}en, kommen Sie bitte sp\x{E4}ter "
+                  text run at (567,19) width 47: "wieder."
             LayoutTableRow {TR} at (0,336) size 743x56
               LayoutTableCell {TD} at (0,336) size 743x56 [border: (1px solid #000000)] [r=6 c=0 rs=1 cs=1]
                 LayoutText {#text} at (275,1) size 193x17
@@ -139,8 +139,8 @@ layer at (0,0) size 785x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (315,1) size 113x17
                   text run at (315,1) width 113: "11. Oktober 2001"
                 LayoutBR {BR} at (427,15) size 1x0
-                LayoutText {#text} at (124,19) size 495x17
-                  text run at (124,19) width 495: "neues Script ist online, .htaccess-Password-Manager, mehr Info unter Scripte"
+                LayoutText {#text} at (125,19) size 493x17
+                  text run at (125,19) width 493: "neues Script ist online, .htaccess-Password-Manager, mehr Info unter Scripte"
             LayoutTableRow {TR} at (0,720) size 743x38
               LayoutTableCell {TD} at (0,720) size 743x38 [border: (1px solid #000000)] [r=10 c=0 rs=1 cs=1]
                 LayoutText {#text} at (307,1) size 129x17
@@ -164,10 +164,10 @@ layer at (0,0) size 785x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (318,1) size 107x17
                   text run at (318,1) width 107: "08. August 2001"
                 LayoutBR {BR} at (424,15) size 1x0
-                LayoutText {#text} at (98,19) size 547x17
-                  text run at (98,19) width 470: "Ich schreibe gerade eine neue Version von dem Download Counter, bitte "
-                  text run at (567,19) width 78: "schreibt mir"
-                LayoutBR {BR} at (644,33) size 1x0
+                LayoutText {#text} at (99,19) size 545x17
+                  text run at (99,19) width 468: "Ich schreibe gerade eine neue Version von dem Download Counter, bitte "
+                  text run at (566,19) width 78: "schreibt mir"
+                LayoutBR {BR} at (643,33) size 1x0
                 LayoutText {#text} at (190,37) size 363x17
                   text run at (190,37) width 363: "ins Forum was Ihr da alles haben wollt, wer das benutzt!"
             LayoutTableRow {TR} at (0,870) size 743x56
@@ -229,8 +229,8 @@ layer at (0,0) size 785x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (239,55) size 265x17
                   text run at (239,55) width 265: "Mehr Info unter \"Perl Scripte\" im Men\x{FC}. "
                 LayoutBR {BR} at (503,69) size 1x0
-                LayoutText {#text} at (156,73) size 431x17
-                  text run at (156,73) width 431: "P.S. den Umstieg auf die Version3.3 kann ich Euch nur empfehlen!"
+                LayoutText {#text} at (157,73) size 429x17
+                  text run at (157,73) width 429: "P.S. den Umstieg auf die Version3.3 kann ich Euch nur empfehlen!"
             LayoutTableRow {TR} at (0,1186) size 743x74
               LayoutTableCell {TD} at (0,1186) size 743x74 [border: (1px solid #000000)] [r=18 c=0 rs=1 cs=1]
                 LayoutText {#text} at (328,1) size 87x17
@@ -250,9 +250,9 @@ layer at (0,0) size 785x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (328,1) size 87x17
                   text run at (328,1) width 87: "01. Juni 2001"
                 LayoutBR {BR} at (414,15) size 1x0
-                LayoutText {#text} at (215,19) size 313x17
-                  text run at (215,19) width 313: "Ein neues Script ist online! G5-ICQ Newsletter. "
-                LayoutBR {BR} at (527,33) size 1x0
+                LayoutText {#text} at (216,19) size 311x17
+                  text run at (216,19) width 311: "Ein neues Script ist online! G5-ICQ Newsletter. "
+                LayoutBR {BR} at (526,33) size 1x0
                 LayoutText {#text} at (241,37) size 261x17
                   text run at (241,37) width 261: "Mehr Info unter \"Perl Scripte\" im Men\x{FC}."
             LayoutTableRow {TR} at (0,1316) size 743x56

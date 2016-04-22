@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {H4} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 156x17
           text run at (0,0) width 156: "Testcase distilled from "
-        LayoutInline {A} at (0,0) size 510x17 [color=#0000EE]
-          LayoutText {#text} at (155,0) size 510x17
-            text run at (155,0) width 510: "http://www.download.com/pc/list/0,339,0-b-0-0-a-1,00.html?st.dl.fd.ag.new"
+        LayoutInline {A} at (0,0) size 509x17 [color=#0000EE]
+          LayoutText {#text} at (155,0) size 509x17
+            text run at (155,0) width 509: "http://www.download.com/pc/list/0,339,0-b-0-0-a-1,00.html?st.dl.fd.ag.new"
       LayoutBlockFlow {H4} at (0,39.27) size 784x18
         LayoutText {#text} at (0,0) size 308x17
           text run at (0,0) width 308: "Minimize the window and then open it again."

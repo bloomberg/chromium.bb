@@ -7,8 +7,8 @@ layer at (0,0) size 1066x825 backgroundClip at (0,0) size 1066x799 clip at (0,0)
         LayoutText {#text} at (0,0) size 1036x35
           text run at (0,0) width 566: "This is a test that only dumps the layout tree, and doesn't actually display the page. This "
           text run at (565,0) width 471: "tests some peculiarities in the test framework for printing. To run this test"
-          text run at (0,18) width 106: "manually, run it "
-          text run at (105,18) width 228: "with content_shell --run-layout-test"
+          text run at (0,18) width 105: "manually, run it "
+          text run at (104,18) width 228: "with content_shell --run-layout-test"
       LayoutBlockFlow {DIV} at (0,52) size 1050x18
         LayoutText {#text} at (0,0) size 165x17
           text run at (0,0) width 165: "This should be on page 1."

@@ -81,8 +81,8 @@ layer at (0,0) size 785x1092 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (364,18) width 341: "things change. Remove the image and things change."
       LayoutBlockFlow {P} at (0,1006) size 769x18
         LayoutText {#text} at (0,0) size 609x18
-          text run at (0,0) width 505: "(Note: If the image has disappeared from the server, replace it with any 593px "
-          text run at (504,0) width 105: "image you like.)"
+          text run at (0,0) width 504: "(Note: If the image has disappeared from the server, replace it with any 593px "
+          text run at (503,0) width 106: "image you like.)"
       LayoutBlockFlow {P} at (0,1040) size 769x18
         LayoutText {#text} at (0,0) size 57x18
           text run at (0,0) width 57: "See also "

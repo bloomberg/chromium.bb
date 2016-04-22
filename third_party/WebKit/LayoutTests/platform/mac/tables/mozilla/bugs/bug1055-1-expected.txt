@@ -30,18 +30,18 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (277,2) width 290: "style=\"border-top: green 10px solid;\""
         LayoutText {#text} at (566,0) size 5x18
           text run at (566,0) width 5: "."
-      LayoutTable {TABLE} at (0,121.44) size 459x116 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 457x114
-          LayoutTableRow {TR} at (0,5) size 457x31
-            LayoutTableCell {TD} at (5,5) size 447x31 [border: (10px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,11) size 443x18
-                text run at (2,11) width 443: "Every cell in this table should have a 10-pixel solid green top border."
-          LayoutTableRow {TR} at (0,41) size 457x68
+      LayoutTable {TABLE} at (0,121.44) size 458x116 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 456x114
+          LayoutTableRow {TR} at (0,5) size 456x31
+            LayoutTableCell {TD} at (5,5) size 446x31 [border: (10px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (2,11) size 442x18
+                text run at (2,11) width 442: "Every cell in this table should have a 10-pixel solid green top border."
+          LayoutTableRow {TR} at (0,41) size 456x68
             LayoutTableCell {TD} at (5,59) size 112x31 [border: (10px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,11) size 54x18
                 text run at (2,11) width 54: "Cell one"
-            LayoutTableCell {TD} at (122,41) size 330x68 [border: (10px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow (anonymous) at (2,11) size 326x18
+            LayoutTableCell {TD} at (122,41) size 329x68 [border: (10px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (2,11) size 325x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"
               LayoutTable {TABLE} at (2,29) size 166x37 [border: (1px outset #808080)]
@@ -73,17 +73,17 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (314,2) width 289: "style=\"border-top: green 10px solid;\""
         LayoutText {#text} at (603,0) size 4x18
           text run at (603,0) width 4: "."
-      LayoutTable {TABLE} at (0,305.44) size 455x109
-        LayoutTableSection {TBODY} at (0,0) size 455x109
-          LayoutTableRow {TR} at (0,5) size 455x30
-            LayoutTableCell {TD} at (5,5) size 445x30 [border: (10px solid #008000) none] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (1,11) size 443x18
-                text run at (1,11) width 443: "Every cell in this table should have a 10-pixel solid green top border."
-          LayoutTableRow {TR} at (0,40) size 455x64
-            LayoutTableCell {TD} at (5,57) size 112x30 [border: (10px solid #008000) none] [r=1 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,305.44) size 454x109
+        LayoutTableSection {TBODY} at (0,0) size 454x109
+          LayoutTableRow {TR} at (0,5) size 454x30
+            LayoutTableCell {TD} at (5,5) size 444x30 [border: (10px solid #008000) none] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (1,11) size 442x18
+                text run at (1,11) width 442: "Every cell in this table should have a 10-pixel solid green top border."
+          LayoutTableRow {TR} at (0,40) size 454x64
+            LayoutTableCell {TD} at (5,57) size 111x30 [border: (10px solid #008000) none] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,11) size 54x18
                 text run at (1,11) width 54: "Cell one"
-            LayoutTableCell {TD} at (122,40) size 328x64 [border: (10px solid #008000) none] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (121,40) size 328x64 [border: (10px solid #008000) none] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (1,11) size 326x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"
@@ -120,18 +120,18 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (277,2) width 305: "style=\"border-right: green 10px solid;\""
         LayoutText {#text} at (581,0) size 5x18
           text run at (581,0) width 5: "."
-      LayoutTable {TABLE} at (0,535.88) size 477x89 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 475x87
-          LayoutTableRow {TR} at (0,5) size 475x22
-            LayoutTableCell {TD} at (5,5) size 465x22 [border: (1px inset #808080) (10px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,2) size 452x18
-                text run at (2,2) width 452: "Every cell in this table should have a 10-pixel solid green right border."
-          LayoutTableRow {TR} at (0,32) size 475x50
+      LayoutTable {TABLE} at (0,535.88) size 476x89 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 474x87
+          LayoutTableRow {TR} at (0,5) size 474x22
+            LayoutTableCell {TD} at (5,5) size 464x22 [border: (1px inset #808080) (10px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (2,2) size 451x18
+                text run at (2,2) width 451: "Every cell in this table should have a 10-pixel solid green right border."
+          LayoutTableRow {TR} at (0,32) size 474x50
             LayoutTableCell {TD} at (5,46) size 120x22 [border: (1px inset #808080) (10px solid #008000) (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 54x18
                 text run at (2,2) width 54: "Cell one"
-            LayoutTableCell {TD} at (130,32) size 340x50 [border: (1px inset #808080) (10px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow (anonymous) at (2,2) size 327x18
+            LayoutTableCell {TD} at (130,32) size 339x50 [border: (1px inset #808080) (10px solid #008000) (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (2,2) size 326x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"
               LayoutTable {TABLE} at (2,20) size 175x28 [border: (1px outset #808080)]
@@ -163,17 +163,17 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (277,2) width 305: "style=\"border-right: green 10px solid;\""
         LayoutText {#text} at (581,0) size 5x18
           text run at (581,0) width 5: "."
-      LayoutTable {TABLE} at (0,692.88) size 474x79
-        LayoutTableSection {TBODY} at (0,0) size 474x79
-          LayoutTableRow {TR} at (0,5) size 474x20
-            LayoutTableCell {TD} at (5,5) size 464x20 [border: none (10px solid #008000) none] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (1,1) size 452x18
-                text run at (1,1) width 452: "Every cell in this table should have a 10-pixel solid green right border."
-          LayoutTableRow {TR} at (0,30) size 474x44
-            LayoutTableCell {TD} at (5,42) size 121x20 [border: none (10px solid #008000) none] [r=1 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,692.88) size 473x79
+        LayoutTableSection {TBODY} at (0,0) size 473x79
+          LayoutTableRow {TR} at (0,5) size 473x20
+            LayoutTableCell {TD} at (5,5) size 463x20 [border: none (10px solid #008000) none] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (1,1) size 451x18
+                text run at (1,1) width 451: "Every cell in this table should have a 10-pixel solid green right border."
+          LayoutTableRow {TR} at (0,30) size 473x44
+            LayoutTableCell {TD} at (5,42) size 120x20 [border: none (10px solid #008000) none] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 54x18
                 text run at (1,1) width 54: "Cell one"
-            LayoutTableCell {TD} at (131,30) size 338x44 [border: none (10px solid #008000) none] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (130,30) size 338x44 [border: none (10px solid #008000) none] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (1,1) size 326x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"
@@ -390,17 +390,17 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (277,2) width 258: "style=\"border: green 10px solid;\""
         LayoutText {#text} at (534,0) size 5x18
           text run at (534,0) width 5: "."
-      LayoutTable {TABLE} at (0,1665.19) size 452x143 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 450x141
-          LayoutTableRow {TR} at (0,5) size 450x40
-            LayoutTableCell {TD} at (5,5) size 440x40 [border: (10px solid #008000)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (11,11) size 418x18
-                text run at (11,11) width 418: "Every cell in this table should have a 10-pixel solid green border."
-          LayoutTableRow {TR} at (0,50) size 450x86
-            LayoutTableCell {TD} at (5,73) size 117x40 [border: (10px solid #008000)] [r=1 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,1665.19) size 451x143 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 449x141
+          LayoutTableRow {TR} at (0,5) size 449x40
+            LayoutTableCell {TD} at (5,5) size 439x40 [border: (10px solid #008000)] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (11,11) size 417x18
+                text run at (11,11) width 417: "Every cell in this table should have a 10-pixel solid green border."
+          LayoutTableRow {TR} at (0,50) size 449x86
+            LayoutTableCell {TD} at (5,73) size 116x40 [border: (10px solid #008000)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (11,11) size 54x18
                 text run at (11,11) width 54: "Cell one"
-            LayoutTableCell {TD} at (127,50) size 318x86 [border: (10px solid #008000)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (126,50) size 318x86 [border: (10px solid #008000)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (11,11) size 296x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"
@@ -433,17 +433,17 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (314,2) width 258: "style=\"border: green 10px solid;\""
         LayoutText {#text} at (571,0) size 5x18
           text run at (571,0) width 5: "."
-      LayoutTable {TABLE} at (0,1876.19) size 450x139
-        LayoutTableSection {TBODY} at (0,0) size 450x139
-          LayoutTableRow {TR} at (0,5) size 450x40
-            LayoutTableCell {TD} at (5,5) size 440x40 [border: (10px solid #008000)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (11,11) size 418x18
-                text run at (11,11) width 418: "Every cell in this table should have a 10-pixel solid green border."
-          LayoutTableRow {TR} at (0,50) size 450x84
-            LayoutTableCell {TD} at (5,72) size 118x40 [border: (10px solid #008000)] [r=1 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (0,1876.19) size 449x139
+        LayoutTableSection {TBODY} at (0,0) size 449x139
+          LayoutTableRow {TR} at (0,5) size 449x40
+            LayoutTableCell {TD} at (5,5) size 439x40 [border: (10px solid #008000)] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (11,11) size 417x18
+                text run at (11,11) width 417: "Every cell in this table should have a 10-pixel solid green border."
+          LayoutTableRow {TR} at (0,50) size 449x84
+            LayoutTableCell {TD} at (5,72) size 117x40 [border: (10px solid #008000)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (11,11) size 54x18
                 text run at (11,11) width 54: "Cell one"
-            LayoutTableCell {TD} at (128,50) size 317x84 [border: (10px solid #008000)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (127,50) size 317x84 [border: (10px solid #008000)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (11,11) size 295x18
                 LayoutText {#text} at (0,0) size 55x18
                   text run at (0,0) width 55: "Cell two"

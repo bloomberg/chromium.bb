@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#999999]
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 470x18
-          text run at (0,0) width 427: "Problem: Tables inside a DIV get border=1 after moving the DIV. "
-          text run at (426,0) width 44: "If you "
+        LayoutText {#text} at (0,0) size 468x18
+          text run at (0,0) width 425: "Problem: Tables inside a DIV get border=1 after moving the DIV. "
+          text run at (424,0) width 44: "If you "
         LayoutInline {A} at (0,0) size 127x18 [color=#0000EE]
           LayoutInline {B} at (0,0) size 127x18
-            LayoutText {#text} at (469,0) size 127x18
-              text run at (469,0) width 127: "remove the border"
-        LayoutText {#text} at (595,0) size 781x36
-          text run at (595,0) width 186: " attribute from the tables, the"
+            LayoutText {#text} at (467,0) size 127x18
+              text run at (467,0) width 127: "remove the border"
+        LayoutText {#text} at (593,0) size 779x36
+          text run at (593,0) width 186: " attribute from the tables, the"
           text run at (0,18) width 153: "border doesn't show up."
 layer at (70,70) size 173x54
   LayoutBlockFlow (positioned) {DIV} at (70,70) size 173x54

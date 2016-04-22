@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,4) size 625x77
+  LayoutSVGRoot {svg} at (0,4) size 621x77
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceFilter {filter} [id="myfilter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         [feGaussianBlur stdDeviation="3.00, 3.00"]
           [SourceGraphic]
-    LayoutSVGText {text} at (4,11) size 564x63 contains 1 chunk(s)
-      [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52.37,4.70) size 676.42x75.60
-      LayoutSVGInlineText {#text} at (0,0) size 564x63
-        [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52.37,4.70) size 676.42x75.60
-        chunk 1 text run 1 at (4.00,60.00) startOffset 0 endOffset 26 width 563.70: "This text should be blury."
+    LayoutSVGText {text} at (4,11) size 561x63 contains 1 chunk(s)
+      [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52,4.70) size 672.13x75.60
+      LayoutSVGInlineText {#text} at (0,0) size 561x63
+        [filter="myfilter"] LayoutSVGResourceFilter {filter} at (-52,4.70) size 672.13x75.60
+        chunk 1 text run 1 at (4.00,60.00) startOffset 0 endOffset 26 width 560.12: "This text should be blury."

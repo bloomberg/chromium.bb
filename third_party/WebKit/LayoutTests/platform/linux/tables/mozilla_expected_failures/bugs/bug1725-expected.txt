@@ -64,4 +64,4 @@ layer at (0,0) size 800x600
                 text run at (0,20) width 62: "should be "
                 text run at (62,20) width 374: "independently verified. The price shown may represent the top"
                 text run at (0,40) width 91: "or bottom of a "
-                text run at (91,40) width 336: "price range listing and not necessarily a fixed price offer."
+                text run at (91,40) width 335: "price range listing and not necessarily a fixed price offer."

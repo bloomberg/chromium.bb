@@ -12,15 +12,15 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 504x174
           LayoutTableRow {TR} at (0,2) size 504x84
             LayoutTableCell {TD} at (2,2) size 500x84 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (2,2) size 493x79
+              LayoutText {#text} at (2,2) size 492x79
                 text run at (2,2) width 417: "Cons For Pokemon \"They're Pokemon card sharks out there. This is "
                 text run at (419,2) width 66: "worse than"
                 text run at (2,22) width 366: "the Cabbage Patch Kid craze because now it's the kids who "
                 text run at (368,22) width 114: "are actually fighting"
                 text run at (2,42) width 233: "each other instead of just the parents.\" "
                 text run at (235,42) width 240: "-- Children are doing anything, including"
-                text run at (2,62) width 145: "breaking the law, to get "
-                text run at (147,62) width 348: "their grubby hands on some trading cards, observe police."
+                text run at (2,62) width 144: "breaking the law, to get "
+                text run at (145,62) width 349: "their grubby hands on some trading cards, observe police."
           LayoutTableRow {TR} at (0,88) size 504x84
             LayoutTableCell {TD} at (2,88) size 272x24 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 40x19

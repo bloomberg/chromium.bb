@@ -19,4 +19,4 @@ layer at (0,0) size 800x600
                 text run at (0,0) width 480: "Spain stretched their unbeaten streak to six games as they beat Croatia 3-1 "
                 text run at (479,0) width 152: "in a friendly at Seville's"
                 text run at (0,18) width 317: "new Olympic stadium which was inaugurated on "
-                text run at (316,18) width 79: "Wednesday."
+                text run at (316,18) width 78: "Wednesday."

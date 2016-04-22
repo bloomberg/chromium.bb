@@ -12,8 +12,8 @@ layer at (0,0) size 800x96
                   LayoutTableRow {TR} at (0,0) size 298x74
                     LayoutTableCell {TD} at (0,0) size 298x74 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutText {#text} at (1,1) size 294x72
-                        text run at (1,1) width 285: "Presidential candidates George W. Bush and"
-                        text run at (1,19) width 251: "Al Gore are expected to show a kinder,"
+                        text run at (1,1) width 284: "Presidential candidates George W. Bush and"
+                        text run at (1,19) width 250: "Al Gore are expected to show a kinder,"
                         text run at (1,37) width 294: "gentler side Wednesday in the second of three"
                         text run at (1,55) width 185: "nationally televised debates. "
                       LayoutBR {BR} at (185,69) size 1x0

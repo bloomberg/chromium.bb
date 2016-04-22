@@ -88,10 +88,10 @@ layer at (8,8) size 769x1428 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (1,1) size 264x18
                 text run at (1,1) width 264: "This is really evil, but completely valid..."
             LayoutBlockFlow {P} at (21,449) size 444x110 [border: (1px dotted #FFFF00)]
-              LayoutText {#text} at (1,1) size 431x108
+              LayoutText {#text} at (1,1) size 430x108
                 text run at (1,1) width 426: "This document should have two cells, side by side: one on the left,"
                 text run at (1,19) width 426: "the other on the right. The one on the left should be red with white"
-                text run at (1,37) width 431: "writing and a thick white border. It should contain four dotted lines"
+                text run at (1,37) width 430: "writing and a thick white border. It should contain four dotted lines"
                 text run at (1,55) width 388: "separated by a blank line, followed by a dotted bordered box"
                 text run at (1,73) width 403: "containing the document title, and another dotted bordered box"
                 text run at (1,91) width 286: "containing the stylesheet, also shown below:"

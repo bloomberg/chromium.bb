@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 770x54
-          text run at (0,0) width 762: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the"
+          text run at (0,0) width 761: "This table contains an <applet> that will not load -- you can see the space get allocated and then reflow. Notice that the"
           text run at (0,18) width 638: "final table is clipped on the right hand side -- try shrinking the window and notice how the clipping "
           text run at (637,18) width 133: "increases. (I couldn't"
           text run at (0,36) width 348: "really simplify this further without losing some of the "

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 776x18
-          text run at (0,0) width 776: "There are two boxes below, both rotated 180\x{B0} in Y. The rightmost one has backface-visibility: hidden, so you can't see it."
+        LayoutText {#text} at (0,0) size 773x18
+          text run at (0,0) width 773: "There are two boxes below, both rotated 180\x{B0} in Y. The rightmost one has backface-visibility: hidden, so you can't see it."
       LayoutBlockFlow {DIV} at (0,34) size 402x202 [border: (1px solid #000000)]
         LayoutText {#text} at (197,183) size 4x18
           text run at (197,183) width 4: " "

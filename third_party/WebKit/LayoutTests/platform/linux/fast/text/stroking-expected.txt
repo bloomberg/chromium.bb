@@ -13,4 +13,4 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,228) size 784x152 [textStrokeColor=#0000FF] [textStrokeWidth=1.33]
         LayoutText {#text} at (0,1) size 589x149
           text run at (0,1) width 589: "Blue stroke, no fill, red"
-          text run at (0,77) width 211: "shadow."
+          text run at (0,77) width 207: "shadow."

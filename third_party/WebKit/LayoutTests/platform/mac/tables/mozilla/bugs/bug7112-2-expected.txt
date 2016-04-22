@@ -38,7 +38,7 @@ layer at (0,0) size 785x1000 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (671,0) width 90: "The CSS spec"
           text run at (0,18) width 765: "says that the align=center carries down as text-align and never acts to move blocks. You're not moving the block for the"
           text run at (0,36) width 413: "table (above), but you're not doing the text-align inside it either. "
-          text run at (412,36) width 343: "In quirks mode you should do the former, in standard"
+          text run at (412,36) width 341: "In quirks mode you should do the former, in standard"
           text run at (0,54) width 104: "mode, the latter."
       LayoutTable {TABLE} at (0,276) size 230x138 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 228x136
@@ -123,8 +123,8 @@ layer at (0,0) size 785x1000 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                         LayoutText {#text} at (353,0) size 51x18
                           text run at (353,0) width 51: "A table."
       LayoutBlockFlow {P} at (0,774) size 769x18
-        LayoutText {#text} at (0,0) size 408x18
-          text run at (0,0) width 408: "However, in standard mode, the first table should look like this:"
+        LayoutText {#text} at (0,0) size 407x18
+          text run at (0,0) width 407: "However, in standard mode, the first table should look like this:"
       LayoutTable {TABLE} at (0,808) size 769x48
         LayoutTableSection {TBODY} at (0,0) size 769x48
           LayoutTableRow {TR} at (0,2) size 769x44

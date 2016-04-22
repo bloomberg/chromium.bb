@@ -29,4 +29,4 @@ layer at (0,0) size 800x600
                           LayoutText {#text} at (4,0) size 350x36
                             text run at (4,0) width 17: "to "
                             text run at (20,0) width 330: "Receive 50% Off Home Delivery of The New York"
-                            text run at (0,18) width 120: "Times Newspaper."
+                            text run at (0,18) width 119: "Times Newspaper."

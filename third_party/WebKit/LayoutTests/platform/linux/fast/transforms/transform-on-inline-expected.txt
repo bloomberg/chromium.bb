@@ -14,13 +14,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 27x19
           text run at (0,0) width 27: "The "
-        LayoutText {#text} at (158,0) size 541x19
-          text run at (158,0) width 541: " has a transform, which has no effect on inlines. It also has opacity to throw it into a Layer."
+        LayoutText {#text} at (158,0) size 540x19
+          text run at (158,0) width 540: " has a transform, which has no effect on inlines. It also has opacity to throw it into a Layer."
       LayoutBlockFlow {P} at (0,72) size 784x20
         LayoutText {#text} at (0,0) size 27x19
           text run at (0,0) width 27: "The "
-        LayoutText {#text} at (158,0) size 519x19
-          text run at (158,0) width 519: " has a transform and opacity, and is an inline-block. So it should respect the transform."
+        LayoutText {#text} at (158,0) size 518x19
+          text run at (158,0) width 518: " has a transform and opacity, and is an inline-block. So it should respect the transform."
 layer at (8,44) size 131x19 transparent
   LayoutInline {SPAN} at (0,0) size 131x19
     LayoutText {#text} at (27,0) size 131x19

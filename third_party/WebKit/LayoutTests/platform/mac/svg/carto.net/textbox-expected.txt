@@ -19,14 +19,14 @@ layer at (0,0) size 800x600
               LayoutSVGInlineText {#text} at (0,0) size 17x17
                 chunk 1 text run 1 at (105.00,52.00) startOffset 0 endOffset 2 width 16.67: "50"
             LayoutSVGPath {line} at (77,30) size 2x13 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=100.00] [y1=55.00] [x2=100.00] [y2=38.50]
-    LayoutSVGContainer {g} at (77,233) size 339x26 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,300.00)}]
-      LayoutSVGContainer {g} at (77,233) size 339x26
+    LayoutSVGContainer {g} at (77,233) size 338x26 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,300.00)}]
+      LayoutSVGContainer {g} at (77,233) size 338x26
         LayoutSVGRect {rect} at (77,233) size 182x26 [stroke={[type=SOLID] [color=#696969] [stroke width=1.50]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=230.00] [height=30.00]
-        LayoutSVGViewportContainer {svg} at (77,240) size 339x15
-          LayoutSVGContainer {g} at (77,240) size 339x15
-            LayoutSVGText {text} at (5,7) size 428x19 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 428x18
-                chunk 1 text run 1 at (5.00,22.00) startOffset 0 endOffset 66 width 427.36: "This is a transformed textbox with a very, very, very long content"
+        LayoutSVGViewportContainer {svg} at (77,240) size 338x15
+          LayoutSVGContainer {g} at (77,240) size 338x15
+            LayoutSVGText {text} at (5,7) size 426x19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 426x18
+                chunk 1 text run 1 at (5.00,22.00) startOffset 0 endOffset 66 width 425.13: "This is a transformed textbox with a very, very, very long content"
             LayoutSVGPath {line} at (77,241) size 2x13 [stroke={[type=SOLID] [color=#FF0000] [stroke width=1.50]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=25.00] [x2=0.00] [y2=8.50]
     LayoutSVGContainer {g} at (78,28) size 656x258
       LayoutSVGText {text} at (100,215) size 65x19 contains 1 chunk(s)

@@ -11,7 +11,7 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (0,0) size 151x17
           chunk 1 (middle anchor) text run 1 at (149.97,50.00) startOffset 0 endOffset 21 width 150.07: "Text Element Features"
       LayoutSVGContainer {g} at (45,72) size 405x417
-        LayoutSVGText {text} at (45,72) size 318x36 contains 1 chunk(s)
+        LayoutSVGText {text} at (45,72) size 317x36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,15) size 101x17
             chunk 1 text run 1 at (45.00,100.00) startOffset 0 endOffset 16 width 100.98: "Text can change "
           LayoutSVGTSpan {tspan} at (0,0) size 56x36
@@ -25,14 +25,14 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (231,15) size 4x17
             chunk 1 text run 1 at (276.59,100.00) startOffset 0 endOffset 1 width 3.75: " "
           LayoutSVGTSpan {tspan} at (0,0) size 35x17
-            LayoutSVGInlineText {#text} at (235,15) size 35x17
-              chunk 1 text run 1 at (280.34,100.00) startOffset 0 endOffset 6 width 34.57: "color,"
+            LayoutSVGInlineText {#text} at (235,15) size 34x17
+              chunk 1 text run 1 at (280.34,100.00) startOffset 0 endOffset 6 width 33.98: "color,"
           LayoutSVGInlineText {#text} at (269,15) size 20x17
-            chunk 1 text run 1 at (314.91,100.00) startOffset 0 endOffset 1 width 3.75: " "
-            chunk 1 text run 1 at (318.66,100.00) startOffset 0 endOffset 3 width 16.25: "or "
-          LayoutSVGTSpan {tspan} at (0,0) size 29x17
+            chunk 1 text run 1 at (314.32,100.00) startOffset 0 endOffset 1 width 3.75: " "
+            chunk 1 text run 1 at (318.07,100.00) startOffset 0 endOffset 3 width 16.25: "or "
+          LayoutSVGTSpan {tspan} at (0,0) size 28x17
             LayoutSVGInlineText {#text} at (289,15) size 28x17
-              chunk 1 text run 1 at (334.91,100.00) startOffset 0 endOffset 5 width 27.49: "style"
+              chunk 1 text run 1 at (334.32,100.00) startOffset 0 endOffset 5 width 27.49: "style"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (45,112) size 170x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 170x17

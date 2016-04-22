@@ -26,12 +26,12 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 198x18
                 text run at (0,0) width 198: "Quotes delayed by 20 minutes."
               LayoutBR {BR} at (197,14) size 1x0
-              LayoutText {#text} at (0,18) size 473x72
+              LayoutText {#text} at (0,18) size 472x72
                 text run at (0,18) width 128: "To ensure that your "
                 text run at (127,18) width 316: "portfolios and other personalized content can't be"
                 text run at (0,36) width 51: "viewed "
                 text run at (50,36) width 375: "by others using this computer, sign out of Netcenter when "
-                text run at (424,36) width 49: "you are"
+                text run at (424,36) width 48: "you are"
                 text run at (0,54) width 334: "finished. When you want to view your personalized "
                 text run at (333,54) width 139: "content again, all you"
-                text run at (0,72) width 216: "have to do is sign in to Netcenter."
+                text run at (0,72) width 215: "have to do is sign in to Netcenter."

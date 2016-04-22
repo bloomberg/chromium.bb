@@ -43,7 +43,7 @@ layer at (20,20) size 644x433
         LayoutBlockFlow (floating) {SPAN} at (562,0) size 20x20 [bgcolor=#FFFFFF]
         LayoutText {#text} at (112,0) size 549x56
           text run at (112,0) width 437: " a browser must use its default settings, the animation has to be"
-          text run at (0,19) width 547: "smooth, the score has to end on 100/100, and the final page has to look exactly,"
+          text run at (0,19) width 546: "smooth, the score has to end on 100/100, and the final page has to look exactly,"
           text run at (0,38) width 126: "pixel for pixel, like "
         LayoutInline {A} at (0,0) size 164x18 [color=#0000FF]
           LayoutText {#text} at (126,38) size 164x18

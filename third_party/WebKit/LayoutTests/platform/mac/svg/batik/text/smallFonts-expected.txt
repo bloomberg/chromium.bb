@@ -27,13 +27,13 @@ layer at (0,0) size 450x500
             chunk 1 text run 1 at (5.53,2.00) startOffset 0 endOffset 1 width 0.08: " "
           LayoutSVGTSpan {tspan} at (0,0) size 2x1
             LayoutSVGInlineText {#text} at (4,0) size 1x1
-              chunk 1 text run 1 at (5.61,2.00) startOffset 0 endOffset 6 width 0.69: "color,"
+              chunk 1 text run 1 at (5.61,2.00) startOffset 0 endOffset 6 width 0.68: "color,"
           LayoutSVGInlineText {#text} at (5,0) size 1x1
-            chunk 1 text run 1 at (6.30,2.00) startOffset 0 endOffset 1 width 0.08: " "
-            chunk 1 text run 1 at (6.37,2.00) startOffset 0 endOffset 3 width 0.32: "or "
+            chunk 1 text run 1 at (6.29,2.00) startOffset 0 endOffset 1 width 0.08: " "
+            chunk 1 text run 1 at (6.36,2.00) startOffset 0 endOffset 3 width 0.32: "or "
           LayoutSVGTSpan {tspan} at (0,0) size 2x1
             LayoutSVGInlineText {#text} at (5,0) size 1x1
-              chunk 1 text run 1 at (6.70,2.00) startOffset 0 endOffset 5 width 0.55: "style"
+              chunk 1 text run 1 at (6.69,2.00) startOffset 0 endOffset 5 width 0.55: "style"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGText {text} at (0,2) size 5x1 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 4x1

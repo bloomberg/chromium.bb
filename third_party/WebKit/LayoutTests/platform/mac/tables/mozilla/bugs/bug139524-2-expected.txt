@@ -27,8 +27,8 @@ layer at (0,0) size 800x357
         LayoutText {#text} at (0,0) size 563x18
           text run at (0,0) width 563: "So the first two colums should both be 100px wide, and the third should be 200px wide."
       LayoutBlockFlow {P} at (0,236.72) size 784x18
-        LayoutText {#text} at (0,0) size 581x18
-          text run at (0,0) width 581: "However, the first column is 100px, the second is 200px, and the third is the default width."
+        LayoutText {#text} at (0,0) size 580x18
+          text run at (0,0) width 580: "However, the first column is 100px, the second is 200px, and the third is the default width."
       LayoutBlockFlow {P} at (0,270.72) size 784x18
         LayoutText {#text} at (0,0) size 384x18
           text run at (0,0) width 384: "So it would appear that the SPAN attribute is being ignored."

@@ -4,9 +4,9 @@ layer at (0,0) size 800x158
   LayoutBlockFlow {html} at (0,0) size 800x158
     LayoutBlockFlow {body} at (8,16) size 784x134
       LayoutBlockFlow {p} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 739x17
-          text run at (0,0) width 413: "No 'number' specification is given for border. There should be a "
-          text run at (412,0) width 327: "2 pixel border around the frame of the table below."
+        LayoutText {#text} at (0,0) size 737x17
+          text run at (0,0) width 412: "No 'number' specification is given for border. There should be a "
+          text run at (411,0) width 326: "2 pixel border around the frame of the table below."
       LayoutTable {table} at (0,34) size 193x100 [border: (1px outset #808080)]
         LayoutTableCol {colgroup} at (0,0) size 0x0
           LayoutTableCol {col} at (0,0) size 0x0

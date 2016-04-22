@@ -413,37 +413,37 @@
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGText text id='textMinimalWindow'",
-          "rect": [43, 481, 113, 36],
+          "rect": [43, 481, 112, 36],
           "reason": "location change"
         },
         {

@@ -376,13 +376,13 @@ layer at (0,0) size 785x5955 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 31x17
                 text run at (2,2) width 31: "Data"
       LayoutBlockFlow {P} at (0,1886.44) size 769x36
-        LayoutText {#text} at (0,0) size 219x17
-          text run at (0,0) width 219: "However, vertical-align values of "
+        LayoutText {#text} at (0,0) size 218x17
+          text run at (0,0) width 218: "However, vertical-align values of "
         LayoutInline {CODE} at (0,0) size 65x16
-          LayoutText {#text} at (218,2) size 65x16
-            text run at (218,2) width 65: "baseline"
-        LayoutText {#text} at (282,0) size 762x35
-          text run at (282,0) width 480: " (the default, but could be overridden in a UA stylesheet) can make it taller"
+          LayoutText {#text} at (217,2) size 65x16
+            text run at (217,2) width 65: "baseline"
+        LayoutText {#text} at (281,0) size 761x35
+          text run at (281,0) width 480: " (the default, but could be overridden in a UA stylesheet) can make it taller"
           text run at (0,18) width 60: "than that:"
       LayoutTable {TABLE} at (0,1938.44) size 293x144
         LayoutTableSection {TBODY} at (0,0) size 293x144
@@ -456,9 +456,9 @@ layer at (0,0) size 785x5955 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 31x17
                 text run at (2,2) width 31: "Data"
       LayoutBlockFlow {P} at (0,2450.44) size 769x36
-        LayoutText {#text} at (0,0) size 765x35
-          text run at (0,0) width 489: "These two tables should be 200px tall, because of a height on the table row. "
-          text run at (488,0) width 277: "The second one should have its second and"
+        LayoutText {#text} at (0,0) size 764x35
+          text run at (0,0) width 488: "These two tables should be 200px tall, because of a height on the table row. "
+          text run at (487,0) width 277: "The second one should have its second and"
           text run at (0,18) width 452: "third cell's contents offset from the middle by 10px (bottom, then top):"
       LayoutTable {TABLE} at (0,2502.44) size 293x204
         LayoutTableSection {TBODY} at (0,0) size 293x204
@@ -493,9 +493,9 @@ layer at (0,0) size 785x5955 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (2,2) size 31x17
                 text run at (2,2) width 31: "Data"
       LayoutBlockFlow {P} at (0,2926.44) size 769x36
-        LayoutText {#text} at (0,0) size 734x35
+        LayoutText {#text} at (0,0) size 733x35
           text run at (0,0) width 527: "The behavior of percentage heights on table-row or table-row-group is undefined. "
-          text run at (526,0) width 208: "However, I think they should be"
+          text run at (526,0) width 207: "However, I think they should be"
           text run at (0,18) width 283: "ignored, so these tables should look normal:"
       LayoutTable {TABLE} at (0,2978.44) size 113x74
         LayoutTableSection {TBODY} at (0,0) size 113x74

@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 779x36
-          text run at (0,0) width 779: "The image below has a width of 459px. When the table below it has a width of 459px or greater, the bottom row overlaps"
+        LayoutText {#text} at (0,0) size 778x36
+          text run at (0,0) width 778: "The image below has a width of 459px. When the table below it has a width of 459px or greater, the bottom row overlaps"
           text run at (0,18) width 73: "the top row"
       LayoutBlockFlow (anonymous) at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 142x18
@@ -37,5 +37,5 @@ layer at (0,0) size 800x600
                 text run at (2,38) width 143: "documentation on the "
                 text run at (144,38) width 505: "application of the open, interoperable \"markup language\" standards, including "
                 text run at (648,38) width 35: "XSL,"
-                text run at (2,56) width 700: "XSLT, XPath, XQuery, XLink, XPointer, XHTML, HyTime, DSSSL, CSS, SPDL, SVG, CGM, ISO-HTML,"
+                text run at (2,56) width 697: "XSLT, XPath, XQuery, XLink, XPointer, XHTML, HyTime, DSSSL, CSS, SPDL, SVG, CGM, ISO-HTML,"
                 text run at (2,74) width 71: "and others."

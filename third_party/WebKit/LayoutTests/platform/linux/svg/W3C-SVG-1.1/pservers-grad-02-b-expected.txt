@@ -12,9 +12,9 @@ layer at (0,0) size 480x360
         LayoutSVGInlineText {#text} at (0,0) size 209x35
           chunk 1 text run 1 at (20.00,130.00) startOffset 0 endOffset 16 width 209.00: "Radial gradient."
       LayoutSVGRect {rect} at (20,150) size 440x80 [fill={[type=RADIAL-GRADIENT] [id="Grad2b"]}] [x=20.00] [y=150.00] [width=440.00] [height=80.00]
-      LayoutSVGText {text} at (20,232) size 370x35 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 370x35
-          chunk 1 text run 1 at (20.00,260.00) startOffset 0 endOffset 27 width 370.00: "Referencing gradient below."
+      LayoutSVGText {text} at (20,232) size 369x35 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 369x35
+          chunk 1 text run 1 at (20.00,260.00) startOffset 0 endOffset 27 width 368.34: "Referencing gradient below."
     LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 261x46
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.8 $"

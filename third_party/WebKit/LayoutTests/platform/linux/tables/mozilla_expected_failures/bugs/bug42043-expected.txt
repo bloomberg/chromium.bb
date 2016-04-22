@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         LayoutInline {B} at (0,0) size 748x39
           LayoutText {#text} at (645,20) size 748x39
             text run at (645,20) width 103: "5.0 renders this"
-            text run at (0,40) width 63: "correctly."
+            text run at (0,40) width 62: "correctly."
       LayoutTable {TABLE} at (0,76) size 784x30 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0
@@ -51,7 +51,7 @@ layer at (0,0) size 800x600
         LayoutInline {B} at (0,0) size 783x39
           LayoutText {#text} at (675,20) size 783x39
             text run at (675,20) width 108: "The first column"
-            text run at (0,40) width 597: "is rendered properly, but there seems to be a problem with the width of the second column."
+            text run at (0,40) width 596: "is rendered properly, but there seems to be a problem with the width of the second column."
       LayoutTable {TABLE} at (0,380) size 784x30 [border: (1px outset #808080)]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
           LayoutTableCol {COL} at (0,0) size 0x0

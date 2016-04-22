@@ -43,7 +43,7 @@ layer at (19,469) size 602x402 backgroundClip at (19,469) size 602x131 clip at (
         text run at (0,8) width 583: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt"
         text run at (0,41) width 549: "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation"
         text run at (0,74) width 522: "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in"
-        text run at (0,107) width 569: "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint"
+        text run at (0,107) width 568: "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint"
         text run at (0,140) width 538: "occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est"
         text run at (0,173) width 58: "laborum."
     LayoutBlockFlow {P} at (1,263) size 585x198
@@ -51,6 +51,6 @@ layer at (19,469) size 602x402 backgroundClip at (19,469) size 602x131 clip at (
         text run at (0,8) width 583: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt"
         text run at (0,41) width 549: "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation"
         text run at (0,74) width 522: "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in"
-        text run at (0,107) width 569: "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint"
+        text run at (0,107) width 568: "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint"
         text run at (0,140) width 538: "occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est"
         text run at (0,173) width 58: "laborum."

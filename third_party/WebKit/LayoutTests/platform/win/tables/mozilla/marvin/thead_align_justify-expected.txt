@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 678x35
           text run at (0,0) width 678: "The THEAD element labels the head area of a table. In this test, the THEAD text has an attribute value of"
-          text run at (0,18) width 636: "ALIGN=JUSTIFY. ALIGN-JUSTIFY should attempt to justify text within all cells of the THEAD."
+          text run at (0,18) width 634: "ALIGN=JUSTIFY. ALIGN-JUSTIFY should attempt to justify text within all cells of the THEAD."
       LayoutTable {TABLE} at (0,52) size 698x76 [border: (1px outset #808080)]
         LayoutTableSection {THEAD} at (1,1) size 696x26
           LayoutTableRow {TR} at (0,2) size 696x22

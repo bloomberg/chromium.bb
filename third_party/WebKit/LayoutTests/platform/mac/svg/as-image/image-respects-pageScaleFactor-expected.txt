@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 350x18
           text run at (0,0) width 350: "This test passes if both of the circles have sharp edges."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 449x18
-          text run at (0,0) width 449: "To run manually, use full-page zoom to increase the page scale factor."
+        LayoutText {#text} at (0,0) size 447x18
+          text run at (0,0) width 447: "To run manually, use full-page zoom to increase the page scale factor."
       LayoutBlockFlow (anonymous) at (0,68) size 784x132
         LayoutImage {IMG} at (0,0) size 128x128
         LayoutText {#text} at (128,114) size 4x18

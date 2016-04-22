@@ -12,6 +12,6 @@ layer at (0,0) size 800x600
           text run at (0,0) width 635: "Orange stroke, black fill,"
           text run at (0,74) width 416: "orange overline."
       LayoutBlockFlow {DIV} at (0,296) size 784x148 [textFillColor=#0000FF] [textStrokeWidth=1.33]
-        LayoutText {#text} at (0,0) size 596x148
+        LayoutText {#text} at (0,0) size 594x148
           text run at (0,0) width 594: "No stroke, blue fill, red"
-          text run at (0,74) width 596: "shadow, blue underline"
+          text run at (0,74) width 592: "shadow, blue underline"

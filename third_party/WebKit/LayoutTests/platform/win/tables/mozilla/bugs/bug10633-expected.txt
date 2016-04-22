@@ -55,16 +55,16 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {P} at (0,0) size 213x85
                 LayoutImage {IMG} at (0,0) size 1x5
                 LayoutBR {BR} at (1,5) size 0x0
-                LayoutInline {FONT} at (0,0) size 211x64
-                  LayoutText {#text} at (0,5) size 211x64
+                LayoutInline {FONT} at (0,0) size 210x64
+                  LayoutText {#text} at (0,5) size 210x64
                     text run at (0,5) width 123: "Search using almost "
                     text run at (123,5) width 21: "any"
                     text run at (0,21) width 180: "combination of business name,"
-                    text run at (0,37) width 178: "category, street address, city, "
-                    text run at (178,37) width 33: "state,"
-                    text run at (0,53) width 128: "ZIP, or phone number."
-                LayoutInline {FONT} at (0,0) size 128x32
-                  LayoutBR {BR} at (128,66) size 0x0
+                    text run at (0,37) width 177: "category, street address, city, "
+                    text run at (176,37) width 34: "state,"
+                    text run at (0,53) width 126: "ZIP, or phone number."
+                LayoutInline {FONT} at (0,0) size 126x32
+                  LayoutBR {BR} at (125,66) size 1x0
                   LayoutText {#text} at (0,69) size 4x16
                     text run at (0,69) width 4: " "
             LayoutTableCell {TD} at (225,56) size 18x18 [r=2 c=5 rs=1 cs=1]

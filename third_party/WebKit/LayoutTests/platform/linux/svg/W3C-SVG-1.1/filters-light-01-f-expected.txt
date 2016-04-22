@@ -93,9 +93,9 @@ layer at (0,0) size 480x360
         LayoutSVGImage {image} at (355,150) size 50x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(355.00,150.00)}]
           [filter="pointLightD"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
       LayoutSVGContainer {g} at (70,195) size 410x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,210.00)}]
-        LayoutSVGText {text} at (70,-15) size 439x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 439x19
-            chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 438.23: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
+        LayoutSVGText {text} at (70,-15) size 436x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 436x19
+            chunk 1 text run 1 at (70.00,0.00) startOffset 0 endOffset 73 width 435.13: "Various values for feSpotLight's x, y, z, pointsAtX, pointsAtY, pointsAtZ"
         LayoutSVGText {text} at (70,0) size 66x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 66x19
             chunk 1 text run 1 at (70.00,15.00) startOffset 0 endOffset 11 width 66.00: "(25, 0, 25)"

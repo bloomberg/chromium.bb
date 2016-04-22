@@ -25,8 +25,8 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 104x26
           text run at (0,0) width 104: "0. Control"
       LayoutBlockFlow {P} at (0,201.25) size 769x20
-        LayoutText {#text} at (0,0) size 373x19
-          text run at (0,0) width 373: "The following four tests should look identical, namely, like this:"
+        LayoutText {#text} at (0,0) size 372x19
+          text run at (0,0) width 372: "The following four tests should look identical, namely, like this:"
       LayoutBlockFlow {DIV} at (0,237.25) size 769x76 [color=#FFFFFF] [bgcolor=#000000]
         LayoutText {#text} at (0,0) size 766x75
           text run at (0,0) width 766: "This text should be white on black, bold, twice the"
@@ -185,8 +185,8 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 254: "How does your browser fare on this test? "
           LayoutMenuList {SELECT} at (254,0) size 505x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 503x18
-              LayoutText (anonymous) at (4,1) size 481x16
-                text run at (4,1) width 481: "The tests all render identically, and this browser may or may not grok CSS2 tables."
+              LayoutText (anonymous) at (4,1) size 480x16
+                text run at (4,1) width 480: "The tests all render identically, and this browser may or may not grok CSS2 tables."
           LayoutText {#text} at (0,0) size 0x0
           LayoutInline {LABEL} at (0,0) size 220x19
             LayoutText {#text} at (0,21) size 66x19

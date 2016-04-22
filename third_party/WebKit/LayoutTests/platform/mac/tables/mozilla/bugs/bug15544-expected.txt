@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
               LayoutImage {IMG} at (0,0) size 25x40
               LayoutImage {IMG} at (25,0) size 25x40
       LayoutBlockFlow (anonymous) at (0,93) size 784x18
-        LayoutText {#text} at (0,0) size 324x18
-          text run at (0,0) width 324: "Here's the same table without the off-by-one error."
+        LayoutText {#text} at (0,0) size 323x18
+          text run at (0,0) width 323: "Here's the same table without the off-by-one error."
       LayoutTable {TABLE} at (0,111) size 80x93
         LayoutTableSection {TBODY} at (0,0) size 80x93
           LayoutTableRow {TR} at (0,0) size 80x28
