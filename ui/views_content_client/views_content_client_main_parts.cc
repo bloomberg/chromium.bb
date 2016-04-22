@@ -10,6 +10,7 @@
 #include "content/public/browser/context_factory.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 
 namespace ui {
@@ -24,6 +25,7 @@ ViewsContentClientMainParts::~ViewsContentClientMainParts() {
 }
 
 void ViewsContentClientMainParts::PreMainMessageLoopRun() {
+  ui::MaterialDesignController::Initialize();
   ui::InitializeInputMethodForTesting();
   browser_context_.reset(new content::ShellBrowserContext(false, NULL));
 
