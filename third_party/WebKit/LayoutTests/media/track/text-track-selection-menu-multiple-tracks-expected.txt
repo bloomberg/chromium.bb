@@ -1,0 +1,57 @@
+Test that we can add multiple tracks and select between them from the track selection menu
+EVENT(canplaythrough)
+
+** Caption button should be visible and enabled.
+EXPECTED (captionsButtonCoordinates[0] > '0') OK
+EXPECTED (captionsButtonCoordinates[1] > '0') OK
+EXPECTED (captionsButtonElement.disabled == 'false') OK
+
+EXPECTED (video.textTracks.length == '5') OK
+
+Select track at index 0
+*** Click the CC button.
+EXPECTED (video.textTracks[0].mode == 'showing') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'English') OK
+EXPECTED (video.textTracks[1].mode == 'disabled') OK
+EXPECTED (video.textTracks[2].mode == 'disabled') OK
+EXPECTED (video.textTracks[3].mode == 'disabled') OK
+EXPECTED (video.textTracks[4].mode == 'disabled') OK
+
+Select track at index 1
+*** Click the CC button.
+EXPECTED (video.textTracks[1].mode == 'showing') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'Russian') OK
+EXPECTED (video.textTracks[0].mode == 'disabled') OK
+EXPECTED (video.textTracks[2].mode == 'disabled') OK
+EXPECTED (video.textTracks[3].mode == 'disabled') OK
+EXPECTED (video.textTracks[4].mode == 'disabled') OK
+
+Select track at index 2
+*** Click the CC button.
+EXPECTED (video.textTracks[2].mode == 'showing') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'French') OK
+EXPECTED (video.textTracks[0].mode == 'disabled') OK
+EXPECTED (video.textTracks[1].mode == 'disabled') OK
+EXPECTED (video.textTracks[3].mode == 'disabled') OK
+EXPECTED (video.textTracks[4].mode == 'disabled') OK
+
+Select track at index 3
+*** Click the CC button.
+EXPECTED (video.textTracks[3].mode == 'showing') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'Japanese') OK
+EXPECTED (video.textTracks[0].mode == 'disabled') OK
+EXPECTED (video.textTracks[1].mode == 'disabled') OK
+EXPECTED (video.textTracks[2].mode == 'disabled') OK
+EXPECTED (video.textTracks[4].mode == 'disabled') OK
+
+Select track at index 4
+*** Click the CC button.
+EXPECTED (video.textTracks[4].mode == 'showing') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'German') OK
+EXPECTED (video.textTracks[0].mode == 'disabled') OK
+EXPECTED (video.textTracks[1].mode == 'disabled') OK
+EXPECTED (video.textTracks[2].mode == 'disabled') OK
+EXPECTED (video.textTracks[3].mode == 'disabled') OK
+
+END OF TEST
+

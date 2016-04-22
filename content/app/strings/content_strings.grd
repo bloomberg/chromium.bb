@@ -856,6 +856,14 @@ below:
         Please lengthen this text to <ph name="MIN_CHARACTERS">$2<ex>101</ex></ph> characters or more (you are currently using <ph name="CURRENT_LENGTH">$1<ex>100</ex></ph> characters).
       </message>
 
+      <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified">
+        Unknown
+      </message>
+
+      <message name="IDS_MEDIA_TRACKS_OFF" desc="Menu item label for a text track that represents disabling closed captions">
+        Off
+      </message>
+
       <message name="IDS_PLUGIN_INITIALIZATION_ERROR" desc="A message displayed when a plugin failed to load">
         Couldn't load plugin.
       </message>

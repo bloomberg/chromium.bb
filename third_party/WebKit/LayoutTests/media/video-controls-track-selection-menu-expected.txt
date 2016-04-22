@@ -1,0 +1,26 @@
+Test that we can display a track list menu and select tracks from the list
+EVENT(canplaythrough)
+
+** Caption button should be visible and enabled.
+EXPECTED (captionsButtonCoordinates[0] > '0') OK
+EXPECTED (captionsButtonCoordinates[1] > '0') OK
+EXPECTED (captionsButtonElement.disabled == 'false') OK
+
+EXPECTED (video.textTracks.length == '2') OK
+EXPECTED (video.textTracks[0].mode == 'hidden') OK
+EXPECTED (video.textTracks[1].mode == 'hidden') OK
+
+Select track 0 and verify it is displayed
+*** Click the CC button.
+EXPECTED (video.textTracks[0].mode == 'showing') OK
+EXPECTED (video.textTracks[1].mode == 'hidden') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'Lorem') OK
+
+Select track 1 and verify it is displayed
+*** Click the CC button.
+EXPECTED (video.textTracks[0].mode == 'disabled') OK
+EXPECTED (video.textTracks[1].mode == 'showing') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'first caption') OK
+
+END OF TEST
+

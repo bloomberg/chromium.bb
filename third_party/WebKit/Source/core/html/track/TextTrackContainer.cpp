@@ -54,7 +54,7 @@ LayoutObject* TextTrackContainer::createLayoutObject(const ComputedStyle&)
 
 void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement, ExposingControls exposingControls)
 {
-    if (!mediaElement.closedCaptionsVisible()) {
+    if (!mediaElement.textTracksVisible()) {
         removeChildren();
         return;
     }

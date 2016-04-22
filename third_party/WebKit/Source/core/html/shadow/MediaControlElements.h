@@ -34,6 +34,8 @@
 
 namespace blink {
 
+class TextTrack;
+
 // ----------------------------
 
 class MediaControlPanelElement final : public MediaControlDivElement {
@@ -142,6 +144,32 @@ private:
     explicit MediaControlToggleClosedCaptionsButtonElement(MediaControls&);
 
     void defaultEventHandler(Event*) override;
+};
+
+// ----------------------------
+
+class MediaControlTextTrackListElement final : public MediaControlDivElement {
+public:
+    static MediaControlTextTrackListElement* create(MediaControls&);
+
+    bool willRespondToMouseClickEvents() override { return true; }
+
+    void setVisible(bool);
+
+private:
+    explicit MediaControlTextTrackListElement(MediaControls&);
+
+    void defaultEventHandler(Event*) override;
+
+    void refreshTextTrackListMenu();
+
+    // Returns the label for the track when a valid track is passed in and "Off" when the parameter is null.
+    String getTextTrackLabel(TextTrack*);
+    // Creates the track element in the list when a valid track is passed in and the "Off" item when the parameter is null.
+    Element* createTextTrackListItem(TextTrack*);
+
+    void showTextTrackAtIndex(unsigned);
+    void disableShowingTextTracks();
 };
 
 // ----------------------------

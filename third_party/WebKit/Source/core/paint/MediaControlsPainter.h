@@ -51,6 +51,9 @@ public:
     static bool paintMediaFullscreenButton(const LayoutObject&, const PaintInfo&, const IntRect&);
     static bool paintMediaOverlayPlayButton(const LayoutObject&, const PaintInfo&, const IntRect&);
     static bool paintMediaCastButton(const LayoutObject&, const PaintInfo&, const IntRect&);
+    static bool paintMediaTrackSelectionCheckmark(const LayoutObject&, const PaintInfo&, const IntRect&);
+    static bool paintMediaClosedCaptionsIcon(const LayoutObject&, const PaintInfo&, const IntRect&);
+    static bool paintMediaSubtitlesIcon(const LayoutObject&, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(ComputedStyle&);
 
 private:

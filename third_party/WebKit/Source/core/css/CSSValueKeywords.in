@@ -636,6 +636,9 @@ media-current-time-display
 media-time-remaining-display
 -internal-media-cast-off-button
 -internal-media-overlay-cast-off-button
+-internal-media-track-selection-checkmark
+-internal-media-closed-captions-icon
+-internal-media-subtitles-icon
 menulist
 menulist-button
 menulist-text

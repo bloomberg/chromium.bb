@@ -456,6 +456,15 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case MediaTimeRemainingPart:
         m_value.valueID = CSSValueMediaTimeRemainingDisplay;
         break;
+    case MediaTrackSelectionCheckmarkPart:
+        m_value.valueID = CSSValueInternalMediaTrackSelectionCheckmark;
+        break;
+    case MediaClosedCaptionsIconPart:
+        m_value.valueID = CSSValueInternalMediaClosedCaptionsIcon;
+        break;
+    case MediaSubtitlesIconPart:
+        m_value.valueID = CSSValueInternalMediaSubtitlesIcon;
+        break;
     case MenulistPart:
         m_value.valueID = CSSValueMenulist;
         break;

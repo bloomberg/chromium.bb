@@ -414,12 +414,24 @@ void TextTrack::invalidateTrackIndex()
     m_renderedTrackIndex = invalidTrackIndex;
 }
 
-bool TextTrack::isRendered()
+bool TextTrack::isRendered() const
 {
     if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
         return false;
 
     if (m_mode != showingKeyword())
+        return false;
+
+    return true;
+}
+
+bool TextTrack::canBeRendered() const
+{
+    // A track can be displayed when it's of kind captions or subtitles and hasn't failed to load.
+    if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
+        return false;
+
+    if (getReadinessState() == FailedToLoad)
         return false;
 
     return true;

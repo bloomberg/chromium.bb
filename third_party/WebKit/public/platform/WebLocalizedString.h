@@ -138,6 +138,8 @@ struct WebLocalizedString {
         SearchMenuRecentSearchesText, // Deprecated.
         SelectMenuListText,
         SubmitButtonDefaultLabel,
+        TextTracksNoLabel,
+        TextTracksOff,
         ThisMonthButtonLabel,
         ThisWeekButtonLabel,
         ValidationBadInputForNumber,

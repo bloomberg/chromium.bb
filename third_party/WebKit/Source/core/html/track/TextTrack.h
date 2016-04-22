@@ -102,7 +102,8 @@ public:
     int trackIndex();
     void invalidateTrackIndex();
 
-    bool isRendered();
+    bool isRendered() const;
+    bool canBeRendered() const;
     int trackIndexRelativeToRenderedTracks();
 
     bool hasBeenConfigured() const { return m_hasBeenConfigured; }

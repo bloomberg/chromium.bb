@@ -207,6 +207,7 @@ public:
     void textTrackReadyStateChanged(TextTrack*);
 
     void textTrackModeChanged(TextTrack*);
+    void disableAutomaticTextTrackSelection();
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
@@ -223,8 +224,7 @@ public:
     virtual bool usesOverlayFullscreenVideo() const { return false; }
 
     bool hasClosedCaptions() const;
-    bool closedCaptionsVisible() const;
-    void setClosedCaptionsVisible(bool);
+    bool textTracksVisible() const;
 
     static void setTextTrackKindUserPreferenceForAllMediaElements(Document*);
     void automaticTrackSelectionForUpdatedUserPreference();
@@ -561,9 +561,11 @@ private:
     // time has not changed since sending an "ended" event
     bool m_sentEndEvent : 1;
 
-    bool m_closedCaptionsVisible : 1;
-
     bool m_ignorePreloadNone : 1;
+
+    bool m_textTracksVisible : 1;
+    bool m_shouldPerformAutomaticTrackSelection : 1;
+
     bool m_tracksAreReady : 1;
     bool m_processingPreferenceChange : 1;
     bool m_remoteRoutesAvailable : 1;

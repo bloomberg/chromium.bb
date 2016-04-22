@@ -504,7 +504,7 @@ bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(const LayoutObje
 
     bool isEnabled = mediaElement->hasClosedCaptions();
 
-    if (mediaElement->closedCaptionsVisible())
+    if (mediaElement->textTracksVisible())
         return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButton, isEnabled);
 
     return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled, isEnabled);
@@ -539,6 +539,39 @@ bool MediaControlsPainter::paintMediaCastButton(const LayoutObject& object, cons
         ASSERT_NOT_REACHED();
         return false;
     }
+}
+
+bool MediaControlsPainter::paintMediaTrackSelectionCheckmark(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
+{
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    if (!mediaElement)
+        return false;
+
+    static Image* mediaTrackSelectionCheckmark = platformResource("mediaplayerTrackSelectionCheckmark",
+        "mediaplayerTrackSelectionCheckmarkNew");
+    return paintMediaButton(paintInfo.context, rect, mediaTrackSelectionCheckmark);
+}
+
+bool MediaControlsPainter::paintMediaClosedCaptionsIcon(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
+{
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    if (!mediaElement)
+        return false;
+
+    static Image* mediaClosedCaptionsIcon = platformResource("mediaplayerClosedCaptionsIcon",
+        "mediaplayerClosedCaptionsIconNew");
+    return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionsIcon);
+}
+
+bool MediaControlsPainter::paintMediaSubtitlesIcon(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
+{
+    const HTMLMediaElement* mediaElement = toParentMediaElement(object);
+    if (!mediaElement)
+        return false;
+
+    static Image* mediaSubtitlesIcon = platformResource("mediaplayerSubtitlesIcon",
+        "mediaplayerSubtitlesIconNew");
+    return paintMediaButton(paintInfo.context, rect, mediaSubtitlesIcon);
 }
 
 void MediaControlsPainter::adjustMediaSliderThumbSize(ComputedStyle& style)

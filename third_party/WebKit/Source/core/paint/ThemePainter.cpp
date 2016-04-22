@@ -137,6 +137,12 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
     case MediaCastOffButtonPart:
     case MediaOverlayCastOffButtonPart:
         return MediaControlsPainter::paintMediaCastButton(o, paintInfo, r);
+    case MediaTrackSelectionCheckmarkPart:
+        return MediaControlsPainter::paintMediaTrackSelectionCheckmark(o, paintInfo, r);
+    case MediaClosedCaptionsIconPart:
+        return MediaControlsPainter::paintMediaClosedCaptionsIcon(o, paintInfo, r);
+    case MediaSubtitlesIconPart:
+        return MediaControlsPainter::paintMediaSubtitlesIcon(o, paintInfo, r);
     case MenulistButtonPart:
     case TextFieldPart:
     case TextAreaPart:

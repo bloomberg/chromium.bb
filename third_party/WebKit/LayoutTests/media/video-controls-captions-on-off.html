@@ -2,22 +2,21 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Test closed caption button toggling.</title>
+    <title>Test closed caption track selection on and off.</title>
     <script src=media-file.js></script>
     <script src=media-controls.js></script>
     <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
          (Please avoid writing new tests using video-test.js) -->
     <script src=video-test.js></script>
     <script>
-        var displayElement;
-        var track;
         var text = ["First", "Second", "Third"];
+        var displayElement;
 
         function addTextTrack()
         {
-            track = video.addTextTrack('captions');
+            var track = video.addTextTrack('captions');
 
-            for(var i = 0; i < 3; i++) {
+            for (var i = 0; i < 3; i++) {
                 var cue = new VTTCue(0, 120, text[i]);
                 track.addCue(cue);
             }
@@ -27,9 +26,9 @@
         {
             for (var i = 0; i < 3; i++) {
                 try {
-                    displayElement = textTrackDisplayElement(video, 'display', i);
+                    displayElement = textTrackDisplayElement(video, "display", i);
                     testExpected("displayElement.innerText", text[i]);
-                } catch(e) {
+                } catch (e) {
                     consoleWrite(e);
                 }
             }
@@ -54,18 +53,18 @@
             checkCaptionsDisplay();
 
             consoleWrite("");
-            consoleWrite("** Captions track should become visible after button is clicked **");
-            clickCCButton();
+            consoleWrite("** Captions track should become visible after the track is selected **");
+            selectTextTrack(video, 0);
             checkCaptionsDisplay();
 
             consoleWrite("");
-            consoleWrite("** Captions should not be visible after button is clicked again **");
-            clickCCButton();
+            consoleWrite("** Captions should not be visible after they're turned off through the menu **");
+            turnClosedCaptionsOff(video);
             checkCaptionsDisplay();
 
             consoleWrite("");
-            consoleWrite("** Captions should become visible after button is clicked again **");
-            clickCCButton();
+            consoleWrite("** Captions track should become visible after the track is selected again **");
+            selectTextTrack(video, 0);
             checkCaptionsDisplay();
 
             consoleWrite("");
@@ -82,7 +81,7 @@
     </script>
 </head>
 <body onload="loaded()">
-    <p>Tests that multiple toggles of the closed captions button still display captions</p>
+    <p>Tests that tracks can be turned on and off through the track selection menu</p>
     <video controls></video>
 </body>
 </html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script src="../media-file.js"></script>
+<!-- TODO(srivats): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
+<script src="../video-test.js"></script>
+<script src="../media-controls.js"></script>
+<script>
+
+    var trackLanguages = ["en", "ru", "fr", "jp", "de"];
+    var trackCueText = ["English", "Russian", "French", "Japanese", "German"];
+
+    function startTest()
+    {
+        findMediaElement();
+        testClosedCaptionsButtonVisibility(true);
+        consoleWrite("");
+        testExpected("video.textTracks.length", trackLanguages.length);
+        consoleWrite("");
+
+        for (var i = 0; i < trackLanguages.length; i++) {
+            consoleWrite("Select track at index " + i);
+            selectTextTrack(video, i);
+            testExpected("video.textTracks[" + i + "].mode", "showing");
+            testExpected("textTrackDisplayElement(video, 'display').innerText", trackCueText[i]);
+            for (var j = 0; j < trackLanguages.length; j++) {
+                if (j != i)
+                    testExpected("video.textTracks[" + j + "].mode", "disabled");
+            }
+            consoleWrite("");
+        }
+        endTest();
+    }
+
+    function addTextTracks()
+    {
+        for (var i = 0; i < trackLanguages.length; i++) {
+            var track = video.addTextTrack("captions", trackCueText[i], trackLanguages[i]);
+            track.addCue(new VTTCue(0.0, 1.0, trackCueText[i]));
+            track.mode = "disabled";
+        }
+        startTest();
+    }
+
+    window.onload = function()
+    {
+        consoleWrite("Test that we can add multiple tracks and select between them from the track selection menu");
+        findMediaElement();
+        video.src = findMediaFile("video", "../content/test");
+        waitForEvent("canplaythrough", addTextTracks);
+    }
+
+</script>
+<video controls></video>

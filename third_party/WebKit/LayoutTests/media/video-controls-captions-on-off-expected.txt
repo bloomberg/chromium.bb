@@ -1,4 +1,4 @@
-Tests that multiple toggles of the closed captions button still display captions
+Tests that tracks can be turned on and off through the track selection menu
 
 EVENT(canplaythrough)
 
@@ -14,19 +14,19 @@ No text track cue with display id '-webkit-media-text-track-display' is currentl
 No text track cue with display id '-webkit-media-text-track-display' is currently visible
 No text track cue with display id '-webkit-media-text-track-display' is currently visible
 
-** Captions track should become visible after button is clicked **
+** Captions track should become visible after the track is selected **
 *** Click the CC button.
 EXPECTED (displayElement.innerText == 'First') OK
 EXPECTED (displayElement.innerText == 'Second') OK
 EXPECTED (displayElement.innerText == 'Third') OK
 
-** Captions should not be visible after button is clicked again **
+** Captions should not be visible after they're turned off through the menu **
 *** Click the CC button.
 No text track cue with display id '-webkit-media-text-track-display' is currently visible
 No text track cue with display id '-webkit-media-text-track-display' is currently visible
 No text track cue with display id '-webkit-media-text-track-display' is currently visible
 
-** Captions should become visible after button is clicked again **
+** Captions track should become visible after the track is selected again **
 *** Click the CC button.
 EXPECTED (displayElement.innerText == 'First') OK
 EXPECTED (displayElement.innerText == 'Second') OK

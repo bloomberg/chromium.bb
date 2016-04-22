@@ -1,0 +1,22 @@
+Test that we can add a track dynamically and it is displayed on the track selection menu
+EVENT(canplaythrough)
+
+** Caption button should be visible and enabled.
+EXPECTED (captionsButtonCoordinates[0] > '0') OK
+EXPECTED (captionsButtonCoordinates[1] > '0') OK
+EXPECTED (captionsButtonElement.disabled == 'false') OK
+
+EXPECTED (video.textTracks.length == '2') OK
+EXPECTED (video.textTracks[0].mode == 'showing') OK
+EXPECTED (video.textTracks[1].mode == 'hidden') OK
+
+Verify the default track is being displayed
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'Lorem') OK
+
+Select the newly added track
+*** Click the CC button.
+EXPECTED (video.textTracks[1].mode == 'showing') OK
+EXPECTED (video.textTracks[0].mode == 'disabled') OK
+EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'Bonjour') OK
+END OF TEST
+

@@ -32,19 +32,25 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ClientRect.h"
+#include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaSource.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
+#include "core/html/track/TextTrackList.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/api/LayoutSliderItem.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "public/platform/UserMetricsAction.h"
 
@@ -56,6 +62,16 @@ namespace {
 
 // This is the duration from mediaControls.css
 const double fadeOutDuration = 0.3;
+
+const QualifiedName& trackIndexAttrName()
+{
+    // Save the track index in an attribute to avoid holding a pointer to the text track.
+    DEFINE_STATIC_LOCAL(QualifiedName, trackIndexAttr, (nullAtom, "data-track-index", nullAtom));
+    return trackIndexAttr;
+}
+
+// When specified as trackIndex, disable text tracks.
+const int trackIndexOffValue = -1;
 
 bool isUserInteractionEvent(Event* event)
 {
@@ -94,6 +110,21 @@ Element* elementFromCenter(Element& element)
     int centerY = static_cast<int>((clientRect->top() + clientRect->bottom()) / 2);
 
     return element.document().elementFromPoint(centerX , centerY);
+}
+
+bool hasDuplicateLabel(TextTrack* currentTrack)
+{
+    DCHECK(currentTrack);
+    TextTrackList* trackList = currentTrack->trackList();
+    // The runtime of this method is quadratic but since there are usually very few text tracks it won't
+    // affect the performance much.
+    String currentTrackLabel = currentTrack->label();
+    for (unsigned i = 0; i < trackList->length(); i++) {
+        TextTrack* track = trackList->anonymousIndexedGetter(i);
+        if (currentTrack != track && currentTrackLabel == track->label())
+            return true;
+    }
+    return false;
 }
 
 } // anonymous namespace
@@ -371,25 +402,157 @@ MediaControlToggleClosedCaptionsButtonElement* MediaControlToggleClosedCaptionsB
 
 void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 {
-    bool captionsVisible = mediaElement().closedCaptionsVisible();
+    bool captionsVisible = mediaElement().textTracksVisible();
     setDisplayType(captionsVisible ? MediaHideClosedCaptionsButton : MediaShowClosedCaptionsButton);
-    setChecked(captionsVisible);
 }
 
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        if (mediaElement().closedCaptionsVisible())
-            Platform::current()->recordAction(UserMetricsAction("Media.Controls.ClosedCaptionHide"));
-        else
-            Platform::current()->recordAction(UserMetricsAction("Media.Controls.ClosedCaptionShow"));
-        mediaElement().setClosedCaptionsVisible(!mediaElement().closedCaptionsVisible());
-        setChecked(mediaElement().closedCaptionsVisible());
+        mediaControls().toggleTextTrackList();
         updateDisplayType();
         event->setDefaultHandled();
     }
 
     HTMLInputElement::defaultEventHandler(event);
+}
+
+// ----------------------------
+
+MediaControlTextTrackListElement::MediaControlTextTrackListElement(MediaControls& mediaControls)
+    : MediaControlDivElement(mediaControls, MediaTextTrackList)
+{
+}
+
+MediaControlTextTrackListElement* MediaControlTextTrackListElement::create(MediaControls& mediaControls)
+{
+    MediaControlTextTrackListElement* element = new MediaControlTextTrackListElement(mediaControls);
+    element->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list"));
+    element->setIsWanted(false);
+    return element;
+}
+
+void MediaControlTextTrackListElement::defaultEventHandler(Event* event)
+{
+    if (event->type() == EventTypeNames::change) {
+        // Identify which input element was selected and set track to showing
+        Node* target = event->target()->toNode();
+        if (!target || !target->isElementNode())
+            return;
+
+        disableShowingTextTracks();
+        int trackIndex = toElement(target)->getIntegralAttribute(trackIndexAttrName());
+        if (trackIndex != trackIndexOffValue) {
+            ASSERT(trackIndex >= 0);
+            showTextTrackAtIndex(trackIndex);
+            mediaElement().disableAutomaticTextTrackSelection();
+        }
+
+        mediaControls().toggleTextTrackList();
+        event->setDefaultHandled();
+    }
+    MediaControlDivElement::defaultEventHandler(event);
+}
+
+void MediaControlTextTrackListElement::setVisible(bool visible)
+{
+    if (visible) {
+        setIsWanted(true);
+        refreshTextTrackListMenu();
+    } else {
+        setIsWanted(false);
+    }
+}
+
+void MediaControlTextTrackListElement::showTextTrackAtIndex(unsigned indexToEnable)
+{
+    TextTrackList* trackList = mediaElement().textTracks();
+    if (indexToEnable >= trackList->length())
+        return;
+    TextTrack* track = trackList->anonymousIndexedGetter(indexToEnable);
+    if (track && track->canBeRendered())
+        track->setMode(TextTrack::showingKeyword());
+}
+
+void MediaControlTextTrackListElement::disableShowingTextTracks()
+{
+    TextTrackList* trackList = mediaElement().textTracks();
+    for (unsigned i = 0; i < trackList->length(); ++i) {
+        TextTrack* track = trackList->anonymousIndexedGetter(i);
+        if (track->mode() == TextTrack::showingKeyword())
+            track->setMode(TextTrack::disabledKeyword());
+    }
+}
+
+String MediaControlTextTrackListElement::getTextTrackLabel(TextTrack* track)
+{
+    if (!track)
+        return mediaElement().locale().queryString(WebLocalizedString::TextTracksOff);
+
+    String trackLabel = track->label();
+
+    if (trackLabel.isEmpty())
+        trackLabel = String(mediaElement().locale().queryString(WebLocalizedString::TextTracksNoLabel));
+
+    return trackLabel;
+}
+
+// TextTrack parameter when passed in as a nullptr, creates the "Off" list item in the track list.
+Element* MediaControlTextTrackListElement::createTextTrackListItem(TextTrack* track)
+{
+    int trackIndex = track ? track->trackIndex() : trackIndexOffValue;
+    HTMLLabelElement* trackItem = HTMLLabelElement::create(document(), nullptr);
+    trackItem->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list-item"));
+    HTMLInputElement* trackItemInput = HTMLInputElement::create(document(), nullptr, false);
+    trackItemInput->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list-item-input"));
+    trackItemInput->setType(InputTypeNames::checkbox);
+    trackItemInput->setIntegralAttribute(trackIndexAttrName(), trackIndex);
+    if (!mediaElement().textTracksVisible()) {
+        if (!track)
+            trackItemInput->setChecked(true);
+    } else {
+        // If there are multiple text tracks set to showing, they must all have
+        // checkmarks displayed.
+        if (track && track->mode() == TextTrack::showingKeyword())
+            trackItemInput->setChecked(true);
+    }
+
+    trackItem->appendChild(trackItemInput);
+    String trackLabel = getTextTrackLabel(track);
+    trackItem->appendChild(Text::create(document(), trackLabel));
+    // Add a track kind marker icon if there are multiple tracks with the same label or if the track has no label.
+    if (track && (track->label().isEmpty() || hasDuplicateLabel(track))) {
+        HTMLSpanElement* trackKindMarker = HTMLSpanElement::create(document());
+        if (track->kind() == track->captionsKeyword()) {
+            trackKindMarker->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list-kind-captions"));
+        } else {
+            ASSERT(track->kind() == track->subtitlesKeyword());
+            trackKindMarker->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list-kind-subtitles"));
+        }
+        trackItem->appendChild(trackKindMarker);
+    }
+    return trackItem;
+}
+
+void MediaControlTextTrackListElement::refreshTextTrackListMenu()
+{
+    if (!mediaElement().hasClosedCaptions() || !mediaElement().textTracksAreReady())
+        return;
+
+    EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
+    removeChildren(OmitSubtreeModifiedEvent);
+
+    // Construct a menu for subtitles and captions
+    // Pass in a nullptr to createTextTrackListItem to create the "Off" track item.
+    appendChild(createTextTrackListItem(nullptr));
+
+    TextTrackList* trackList = mediaElement().textTracks();
+    for (unsigned i = 0; i < trackList->length(); i++) {
+        TextTrack* track = trackList->anonymousIndexedGetter(i);
+        if (!track->canBeRendered())
+            continue;
+        appendChild(createTextTrackListItem(track));
+    }
 }
 
 // ----------------------------

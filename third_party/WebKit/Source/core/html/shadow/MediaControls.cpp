@@ -116,6 +116,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_muteButton(nullptr)
     , m_volumeSlider(nullptr)
     , m_toggleClosedCaptionsButton(nullptr)
+    , m_textTrackList(nullptr)
     , m_castButton(nullptr)
     , m_fullScreenButton(nullptr)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
@@ -157,6 +158,12 @@ MediaControls* MediaControls::create(HTMLMediaElement& mediaElement)
 //     +-MediaControlToggleClosedCaptionsButtonElement (-webkit-media-controls-toggle-closed-captions-button)
 //     +-MediaControlCastButtonElement                 (-internal-media-controls-cast-button)
 //     \-MediaControlFullscreenButtonElement           (-webkit-media-controls-fullscreen-button)
+// +-MediaControlTextTrackListElement                (-internal-media-controls-text-track-list)
+// | {for each renderable text track}
+//  \-MediaControlTextTrackListItem                 (-internal-media-controls-text-track-list-item)
+//  +-MediaControlTextTrackListItemInput            (-internal-media-controls-text-track-list-item-input)
+//  +-MediaControlTextTrackListItemCaptions         (-internal-media-controls-text-track-list-kind-captions)
+//  +-MediaControlTextTrackListItemSubtitles        (-internal-media-controls-text-track-list-kind-subtitles)
 void MediaControls::initializeControls()
 {
     const bool useNewUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
@@ -231,6 +238,10 @@ void MediaControls::initializeControls()
 
     m_enclosure = enclosure;
     appendChild(enclosure);
+
+    MediaControlTextTrackListElement* textTrackList = MediaControlTextTrackListElement::create(*this);
+    m_textTrackList = textTrackList;
+    appendChild(textTrackList);
 }
 
 void MediaControls::reset()
@@ -333,6 +344,9 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const
     // through all the potential ancestor hosts for the focused element.)
     const bool ignoreFocus = behaviorFlags & IgnoreFocus;
     if (!ignoreFocus && (mediaElement().focused() || contains(document().focusedElement())))
+        return false;
+    // Don't hide the media controls when the text track list is showing.
+    if (m_textTrackList->isWanted())
         return false;
     return true;
 }
@@ -458,6 +472,16 @@ void MediaControls::refreshClosedCaptionsButtonVisibility()
 {
     m_toggleClosedCaptionsButton->setIsWanted(mediaElement().hasClosedCaptions());
     BatchedControlUpdate batch(this);
+}
+
+void MediaControls::toggleTextTrackList()
+{
+    if (!mediaElement().hasClosedCaptions()) {
+        m_textTrackList->setVisible(false);
+        return;
+    }
+
+    m_textTrackList->setVisible(!m_textTrackList->isWanted());
 }
 
 void MediaControls::refreshCastButtonVisibility()
@@ -759,6 +783,7 @@ DEFINE_TRACE(MediaControls)
     visitor->trace(m_fullScreenButton);
     visitor->trace(m_durationDisplay);
     visitor->trace(m_enclosure);
+    visitor->trace(m_textTrackList);
     visitor->trace(m_castButton);
     visitor->trace(m_overlayCastButton);
     HTMLDivElement::trace(visitor);

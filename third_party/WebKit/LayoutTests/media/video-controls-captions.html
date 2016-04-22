@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Test closed caption button toggling.</title>
+    <title>Test closed caption track selection functionality.</title>
     <script src=media-file.js></script>
     <script src=media-controls.js></script>
     <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
@@ -70,21 +70,21 @@
             checkCaptionsDisplay();
 
             consoleWrite("");
-            consoleWrite("** Captions track should load and captions should become visible after button is clicked **");
+            consoleWrite("** Captions track should load and captions should become visible after a track is selected **");
 
-            // Note: the test flow continues with "testCCButtonToggling" when the
+            // Note: the test flow continues with "testCCTrackSelectionFunctionality" when the
             // "load" event of the single TextTrack fires up. While the test structure
             // might seem weird, this avoids timeouts.
-            clickCCButton();
+            selectTextTrack(video, 0);
         }
 
-        function testCCButtonToggling()
+        function testCCTrackSelectionFunctionality()
         {
             checkCaptionsDisplay();
 
             consoleWrite("");
-            consoleWrite("** Captions should not be visible after button is clicked again **");
-            clickCCButton();
+            consoleWrite("** Captions should not be visible after Off is clicked **");
+            turnClosedCaptionsOff(video);
             checkCaptionsDisplay();
 
             removeHTMLTrackElement();
@@ -94,7 +94,7 @@
             testClosedCaptionsButtonVisibility(true);
 
             consoleWrite("");
-            clickCCButton();
+            selectTextTrack(video, 0);
         }
 
         function trackError()
@@ -118,9 +118,9 @@
     </script>
 </head>
 <body onload="loaded()">
-    <p>Tests that the closed captions button, when toggled, updates the text track display area.</p>
+    <p>Tests that the closed captions button enables track switching</p>
     <video controls>
-        <track src="track/captions-webvtt/captions-fast.vtt" kind="captions" onload="testCCButtonToggling()">
+        <track src="track/captions-webvtt/captions-fast.vtt" kind="captions" onload="testCCTrackSelectionFunctionality()">
     </video>
 </body>
 </html>

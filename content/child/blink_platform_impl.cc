@@ -337,6 +337,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_INPUT_WEEK_TEMPLATE;
     case WebLocalizedString::WeekNumberLabel:
       return IDS_FORM_WEEK_NUMBER_LABEL;
+    case WebLocalizedString::TextTracksNoLabel:
+      return IDS_MEDIA_TRACKS_NO_LABEL;
+    case WebLocalizedString::TextTracksOff:
+      return IDS_MEDIA_TRACKS_OFF;
     // This "default:" line exists to avoid compile warnings about enum
     // coverage when we add a new symbol to WebLocalizedString.h in WebKit.
     // After a planned WebKit patch is landed, we need to add a case statement
@@ -672,6 +676,24 @@ const DataResource kDataResources[] = {
      ui::SCALE_FACTOR_100P},
     {"mediaplayerOverlayPlayNew",
      IDR_MEDIAPLAYER_OVERLAY_PLAY_BUTTON_NEW,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerTrackSelectionCheckmark",
+     IDR_MEDIAPLAYER_TRACKSELECTION_CHECKMARK,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerTrackSelectionCheckmarkNew",
+     IDR_MEDIAPLAYER_TRACKSELECTION_CHECKMARK_NEW,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerClosedCaptionsIcon",
+     IDR_MEDIAPLAYER_CLOSEDCAPTIONS_ICON,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerClosedCaptionsIconNew",
+     IDR_MEDIAPLAYER_CLOSEDCAPTIONS_ICON_NEW,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerSubtitlesIcon",
+     IDR_MEDIAPLAYER_SUBTITLES_ICON,
+     ui::SCALE_FACTOR_100P},
+    {"mediaplayerSubtitlesIconNew",
+     IDR_MEDIAPLAYER_SUBTITLES_ICON_NEW,
      ui::SCALE_FACTOR_100P},
     {"searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P},
     {"searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, ui::SCALE_FACTOR_100P},

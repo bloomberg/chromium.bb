@@ -1,4 +1,4 @@
-Tests that the closed captions button, when toggled, updates the text track display area.
+Tests that the closed captions button enables track switching
 
 EVENT(canplaythrough)
 
@@ -12,11 +12,11 @@ EXPECTED (video.textTracks.length == '1') OK
 EXPECTED (video.textTracks[0].mode == 'disabled') OK
 Failed to find text track container element
 
-** Captions track should load and captions should become visible after button is clicked **
+** Captions track should load and captions should become visible after a track is selected **
 *** Click the CC button.
 EXPECTED (textTrackDisplayElement(video, 'display').innerText == 'Lorem') OK
 
-** Captions should not be visible after button is clicked again **
+** Captions should not be visible after Off is clicked **
 *** Click the CC button.
 No text track cue with display id '-webkit-media-text-track-display' is currently visible
 

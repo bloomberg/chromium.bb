@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<script src="media-file.js"></script>
+<!-- TODO(srivats): Convert test to testharness.js. crbug.com/588956
+     (Please avoid writing new tests using video-test.js) -->
+<script src="video-test.js"></script>
+<script src="media-controls.js"></script>
+<script>
+
+    function startTest()
+    {
+        findMediaElement();
+        testClosedCaptionsButtonVisibility(true);
+        consoleWrite("");
+        testExpected("video.textTracks.length", 2);
+        testExpected("video.textTracks[0].mode", "hidden");
+        testExpected("video.textTracks[1].mode", "hidden");
+
+        consoleWrite("");
+        consoleWrite("Select track 0 and verify it is displayed");
+        selectTextTrack(video, 0);
+        testExpected("video.textTracks[0].mode", "showing");
+        testExpected("video.textTracks[1].mode", "hidden");
+        testExpected("textTrackDisplayElement(video, 'display').innerText", "Lorem");
+
+        consoleWrite("");
+        consoleWrite("Select track 1 and verify it is displayed");
+        selectTextTrack(video, 1);
+        testExpected("video.textTracks[0].mode", "disabled");
+        testExpected("video.textTracks[1].mode", "showing");
+        testExpected("textTrackDisplayElement(video, 'display').innerText", "first caption");
+
+        consoleWrite("");
+        endTest();
+    }
+
+    window.onload = function()
+    {
+        consoleWrite("Test that we can display a track list menu and select tracks from the list");
+        findMediaElement();
+        video.src = findMediaFile("video", "content/test");
+        enableAllTextTracks();
+        waitForEvent("canplaythrough", startTest);
+    }
+
+</script>
+<video controls>
+    <track src="track/captions-webvtt/captions.vtt" kind="captions" label="Track1">
+    <track src="track/captions-webvtt/long-word.vtt" kind="captions" label="Track2">
+</video>
