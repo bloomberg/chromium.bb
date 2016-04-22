@@ -59,7 +59,7 @@
       }, {
         'disable_ffmpeg_asm%': 0,
       }],
-      ['target_arch == "arm" and arm_version == 7 and arm_neon == 1', {
+      ['target_arch == "arm" and arm_version >= 7 and arm_neon == 1', {
         # Need a separate config for arm+neon vs arm
         'ffmpeg_config%': 'arm-neon',
       }, {
