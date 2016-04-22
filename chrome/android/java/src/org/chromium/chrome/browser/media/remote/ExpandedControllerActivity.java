@@ -26,6 +26,7 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
+import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.third_party.android.media.MediaController;
 
 /**
@@ -133,6 +134,8 @@ public class ExpandedControllerActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MediaNotificationUma.recordClickSource(getIntent());
 
         mMediaRouteController =
                 RemoteMediaPlayerController.instance().getCurrentlyPlayingMediaRouteController();

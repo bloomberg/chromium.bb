@@ -554,8 +554,10 @@ public class MediaNotificationManager {
         // TODO(avayvod) work out what we should do in this case. See https://crbug.com/585395.
         if (mMediaNotificationInfo.contentIntent != null) {
             mNotificationBuilder.setContentIntent(PendingIntent.getActivity(mContext,
-                    mMediaNotificationInfo.tabId,
-                    mMediaNotificationInfo.contentIntent, 0));
+                    mMediaNotificationInfo.tabId, mMediaNotificationInfo.contentIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT));
+            // Set FLAG_UPDATE_CURRENT so that the intent extras is updated, otherwise the
+            // intent extras will stay the same for the same tab.
         }
 
         mNotificationBuilder.setVisibility(

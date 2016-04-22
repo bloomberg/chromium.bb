@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.content.Context;
+import android.content.Intent;
 
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
@@ -21,6 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
+import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.MediaMetadata;
 
@@ -139,6 +141,9 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                     });
         }
 
+        Intent contentIntent = Tab.createBringTabToFrontIntent(tabId);
+        contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
+                MediaNotificationUma.SOURCE_PRESENTATION);
         mNotificationBuilder = new MediaNotificationInfo.Builder()
                 .setPaused(false)
                 .setOrigin(origin)
@@ -147,7 +152,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                 .setTabId(tabId)
                 .setPrivate(isIncognito)
                 .setActions(MediaNotificationInfo.ACTION_STOP)
-                .setContentIntent(Tab.createBringTabToFrontIntent(tabId))
+                .setContentIntent(contentIntent)
                 .setId(R.id.presentation_notification)
                 .setListener(this);
         setNotificationMetadata(mNotificationBuilder);

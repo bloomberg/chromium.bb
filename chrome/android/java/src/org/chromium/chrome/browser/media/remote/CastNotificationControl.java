@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
+import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.MediaMetadata;
 
@@ -100,6 +101,8 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         mAudioManager.requestAudioFocus(this, AudioManager.USE_DEFAULT_STREAM_TYPE,
                 AudioManager.AUDIOFOCUS_GAIN);
         Intent contentIntent = new Intent(mContext, ExpandedControllerActivity.class);
+        contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
+                MediaNotificationUma.SOURCE_MEDIA_FLING);
         mNotificationBuilder = new MediaNotificationInfo.Builder()
                 .setPaused(false)
                 .setPrivate(false)

@@ -20971,6 +20971,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Notification.Click" enum="MediaNotificationClickSource">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    The type of media notification the user clicked to go back to Chrome.
+  </summary>
+</histogram>
+
 <histogram name="Media.PepperVideoDecoderError"
     enum="VideoDecodeAcceleratorError">
   <owner>ihf@chromium.org</owner>
@@ -77189,6 +77198,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="URL"/>
   <int value="1" label="MediaSource"/>
   <int value="2" label="MediaStream"/>
+</enum>
+
+<enum name="MediaNotificationClickSource" type="int">
+  <int value="0" label="Media"/>
+  <int value="1" label="Presentation"/>
+  <int value="2" label="MediaFling"/>
 </enum>
 
 <enum name="MediaOutputProtectionStatus" type="int">

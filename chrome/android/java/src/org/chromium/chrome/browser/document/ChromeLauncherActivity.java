@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationUIManager;
@@ -984,5 +985,6 @@ public class ChromeLauncherActivity extends Activity
             int maskedFlags = intent.getFlags() & flagsOfInterest;
             sIntentFlagsHistogram.record(maskedFlags);
         }
+        MediaNotificationUma.recordClickSource(intent);
     }
 }

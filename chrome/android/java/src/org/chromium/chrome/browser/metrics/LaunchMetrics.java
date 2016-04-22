@@ -84,6 +84,29 @@ public class LaunchMetrics {
         }
     }
 
+    /** Caches a set of enumerated histogram samples. */
+    public static class EnumeratedHistogramSample extends CachedHistogram {
+        private final List<Integer> mSamples = new ArrayList<Integer>();
+        private final int mMaxValue;
+
+        public EnumeratedHistogramSample(String histogramName, int maxValue) {
+            super(histogramName);
+            mMaxValue = maxValue;
+        }
+
+        public void record(int sample) {
+            mSamples.add(sample);
+        }
+
+        @Override
+        protected void commitAndClear() {
+            for (Integer sample : mSamples) {
+                RecordHistogram.recordEnumeratedHistogram(mHistogramName, sample, mMaxValue);
+            }
+            mSamples.clear();
+        }
+    }
+
     // Each list item is a pair of the url and where it was added from e.g. from the add to
     // homescreen menu item, an app banner, or unknown. The mapping of int source values to
     // their string names is found in the C++ ShortcutInfo struct.

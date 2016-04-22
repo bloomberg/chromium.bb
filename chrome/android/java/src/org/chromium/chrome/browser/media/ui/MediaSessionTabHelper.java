@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Build;
@@ -14,6 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -111,6 +113,10 @@ public class MediaSessionTabHelper {
                     metadata = mFallbackMetadata;
                 }
 
+                Intent contentIntent = Tab.createBringTabToFrontIntent(mTab.getId());
+                contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
+                        MediaNotificationUma.SOURCE_MEDIA);
+
                 mNotificationInfoBuilder =
                         new MediaNotificationInfo.Builder()
                                 .setMetadata(metadata)
@@ -122,7 +128,7 @@ public class MediaSessionTabHelper {
                                 .setLargeIcon(mFavicon)
                                 .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
-                                .setContentIntent(Tab.createBringTabToFrontIntent(mTab.getId()))
+                                .setContentIntent(contentIntent)
                                 .setId(R.id.media_playback_notification)
                                 .setListener(mControlsListener);
 
