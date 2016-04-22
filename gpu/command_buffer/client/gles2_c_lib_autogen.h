@@ -1412,33 +1412,6 @@ void GL_APIENTRY GLES2BindUniformLocationCHROMIUM(GLuint program,
                                                   const char* name) {
   gles2::GetGLContext()->BindUniformLocationCHROMIUM(program, location, name);
 }
-void GL_APIENTRY GLES2GenValuebuffersCHROMIUM(GLsizei n, GLuint* buffers) {
-  gles2::GetGLContext()->GenValuebuffersCHROMIUM(n, buffers);
-}
-void GL_APIENTRY GLES2DeleteValuebuffersCHROMIUM(GLsizei n,
-                                                 const GLuint* valuebuffers) {
-  gles2::GetGLContext()->DeleteValuebuffersCHROMIUM(n, valuebuffers);
-}
-GLboolean GL_APIENTRY GLES2IsValuebufferCHROMIUM(GLuint valuebuffer) {
-  return gles2::GetGLContext()->IsValuebufferCHROMIUM(valuebuffer);
-}
-void GL_APIENTRY GLES2BindValuebufferCHROMIUM(GLenum target,
-                                              GLuint valuebuffer) {
-  gles2::GetGLContext()->BindValuebufferCHROMIUM(target, valuebuffer);
-}
-void GL_APIENTRY GLES2SubscribeValueCHROMIUM(GLenum target,
-                                             GLenum subscription) {
-  gles2::GetGLContext()->SubscribeValueCHROMIUM(target, subscription);
-}
-void GL_APIENTRY GLES2PopulateSubscribedValuesCHROMIUM(GLenum target) {
-  gles2::GetGLContext()->PopulateSubscribedValuesCHROMIUM(target);
-}
-void GL_APIENTRY GLES2UniformValuebufferCHROMIUM(GLint location,
-                                                 GLenum target,
-                                                 GLenum subscription) {
-  gles2::GetGLContext()->UniformValuebufferCHROMIUM(location, target,
-                                                    subscription);
-}
 void GL_APIENTRY GLES2BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   gles2::GetGLContext()->BindTexImage2DCHROMIUM(target, imageId);
 }
@@ -2788,35 +2761,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glBindUniformLocationCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glBindUniformLocationCHROMIUM),
-    },
-    {
-        "glGenValuebuffersCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glGenValuebuffersCHROMIUM),
-    },
-    {
-        "glDeleteValuebuffersCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glDeleteValuebuffersCHROMIUM),
-    },
-    {
-        "glIsValuebufferCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glIsValuebufferCHROMIUM),
-    },
-    {
-        "glBindValuebufferCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glBindValuebufferCHROMIUM),
-    },
-    {
-        "glSubscribeValueCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glSubscribeValueCHROMIUM),
-    },
-    {
-        "glPopulateSubscribedValuesCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glPopulateSubscribedValuesCHROMIUM),
-    },
-    {
-        "glUniformValuebufferCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glUniformValuebufferCHROMIUM),
     },
     {
         "glBindTexImage2DCHROMIUM",

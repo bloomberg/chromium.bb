@@ -31,12 +31,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -602,8 +600,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       io_task_runner_(io_task_runner),
       share_group_(share_group),
       mailbox_manager_(mailbox),
-      subscription_ref_set_(new gles2::SubscriptionRefSet),
-      pending_valuebuffer_state_(new ValueStateMap),
       watchdog_(watchdog),
       allow_view_command_buffers_(allow_view_command_buffers),
       allow_real_time_streams_(allow_real_time_streams),
@@ -616,8 +612,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   scoped_refptr<GpuChannelMessageQueue> control_queue =
       CreateStream(GPU_STREAM_DEFAULT, GpuStreamPriority::HIGH);
   AddRouteToStream(MSG_ROUTING_CONTROL, GPU_STREAM_DEFAULT);
-
-  subscription_ref_set_->AddObserver(this);
 }
 
 GpuChannel::~GpuChannel() {
@@ -627,7 +621,6 @@ GpuChannel::~GpuChannel() {
   for (auto& kv : streams_)
     kv.second->Disable();
 
-  subscription_ref_set_->RemoveObserver(this);
   if (preempting_flag_.get())
     preempting_flag_->Reset();
 }
@@ -709,14 +702,6 @@ bool GpuChannel::Send(IPC::Message* message) {
   }
 
   return channel_->Send(message);
-}
-
-void GpuChannel::OnAddSubscription(unsigned int target) {
-  gpu_channel_manager()->delegate()->AddSubscription(client_id_, target);
-}
-
-void GpuChannel::OnRemoveSubscription(unsigned int target) {
-  gpu_channel_manager()->delegate()->RemoveSubscription(client_id_, target);
 }
 
 void GpuChannel::OnStreamRescheduled(int32_t stream_id, bool scheduled) {
@@ -960,8 +945,7 @@ void GpuChannel::OnCreateCommandBuffer(
 
   std::unique_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, sync_point_manager_, task_runner_.get(), share_group,
-      surface_handle, mailbox_manager_.get(), preempted_flag_.get(),
-      subscription_ref_set_.get(), pending_valuebuffer_state_.get(), size,
+      surface_handle, mailbox_manager_.get(), preempted_flag_.get(), size,
       disallowed_features_, init_params.attribs, init_params.gpu_preference,
       init_params.stream_id, route_id, watchdog_, init_params.active_url));
 
@@ -1069,11 +1053,6 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
                                           client_id_);
     }
   }
-}
-
-void GpuChannel::HandleUpdateValueState(
-    unsigned int target, const ValueState& state) {
-  pending_valuebuffer_state_->UpdateState(target, state);
 }
 
 }  // namespace gpu

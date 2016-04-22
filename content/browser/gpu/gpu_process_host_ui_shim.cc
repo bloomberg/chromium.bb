@@ -196,8 +196,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
                         OnVideoMemoryUsageStatsReceived);
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AddSubscription, OnAddSubscription);
-    IPC_MESSAGE_HANDLER(GpuHostMsg_RemoveSubscription, OnRemoveSubscription);
 
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -276,22 +274,6 @@ void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
     const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {
   GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
       video_memory_usage_stats);
-}
-
-void GpuProcessHostUIShim::OnAddSubscription(int32_t process_id,
-                                             unsigned int target) {
-  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  if (rph) {
-    rph->OnAddSubscription(target);
-  }
-}
-
-void GpuProcessHostUIShim::OnRemoveSubscription(int32_t process_id,
-                                                unsigned int target) {
-  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  if (rph) {
-    rph->OnRemoveSubscription(target);
-  }
 }
 
 }  // namespace content

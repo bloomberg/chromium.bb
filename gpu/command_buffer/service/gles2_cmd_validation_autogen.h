@@ -308,7 +308,6 @@ class StringTypeValidator {
 };
 StringTypeValidator string_type;
 
-ValueValidator<GLenum> subscription_target;
 ValueValidator<GLbitfield> sync_flush_flags;
 class SyncParameterValidator {
  public:
@@ -389,7 +388,6 @@ class UniformParameterValidator {
 };
 UniformParameterValidator uniform_parameter;
 
-ValueValidator<GLenum> value_buffer_target;
 class VertexAttribITypeValidator {
  public:
   bool IsValid(const GLenum value) const;

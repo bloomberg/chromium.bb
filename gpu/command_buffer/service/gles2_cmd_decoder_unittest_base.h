@@ -28,7 +28,6 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -134,10 +133,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return group_->program_manager()->GetProgram(client_id);
   }
 
-  Valuebuffer* GetValuebuffer(GLuint client_id) {
-    return group_->valuebuffer_manager()->GetValuebuffer(client_id);
-  }
-
   QueryManager::Query* GetQueryInfo(GLuint client_id) {
     return decoder_->GetQueryManager()->GetQuery(client_id);
   }
@@ -163,14 +158,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   ProgramManager* program_manager() {
     return group_->program_manager();
-  }
-
-  ValuebufferManager* valuebuffer_manager() {
-    return group_->valuebuffer_manager();
-  }
-
-  ValueStateMap* pending_valuebuffer_state() {
-    return group_->pending_valuebuffer_state();
   }
 
   FeatureInfo* feature_info() {
@@ -652,7 +639,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   GLuint client_fragment_shader_id_;
   GLuint client_query_id_;
   GLuint client_vertexarray_id_;
-  GLuint client_valuebuffer_id_;
   GLuint client_transformfeedback_id_;
   GLuint client_sync_id_;
 

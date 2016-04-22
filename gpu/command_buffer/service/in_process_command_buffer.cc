@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -40,7 +39,6 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -179,22 +177,6 @@ InProcessCommandBuffer::Service::mailbox_manager() {
     mailbox_manager_ = gles2::MailboxManager::Create(gpu_preferences());
   }
   return mailbox_manager_;
-}
-
-scoped_refptr<gles2::SubscriptionRefSet>
-InProcessCommandBuffer::Service::subscription_ref_set() {
-  if (!subscription_ref_set_.get()) {
-    subscription_ref_set_ = new gles2::SubscriptionRefSet();
-  }
-  return subscription_ref_set_;
-}
-
-scoped_refptr<ValueStateMap>
-InProcessCommandBuffer::Service::pending_valuebuffer_state() {
-  if (!pending_valuebuffer_state_.get()) {
-    pending_valuebuffer_state_ = new ValueStateMap();
-  }
-  return pending_valuebuffer_state_;
 }
 
 gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
@@ -354,8 +336,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                 service_->gpu_preferences(), service_->mailbox_manager(), NULL,
                 service_->shader_translator_cache(),
                 service_->framebuffer_completeness_cache(), feature_info,
-                service_->subscription_ref_set(),
-                service_->pending_valuebuffer_state(),
                 bind_generates_resource)));
 
   executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get(),

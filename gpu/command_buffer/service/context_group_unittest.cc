@@ -8,13 +8,11 @@
 
 #include <memory>
 
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -46,7 +44,7 @@ class ContextGroupTest : public GpuServiceTest {
     scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
     group_ = scoped_refptr<ContextGroup>(
         new ContextGroup(gpu_preferences_, NULL, NULL, NULL, NULL, feature_info,
-                         NULL, NULL, kBindGeneratesResource));
+                         kBindGeneratesResource));
   }
 
   GpuPreferences gpu_preferences_;

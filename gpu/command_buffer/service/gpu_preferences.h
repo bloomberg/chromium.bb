@@ -97,9 +97,6 @@ struct GPU_EXPORT GpuPreferences {
   // Allows async texture uploads (off main thread) via GL context sharing.
   bool enable_share_group_async_texture_upload = false;
 
-  // Enable WebGL subscribe uniform extension.
-  bool enable_subscribe_uniform_extension = false;
-
   // Simulates shared textures when share groups are not available.
   // Not available everywhere.
   bool enable_threaded_texture_mailboxes = false;

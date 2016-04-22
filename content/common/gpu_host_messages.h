@@ -9,7 +9,6 @@
 #include "content/common/content_export.h"
 #include "content/common/establish_channel_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
@@ -127,7 +126,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
   IPC_STRUCT_TRAITS_MEMBER(gpu_program_cache_size)
   IPC_STRUCT_TRAITS_MEMBER(disable_gpu_shader_disk_cache)
   IPC_STRUCT_TRAITS_MEMBER(enable_share_group_async_texture_upload)
-  IPC_STRUCT_TRAITS_MEMBER(enable_subscribe_uniform_extension)
   IPC_STRUCT_TRAITS_MEMBER(enable_threaded_texture_mailboxes)
   IPC_STRUCT_TRAITS_MEMBER(gl_shader_interm_output)
   IPC_STRUCT_TRAITS_MEMBER(emulate_shader_precision)
@@ -213,12 +211,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_DisableWatchdog)
 // Tells the GPU process that the browser has seen a GPU switch.
 IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 
-// Sends an input event to the gpu service.
-IPC_MESSAGE_CONTROL3(GpuMsg_UpdateValueState,
-                     int,          /* client_id */
-                     unsigned int, /* target */
-                     gpu::ValueState /* valuestate */)
-
 //------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages to the browser.
@@ -280,18 +272,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext, GURL /* url */)
 // Tells the browser about GPU memory usage statistics for UMA logging.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
                      gpu::GPUMemoryUmaStats /* GPU memory UMA stats */)
-
-// Tells the browser that a context has subscribed to a new target and
-// the browser should start sending the corresponding information
-IPC_MESSAGE_CONTROL2(GpuHostMsg_AddSubscription,
-                     int32_t /* client_id */,
-                     unsigned int /* target */)
-
-// Tells the browser that no contexts are subscribed to the target anymore
-// so the browser should stop sending the corresponding information
-IPC_MESSAGE_CONTROL2(GpuHostMsg_RemoveSubscription,
-                     int32_t /* client_id */,
-                     unsigned int /* target */)
 
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,

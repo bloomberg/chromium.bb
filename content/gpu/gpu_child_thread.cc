@@ -282,7 +282,6 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
-    IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(GpuMsg_WakeUpGpu, OnWakeUpGpu);
 #endif
@@ -296,10 +295,6 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
 
 void GpuChildThread::SetActiveURL(const GURL& url) {
   GetContentClient()->SetActiveURL(url);
-}
-
-void GpuChildThread::AddSubscription(int32_t client_id, unsigned int target) {
-  Send(new GpuHostMsg_AddSubscription(client_id, target));
 }
 
 void GpuChildThread::DidCreateOffscreenContext(const GURL& active_url) {
@@ -323,11 +318,6 @@ void GpuChildThread::DidLoseContext(bool offscreen,
 
 void GpuChildThread::GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) {
   Send(new GpuHostMsg_GpuMemoryUmaStats(params));
-}
-
-void GpuChildThread::RemoveSubscription(int32_t client_id,
-                                        unsigned int target) {
-  Send(new GpuHostMsg_RemoveSubscription(client_id, target));
 }
 
 #if defined(OS_MACOSX)
@@ -554,13 +544,6 @@ void GpuChildThread::OnDestroyGpuMemoryBuffer(
     const gpu::SyncToken& sync_token) {
   if (gpu_channel_manager_)
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
-}
-
-void GpuChildThread::OnUpdateValueState(int client_id,
-                                        unsigned int target,
-                                        const gpu::ValueState& state) {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->UpdateValueState(client_id, target, state);
 }
 
 #if defined(OS_ANDROID)

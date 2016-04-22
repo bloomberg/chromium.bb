@@ -89,7 +89,6 @@ class GpuChildThread : public ChildThreadImpl,
 
   // gpu::GpuChannelManagerDelegate implementation.
   void SetActiveURL(const GURL& url) override;
-  void AddSubscription(int32_t client_id, unsigned int target) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
   void DidDestroyOffscreenContext(const GURL& active_url) override;
@@ -97,7 +96,6 @@ class GpuChildThread : public ChildThreadImpl,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
-  void RemoveSubscription(int32_t client_id, unsigned int target) override;
 #if defined(OS_MACOSX)
   void SendAcceleratedSurfaceBuffersSwapped(
       int32_t surface_id,
@@ -138,9 +136,6 @@ class GpuChildThread : public ChildThreadImpl,
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 int client_id,
                                 const gpu::SyncToken& sync_token);
-  void OnUpdateValueState(int client_id,
-                          unsigned int target,
-                          const gpu::ValueState& state);
 #if defined(OS_ANDROID)
   void OnWakeUpGpu();
 #endif

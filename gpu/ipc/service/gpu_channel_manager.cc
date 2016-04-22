@@ -15,7 +15,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
@@ -207,16 +206,6 @@ void GpuChannelManager::DestroyGpuMemoryBuffer(
 
   // No sync token or invalid sync token, destroy immediately.
   InternalDestroyGpuMemoryBuffer(id, client_id);
-}
-
-void GpuChannelManager::UpdateValueState(int client_id,
-                                         unsigned int target,
-                                         const ValueState& state) {
-  // Only pass updated state to the channel corresponding to the
-  // render_widget_host where the event originated.
-  auto it = gpu_channels_.find(client_id);
-  if (it != gpu_channels_.end())
-    it->second->HandleUpdateValueState(target, state);
 }
 
 void GpuChannelManager::PopulateShaderCache(const std::string& program_proto) {

@@ -37,7 +37,5 @@
     'command_buffer/common/sync_token.h',
     'command_buffer/common/thread_local.h',
     'command_buffer/common/time.h',
-    'command_buffer/common/value_state.cc',
-    'command_buffer/common/value_state.h',
   ],
 }

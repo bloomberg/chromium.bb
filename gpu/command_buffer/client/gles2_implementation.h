@@ -467,7 +467,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool IsTextureReservedId(GLuint id) { return false; }
   bool IsVertexArrayReservedId(GLuint id) { return false; }
   bool IsProgramReservedId(GLuint id) { return false; }
-  bool IsValuebufferReservedId(GLuint id) { return false; }
   bool IsSamplerReservedId(GLuint id) { return false; }
   bool IsTransformFeedbackReservedId(GLuint id) { return false; }
 
@@ -481,7 +480,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void BindTextureHelper(GLenum target, GLuint texture);
   void BindTransformFeedbackHelper(GLenum target, GLuint transformfeedback);
   void BindVertexArrayOESHelper(GLuint array);
-  void BindValuebufferCHROMIUMHelper(GLenum target, GLuint valuebuffer);
   void UseProgramHelper(GLuint program);
 
   void BindBufferStub(GLenum target, GLuint buffer);
@@ -491,7 +489,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void BindFramebufferStub(GLenum target, GLuint framebuffer);
   void BindRenderbufferStub(GLenum target, GLuint renderbuffer);
   void BindTextureStub(GLenum target, GLuint texture);
-  void BindValuebufferCHROMIUMStub(GLenum target, GLuint valuebuffer);
 
   void GenBuffersHelper(GLsizei n, const GLuint* buffers);
   void GenFramebuffersHelper(GLsizei n, const GLuint* framebuffers);
@@ -499,7 +496,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void GenTexturesHelper(GLsizei n, const GLuint* textures);
   void GenVertexArraysOESHelper(GLsizei n, const GLuint* arrays);
   void GenQueriesEXTHelper(GLsizei n, const GLuint* queries);
-  void GenValuebuffersCHROMIUMHelper(GLsizei n, const GLuint* valuebuffers);
   void GenSamplersHelper(GLsizei n, const GLuint* samplers);
   void GenTransformFeedbacksHelper(GLsizei n, const GLuint* transformfeedbacks);
 
@@ -511,7 +507,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool DeleteShaderHelper(GLuint shader);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* queries);
   void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* arrays);
-  void DeleteValuebuffersCHROMIUMHelper(GLsizei n, const GLuint* valuebuffers);
   void DeleteSamplersHelper(GLsizei n, const GLuint* samplers);
   void DeleteTransformFeedbacksHelper(
       GLsizei n, const GLuint* transformfeedbacks);
@@ -525,7 +520,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void DeleteProgramStub(GLsizei n, const GLuint* programs);
   void DeleteShaderStub(GLsizei n, const GLuint* shaders);
   void DeleteVertexArraysOESStub(GLsizei n, const GLuint* arrays);
-  void DeleteValuebuffersCHROMIUMStub(GLsizei n, const GLuint* valuebuffers);
   void DeleteSamplersStub(GLsizei n, const GLuint* samplers);
   void DeleteTransformFeedbacksStub(
       GLsizei n, const GLuint* transformfeedbacks);
@@ -751,7 +745,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   GLuint bound_framebuffer_;
   GLuint bound_read_framebuffer_;
   GLuint bound_renderbuffer_;
-  GLuint bound_valuebuffer_;
 
   // The program in use by glUseProgram
   GLuint current_program_;

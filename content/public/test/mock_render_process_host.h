@@ -98,11 +98,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
-  bool SubscribeUniformEnabled() const override;
-  void OnAddSubscription(unsigned int target) override;
-  void OnRemoveSubscription(unsigned int target) override;
-  void SendUpdateValueState(
-      unsigned int target, const gpu::ValueState& state) override;
 #if defined(ENABLE_BROWSER_CDMS)
   scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id,
                                          int cdm_id) const override;

@@ -27,7 +27,6 @@ namespace gpu {
 
 struct GpuPreferences;
 class TransferBufferManager;
-class ValueStateMap;
 
 namespace gles2 {
 
@@ -42,8 +41,6 @@ class ProgramManager;
 class SamplerManager;
 class ShaderManager;
 class TextureManager;
-class SubscriptionRefSet;
-class ValuebufferManager;
 class MemoryTracker;
 struct DisallowedFeatures;
 
@@ -59,8 +56,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       const scoped_refptr<FramebufferCompletenessCache>&
           framebuffer_completeness_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
-      const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
-      const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
       bool bind_generates_resource);
 
   // This should only be called by GLES2Decoder. This must be paired with a
@@ -166,14 +161,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return renderbuffer_manager_.get();
   }
 
-  ValuebufferManager* valuebuffer_manager() const {
-    return valuebuffer_manager_.get();
-  }
-
-  ValueStateMap* pending_valuebuffer_state() const {
-    return pending_valuebuffer_state_.get();
-  }
-
   TextureManager* texture_manager() const {
     return texture_manager_.get();
   }
@@ -270,8 +257,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<FramebufferCompletenessCache> framebuffer_completeness_cache_;
   scoped_refptr<TransferBufferManager> transfer_buffer_manager_;
-  scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
-  scoped_refptr<ValueStateMap> pending_valuebuffer_state_;
 
   bool enforce_gl_minimums_;
   bool bind_generates_resource_;
@@ -313,8 +298,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::unique_ptr<ShaderManager> shader_manager_;
 
   std::unique_ptr<SamplerManager> sampler_manager_;
-
-  std::unique_ptr<ValuebufferManager> valuebuffer_manager_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 

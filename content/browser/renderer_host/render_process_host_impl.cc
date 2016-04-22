@@ -572,8 +572,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       worker_ref_count_(0),
       max_worker_count_(0),
       permission_service_context_(new PermissionServiceContext(this)),
-      pending_valuebuffer_state_(new gpu::ValueStateMap()),
-      subscribe_uniform_enabled_(false),
       channel_connected_(false),
       sent_render_process_ready_(false),
 #if defined(OS_ANDROID)
@@ -597,9 +595,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                             base::Bind(&CacheShaderInfo, GetID(),
                                        storage_partition_impl_->GetPath()));
   }
-  subscribe_uniform_enabled_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSubscribeUniformExtension);
 
 #if defined(OS_MACOSX)
   if (BootstrapSandboxManager::ShouldEnable())
@@ -1126,37 +1121,6 @@ RenderProcessHostImpl::TakeMetricsAllocator() {
 const base::TimeTicks& RenderProcessHostImpl::GetInitTimeForNavigationMetrics()
     const {
   return init_time_;
-}
-
-bool RenderProcessHostImpl::SubscribeUniformEnabled() const {
-  return subscribe_uniform_enabled_;
-}
-
-void RenderProcessHostImpl::OnAddSubscription(unsigned int target) {
-  DCHECK(subscribe_uniform_enabled_);
-  subscription_set_.insert(target);
-  const gpu::ValueState* state = pending_valuebuffer_state_->GetState(target);
-  if (state) {
-    SendUpdateValueState(target, *state);
-  }
-}
-
-void RenderProcessHostImpl::OnRemoveSubscription(unsigned int target) {
-  DCHECK(subscribe_uniform_enabled_);
-  subscription_set_.erase(target);
-}
-
-void RenderProcessHostImpl::SendUpdateValueState(unsigned int target,
-                                                 const gpu::ValueState& state) {
-  DCHECK(subscribe_uniform_enabled_);
-  if (subscription_set_.find(target) != subscription_set_.end()) {
-    GpuProcessHost::SendOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                             CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-                             new GpuMsg_UpdateValueState(id_, target, state));
-  } else {
-    // Store the ValueState locally in case a Valuebuffer subscribes to it later
-    pending_valuebuffer_state_->UpdateState(target, state);
-  }
 }
 
 #if defined(ENABLE_BROWSER_CDMS)

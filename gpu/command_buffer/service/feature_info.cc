@@ -130,7 +130,6 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_texture_rg(false),
       chromium_image_ycbcr_420v(false),
       chromium_image_ycbcr_422(false),
-      enable_subscribe_uniform(false),
       emulate_primitive_restart_fixed_index(false),
       ext_render_buffer_format_bgra8888(false),
       ext_multisample_compatibility(false),
@@ -167,9 +166,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
 
   feature_flags_.is_swiftshader =
       (command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
-
-  feature_flags_.enable_subscribe_uniform =
-      command_line->HasSwitch(switches::kEnableSubscribeUniformExtension);
 
   enable_unsafe_es3_apis_switch_ =
       command_line->HasSwitch(switches::kEnableUnsafeES3APIs);
@@ -342,10 +338,6 @@ void FeatureInfo::InitializeFeatures() {
   // UNPACK_ROW_LENGTH, UNPACK_SKIP_ROWS, and UNPACK_SKIP_PIXELS are enabled,
   // but there is no need to add them to pixel_store validtor.
   AddExtensionString("GL_EXT_unpack_subimage");
-
-  if (feature_flags_.enable_subscribe_uniform) {
-    AddExtensionString("GL_CHROMIUM_subscribe_uniform");
-  }
 
   // OES_vertex_array_object is emulated if not present natively,
   // so the extension string is always exposed.

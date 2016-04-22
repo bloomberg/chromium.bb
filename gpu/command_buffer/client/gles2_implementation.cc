@@ -134,7 +134,6 @@ GLES2Implementation::GLES2Implementation(
       bound_framebuffer_(0),
       bound_read_framebuffer_(0),
       bound_renderbuffer_(0),
-      bound_valuebuffer_(0),
       current_program_(0),
       bound_array_buffer_(0),
       bound_copy_read_buffer_(0),
@@ -3983,11 +3982,6 @@ void GLES2Implementation::GenQueriesEXTHelper(
     GLsizei /* n */, const GLuint* /* queries */) {
 }
 
-void GLES2Implementation::GenValuebuffersCHROMIUMHelper(
-    GLsizei /* n */,
-    const GLuint* /* valuebuffers */) {
-}
-
 void GLES2Implementation::GenSamplersHelper(
     GLsizei /* n */, const GLuint* /* samplers */) {
 }
@@ -4291,35 +4285,6 @@ void GLES2Implementation::BindVertexArrayOESHelper(GLuint array) {
   }
 }
 
-void GLES2Implementation::BindValuebufferCHROMIUMHelper(GLenum target,
-                                                        GLuint valuebuffer) {
-  bool changed = false;
-  switch (target) {
-    case GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM:
-      if (bound_valuebuffer_ != valuebuffer) {
-        bound_valuebuffer_ = valuebuffer;
-        changed = true;
-      }
-      break;
-    default:
-      changed = true;
-      break;
-  }
-  // TODO(gman): See note #2 above.
-  if (changed) {
-    GetIdHandler(id_namespaces::kValuebuffers)->MarkAsUsedForBind(
-        this, target, valuebuffer,
-        &GLES2Implementation::BindValuebufferCHROMIUMStub);
-  }
-}
-
-void GLES2Implementation::BindValuebufferCHROMIUMStub(GLenum target,
-                                                      GLuint valuebuffer) {
-  helper_->BindValuebufferCHROMIUM(target, valuebuffer);
-  if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::OrderingBarrier();
-}
-
 void GLES2Implementation::UseProgramHelper(GLuint program) {
   if (current_program_ != program) {
     current_program_ = program;
@@ -4475,23 +4440,6 @@ void GLES2Implementation::DeleteVertexArraysOESStub(
   helper_->DeleteVertexArraysOESImmediate(n, arrays);
 }
 
-void GLES2Implementation::DeleteValuebuffersCHROMIUMHelper(
-    GLsizei n,
-    const GLuint* valuebuffers) {
-  if (!GetIdHandler(id_namespaces::kValuebuffers)
-           ->FreeIds(this, n, valuebuffers,
-                     &GLES2Implementation::DeleteValuebuffersCHROMIUMStub)) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteValuebuffersCHROMIUM",
-               "id not created by this context.");
-    return;
-  }
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (valuebuffers[ii] == bound_valuebuffer_) {
-      bound_valuebuffer_ = 0;
-    }
-  }
-}
-
 void GLES2Implementation::DeleteSamplersStub(
     GLsizei n, const GLuint* samplers) {
   helper_->DeleteSamplersImmediate(n, samplers);
@@ -4523,12 +4471,6 @@ void GLES2Implementation::DeleteTransformFeedbacksHelper(
         "glDeleteTransformFeedbacks", "id not created by this context.");
     return;
   }
-}
-
-void GLES2Implementation::DeleteValuebuffersCHROMIUMStub(
-    GLsizei n,
-    const GLuint* valuebuffers) {
-  helper_->DeleteValuebuffersCHROMIUMImmediate(n, valuebuffers);
 }
 
 void GLES2Implementation::DisableVertexAttribArray(GLuint index) {

@@ -54,8 +54,6 @@ source_set("common_sources") {
     "sync_token.h",
     "thread_local.h",
     "time.h",
-    "value_state.cc",
-    "value_state.h",
   ]
 
   configs += [ "//gpu:gpu_implementation" ]
@@ -94,6 +92,5 @@ mojom("interfaces") {
     "mailbox.mojom",
     "mailbox_holder.mojom",
     "sync_token.mojom",
-    "value_state.mojom",
   ]
 }

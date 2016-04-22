@@ -48,7 +48,6 @@ namespace gpu {
 class SyncPointClient;
 class SyncPointOrderData;
 class SyncPointManager;
-class ValueStateMap;
 
 namespace gles2 {
 class FramebufferCompletenessCache;
@@ -56,7 +55,6 @@ class GLES2Decoder;
 class MailboxManager;
 class ProgramCache;
 class ShaderTranslatorCache;
-class SubscriptionRefSet;
 }
 
 class CommandBufferServiceBase;
@@ -158,8 +156,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds();
     scoped_refptr<gfx::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
-    scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set();
-    scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state();
     gpu::gles2::ProgramCache* program_cache();
 
    private:
@@ -167,8 +163,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
     scoped_refptr<gfx::GLShareGroup> share_group_;
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
-    scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set_;
-    scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
     std::unique_ptr<gpu::gles2::ProgramCache> program_cache_;
   };
 

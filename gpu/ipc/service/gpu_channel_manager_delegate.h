@@ -26,10 +26,6 @@ struct GPUMemoryUmaStats;
 
 class GpuChannelManagerDelegate {
  public:
-  // Tells the delegate that a context has subscribed to a new target and
-  // the browser should start sending the corresponding information
-  virtual void AddSubscription(int32_t client_id, unsigned int target) = 0;
-
   // Tells the delegate that an offscreen context was created for the provided
   // |active_url|.
   virtual void DidCreateOffscreenContext(const GURL& active_url) = 0;
@@ -48,10 +44,6 @@ class GpuChannelManagerDelegate {
 
   // Tells the delegate about GPU memory usage statistics for UMA logging.
   virtual void GpuMemoryUmaStats(const GPUMemoryUmaStats& params) = 0;
-
-  // Tells the delegate that no contexts are subscribed to the target anymore
-  // so the delegate should stop sending the corresponding information.
-  virtual void RemoveSubscription(int32_t client_id, unsigned int target) = 0;
 
   // Tells the delegate to cache the given shader information in persistent
   // storage. The embedder is expected to repopulate the in-memory cache through

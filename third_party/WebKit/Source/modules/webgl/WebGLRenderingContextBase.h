@@ -64,8 +64,6 @@ class GLES2Interface;
 namespace blink {
 
 class ANGLEInstancedArrays;
-class CHROMIUMSubscribeUniform;
-class CHROMIUMValuebuffer;
 class EXTBlendMinMax;
 class EXTDisjointTimerQuery;
 class EXTFragDepth;
@@ -396,15 +394,6 @@ public:
 
     unsigned maxVertexAttribs() const { return m_maxVertexAttribs; }
 
-    // GL_CHROMIUM_subscribe_uniform
-    CHROMIUMValuebuffer* createValuebufferCHROMIUM();
-    void deleteValuebufferCHROMIUM(CHROMIUMValuebuffer*);
-    GLboolean isValuebufferCHROMIUM(CHROMIUMValuebuffer*);
-    void bindValuebufferCHROMIUM(GLenum target, CHROMIUMValuebuffer*);
-    void subscribeValueCHROMIUM(GLenum target, GLenum subscription);
-    void populateSubscribedValuesCHROMIUM(GLenum target);
-    void uniformValuebufferCHROMIUM(const WebGLUniformLocation*, GLenum target, GLenum subscription);
-
     // Eagerly finalize WebGLRenderingContextBase in order for it
     // to (first) be able to detach its WebGLContextObjects, before
     // they're later swept and finalized.
@@ -538,7 +527,6 @@ protected:
     Member<WebGLProgram> m_currentProgram;
     Member<WebGLFramebuffer> m_framebufferBinding;
     Member<WebGLRenderbuffer> m_renderbufferBinding;
-    Member<CHROMIUMValuebuffer> m_valuebufferBinding;
 
     HeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;

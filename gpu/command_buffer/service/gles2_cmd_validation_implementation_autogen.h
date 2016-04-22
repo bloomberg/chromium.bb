@@ -947,10 +947,6 @@ bool Validators::StringTypeValidator::IsValid(const GLenum value) const {
   return false;
 };
 
-static const GLenum valid_subscription_target_table[] = {
-    GL_MOUSE_POSITION_CHROMIUM,
-};
-
 static const GLbitfield valid_sync_flush_flags_table[] = {
     GL_SYNC_FLUSH_COMMANDS_BIT, 0,
 };
@@ -1331,10 +1327,6 @@ bool Validators::UniformParameterValidator::IsValid(const GLenum value) const {
   return false;
 };
 
-static const GLenum valid_value_buffer_target_table[] = {
-    GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,
-};
-
 bool Validators::VertexAttribITypeValidator::IsValid(const GLenum value) const {
   switch (value) {
     case GL_BYTE:
@@ -1414,8 +1406,6 @@ Validators::Validators()
       shader_binary_format(),
       src_blend_factor(valid_src_blend_factor_table,
                        arraysize(valid_src_blend_factor_table)),
-      subscription_target(valid_subscription_target_table,
-                          arraysize(valid_subscription_target_table)),
       sync_flush_flags(valid_sync_flush_flags_table,
                        arraysize(valid_sync_flush_flags_table)),
       texture_bind_target(valid_texture_bind_target_table,
@@ -1449,8 +1439,6 @@ Validators::Validators()
       transform_feedback_bind_target(
           valid_transform_feedback_bind_target_table,
           arraysize(valid_transform_feedback_bind_target_table)),
-      value_buffer_target(valid_value_buffer_target_table,
-                          arraysize(valid_value_buffer_target_table)),
       vertex_attrib_type(valid_vertex_attrib_type_table,
                          arraysize(valid_vertex_attrib_type_table)),
       vertex_attribute(valid_vertex_attribute_table,

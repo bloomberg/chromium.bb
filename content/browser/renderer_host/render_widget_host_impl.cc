@@ -971,17 +971,6 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
   MouseEventWithLatencyInfo mouse_with_latency(mouse_event, ui_latency);
   latency_tracker_.OnInputEvent(mouse_event, &mouse_with_latency.latency);
   input_router_->SendMouseEvent(mouse_with_latency);
-
-  // Pass mouse state to gpu service if the subscribe uniform
-  // extension is enabled.
-  if (process_->SubscribeUniformEnabled()) {
-    gpu::ValueState state;
-    state.int_value[0] = mouse_event.x;
-    state.int_value[1] = mouse_event.y;
-    // TODO(orglofch) Separate the mapping of pending value states to the
-    // Gpu Service to be per RWH not per process
-    process_->SendUpdateValueState(GL_MOUSE_POSITION_CHROMIUM, state);
-  }
 }
 
 void RenderWidgetHostImpl::ForwardWheelEvent(

@@ -291,13 +291,6 @@ GL_APICALL void         GL_APIENTRY glProduceTextureDirectCHROMIUM (GLidBindText
 GL_APICALL void         GL_APIENTRY glConsumeTextureCHROMIUM (GLenumTextureBindTarget target, const GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTextureCHROMIUM (GLenumTextureBindTarget target, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glBindUniformLocationCHROMIUM (GLidProgram program, GLint location, const char* name);
-GL_APICALL void         GL_APIENTRY glGenValuebuffersCHROMIUM (GLsizeiNotNegative n, GLuint* buffers);
-GL_APICALL void         GL_APIENTRY glDeleteValuebuffersCHROMIUM (GLsizeiNotNegative n, const GLuint* valuebuffers);
-GL_APICALL GLboolean    GL_APIENTRY glIsValuebufferCHROMIUM (GLidBindValuebuffer valuebuffer);
-GL_APICALL void         GL_APIENTRY glBindValuebufferCHROMIUM (GLenumValueBufferTarget target, GLidBindValuebuffer valuebuffer);
-GL_APICALL void         GL_APIENTRY glSubscribeValueCHROMIUM (GLenumValueBufferTarget target, GLenumSubscriptionTarget subscription);
-GL_APICALL void         GL_APIENTRY glPopulateSubscribedValuesCHROMIUM (GLenumValueBufferTarget target);
-GL_APICALL void         GL_APIENTRY glUniformValuebufferCHROMIUM (GLintUniformLocation location, GLenumValueBufferTarget target, GLenumSubscriptionTarget subscription);
 GL_APICALL void         GL_APIENTRY glBindTexImage2DCHROMIUM (GLenumTextureBindTarget target, GLint imageId);
 GL_APICALL void         GL_APIENTRY glReleaseTexImage2DCHROMIUM (GLenumTextureBindTarget target, GLint imageId);
 GL_APICALL void         GL_APIENTRY glTraceBeginCHROMIUM (const char* category_name, const char* trace_name);

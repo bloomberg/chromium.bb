@@ -10,7 +10,6 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/common/value_state.h"
 
 // Generate param traits size methods.
 #include "ipc/param_traits_size_macros.h"
@@ -174,38 +173,6 @@ void ParamTraits<gpu::MailboxHolder>::Log(const param_type& p, std::string* l) {
   LogParam(p.mailbox, l);
   LogParam(p.sync_token, l);
   *l += base::StringPrintf(":%04x@", p.texture_target);
-}
-
-void ParamTraits<gpu::ValueState>::GetSize(base::PickleSizer* s,
-                                           const param_type& p) {
-  s->AddData(sizeof(gpu::ValueState));
-}
-
-void ParamTraits<gpu::ValueState>::Write(base::Pickle* m, const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(&p),
-               sizeof(gpu::ValueState));
-}
-
-bool ParamTraits<gpu::ValueState>::Read(const base::Pickle* m,
-                                        base::PickleIterator* iter,
-                                        param_type* p) {
-  int length;
-  const char* data = NULL;
-  if (!iter->ReadData(&data, &length) || length != sizeof(gpu::ValueState))
-    return false;
-  DCHECK(data);
-  memcpy(p, data, sizeof(gpu::ValueState));
-  return true;
-}
-
-void ParamTraits<gpu::ValueState>::Log(const param_type& p, std::string* l) {
-  l->append("<ValueState (");
-  for (int value : p.int_value)
-    *l += base::StringPrintf("%i ", value);
-  l->append(" int values ");
-  for (float value : p.float_value)
-    *l += base::StringPrintf("%f ", value);
-  l->append(" float values)>");
 }
 
 }  // namespace IPC

@@ -17,12 +17,10 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
 #include "gpu/gles2_conform_support/egl/test_support.h"
@@ -173,8 +171,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
       gpu_preferences_, NULL, NULL,
       new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
-      new gpu::gles2::FramebufferCompletenessCache, feature_info, NULL, NULL,
-      true));
+      new gpu::gles2::FramebufferCompletenessCache, feature_info, true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));
   if (!decoder_.get())

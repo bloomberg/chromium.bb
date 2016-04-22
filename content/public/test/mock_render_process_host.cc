@@ -278,20 +278,6 @@ const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()
   return dummy_time;
 }
 
-bool MockRenderProcessHost::SubscribeUniformEnabled() const {
-  return false;
-}
-
-void MockRenderProcessHost::OnAddSubscription(unsigned int target) {
-}
-
-void MockRenderProcessHost::OnRemoveSubscription(unsigned int target) {
-}
-
-void MockRenderProcessHost::SendUpdateValueState(
-    unsigned int target, const gpu::ValueState& state) {
-}
-
 #if defined(ENABLE_BROWSER_CDMS)
 scoped_refptr<media::MediaKeys> MockRenderProcessHost::GetCdm(
     int render_frame_id,

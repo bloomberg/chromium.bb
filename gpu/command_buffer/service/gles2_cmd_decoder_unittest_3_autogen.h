@@ -346,25 +346,6 @@ TEST_P(GLES2DecoderTest3, SwapBuffersValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMValidArgs) {
-  SpecializedSetup<cmds::IsValuebufferCHROMIUM, 0>(true);
-  cmds::IsValuebufferCHROMIUM cmd;
-  cmd.Init(client_valuebuffer_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
-  SpecializedSetup<cmds::IsValuebufferCHROMIUM, 0>(false);
-  cmds::IsValuebufferCHROMIUM cmd;
-  cmd.Init(client_valuebuffer_id_, kInvalidSharedMemoryId,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(client_valuebuffer_id_, shared_memory_id_,
-           kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest3, SwapIntervalValidArgs) {
   SpecializedSetup<cmds::SwapInterval, 0>(true);
   cmds::SwapInterval cmd;

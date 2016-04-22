@@ -105,8 +105,6 @@ class GpuProcessHostUIShim : public IPC::Listener,
 #endif
   void OnVideoMemoryUsageStatsReceived(
       const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
-  void OnAddSubscription(int32_t process_id, unsigned int target);
-  void OnRemoveSubscription(int32_t process_id, unsigned int target);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

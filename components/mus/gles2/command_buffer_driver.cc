@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -136,8 +135,8 @@ bool CommandBufferDriver::Initialize(
           gpu_state_->gpu_preferences(), gpu_state_->mailbox_manager(),
           new GpuMemoryTracker,
           new gpu::gles2::ShaderTranslatorCache(gpu_state_->gpu_preferences()),
-          new gpu::gles2::FramebufferCompletenessCache, feature_info, nullptr,
-          nullptr, bind_generates_resource);
+          new gpu::gles2::FramebufferCompletenessCache, feature_info,
+          bind_generates_resource);
 
   command_buffer_.reset(
       new gpu::CommandBufferService(context_group->transfer_buffer_manager()));

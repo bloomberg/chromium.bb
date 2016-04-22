@@ -29,7 +29,6 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -170,8 +169,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     SurfaceHandle surface_handle,
     gles2::MailboxManager* mailbox_manager,
     PreemptionFlag* preempt_by_flag,
-    gles2::SubscriptionRefSet* subscription_ref_set,
-    ValueStateMap* pending_valuebuffer_state,
     const gfx::Size& size,
     const gles2::DisallowedFeatures& disallowed_features,
     const std::vector<int32_t>& attribs,
@@ -219,8 +216,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
                                           command_buffer_id_.GetUnsafeValue()),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         channel_->gpu_channel_manager()->framebuffer_completeness_cache(),
-        feature_info, subscription_ref_set, pending_valuebuffer_state,
-        attrib_parser.bind_generates_resource);
+        feature_info, attrib_parser.bind_generates_resource);
   }
 
 // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent

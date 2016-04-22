@@ -696,35 +696,6 @@ typedef void (GL_APIENTRYP PFNGLWAITSYNCTOKENCHROMIUM) (
 #endif
 #endif /* GL_CHROMIUM_color_buffer_float_rgb */
 
-/* GL_CHROMIUM_subscribe_uniform */
-#ifndef GL_CHROMIUM_subscribe_uniform
-#define GL_CHROMIUM_subscribe_uniform 1
-
-#ifndef GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM
-#define GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM 0x924B
-#endif
-
-#ifndef GL_MOUSE_POSITION_CHROMIUM
-#define GL_MOUSE_POSITION_CHROMIUM 0x924C
-#endif
-
-#ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL void GL_APIENTRY
-glGenValuebuffersCHROMIUM(GLsizei n, GLuint* buffers);
-GL_APICALL void GL_APIENTRY
-glDeleteValuebuffersCHROMIUM(GLsizei n, const GLuint* valuebuffers);
-GL_APICALL GLboolean GL_APIENTRY glIsValuebufferCHROMIUM(GLuint valuebuffer);
-GL_APICALL void GL_APIENTRY
-glBindValuebufferCHROMIUM(GLenum target, GLuint valuebuffer);
-GL_APICALL void GL_APIENTRY
-glSubscribeValueCHROMIUM(GLenum target, GLenum subscription);
-GL_APICALL void GL_APIENTRY glPopulateSubscribedValuesCHROMIUM(GLenum target);
-GL_APICALL void GL_APIENTRY glUniformValuebufferCHROMIUM(GLint location,
-                                                         GLenum target,
-                                                         GLenum subscription);
-#endif
-#endif /* GL_CHROMIUM_subscribe_uniform */
-
 /* GL_CHROMIUM_schedule_overlay_plane */
 #ifndef GL_CHROMIUM_schedule_overlay_plane
 #define GL_CHROMIUM_schedule_overlay_plane 1

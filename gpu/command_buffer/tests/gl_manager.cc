@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -37,7 +36,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -298,7 +296,7 @@ void GLManager::InitializeWithCommandLine(
     context_group = new gles2::ContextGroup(
         gpu_preferences_, mailbox_manager_.get(), NULL,
         new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
-        new gpu::gles2::FramebufferCompletenessCache, feature_info, NULL, NULL,
+        new gpu::gles2::FramebufferCompletenessCache, feature_info,
         options.bind_generates_resource);
   }
 

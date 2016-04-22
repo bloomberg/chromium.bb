@@ -33,7 +33,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/ANGLEInstancedArrays.h"
-#include "modules/webgl/CHROMIUMSubscribeUniform.h"
 #include "modules/webgl/EXTBlendMinMax.h"
 #include "modules/webgl/EXTDisjointTimerQuery.h"
 #include "modules/webgl/EXTFragDepth.h"
@@ -119,7 +118,6 @@ void WebGLRenderingContext::registerContextExtensions()
     static const char* const bothPrefixes[] = { "", "WEBKIT_", 0, };
 
     registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
-    registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
     registerExtension<EXTBlendMinMax>(m_extBlendMinMax);
     registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
     registerExtension<EXTFragDepth>(m_extFragDepth);
@@ -148,7 +146,6 @@ void WebGLRenderingContext::registerContextExtensions()
 DEFINE_TRACE(WebGLRenderingContext)
 {
     visitor->trace(m_angleInstancedArrays);
-    visitor->trace(m_chromiumSubscribeUniform);
     visitor->trace(m_extBlendMinMax);
     visitor->trace(m_extDisjointTimerQuery);
     visitor->trace(m_extFragDepth);

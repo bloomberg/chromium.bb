@@ -262,31 +262,6 @@ VISIT_GL_CALL(BindUniformLocationCHROMIUM,
               void,
               (GLuint program, GLint location, const char* name),
               (program, location, name))
-VISIT_GL_CALL(GenValuebuffersCHROMIUM,
-              void,
-              (GLsizei n, GLuint* buffers),
-              (n, buffers))
-VISIT_GL_CALL(DeleteValuebuffersCHROMIUM,
-              void,
-              (GLsizei n, const GLuint* valuebuffers),
-              (n, valuebuffers))
-VISIT_GL_CALL(IsValuebufferCHROMIUM,
-              GLboolean,
-              (GLuint valuebuffer),
-              (valuebuffer))
-VISIT_GL_CALL(BindValuebufferCHROMIUM,
-              void,
-              (GLenum target, GLuint valuebuffer),
-              (target, valuebuffer))
-VISIT_GL_CALL(SubscribeValueCHROMIUM,
-              void,
-              (GLenum target, GLenum subscription),
-              (target, subscription))
-VISIT_GL_CALL(PopulateSubscribedValuesCHROMIUM, void, (GLenum target), (target))
-VISIT_GL_CALL(UniformValuebufferCHROMIUM,
-              void,
-              (GLint location, GLenum target, GLenum subscription),
-              (location, target, subscription))
 VISIT_GL_CALL(BindTexImage2DCHROMIUM,
               void,
               (GLenum target, GLint imageId),

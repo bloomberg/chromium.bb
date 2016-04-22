@@ -732,16 +732,6 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   void BindUniformLocationCHROMIUM(GLuint program,
                                    GLint location,
                                    const char* name) override;
-  void GenValuebuffersCHROMIUM(GLsizei n, GLuint* buffers) override;
-  void DeleteValuebuffersCHROMIUM(GLsizei n,
-                                  const GLuint* valuebuffers) override;
-  GLboolean IsValuebufferCHROMIUM(GLuint valuebuffer) override;
-  void BindValuebufferCHROMIUM(GLenum target, GLuint valuebuffer) override;
-  void SubscribeValueCHROMIUM(GLenum target, GLenum subscription) override;
-  void PopulateSubscribedValuesCHROMIUM(GLenum target) override;
-  void UniformValuebufferCHROMIUM(GLint location,
-                                  GLenum target,
-                                  GLenum subscription) override;
   void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
   void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
   void TraceBeginCHROMIUM(const char* category_name,

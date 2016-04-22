@@ -16,7 +16,6 @@
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -112,7 +111,6 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_fragment_shader_id_(122),
       client_query_id_(123),
       client_vertexarray_id_(124),
-      client_valuebuffer_id_(125),
       client_transformfeedback_id_(126),
       client_sync_id_(127),
       service_renderbuffer_id_(0),
@@ -198,8 +196,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
       gpu_preferences_, NULL, memory_tracker_,
       new ShaderTranslatorCache(gpu_preferences_),
-      new FramebufferCompletenessCache, feature_info, new SubscriptionRefSet,
-      new ValueStateMap, normalized_init.bind_generates_resource));
+      new FramebufferCompletenessCache, feature_info,
+      normalized_init.bind_generates_resource));
   bool use_default_textures = normalized_init.bind_generates_resource;
 
   InSequence sequence;

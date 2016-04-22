@@ -20,7 +20,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
@@ -47,23 +46,16 @@ namespace gpu {
 class PreemptionFlag;
 class SyncPointOrderData;
 class SyncPointManager;
-union ValueState;
-class ValueStateMap;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 class GpuChannelMessageQueue;
 class GpuWatchdog;
 
-namespace gles2 {
-class SubscriptionRefSet;
-}
-
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
 class GPU_EXPORT GpuChannel
     : public IPC::Listener,
-      public IPC::Sender,
-      public gles2::SubscriptionRefSet::Observer {
+      public IPC::Sender {
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -113,10 +105,6 @@ class GPU_EXPORT GpuChannel
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
-  // SubscriptionRefSet::Observer implementation
-  void OnAddSubscription(unsigned int target) override;
-  void OnRemoveSubscription(unsigned int target) override;
-
   void OnStreamRescheduled(int32_t stream_id, bool scheduled);
 
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
@@ -146,15 +134,7 @@ class GPU_EXPORT GpuChannel
       gfx::BufferFormat format,
       uint32_t internalformat);
 
-  void HandleUpdateValueState(unsigned int target,
-                              const ValueState& state);
-
   GpuChannelMessageFilter* filter() const { return filter_.get(); }
-
-  // Visible for testing.
-  const ValueStateMap* pending_valuebuffer_state() const {
-    return pending_valuebuffer_state_.get();
-  }
 
   // Returns the global order number for the last processed IPC message.
   uint32_t GetProcessedOrderNum() const;
@@ -259,10 +239,6 @@ class GPU_EXPORT GpuChannel
   scoped_refptr<gfx::GLShareGroup> share_group_;
 
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
-
-  scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set_;
-
-  scoped_refptr<ValueStateMap> pending_valuebuffer_state_;
 
   gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* const watchdog_;

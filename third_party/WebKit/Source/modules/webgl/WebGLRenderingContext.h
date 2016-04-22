@@ -63,7 +63,6 @@ private:
 
     // Enabled extension objects.
     Member<ANGLEInstancedArrays> m_angleInstancedArrays;
-    Member<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     Member<EXTBlendMinMax> m_extBlendMinMax;
     Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
     Member<EXTFragDepth> m_extFragDepth;

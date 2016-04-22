@@ -26,10 +26,6 @@ class SharedPersistentMemoryAllocator;
 class TimeDelta;
 }
 
-namespace gpu {
-union ValueState;
-}
-
 namespace media {
 class AudioOutputController;
 class MediaKeys;
@@ -278,18 +274,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // value.
   // Note: Do not use! Will disappear after PlzNavitate is completed.
   virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() const = 0;
-
-  // Returns whether or not the CHROMIUM_subscribe_uniform WebGL extension
-  // is currently enabled
-  virtual bool SubscribeUniformEnabled() const = 0;
-
-  // Handlers for subscription target changes to update subscription_set_
-  virtual void OnAddSubscription(unsigned int target) = 0;
-  virtual void OnRemoveSubscription(unsigned int target) = 0;
-
-  // Send a new ValueState to the Gpu Service to update a subscription target
-  virtual void SendUpdateValueState(
-      unsigned int target, const gpu::ValueState& state) = 0;
 
   // Retrieves the list of AudioOutputController objects associated
   // with this object and passes it to the callback you specify, on

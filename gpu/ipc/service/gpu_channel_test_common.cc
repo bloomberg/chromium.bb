@@ -20,9 +20,6 @@ TestGpuChannelManagerDelegate::~TestGpuChannelManagerDelegate() {}
 
 void TestGpuChannelManagerDelegate::SetActiveURL(const GURL& url) {}
 
-void TestGpuChannelManagerDelegate::AddSubscription(int32_t client_id,
-                                                    unsigned int target) {}
-
 void TestGpuChannelManagerDelegate::DidCreateOffscreenContext(
     const GURL& active_url) {}
 
@@ -38,9 +35,6 @@ void TestGpuChannelManagerDelegate::DidLoseContext(
 
 void TestGpuChannelManagerDelegate::GpuMemoryUmaStats(
     const GPUMemoryUmaStats& params) {}
-
-void TestGpuChannelManagerDelegate::RemoveSubscription(int32_t client_id,
-                                                       unsigned int target) {}
 
 void TestGpuChannelManagerDelegate::StoreShaderToDisk(
     int32_t client_id,

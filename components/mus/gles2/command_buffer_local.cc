@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/vsync_provider.h"

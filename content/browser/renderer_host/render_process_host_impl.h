@@ -40,10 +40,6 @@ namespace gfx {
 class Size;
 }
 
-namespace gpu {
-class ValueStateMap;
-}
-
 namespace IPC {
 class ChannelMojoHost;
 }
@@ -164,11 +160,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
-  bool SubscribeUniformEnabled() const override;
-  void OnAddSubscription(unsigned int target) override;
-  void OnRemoveSubscription(unsigned int target) override;
-  void SendUpdateValueState(
-      unsigned int target, const gpu::ValueState& state) override;
 #if defined(ENABLE_BROWSER_CDMS)
   scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id,
                                          int cdm_id) const override;
@@ -502,20 +493,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Context shared for each mojom::PermissionService instance created for this
   // RPH.
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
-
-  // This is a set of all subscription targets valuebuffers in the GPU process
-  // are currently subscribed too. Used to prevent sending unnecessary
-  // ValueState updates.
-  typedef base::hash_set<unsigned int> SubscriptionSet;
-  SubscriptionSet subscription_set_;
-
-  // Maintains ValueStates which are not currently subscribed too so we can
-  // pass them to the GpuService if a Valuebuffer ever subscribes to the
-  // respective subscription target
-  scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
-
-  // Whether or not the CHROMIUM_subscribe_uniform WebGL extension is enabled
-  bool subscribe_uniform_enabled_;
 
   // The memory allocator, if any, in which the renderer will write its metrics.
   std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;

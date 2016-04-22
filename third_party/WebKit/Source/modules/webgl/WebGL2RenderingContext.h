@@ -40,7 +40,6 @@ public:
 protected:
     WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
 
-    Member<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     Member<EXTColorBufferFloat> m_extColorBufferFloat;
     Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
     Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;

@@ -10,7 +10,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/CHROMIUMSubscribeUniform.h"
 #include "modules/webgl/EXTColorBufferFloat.h"
 #include "modules/webgl/EXTDisjointTimerQuery.h"
 #include "modules/webgl/EXTTextureFilterAnisotropic.h"
@@ -87,7 +86,6 @@ void WebGL2RenderingContext::setCanvasGetContextResult(RenderingContext& result)
 void WebGL2RenderingContext::registerContextExtensions()
 {
     // Register extensions.
-    registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
     registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat, DraftExtension);
     registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
@@ -104,7 +102,6 @@ void WebGL2RenderingContext::registerContextExtensions()
 
 DEFINE_TRACE(WebGL2RenderingContext)
 {
-    visitor->trace(m_chromiumSubscribeUniform);
     visitor->trace(m_extColorBufferFloat);
     visitor->trace(m_extDisjointTimerQuery);
     visitor->trace(m_extTextureFilterAnisotropic);

@@ -44,7 +44,6 @@ class Logger;
 class QueryManager;
 class Texture;
 class VertexArrayManager;
-class ValuebufferManager;
 struct ContextState;
 
 struct DisallowedFeatures {
@@ -210,9 +209,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Gets the ImageManager for this context.
   virtual ImageManager* GetImageManager() = 0;
-
-  // Gets the ValuebufferManager for this context.
-  virtual ValuebufferManager* GetValuebufferManager() = 0;
 
   // Returns false if there are no pending queries.
   virtual bool HasPendingQueries() const = 0;

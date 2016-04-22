@@ -45,7 +45,6 @@ class PreemptionFlag;
 class SyncPointClient;
 class SyncPointManager;
 struct SyncToken;
-union ValueState;
 namespace gles2 {
 class FramebufferCompletenessCache;
 class MailboxManager;
@@ -96,9 +95,6 @@ class GPU_EXPORT GpuChannelManager {
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const SyncToken& sync_token);
-  void UpdateValueState(int client_id,
-                        unsigned int target,
-                        const ValueState& state);
 #if defined(OS_ANDROID)
   void WakeUpGpu();
 #endif

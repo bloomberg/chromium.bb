@@ -41,10 +41,8 @@ struct Mailbox;
 struct SyncToken;
 class SyncPointClient;
 class SyncPointManager;
-class ValueStateMap;
 namespace gles2 {
 class MailboxManager;
-class SubscriptionRefSet;
 }
 }
 
@@ -81,8 +79,6 @@ class GPU_EXPORT GpuCommandBufferStub
       SurfaceHandle surface_handle,
       gles2::MailboxManager* mailbox_manager,
       PreemptionFlag* preempt_by_flag,
-      gles2::SubscriptionRefSet* subscription_ref_set,
-      ValueStateMap* pending_valuebuffer_state,
       const gfx::Size& size,
       const gles2::DisallowedFeatures& disallowed_features,
       const std::vector<int32_t>& attribs,

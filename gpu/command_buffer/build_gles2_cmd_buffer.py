@@ -2147,18 +2147,6 @@ _NAMED_TYPE_INFO = {
       'GL_READ_WRITE_CHROMIUM',
     ],
   },
-  'ValueBufferTarget': {
-    'type': 'GLenum',
-    'valid': [
-      'GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM',
-    ],
-  },
-  'SubscriptionTarget': {
-    'type': 'GLenum',
-    'valid': [
-      'GL_MOUSE_POSITION_CHROMIUM',
-    ],
-  },
   'UniformParameter': {
     'type': 'GLenum',
     'is_complete': True,
@@ -2591,57 +2579,6 @@ _FUNCTION_INFO = {
     'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
     'trace_level': 2,
-  },
-  'GenValuebuffersCHROMIUM': {
-    'type': 'GENn',
-    'gl_test_func': 'glGenValuebuffersCHROMIUM',
-    'resource_type': 'Valuebuffer',
-    'resource_types': 'Valuebuffers',
-    'unit_test': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
-  },
-  'DeleteValuebuffersCHROMIUM': {
-    'type': 'DELn',
-    'gl_test_func': 'glDeleteValuebuffersCHROMIUM',
-    'resource_type': 'Valuebuffer',
-    'resource_types': 'Valuebuffers',
-    'unit_test': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
-  },
-  'IsValuebufferCHROMIUM': {
-    'type': 'Is',
-    'decoder_func': 'DoIsValuebufferCHROMIUM',
-    'expectation': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
-  },
-  'BindValuebufferCHROMIUM': {
-    'type': 'Bind',
-    'decoder_func': 'DoBindValueBufferCHROMIUM',
-    'gen_func': 'GenValueBuffersCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
-  },
-  'SubscribeValueCHROMIUM': {
-    'decoder_func': 'DoSubscribeValueCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
-  },
-  'PopulateSubscribedValuesCHROMIUM': {
-    'decoder_func': 'DoPopulateSubscribedValuesCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
-  },
-  'UniformValuebufferCHROMIUM': {
-    'decoder_func': 'DoUniformValueBufferCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_subscribe_uniform',
-    'chromium': True,
   },
   'ClearStencil': {
     'type': 'StateSet',

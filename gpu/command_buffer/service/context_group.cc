@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -23,7 +22,6 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -65,8 +63,6 @@ ContextGroup::ContextGroup(
     const scoped_refptr<FramebufferCompletenessCache>&
         framebuffer_completeness_cache,
     const scoped_refptr<FeatureInfo>& feature_info,
-    const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
-    const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
     bool bind_generates_resource)
     : gpu_preferences_(gpu_preferences),
       mailbox_manager_(mailbox_manager),
@@ -83,8 +79,6 @@ ContextGroup::ContextGroup(
 #else
       framebuffer_completeness_cache_(framebuffer_completeness_cache),
 #endif
-      subscription_ref_set_(subscription_ref_set),
-      pending_valuebuffer_state_(pending_valuebuffer_state),
       enforce_gl_minimums_(gpu_preferences_.enforce_gl_minimums),
       bind_generates_resource_(bind_generates_resource),
       max_vertex_attribs_(0u),
@@ -110,10 +104,6 @@ ContextGroup::ContextGroup(
     DCHECK(feature_info_);
     if (!mailbox_manager_.get())
       mailbox_manager_ = new MailboxManagerImpl;
-    if (!subscription_ref_set_.get())
-      subscription_ref_set_ = new SubscriptionRefSet();
-    if (!pending_valuebuffer_state_.get())
-      pending_valuebuffer_state_ = new ValueStateMap();
     transfer_buffer_manager_ = new TransferBufferManager(memory_tracker_.get());
   }
 }
@@ -216,9 +206,6 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
       feature_info_.get()));
   shader_manager_.reset(new ShaderManager());
   sampler_manager_.reset(new SamplerManager(feature_info_.get()));
-  valuebuffer_manager_.reset(
-      new ValuebufferManager(subscription_ref_set_.get(),
-                             pending_valuebuffer_state_.get()));
 
   // Lookup GL things we need to know.
   const GLint kGLES2RequiredMinimumVertexAttribs = 8u;
@@ -523,11 +510,6 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   if (sampler_manager_ != NULL) {
     sampler_manager_->Destroy(have_context);
     sampler_manager_.reset();
-  }
-
-  if (valuebuffer_manager_ != NULL) {
-    valuebuffer_manager_->Destroy();
-    valuebuffer_manager_.reset();
   }
 
   memory_tracker_ = NULL;
