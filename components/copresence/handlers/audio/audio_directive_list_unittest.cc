@@ -29,7 +29,7 @@ class AudioDirectiveListTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<AudioDirectiveList> directive_list_;
+  std::unique_ptr<AudioDirectiveList> directive_list_;
 };
 
 TEST_F(AudioDirectiveListTest, Basic) {

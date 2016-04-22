@@ -47,14 +47,12 @@ class HttpPostTest : public testing::Test {
 
  protected:
   bool ResponsePassedThrough(int response_code, const std::string& response) {
-    scoped_ptr<HttpPost> post(
-        new HttpPost(context_getter_.get(),
-                     std::string("http://") + kFakeServerHost,
-                     kRPCName,
-                     kApiKey,
-                     "",  // auth token
-                     "",  // tracing token
-                     proto_));
+    std::unique_ptr<HttpPost> post(new HttpPost(
+        context_getter_.get(), std::string("http://") + kFakeServerHost,
+        kRPCName, kApiKey,
+        "",  // auth token
+        "",  // tracing token
+        proto_));
     post->Start(base::Bind(&HttpPostTest::TestResponseCallback,
                            base::Unretained(this)));
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(

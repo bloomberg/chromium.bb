@@ -4,12 +4,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
@@ -54,8 +55,8 @@ class AudioDirectiveHandlerTest : public testing::Test {
     directive_handler_.reset(new AudioDirectiveHandlerImpl(
         base::Bind(&AudioDirectiveHandlerTest::GetDirectiveUpdates,
                    base::Unretained(this)),
-        make_scoped_ptr<audio_modem::Modem>(modem_ptr_),
-        make_scoped_ptr<base::Timer>(timer_ptr_),
+        base::WrapUnique<audio_modem::Modem>(modem_ptr_),
+        base::WrapUnique<base::Timer>(timer_ptr_),
         make_scoped_refptr(new TickClockRefCounted(clock_ptr_))));
     directive_handler_->Initialize(nullptr, audio_modem::TokensCallback());
   }
@@ -74,7 +75,7 @@ class AudioDirectiveHandlerTest : public testing::Test {
   // our the audio directive handler since the directive list ctor (invoked
   // from the directive handler ctor) will post tasks.
   base::MessageLoop message_loop_;
-  scoped_ptr<AudioDirectiveHandler> directive_handler_;
+  std::unique_ptr<AudioDirectiveHandler> directive_handler_;
 
   std::vector<Directive> current_directives_;
 

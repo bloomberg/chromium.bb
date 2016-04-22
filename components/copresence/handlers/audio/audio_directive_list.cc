@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
+
 namespace copresence {
 
 // Public functions.
@@ -57,17 +59,17 @@ void AudioDirectiveList::RemoveDirective(const std::string& op_id) {
                  LatestFirstComparator());
 }
 
-scoped_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
+std::unique_ptr<AudioDirective> AudioDirectiveList::GetActiveDirective() {
   // The top is always the instruction that is ending the latest.
   // If that time has passed, all our previous instructions have expired too.
   // So we clear the list.
   if (active_directives_.empty() ||
       active_directives_.front().end_time < clock_->NowTicks()) {
     active_directives_.clear();
-    return scoped_ptr<AudioDirective>();
+    return std::unique_ptr<AudioDirective>();
   }
 
-  return make_scoped_ptr(new AudioDirective(active_directives_.front()));
+  return base::WrapUnique(new AudioDirective(active_directives_.front()));
 }
 
 const std::vector<AudioDirective>& AudioDirectiveList::directives() const {

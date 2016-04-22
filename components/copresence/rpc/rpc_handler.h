@@ -6,12 +6,12 @@
 #define COMPONENTS_COPRESENCE_RPC_RPC_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "components/copresence/proto/enums.pb.h"
@@ -55,7 +55,7 @@ class SubscribedMessage;
 //                    nullptr,
 //                    base::Bind(&HandleMessages));
 //
-// scoped_ptr<ReportRequest> request(new ReportRequest);
+// std::unique_ptr<ReportRequest> request(new ReportRequest);
 // (Fill in ReportRequest.)
 //
 // handler.SendReportRequest(std::move(request),
@@ -88,13 +88,13 @@ class RpcHandler final {
   // MessageLite: Contents of POST request to be sent. This needs to be
   //     a (scoped) pointer to ease handling of the abstract MessageLite class.
   // PostCleanupCallback: Receives the response to the request.
-  using PostCallback = base::Callback<void(
-      net::URLRequestContextGetter*,
-      const std::string&,
-      const std::string&,
-      const std::string&,
-      scoped_ptr<google::protobuf::MessageLite>,
-      const PostCleanupCallback&)>;
+  using PostCallback =
+      base::Callback<void(net::URLRequestContextGetter*,
+                          const std::string&,
+                          const std::string&,
+                          const std::string&,
+                          std::unique_ptr<google::protobuf::MessageLite>,
+                          const PostCleanupCallback&)>;
 
   // Report rpc name to send to Apiary.
   static const char kReportRequestRpcName[];
@@ -116,7 +116,7 @@ class RpcHandler final {
   ~RpcHandler();
 
   // Sends a ReportRequest from a specific app, and get notified of completion.
-  void SendReportRequest(scoped_ptr<ReportRequest> request,
+  void SendReportRequest(std::unique_ptr<ReportRequest> request,
                          const std::string& app_id,
                          const std::string& auth_token,
                          const StatusCallback& callback);
@@ -128,13 +128,13 @@ class RpcHandler final {
  private:
   // A queued ReportRequest along with its metadata.
   struct PendingRequest {
-    PendingRequest(scoped_ptr<ReportRequest> report,
+    PendingRequest(std::unique_ptr<ReportRequest> report,
                    const std::string& app_id,
                    bool authenticated,
                    const StatusCallback& callback);
     ~PendingRequest();
 
-    scoped_ptr<ReportRequest> report;
+    std::unique_ptr<ReportRequest> report;
     const std::string app_id;
     const bool authenticated;
     const StatusCallback callback;
@@ -150,7 +150,7 @@ class RpcHandler final {
   void ProcessQueuedRequests(bool authenticated);
 
   // Sends a ReportRequest from Chrome itself, i.e. no app id.
-  void ReportOnAllDevices(scoped_ptr<ReportRequest> request);
+  void ReportOnAllDevices(std::unique_ptr<ReportRequest> request);
 
   // Stores a GCM ID and send it to the server if needed.
   void RegisterGcmId(const std::string& gcm_id);
@@ -183,12 +183,13 @@ class RpcHandler final {
 
   // Wrapper for the http post constructor. This is the default way
   // to contact the server, but it can be overridden for testing.
-  void SendHttpPost(net::URLRequestContextGetter* url_context_getter,
-                    const std::string& rpc_name,
-                    const std::string& api_key,
-                    const std::string& auth_token,
-                    scoped_ptr<google::protobuf::MessageLite> request_proto,
-                    const PostCleanupCallback& callback);
+  void SendHttpPost(
+      net::URLRequestContextGetter* url_context_getter,
+      const std::string& rpc_name,
+      const std::string& api_key,
+      const std::string& auth_token,
+      std::unique_ptr<google::protobuf::MessageLite> request_proto,
+      const PostCleanupCallback& callback);
 
   // These belong to the caller.
   CopresenceDelegate* const delegate_;

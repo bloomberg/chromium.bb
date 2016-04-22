@@ -115,7 +115,7 @@ void CopresenceManagerImpl::ExecuteReportRequest(
   }
 
   // We'll need to modify the ReportRequest, so we make our own copy to send.
-  scoped_ptr<ReportRequest> request_copy(new ReportRequest(request));
+  std::unique_ptr<ReportRequest> request_copy(new ReportRequest(request));
   rpc_handler_->SendReportRequest(std::move(request_copy), app_id, auth_token,
                                   callback);
 }

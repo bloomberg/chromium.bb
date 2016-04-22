@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -66,7 +66,7 @@ class TimedMap {
     return map_.erase(key);
   }
 
-  void set_clock_for_testing(scoped_ptr<base::TickClock> clock) {
+  void set_clock_for_testing(std::unique_ptr<base::TickClock> clock) {
     clock_ = std::move(clock);
   }
 
@@ -97,7 +97,7 @@ class TimedMap {
 
   const ValueType kEmptyValue;
 
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
   base::RepeatingTimer timer_;
   const base::TimeDelta lifetime_;
   const size_t max_elements_;

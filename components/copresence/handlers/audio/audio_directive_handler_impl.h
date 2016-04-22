@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_HANDLER_IMPL_H_
 #define COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_HANDLER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/audio_modem/public/modem.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
@@ -43,8 +43,8 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
       const DirectivesCallback& update_directives_callback);
   AudioDirectiveHandlerImpl(
       const DirectivesCallback& update_directives_callback,
-      scoped_ptr<audio_modem::Modem> audio_modem,
-      scoped_ptr<base::Timer> timer,
+      std::unique_ptr<audio_modem::Modem> audio_modem,
+      std::unique_ptr<base::Timer> timer,
       const scoped_refptr<TickClockRefCounted>& clock);
 
   ~AudioDirectiveHandlerImpl() override;
@@ -69,8 +69,8 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
   bool GetNextInstructionExpiry(base::TimeTicks* next_event);
 
   DirectivesCallback update_directives_callback_;
-  scoped_ptr<audio_modem::Modem> audio_modem_;
-  scoped_ptr<base::Timer> audio_event_timer_;
+  std::unique_ptr<audio_modem::Modem> audio_modem_;
+  std::unique_ptr<base::Timer> audio_event_timer_;
   scoped_refptr<TickClockRefCounted> clock_;
 
   // Lists of transmits and receives, for both audible and inaudible tokens.

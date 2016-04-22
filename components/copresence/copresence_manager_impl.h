@@ -7,12 +7,12 @@
 
 #include <google/protobuf/repeated_field.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/copresence/copresence_state_impl.h"
 #include "components/copresence/public/copresence_manager.h"
 #include "components/copresence/timed_map.h"
@@ -86,13 +86,13 @@ class CopresenceManagerImpl : public CopresenceManager {
   bool init_failed_;
 
   // The RpcHandler makes calls to the other objects here, so it must come last.
-  scoped_ptr<CopresenceStateImpl> state_;
-  scoped_ptr<DirectiveHandler> directive_handler_;
-  scoped_ptr<GCMHandler> gcm_handler_;
-  scoped_ptr<RpcHandler> rpc_handler_;
+  std::unique_ptr<CopresenceStateImpl> state_;
+  std::unique_ptr<DirectiveHandler> directive_handler_;
+  std::unique_ptr<GCMHandler> gcm_handler_;
+  std::unique_ptr<RpcHandler> rpc_handler_;
 
-  scoped_ptr<base::Timer> poll_timer_;
-  scoped_ptr<base::Timer> audio_check_timer_;
+  std::unique_ptr<base::Timer> poll_timer_;
+  std::unique_ptr<base::Timer> audio_check_timer_;
 
   TimedMap<std::string, google::protobuf::RepeatedPtrField<SubscribedMessage>>
   queued_messages_by_token_;

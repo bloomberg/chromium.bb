@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/proto/data.pb.h"
@@ -24,16 +25,16 @@ namespace copresence {
 // Public functions.
 
 DirectiveHandlerImpl::DirectiveHandlerImpl()
-    : DirectiveHandlerImpl(make_scoped_ptr(new AudioDirectiveHandlerImpl(
-                               DirectivesCallback()))) {}
+    : DirectiveHandlerImpl(base::WrapUnique(
+          new AudioDirectiveHandlerImpl(DirectivesCallback()))) {}
 
 DirectiveHandlerImpl::DirectiveHandlerImpl(
     const DirectivesCallback& update_directives_callback)
-    : DirectiveHandlerImpl(make_scoped_ptr(new AudioDirectiveHandlerImpl(
-                               update_directives_callback))) {}
+    : DirectiveHandlerImpl(base::WrapUnique(
+          new AudioDirectiveHandlerImpl(update_directives_callback))) {}
 
 DirectiveHandlerImpl::DirectiveHandlerImpl(
-    scoped_ptr<AudioDirectiveHandler> audio_handler)
+    std::unique_ptr<AudioDirectiveHandler> audio_handler)
     : audio_handler_(std::move(audio_handler)), is_started_(false) {}
 
 DirectiveHandlerImpl::~DirectiveHandlerImpl() {}

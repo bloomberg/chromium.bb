@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/copresence/timed_map.h"
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "components/copresence/timed_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -98,7 +100,7 @@ TEST_F(TimedMapTest, TimedEvict) {
 
   // The map takes ownership of the clock, but we retain a pointer.
   base::SimpleTestTickClock* clock = new base::SimpleTestTickClock;
-  map.set_clock_for_testing(make_scoped_ptr<base::TickClock>(clock));
+  map.set_clock_for_testing(base::WrapUnique<base::TickClock>(clock));
 
   // Add value at T=0.
   map.Add(0x1337, Value(0x7331));

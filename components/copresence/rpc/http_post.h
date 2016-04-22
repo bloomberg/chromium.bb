@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_COPRESENCE_RPC_HTTP_POST_H_
 #define COMPONENTS_COPRESENCE_RPC_HTTP_POST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace google {
@@ -65,7 +65,7 @@ class HttpPost : public net::URLFetcherDelegate {
 
   ResponseCallback response_callback_;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpPost);
 };

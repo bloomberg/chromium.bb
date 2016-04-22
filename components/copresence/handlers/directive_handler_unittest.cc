@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/audio_modem/test/stub_whispernet_client.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
@@ -103,7 +104,7 @@ class DirectiveHandlerTest : public testing::Test {
       : whispernet_client_(new audio_modem::StubWhispernetClient),
         audio_handler_(new FakeAudioDirectiveHandler),
         directive_handler_(
-            make_scoped_ptr<AudioDirectiveHandler>(audio_handler_)) {}
+            base::WrapUnique<AudioDirectiveHandler>(audio_handler_)) {}
 
  protected:
   void StartDirectiveHandler() {
@@ -111,7 +112,7 @@ class DirectiveHandlerTest : public testing::Test {
                              audio_modem::TokensCallback());
   }
 
-  scoped_ptr<audio_modem::WhispernetClient> whispernet_client_;
+  std::unique_ptr<audio_modem::WhispernetClient> whispernet_client_;
   FakeAudioDirectiveHandler* audio_handler_;
   DirectiveHandlerImpl directive_handler_;
 };

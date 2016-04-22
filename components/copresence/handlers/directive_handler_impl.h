@@ -5,15 +5,14 @@
 #ifndef COMPONENTS_COPRESENCE_HANDLERS_DIRECTIVE_HANDLER_IMPL_H_
 #define COMPONENTS_COPRESENCE_HANDLERS_DIRECTIVE_HANDLER_IMPL_H_
 
-#include "components/copresence/handlers/directive_handler.h"
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
+#include "components/copresence/handlers/directive_handler.h"
 #include "components/copresence/public/copresence_constants.h"
 
 namespace copresence {
@@ -24,8 +23,7 @@ class DirectiveHandlerImpl final : public DirectiveHandler {
   DirectiveHandlerImpl();
   explicit DirectiveHandlerImpl(
       const DirectivesCallback& update_directives_callback);
-  DirectiveHandlerImpl(
-      scoped_ptr<AudioDirectiveHandler> audio_handler);
+  DirectiveHandlerImpl(std::unique_ptr<AudioDirectiveHandler> audio_handler);
   ~DirectiveHandlerImpl() override;
 
   // DirectiveHandler overrides.
@@ -41,7 +39,7 @@ class DirectiveHandlerImpl final : public DirectiveHandler {
   // Starts actually running a directive.
   void StartDirective(const std::string& op_id, const Directive& directive);
 
-  scoped_ptr<AudioDirectiveHandler> audio_handler_;
+  std::unique_ptr<AudioDirectiveHandler> audio_handler_;
   std::map<std::string, std::vector<Directive>> pending_directives_;
 
   bool is_started_;

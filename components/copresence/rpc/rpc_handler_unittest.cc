@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "components/audio_modem/public/modem.h"
@@ -121,7 +122,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
         authenticated, false, nullptr, net::HTTP_OK, serialized_response);
   }
 
-  void SendReport(scoped_ptr<ReportRequest> request,
+  void SendReport(std::unique_ptr<ReportRequest> request,
                   const std::string& app_id,
                   const std::string& auth_token) {
     rpc_handler_.SendReportRequest(std::move(request), app_id, auth_token,
@@ -129,7 +130,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   }
 
   void SendReportResponse(int status_code,
-                          scoped_ptr<ReportResponse> response) {
+                          std::unique_ptr<ReportResponse> response) {
     response->mutable_header()->mutable_status()->set_code(OK);
 
     std::string serialized_response;
@@ -162,7 +163,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
   // For rpc_handler_.invalid_audio_token_cache_
   base::MessageLoop message_loop_;
 
-  scoped_ptr<WhispernetClient> whispernet_client_;
+  std::unique_ptr<WhispernetClient> whispernet_client_;
   FakeDirectiveHandler directive_handler_;
   RpcHandler rpc_handler_;
 
@@ -180,7 +181,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
       const std::string& rpc_name,
       const std::string& api_key,
       const std::string& auth_token,
-      scoped_ptr<MessageLite> request_proto,
+      std::unique_ptr<MessageLite> request_proto,
       const RpcHandler::PostCleanupCallback& response_callback) {
     rpc_name_ = rpc_name;
     api_key_ = api_key;
@@ -211,7 +212,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
   // Send a report.
   ReportRequest* report = new ReportRequest;
   report->mutable_manage_messages_request()->add_id_to_unpublish("unpublish");
-  SendReport(make_scoped_ptr(report), "Q App ID", "Q Auth Token");
+  SendReport(base::WrapUnique(report), "Q App ID", "Q Auth Token");
   EXPECT_THAT(request_queue(), SizeIs(1));
   EXPECT_TRUE(request_queue()[0]->authenticated);
 
@@ -226,7 +227,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
   report = new ReportRequest;
   report->mutable_manage_subscriptions_request()->add_id_to_unsubscribe(
       "unsubscribe");
-  SendReport(make_scoped_ptr(report), "Q App ID", "Q Auth Token");
+  SendReport(base::WrapUnique(report), "Q App ID", "Q Auth Token");
   EXPECT_THAT(request_protos_, SizeIs(1));
   EXPECT_THAT(request_queue(), SizeIs(2));
   EXPECT_TRUE(request_queue()[1]->authenticated);
@@ -235,7 +236,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
   report = new ReportRequest;
   report->mutable_update_signals_request()->add_token_observation()
       ->set_token_id("Q Audio Token");
-  SendReport(make_scoped_ptr(report), "Q App ID", "");
+  SendReport(base::WrapUnique(report), "Q App ID", "");
   EXPECT_THAT(request_queue(), SizeIs(3));
   EXPECT_FALSE(request_queue()[2]->authenticated);
 
@@ -274,8 +275,7 @@ TEST_F(RpcHandlerTest, RequestQueuing) {
 
 TEST_F(RpcHandlerTest, CreateRequestHeader) {
   device_id_by_auth_state_[true] = "CreateRequestHeader Device ID";
-  SendReport(make_scoped_ptr(new ReportRequest),
-             "CreateRequestHeader App",
+  SendReport(base::WrapUnique(new ReportRequest), "CreateRequestHeader App",
              "CreateRequestHeader Auth Token");
 
   EXPECT_EQ(RpcHandler::kReportRequestRpcName, rpc_name_);
@@ -319,7 +319,7 @@ TEST_F(RpcHandlerTest, ReportTokens) {
 
 TEST_F(RpcHandlerTest, ReportResponseHandler) {
   // Fail on HTTP status != 200.
-  scoped_ptr<ReportResponse> response(new ReportResponse);
+  std::unique_ptr<ReportResponse> response(new ReportResponse);
   status_ = SUCCESS;
   SendReportResponse(net::HTTP_BAD_REQUEST, std::move(response));
   EXPECT_EQ(FAIL, status_);

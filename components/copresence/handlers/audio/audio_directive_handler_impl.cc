@@ -5,13 +5,14 @@
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -32,7 +33,7 @@ namespace {
 
 base::TimeTicks GetEarliestEventTime(AudioDirectiveList* list,
                                      base::TimeTicks event_time) {
-  scoped_ptr<AudioDirective> active_directive = list->GetActiveDirective();
+  std::unique_ptr<AudioDirective> active_directive = list->GetActiveDirective();
 
   if (!active_directive)
     return event_time;
@@ -62,8 +63,8 @@ AudioDirectiveHandlerImpl::AudioDirectiveHandlerImpl(
 
 AudioDirectiveHandlerImpl::AudioDirectiveHandlerImpl(
     const DirectivesCallback& update_directives_callback,
-    scoped_ptr<audio_modem::Modem> audio_modem,
-    scoped_ptr<base::Timer> timer,
+    std::unique_ptr<audio_modem::Modem> audio_modem,
+    std::unique_ptr<base::Timer> timer,
     const scoped_refptr<TickClockRefCounted>& clock)
     : update_directives_callback_(update_directives_callback),
       audio_modem_(std::move(audio_modem)),

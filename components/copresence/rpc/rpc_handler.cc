@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 // TODO(ckehoe): time.h includes windows.h, which #defines DeviceCapabilities
@@ -122,8 +124,9 @@ BroadcastScanConfiguration GetBroadcastScanConfig(const T& msg) {
   return BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
 }
 
-scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
-  scoped_ptr<DeviceState> state(new DeviceState);
+std::unique_ptr<DeviceState> GetDeviceCapabilities(
+    const ReportRequest& request) {
+  std::unique_ptr<DeviceState> state(new DeviceState);
 
   TokenTechnology* ultrasound =
       state->mutable_capabilities()->add_token_technology();
@@ -204,7 +207,7 @@ RpcHandler::~RpcHandler() {
     delete post;
 }
 
-void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
+void RpcHandler::SendReportRequest(std::unique_ptr<ReportRequest> request,
                                    const std::string& app_id,
                                    const std::string& auth_token,
                                    const StatusCallback& status_callback) {
@@ -260,21 +263,19 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
   AddPlayingTokens(request.get());
 
   request->set_allocated_header(CreateRequestHeader(app_id, device_id));
-  server_post_callback_.Run(delegate_->GetRequestContext(),
-                            kReportRequestRpcName,
-                            delegate_->GetAPIKey(app_id),
-                            auth_token,
-                            make_scoped_ptr<MessageLite>(request.release()),
-                            // On destruction, this request will be cancelled.
-                            base::Bind(&RpcHandler::ReportResponseHandler,
-                                       base::Unretained(this),
-                                       status_callback));
+  server_post_callback_.Run(
+      delegate_->GetRequestContext(), kReportRequestRpcName,
+      delegate_->GetAPIKey(app_id), auth_token,
+      base::WrapUnique<MessageLite>(request.release()),
+      // On destruction, this request will be cancelled.
+      base::Bind(&RpcHandler::ReportResponseHandler, base::Unretained(this),
+                 status_callback));
 }
 
 void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
   DCHECK(!tokens.empty());
 
-  scoped_ptr<ReportRequest> request(new ReportRequest);
+  std::unique_ptr<ReportRequest> request(new ReportRequest);
   for (const AudioToken& token : tokens) {
     if (invalid_audio_token_cache_.HasKey(ToUrlSafe(token.token)))
       continue;
@@ -288,10 +289,11 @@ void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
 
 // Private functions.
 
-RpcHandler::PendingRequest::PendingRequest(scoped_ptr<ReportRequest> report,
-                                           const std::string& app_id,
-                                           bool authenticated,
-                                           const StatusCallback& callback)
+RpcHandler::PendingRequest::PendingRequest(
+    std::unique_ptr<ReportRequest> report,
+    const std::string& app_id,
+    bool authenticated,
+    const StatusCallback& callback)
     : report(std::move(report)),
       app_id(app_id),
       authenticated(authenticated),
@@ -303,7 +305,7 @@ void RpcHandler::RegisterDevice(const bool authenticated) {
   DVLOG(2) << "Sending " << (authenticated ? "authenticated" : "anonymous")
            << " registration to server.";
 
-  scoped_ptr<RegisterDeviceRequest> request(new RegisterDeviceRequest);
+  std::unique_ptr<RegisterDeviceRequest> request(new RegisterDeviceRequest);
 
   // Add a GCM ID for authenticated registration, if we have one.
   if (!authenticated || gcm_id_.empty()) {
@@ -336,16 +338,13 @@ void RpcHandler::RegisterDevice(const bool authenticated) {
      std::string(), delegate_->GetDeviceId(authenticated)));
   if (authenticated)
     DCHECK(!auth_token_.empty());
-  server_post_callback_.Run(delegate_->GetRequestContext(),
-                            kRegisterDeviceRpcName,
-                            std::string(),
-                            authenticated ? auth_token_ : std::string(),
-                            make_scoped_ptr<MessageLite>(request.release()),
-                            // On destruction, this request will be cancelled.
-                            base::Bind(&RpcHandler::RegisterResponseHandler,
-                                       base::Unretained(this),
-                                       authenticated,
-                                       gcm_pending));
+  server_post_callback_.Run(
+      delegate_->GetRequestContext(), kRegisterDeviceRpcName, std::string(),
+      authenticated ? auth_token_ : std::string(),
+      base::WrapUnique<MessageLite>(request.release()),
+      // On destruction, this request will be cancelled.
+      base::Bind(&RpcHandler::RegisterResponseHandler, base::Unretained(this),
+                 authenticated, gcm_pending));
 }
 
 void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
@@ -381,7 +380,7 @@ void RpcHandler::ProcessQueuedRequests(const bool authenticated) {
   pending_requests_queue_ = std::move(still_pending_requests);
 }
 
-void RpcHandler::ReportOnAllDevices(scoped_ptr<ReportRequest> request) {
+void RpcHandler::ReportOnAllDevices(std::unique_ptr<ReportRequest> request) {
   std::vector<bool> auth_states;
   if (!auth_token_.empty() && !delegate_->GetDeviceId(true).empty())
     auth_states.push_back(true);
@@ -393,10 +392,9 @@ void RpcHandler::ReportOnAllDevices(scoped_ptr<ReportRequest> request) {
   }
 
   for (bool authenticated : auth_states) {
-    SendReportRequest(make_scoped_ptr(new ReportRequest(*request)),
-                      std::string(),
-                      authenticated ? auth_token_ : std::string(),
-                      StatusCallback());
+    SendReportRequest(
+        base::WrapUnique(new ReportRequest(*request)), std::string(),
+        authenticated ? auth_token_ : std::string(), StatusCallback());
   }
 }
 
@@ -600,7 +598,7 @@ void RpcHandler::SendHttpPost(net::URLRequestContextGetter* url_context_getter,
                               const std::string& rpc_name,
                               const std::string& api_key,
                               const std::string& auth_token,
-                              scoped_ptr<MessageLite> request_proto,
+                              std::unique_ptr<MessageLite> request_proto,
                               const PostCleanupCallback& callback) {
   // Create the base URL to call.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_H_
 #define COMPONENTS_COPRESENCE_HANDLERS_AUDIO_AUDIO_DIRECTIVE_LIST_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/tick_clock_ref_counted.h"
@@ -56,7 +56,7 @@ class AudioDirectiveList final {
   void AddDirective(const std::string& op_id, const Directive& directive);
   void RemoveDirective(const std::string& op_id);
 
-  scoped_ptr<AudioDirective> GetActiveDirective();
+  std::unique_ptr<AudioDirective> GetActiveDirective();
 
   const std::vector<AudioDirective>& directives() const;
 

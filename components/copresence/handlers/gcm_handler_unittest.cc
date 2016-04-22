@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/base64url.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/copresence/handlers/gcm_handler_impl.h"
 #include "components/copresence/proto/push_message.pb.h"
 #include "components/copresence/test/fake_directive_handler.h"
@@ -37,8 +38,8 @@ class GCMHandlerTest : public testing::Test {
     gcm_handler_.OnMessage(GCMHandlerImpl::kCopresenceAppId, message);
   }
 
-  scoped_ptr<gcm::GCMDriver> driver_;
-  scoped_ptr<FakeDirectiveHandler> directive_handler_;
+  std::unique_ptr<gcm::GCMDriver> driver_;
+  std::unique_ptr<FakeDirectiveHandler> directive_handler_;
   GCMHandlerImpl gcm_handler_;
 };
 

@@ -6,15 +6,16 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/tick_clock.h"
 
 namespace copresence {
 
-TickClockRefCounted::TickClockRefCounted(scoped_ptr<base::TickClock> clock)
+TickClockRefCounted::TickClockRefCounted(std::unique_ptr<base::TickClock> clock)
     : clock_(std::move(clock)) {}
 
 TickClockRefCounted::TickClockRefCounted(base::TickClock* clock)
-    : clock_(make_scoped_ptr(clock)) {}
+    : clock_(base::WrapUnique(clock)) {}
 
 base::TimeTicks TickClockRefCounted::NowTicks() const {
   return clock_->NowTicks();

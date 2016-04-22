@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_COPRESENCE_HANDLERS_AUDIO_TICK_CLOCK_REF_COUNTED_H_
 #define COMPONENTS_COPRESENCE_HANDLERS_AUDIO_TICK_CLOCK_REF_COUNTED_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class TickClock;
@@ -19,7 +20,7 @@ namespace copresence {
 class TickClockRefCounted
     : public base::RefCountedThreadSafe<TickClockRefCounted> {
  public:
-  explicit TickClockRefCounted(scoped_ptr<base::TickClock> clock);
+  explicit TickClockRefCounted(std::unique_ptr<base::TickClock> clock);
 
   // Takes ownership of the clock.
   explicit TickClockRefCounted(base::TickClock* clock);
@@ -30,7 +31,7 @@ class TickClockRefCounted
   friend class base::RefCountedThreadSafe<TickClockRefCounted>;
   virtual ~TickClockRefCounted();
 
-  scoped_ptr<base::TickClock> clock_;
+  std::unique_ptr<base::TickClock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TickClockRefCounted);
 };
