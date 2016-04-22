@@ -351,7 +351,7 @@ const char kFlagsProperty[] = "Flags";
 const char kNotifyingProperty[] = "Notifying";
 const char kDescriptorsProperty[] = "Descriptors";
 
-// Possible values for the "Flags" property.
+// Possible values for Bluetooth GATT Characteristic "Flags" property.
 const char kFlagBroadcast[] = "broadcast";
 const char kFlagRead[] = "read";
 const char kFlagWriteWithoutResponse[] = "write-without-response";
@@ -362,6 +362,10 @@ const char kFlagAuthenticatedSignedWrites[] = "authenticated-signed-writes";
 const char kFlagExtendedProperties[] = "extended-properties";
 const char kFlagReliableWrite[] = "reliable-write";
 const char kFlagWritableAuxiliaries[] = "writable-auxiliaries";
+const char kFlagEncryptRead[] = "encrypt-read";
+const char kFlagEncryptWrite[] = "encrypt-write";
+const char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
+const char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
 }  // namespace bluetooth_gatt_characteristic
 
 namespace bluetooth_gatt_descriptor {
@@ -378,6 +382,15 @@ const char kWriteValue[] = "WriteValue";
 const char kUUIDProperty[] = "UUID";
 const char kCharacteristicProperty[] = "Characteristic";
 const char kValueProperty[] = "Value";
+const char kFlagsProperty[] = "Flags";
+
+// Possible values for Bluetooth GATT Descriptor "Flags" property.
+const char kFlagRead[] = "read";
+const char kFlagWrite[] = "write";
+const char kFlagEncryptRead[] = "encrypt-read";
+const char kFlagEncryptWrite[] = "encrypt-write";
+const char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
+const char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
 }  // namespace bluetooth_gatt_descriptor
 
 namespace bluetooth_gatt_manager {
@@ -386,6 +399,8 @@ const char kBluetoothGattManagerServiceName[] = "org.bluez";
 const char kBluetoothGattManagerInterface[] = "org.bluez.GattManager1";
 
 // Bluetooth GATT Manager methods.
+const char kRegisterApplication[] = "RegisterApplication";
+const char kUnregisterApplication[] = "UnregisterApplication";
 const char kRegisterService[] = "RegisterService";
 const char kUnregisterService[] = "UnregisterService";
 
