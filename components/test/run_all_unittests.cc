@@ -25,6 +25,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
+#include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
+#include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
@@ -63,6 +65,8 @@ class ComponentsTestSuite : public base::TestSuite {
     JNIEnv* env = base::android::AttachCurrentThread();
     ASSERT_TRUE(content::RegisterJniForTesting(env));
     ASSERT_TRUE(gfx::android::RegisterJni(env));
+    ASSERT_TRUE(instance_id::android::RegisterInstanceIDJni(env));
+    ASSERT_TRUE(instance_id::ScopedUseFakeInstanceIDAndroid::RegisterJni(env));
     ASSERT_TRUE(invalidation::android::RegisterInvalidationJni(env));
     ASSERT_TRUE(policy::android::RegisterPolicy(env));
     ASSERT_TRUE(safe_json::android::RegisterSafeJsonJni(env));

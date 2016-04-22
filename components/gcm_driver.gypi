@@ -214,6 +214,15 @@
         # Note: file list duplicated in GN build.
         'gcm_driver/instance_id/fake_gcm_driver_for_instance_id.cc',
         'gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h',
+        'gcm_driver/instance_id/scoped_use_fake_instance_id_android.cc',
+        'gcm_driver/instance_id/scoped_use_fake_instance_id_android.h',
+      ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            'instance_id_driver_test_support_jni_headers',
+          ],
+        }],
       ],
     },
     {
@@ -323,11 +332,35 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN version: //components/gcm_driver/instance_id/android:instance_id_driver_test_support_java
+          'target_name': 'instance_id_driver_test_support_java',
+          'type': 'none',
+          'dependencies': [
+            'instance_id_driver_java',
+          ],
+          'variables': {
+            'java_in_dir': 'gcm_driver/instance_id/android/javatests',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
           # GN version: //components/gcm_driver/instance_id/android:jni_headers
           'target_name': 'instance_id_driver_jni_headers',
           'type': 'none',
           'sources': [
             'gcm_driver/instance_id/android/java/src/org/chromium/components/gcm_driver/instance_id/InstanceIDBridge.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'components/gcm_driver/instance_id',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          # GN version: //components/gcm_driver/instance_id/android:test_support_jni_headers
+          'target_name': 'instance_id_driver_test_support_jni_headers',
+          'type': 'none',
+          'sources': [
+            'gcm_driver/instance_id/android/javatests/src/org/chromium/components/gcm_driver/instance_id/FakeInstanceIDWithSubtype.java',
           ],
           'variables': {
             'jni_gen_package': 'components/gcm_driver/instance_id',

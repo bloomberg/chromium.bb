@@ -41,14 +41,22 @@ source_set("test_support") {
   sources = [
     "fake_gcm_driver_for_instance_id.cc",
     "fake_gcm_driver_for_instance_id.h",
+    "scoped_use_fake_instance_id_android.cc",
+    "scoped_use_fake_instance_id_android.h",
   ]
 
-  deps = [
+  public_deps = [
     ":instance_id",
+  ]
+  deps = [
     "//base",
     "//components/gcm_driver:test_support",
     "//testing/gtest",
   ]
+
+  if (is_android) {
+    deps += [ "android:test_support_jni_headers" ]
+  }
 }
 
 source_set("unit_tests") {

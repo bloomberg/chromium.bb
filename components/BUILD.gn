@@ -165,6 +165,7 @@ test("components_unittests") {
       "//components/domain_reliability:unit_tests",
       "//components/error_page/renderer:unit_tests",
       "//components/favicon/content:unit_tests",
+      "//components/gcm_driver/instance_id:unit_tests",
       "//components/guest_view/browser:unit_tests",
       "//components/history/content/browser:unit_tests",
       "//components/invalidation/impl:unit_tests",
@@ -210,6 +211,9 @@ test("components_unittests") {
     isolate_file = "components_unittests.isolate"
 
     deps += [
+      "//components/gcm_driver/instance_id:test_support",
+      "//components/gcm_driver/instance_id/android:instance_id_driver_java",
+      "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
       "//components/safe_json",
@@ -220,7 +224,6 @@ test("components_unittests") {
       "//components/web_restrictions:test_support",
       "//components/web_restrictions:test_support_java",
       "//components/web_restrictions:unit_tests",
-      "//content/public/android:content_java",
       "//content/public/android:content_java",
       "//content/public/browser",
       "//net",
@@ -240,7 +243,6 @@ test("components_unittests") {
       "//components/audio_modem:unit_tests",
       "//components/copresence:unit_tests",
       "//components/feedback:unit_tests",
-      "//components/gcm_driver/instance_id:unit_tests",
       "//components/proximity_auth:unit_tests",
       "//components/storage_monitor:unit_tests",
       "//components/web_modal:unit_tests",

@@ -24,6 +24,19 @@ namespace instance_id {
 // InstanceID implementation for Android.
 class InstanceIDAndroid : public InstanceID {
  public:
+  // Tests depending on InstanceID that run without a nested Java message loop
+  // must use this. Operations that would normally be asynchronous will instead
+  // block the UI thread.
+  class ScopedBlockOnAsyncTasksForTesting {
+   public:
+    ScopedBlockOnAsyncTasksForTesting();
+    ~ScopedBlockOnAsyncTasksForTesting();
+
+   private:
+    bool previous_value_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedBlockOnAsyncTasksForTesting);
+  };
+
   // Register JNI methods.
   static bool RegisterJni(JNIEnv* env);
 

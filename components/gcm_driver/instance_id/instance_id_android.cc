@@ -26,6 +26,19 @@ using base::android::ConvertUTF8ToJavaString;
 
 namespace instance_id {
 
+InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting::
+    ScopedBlockOnAsyncTasksForTesting() {
+  JNIEnv* env = AttachCurrentThread();
+  previous_value_ =
+      Java_InstanceIDBridge_setBlockOnAsyncTasksForTesting(env, true);
+}
+
+InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting::
+    ~ScopedBlockOnAsyncTasksForTesting() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_InstanceIDBridge_setBlockOnAsyncTasksForTesting(env, previous_value_);
+}
+
 // static
 bool InstanceIDAndroid::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);

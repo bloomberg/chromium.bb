@@ -9,6 +9,9 @@ import android.text.TextUtils;
 
 import com.google.android.gms.iid.InstanceID;
 
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +24,16 @@ public class InstanceIDWithSubtype extends InstanceID {
     private final String mSubtype;
 
     /** Cached instances. May be accessed from multiple threads; synchronize on InstanceID.class. */
-    private static Map<String, InstanceIDWithSubtype> sSubtypeInstances = new HashMap<>();
+    @VisibleForTesting
+    @SuppressFBWarnings("MS_MUTABLE_COLLECTION_PKGPROTECT")
+    protected static final Map<String, InstanceIDWithSubtype> sSubtypeInstances = new HashMap<>();
 
-    private InstanceIDWithSubtype(Context context, String subtype) {
+    /** Fake subclasses can set this so getInstance creates instances of them. */
+    @VisibleForTesting
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    protected static FakeFactory sFakeFactoryForTesting = null;
+
+    protected InstanceIDWithSubtype(Context context, String subtype) {
         super(context, subtype, null /* options */);
         mSubtype = subtype;
     }
@@ -41,7 +51,7 @@ public class InstanceIDWithSubtype extends InstanceID {
         // Synchronize on the base class, to match the synchronized statements in
         // InstanceID.getInstance.
         synchronized (InstanceID.class) {
-            if (sSubtypeInstances.isEmpty()) {
+            if (sSubtypeInstances.isEmpty() && sFakeFactoryForTesting == null) {
                 // The static InstanceID.getInstance method performs some one-time initialization
                 // logic that is also necessary for users of this sub-class. To work around this,
                 // first get (but don't use) the default InstanceID.
@@ -50,7 +60,11 @@ public class InstanceIDWithSubtype extends InstanceID {
 
             InstanceIDWithSubtype existing = sSubtypeInstances.get(subtype);
             if (existing == null) {
-                existing = new InstanceIDWithSubtype(context, subtype);
+                if (sFakeFactoryForTesting != null) {
+                    existing = sFakeFactoryForTesting.create(context, subtype);
+                } else {
+                    existing = new InstanceIDWithSubtype(context, subtype);
+                }
                 sSubtypeInstances.put(subtype, existing);
             }
             return existing;
@@ -68,5 +82,11 @@ public class InstanceIDWithSubtype extends InstanceID {
 
     public String getSubtype() {
         return mSubtype;
+    }
+
+    /** Fake subclasses can set {@link #sFakeFactoryForTesting} to an implementation of this. */
+    @VisibleForTesting
+    public interface FakeFactory {
+        public InstanceIDWithSubtype create(Context context, String subtype);
     }
 }

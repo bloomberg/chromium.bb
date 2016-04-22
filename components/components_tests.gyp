@@ -1393,7 +1393,6 @@
             'gcm_driver/gcm_client_impl_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
-            'gcm_driver/instance_id/instance_id_driver_unittest.cc',
             'sessions/core/session_backend_unittest.cc',
             'storage_monitor/media_storage_util_unittest.cc',
             'storage_monitor/storage_info_unittest.cc',
@@ -1660,6 +1659,8 @@
           'type': 'none',
           'dependencies': [
             'components_unittests',
+            'components.gyp:instance_id_driver_java',
+            'components.gyp:instance_id_driver_test_support_java',
             'components.gyp:invalidation_java',
             'components.gyp:signin_core_browser_java',
             'components.gyp:web_restrictions_test_support_java',
