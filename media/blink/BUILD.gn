@@ -13,7 +13,6 @@ component("blink") {
     "//cc",
     "//cc/blink",
     "//gpu",
-    "//gpu/blink",
     "//media",
     "//media:shared_memory_support",
     "//net",

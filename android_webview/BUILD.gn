@@ -576,7 +576,6 @@ source_set("common") {
     "//content/public/app:both",
     "//content/public/browser",
     "//gin",
-    "//gpu/blink",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",

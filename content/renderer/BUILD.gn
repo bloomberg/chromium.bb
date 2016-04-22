@@ -53,7 +53,6 @@ source_set("renderer") {
     "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",
-    "//gpu/blink",
     "//gpu/command_buffer/client:gles2_interface",
     "//ipc/mojo",
     "//jingle:jingle_glue",

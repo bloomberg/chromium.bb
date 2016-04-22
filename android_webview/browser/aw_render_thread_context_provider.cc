@@ -9,7 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/managed_memory_policy.h"
-#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"

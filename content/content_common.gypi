@@ -8,7 +8,6 @@
     '../cc/cc.gyp:cc',
     '../components/tracing.gyp:tracing',
     '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-    '../gpu/blink/gpu_blink.gyp:gpu_blink',
     '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
     '../gpu/gpu.gyp:command_buffer_service',
     '../gpu/gpu.gyp:gles2_c_lib',

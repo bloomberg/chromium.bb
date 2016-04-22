@@ -19,9 +19,16 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 
+namespace gpu {
+class CommandBufferProxyImpl;
+namespace gles2 {
+class GLES2TraceImplementation;
+}
+}
+
 namespace skia_bindings {
 class GrContextForGLES2Interface;
-}  // namespace skia_bindings
+}
 
 namespace content {
 
@@ -64,6 +71,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::ThreadChecker context_thread_checker_;
 
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
+  std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   gpu::SharedMemoryLimits memory_limits_;

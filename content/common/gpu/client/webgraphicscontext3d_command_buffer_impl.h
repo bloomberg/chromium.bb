@@ -18,7 +18,6 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
-#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -44,7 +43,7 @@ class GLES2Interface;
 namespace content {
 
 class WebGraphicsContext3DCommandBufferImpl
-    : public gpu_blink::WebGraphicsContext3DImpl {
+    : public NON_EXPORTED_BASE(blink::WebGraphicsContext3D) {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,
@@ -94,6 +93,14 @@ class WebGraphicsContext3DCommandBufferImpl
     DISALLOW_COPY_AND_ASSIGN(ShareGroup);
   };
 
+  class WebGraphicsContextLostCallback {
+   public:
+    virtual void onContextLost() = 0;
+
+   protected:
+    virtual ~WebGraphicsContextLostCallback() {}
+  };
+
   CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl(
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
@@ -114,6 +121,10 @@ class WebGraphicsContext3DCommandBufferImpl
 
   gpu::gles2::GLES2Implementation* GetImplementation() {
     return real_gl_.get();
+  }
+
+  void SetContextLostCallback(WebGraphicsContextLostCallback* callback) {
+    context_lost_callback_ = callback;
   }
 
   CONTENT_EXPORT bool InitializeOnCurrentThread(
@@ -157,6 +168,10 @@ class WebGraphicsContext3DCommandBufferImpl
   bool CreateContext(const gpu::SharedMemoryLimits& memory_limits);
 
   void OnContextLost();
+
+  bool initialized_ = false;
+  bool initialize_failed_ = false;
+  WebGraphicsContextLostCallback* context_lost_callback_ = nullptr;
 
   bool automatic_flushes_;
   gpu::gles2::ContextCreationAttribHelper attributes_;

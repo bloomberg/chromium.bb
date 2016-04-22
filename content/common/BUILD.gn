@@ -160,7 +160,6 @@ source_set("common") {
     "//components/tracing:startup_tracing",
     "//device/bluetooth",
     "//gpu",
-    "//gpu/blink",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",

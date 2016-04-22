@@ -838,7 +838,6 @@
         '../components/components.gyp:display_compositor',
         '../components/scheduler/scheduler.gyp:scheduler',
         '../components/scheduler/scheduler.gyp:scheduler_test_support',
-        '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/gpu.gyp:gpu_ipc_common',
         '../gpu/gpu.gyp:gpu_ipc_service_test_support',
         '../ipc/mojo/ipc_mojo.gyp:*',

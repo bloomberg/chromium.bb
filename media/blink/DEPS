@@ -4,7 +4,6 @@ include_rules = [
   "+cc/layers/video_layer.h",
   "+components/scheduler",  # Only allowed in tests.
   "+gin",
-  "+gpu/blink",
   "+media",
   "+net/base",
   "+net/http",

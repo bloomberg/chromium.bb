@@ -27,7 +27,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
@@ -241,8 +240,6 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
       gles2_helper_.get(), gles2_share_group.get(), transfer_buffer_.get(),
       bind_generates_resource, lose_context_when_out_of_memory,
       support_client_side_arrays, command_buffer_.get()));
-  SetGLInterface(real_gl_.get());
-
   if (!real_gl_->Initialize(memory_limits.start_transfer_buffer_size,
                             memory_limits.min_transfer_buffer_size,
                             memory_limits.max_transfer_buffer_size,
@@ -254,11 +251,6 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   if (add_to_share_group)
     share_group_->AddContextLocked(this);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuClientTracing)) {
-    trace_gl_.reset(new gpu::gles2::GLES2TraceImplementation(GetGLInterface()));
-    SetGLInterface(trace_gl_.get());
-  }
   return true;
 }
 
@@ -279,17 +271,6 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeOnCurrentThread(
 
 void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   share_group_->RemoveContext(this);
-
-  gpu::gles2::GLES2Interface* gl = GetGLInterface();
-  if (gl) {
-    // First flush the context to ensure that any pending frees of resources
-    // are completed. Otherwise, if this context is part of a share group,
-    // those resources might leak. Also, any remaining side effects of commands
-    // issued on this context might not be visible to other contexts in the
-    // share group.
-    gl->Flush();
-    SetGLInterface(nullptr);
-  }
 
   trace_gl_.reset();
   real_gl_.reset();

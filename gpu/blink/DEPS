@@ -1,4 +1,0 @@
-include_rules = [
-  "+third_party/WebKit/public/platform",
-  "+third_party/khronos/GLES2",
-]

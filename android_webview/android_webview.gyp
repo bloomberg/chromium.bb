@@ -246,7 +246,6 @@
         '../content/content.gyp:content_app_both',
         '../content/content.gyp:content_browser',
         '../gin/gin.gyp:gin',
-        '../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gl_in_process_context',

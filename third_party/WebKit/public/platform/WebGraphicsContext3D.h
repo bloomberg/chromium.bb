@@ -34,23 +34,8 @@
 #include "WebNonCopyable.h"
 
 namespace blink {
-class WebString;
-
-// This interface abstracts the operations performed by the
-// GraphicsContext3D in order to implement WebGL. Nearly all of the
-// methods exposed on this interface map directly to entry points in
-// the OpenGL ES 2.0 API.
 class WebGraphicsContext3D : public WebNonCopyable {
 public:
-    class WebGraphicsContextLostCallback {
-    public:
-        virtual void onContextLost() = 0;
-
-    protected:
-        virtual ~WebGraphicsContextLostCallback() { }
-    };
-
-    // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 };
 

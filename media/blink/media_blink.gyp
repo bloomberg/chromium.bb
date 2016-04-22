@@ -15,7 +15,6 @@
         '../../base/base.gyp:base',
         '../../cc/cc.gyp:cc',
         '../../cc/blink/cc_blink.gyp:cc_blink',
-        '../../gpu/blink/gpu_blink.gyp:gpu_blink',
         '../../gpu/gpu.gyp:gpu',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../net/net.gyp:net',
