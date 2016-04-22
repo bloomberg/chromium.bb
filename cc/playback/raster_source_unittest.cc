@@ -11,9 +11,9 @@
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "cc/tiles/software_image_decode_controller.h"
-#include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -187,7 +187,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
-  skia::RefPtr<SkImage> discardable_image[2][2];
+  sk_sp<SkImage> discardable_image[2][2];
   discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
   discardable_image[0][1] = CreateDiscardableImage(gfx::Size(32, 32));
   discardable_image[1][1] = CreateDiscardableImage(gfx::Size(32, 32));
@@ -198,11 +198,9 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   // |---|---|
   // |   | x |
   // |---|---|
-  recording_source->add_draw_image(discardable_image[0][0].get(),
-                                   gfx::Point(0, 0));
-  recording_source->add_draw_image(discardable_image[0][1].get(),
-                                   gfx::Point(260, 0));
-  recording_source->add_draw_image(discardable_image[1][1].get(),
+  recording_source->add_draw_image(discardable_image[0][0], gfx::Point(0, 0));
+  recording_source->add_draw_image(discardable_image[0][1], gfx::Point(260, 0));
+  recording_source->add_draw_image(discardable_image[1][1],
                                    gfx::Point(260, 260));
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
@@ -215,7 +213,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), 1.f, &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_EQ(discardable_image[0][0].get(), images[0].image());
+    EXPECT_EQ(discardable_image[0][0], images[0].image());
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
@@ -223,7 +221,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), 1.f,
                                        &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_EQ(discardable_image[1][1].get(), images[0].image());
+    EXPECT_EQ(discardable_image[1][1], images[0].image());
   }
   // Ensure there's no discardable pixel refs in the empty cell
   {
@@ -237,9 +235,9 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     std::vector<DrawImage> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), 1.f, &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_EQ(discardable_image[0][0].get(), images[0].image());
-    EXPECT_EQ(discardable_image[0][1].get(), images[1].image());
-    EXPECT_EQ(discardable_image[1][1].get(), images[2].image());
+    EXPECT_EQ(discardable_image[0][0], images[0].image());
+    EXPECT_EQ(discardable_image[0][1], images[1].image());
+    EXPECT_EQ(discardable_image[1][1], images[2].image());
   }
 }
 
@@ -550,8 +548,8 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
   // 1. Paint the image.
-  skia::RefPtr<SkImage> image = CreateDiscardableImage(gfx::Size(5, 5));
-  recording_source->add_draw_image(image.get(), gfx::Point(0, 0));
+  recording_source->add_draw_image(CreateDiscardableImage(gfx::Size(5, 5)),
+                                   gfx::Point(0, 0));
 
   // 2. Cover everything in red.
   SkPaint paint;

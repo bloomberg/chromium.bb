@@ -24,7 +24,7 @@
 #include "cc/playback/draw_image.h"
 #include "cc/resources/resource_format.h"
 #include "cc/tiles/image_decode_controller.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
 
@@ -141,9 +141,9 @@ class CC_EXPORT SoftwareImageDecodeController
                  uint64_t tracing_id);
     ~DecodedImage();
 
-    SkImage* image() const {
+    const sk_sp<SkImage>& image() const {
       DCHECK(locked_);
-      return image_.get();
+      return image_;
     }
 
     const SkSize& src_rect_offset() const { return src_rect_offset_; }
@@ -162,7 +162,7 @@ class CC_EXPORT SoftwareImageDecodeController
     bool locked_;
     SkImageInfo image_info_;
     std::unique_ptr<base::DiscardableMemory> memory_;
-    skia::RefPtr<SkImage> image_;
+    sk_sp<SkImage> image_;
     SkSize src_rect_offset_;
     uint64_t tracing_id_;
   };
@@ -214,15 +214,17 @@ class CC_EXPORT SoftwareImageDecodeController
   // GetOriginalImageDecode is called by DecodeImageInternal when the quality
   // does not scale the image. Like DecodeImageInternal, it should be called
   // with no lock acquired and it returns nullptr if the decoding failed.
-  std::unique_ptr<DecodedImage> GetOriginalImageDecode(const ImageKey& key,
-                                                       const SkImage& image);
+  std::unique_ptr<DecodedImage> GetOriginalImageDecode(
+      const ImageKey& key,
+      sk_sp<const SkImage> image);
 
   // GetScaledImageDecode is called by DecodeImageInternal when the quality
   // requires the image be scaled. Like DecodeImageInternal, it should be
   // called with no lock acquired and it returns nullptr if the decoding or
   // scaling failed.
-  std::unique_ptr<DecodedImage> GetScaledImageDecode(const ImageKey& key,
-                                                     const SkImage& image);
+  std::unique_ptr<DecodedImage> GetScaledImageDecode(
+      const ImageKey& key,
+      sk_sp<const SkImage> image);
 
   void SanityCheckState(int line, bool lock_acquired);
   void RefImage(const ImageKey& key);

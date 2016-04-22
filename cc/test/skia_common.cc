@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "cc/playback/display_item_list.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -52,11 +51,9 @@ bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
   return !memcmp(pixels_a.get(), pixels_b.get(), pixel_size);
 }
 
-skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
-  const SkImageInfo info =
-      SkImageInfo::MakeN32Premul(size.width(), size.height());
-  return skia::AdoptRef(
-      SkImage::NewFromGenerator(new TestImageGenerator(info)));
+sk_sp<SkImage> CreateDiscardableImage(const gfx::Size& size) {
+  return SkImage::MakeFromGenerator(new TestImageGenerator(
+      SkImageInfo::MakeN32Premul(size.width(), size.height())));
 }
 
 }  // namespace cc

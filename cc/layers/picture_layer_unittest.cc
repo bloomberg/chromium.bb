@@ -26,6 +26,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
 
@@ -301,8 +302,8 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   gfx::Size layer_size(50, 50);
   FakeContentLayerClient client;
   client.set_bounds(layer_size);
-  skia::RefPtr<SkImage> image = CreateDiscardableImage(layer_size);
-  client.add_draw_image(image.get(), gfx::Point(), SkPaint());
+  client.add_draw_image(CreateDiscardableImage(layer_size), gfx::Point(),
+                        SkPaint());
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
   layer->SetBounds(gfx::Size(10, 10));
 

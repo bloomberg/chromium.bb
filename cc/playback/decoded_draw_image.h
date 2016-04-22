@@ -8,32 +8,25 @@
 #include <cfloat>
 #include <cmath>
 
+#include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 namespace cc {
 
-class DecodedDrawImage {
+class CC_EXPORT DecodedDrawImage {
  public:
-  DecodedDrawImage(const SkImage* image,
+  DecodedDrawImage(sk_sp<const SkImage> image,
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
-                   SkFilterQuality filter_quality)
-      : image_(image),
-        src_rect_offset_(src_rect_offset),
-        scale_adjustment_(scale_adjustment),
-        filter_quality_(filter_quality),
-        at_raster_decode_(false) {}
+                   SkFilterQuality filter_quality);
+  DecodedDrawImage(sk_sp<const SkImage> image, SkFilterQuality filter_quality);
+  DecodedDrawImage(const DecodedDrawImage& other);
+  ~DecodedDrawImage();
 
-  DecodedDrawImage(const SkImage* image, SkFilterQuality filter_quality)
-      : image_(image),
-        src_rect_offset_(SkSize::Make(0.f, 0.f)),
-        scale_adjustment_(SkSize::Make(1.f, 1.f)),
-        filter_quality_(filter_quality),
-        at_raster_decode_(false) {}
-
-  const SkImage* image() const { return image_; }
+  const sk_sp<const SkImage>& image() const { return image_; }
   const SkSize& src_rect_offset() const { return src_rect_offset_; }
   const SkSize& scale_adjustment() const { return scale_adjustment_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }
@@ -48,7 +41,7 @@ class DecodedDrawImage {
   bool is_at_raster_decode() const { return at_raster_decode_; }
 
  private:
-  const SkImage* image_;
+  sk_sp<const SkImage> image_;
   const SkSize src_rect_offset_;
   const SkSize scale_adjustment_;
   const SkFilterQuality filter_quality_;

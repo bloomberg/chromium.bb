@@ -30,23 +30,19 @@ DrawImage::DrawImage()
       scale_(SkSize::Make(1.f, 1.f)),
       matrix_is_decomposable_(true) {}
 
-DrawImage::DrawImage(const SkImage* image,
+DrawImage::DrawImage(sk_sp<const SkImage> image,
                      const SkIRect& src_rect,
                      SkFilterQuality filter_quality,
                      const SkMatrix& matrix)
-    : image_(image),
+    : image_(std::move(image)),
       src_rect_(src_rect),
       filter_quality_(filter_quality),
       matrix_(matrix) {
   matrix_is_decomposable_ = ExtractScale(matrix_, &scale_);
 }
 
-DrawImage::DrawImage(const DrawImage& other)
-    : image_(other.image_),
-      src_rect_(other.src_rect_),
-      filter_quality_(other.filter_quality_),
-      matrix_(other.matrix_),
-      scale_(other.scale_),
-      matrix_is_decomposable_(other.matrix_is_decomposable_) {}
+DrawImage::DrawImage(const DrawImage& other) = default;
+
+DrawImage::~DrawImage() = default;
 
 }  // namespace cc

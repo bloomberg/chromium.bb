@@ -19,6 +19,7 @@
 #include "cc/raster/tile_task.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -64,7 +65,6 @@ class ImageDecodeTaskImpl : public TileTask {
         controller_(controller),
         image_key_(image_key),
         image_(image),
-        image_ref_(skia::SharePtr(image.image())),
         source_prepare_tiles_id_(source_prepare_tiles_id) {}
 
   // Overridden from Task:
@@ -73,7 +73,7 @@ class ImageDecodeTaskImpl : public TileTask {
                  "software", "source_prepare_tiles_id",
                  source_prepare_tiles_id_);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        image_ref_.get());
+        image_.image().get());
     controller_->DecodeImage(image_key_, image_);
   }
 
@@ -90,7 +90,6 @@ class ImageDecodeTaskImpl : public TileTask {
   SoftwareImageDecodeController* controller_;
   SoftwareImageDecodeController::ImageKey image_key_;
   DrawImage image_;
-  skia::RefPtr<const SkImage> image_ref_;
   uint64_t source_prepare_tiles_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
@@ -370,19 +369,19 @@ SoftwareImageDecodeController::DecodeImageInternal(
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "SoftwareImageDecodeController::DecodeImageInternal", "key",
                key.ToString());
-  const SkImage* image = draw_image.image();
+  sk_sp<const SkImage> image = draw_image.image();
   if (!image)
     return nullptr;
 
   switch (key.filter_quality()) {
     case kNone_SkFilterQuality:
     case kLow_SkFilterQuality:
-      return GetOriginalImageDecode(key, *image);
+      return GetOriginalImageDecode(key, std::move(image));
     case kMedium_SkFilterQuality:
       NOTIMPLEMENTED();
       return nullptr;
     case kHigh_SkFilterQuality:
-      return GetScaledImageDecode(key, *image);
+      return GetScaledImageDecode(key, std::move(image));
     default:
       NOTREACHED();
       return nullptr;
@@ -499,10 +498,11 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
 }
 
 std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
-SoftwareImageDecodeController::GetOriginalImageDecode(const ImageKey& key,
-                                                      const SkImage& image) {
+SoftwareImageDecodeController::GetOriginalImageDecode(
+    const ImageKey& key,
+    sk_sp<const SkImage> image) {
   SkImageInfo decoded_info =
-      CreateImageInfo(image.width(), image.height(), format_);
+      CreateImageInfo(image->width(), image->height(), format_);
   std::unique_ptr<base::DiscardableMemory> decoded_pixels;
   {
     TRACE_EVENT0("disabled-by-default-cc.debug",
@@ -517,9 +517,9 @@ SoftwareImageDecodeController::GetOriginalImageDecode(const ImageKey& key,
     TRACE_EVENT0("disabled-by-default-cc.debug",
                  "SoftwareImageDecodeController::GetOriginalImageDecode - "
                  "read pixels");
-    bool result = image.readPixels(decoded_info, decoded_pixels->data(),
-                                   decoded_info.minRowBytes(), 0, 0,
-                                   SkImage::kDisallow_CachingHint);
+    bool result = image->readPixels(decoded_info, decoded_pixels->data(),
+                                    decoded_info.minRowBytes(), 0, 0,
+                                    SkImage::kDisallow_CachingHint);
 
     if (!result) {
       decoded_pixels->Unlock();
@@ -532,12 +532,13 @@ SoftwareImageDecodeController::GetOriginalImageDecode(const ImageKey& key,
 }
 
 std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
-SoftwareImageDecodeController::GetScaledImageDecode(const ImageKey& key,
-                                                    const SkImage& image) {
+SoftwareImageDecodeController::GetScaledImageDecode(
+    const ImageKey& key,
+    sk_sp<const SkImage> image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
-  gfx::Rect full_image_rect(image.width(), image.height());
-  DrawImage original_size_draw_image(&image,
+  gfx::Rect full_image_rect(image->width(), image->height());
+  DrawImage original_size_draw_image(std::move(image),
                                      gfx::RectToSkIRect(full_image_rect),
                                      kNone_SkFilterQuality, SkMatrix::I());
   ImageKey original_size_key =
@@ -887,9 +888,9 @@ SoftwareImageDecodeController::DecodedImage::DecodedImage(
       memory_(std::move(memory)),
       src_rect_offset_(src_rect_offset),
       tracing_id_(tracing_id) {
-  image_ = skia::AdoptRef(SkImage::NewFromRaster(
-      image_info_, memory_->data(), image_info_.minRowBytes(),
-      [](const void* pixels, void* context) {}, nullptr));
+  SkPixmap pixmap(image_info_, memory_->data(), image_info_.minRowBytes());
+  image_ = SkImage::MakeFromRaster(
+      pixmap, [](const void* pixels, void* context) {}, nullptr);
 }
 
 SoftwareImageDecodeController::DecodedImage::~DecodedImage() {

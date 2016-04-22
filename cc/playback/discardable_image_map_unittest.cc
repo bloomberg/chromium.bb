@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -25,9 +26,9 @@ namespace cc {
 namespace {
 
 struct PositionDrawImage {
-  PositionDrawImage(const SkImage* image, const gfx::Rect& image_rect)
-      : image(image), image_rect(image_rect) {}
-  const SkImage* image;
+  PositionDrawImage(sk_sp<const SkImage> image, const gfx::Rect& image_rect)
+      : image(std::move(image)), image_rect(image_rect) {}
+  sk_sp<const SkImage> image;
   gfx::Rect image_rect;
 };
 
@@ -72,14 +73,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
   // |---|---|---|---|
   // | x |   | x |   |
   // |---|---|---|---|
-  skia::RefPtr<SkImage> discardable_image[4][4];
+  sk_sp<SkImage> discardable_image[4][4];
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
         SkPaint paint;
         content_layer_client.add_draw_image(
-            discardable_image[y][x].get(), gfx::Point(x * 512 + 6, y * 512 + 6),
+            discardable_image[y][x], gfx::Point(x * 512 + 6, y * 512 + 6),
             paint);
       }
     }
@@ -106,8 +107,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
           image_map, gfx::Rect(x * 512, y * 512, 500, 500));
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
-        EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
-            << x << " " << y;
+        EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
+                                                                << y;
         EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
       } else {
@@ -120,14 +121,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
   std::vector<PositionDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(512, 512, 2048, 2048));
   EXPECT_EQ(4u, images.size());
-  EXPECT_TRUE(images[0].image == discardable_image[1][2].get());
+  EXPECT_TRUE(images[0].image == discardable_image[1][2]);
   EXPECT_EQ(gfx::Rect(2 * 512 + 6, 512 + 6, 500, 500), images[0].image_rect);
-  EXPECT_TRUE(images[1].image == discardable_image[2][1].get());
+  EXPECT_TRUE(images[1].image == discardable_image[2][1]);
   EXPECT_EQ(gfx::Rect(512 + 6, 2 * 512 + 6, 500, 500), images[1].image_rect);
-  EXPECT_TRUE(images[2].image == discardable_image[2][3].get());
+  EXPECT_TRUE(images[2].image == discardable_image[2][3]);
   EXPECT_EQ(gfx::Rect(3 * 512 + 6, 2 * 512 + 6, 500, 500),
             images[2].image_rect);
-  EXPECT_TRUE(images[3].image == discardable_image[3][2].get());
+  EXPECT_TRUE(images[3].image == discardable_image[3][2]);
   EXPECT_EQ(gfx::Rect(2 * 512 + 6, 3 * 512 + 6, 500, 500),
             images[3].image_rect);
 }
@@ -149,14 +150,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   // |---|---|---|---|
   // | x |   | x |   |
   // |---|---|---|---|
-  skia::RefPtr<SkImage> discardable_image[4][4];
+  sk_sp<SkImage> discardable_image[4][4];
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
         SkPaint paint;
         content_layer_client.add_draw_image(
-            discardable_image[y][x].get(),
+            discardable_image[y][x],
             gfx::Point(1024 + x * 512 + 6, y * 512 + 6), paint);
       }
     }
@@ -183,8 +184,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
           image_map, gfx::Rect(1024 + x * 512, y * 512, 500, 500));
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
-        EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
-            << x << " " << y;
+        EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
+                                                                << y;
         EXPECT_EQ(gfx::Rect(1024 + x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
       } else {
@@ -197,16 +198,16 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
     std::vector<PositionDrawImage> images = GetDiscardableImagesInRect(
         image_map, gfx::Rect(1024 + 512, 512, 2048, 2048));
     EXPECT_EQ(4u, images.size());
-    EXPECT_TRUE(images[0].image == discardable_image[1][2].get());
+    EXPECT_TRUE(images[0].image == discardable_image[1][2]);
     EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 512 + 6, 500, 500),
               images[0].image_rect);
-    EXPECT_TRUE(images[1].image == discardable_image[2][1].get());
+    EXPECT_TRUE(images[1].image == discardable_image[2][1]);
     EXPECT_EQ(gfx::Rect(1024 + 512 + 6, 2 * 512 + 6, 500, 500),
               images[1].image_rect);
-    EXPECT_TRUE(images[2].image == discardable_image[2][3].get());
+    EXPECT_TRUE(images[2].image == discardable_image[2][3]);
     EXPECT_EQ(gfx::Rect(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500),
               images[2].image_rect);
-    EXPECT_TRUE(images[3].image == discardable_image[3][2].get());
+    EXPECT_TRUE(images[3].image == discardable_image[3][2]);
     EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500),
               images[3].image_rect);
   }
@@ -249,14 +250,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
   // |---|---|---|---|
   // | x |   | x |   |
   // |---|---|---|---|
-  skia::RefPtr<SkImage> discardable_image[4][4];
+  sk_sp<SkImage> discardable_image[4][4];
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
         discardable_image[y][x] = CreateDiscardableImage(gfx::Size(500, 500));
         SkPaint paint;
         content_layer_client.add_draw_image(
-            discardable_image[y][x].get(), gfx::Point(x * 512 + 6, y * 512 + 6),
+            discardable_image[y][x], gfx::Point(x * 512 + 6, y * 512 + 6),
             paint);
       }
     }
@@ -283,8 +284,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
           image_map, gfx::Rect(x * 512 + 256, y * 512 + 256, 1, 1));
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
-        EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
-            << x << " " << y;
+        EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
+                                                                << y;
         EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
                   images[0].image_rect);
       } else {
@@ -299,10 +300,10 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   FakeContentLayerClient content_layer_client;
   content_layer_client.set_bounds(visible_rect.size());
 
-  skia::RefPtr<SkImage> discardable_image;
-  discardable_image = CreateDiscardableImage(gfx::Size(1 << 25, 1 << 25));
+  sk_sp<SkImage> discardable_image =
+      CreateDiscardableImage(gfx::Size(1 << 25, 1 << 25));
   SkPaint paint;
-  content_layer_client.add_draw_image(discardable_image.get(), gfx::Point(0, 0),
+  content_layer_client.add_draw_image(discardable_image, gfx::Point(0, 0),
                                       paint);
 
   FakeRecordingSource recording_source;
@@ -322,7 +323,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   std::vector<PositionDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
-  EXPECT_TRUE(images[0].image == discardable_image.get());
+  EXPECT_TRUE(images[0].image == discardable_image);
   EXPECT_EQ(gfx::Rect(0, 0, 1 << 25, 1 << 25), images[0].image_rect);
 }
 
@@ -331,8 +332,7 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
   FakeContentLayerClient content_layer_client;
   content_layer_client.set_bounds(visible_rect.size());
 
-  skia::RefPtr<SkImage> discardable_image;
-  discardable_image = CreateDiscardableImage(gfx::Size(10, 10));
+  sk_sp<SkImage> discardable_image = CreateDiscardableImage(gfx::Size(10, 10));
 
   DiscardableImageMap image_map;
   {
@@ -343,14 +343,14 @@ TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
       generator.canvas()->saveLayer(gfx::RectToSkRect(visible_rect),
                                     paint.get());
     }
-    generator.canvas()->drawImage(discardable_image.get(), 0, 0, nullptr);
+    generator.canvas()->drawImage(discardable_image, 0, 0, nullptr);
     generator.canvas()->restore();
   }
 
   std::vector<PositionDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
   EXPECT_EQ(1u, images.size());
-  EXPECT_TRUE(images[0].image == discardable_image.get());
+  EXPECT_TRUE(images[0].image == discardable_image);
 }
 
 }  // namespace cc

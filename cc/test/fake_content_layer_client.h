@@ -12,27 +12,27 @@
 
 #include "base/compiler_specific.h"
 #include "cc/layers/content_layer_client.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
-
-class SkImage;
 
 namespace cc {
 
 class FakeContentLayerClient : public ContentLayerClient {
  public:
   struct ImageData {
-    ImageData(const SkImage* image,
+    ImageData(sk_sp<const SkImage> image,
               const gfx::Point& point,
               const SkPaint& paint);
-    ImageData(const SkImage* image,
+    ImageData(sk_sp<const SkImage> image,
               const gfx::Transform& transform,
               const SkPaint& paint);
     ImageData(const ImageData& other);
     ~ImageData();
-    skia::RefPtr<const SkImage> image;
+    sk_sp<const SkImage> image;
     gfx::Point point;
     gfx::Transform transform;
     SkPaint paint;
@@ -63,17 +63,17 @@ class FakeContentLayerClient : public ContentLayerClient {
     draw_rects_.push_back(std::make_pair(rect, paint));
   }
 
-  void add_draw_image(const SkImage* image,
+  void add_draw_image(sk_sp<const SkImage> image,
                       const gfx::Point& point,
                       const SkPaint& paint) {
-    ImageData data(image, point, paint);
+    ImageData data(std::move(image), point, paint);
     draw_images_.push_back(data);
   }
 
-  void add_draw_image_with_transform(const SkImage* image,
+  void add_draw_image_with_transform(sk_sp<const SkImage> image,
                                      const gfx::Transform& transform,
                                      const SkPaint& paint) {
-    ImageData data(image, transform, paint);
+    ImageData data(std::move(image), transform, paint);
     draw_images_.push_back(data);
   }
 

@@ -8,15 +8,15 @@
 #include "cc/raster/tile_task.h"
 #include "cc/test/test_context_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
 namespace {
 
-skia::RefPtr<SkImage> CreateImage(int width, int height) {
-  SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+sk_sp<SkImage> CreateImage(int width, int height) {
   SkBitmap bitmap;
-  bitmap.allocPixels(info);
-  return skia::AdoptRef(SkImage::NewFromBitmap(bitmap));
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
+  return SkImage::MakeFromBitmap(bitmap);
 }
 
 SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
@@ -60,14 +60,14 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageSameImage) {
   context_provider->BindToCurrentThread();
   GpuImageDecodeController controller(context_provider.get(),
                                       ResourceFormat::RGBA_8888);
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
   uint64_t prepare_tiles_id = 1;
 
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -75,7 +75,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageSameImage) {
   EXPECT_TRUE(task);
 
   DrawImage another_draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
+      image, SkIRect::MakeWH(image->width(), image->height()), quality,
       CreateMatrix(SkSize::Make(1.5f, 1.5f), is_decomposable));
   scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
@@ -99,20 +99,19 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageDifferentImage) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> first_image = CreateImage(100, 100);
+  sk_sp<SkImage> first_image = CreateImage(100, 100);
   DrawImage first_draw_image(
-      first_image.get(),
-      SkIRect::MakeWH(first_image->width(), first_image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+      first_image, SkIRect::MakeWH(first_image->width(), first_image->height()),
+      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> first_task;
   bool need_unref = controller.GetTaskForImageAndRef(
       first_draw_image, prepare_tiles_id, &first_task);
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(first_task);
 
-  skia::RefPtr<SkImage> second_image = CreateImage(100, 100);
+  sk_sp<SkImage> second_image = CreateImage(100, 100);
   DrawImage second_draw_image(
-      second_image.get(),
+      second_image,
       SkIRect::MakeWH(second_image->width(), second_image->height()), quality,
       CreateMatrix(SkSize::Make(0.25f, 0.25f), is_decomposable));
   scoped_refptr<TileTask> second_task;
@@ -140,10 +139,10 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -177,10 +176,10 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -227,10 +226,10 @@ TEST(GpuImageDecodeControllerTest,
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -276,10 +275,10 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDraw) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -311,10 +310,10 @@ TEST(GpuImageDecodeControllerTest, GetLargeDecodedImageForDraw) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(1, 24000);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(1, 24000);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   bool need_unref =
       controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
@@ -349,10 +348,10 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
   controller.SetCachedItemLimitForTesting(0);
   controller.SetCachedBytesLimitForTesting(0);
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
   scoped_refptr<TileTask> task;
   bool need_unref =
@@ -384,10 +383,10 @@ TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
   controller.SetCachedItemLimitForTesting(0);
   controller.SetCachedBytesLimitForTesting(0);
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
   scoped_refptr<TileTask> task;
   bool need_unref =
@@ -431,10 +430,10 @@ TEST(GpuImageDecodeControllerTest,
   controller.SetCachedItemLimitForTesting(0);
   controller.SetCachedBytesLimitForTesting(0);
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
 
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
@@ -463,10 +462,10 @@ TEST(GpuImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.f, 0.f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.f, 0.f), is_decomposable));
 
   scoped_refptr<TileTask> task;
   bool need_unref =
@@ -493,9 +492,9 @@ TEST(GpuImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  sk_sp<SkImage> image = CreateImage(100, 100);
   DrawImage draw_image(
-      image.get(), SkIRect::MakeXYWH(150, 150, image->width(), image->height()),
+      image, SkIRect::MakeXYWH(150, 150, image->width(), image->height()),
       quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
 
   scoped_refptr<TileTask> task;
@@ -523,10 +522,10 @@ TEST(GpuImageDecodeControllerTest, CanceledTasksDoNotCountAgainstBudget) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  sk_sp<SkImage> image = CreateImage(100, 100);
   DrawImage draw_image(
-      image.get(), SkIRect::MakeXYWH(0, 0, image->width(), image->height()),
-      quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
+      image, SkIRect::MakeXYWH(0, 0, image->width(), image->height()), quality,
+      CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable));
 
   scoped_refptr<TileTask> task;
   bool need_unref =
@@ -553,10 +552,10 @@ TEST(GpuImageDecodeControllerTest, ShouldAggressivelyFreeResources) {
   uint64_t prepare_tiles_id = 1;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  skia::RefPtr<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      image.get(), SkIRect::MakeWH(image->width(), image->height()), quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
   scoped_refptr<TileTask> task;
   {
     bool need_unref =

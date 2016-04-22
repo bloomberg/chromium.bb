@@ -331,6 +331,7 @@
         'playback/clip_path_display_item.h',
         'playback/compositing_display_item.cc',
         'playback/compositing_display_item.h',
+        'playback/decoded_draw_image.cc',
         'playback/decoded_draw_image.h',
         'playback/discardable_image_map.cc',
         'playback/discardable_image_map.h',

@@ -16,7 +16,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
 #include "cc/tiles/image_decode_controller.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImageTextureData;
 
@@ -108,7 +108,7 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
     ~UploadedImageData();
 
     // May be null if image not yet uploaded / prepared.
-    skia::RefPtr<SkImage> image;
+    sk_sp<SkImage> image;
     // True if the image is counting against our memory limits.
     bool budgeted;
     uint32_t ref_count;
@@ -164,7 +164,7 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
 
   const ResourceFormat format_;
   ContextProvider* context_;
-  skia::RefPtr<GrContextThreadSafeProxy> context_threadsafe_proxy_;
+  sk_sp<GrContextThreadSafeProxy> context_threadsafe_proxy_;
 
   // All members below this point must only be accessed while holding |lock_|.
   base::Lock lock_;
@@ -183,7 +183,7 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
   // We can't release GPU backed SkImages without holding the context lock,
   // so we add them to this list and defer deletion until the next time the lock
   // is held.
-  std::vector<skia::RefPtr<SkImage>> images_pending_deletion_;
+  std::vector<sk_sp<SkImage>> images_pending_deletion_;
 };
 
 }  // namespace cc

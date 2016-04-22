@@ -53,7 +53,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
                    const SkPaint* paint) override {
     const SkMatrix& ctm = getTotalMatrix();
     AddImage(
-        image, SkRect::MakeIWH(image->width(), image->height()),
+        sk_ref_sp(image), SkRect::MakeIWH(image->width(), image->height()),
         MapRect(ctm, SkRect::MakeXYWH(x, y, image->width(), image->height())),
         ctm, paint);
   }
@@ -72,7 +72,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     SkMatrix matrix;
     matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
     matrix.postConcat(ctm);
-    AddImage(image, *src, MapRect(ctm, dst), matrix, paint);
+    AddImage(sk_ref_sp(image), *src, MapRect(ctm, dst), matrix, paint);
   }
 
   void onDrawImageNine(const SkImage* image,
@@ -119,7 +119,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     return true;
   }
 
-  void AddImage(const SkImage* image,
+  void AddImage(sk_sp<const SkImage> image,
                 const SkRect& src_rect,
                 const SkRect& rect,
                 const SkMatrix& matrix,
@@ -144,9 +144,9 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
 
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
-    image_set_->push_back(
-        std::make_pair(DrawImage(image, src_irect, filter_quality, matrix),
-                       gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect))));
+    image_set_->push_back(std::make_pair(
+        DrawImage(std::move(image), src_irect, filter_quality, matrix),
+        gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect))));
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
@@ -160,11 +160,11 @@ DiscardableImageMap::DiscardableImageMap() {}
 
 DiscardableImageMap::~DiscardableImageMap() {}
 
-skia::RefPtr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
+sk_sp<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
     const gfx::Size& bounds) {
   DCHECK(all_images_.empty());
-  return skia::AdoptRef(new DiscardableImagesMetadataCanvas(
-      bounds.width(), bounds.height(), &all_images_));
+  return sk_make_sp<DiscardableImagesMetadataCanvas>(
+      bounds.width(), bounds.height(), &all_images_);
 }
 
 void DiscardableImageMap::EndGeneratingMetadata() {

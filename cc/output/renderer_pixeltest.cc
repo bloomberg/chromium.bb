@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -2569,13 +2570,13 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   canvas->drawPoint(0, 1, SK_ColorBLUE);
   canvas->drawPoint(1, 0, SK_ColorBLUE);
   canvas->drawPoint(1, 1, SK_ColorGREEN);
-  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
 
   std::unique_ptr<FakeRecordingSource> recording =
       FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
-  recording->add_draw_image_with_paint(image.get(), gfx::Point(), paint);
+  recording->add_draw_image_with_paint(surface->makeImageSnapshot(),
+                                       gfx::Point(), paint);
   recording->Rerecord();
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFromRecordingSource(recording.get(), false);
@@ -2618,13 +2619,13 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   canvas->drawPoint(0, 1, SK_ColorBLUE);
   canvas->drawPoint(1, 0, SK_ColorBLUE);
   canvas->drawPoint(1, 1, SK_ColorGREEN);
-  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
 
   std::unique_ptr<FakeRecordingSource> recording =
       FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
-  recording->add_draw_image_with_paint(image.get(), gfx::Point(), paint);
+  recording->add_draw_image_with_paint(surface->makeImageSnapshot(),
+                                       gfx::Point(), paint);
   recording->Rerecord();
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFromRecordingSource(recording.get(), false);

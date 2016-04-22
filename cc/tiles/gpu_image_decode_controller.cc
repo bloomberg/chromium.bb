@@ -15,9 +15,9 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu_image_decode_controller.h"
-#include "skia/ext/refptr.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
@@ -65,7 +65,6 @@ class ImageDecodeTaskImpl : public TileTask {
       : TileTask(true),
         controller_(controller),
         image_(draw_image),
-        image_ref_(skia::SharePtr(draw_image.image())),
         source_prepare_tiles_id_(source_prepare_tiles_id) {
     DCHECK(!SkipImage(draw_image));
   }
@@ -89,7 +88,6 @@ class ImageDecodeTaskImpl : public TileTask {
  private:
   GpuImageDecodeController* controller_;
   DrawImage image_;
-  skia::RefPtr<const SkImage> image_ref_;
   const uint64_t source_prepare_tiles_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
@@ -107,7 +105,6 @@ class ImageUploadTaskImpl : public TileTask {
       : TileTask(false),
         controller_(controller),
         image_(draw_image),
-        image_ref_(skia::SharePtr(draw_image.image())),
         source_prepare_tiles_id_(source_prepare_tiles_id) {
     DCHECK(!SkipImage(draw_image));
     dependencies_.push_back(std::move(decode_dependency));
@@ -131,7 +128,6 @@ class ImageUploadTaskImpl : public TileTask {
  private:
   GpuImageDecodeController* controller_;
   DrawImage image_;
-  skia::RefPtr<const SkImage> image_ref_;
   uint64_t source_prepare_tiles_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageUploadTaskImpl);
@@ -165,7 +161,7 @@ GpuImageDecodeController::GpuImageDecodeController(ContextProvider* context,
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
   ContextProvider::ScopedContextLock context_lock(context_);
   context_threadsafe_proxy_ =
-      skia::AdoptRef(context->GrContext()->threadSafeProxy());
+      sk_sp<GrContextThreadSafeProxy>(context->GrContext()->threadSafeProxy());
 }
 
 GpuImageDecodeController::~GpuImageDecodeController() {
@@ -296,10 +292,11 @@ DecodedDrawImage GpuImageDecodeController::GetDecodedImageForDraw(
   // in DrawWithImageFinished.
   UnrefImageDecode(draw_image);
 
-  SkImage* image = image_data->upload.image.get();
+  sk_sp<SkImage> image = image_data->upload.image;
   DCHECK(image || image_data->decode.decode_failure);
 
-  DecodedDrawImage decoded_draw_image(image, draw_image.filter_quality());
+  DecodedDrawImage decoded_draw_image(std::move(image),
+                                      draw_image.filter_quality());
   decoded_draw_image.set_at_raster_decode(image_data->is_at_raster);
   return decoded_draw_image;
 }
@@ -679,22 +676,22 @@ void GpuImageDecodeController::UploadImageIfNecessary(
   // cleaned up so we don't exceed our memory limit during this upload.
   DeletePendingImages();
 
-  skia::RefPtr<SkImage> uploaded_image;
+  sk_sp<SkImage> uploaded_image;
   {
     base::AutoUnlock unlock(lock_);
     switch (image_data->mode) {
       case DecodedDataMode::CPU: {
         SkImageInfo image_info = CreateImageInfoForDrawImage(draw_image);
-        uploaded_image = skia::AdoptRef(SkImage::NewFromRaster(
-            image_info, image_data->decode.data->data(),
-            image_info.minRowBytes(), [](const void*, void*) {}, nullptr));
+        SkPixmap pixmap(image_info, image_data->decode.data->data(),
+                        image_info.minRowBytes());
+        uploaded_image =
+            SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);
         break;
       }
       case DecodedDataMode::GPU: {
-        uploaded_image =
-            skia::AdoptRef(SkImage::NewFromDeferredTextureImageData(
-                context_->GrContext(), image_data->decode.data->data(),
-                SkBudgeted::kNo));
+        uploaded_image = SkImage::MakeFromDeferredTextureImageData(
+            context_->GrContext(), image_data->decode.data->data(),
+            SkBudgeted::kNo);
         break;
       }
     }
