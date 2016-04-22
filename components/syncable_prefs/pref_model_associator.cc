@@ -11,6 +11,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -86,7 +87,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
     const sync_pb::PreferenceSpecifics& preference = GetSpecifics(sync_pref);
     DCHECK(pref_name == preference.name());
     base::JSONReader reader;
-    scoped_ptr<base::Value> sync_value(reader.ReadToValue(preference.value()));
+    std::unique_ptr<base::Value> sync_value(
+        reader.ReadToValue(preference.value()));
     if (!sync_value.get()) {
       LOG(ERROR) << "Failed to deserialize preference value: "
                  << reader.GetErrorMessage();
@@ -96,7 +98,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     if (user_pref_value) {
       DVLOG(1) << "Found user pref value for " << pref_name;
       // We have both server and local values. Merge them.
-      scoped_ptr<base::Value> new_value(
+      std::unique_ptr<base::Value> new_value(
           MergePreference(pref_name, *user_pref_value, *sync_value));
 
       // Update the local preference based on what we got from the
@@ -158,8 +160,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
 syncer::SyncMergeResult PrefModelAssociator::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK_EQ(type_, type);
   DCHECK(CalledOnValidThread());
   DCHECK(pref_service_);
@@ -224,7 +226,7 @@ void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   pref_service_->OnIsSyncingChanged();
 }
 
-scoped_ptr<base::Value> PrefModelAssociator::MergePreference(
+std::unique_ptr<base::Value> PrefModelAssociator::MergePreference(
     const std::string& name,
     const base::Value& local_value,
     const base::Value& server_value) {
@@ -233,13 +235,13 @@ scoped_ptr<base::Value> PrefModelAssociator::MergePreference(
   if (client_) {
     std::string new_pref_name;
     if (client_->IsMergeableListPreference(name))
-      return make_scoped_ptr(MergeListValues(local_value, server_value));
+      return base::WrapUnique(MergeListValues(local_value, server_value));
     if (client_->IsMergeableDictionaryPreference(name))
-      return make_scoped_ptr(MergeDictionaryValues(local_value, server_value));
+      return base::WrapUnique(MergeDictionaryValues(local_value, server_value));
   }
 
   // If this is not a specially handled preference, server wins.
-  return make_scoped_ptr(server_value.DeepCopy());
+  return base::WrapUnique(server_value.DeepCopy());
 }
 
 bool PrefModelAssociator::CreatePrefSyncData(
@@ -388,7 +390,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
       continue;
     }
 
-    scoped_ptr<base::Value> value(ReadPreferenceSpecifics(pref_specifics));
+    std::unique_ptr<base::Value> value(ReadPreferenceSpecifics(pref_specifics));
     if (!value.get()) {
       // Skip values we can't deserialize.
       // TODO(zea): consider taking some further action such as erasing the bad
@@ -414,7 +416,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
 base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference) {
   base::JSONReader reader;
-  scoped_ptr<base::Value> value(reader.ReadToValue(preference.value()));
+  std::unique_ptr<base::Value> value(reader.ReadToValue(preference.value()));
   if (!value.get()) {
     std::string err = "Failed to deserialize preference value: " +
         reader.GetErrorMessage();

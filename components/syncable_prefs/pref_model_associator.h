@@ -6,13 +6,13 @@
 #define COMPONENTS_SYNCABLE_PREFS_PREF_MODEL_ASSOCIATOR_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
@@ -58,8 +58,8 @@ class PrefModelAssociator
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(syncer::ModelType type) override;
 
   // Returns the list of preference names that are registered as syncable, and
@@ -87,9 +87,9 @@ class PrefModelAssociator
   // value always takes precedence. Note that only certain preferences will
   // actually be merged, all others will return a copy of the server value. See
   // the method's implementation for details.
-  scoped_ptr<base::Value> MergePreference(const std::string& name,
-                                          const base::Value& local_value,
-                                          const base::Value& server_value);
+  std::unique_ptr<base::Value> MergePreference(const std::string& name,
+                                               const base::Value& local_value,
+                                               const base::Value& server_value);
 
   // Fills |sync_data| with a sync representation of the preference data
   // provided.
@@ -171,10 +171,10 @@ class PrefModelAssociator
   PrefServiceSyncable* pref_service_;
 
   // Sync's syncer::SyncChange handler. We push all our changes through this.
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Sync's error handler. We use this to create sync errors.
-  scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
+  std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   // The datatype that this associator is responible for, either PREFERENCES or
   // PRIORITY_PREFERENCES.

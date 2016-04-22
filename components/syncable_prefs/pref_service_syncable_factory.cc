@@ -53,26 +53,18 @@ void PrefServiceSyncableFactory::SetPrefModelAssociatorClient(
   pref_model_associator_client_ = pref_model_associator_client;
 }
 
-scoped_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
+std::unique_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
     user_prefs::PrefRegistrySyncable* pref_registry) {
   TRACE_EVENT0("browser", "PrefServiceSyncableFactory::CreateSyncable");
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  scoped_ptr<PrefServiceSyncable> pref_service(
-      new PrefServiceSyncable(
-          pref_notifier,
-          new PrefValueStore(managed_prefs_.get(),
-                             supervised_user_prefs_.get(),
-                             extension_prefs_.get(),
-                             command_line_prefs_.get(),
-                             user_prefs_.get(),
-                             recommended_prefs_.get(),
-                             pref_registry->defaults().get(),
-                             pref_notifier),
-          user_prefs_.get(),
-          pref_registry,
-          pref_model_associator_client_,
-          read_error_callback_,
-          async_));
+  std::unique_ptr<PrefServiceSyncable> pref_service(new PrefServiceSyncable(
+      pref_notifier,
+      new PrefValueStore(managed_prefs_.get(), supervised_user_prefs_.get(),
+                         extension_prefs_.get(), command_line_prefs_.get(),
+                         user_prefs_.get(), recommended_prefs_.get(),
+                         pref_registry->defaults().get(), pref_notifier),
+      user_prefs_.get(), pref_registry, pref_model_associator_client_,
+      read_error_callback_, async_));
   return pref_service;
 }
 
