@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"

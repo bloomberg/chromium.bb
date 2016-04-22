@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/cpp/system/watcher.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/public/cpp/system/watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -42,7 +44,7 @@ class WatcherTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 TEST_F(WatcherTest, WatchBasic) {

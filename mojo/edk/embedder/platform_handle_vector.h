@@ -5,9 +5,9 @@
 #ifndef MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_VECTOR_H_
 #define MOJO_EDK_EMBEDDER_PLATFORM_HANDLE_VECTOR_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -27,7 +27,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandleVectorDeleter {
 };
 
 using ScopedPlatformHandleVectorPtr =
-    scoped_ptr<PlatformHandleVector, PlatformHandleVectorDeleter>;
+    std::unique_ptr<PlatformHandleVector, PlatformHandleVectorDeleter>;
 
 }  // namespace edk
 }  // namespace mojo

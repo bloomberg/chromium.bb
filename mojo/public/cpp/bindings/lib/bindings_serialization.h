@@ -131,7 +131,7 @@ struct SerializationContext {
   // Used to serialize/deserialize associated interface pointers and requests.
   scoped_refptr<MultiplexRouter> router;
 
-  scoped_ptr<WTFStringContext> wtf_string_context;
+  std::unique_ptr<WTFStringContext> wtf_string_context;
 
   // Stashes handles encoded in a message by index.
   SerializedHandleVector handles;

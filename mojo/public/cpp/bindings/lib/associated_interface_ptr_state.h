@@ -6,11 +6,13 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_ASSOCIATED_INTERFACE_PTR_STATE_H_
 
 #include <stdint.h>
+
 #include <algorithm>  // For |std::swap()|.
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -86,7 +88,7 @@ class AssociatedInterfacePtrState {
     version_ = info.version();
     endpoint_client_.reset(new InterfaceEndpointClient(
         AssociatedInterfacePtrInfoHelper::PassHandle(&info), nullptr,
-        make_scoped_ptr(new typename Interface::ResponseValidator_()), false));
+        base::WrapUnique(new typename Interface::ResponseValidator_()), false));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->router = endpoint_client_->router();
   }
@@ -127,8 +129,8 @@ class AssociatedInterfacePtrState {
  private:
   using Proxy = typename Interface::Proxy_;
 
-  scoped_ptr<InterfaceEndpointClient> endpoint_client_;
-  scoped_ptr<Proxy> proxy_;
+  std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
+  std::unique_ptr<Proxy> proxy_;
 
   uint32_t version_;
 

@@ -20,7 +20,7 @@ MappingTable::~MappingTable() {
 }
 
 MojoResult MappingTable::AddMapping(
-    scoped_ptr<PlatformSharedBufferMapping> mapping) {
+    std::unique_ptr<PlatformSharedBufferMapping> mapping) {
   DCHECK(mapping);
 
   if (address_to_mapping_map_.size() >=

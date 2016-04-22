@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
@@ -44,7 +45,7 @@ class PickleBuffer : public Buffer {
   void* Allocate(size_t num_bytes) override;
   PickleBuffer* AsPickleBuffer() override;
 
-  scoped_ptr<Storage> storage_;
+  std::unique_ptr<Storage> storage_;
 
   DISALLOW_COPY_AND_ASSIGN(PickleBuffer);
 };

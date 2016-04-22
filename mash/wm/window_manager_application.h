@@ -123,7 +123,7 @@ class WindowManagerApplication
   // The ShelfLayout object is created once OnEmbed() is called. Until that
   // time |shelf_layout_requests_| stores pending interface requests.
   mojo::BindingSet<mojom::ShelfLayout> shelf_layout_bindings_;
-  std::vector<scoped_ptr<mojo::InterfaceRequest<mojom::ShelfLayout>>>
+  std::vector<std::unique_ptr<mojo::InterfaceRequest<mojom::ShelfLayout>>>
       shelf_layout_requests_;
 
   // |user_window_controller_| is created once OnEmbed() is called. Until that

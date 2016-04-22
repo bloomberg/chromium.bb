@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
 
@@ -38,7 +38,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
 
   // Tries to add a mapping. (Takes ownership of the mapping in all cases; on
   // failure, it will be destroyed.)
-  MojoResult AddMapping(scoped_ptr<PlatformSharedBufferMapping> mapping);
+  MojoResult AddMapping(std::unique_ptr<PlatformSharedBufferMapping> mapping);
   MojoResult RemoveMapping(void* address);
 
  private:

@@ -373,7 +373,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
       sinks_queries_;
 
-  base::ScopedPtrHashMap<MediaSource::Id, scoped_ptr<MediaRoutesQuery>>
+  base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
       routes_queries_;
 
   std::unordered_map<std::string, std::vector<MediaSinkSearchResponseCallback>>

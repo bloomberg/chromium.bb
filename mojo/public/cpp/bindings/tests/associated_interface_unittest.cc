@@ -316,8 +316,8 @@ class TestReceiver {
   base::Thread receiver_thread_;
   int32_t max_value_to_receive_;
 
-  scoped_ptr<IntegerSenderImpl> impl0_;
-  scoped_ptr<IntegerSenderImpl> impl1_;
+  std::unique_ptr<IntegerSenderImpl> impl0_;
+  std::unique_ptr<IntegerSenderImpl> impl1_;
 
   std::vector<int32_t> values_;
 

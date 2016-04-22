@@ -4,13 +4,13 @@
 
 #include "mojo/message_pump/handle_watcher.h"
 
+#include <memory>
 #include <string>
 
 #include "base/at_exit.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -50,8 +50,8 @@ void DeleteWatcherAndForwardResult(
   next_callback.Run(result);
 }
 
-scoped_ptr<base::MessageLoop> CreateMessageLoop(MessageLoopConfig config) {
-  scoped_ptr<base::MessageLoop> loop;
+std::unique_ptr<base::MessageLoop> CreateMessageLoop(MessageLoopConfig config) {
+  std::unique_ptr<base::MessageLoop> loop;
   if (config == MESSAGE_LOOP_CONFIG_DEFAULT)
     loop.reset(new base::MessageLoop());
   else
@@ -147,8 +147,8 @@ class HandleWatcherTest : public testing::TestWithParam<MessageLoopConfig> {
   base::SimpleTestTickClock tick_clock_;
 
  private:
-  scoped_ptr<base::ShadowingAtExitManager> at_exit_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::ShadowingAtExitManager> at_exit_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcherTest);
 };
@@ -430,7 +430,7 @@ void RunStressTest(int count,
       callback_helper.RunUntilGotCallback();
       EXPECT_TRUE(callback_helper.got_callback());
     } else {
-      scoped_ptr<TestData> test_data(new TestData);
+      std::unique_ptr<TestData> test_data(new TestData);
       ASSERT_TRUE(test_data->pipe.handle0.is_valid());
       test_data->watcher.Start(test_data->pipe.handle0.get(),
                     MOJO_HANDLE_SIGNAL_READABLE,
@@ -467,7 +467,7 @@ TEST(HandleWatcherCleanEnvironmentTest, StressTest) {
   // Starts the threads first and then post the task in hopes of having more
   // threads running at once.
   for (int i = 0; i < kThreadCount; ++i) {
-    scoped_ptr<base::Thread> thread(new base::Thread("test thread"));
+    std::unique_ptr<base::Thread> thread(new base::Thread("test thread"));
     if (i % 2) {
       base::Thread::Options thread_options;
       thread_options.message_pump_factory =

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/sys_info.h"
@@ -108,7 +109,7 @@ bool PlatformSharedBuffer::IsReadOnly() const {
   return read_only_;
 }
 
-scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::Map(
+std::unique_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::Map(
     size_t offset,
     size_t length) {
   if (!IsValidMap(offset, length))
@@ -129,7 +130,7 @@ bool PlatformSharedBuffer::IsValidMap(size_t offset, size_t length) {
   return true;
 }
 
-scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::MapNoCheck(
+std::unique_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::MapNoCheck(
     size_t offset,
     size_t length) {
   DCHECK(IsValidMap(offset, length));
@@ -142,10 +143,10 @@ scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::MapNoCheck(
   if (handle == base::SharedMemory::NULLHandle())
     return nullptr;
 
-  scoped_ptr<PlatformSharedBufferMapping> mapping(
+  std::unique_ptr<PlatformSharedBufferMapping> mapping(
       new PlatformSharedBufferMapping(handle, read_only_, offset, length));
   if (mapping->Map())
-    return make_scoped_ptr(mapping.release());
+    return base::WrapUnique(mapping.release());
 
   return nullptr;
 }

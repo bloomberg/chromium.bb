@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/bitmap_uploader/bitmap_uploader_export.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_surface_client.h"

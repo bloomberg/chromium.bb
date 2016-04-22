@@ -190,7 +190,7 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
   command_buffer_->RegisterTransferBuffer(*id, std::move(duped),
                                           static_cast<uint32_t>(size));
 
-  scoped_ptr<gpu::BufferBacking> backing(
+  std::unique_ptr<gpu::BufferBacking> backing(
       new mus::MojoBufferBacking(std::move(handle), memory, size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
   return buffer;
@@ -269,10 +269,11 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
     size_t height,
     unsigned internalformat,
     unsigned usage) {
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer(mus::MojoGpuMemoryBufferImpl::Create(
-      gfx::Size(static_cast<int>(width), static_cast<int>(height)),
-      gpu::DefaultBufferFormatForImageFormat(internalformat),
-      gfx::BufferUsage::SCANOUT));
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
+      mus::MojoGpuMemoryBufferImpl::Create(
+          gfx::Size(static_cast<int>(width), static_cast<int>(height)),
+          gpu::DefaultBufferFormatForImageFormat(internalformat),
+          gfx::BufferUsage::SCANOUT));
   if (!buffer)
     return -1;
 

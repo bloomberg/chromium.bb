@@ -225,7 +225,7 @@ void ShelfDelegateMus::AddItem(
   app_id_to_shelf_id_.insert(std::make_pair(item_id, shelf_id));
   model_->Add(shelf_item);
 
-  scoped_ptr<ShelfItemDelegateMus> item_delegate(new ShelfItemDelegateMus(
+  std::unique_ptr<ShelfItemDelegateMus> item_delegate(new ShelfItemDelegateMus(
       0, item->title.To<base::string16>(), user_window_controller_.get()));
   Shell::GetInstance()->shelf_item_delegate_manager()->SetShelfItemDelegate(
       shelf_id, std::move(item_delegate));

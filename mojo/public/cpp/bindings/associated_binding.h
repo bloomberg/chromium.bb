@@ -5,10 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_BINDING_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -80,7 +81,7 @@ class AssociatedBinding {
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         std::move(handle), &stub_,
-        make_scoped_ptr(new typename Interface::RequestValidator_()),
+        base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_));
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
@@ -135,7 +136,7 @@ class AssociatedBinding {
   }
 
  private:
-  scoped_ptr<internal::InterfaceEndpointClient> endpoint_client_;
+  std::unique_ptr<internal::InterfaceEndpointClient> endpoint_client_;
 
   typename Interface::Stub_ stub_;
   Interface* impl_;

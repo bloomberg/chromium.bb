@@ -5,10 +5,10 @@
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 
 #include <limits>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
@@ -196,7 +196,7 @@ MojoResult MessagePipeDispatcher::WriteMessage(
   }
 
   // We now have enough information to fully allocate the message storage.
-  scoped_ptr<PortsMessage> message = PortsMessage::NewUserMessage(
+  std::unique_ptr<PortsMessage> message = PortsMessage::NewUserMessage(
       header_size + num_bytes, num_ports, num_handles);
   DCHECK(message);
 
@@ -397,7 +397,7 @@ MojoResult MessagePipeDispatcher::ReadMessage(void* bytes,
   // Alright! We have a message and the caller has provided sufficient storage
   // in which to receive it.
 
-  scoped_ptr<PortsMessage> message(
+  std::unique_ptr<PortsMessage> message(
       static_cast<PortsMessage*>(ports_message.release()));
 
   const MessageHeader* header =

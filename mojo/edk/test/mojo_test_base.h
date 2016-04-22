@@ -5,6 +5,7 @@
 #ifndef MOJO_EDK_TEST_MOJO_TEST_BASE_H_
 #define MOJO_EDK_TEST_MOJO_TEST_BASE_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -13,7 +14,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/c/system/types.h"
@@ -143,7 +143,7 @@ class MojoTestBase : public testing::Test {
  private:
   friend class ClientController;
 
-  std::vector<scoped_ptr<ClientController>> clients_;
+  std::vector<std::unique_ptr<ClientController>> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestBase);
 };

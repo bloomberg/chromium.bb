@@ -4,8 +4,9 @@
 
 #include "mojo/edk/embedder/test_embedder.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"

@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/ports/port_ref.h"
 #include "mojo/public/c/system/macros.h"

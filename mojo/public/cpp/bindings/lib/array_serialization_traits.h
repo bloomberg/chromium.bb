@@ -443,7 +443,7 @@ struct ArraySerializationStrategy<MojomType, UserType, true> {
                         SerializationContext* context) {
     DCHECK(!Traits::IsNull(input));
     DCHECK(validate_params);
-    // TODO(rockot): We may want to support nullable (i.e. scoped_ptr<T>)
+    // TODO(rockot): We may want to support nullable (i.e. std::unique_ptr<T>)
     // elements here.
     DCHECK(!validate_params->element_is_nullable);
     size_t element_count = Traits::GetSize(input);

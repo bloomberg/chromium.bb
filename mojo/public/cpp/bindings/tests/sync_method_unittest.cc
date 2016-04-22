@@ -205,7 +205,7 @@ class TestSyncServiceThread {
  private:
   base::Thread thread_;
 
-  scoped_ptr<typename ImplTraits<Interface>::Type> impl_;
+  std::unique_ptr<typename ImplTraits<Interface>::Type> impl_;
 
   mutable base::Lock lock_;
   bool ping_called_;
@@ -271,7 +271,7 @@ class SyncMethodAssociatedTest : public SyncMethodTest {
   }
 
   InterfacePtr<TestSyncMaster> master_ptr_;
-  scoped_ptr<TestSyncMasterImpl> master_impl_;
+  std::unique_ptr<TestSyncMasterImpl> master_impl_;
 
   // An associated interface whose binding lives at the |master_impl_| side.
   TestSyncAssociatedPtrInfo asso_ptr_info_;

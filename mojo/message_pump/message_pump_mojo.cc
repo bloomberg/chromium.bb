@@ -78,8 +78,8 @@ MessagePumpMojo::~MessagePumpMojo() {
 }
 
 // static
-scoped_ptr<base::MessagePump> MessagePumpMojo::Create() {
-  return scoped_ptr<MessagePump>(new MessagePumpMojo());
+std::unique_ptr<base::MessagePump> MessagePumpMojo::Create() {
+  return std::unique_ptr<MessagePump>(new MessagePumpMojo());
 }
 
 // static

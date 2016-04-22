@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"

@@ -4,6 +4,7 @@
 
 #include "mojo/edk/test/mojo_test_base.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -42,8 +43,7 @@ MojoTestBase::~MojoTestBase() {}
 
 MojoTestBase::ClientController& MojoTestBase::StartClient(
     const std::string& client_name) {
-  clients_.push_back(
-      make_scoped_ptr(new ClientController(client_name, this)));
+  clients_.push_back(base::WrapUnique(new ClientController(client_name, this)));
   return *clients_.back();
 }
 

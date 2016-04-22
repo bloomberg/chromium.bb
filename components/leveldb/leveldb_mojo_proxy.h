@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"

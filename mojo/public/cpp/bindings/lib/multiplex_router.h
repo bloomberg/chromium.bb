@@ -9,12 +9,12 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -94,7 +94,7 @@ class MultiplexRouter
   // and notifies all interfaces running on this pipe.
   void RaiseError();
 
-  scoped_ptr<AssociatedGroup> CreateAssociatedGroup();
+  std::unique_ptr<AssociatedGroup> CreateAssociatedGroup();
 
   static MultiplexRouter* GetRouter(AssociatedGroup* associated_group);
 
@@ -232,7 +232,7 @@ class MultiplexRouter
   std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>> endpoints_;
   uint32_t next_interface_id_value_;
 
-  std::deque<scoped_ptr<Task>> tasks_;
+  std::deque<std::unique_ptr<Task>> tasks_;
   // It refers to tasks in |tasks_| and doesn't own any of them.
   std::map<InterfaceId, std::deque<Task*>> sync_message_tasks_;
 

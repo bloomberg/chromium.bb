@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <ostream>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
@@ -101,7 +101,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      scoped_ptr<PlatformSharedBufferMapping>* mapping);
+      std::unique_ptr<PlatformSharedBufferMapping>* mapping);
 
   ///////////// Data pipe consumer API /////////////
 

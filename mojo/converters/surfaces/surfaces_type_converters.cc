@@ -473,11 +473,11 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
 }
 
 // static
-scoped_ptr<cc::RenderPass> ConvertToRenderPass(
+std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const PassPtr& input,
     const CompositorFrameMetadataPtr& metadata,
     CustomSurfaceConverter* custom_converter) {
-  scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
+  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
   pass->SetAll(input->id.To<cc::RenderPassId>(),
                input->output_rect.To<gfx::Rect>(),
@@ -496,14 +496,14 @@ scoped_ptr<cc::RenderPass> ConvertToRenderPass(
     }
     if (!ConvertDrawQuad(quad, metadata, *sqs_iter, pass.get(),
                          custom_converter))
-      return scoped_ptr<cc::RenderPass>();
+      return std::unique_ptr<cc::RenderPass>();
   }
   return pass;
 }
 
 // static
-scoped_ptr<cc::RenderPass>
-TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
+std::unique_ptr<cc::RenderPass>
+TypeConverter<std::unique_ptr<cc::RenderPass>, PassPtr>::Convert(
     const PassPtr& input) {
   mus::mojom::CompositorFrameMetadataPtr metadata;
   return ConvertToRenderPass(input, metadata,
@@ -603,22 +603,23 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
 }
 
 // static
-scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
+std::unique_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
     const CompositorFramePtr& input,
     CustomSurfaceConverter* custom_converter) {
-  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
+  std::unique_ptr<cc::DelegatedFrameData> frame_data(
+      new cc::DelegatedFrameData);
   frame_data->device_scale_factor = 1.f;
   frame_data->resource_list =
       input->resources.To<cc::TransferableResourceArray>();
   frame_data->render_pass_list.reserve(input->passes.size());
   for (size_t i = 0; i < input->passes.size(); ++i) {
-    scoped_ptr<cc::RenderPass> pass = ConvertToRenderPass(
+    std::unique_ptr<cc::RenderPass> pass = ConvertToRenderPass(
         input->passes[i], input->metadata, custom_converter);
     if (!pass)
-      return scoped_ptr<cc::CompositorFrame>();
+      return std::unique_ptr<cc::CompositorFrame>();
     frame_data->render_pass_list.push_back(std::move(pass));
   }
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   cc::CompositorFrameMetadata metadata =
       input->metadata.To<cc::CompositorFrameMetadata>();
   frame->delegated_frame_data = std::move(frame_data);
@@ -626,9 +627,9 @@ scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
 }
 
 // static
-scoped_ptr<cc::CompositorFrame>
-TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr>::Convert(
-    const CompositorFramePtr& input) {
+std::unique_ptr<cc::CompositorFrame>
+TypeConverter<std::unique_ptr<cc::CompositorFrame>,
+              CompositorFramePtr>::Convert(const CompositorFramePtr& input) {
   return ConvertToCompositorFrame(input, nullptr);
 }
 

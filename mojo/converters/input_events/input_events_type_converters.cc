@@ -325,8 +325,8 @@ mus::mojom::EventPtr TypeConverter<mus::mojom::EventPtr, ui::KeyEvent>::Convert(
 }
 
 // static
-scoped_ptr<ui::Event>
-TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
+std::unique_ptr<ui::Event>
+TypeConverter<std::unique_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
     const mus::mojom::EventPtr& input) {
   gfx::PointF location;
   gfx::PointF screen_location;
@@ -340,7 +340,7 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
   switch (input->action) {
     case mus::mojom::EventType::KEY_PRESSED:
     case mus::mojom::EventType::KEY_RELEASED: {
-      scoped_ptr<ui::KeyEvent> key_event;
+      std::unique_ptr<ui::KeyEvent> key_event;
       if (input->key_data->is_char) {
         key_event.reset(new ui::KeyEvent(
             static_cast<base::char16>(input->key_data->character),
@@ -355,11 +355,11 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
             static_cast<ui::KeyboardCode>(input->key_data->key_code),
             input->flags));
       }
-      key_event->SetExtendedKeyEventData(scoped_ptr<ui::ExtendedKeyEventData>(
-          new MojoExtendedKeyEventData(
-              static_cast<int32_t>(input->key_data->windows_key_code),
-              input->key_data->text,
-              input->key_data->unmodified_text)));
+      key_event->SetExtendedKeyEventData(
+          std::unique_ptr<ui::ExtendedKeyEventData>(
+              new MojoExtendedKeyEventData(
+                  static_cast<int32_t>(input->key_data->windows_key_code),
+                  input->key_data->text, input->key_data->unmodified_text)));
       return std::move(key_event);
     }
     case mus::mojom::EventType::POINTER_DOWN:
@@ -370,7 +370,7 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
       switch (input->pointer_data->kind) {
         case mus::mojom::PointerKind::MOUSE: {
           // TODO: last flags isn't right. Need to send changed_flags.
-          scoped_ptr<ui::MouseEvent> event(new ui::MouseEvent(
+          std::unique_ptr<ui::MouseEvent> event(new ui::MouseEvent(
               MojoMouseEventTypeToUIEvent(input), gfx::Point(), gfx::Point(),
               ui::EventTimeForNow(), ui::EventFlags(input->flags),
               ui::EventFlags(input->flags)));
@@ -380,7 +380,7 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
         } break;
         case mus::mojom::PointerKind::TOUCH: {
           DCHECK(input->pointer_data->brush_data);
-          scoped_ptr<ui::TouchEvent> touch_event(new ui::TouchEvent(
+          std::unique_ptr<ui::TouchEvent> touch_event(new ui::TouchEvent(
               MojoTouchEventTypeToUIEvent(input), gfx::Point(),
               ui::EventFlags(input->flags), input->pointer_data->pointer_id,
               base::TimeDelta::FromInternalValue(input->time_stamp),
@@ -398,13 +398,13 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
     } break;
     case mus::mojom::EventType::WHEEL: {
       DCHECK(input->pointer_data && input->pointer_data->wheel_data);
-      scoped_ptr<ui::MouseEvent> pre_wheel_event(new ui::MouseEvent(
+      std::unique_ptr<ui::MouseEvent> pre_wheel_event(new ui::MouseEvent(
           MojoWheelEventTypeToUIEvent(input), gfx::Point(), gfx::Point(),
           ui::EventTimeForNow(), ui::EventFlags(input->flags),
           ui::EventFlags(input->flags)));
       pre_wheel_event->set_location_f(location);
       pre_wheel_event->set_root_location_f(screen_location);
-      scoped_ptr<ui::MouseEvent> wheel_event(new ui::MouseWheelEvent(
+      std::unique_ptr<ui::MouseEvent> wheel_event(new ui::MouseWheelEvent(
           *pre_wheel_event,
           static_cast<int>(input->pointer_data->wheel_data->delta_x),
           static_cast<int>(input->pointer_data->wheel_data->delta_y)));

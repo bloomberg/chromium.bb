@@ -86,9 +86,9 @@ void SetWebMouseEventLocation(const mus::mojom::LocationData& location_data,
   web_event->globalY = static_cast<int>(location_data.screen_y);
 }
 
-scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
+std::unique_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
     const mus::mojom::EventPtr& event) {
-  scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
+  std::unique_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
   web_event->pointerType =
       EventPointerKindToWebPointerType(event->pointer_data->kind);
 
@@ -129,9 +129,10 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
   return std::move(web_event);
 }
 
-scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
+std::unique_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
     const mus::mojom::EventPtr& event) {
-  scoped_ptr<blink::WebKeyboardEvent> web_event(new blink::WebKeyboardEvent);
+  std::unique_ptr<blink::WebKeyboardEvent> web_event(
+      new blink::WebKeyboardEvent);
 
   web_event->modifiers = EventFlagsToWebInputEventModifiers(event->flags);
   web_event->timeStampSeconds = EventTimeToWebEventTime(event);
@@ -162,11 +163,11 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
   return std::move(web_event);
 }
 
-scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
+std::unique_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
     const mus::mojom::EventPtr& event) {
   DCHECK(event->pointer_data && event->pointer_data->wheel_data);
   const mus::mojom::WheelData& wheel_data = *event->pointer_data->wheel_data;
-  scoped_ptr<blink::WebMouseWheelEvent> web_event(
+  std::unique_ptr<blink::WebMouseWheelEvent> web_event(
       new blink::WebMouseWheelEvent);
   web_event->type = blink::WebInputEvent::MouseWheel;
   web_event->button = blink::WebMouseEvent::ButtonNone;
@@ -250,9 +251,9 @@ void SetWebTouchEventLocation(const mus::mojom::PointerData& pointer_data,
   }
 }
 
-scoped_ptr<blink::WebInputEvent> BuildWebTouchEvent(
+std::unique_ptr<blink::WebInputEvent> BuildWebTouchEvent(
     const mus::mojom::EventPtr& event) {
-  scoped_ptr<blink::WebTouchEvent> web_event(new blink::WebTouchEvent);
+  std::unique_ptr<blink::WebTouchEvent> web_event(new blink::WebTouchEvent);
 
   // TODO(jonross): we will need to buffer input events, as blink expects all
   // active touch points to be in each WebInputEvent (crbug.com/578160)
@@ -294,9 +295,9 @@ scoped_ptr<blink::WebInputEvent> BuildWebTouchEvent(
 }  // namespace
 
 // static
-scoped_ptr<blink::WebInputEvent>
-TypeConverter<scoped_ptr<blink::WebInputEvent>, mus::mojom::EventPtr>::Convert(
-    const mus::mojom::EventPtr& event) {
+std::unique_ptr<blink::WebInputEvent> TypeConverter<
+    std::unique_ptr<blink::WebInputEvent>,
+    mus::mojom::EventPtr>::Convert(const mus::mojom::EventPtr& event) {
   switch (event->action) {
     case mus::mojom::EventType::POINTER_DOWN:
     case mus::mojom::EventType::POINTER_UP:

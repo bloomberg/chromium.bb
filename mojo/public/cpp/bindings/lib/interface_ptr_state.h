@@ -6,13 +6,15 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_STATE_H_
 
 #include <stdint.h>
+
 #include <algorithm>  // For |std::swap()|.
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -316,15 +318,15 @@ class InterfacePtrState<Interface, true> {
     router_ = new MultiplexRouter(true, std::move(handle_));
     endpoint_client_.reset(new InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
-        make_scoped_ptr(new typename Interface::ResponseValidator_()), false));
+        base::WrapUnique(new typename Interface::ResponseValidator_()), false));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->router = endpoint_client_->router();
   }
 
   scoped_refptr<MultiplexRouter> router_;
 
-  scoped_ptr<InterfaceEndpointClient> endpoint_client_;
-  scoped_ptr<Proxy> proxy_;
+  std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
+  std::unique_ptr<Proxy> proxy_;
 
   // |router_| (as well as other members above) is not initialized until
   // read/write with the message pipe handle is needed. |handle_| is valid

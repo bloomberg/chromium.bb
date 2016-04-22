@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <functional>
+#include <memory>
 #include <set>
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -45,7 +45,7 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
 
   // Static factory function (for using with |base::Thread::Options|, wrapped
   // using |base::Bind()|).
-  static scoped_ptr<base::MessagePump> Create();
+  static std::unique_ptr<base::MessagePump> Create();
 
   // Returns the MessagePumpMojo instance of the current thread, if it exists.
   static MessagePumpMojo* current();

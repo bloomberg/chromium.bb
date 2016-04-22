@@ -20,6 +20,8 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
+#include <memory>
+
 namespace {
 
 using blink::ScreenWakeLock;
@@ -54,7 +56,7 @@ private:
         mojo::Binding<WakeLockService> m_binding;
         MockServiceRegistry* const m_registry;
     };
-    scoped_ptr<MockWakeLockService> m_mockWakeLockService;
+    std::unique_ptr<MockWakeLockService> m_mockWakeLockService;
 
     bool m_wakeLockStatus;
 };

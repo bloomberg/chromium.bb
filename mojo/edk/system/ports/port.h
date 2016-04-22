@@ -5,13 +5,13 @@
 #ifndef MOJO_EDK_SYSTEM_PORTS_PORT_H_
 #define MOJO_EDK_SYSTEM_PORTS_PORT_H_
 
+#include <memory>
 #include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/ports/message_queue.h"
 #include "mojo/edk/system/ports/user_data.h"
@@ -37,7 +37,7 @@ class Port : public base::RefCountedThreadSafe<Port> {
   uint64_t next_sequence_num_to_send;
   uint64_t last_sequence_num_to_receive;
   MessageQueue message_queue;
-  scoped_ptr<std::pair<NodeName, ScopedMessage>> send_on_proxy_removal;
+  std::unique_ptr<std::pair<NodeName, ScopedMessage>> send_on_proxy_removal;
   scoped_refptr<UserData> user_data;
   bool remove_proxy_on_last_message;
   bool peer_closed;

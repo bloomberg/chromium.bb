@@ -9,12 +9,12 @@
 
 #include <algorithm>
 #include <deque>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -461,8 +461,8 @@ class ChannelPosix : public Channel,
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These watchers must only be accessed on the IO thread.
-  scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> read_watcher_;
-  scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> write_watcher_;
+  std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> read_watcher_;
+  std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> write_watcher_;
 
   std::deque<PlatformHandle> incoming_platform_handles_;
 

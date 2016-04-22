@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
@@ -92,7 +92,7 @@ class MOJO_SYSTEM_IMPL_EXPORT WaitSetDispatcher : public Dispatcher {
   AwakableList awakable_list_;
 
   // Waiter used to wait on dispatchers.
-  scoped_ptr<Waiter> waiter_;
+  std::unique_ptr<Waiter> waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitSetDispatcher);
 };

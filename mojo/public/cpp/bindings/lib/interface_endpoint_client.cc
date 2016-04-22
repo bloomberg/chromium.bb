@@ -5,11 +5,13 @@
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -126,7 +128,7 @@ bool InterfaceEndpointClient::HandleIncomingMessageThunk::Accept(
 InterfaceEndpointClient::InterfaceEndpointClient(
     ScopedInterfaceEndpointHandle handle,
     MessageReceiverWithResponderStatus* receiver,
-    scoped_ptr<MessageFilter> payload_validator,
+    std::unique_ptr<MessageFilter> payload_validator,
     bool expect_sync_requests)
     : handle_(std::move(handle)),
       incoming_receiver_(receiver),
@@ -215,14 +217,14 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
 
   if (!message->has_flag(kMessageIsSync)) {
     // We assume ownership of |responder|.
-    async_responders_[request_id] = make_scoped_ptr(responder);
+    async_responders_[request_id] = base::WrapUnique(responder);
     return true;
   }
 
   bool response_received = false;
-  scoped_ptr<MessageReceiver> sync_responder(responder);
+  std::unique_ptr<MessageReceiver> sync_responder(responder);
   sync_responses_.insert(std::make_pair(
-      request_id, make_scoped_ptr(new SyncResponseInfo(&response_received))));
+      request_id, base::WrapUnique(new SyncResponseInfo(&response_received))));
 
   base::WeakPtr<InterfaceEndpointClient> weak_self =
       weak_ptr_factory_.GetWeakPtr();
@@ -233,7 +235,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
     if (response_received) {
-      scoped_ptr<Message> response = std::move(iter->second->response);
+      std::unique_ptr<Message> response = std::move(iter->second->response);
       ignore_result(sync_responder->Accept(response.get()));
     }
     sync_responses_.erase(iter);
@@ -287,7 +289,7 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
     auto it = async_responders_.find(request_id);
     if (it == async_responders_.end())
       return false;
-    scoped_ptr<MessageReceiver> responder = std::move(it->second);
+    std::unique_ptr<MessageReceiver> responder = std::move(it->second);
     async_responders_.erase(it);
     return responder->Accept(message);
   } else {

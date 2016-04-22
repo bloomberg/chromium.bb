@@ -5,8 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -180,9 +181,9 @@ class Connector : public MessageReceiver {
 
   // If sending messages is allowed from multiple threads, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.
-  scoped_ptr<base::Lock> lock_;
+  std::unique_ptr<base::Lock> lock_;
 
-  scoped_ptr<SyncHandleWatcher> sync_watcher_;
+  std::unique_ptr<SyncHandleWatcher> sync_watcher_;
   bool allow_woken_up_by_others_;
   // If non-zero, currently the control flow is inside the sync handle watcher
   // callback.

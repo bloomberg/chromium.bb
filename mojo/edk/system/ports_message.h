@@ -5,9 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_PORTS_MESSAGE_H__
 #define MOJO_EDK_SYSTEM_PORTS_MESSAGE_H__
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/ports/message.h"
@@ -19,9 +19,9 @@ class NodeController;
 
 class PortsMessage : public ports::Message {
  public:
-  static scoped_ptr<PortsMessage> NewUserMessage(size_t num_payload_bytes,
-                                                 size_t num_ports,
-                                                 size_t num_handles);
+  static std::unique_ptr<PortsMessage> NewUserMessage(size_t num_payload_bytes,
+                                                      size_t num_ports,
+                                                      size_t num_handles);
 
   ~PortsMessage() override;
 

@@ -5,10 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_WATCHER_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_WATCHER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -93,7 +94,7 @@ class Watcher {
   // access from any thread.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_ptr<MessageLoopObserver> message_loop_observer_;
+  std::unique_ptr<MessageLoopObserver> message_loop_observer_;
 
   // A persistent weak reference to this Watcher which can be passed to the
   // Dispatcher any time this object should be signalled. Safe to access (but

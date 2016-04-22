@@ -5,8 +5,9 @@
 #ifndef MOJO_EDK_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 #define MOJO_EDK_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"

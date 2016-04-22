@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_LEVELDB_APP_H_
 #define COMPONENTS_LEVELDB_LEVELDB_APP_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"

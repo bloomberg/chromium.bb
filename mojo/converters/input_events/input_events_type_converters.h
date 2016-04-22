@@ -5,7 +5,8 @@
 #ifndef MOJO_CONVERTERS_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
 #define MOJO_CONVERTERS_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "mojo/converters/input_events/mojo_input_events_export.h"
 #include "ui/events/event.h"
@@ -39,8 +40,8 @@ struct MOJO_INPUT_EVENTS_EXPORT
 
 template <>
 struct MOJO_INPUT_EVENTS_EXPORT
-    TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr> {
-  static scoped_ptr<ui::Event> Convert(const mus::mojom::EventPtr& input);
+    TypeConverter<std::unique_ptr<ui::Event>, mus::mojom::EventPtr> {
+  static std::unique_ptr<ui::Event> Convert(const mus::mojom::EventPtr& input);
 };
 
 }  // namespace mojo

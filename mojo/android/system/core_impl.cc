@@ -7,13 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/CoreImpl_jni.h"
 #include "mojo/message_pump/handle_watcher.h"
@@ -39,7 +40,7 @@ void AsyncWaitCallback(mojo::common::HandleWatcher* watcher,
                        void* data,
                        MojoResult result) {
   delete watcher;
-  scoped_ptr<AsyncWaitCallbackData> callback_data(
+  std::unique_ptr<AsyncWaitCallbackData> callback_data(
       static_cast<AsyncWaitCallbackData*>(data));
   mojo::android::Java_CoreImpl_onAsyncWaitResult(
       base::android::AttachCurrentThread(),
@@ -401,7 +402,7 @@ static void CancelAsyncWait(JNIEnv* env,
     // the data_ptr.
     return;
   }
-  scoped_ptr<AsyncWaitCallbackData> deleter(
+  std::unique_ptr<AsyncWaitCallbackData> deleter(
       reinterpret_cast<AsyncWaitCallbackData*>(data_ptr));
   delete reinterpret_cast<common::HandleWatcher*>(
       static_cast<MojoAsyncWaitID>(id));

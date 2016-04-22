@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/lib/pickle_buffer.h"
 
@@ -93,7 +93,7 @@ class Message {
  private:
   void CloseHandles();
 
-  scoped_ptr<internal::PickleBuffer> buffer_;
+  std::unique_ptr<internal::PickleBuffer> buffer_;
   std::vector<Handle> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(Message);
@@ -122,7 +122,8 @@ class MessageReceiverWithResponder : public MessageReceiver {
   // |responder| and will delete it after calling |responder->Accept| or upon
   // its own destruction.
   //
-  // TODO(yzshen): consider changing |responder| to scoped_ptr<MessageReceiver>.
+  // TODO(yzshen): consider changing |responder| to
+  // std::unique_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
       WARN_UNUSED_RESULT = 0;
 };
@@ -160,7 +161,8 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
   // |responder| and will delete it after calling |responder->Accept| or upon
   // its own destruction.
   //
-  // TODO(yzshen): consider changing |responder| to scoped_ptr<MessageReceiver>.
+  // TODO(yzshen): consider changing |responder| to
+  // std::unique_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message,
                                    MessageReceiverWithStatus* responder)
       WARN_UNUSED_RESULT = 0;

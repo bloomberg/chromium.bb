@@ -28,8 +28,8 @@ enum MessageLoopConfig {
   MESSAGE_LOOP_CONFIG_MOJO = 1
 };
 
-scoped_ptr<base::MessageLoop> CreateMessageLoop(MessageLoopConfig config) {
-  scoped_ptr<base::MessageLoop> loop;
+std::unique_ptr<base::MessageLoop> CreateMessageLoop(MessageLoopConfig config) {
+  std::unique_ptr<base::MessageLoop> loop;
   if (config == MESSAGE_LOOP_CONFIG_DEFAULT)
     loop.reset(new base::MessageLoop());
   else
@@ -78,7 +78,7 @@ class HandleWatcherPerftest : public testing::TestWithParam<MessageLoopConfig> {
   }
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcherPerftest);
 };
@@ -117,7 +117,7 @@ TEST_P(HandleWatcherPerftest, StartAllThenStop_1000Handles) {
   // Create separately from the start/stop loops to avoid affecting the
   // benchmark.
   for (uint64_t i = 0; i < kHandles; i++) {
-    scoped_ptr<TestData> test_data(new TestData);
+    std::unique_ptr<TestData> test_data(new TestData);
     ASSERT_TRUE(test_data->pipe.handle0.is_valid());
     data_vector.push_back(std::move(test_data));
   }
@@ -176,7 +176,7 @@ TEST_P(HandleWatcherPerftest, StartAndSignal_1000Waiting) {
   };
   ScopedVector<TestData> data_vector;
   for (uint64_t i = 0; i < kWaitingHandles; i++) {
-    scoped_ptr<TestData> test_data(new TestData);
+    std::unique_ptr<TestData> test_data(new TestData);
     ASSERT_TRUE(test_data->pipe.handle0.is_valid());
     test_data->watcher.Start(
         test_data->pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE,

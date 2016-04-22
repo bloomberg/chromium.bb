@@ -15,7 +15,7 @@ void SendDataPipeControlMessage(NodeController* node_controller,
                                 const ports::PortRef& port,
                                 DataPipeCommand command,
                                 uint32_t num_bytes) {
-  scoped_ptr<PortsMessage> message =
+  std::unique_ptr<PortsMessage> message =
       PortsMessage::NewUserMessage(sizeof(DataPipeControlMessage), 0, 0);
   CHECK(message);
 

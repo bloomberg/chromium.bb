@@ -4,16 +4,18 @@
 
 #include "mojo/edk/system/ports_message.h"
 
+#include "base/memory/ptr_util.h"
 #include "mojo/edk/system/node_channel.h"
 
 namespace mojo {
 namespace edk {
 
 // static
-scoped_ptr<PortsMessage> PortsMessage::NewUserMessage(size_t num_payload_bytes,
-                                                      size_t num_ports,
-                                                      size_t num_handles) {
-  return make_scoped_ptr(
+std::unique_ptr<PortsMessage> PortsMessage::NewUserMessage(
+    size_t num_payload_bytes,
+    size_t num_ports,
+    size_t num_handles) {
+  return base::WrapUnique(
       new PortsMessage(num_payload_bytes, num_ports, num_handles));
 }
 

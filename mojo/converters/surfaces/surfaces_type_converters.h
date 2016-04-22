@@ -5,7 +5,8 @@
 #ifndef MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
 #define MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
@@ -77,7 +78,7 @@ struct MOJO_SURFACES_EXPORT
       const cc::SharedQuadState& input);
 };
 
-scoped_ptr<cc::RenderPass> ConvertToRenderPass(
+std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     const mus::mojom::PassPtr& input,
     const mus::mojom::CompositorFrameMetadataPtr& metadata,
     CustomSurfaceConverter* custom_converter);
@@ -89,8 +90,9 @@ struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::PassPtr, cc::RenderPass> {
 
 template <>
 struct MOJO_SURFACES_EXPORT
-    TypeConverter<scoped_ptr<cc::RenderPass>, mus::mojom::PassPtr> {
-  static scoped_ptr<cc::RenderPass> Convert(const mus::mojom::PassPtr& input);
+    TypeConverter<std::unique_ptr<cc::RenderPass>, mus::mojom::PassPtr> {
+  static std::unique_ptr<cc::RenderPass> Convert(
+      const mus::mojom::PassPtr& input);
 };
 
 // Types from compositor_frame.mojom
@@ -135,9 +137,9 @@ struct MOJO_SURFACES_EXPORT
       const mus::mojom::CompositorFrameMetadataPtr& input);
 };
 
-MOJO_SURFACES_EXPORT scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
-    const mus::mojom::CompositorFramePtr& input,
-    CustomSurfaceConverter* custom_converter);
+MOJO_SURFACES_EXPORT std::unique_ptr<cc::CompositorFrame>
+ConvertToCompositorFrame(const mus::mojom::CompositorFramePtr& input,
+                         CustomSurfaceConverter* custom_converter);
 
 template <>
 struct MOJO_SURFACES_EXPORT
@@ -147,9 +149,9 @@ struct MOJO_SURFACES_EXPORT
 };
 
 template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<scoped_ptr<cc::CompositorFrame>,
+struct MOJO_SURFACES_EXPORT TypeConverter<std::unique_ptr<cc::CompositorFrame>,
                                           mus::mojom::CompositorFramePtr> {
-  static scoped_ptr<cc::CompositorFrame> Convert(
+  static std::unique_ptr<cc::CompositorFrame> Convert(
       const mus::mojom::CompositorFramePtr& input);
 };
 

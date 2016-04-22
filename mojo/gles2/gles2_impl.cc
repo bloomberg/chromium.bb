@@ -42,7 +42,7 @@ MojoGLES2Context MojoGLES2CreateContext(MojoHandle handle,
     }
   }
   attribs.push_back(kNone);
-  scoped_ptr<GLES2Context> client(new GLES2Context(
+  std::unique_ptr<GLES2Context> client(new GLES2Context(
       attribs, std::move(scoped_handle), lost_callback, closure));
   if (!client->Initialize())
     client.reset();

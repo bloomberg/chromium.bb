@@ -86,8 +86,8 @@ class NativeWidgetMusTest : public ViewsTestBase {
   ~NativeWidgetMusTest() override {}
 
   // Creates a test widget. Takes ownership of |delegate|.
-  scoped_ptr<Widget> CreateWidget(TestWidgetDelegate* delegate) {
-    scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> CreateWidget(TestWidgetDelegate* delegate) {
+    std::unique_ptr<Widget> widget(new Widget());
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.delegate = delegate;
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -103,7 +103,7 @@ class NativeWidgetMusTest : public ViewsTestBase {
 // Tests communication of activation and focus between Widget and
 // NativeWidgetMus.
 TEST_F(NativeWidgetMusTest, OnActivationChanged) {
-  scoped_ptr<Widget> widget(CreateWidget(nullptr));
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
   widget->Show();
 
   // Track activation, focus and blur events.

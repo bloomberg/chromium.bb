@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
@@ -69,15 +70,16 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
   // must be contained in [0, |num_bytes|], and |length| must be at least 1.
   // Returns null on failure.
-  scoped_ptr<PlatformSharedBufferMapping> Map(size_t offset, size_t length);
+  std::unique_ptr<PlatformSharedBufferMapping> Map(size_t offset,
+                                                   size_t length);
 
   // Checks if |offset| and |length| are valid arguments.
   bool IsValidMap(size_t offset, size_t length);
 
   // Like |Map()|, but doesn't check its arguments (which should have been
   // preflighted using |IsValidMap()|).
-  scoped_ptr<PlatformSharedBufferMapping> MapNoCheck(size_t offset,
-                                                     size_t length);
+  std::unique_ptr<PlatformSharedBufferMapping> MapNoCheck(size_t offset,
+                                                          size_t length);
 
   // Duplicates the underlying platform handle and passes it to the caller.
   ScopedPlatformHandle DuplicatePlatformHandle();
@@ -119,11 +121,11 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   const bool read_only_;
 
   base::Lock lock_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
 
   // A separate read-only shared memory for platforms that need it (i.e. Linux
   // with sync broker).
-  scoped_ptr<base::SharedMemory> ro_shared_memory_;
+  std::unique_ptr<base::SharedMemory> ro_shared_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSharedBuffer);
 };

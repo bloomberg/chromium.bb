@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -241,7 +242,7 @@ class MultiplexRouter::InterfaceEndpoint
   // used exclusively on the client's thread. They may be accessed outside of
   // the router's lock.
 
-  scoped_ptr<SyncHandleWatcher> sync_watcher_;
+  std::unique_ptr<SyncHandleWatcher> sync_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceEndpoint);
 };
@@ -249,16 +250,17 @@ class MultiplexRouter::InterfaceEndpoint
 struct MultiplexRouter::Task {
  public:
   // Doesn't take ownership of |message| but takes its contents.
-  static scoped_ptr<Task> CreateMessageTask(Message* message) {
+  static std::unique_ptr<Task> CreateMessageTask(Message* message) {
     Task* task = new Task(MESSAGE);
     task->message.reset(new Message);
     message->MoveTo(task->message.get());
-    return make_scoped_ptr(task);
+    return base::WrapUnique(task);
   }
-  static scoped_ptr<Task> CreateNotifyErrorTask(InterfaceEndpoint* endpoint) {
+  static std::unique_ptr<Task> CreateNotifyErrorTask(
+      InterfaceEndpoint* endpoint) {
     Task* task = new Task(NOTIFY_ERROR);
     task->endpoint_to_notify = endpoint;
-    return make_scoped_ptr(task);
+    return base::WrapUnique(task);
   }
 
   ~Task() {}
@@ -266,7 +268,7 @@ struct MultiplexRouter::Task {
   bool IsMessageTask() const { return type == MESSAGE; }
   bool IsNotifyErrorTask() const { return type == NOTIFY_ERROR; }
 
-  scoped_ptr<Message> message;
+  std::unique_ptr<Message> message;
   scoped_refptr<InterfaceEndpoint> endpoint_to_notify;
 
   enum Type { MESSAGE, NOTIFY_ERROR };
@@ -430,8 +432,8 @@ void MultiplexRouter::RaiseError() {
   }
 }
 
-scoped_ptr<AssociatedGroup> MultiplexRouter::CreateAssociatedGroup() {
-  scoped_ptr<AssociatedGroup> group(new AssociatedGroup);
+std::unique_ptr<AssociatedGroup> MultiplexRouter::CreateAssociatedGroup() {
+  std::unique_ptr<AssociatedGroup> group(new AssociatedGroup);
   group->router_ = this;
   return group;
 }
@@ -574,7 +576,7 @@ void MultiplexRouter::ProcessTasks(ClientCallBehavior client_call_behavior) {
     return;
 
   while (!tasks_.empty()) {
-    scoped_ptr<Task> task(std::move(tasks_.front()));
+    std::unique_ptr<Task> task(std::move(tasks_.front()));
     tasks_.pop_front();
 
     InterfaceId id = kInvalidInterfaceId;
@@ -620,7 +622,7 @@ bool MultiplexRouter::ProcessFirstSyncMessageForEndpoint(InterfaceId id) {
   iter->second.pop_front();
 
   DCHECK(task->IsMessageTask());
-  scoped_ptr<Message> message(std::move(task->message));
+  std::unique_ptr<Message> message(std::move(task->message));
 
   // Note: after this call, |task| and  |iter| may be invalidated.
   bool processed = ProcessIncomingMessage(

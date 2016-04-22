@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,8 @@ TEST(PlatformSharedBufferTest, Basic) {
   // Map it all, scribble some stuff, and then unmap it.
   {
     EXPECT_TRUE(buffer->IsValidMap(0, kNumBytes));
-    scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kNumBytes));
+    std::unique_ptr<PlatformSharedBufferMapping> mapping(
+        buffer->Map(0, kNumBytes));
     ASSERT_TRUE(mapping);
     ASSERT_TRUE(mapping->GetBase());
     int* stuff = static_cast<int*>(mapping->GetBase());
@@ -51,7 +52,7 @@ TEST(PlatformSharedBufferTest, Basic) {
   {
     ASSERT_TRUE(buffer->IsValidMap(0, kNumBytes));
     // Use |MapNoCheck()| this time.
-    scoped_ptr<PlatformSharedBufferMapping> mapping1(
+    std::unique_ptr<PlatformSharedBufferMapping> mapping1(
         buffer->MapNoCheck(0, kNumBytes));
     ASSERT_TRUE(mapping1);
     ASSERT_TRUE(mapping1->GetBase());
@@ -59,7 +60,7 @@ TEST(PlatformSharedBufferTest, Basic) {
     for (size_t i = 0; i < kNumInts; i++)
       EXPECT_EQ(static_cast<int>(i) + kFudge, stuff1[i]) << i;
 
-    scoped_ptr<PlatformSharedBufferMapping> mapping2(
+    std::unique_ptr<PlatformSharedBufferMapping> mapping2(
         buffer->Map((kNumInts / 2) * sizeof(int), 2 * sizeof(int)));
     ASSERT_TRUE(mapping2);
     ASSERT_TRUE(mapping2->GetBase());
@@ -83,7 +84,7 @@ TEST(PlatformSharedBufferTest, Basic) {
   // it to be.
   {
     EXPECT_TRUE(buffer->IsValidMap(sizeof(int), kNumBytes - sizeof(int)));
-    scoped_ptr<PlatformSharedBufferMapping> mapping(
+    std::unique_ptr<PlatformSharedBufferMapping> mapping(
         buffer->Map(sizeof(int), kNumBytes - sizeof(int)));
     ASSERT_TRUE(mapping);
     ASSERT_TRUE(mapping->GetBase());
@@ -152,8 +153,8 @@ TEST(PlatformSharedBufferTest, TooBig) {
 // using the address as the key for unmapping.
 TEST(PlatformSharedBufferTest, MappingsDistinct) {
   scoped_refptr<PlatformSharedBuffer> buffer(PlatformSharedBuffer::Create(100));
-  scoped_ptr<PlatformSharedBufferMapping> mapping1(buffer->Map(0, 100));
-  scoped_ptr<PlatformSharedBufferMapping> mapping2(buffer->Map(0, 100));
+  std::unique_ptr<PlatformSharedBufferMapping> mapping1(buffer->Map(0, 100));
+  std::unique_ptr<PlatformSharedBufferMapping> mapping2(buffer->Map(0, 100));
   EXPECT_NE(mapping1->GetBase(), mapping2->GetBase());
 }
 
@@ -162,7 +163,8 @@ TEST(PlatformSharedBufferTest, BufferZeroInitialized) {
   for (size_t i = 0; i < arraysize(kSizes); i++) {
     scoped_refptr<PlatformSharedBuffer> buffer(
         PlatformSharedBuffer::Create(kSizes[i]));
-    scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));
+    std::unique_ptr<PlatformSharedBufferMapping> mapping(
+        buffer->Map(0, kSizes[i]));
     for (size_t j = 0; j < kSizes[i]; j++) {
       // "Assert" instead of "expect" so we don't spam the output with thousands
       // of failures if we fail.
@@ -173,8 +175,8 @@ TEST(PlatformSharedBufferTest, BufferZeroInitialized) {
 }
 
 TEST(PlatformSharedBufferTest, MappingsOutliveBuffer) {
-  scoped_ptr<PlatformSharedBufferMapping> mapping1;
-  scoped_ptr<PlatformSharedBufferMapping> mapping2;
+  std::unique_ptr<PlatformSharedBufferMapping> mapping1;
+  std::unique_ptr<PlatformSharedBufferMapping> mapping2;
 
   {
     scoped_refptr<PlatformSharedBuffer> buffer(
@@ -205,7 +207,7 @@ TEST(PlatformSharedBufferTest, FromSharedMemoryHandle) {
           kBufferSize, false /* read_only */, shm_handle));
   ASSERT_TRUE(simple_buffer);
 
-  scoped_ptr<PlatformSharedBufferMapping> mapping =
+  std::unique_ptr<PlatformSharedBufferMapping> mapping =
       simple_buffer->Map(0, kBufferSize);
   ASSERT_TRUE(mapping);
 

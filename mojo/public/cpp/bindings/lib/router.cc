@@ -5,11 +5,13 @@
 #include "mojo/public/cpp/bindings/lib/router.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -152,14 +154,14 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
 
   if (!message->has_flag(kMessageIsSync)) {
     // We assume ownership of |responder|.
-    async_responders_[request_id] = make_scoped_ptr(responder);
+    async_responders_[request_id] = base::WrapUnique(responder);
     return true;
   }
 
   bool response_received = false;
-  scoped_ptr<MessageReceiver> sync_responder(responder);
+  std::unique_ptr<MessageReceiver> sync_responder(responder);
   sync_responses_.insert(std::make_pair(
-      request_id, make_scoped_ptr(new SyncResponseInfo(&response_received))));
+      request_id, base::WrapUnique(new SyncResponseInfo(&response_received))));
 
   base::WeakPtr<Router> weak_self = weak_factory_.GetWeakPtr();
   connector_.SyncWatch(&response_received);
@@ -169,7 +171,7 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
     if (response_received) {
-      scoped_ptr<Message> response = std::move(iter->second->response);
+      std::unique_ptr<Message> response = std::move(iter->second->response);
       ignore_result(sync_responder->Accept(response.get()));
     }
     sync_responses_.erase(iter);
@@ -192,7 +194,7 @@ bool Router::HandleIncomingMessage(Message* message) {
       connector_.during_sync_handle_watcher_callback();
   if (!message->has_flag(kMessageIsSync) &&
       (during_sync_call || !pending_messages_.empty())) {
-    scoped_ptr<Message> pending_message(new Message);
+    std::unique_ptr<Message> pending_message(new Message);
     message->MoveTo(pending_message.get());
     pending_messages_.push(std::move(pending_message));
 
@@ -215,7 +217,7 @@ void Router::HandleQueuedMessages() {
 
   base::WeakPtr<Router> weak_self = weak_factory_.GetWeakPtr();
   while (!pending_messages_.empty()) {
-    scoped_ptr<Message> message(std::move(pending_messages_.front()));
+    std::unique_ptr<Message> message(std::move(pending_messages_.front()));
     pending_messages_.pop();
 
     bool result = HandleMessageInternal(message.get());
@@ -269,7 +271,7 @@ bool Router::HandleMessageInternal(Message* message) {
       DCHECK(testing_mode_);
       return false;
     }
-    scoped_ptr<MessageReceiver> responder = std::move(it->second);
+    std::unique_ptr<MessageReceiver> responder = std::move(it->second);
     async_responders_.erase(it);
     return responder->Accept(message);
   } else {

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -63,11 +64,11 @@ class MultiplexRouterTest : public testing::Test {
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
   ResponseGenerator generator;
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
 
   Message request;
@@ -110,11 +111,11 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
   ResponseGenerator generator;
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
 
   Message request;
@@ -154,10 +155,10 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
 
 TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
   InterfaceEndpointClient client1(std::move(endpoint1_), nullptr,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
 
   // Without an incoming receiver set on client1, we expect client0 to observe
@@ -185,12 +186,12 @@ TEST_F(MultiplexRouterTest, RequestWithNoReceiver) {
 // be sent until after the requests have been accepted.
 TEST_F(MultiplexRouterTest, LazyResponses) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
   base::RunLoop run_loop;
   LazyResponseGenerator generator(run_loop.QuitClosure());
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
 
   Message request;
@@ -251,7 +252,7 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
 TEST_F(MultiplexRouterTest, MissingResponses) {
   base::RunLoop run_loop0, run_loop1;
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
   bool error_handler_called0 = false;
   client0.set_connection_error_handler(
@@ -263,7 +264,7 @@ TEST_F(MultiplexRouterTest, MissingResponses) {
   base::RunLoop run_loop3;
   LazyResponseGenerator generator(run_loop3.QuitClosure());
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                  make_scoped_ptr(new PassThroughFilter()),
+                                  base::WrapUnique(new PassThroughFilter()),
                                   false);
   bool error_handler_called1 = false;
   client1.set_connection_error_handler(
@@ -312,10 +313,10 @@ TEST_F(MultiplexRouterTest, LateResponse) {
   LazyResponseGenerator generator(run_loop.QuitClosure());
   {
     InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                    make_scoped_ptr(new PassThroughFilter()),
+                                    base::WrapUnique(new PassThroughFilter()),
                                     false);
     InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                    make_scoped_ptr(new PassThroughFilter()),
+                                    base::WrapUnique(new PassThroughFilter()),
                                     false);
 
     Message request;

@@ -98,7 +98,7 @@ class SurfaceLibQuadTest : public testing::Test {
   gfx::Rect opaque_rect;
   gfx::Rect visible_rect;
   bool needs_blending;
-  scoped_ptr<cc::RenderPass> pass;
+  std::unique_ptr<cc::RenderPass> pass;
   cc::SharedQuadState* sqs;
 };
 
@@ -191,7 +191,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   SharedQuadStatePtr mus_sqs = SharedQuadState::New();
   mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
 
-  scoped_ptr<cc::RenderPass> pass = mus_pass.To<scoped_ptr<cc::RenderPass>>();
+  std::unique_ptr<cc::RenderPass> pass =
+      mus_pass.To<std::unique_ptr<cc::RenderPass>>();
 
   EXPECT_FALSE(pass);
 }
@@ -210,7 +211,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   SharedQuadStatePtr mus_sqs = SharedQuadState::New();
   mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
 
-  scoped_ptr<cc::RenderPass> pass = mus_pass.To<scoped_ptr<cc::RenderPass>>();
+  std::unique_ptr<cc::RenderPass> pass =
+      mus_pass.To<std::unique_ptr<cc::RenderPass>>();
   EXPECT_FALSE(pass);
 }
 
@@ -224,7 +226,7 @@ TEST(SurfaceLibTest, SharedQuadState) {
   float opacity = 0.65f;
   int sorting_context_id = 13;
   ::SkXfermode::Mode blend_mode = ::SkXfermode::kSrcOver_Mode;
-  scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
+  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(quad_to_target_transform, quad_layer_bounds,
               visible_quad_layer_rect, clip_rect, is_clipped, opacity,
@@ -244,7 +246,7 @@ TEST(SurfaceLibTest, SharedQuadState) {
 }
 
 TEST(SurfaceLibTest, RenderPass) {
-  scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
+  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   cc::RenderPassId pass_id(1, 6);
   gfx::Rect output_rect(4, 9, 13, 71);
   gfx::Rect damage_rect(9, 17, 41, 45);
@@ -321,8 +323,8 @@ TEST(SurfaceLibTest, RenderPass) {
   ASSERT_EQ(3u, mus_pass->quads.size());
   EXPECT_EQ(0u, mus_pass->quads[0]->shared_quad_state_index);
 
-  scoped_ptr<cc::RenderPass> round_trip_pass =
-      mus_pass.To<scoped_ptr<cc::RenderPass>>();
+  std::unique_ptr<cc::RenderPass> round_trip_pass =
+      mus_pass.To<std::unique_ptr<cc::RenderPass>>();
   EXPECT_EQ(pass_id, round_trip_pass->id);
   EXPECT_EQ(output_rect, round_trip_pass->output_rect);
   EXPECT_EQ(damage_rect, round_trip_pass->damage_rect);

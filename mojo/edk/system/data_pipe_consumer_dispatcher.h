@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
@@ -103,7 +104,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   AwakableList awakable_list_;
 
   scoped_refptr<PlatformSharedBuffer> shared_ring_buffer_;
-  scoped_ptr<PlatformSharedBufferMapping> ring_buffer_mapping_;
+  std::unique_ptr<PlatformSharedBufferMapping> ring_buffer_mapping_;
   ScopedPlatformHandle buffer_handle_for_transit_;
 
   bool in_two_phase_read_ = false;

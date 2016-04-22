@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -273,7 +274,8 @@ MojoResult Core::AsyncWait(MojoHandle handle,
   scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
   DCHECK(dispatcher);
 
-  scoped_ptr<AsyncWaiter> waiter = make_scoped_ptr(new AsyncWaiter(callback));
+  std::unique_ptr<AsyncWaiter> waiter =
+      base::WrapUnique(new AsyncWaiter(callback));
   MojoResult rv = dispatcher->AddAwakable(waiter.get(), signals, 0, nullptr);
   if (rv == MOJO_RESULT_OK)
     ignore_result(waiter.release());
@@ -763,7 +765,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  scoped_ptr<PlatformSharedBufferMapping> mapping;
+  std::unique_ptr<PlatformSharedBufferMapping> mapping;
   MojoResult result = dispatcher->MapBuffer(offset, num_bytes, flags, &mapping);
   if (result != MOJO_RESULT_OK)
     return result;
@@ -862,7 +864,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
 
 // static
 void Core::PassNodeControllerToIOThread(
-    scoped_ptr<NodeController> node_controller) {
+    std::unique_ptr<NodeController> node_controller) {
   // It's OK to leak this reference. At this point we know the IO loop is still
   // running, and we know the NodeController will observe its eventual
   // destruction. This tells the NodeController to delete itself when that

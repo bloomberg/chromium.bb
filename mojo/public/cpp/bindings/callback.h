@@ -5,11 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 
+#include <memory>
 #include <type_traits>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/lib/callback_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 
@@ -143,7 +143,7 @@ class Callback<void(Args...)> {
   struct RunnableHolder : public base::RefCountedThreadSafe<RunnableHolder> {
     explicit RunnableHolder(Runnable* runnable) : runnable(runnable) {}
 
-    scoped_ptr<Runnable> runnable;
+    std::unique_ptr<Runnable> runnable;
 
    private:
     friend class base::RefCountedThreadSafe<RunnableHolder>;

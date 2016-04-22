@@ -5,12 +5,12 @@
 #ifndef MOJO_EDK_SYSTEM_CORE_H_
 #define MOJO_EDK_SYSTEM_CORE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -236,7 +236,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // Used to pass ownership of our NodeController over to the IO thread in the
   // event that we're torn down before said thread.
   static void PassNodeControllerToIOThread(
-      scoped_ptr<NodeController> node_controller);
+      std::unique_ptr<NodeController> node_controller);
 
   // Guards node_controller_.
   //
@@ -250,7 +250,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // This is lazily initialized on first access. Always use GetNodeController()
   // to access it.
-  scoped_ptr<NodeController> node_controller_;
+  std::unique_ptr<NodeController> node_controller_;
 
   base::Lock handles_lock_;
   HandleTable handles_;

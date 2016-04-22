@@ -136,7 +136,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   }
 
   void Launch(const std::string& name, bool new_window) {
-    scoped_ptr<shell::Connection> connection = connector_->Connect(name);
+    std::unique_ptr<shell::Connection> connection = connector_->Connect(name);
     mojom::LaunchablePtr launchable;
     connection->GetInterface(&launchable);
     connections_.push_back(std::move(connection));

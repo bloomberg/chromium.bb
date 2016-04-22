@@ -25,7 +25,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
  public:
   struct Message;
 
-  using MessagePtr = scoped_ptr<Message>;
+  using MessagePtr = std::unique_ptr<Message>;
 
   // A message to be written to a channel.
   struct Message {
@@ -265,7 +265,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
   class ReadBuffer;
 
   Delegate* delegate_;
-  const scoped_ptr<ReadBuffer> read_buffer_;
+  const std::unique_ptr<ReadBuffer> read_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };

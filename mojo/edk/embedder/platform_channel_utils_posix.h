@@ -9,8 +9,8 @@
 #include <sys/types.h>  // For |ssize_t|.
 
 #include <deque>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 

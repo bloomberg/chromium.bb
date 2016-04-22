@@ -5,12 +5,13 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDING_STATE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BINDING_STATE_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -149,7 +150,7 @@ class BindingState<Interface, true> {
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(internal::kMasterInterfaceId),
-        &stub_, make_scoped_ptr(new typename Interface::RequestValidator_()),
+        &stub_, base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_));
 
     endpoint_client_->set_connection_error_handler(
@@ -217,7 +218,7 @@ class BindingState<Interface, true> {
 
  private:
   scoped_refptr<internal::MultiplexRouter> router_;
-  scoped_ptr<internal::InterfaceEndpointClient> endpoint_client_;
+  std::unique_ptr<internal::InterfaceEndpointClient> endpoint_client_;
 
   typename Interface::Stub_ stub_;
   Interface* impl_;
