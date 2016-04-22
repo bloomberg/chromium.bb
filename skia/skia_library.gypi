@@ -68,7 +68,6 @@
   '../third_party/skia/src/utils/SkDumpCanvas.cpp',
   '../third_party/skia/src/utils/SkInterpolator.cpp',
   '../third_party/skia/src/utils/SkLayer.cpp',
-  '../third_party/skia/src/utils/SkMD5.cpp',
   '../third_party/skia/src/utils/SkMeshUtils.cpp',
   '../third_party/skia/src/utils/SkNinePatch.cpp',
   '../third_party/skia/src/utils/SkOSFile.cpp',
