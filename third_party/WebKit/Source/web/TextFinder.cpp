@@ -484,8 +484,12 @@ void TextFinder::clearFindMatchesCache()
 bool TextFinder::isActiveMatchFrameValid() const
 {
     WebLocalFrameImpl* mainFrameImpl = ownerFrame().viewImpl()->mainFrameImpl();
-    WebLocalFrameImpl* activeMatchFrame = mainFrameImpl->activeMatchFrame();
-    return activeMatchFrame && activeMatchFrame->activeMatch() && activeMatchFrame->frame()->tree().isDescendantOf(mainFrameImpl->frame());
+    if (!mainFrameImpl->textFinder())
+        return false;
+
+    if (WebLocalFrameImpl* activeMatchFrame = mainFrameImpl->textFinder()->activeMatchFrame())
+        return activeMatchFrame->textFinder()->activeMatch() && activeMatchFrame->frame()->tree().isDescendantOf(mainFrameImpl->frame());
+    return false;
 }
 
 void TextFinder::updateFindMatchRects()
@@ -533,7 +537,7 @@ WebFloatRect TextFinder::activeFindMatchRect()
     if (!isActiveMatchFrameValid())
         return WebFloatRect();
 
-    return WebFloatRect(findInPageRectFromRange(m_currentActiveMatchFrame->activeMatch()));
+    return WebFloatRect(findInPageRectFromRange(m_currentActiveMatchFrame->textFinder()->activeMatch()));
 }
 
 void TextFinder::findMatchRects(WebVector<WebFloatRect>& outputRects)
