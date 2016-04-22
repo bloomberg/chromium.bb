@@ -25,9 +25,9 @@
 #include "components/audio_modem/public/whispernet_client.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_converter.h"
+#include "media/base/audio_parameters.h"
 
 using audio_modem::WhispernetClient;
 using audio_modem::AUDIBLE;

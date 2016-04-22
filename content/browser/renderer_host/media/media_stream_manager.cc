@@ -48,7 +48,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "crypto/hmac.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/video_capture_device_factory.h"

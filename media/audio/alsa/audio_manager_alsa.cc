@@ -17,7 +17,6 @@
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
-#include "media/audio/audio_parameters.h"
 #if defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
 #endif
@@ -27,6 +26,7 @@
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #endif
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"

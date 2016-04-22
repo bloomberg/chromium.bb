@@ -14,7 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 

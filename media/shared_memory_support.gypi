@@ -8,12 +8,12 @@
     # These are defined here because we need to build this library both for
     # the general media pipeline and again for the untrusted NaCl target.
     'shared_memory_support_sources': [
-      'audio/audio_parameters.cc',
-      'audio/audio_parameters.h',
-      'audio/point.cc',
-      'audio/point.h',
       'base/audio_bus.cc',
       'base/audio_bus.h',
+      'base/audio_parameters.cc',
+      'base/audio_parameters.h',
+      'base/audio_point.cc',
+      'base/audio_point.h',
       'base/channel_layout.cc',
       'base/channel_layout.h',
       'base/limits.h',

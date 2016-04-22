@@ -15,7 +15,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

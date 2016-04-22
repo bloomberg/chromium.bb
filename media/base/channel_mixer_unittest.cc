@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_mixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -10,7 +10,7 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 

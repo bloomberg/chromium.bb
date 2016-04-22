@@ -10,10 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/sounds/test_data.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

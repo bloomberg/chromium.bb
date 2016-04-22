@@ -12,8 +12,8 @@
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
+#include "media/base/audio_parameters.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;

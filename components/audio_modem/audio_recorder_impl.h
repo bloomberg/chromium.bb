@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/audio_modem/audio_recorder.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace base {
 class MessageLoop;

@@ -13,7 +13,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 
 #if defined(OS_CHROMEOS)

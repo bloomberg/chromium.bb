@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "media/base/vector_math.h"
 

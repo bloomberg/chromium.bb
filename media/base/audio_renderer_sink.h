@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/output_device_info.h"
 #include "url/origin.h"
 

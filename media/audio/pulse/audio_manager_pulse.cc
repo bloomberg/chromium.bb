@@ -13,10 +13,10 @@
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #endif
-#include "media/audio/audio_parameters.h"
 #include "media/audio/pulse/pulse_input.h"
 #include "media/audio/pulse/pulse_output.h"
 #include "media/audio/pulse/pulse_util.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 
 #if defined(DLOPEN_PULSEAUDIO)

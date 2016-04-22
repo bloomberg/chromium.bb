@@ -26,7 +26,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/geometry/rect.h"

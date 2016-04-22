@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/output_device_info.h"
 #include "url/origin.h"
 

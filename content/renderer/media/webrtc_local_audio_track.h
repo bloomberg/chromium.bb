@@ -15,7 +15,7 @@
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/tagged_list.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 class AudioBus;

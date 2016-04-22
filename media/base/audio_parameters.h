@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_PARAMETERS_H_
-#define MEDIA_AUDIO_AUDIO_PARAMETERS_H_
+#ifndef MEDIA_BASE_AUDIO_PARAMETERS_H_
+#define MEDIA_BASE_AUDIO_PARAMETERS_H_
 
 #include <stdint.h>
 #include <string>
@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/audio/point.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_point.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 
@@ -26,7 +26,7 @@ namespace media {
 // AudioBus::kChannelAlignment, since MSVC doesn't accept the latter to be used.
 #if defined(OS_WIN)
 #pragma warning(push)
-#pragma warning(disable: 4324)  // Disable warning for added padding.
+#pragma warning(disable : 4324)  // Disable warning for added padding.
 #endif
 #define PARAMETERS_ALIGNMENT 16
 static_assert(AudioBus::kChannelAlignment == PARAMETERS_ALIGNMENT,
@@ -219,4 +219,4 @@ inline bool operator<(const AudioParameters& a, const AudioParameters& b) {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_AUDIO_PARAMETERS_H_
+#endif  // MEDIA_BASE_AUDIO_PARAMETERS_H_

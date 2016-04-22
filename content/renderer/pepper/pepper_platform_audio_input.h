@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/audio/audio_input_ipc.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 class GURL;
 

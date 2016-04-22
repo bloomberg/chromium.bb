@@ -17,7 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"

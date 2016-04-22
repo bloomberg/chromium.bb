@@ -8,10 +8,10 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/audio_power_monitor.h"
 #include "media/audio/sounds/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 
 namespace {
 // Opens |wav_filename|, reads it and loads it as a wav file. This function will

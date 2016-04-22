@@ -61,9 +61,9 @@
 #include "base/memory/shared_memory.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_input_ipc.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/scoped_task_runner_observer.h"
 #include "media/base/audio_capturer_source.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
 namespace media {

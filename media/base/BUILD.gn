@@ -404,6 +404,8 @@ source_set("unittests") {
     "audio_fifo_unittest.cc",
     "audio_hardware_config_unittest.cc",
     "audio_hash_unittest.cc",
+    "audio_parameters_unittest.cc",
+    "audio_point_unittest.cc",
     "audio_pull_fifo_unittest.cc",
     "audio_push_fifo_unittest.cc",
     "audio_renderer_mixer_input_unittest.cc",

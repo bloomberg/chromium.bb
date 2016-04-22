@@ -5,7 +5,7 @@
 #include "content/renderer/media/media_stream_audio_sink_owner.h"
 
 #include "content/public/renderer/media_stream_audio_sink.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace content {
 

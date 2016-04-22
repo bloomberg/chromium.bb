@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_logging.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace base {
 class SingleThreadTaskRunner;

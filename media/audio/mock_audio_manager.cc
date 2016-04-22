@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

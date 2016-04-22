@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/common/content_switches.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 using media::AudioBus;
 using media::AudioOutputBuffer;

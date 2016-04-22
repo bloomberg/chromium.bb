@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 #include "media/base/audio_hardware_config.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

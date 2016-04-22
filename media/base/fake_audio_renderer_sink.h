@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/output_device_info.h"
 

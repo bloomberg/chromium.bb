@@ -11,8 +11,8 @@
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_fifo.h"
+#include "media/base/audio_parameters.h"
 
 namespace content {
 

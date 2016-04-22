@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "media/audio/point.h"
+#include "media/base/audio_point.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

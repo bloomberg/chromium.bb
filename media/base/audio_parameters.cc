@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 #include "base/logging.h"
 #include "media/base/limits.h"

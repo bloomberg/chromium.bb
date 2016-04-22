@@ -13,7 +13,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
 namespace media {

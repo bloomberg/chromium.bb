@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_worker.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

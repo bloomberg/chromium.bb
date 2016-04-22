@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 namespace media {

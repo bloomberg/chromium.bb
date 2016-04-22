@@ -6,9 +6,9 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_worker.h"
 #include "media/audio/simple_sources.h"
+#include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

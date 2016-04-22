@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/channel_mixing_matrix.h"
 #include "media/base/vector_math.h"
 

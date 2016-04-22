@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

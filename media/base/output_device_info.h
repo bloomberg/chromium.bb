@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
 namespace media {

@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 
 namespace {
 

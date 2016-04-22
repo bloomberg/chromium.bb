@@ -27,9 +27,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_queue.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

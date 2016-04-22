@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

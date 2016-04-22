@@ -3,6 +3,6 @@ specific_include_rules = {
     "+content/common",
   ],
   "media_stream_request.h": [
-    "+media/audio/audio_parameters.h",
+    "+media/base/audio_parameters.h",
   ]
 }

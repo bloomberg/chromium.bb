@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "content/renderer/media/media_stream_audio_track.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/opus/src/include/opus.h"
 

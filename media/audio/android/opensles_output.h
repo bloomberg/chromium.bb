@@ -16,7 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/audio/android/opensles_util.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 CastReceiverAudioValve::CastReceiverAudioValve(
     const media::AudioParameters& params,

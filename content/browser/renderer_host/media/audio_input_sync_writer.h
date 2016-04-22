@@ -19,8 +19,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_input_controller.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_parameters.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

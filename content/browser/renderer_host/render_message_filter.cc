@@ -57,7 +57,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"

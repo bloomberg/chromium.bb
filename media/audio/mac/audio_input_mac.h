@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

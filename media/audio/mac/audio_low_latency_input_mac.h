@@ -51,8 +51,8 @@
 #include "base/timer/timer.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_block_fifo.h"
+#include "media/base/audio_parameters.h"
 
 namespace media {
 

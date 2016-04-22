@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/audio/audio_parameters.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_hardware_config.h"
+#include "media/base/audio_parameters.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
 
 using blink::WebVector;

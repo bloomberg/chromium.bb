@@ -15,9 +15,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_converter.h"
+#include "media/base/audio_parameters.h"
 
 namespace base {
 class SingleThreadTaskRunner;
