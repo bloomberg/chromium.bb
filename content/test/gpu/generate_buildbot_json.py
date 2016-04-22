@@ -417,6 +417,19 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'linux',
     },
+    'Android Debug (Nexus 9)': {
+      'swarming_dimensions': {
+        # There are no PCI IDs on Android.
+        # This is a hack to get the script working.
+        'gpu': '0000:0000',
+        'os': 'Android'
+      },
+      'build_config': 'android-content-shell',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'android',
+    },
 
     # The following "optional" testers don't actually exist on the
     # waterfall. They are present here merely to specify additional
@@ -598,8 +611,22 @@ COMMON_GTESTS = {
   # hardware is deployed on the swarming bots, so stop running it
   # everywhere.
   # 'content_unittests': {},
-  'gl_tests': {'args': ['--use-gpu-in-tests']},
-  'gl_unittests': {'args': ['--use-gpu-in-tests']},
+  'gl_tests': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      }
+    ],
+    'args': ['--use-gpu-in-tests']
+  },
+  'gl_unittests': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      }
+    ],
+    'args': ['--use-gpu-in-tests']
+  },
   # The gles2_conform_tests are closed-source and deliberately only run
   # on the FYI waterfall and the optional tryservers.
   'gles2_conform_test': {
@@ -706,6 +733,7 @@ TELEMETRY_TESTS = {
     ],
     'tester_configs': [
       {
+        'allow_on_android': True,
         'allow_on_mac_nvidia': True,
       },
     ],
@@ -828,6 +856,9 @@ def is_mac_nvidia_retina(tester_config):
           dims['hidpi'] == '1' and
           dims['os'] == 'Mac')
 
+def is_android(tester_config):
+  return tester_config['os_type'] == 'android'
+
 def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
                                  check_waterfall):
   if check_waterfall:
@@ -871,6 +902,9 @@ def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
     if tester_config['build_config'] == 'Debug':
       return False
     if not tc.get('allow_on_mac_nvidia', False):
+      return False
+  if is_android(tester_config):
+    if not tc.get('allow_on_android', False):
       return False
   return True
 
