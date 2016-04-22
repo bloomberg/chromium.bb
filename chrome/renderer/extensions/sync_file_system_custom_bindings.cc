@@ -18,7 +18,7 @@ SyncFileSystemCustomBindings::SyncFileSystemCustomBindings(
     ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction(
-      "GetSyncFileSystemObject",
+      "GetSyncFileSystemObject", "syncFileSystem",
       base::Bind(&SyncFileSystemCustomBindings::GetSyncFileSystemObject,
                  base::Unretained(this)));
 }

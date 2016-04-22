@@ -56,20 +56,40 @@
     "matches": ["<all_urls>"]
   },
   "app.getDetails": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
-    "matches": []
+    "contexts": [
+      "blessed_extension",
+      "unblessed_extension",
+      "content_script",
+      "blessed_web_page",
+      "web_page"
+    ]
   },
   "app.getIsInstalled": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
-    "matches": []
+    "contexts": [
+      "blessed_extension",
+      "unblessed_extension",
+      "content_script",
+      "blessed_web_page",
+      "web_page"
+    ]
   },
   "app.installState": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
-    "matches": []
+    "contexts": [
+      "blessed_extension",
+      "unblessed_extension",
+      "content_script",
+      "blessed_web_page",
+      "web_page"
+    ]
   },
   "app.runningState": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
-    "matches": []
+    "contexts": [
+      "blessed_extension",
+      "unblessed_extension",
+      "content_script",
+      "blessed_web_page",
+      "web_page"
+    ]
   },
   "appviewTag": {
     "internal": true,

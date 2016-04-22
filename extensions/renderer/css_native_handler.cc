@@ -15,7 +15,7 @@ using blink::WebString;
 
 CssNativeHandler::CssNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("CanonicalizeCompoundSelector",
+  RouteFunction("CanonicalizeCompoundSelector", "declarativeContent",
                 base::Bind(&CssNativeHandler::CanonicalizeCompoundSelector,
                            base::Unretained(this)));
 }
