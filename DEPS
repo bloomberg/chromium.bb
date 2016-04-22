@@ -87,8 +87,8 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling dEQP
   # and whatever else without interference from each other.
-  'deqp_revision': 'cc0ded6c77267bbb14d21aac358fc5d9690c07f8',
-  'deqp_url': 'https://android.googlesource.com/platform/external/deqp',
+  # We pull in the version of dEQP from ANGLE's DEPS.
+  'deqp_from_angle': From('src/third_party/angle', 'third_party/deqp/src'),
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype-android
   # and whatever else without interference from each other.
@@ -325,8 +325,7 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
 
     # ANGLE uses dEQP for GPU testing
-    'src/third_party/deqp/src':
-     Var('deqp_url') + '@' + Var('deqp_revision'),
+    'src/third_party/deqp/src': Var('deqp_from_angle'),
   },
   'ios': {
     'src/ios/third_party/earl_grey/src':
@@ -405,8 +404,7 @@ deps_os = {
      Var('chromium_git') + '/external/fontconfig.git' + '@' + 'f16c3118e25546c1b749f9823c51827a60aeb5c1',
 
     # ANGLE uses dEQP for GPU testing
-    'src/third_party/deqp/src':
-     Var('deqp_url') + '@' + Var('deqp_revision'),
+    'src/third_party/deqp/src': Var('deqp_from_angle'),
 
     # Graphics buffer allocator for Chrome OS.
     'src/third_party/minigbm/src':
