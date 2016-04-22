@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/android/sync_compositor_messages.h"
+#include "content/common/android/sync_compositor_statics.h"
 #include "content/common/cc_messages.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
@@ -288,19 +289,6 @@ void SynchronousCompositorProxy::SetSharedMemory(
   *success = true;
 }
 
-namespace {
-SkCanvas* g_sk_canvas_for_draw = nullptr;
-}
-
-// static
-void SynchronousCompositorProxy::SetSkCanvasForDraw(SkCanvas* canvas) {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSingleProcess));
-  DCHECK(canvas || g_sk_canvas_for_draw) << !!canvas;
-  DCHECK(!canvas || !g_sk_canvas_for_draw) << !!canvas;
-  g_sk_canvas_for_draw = canvas;
-}
-
 void SynchronousCompositorProxy::ZeroSharedMemory() {
   DCHECK(!software_draw_shm_->zeroed);
   memset(software_draw_shm_->shm.memory(), 0, software_draw_shm_->buffer_size);
@@ -317,11 +305,12 @@ void SynchronousCompositorProxy::DemandDrawSw(
   if (output_surface_) {
     base::AutoReset<IPC::Message*> scoped_software_draw_reply(
         &software_draw_reply_, reply_message);
+    SkCanvas* sk_canvas_for_draw = SynchronousCompositorGetSkCanvas();
     if (use_in_process_zero_copy_software_draw_) {
-      DCHECK(g_sk_canvas_for_draw);
-      output_surface_->DemandDrawSw(g_sk_canvas_for_draw);
+      DCHECK(sk_canvas_for_draw);
+      output_surface_->DemandDrawSw(sk_canvas_for_draw);
     } else {
-      DCHECK(!g_sk_canvas_for_draw);
+      DCHECK(!sk_canvas_for_draw);
       DoDemandDrawSw(params);
     }
   }

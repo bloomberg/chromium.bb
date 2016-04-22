@@ -243,6 +243,8 @@
       'common/android/media_metadata_android.h',
       'common/android/sync_compositor_messages.cc',
       'common/android/sync_compositor_messages.h',
+      'common/android/sync_compositor_statics.cc',
+      'common/android/sync_compositor_statics.h',
       'common/appcache_interfaces.cc',
       'common/appcache_interfaces.h',
       'common/appcache_messages.h',

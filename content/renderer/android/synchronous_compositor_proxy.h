@@ -46,9 +46,6 @@ class SynchronousCompositorProxy
       public SynchronousCompositorExternalBeginFrameSourceClient,
       public SynchronousCompositorOutputSurfaceClient {
  public:
-  // Called by browser side.
-  static void SetSkCanvasForDraw(SkCanvas* canvas);
-
   SynchronousCompositorProxy(
       int routing_id,
       IPC::Sender* sender,
