@@ -43,6 +43,7 @@ namespace test_runner {
 
 class EventSender;
 class TestInterfaces;
+class TextInputController;
 class WebTestDelegate;
 class WebTestInterfaces;
 
@@ -104,6 +105,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   blink::WebWidget* web_widget_;
   scoped_ptr<WebViewTestClient> view_test_client_;
   scoped_ptr<EventSender> event_sender_;
+  scoped_ptr<TextInputController> text_input_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };

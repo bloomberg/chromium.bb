@@ -12,23 +12,23 @@
 #include "base/memory/weak_ptr.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebView;
 }
 
 namespace test_runner {
 
+class WebTestProxyBase;
+
 // TextInputController is bound to window.textInputController in Javascript
 // when content_shell is running. Layout tests use it to exercise various
 // corners of text input.
-class TextInputController : public base::SupportsWeakPtr<TextInputController> {
+class TextInputController {
  public:
-  TextInputController();
+  explicit TextInputController(WebTestProxyBase* web_test_proxy_base);
   ~TextInputController();
 
-  void Install(blink::WebFrame* frame);
-
-  void SetWebView(blink::WebView* view);
+  void Install(blink::WebLocalFrame* frame);
 
  private:
   friend class TextInputControllerBindings;
@@ -44,7 +44,8 @@ class TextInputController : public base::SupportsWeakPtr<TextInputController> {
                                               unsigned length);
   void SetComposition(const std::string& text);
 
-  blink::WebView* view_;
+  blink::WebView* view();
+  WebTestProxyBase* web_test_proxy_base_;
 
   base::WeakPtrFactory<TextInputController> weak_factory_;
 

@@ -29,7 +29,6 @@ namespace test_runner {
 
 TestInterfaces::TestInterfaces()
     : accessibility_controller_(new AccessibilityController()),
-      text_input_controller_(new TextInputController()),
       test_runner_(new TestRunner(this)),
       delegate_(nullptr),
       app_banner_client_(nullptr) {
@@ -43,12 +42,10 @@ TestInterfaces::TestInterfaces()
 TestInterfaces::~TestInterfaces() {
   accessibility_controller_->SetWebView(nullptr);
   // gamepad_controller_ doesn't depend on WebView.
-  text_input_controller_->SetWebView(nullptr);
   test_runner_->SetWebView(nullptr);
 
   accessibility_controller_->SetDelegate(nullptr);
   // gamepad_controller_ ignores SetDelegate(nullptr)
-  // text_input_controller_ doesn't depend on WebTestDelegate.
   test_runner_->SetDelegate(nullptr);
 }
 
@@ -56,14 +53,12 @@ void TestInterfaces::SetWebView(blink::WebView* web_view,
                                 WebTestProxyBase* proxy) {
   accessibility_controller_->SetWebView(web_view);
   // gamepad_controller_ doesn't depend on WebView.
-  text_input_controller_->SetWebView(web_view);
   test_runner_->SetWebView(web_view);
 }
 
 void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
   accessibility_controller_->SetDelegate(delegate);
   gamepad_controller_ = GamepadController::Create(delegate);
-  // text_input_controller_ doesn't depend on WebTestDelegate.
   test_runner_->SetDelegate(delegate);
   delegate_ = delegate;
 }
@@ -72,7 +67,6 @@ void TestInterfaces::BindTo(blink::WebFrame* frame) {
   accessibility_controller_->Install(frame);
   if (gamepad_controller_)
     gamepad_controller_->Install(frame);
-  text_input_controller_->Install(frame);
   test_runner_->Install(frame);
   GCController::Install(frame);
 }
@@ -81,7 +75,6 @@ void TestInterfaces::ResetTestHelperControllers() {
   accessibility_controller_->Reset();
   if (gamepad_controller_)
     gamepad_controller_->Reset();
-  // text_input_controller_ doesn't have any state to reset.
   blink::WebCache::clear();
 
   for (WebTestProxyBase* web_test_proxy_base : window_list_)
