@@ -626,15 +626,22 @@ gfx::Vector2d GetMouseWheelOffsetFromXEvent(const XEvent& xev) {
   int button = xev.type == GenericEvent ? EventButtonFromXEvent(xev)
                                         : xev.xbutton.button;
 
+  // If this is an xinput1 scroll event from an xinput2 mouse then we need to
+  // block the legacy scroll events for the necessary axes.
+  int scroll_class_type =
+      DeviceDataManagerX11::GetInstance()->GetScrollClassDeviceDetail(xev);
+  bool xi2_vertical = scroll_class_type & SCROLL_TYPE_VERTICAL;
+  bool xi2_horizontal = scroll_class_type & SCROLL_TYPE_HORIZONTAL;
+
   switch (button) {
     case 4:
-      return gfx::Vector2d(0, kWheelScrollAmount);
+      return gfx::Vector2d(0, xi2_vertical ? 0 : kWheelScrollAmount);
     case 5:
-      return gfx::Vector2d(0, -kWheelScrollAmount);
+      return gfx::Vector2d(0, xi2_vertical ? 0 : -kWheelScrollAmount);
     case 6:
-      return gfx::Vector2d(kWheelScrollAmount, 0);
+      return gfx::Vector2d(xi2_horizontal ? 0 : kWheelScrollAmount, 0);
     case 7:
-      return gfx::Vector2d(-kWheelScrollAmount, 0);
+      return gfx::Vector2d(xi2_horizontal ? 0 : -kWheelScrollAmount, 0);
     default:
       return gfx::Vector2d();
   }
@@ -731,7 +738,7 @@ bool GetScrollOffsetsFromXEvent(const XEvent& xev,
     return true;
   }
 
-  if (DeviceDataManagerX11::GetInstance()->GetScrollClassDeviceDetail(xev) !=
+  if (DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(xev) !=
       SCROLL_TYPE_NO_SCROLL) {
     double x_scroll_offset, y_scroll_offset;
     DeviceDataManagerX11::GetInstance()->GetScrollClassOffsets(
