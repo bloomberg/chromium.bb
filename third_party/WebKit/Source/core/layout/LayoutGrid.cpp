@@ -1632,7 +1632,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         if (endIsAuto) {
             offset = LayoutUnit();
         } else {
-            offset = translateRTLCoordinate(m_columnPositions[endLine]) - borderLeft();
+            offset = translateRTLCoordinate(m_columnPositions[endLine]) - borderLogicalLeft();
 
             if (endLine > firstExplicitLine && endLine < lastExplicitLine) {
                 offset += guttersSize(direction, 2);

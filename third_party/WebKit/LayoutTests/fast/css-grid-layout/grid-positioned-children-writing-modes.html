@@ -4,11 +4,14 @@
 <style>
 
 .grid {
-    margin: 1px;
-    width: 50px;
-    height: 25px;
-    grid: 100% / 100%;
+    margin: 5px;
+    width: 100px;
+    height: 75px;
+    grid: 20px / 30px;
     padding: 5px 10px 15px 20px;
+    border-style: solid;
+    border-width: 5px 10px 15px 20px;
+    float: left;
     /* Ensures that the grid container is the containing block of the grid children. */
     position: relative;
 }
@@ -23,48 +26,79 @@
     grid-row: 1 / 2;
 }
 
+.offsets {
+    left: 0;
+    top: 0;
+}
+
 .red {
     background-color: red;
-    width: 50px;
-    height: 25px;
-    top: 5px;
-    left: 20px;
 }
 
 </style>
 <body>
 
 <p>This test checks the behavior of the positioned grid children in combination with the writing modes and text direction properties.</p>
-<p>For the test to pass you should see no red and all the green boxes should have the very the same position and size within each grey box. The black box will be positioned depending on the writing mode and text direction values.</p>
+<p>For the test to pass you should see no red and only green boxes. The black box will be positioned depending on the writing mode and text direction values.</p>
 
 <div class="grid">
-    <div class="sizedToGridArea red"></div>
+    <div class="red"></div>
     <div class="sizedToGridArea absolute onlyFirstRowOnlyFirstColumn">XX</div>
 </div>
 
 <div class="grid verticalRL">
-    <div class="sizedToGridArea red"></div>
+    <div class="red"></div>
     <div class="sizedToGridArea absolute onlyFirstRowOnlyFirstColumn">XX</div>
 </div>
 
 <div class="grid verticalLR">
-    <div class="sizedToGridArea red"></div>
+    <div class="red"></div>
     <div class="sizedToGridArea absolute onlyFirstRowOnlyFirstColumn">XX</div>
 </div>
 
 <div class="grid directionRTL">
-    <div class="sizedToGridArea red"></div>
+    <div class="red"></div>
     <div class="sizedToGridArea absolute onlyFirstRowOnlyFirstColumn">XX</div>
 </div>
 
 <div class="grid verticalRL directionRTL">
-    <div class="sizedToGridArea red"></div>
+    <div class="red"></div>
     <div class="sizedToGridArea absolute onlyFirstRowOnlyFirstColumn">XX</div>
 </div>
 
 <div class="grid verticalLR directionRTL">
-    <div class="sizedToGridArea red"></div>
+    <div class="red"></div>
     <div class="sizedToGridArea absolute onlyFirstRowOnlyFirstColumn">XX</div>
+</div>
+
+<div class="grid">
+    <div class="red"></div>
+    <div class="sizedToGridArea absolute offsets onlyFirstRowOnlyFirstColumn">XX</div>
+</div>
+
+<div class="grid verticalRL">
+    <div class="red"></div>
+    <div class="sizedToGridArea absolute offsets onlyFirstRowOnlyFirstColumn">XX</div>
+</div>
+
+<div class="grid verticalLR">
+    <div class="red"></div>
+    <div class="sizedToGridArea absolute offsets onlyFirstRowOnlyFirstColumn">XX</div>
+</div>
+
+<div class="grid directionRTL">
+    <div class="red"></div>
+    <div class="sizedToGridArea absolute offsets onlyFirstRowOnlyFirstColumn">XX</div>
+</div>
+
+<div class="grid verticalRL directionRTL">
+    <div class="red"></div>
+    <div class="sizedToGridArea absolute offsets onlyFirstRowOnlyFirstColumn">XX</div>
+</div>
+
+<div class="grid verticalLR directionRTL">
+    <div class="red"></div>
+    <div class="sizedToGridArea absolute offsets onlyFirstRowOnlyFirstColumn">XX</div>
 </div>
 
 </body>
