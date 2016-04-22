@@ -29,7 +29,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user.h"
@@ -935,8 +934,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDownloadsStrings(html_source);
 
 #if defined(OS_CHROMEOS)
-  if (EasyUnlockService::Get(profile)->IsAllowed())
-    AddEasyUnlockStrings(html_source);
+  AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
 #endif
   AddLanguagesStrings(html_source);

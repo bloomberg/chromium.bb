@@ -4,8 +4,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
-<link rel="import" href="chrome://md-settings/i18n_setup.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
+<link rel="import" href="chrome://md-settings/i18n_setup.html">
 <link rel="import" href="chrome://md-settings/people_page/sync_page.html">
 <link rel="import" href="chrome://md-settings/people_page/profile_info_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/people_page/sync_browser_proxy.html">
@@ -67,21 +67,21 @@
           <template is="dom-if" if="[[!syncStatus.signedIn]]">
             <paper-button class="action-button" on-tap="onSigninTap_"
                 disabled="[[syncStatus.setupInProgress]]">
-              [[i18n('syncSignin')]]
+              $i18n{syncSignin}
             </paper-button>
           </template>
           <template is="dom-if" if="[[syncStatus.signedIn]]">
             <span class="secondary-action">
               <paper-button class="secondary-button" on-tap="onDisconnectTap_"
                   disabled="[[syncStatus.setupInProgress]]">
-                [[i18n('syncDisconnect')]]
+                $i18n{syncDisconnect}
               </paper-button>
             </span>
           </template>
 </if>
         </div>
         <div class="settings-box two-line" hidden="[[syncStatus.signedIn]]">
-          [[i18n('syncOverview')]]
+          $i18n{syncOverview}
         </div>
 
         <div class="settings-box" hidden="[[!isStatusTextSet_(syncStatus)]]">
@@ -95,7 +95,7 @@
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
           <div class="settings-box">
             <paper-button on-tap="onSyncTap_" class="primary-button">
-              [[i18n('syncPageTitle')]]
+              $i18n{syncPageTitle}
             </paper-button>
           </div>
         </template>
@@ -107,23 +107,23 @@
           </settings-checkbox>
         </div>
 
-        <template is="dom-if" if=[[easyUnlockAllowed_]]>
+        <template is="dom-if" if="[[easyUnlockAllowed_]]">
           <div class="settings-box">
             <div class="middle">
-              <div>[[i18n('easyUnlockSectionTitle')]]</div>
+              <div>$i18n{easyUnlockSectionTitle}</div>
               <div class="secondary">
-                <template is="dom-if" if=[[!easyUnlockEnabled_]]>
-                  [[i18n('easyUnlockSetupIntro')]]
+                <template is="dom-if" if="[[!easyUnlockEnabled_]]">
+                  $i18n{easyUnlockSetupIntro}
                 </template>
-                <template is="dom-if" if=[[easyUnlockEnabled_]]>
-                  [[i18n('easyUnlockDescription')]]
+                <template is="dom-if" if="[[easyUnlockEnabled_]]">
+                  $i18n{easyUnlockDescription}
                 </template>
-                <a target="_blank" href$="[[i18n('easyUnlockLearnMoreURL')]]">
-                  [[i18n('learnMore')]]
+                <a target="_blank" href$="$i18n{easyUnlockLearnMoreURL}">
+                  $i18n{learnMore}
                 </a>
-                <template is="dom-if" if=[[easyUnlockEnabled_]]>
+                <template is="dom-if" if="[[easyUnlockEnabled_]]">
                   <template is="dom-if"
-                      if=[[easyUnlockProximityDetectionAllowed_]]>
+                      if="[[easyUnlockProximityDetectionAllowed_]]">
                     <settings-checkbox
                         pref="{{prefs.easy_unlock.proximity_required}}"
                         i18n-values="label:easyUnlockRequireProximityLabel">
@@ -133,16 +133,16 @@
               </div>
             </div>
             <div class="secondary-action">
-              <template is="dom-if" if=[[!easyUnlockEnabled_]]>
+              <template is="dom-if" if="[[!easyUnlockEnabled_]]">
                 <paper-button id="easyUnlockSetup" class="secondary-button"
                     on-tap="onEasyUnlockSetupTap_">
-                  [[i18n('easyUnlockSetupButton')]]
+                  $i18n{easyUnlockSetupButton}
                 </paper-button>
               </template>
-              <template is="dom-if" if=[[easyUnlockEnabled_]]>
+              <template is="dom-if" if="[[easyUnlockEnabled_]]">
                 <paper-button id="easyUnlockTurnOff" class="secondary-button"
                     on-tap="onEasyUnlockTurnOffTap_">
-                  [[i18n('easyUnlockTurnOffButton')]]
+                  $i18n{easyUnlockTurnOffButton}
                 </paper-button>
               </template>
             </div>
@@ -157,26 +157,26 @@
         </div>
       </neon-animatable>
       <template is="dom-if" name="sync">
-        <settings-subpage page-title="[[i18n('syncPageTitle')]]">
+        <settings-subpage page-title="$i18n{syncPageTitle}">
           <settings-sync-page current-route="[[currentRoute]]">
           </settings-sync-page>
         </settings-subpage>
       </template>
 <if expr="chromeos">
       <template is="dom-if" name="users">
-        <settings-subpage page-title="[[i18n('usersPageTitle')]]">
+        <settings-subpage page-title="$i18n{usersPageTitle}">
           <settings-users-page prefs="{{prefs}}"></settings-users-page>
         </settings-subpage>
       </template>
       <template is="dom-if" name="changePicture">
-        <settings-subpage page-title="[[i18n('changePictureTitle')]]">
+        <settings-subpage page-title="$i18n{changePictureTitle}">
           <settings-change-picture></settings-change-picture>
         </settings-subpage>
       </template>
 </if>
 <if expr="not chromeos">
       <template is="dom-if" name="manageProfile">
-        <settings-subpage page-title="[[i18n('editPerson')]]">
+        <settings-subpage page-title="$i18n{editPerson}">
           <settings-manage-profile profile-icon-url="[[profileIconUrl_]]"
               profile-name="[[profileName_]]">
           </settings-manage-profile>
