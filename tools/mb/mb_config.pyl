@@ -16,6 +16,7 @@
       'Linux x64': 'noswarming_gn_release_bot',
       'Mac': 'noswarming_gyp_release_bot_mac_strip',
       'Win': 'noswarming_gyp_release_bot_minimal_symbols_x86',
+      'Win x64': 'noswarming_gn_release_bot_minimal_symbols_x64',
     },
 
     'chromium.android': {
@@ -219,6 +220,7 @@
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
       'Win8 Tests (1)': 'none',
       'Win8 Tests (2)': 'none',
+      'Win 10 Fast Ring': 'gn_release_trybot_x64',
       'Windows Browser (DrMemory light) (1)': 'none',
       'Windows Browser (DrMemory light) (2)': 'none',
       'Windows Tests (DrMemory)': 'none',
@@ -1167,6 +1169,10 @@
       'gn', 'release_trybot',
     ],
 
+    'gn_release_trybot_x64': [
+      'gn', 'release_trybot', 'x64',
+    ],
+
     'gn_release_trybot_x86': [
       'gn', 'release_trybot', 'x86',
     ],
@@ -1413,6 +1419,10 @@
 
     'noswarming_gn_release_bot': [
       'noswarming', 'gn', 'release_bot',
+    ],
+
+    'noswarming_gn_release_bot_minimal_symbols_x64': [
+      'noswarming', 'gn', 'release_bot', 'minimal_symbols', 'x64',
     ],
 
     'noswarming_gyp_release_bot_mac_strip': [
