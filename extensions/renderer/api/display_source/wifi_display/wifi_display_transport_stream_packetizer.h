@@ -41,10 +41,9 @@ class WiFiDisplayTransportStreamPacket {
   };
 
   WiFiDisplayTransportStreamPacket(const uint8_t* header_data,
-                                   size_t header_size);
-  WiFiDisplayTransportStreamPacket(const uint8_t* header_data,
                                    size_t header_size,
-                                   const uint8_t* payload_data);
+                                   const uint8_t* payload_data,
+                                   size_t payload_size);
 
   const Part& header() const { return header_; }
   const Part& payload() const { return payload_; }
@@ -67,6 +66,8 @@ class WiFiDisplayTransportStreamPacket {
 // |OnPacketizedTransportStreamPacket| is called.
 class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
  public:
+  struct ElementaryStreamState;
+
   enum ElementaryStreamType : uint8_t {
     AUDIO_AAC = 0x0Fu,
     AUDIO_AC3 = 0x81u,
@@ -87,7 +88,7 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
 
   WiFiDisplayTransportStreamPacketizer(
       const base::TimeDelta& delay_for_unit_time_stamps,
-      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos);
+      const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos);
   virtual ~WiFiDisplayTransportStreamPacketizer();
 
   // Encodes one elementary stream unit buffer (such as one video frame or
@@ -132,7 +133,7 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
   bool EncodeMetaInformation(bool flush);
 
   bool SetElementaryStreams(
-      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos);
+      const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos);
 
   void DetachFromThread() { base::NonThreadSafe::DetachFromThread(); }
 
@@ -140,6 +141,7 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
   bool EncodeProgramAssociationTable(bool flush);
   bool EncodeProgramClockReference(bool flush);
   bool EncodeProgramMapTables(bool flush);
+  void ForceEncodeMetaInformationBeforeNextUnit();
 
   // Normalizes unit time stamps by delaying them in order to ensure that unit
   // time stamps are never smaller than a program clock reference.
@@ -158,8 +160,6 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
       bool flush) = 0;
 
  private:
-  struct ElementaryStreamState;
-
   struct {
     uint8_t program_association_table_continuity;
     uint8_t program_map_table_continuity;
@@ -169,6 +169,8 @@ class WiFiDisplayTransportStreamPacketizer : public base::NonThreadSafe {
   base::TimeDelta delay_for_unit_time_stamps_;
   base::TimeTicks program_clock_reference_;
   std::vector<ElementaryStreamState> stream_states_;
+  std::vector<uint8_t> program_association_table_;
+  std::vector<uint8_t> program_map_table_;
 };
 
 }  // namespace extensions

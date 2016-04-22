@@ -38,7 +38,7 @@ class WiFiDisplayMediaPacketizer : public WiFiDisplayTransportStreamPacketizer {
 
   WiFiDisplayMediaPacketizer(
       const base::TimeDelta& delay_for_unit_time_stamps,
-      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos,
+      const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos,
       const PacketizedCallback& on_packetized);
   ~WiFiDisplayMediaPacketizer() override;
 

@@ -25,10 +25,10 @@ WiFiDisplayMediaDatagramPacket::WiFiDisplayMediaDatagramPacket(
 
 WiFiDisplayMediaPacketizer::WiFiDisplayMediaPacketizer(
     const base::TimeDelta& delay_for_unit_time_stamps,
-    std::vector<WiFiDisplayElementaryStreamInfo> stream_infos,
+    const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos,
     const PacketizedCallback& on_packetized)
     : WiFiDisplayTransportStreamPacketizer(delay_for_unit_time_stamps,
-                                           std::move(stream_infos)),
+                                           stream_infos),
       on_packetized_media_datagram_packet_(on_packetized) {
   // Sequence numbers are mainly used for detecting lossed packets within one
   // RTP session. The initial value SHOULD be random (unpredictable) to make

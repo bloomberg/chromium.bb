@@ -14,6 +14,27 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h"
 
 namespace extensions {
+
+struct WiFiDisplayTransportStreamPacketizer::ElementaryStreamState {
+  using ElementaryStreamType =
+      WiFiDisplayElementaryStreamInfo::ElementaryStreamType;
+
+  ElementaryStreamState(const WiFiDisplayElementaryStreamInfo& stream_info,
+                        uint16_t packet_id,
+                        uint8_t stream_id);
+
+  struct {
+    uint8_t continuity;
+  } counters;
+  uint16_t packet_id;
+  uint8_t stream_id;
+  ElementaryStreamType type;
+  struct {
+    uint8_t data[4];
+    uint8_t size;
+  } unit_header;
+};
+
 namespace {
 
 uint32_t crc32(uint32_t crc, const uint8_t* data, size_t len) {
@@ -73,127 +94,111 @@ namespace psi {
 const uint8_t kProgramAssociationTableId = 0x00u;
 const uint8_t kProgramMapTableId = 0x02u;
 
-const uint16_t kFirstProgramNumber = 0x0001u;
-
-const size_t kCrcSize = 4u;
-const size_t kProgramMapTableElementaryStreamEntryBaseSize = 5u;
 const size_t kTableHeaderSize = 3u;
 
-size_t FillInTablePointer(uint8_t* dst, size_t min_size) {
-  size_t i = 1u;
-  if (i < min_size) {
-    std::memset(&dst[i], 0xFF, min_size - i);  // Pointer filler bytes
-    i = min_size;
-  }
-  dst[0] = i - 1u;  // Pointer field
-  return i;
+void AppendTablePointer(std::vector<uint8_t>* dst, uint8_t min_size) {
+  const uint8_t kPointerFieldSize = 1u;
+  const uint8_t length =
+      std::max(min_size, kPointerFieldSize) - kPointerFieldSize;
+  dst->push_back(length);                  // Pointer field
+  dst->insert(dst->end(), length, 0xFFu);  // Pointer filler bytes
 }
 
-size_t FillInTableHeaderAndCrc(uint8_t* header_dst,
-                               uint8_t* crc_dst,
-                               uint8_t table_id) {
-  size_t i;
-  const uint8_t* const header_end = header_dst + kTableHeaderSize;
-  const uint8_t* const crc_end = crc_dst + kCrcSize;
-  const size_t section_length = static_cast<size_t>(crc_end - header_end);
+size_t FillInTableHeader(uint8_t* dst, uint8_t table_id, size_t table_size) {
+  const size_t section_length = table_size - kTableHeaderSize;
   DCHECK_LE(section_length, 1021u);
 
-  // Table header.
-  i = 0u;
-  header_dst[i++] = table_id;
-  header_dst[i++] =
-      (0x1u << 7) |  // Section syntax indicator (1 for PAT and PMT)
-      (0x0u << 6) |  // Private bit (0 for PAT and PMT)
-      (0x3u << 4) |  // Reserved bits (both bits on)
-      (0x0u << 2) |  // Section length unused bits (both bits off)
-      ((section_length >> 8) & 0x03u);       // Section length (10 bits)
-  header_dst[i++] = section_length & 0xFFu;  //
+  size_t i = 0u;
+  dst[i++] = table_id;
+  dst[i++] = (0x1u << 7) |  // Section syntax indicator (1 for PAT and PMT)
+             (0x0u << 6) |  // Private bit (0 for PAT and PMT)
+             (0x3u << 4) |  // Reserved bits (both bits on)
+             (0x0u << 2) |  // Section length unused bits (both bits off)
+             ((section_length >> 8) & 0x03u);  // Section length (10 bits)
+  dst[i++] = section_length & 0xFFu;           //
   DCHECK_EQ(kTableHeaderSize, i);
-
-  // CRC.
-  uint32_t crc =
-      crc32(0xFFFFFFFFu, header_dst, static_cast<size_t>(crc_dst - header_dst));
-  i = 0u;
-  // Avoid swapping the crc by reversing write order.
-  crc_dst[i++] = crc & 0xFFu;
-  crc_dst[i++] = (crc >> 8) & 0xFFu;
-  crc_dst[i++] = (crc >> 16) & 0xFFu;
-  crc_dst[i++] = (crc >> 24) & 0xFFu;
-  DCHECK_EQ(kCrcSize, i);
   return i;
 }
 
-size_t FillInTableSyntax(uint8_t* dst,
-                         uint16_t table_id_extension,
-                         uint8_t version_number) {
-  size_t i = 0u;
-  dst[i++] = table_id_extension >> 8;
-  dst[i++] = table_id_extension & 0xFFu;
-  dst[i++] = (0x3u << 6) |                      // Reserved bits (both bits on)
-             ((version_number & 0x1Fu) << 1) |  // Version number (5 bits)
-             (0x1u << 0);                       // Current indicator
-  dst[i++] = 0u;                                // Section number
-  dst[i++] = 0u;                                // Last section number
-  return i;
+void FillInTableHeaderAndAppendCrc(std::vector<uint8_t>* dst,
+                                   size_t table_pos,
+                                   uint8_t table_id) {
+  const size_t kCrcSize = 4u;
+
+  // Fill in a table header.
+  const size_t table_size = dst->size() + kCrcSize - table_pos;
+  uint8_t* table_data = &(*dst)[table_pos];
+  FillInTableHeader(table_data, table_id, table_size);
+
+  // Append a CRC. Avoid swapping crc_value by reversing write order.
+  uint32_t crc_value = crc32(0xFFFFFFFFu, table_data, table_size - kCrcSize);
+  const uint8_t crc[kCrcSize] = {crc_value & 0xFFu, (crc_value >> 8) & 0xFFu,
+                                 (crc_value >> 16) & 0xFFu,
+                                 (crc_value >> 24) & 0xFFu};
+  DCHECK_EQ(kCrcSize, sizeof(crc));
+  dst->insert(dst->end(), std::begin(crc), std::end(crc));
 }
 
-size_t FillInProgramAssociationTableEntry(uint8_t* dst,
-                                          uint16_t program_number,
-                                          unsigned pmt_packet_id) {
-  size_t i = 0u;
-  dst[i++] = program_number >> 8;
-  dst[i++] = program_number & 0xFFu;
-  dst[i++] = (0x7u << 5) |                    // Reserved bits (all 3 bits on)
-             ((pmt_packet_id >> 8) & 0x1Fu);  // Packet identifier (13 bits)
-  dst[i++] = pmt_packet_id & 0xFFu;           //
-  return i;
+void AppendTableSyntax(std::vector<uint8_t>* dst,
+                       uint16_t table_id_extension,
+                       uint8_t version_number) {
+  const uint8_t table_syntax[] = {
+      table_id_extension >> 8, table_id_extension & 0xFFu,
+      ((0x3u << 6) |                      // Reserved bits (both bits on)
+       ((version_number & 0x1Fu) << 1) |  // Version number (5 bits)
+       (true << 0)),                      // Current indicator
+      0u,                                 // Section number
+      0u};                                // Last section number
+  dst->insert(dst->end(), std::begin(table_syntax), std::end(table_syntax));
 }
 
-size_t FillInProgramMapTableData(uint8_t* dst, unsigned pcr_packet_id) {
-  size_t i = 0u;
-  dst[i++] = (0x7u << 5) |                    // Reserved bits (all 3 bits on)
-             ((pcr_packet_id >> 8) & 0x1Fu);  // Packet identifier (13 bits)
-  dst[i++] = pcr_packet_id & 0xFFu;           //
-  dst[i++] = (0xFu << 4) |                    // Reserved bits (all 4 bits on)
-             (0x0u << 2) |  // Program info length unused bits (both bits off)
-             ((0u >> 8) & 0x3u);  // Program info length (10 bits)
-  dst[i++] = 0u & 0xFFu;          //
-                                  // No program descriptors
-  return i;
+void AppendProgramAssociationTableEntry(std::vector<uint8_t>* dst,
+                                        uint16_t program_number,
+                                        unsigned pmt_packet_id) {
+  const uint8_t entry[] = {
+      program_number >> 8, program_number & 0xFFu,
+      ((0x7u << 5) |                     // Reserved bits (all 3 bits on)
+       ((pmt_packet_id >> 8) & 0x1Fu)),  // Packet identifier (13 bits)
+      pmt_packet_id & 0xFFu};            //
+  dst->insert(dst->end(), std::begin(entry), std::end(entry));
 }
 
-size_t CalculateElementaryStreamInfoLength(
+void AppendProgramMapTableDataWithoutElementaryStreamEntries(
+    std::vector<uint8_t>* dst,
+    unsigned pcr_packet_id) {
+  const uint8_t data[] = {
+      ((0x7u << 5) |                     // Reserved bits (all 3 bits on)
+       ((pcr_packet_id >> 8) & 0x1Fu)),  // Packet identifier (13 bits)
+      pcr_packet_id & 0xFFu,             //
+      ((0xFu << 4) |                     // Reserved bits (all 4 bits on)
+       (0x0u << 2) |         // Program info length unused bits (both bits off)
+       ((0u >> 8) & 0x3u)),  // Program info length (10 bits)
+      0u & 0xFFu};           //
+                             // No program descriptors
+  dst->insert(dst->end(), std::begin(data), std::end(data));
+}
+
+void AppendProgramMapTableElementaryStreamEntry(
+    std::vector<uint8_t>* dst,
+    uint8_t stream_type,
+    unsigned es_packet_id,
     const std::vector<WiFiDisplayElementaryStreamDescriptor>& es_descriptors) {
   size_t es_info_length = 0u;
   for (const auto& es_descriptor : es_descriptors)
     es_info_length += es_descriptor.size();
-  DCHECK_EQ(0u, es_info_length >> 8);
-  return es_info_length;
-}
-
-size_t FillInProgramMapTableElementaryStreamEntry(
-    uint8_t* dst,
-    uint8_t stream_type,
-    unsigned es_packet_id,
-    size_t es_info_length,
-    const std::vector<WiFiDisplayElementaryStreamDescriptor>& es_descriptors) {
-  DCHECK_EQ(CalculateElementaryStreamInfoLength(es_descriptors),
-            es_info_length);
   DCHECK_EQ(0u, es_info_length >> 10);
-  size_t i = 0u;
-  dst[i++] = stream_type;
-  dst[i++] = (0x7u << 5) |                   // Reserved bits (all 3 bits on)
-             ((es_packet_id >> 8) & 0x1Fu);  // Packet identifier (13 bits)
-  dst[i++] = es_packet_id & 0xFFu;           //
-  dst[i++] = (0xFu << 4) |                   // Reserved bits (all 4 bits on)
-             (0x0u << 2) |  // ES info length unused bits (both bits off)
-             ((es_info_length >> 8) & 0x3u);  // ES info length (10 bits)
-  dst[i++] = es_info_length & 0xFFu;          //
-  for (const auto& es_descriptor : es_descriptors) {
-    std::memcpy(&dst[i], es_descriptor.data(), es_descriptor.size());
-    i += es_descriptor.size();
-  }
-  return i;
+  const uint8_t data[] = {
+      stream_type,
+      ((0x7u << 5) |                    // Reserved bits (all 3 bits on)
+       ((es_packet_id >> 8) & 0x1Fu)),  // Packet identifier (13 bits)
+      es_packet_id & 0xFFu,             //
+      ((0xFu << 4) |                    // Reserved bits (all 4 bits on)
+       (0x0u << 2) |  // ES info length unused bits (both bits off)
+       ((es_info_length >> 8) & 0x3u)),  // ES info length (10 bits)
+      es_info_length & 0xFFu};           //
+  dst->insert(dst->end(), std::begin(data), std::end(data));
+  for (const auto& es_descriptor : es_descriptors)
+    dst->insert(dst->end(), es_descriptor.begin(), es_descriptor.end());
 }
 
 }  // namespace psi
@@ -299,8 +304,6 @@ size_t FillInPacketHeader(uint8_t* dst,
 // Code and parameters related to the WiFi Display specification.
 namespace widi {
 
-const size_t kUnitHeaderMaxSize = 4u;
-
 // Maximum interval between meta information which includes:
 //  * Program Association Table (PAT)
 //  * Program Map Table (PMT)
@@ -313,6 +316,9 @@ const unsigned kProgramClockReferencePacketId = 0x1000u;
 const unsigned kVideoStreamPacketId = 0x1011u;
 const unsigned kFirstAudioStreamPacketId = 0x1100u;
 
+const uint16_t kProgramNumber = 0x0001u;
+const uint16_t kTransportStreamId = 0x0001u;
+
 size_t FillInUnitHeader(uint8_t* dst,
                         const WiFiDisplayElementaryStreamInfo& stream_info) {
   size_t i = 0u;
@@ -324,63 +330,108 @@ size_t FillInUnitHeader(uint8_t* dst,
                 WiFiDisplayElementaryStreamDescriptor::LPCMAudioStream>()) {
       dst[i++] = 0xA0u;  // Sub stream ID (0th sub stream)
       dst[i++] = WiFiDisplayTransportStreamPacketizer::LPCM::kFramesPerUnit;
-      dst[i++] = ((0x00u << 1) |  // Reserved (all 7 bits off)
-                  (lpcm_descriptor->emphasis_flag() << 0));
-      dst[i++] = ((lpcm_descriptor->bits_per_sample() << 6) |
-                  (lpcm_descriptor->sampling_frequency() << 3) |
-                  (lpcm_descriptor->number_of_channels() << 0));
+      dst[i++] = (0x00u << 1) |  // Reserved (all 7 bits off)
+                 (lpcm_descriptor->emphasis_flag() << 0);
+      dst[i++] = (lpcm_descriptor->bits_per_sample() << 6) |
+                 (lpcm_descriptor->sampling_frequency() << 3) |
+                 (lpcm_descriptor->number_of_channels() << 0);
     }
   }
 
-  DCHECK_LE(i, kUnitHeaderMaxSize);
   return i;
 }
 
 }  // namespace widi
 
+std::vector<uint8_t> BuildProgramAssociationTable(uint8_t version_number) {
+  std::vector<uint8_t> table;
+
+  // Append a minimal table pointer.
+  psi::AppendTablePointer(&table, 0u);
+
+  // Reserve space for a table header.
+  const size_t table_header_index = table.size();
+  table.resize(table.size() + psi::kTableHeaderSize);
+
+  // Append a table syntax.
+  psi::AppendTableSyntax(&table, widi::kTransportStreamId, version_number);
+
+  // Append program association table data consisting of one entry.
+  psi::AppendProgramAssociationTableEntry(&table, widi::kProgramNumber,
+                                          widi::kProgramMapTablePacketId);
+
+  // Fill in a table header and a CRC now that table size is known.
+  psi::FillInTableHeaderAndAppendCrc(&table, table_header_index,
+                                     psi::kProgramAssociationTableId);
+
+  return table;
+}
+
+std::vector<uint8_t> BuildProgramMapTable(
+    uint8_t version_number,
+    const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos,
+    const std::vector<
+        WiFiDisplayTransportStreamPacketizer::ElementaryStreamState>&
+        stream_states) {
+  DCHECK_EQ(stream_infos.size(), stream_states.size());
+
+  std::vector<uint8_t> table;
+
+  // Append a minimal table pointer.
+  psi::AppendTablePointer(&table, 0u);
+
+  // Reserve space for a table header.
+  const size_t table_header_index = table.size();
+  table.resize(table.size() + psi::kTableHeaderSize);
+
+  // Append a table syntax.
+  psi::AppendTableSyntax(&table, widi::kProgramNumber, version_number);
+
+  // Append program map table data.
+  psi::AppendProgramMapTableDataWithoutElementaryStreamEntries(
+      &table, widi::kProgramClockReferencePacketId);
+  for (size_t i = 0; i < stream_infos.size(); ++i) {
+    psi::AppendProgramMapTableElementaryStreamEntry(
+        &table, stream_states[i].type, stream_states[i].packet_id,
+        stream_infos[i].descriptors());
+  }
+
+  // Fill in a table header and a CRC now that table size is known.
+  psi::FillInTableHeaderAndAppendCrc(&table, table_header_index,
+                                     psi::kProgramMapTableId);
+
+  return table;
+}
+
 }  // namespace
 
 WiFiDisplayTransportStreamPacket::WiFiDisplayTransportStreamPacket(
     const uint8_t* header_data,
-    size_t header_size)
-    : header_(header_data, header_size),
-      payload_(header_.end(), 0u),
-      filler_(kPacketSize - header_size) {}
-
-WiFiDisplayTransportStreamPacket::WiFiDisplayTransportStreamPacket(
-    const uint8_t* header_data,
     size_t header_size,
-    const uint8_t* payload_data)
+    const uint8_t* payload_data,
+    size_t payload_size)
     : header_(header_data, header_size),
-      payload_(payload_data, kPacketSize - header_size),
-      filler_(0u) {}
+      payload_(payload_data, payload_size),
+      filler_(kPacketSize - header_size - payload_size) {}
 
-struct WiFiDisplayTransportStreamPacketizer::ElementaryStreamState {
-  ElementaryStreamState(WiFiDisplayElementaryStreamInfo info,
-                        uint16_t packet_id,
-                        uint8_t stream_id)
-      : info(std::move(info)),
-        info_length(
-            psi::CalculateElementaryStreamInfoLength(this->info.descriptors())),
-        packet_id(packet_id),
-        stream_id(stream_id) {}
-
-  WiFiDisplayElementaryStreamInfo info;
-  uint8_t info_length;
-  struct {
-    uint8_t continuity = 0u;
-  } counters;
-  uint16_t packet_id;
-  uint8_t stream_id;
-};
+WiFiDisplayTransportStreamPacketizer::ElementaryStreamState::
+    ElementaryStreamState(const WiFiDisplayElementaryStreamInfo& stream_info,
+                          uint16_t packet_id,
+                          uint8_t stream_id)
+    : packet_id(packet_id), stream_id(stream_id), type(stream_info.type()) {
+  std::memset(&counters, 0x00, sizeof(counters));
+  unit_header.size = widi::FillInUnitHeader(unit_header.data, stream_info);
+  DCHECK_LE(unit_header.data + unit_header.size, std::end(unit_header.data));
+}
 
 WiFiDisplayTransportStreamPacketizer::WiFiDisplayTransportStreamPacketizer(
     const base::TimeDelta& delay_for_unit_time_stamps,
-    std::vector<WiFiDisplayElementaryStreamInfo> stream_infos)
-    : delay_for_unit_time_stamps_(delay_for_unit_time_stamps) {
+    const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos)
+    : delay_for_unit_time_stamps_(delay_for_unit_time_stamps),
+      program_association_table_(BuildProgramAssociationTable(0u)) {
   std::memset(&counters_, 0x00, sizeof(counters_));
   if (!stream_infos.empty())
-    CHECK(SetElementaryStreams(std::move(stream_infos)));
+    CHECK(SetElementaryStreams(stream_infos));
 }
 
 WiFiDisplayTransportStreamPacketizer::~WiFiDisplayTransportStreamPacketizer() {}
@@ -406,22 +457,17 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
       return false;
   }
 
-  uint8_t unit_header_data[widi::kUnitHeaderMaxSize];
-  const size_t unit_header_size =
-      widi::FillInUnitHeader(unit_header_data, stream_state.info);
-
   UpdateDelayForUnitTimeStamps(pts, dts);
   NormalizeUnitTimeStamps(&pts, &dts);
 
   WiFiDisplayElementaryStreamPacketizer elementary_stream_packetizer;
   WiFiDisplayElementaryStreamPacket elementary_stream_packet =
       elementary_stream_packetizer.EncodeElementaryStreamUnit(
-          stream_state.stream_id, unit_header_data, unit_header_size, unit_data,
-          unit_size, pts, dts);
+          stream_state.stream_id, stream_state.unit_header.data,
+          stream_state.unit_header.size, unit_data, unit_size, pts, dts);
 
   size_t adaptation_field_min_size = 0u;
   uint8_t header_data[WiFiDisplayTransportStreamPacket::kPacketSize];
-  bool is_payload_unit_end;
   bool is_payload_unit_start = true;
   size_t remaining_unit_size = elementary_stream_packet.unit().size();
   do {
@@ -439,7 +485,11 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
     //        - Decoding time stamp
     bool adaptation_field_flag = false;
     size_t header_min_size;
-    if (is_payload_unit_start || is_payload_unit_end) {
+    const bool is_payload_unit_start_or_end =
+        is_payload_unit_start ||
+        remaining_unit_size <= WiFiDisplayTransportStreamPacket::kPacketSize -
+                                   ts::kPacketHeaderSize;
+    if (is_payload_unit_start_or_end) {
       header_min_size = ts::kPacketHeaderSize;
       if (is_payload_unit_start) {
         header_min_size += elementary_stream_packet.header().size() +
@@ -473,7 +523,7 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
                   elementary_stream_packet.unit_header().size());
       i += elementary_stream_packet.unit_header().size();
       DCHECK_EQ(header_min_size + adaptation_field_size, i);
-    } else if (is_payload_unit_end) {
+    } else if (is_payload_unit_start_or_end) {  // Payload unit end
       if (adaptation_field_flag) {
         // Fill in an adaptation field only for padding.
         i += ts::FillInAdaptationField(&header_data[i], false,
@@ -483,9 +533,10 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
     }
 
     // Delegate the packet.
-    WiFiDisplayTransportStreamPacket packet(
+    const WiFiDisplayTransportStreamPacket packet(
         header_data, i,
-        elementary_stream_packet.unit().end() - remaining_unit_size);
+        elementary_stream_packet.unit().end() - remaining_unit_size,
+        WiFiDisplayTransportStreamPacket::kPacketSize - i);
     DCHECK_LE(packet.payload().size(), remaining_unit_size);
     remaining_unit_size -= packet.payload().size();
     if (!OnPacketizedTransportStreamPacket(
@@ -494,9 +545,6 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeElementaryStreamUnit(
     }
 
     // Prepare for the next packet.
-    is_payload_unit_end =
-        remaining_unit_size <=
-        WiFiDisplayTransportStreamPacket::kPacketSize - ts::kPacketHeaderSize;
     is_payload_unit_start = false;
   } while (remaining_unit_size > 0u);
 
@@ -516,41 +564,19 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeProgramAssociationTable(
     bool flush) {
   DCHECK(CalledOnValidThread());
 
-  const uint16_t transport_stream_id = 0x0001u;
-
-  uint8_t header_data[WiFiDisplayTransportStreamPacket::kPacketSize];
-  size_t i = 0u;
-
   // Fill in a packet header.
-  i += ts::FillInPacketHeader(&header_data[i], true,
-                              widi::kProgramAssociationTablePacketId, false,
-                              counters_.program_association_table_continuity++);
-
-  // Fill in a minimal table pointer.
-  i += psi::FillInTablePointer(&header_data[i], 0u);
-
-  // Reserve space for a table header.
-  const size_t table_header_index = i;
-  i += psi::kTableHeaderSize;
-
-  // Fill in a table syntax.
-  const uint8_t version_number = 0u;
-  i += psi::FillInTableSyntax(&header_data[i], transport_stream_id,
-                              version_number);
-
-  // Fill in program association table data.
-  i += psi::FillInProgramAssociationTableEntry(&header_data[i],
-                                               psi::kFirstProgramNumber,
-                                               widi::kProgramMapTablePacketId);
-
-  // Fill in a table header and a CRC now that the table size is known.
-  i += psi::FillInTableHeaderAndCrc(&header_data[table_header_index],
-                                    &header_data[i],
-                                    psi::kProgramAssociationTableId);
+  uint8_t header_data[ts::kPacketHeaderSize];
+  size_t i = ts::FillInPacketHeader(
+      header_data, true, widi::kProgramAssociationTablePacketId, false,
+      counters_.program_association_table_continuity++);
+  DCHECK_EQ(ts::kPacketHeaderSize, i);
 
   // Delegate the packet.
   return OnPacketizedTransportStreamPacket(
-      WiFiDisplayTransportStreamPacket(header_data, i), flush);
+      WiFiDisplayTransportStreamPacket(header_data, i,
+                                       program_association_table_.data(),
+                                       program_association_table_.size()),
+      flush);
 }
 
 bool WiFiDisplayTransportStreamPacketizer::EncodeProgramClockReference(
@@ -581,53 +607,32 @@ bool WiFiDisplayTransportStreamPacketizer::EncodeProgramClockReference(
 
   // Delegate the packet.
   return OnPacketizedTransportStreamPacket(
-      WiFiDisplayTransportStreamPacket(header_data, i), flush);
+      WiFiDisplayTransportStreamPacket(header_data, i, header_data + i, 0u),
+      flush);
 }
 
 bool WiFiDisplayTransportStreamPacketizer::EncodeProgramMapTables(bool flush) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!stream_states_.empty());
-
-  const uint16_t program_number = psi::kFirstProgramNumber;
-
-  uint8_t header_data[WiFiDisplayTransportStreamPacket::kPacketSize];
-  size_t i = 0u;
+  DCHECK(!program_map_table_.empty());
 
   // Fill in a packet header.
-  i += ts::FillInPacketHeader(&header_data[i], true,
-                              widi::kProgramMapTablePacketId, false,
-                              counters_.program_map_table_continuity++);
-
-  // Fill in a minimal table pointer.
-  i += psi::FillInTablePointer(&header_data[i], 0u);
-
-  // Reserve space for a table header.
-  const size_t table_header_index = i;
-  i += psi::kTableHeaderSize;
-
-  // Fill in a table syntax.
-  i += psi::FillInTableSyntax(&header_data[i], program_number,
-                              counters_.program_map_table_version);
-
-  // Fill in program map table data.
-  i += psi::FillInProgramMapTableData(&header_data[i],
-                                      widi::kProgramClockReferencePacketId);
-  for (const auto& stream_state : stream_states_) {
-    DCHECK_LE(i + psi::kProgramMapTableElementaryStreamEntryBaseSize +
-                  stream_state.info_length + psi::kCrcSize,
-              WiFiDisplayTransportStreamPacket::kPacketSize);
-    i += psi::FillInProgramMapTableElementaryStreamEntry(
-        &header_data[i], stream_state.info.type(), stream_state.packet_id,
-        stream_state.info_length, stream_state.info.descriptors());
-  }
-
-  // Fill in a table header and a CRC now that the table size is known.
-  i += psi::FillInTableHeaderAndCrc(&header_data[table_header_index],
-                                    &header_data[i], psi::kProgramMapTableId);
+  uint8_t header_data[ts::kPacketHeaderSize];
+  size_t i =
+      ts::FillInPacketHeader(header_data, true, widi::kProgramMapTablePacketId,
+                             false, counters_.program_map_table_continuity++);
+  DCHECK_EQ(ts::kPacketHeaderSize, i);
 
   // Delegate the packet.
   return OnPacketizedTransportStreamPacket(
-      WiFiDisplayTransportStreamPacket(header_data, i), flush);
+      WiFiDisplayTransportStreamPacket(header_data, ts::kPacketHeaderSize,
+                                       program_map_table_.data(),
+                                       program_map_table_.size()),
+      flush);
+}
+
+void WiFiDisplayTransportStreamPacketizer::
+    ForceEncodeMetaInformationBeforeNextUnit() {
+  program_clock_reference_ = base::TimeTicks();
 }
 
 void WiFiDisplayTransportStreamPacketizer::NormalizeUnitTimeStamps(
@@ -650,20 +655,22 @@ void WiFiDisplayTransportStreamPacketizer::NormalizeUnitTimeStamps(
 }
 
 bool WiFiDisplayTransportStreamPacketizer::SetElementaryStreams(
-    std::vector<WiFiDisplayElementaryStreamInfo> stream_infos) {
+    const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos) {
   DCHECK(CalledOnValidThread());
 
   std::vector<ElementaryStreamState> new_stream_states;
   new_stream_states.reserve(stream_infos.size());
 
+  // Allocate packet and stream IDs.
   uint8_t audio_stream_id =
       WiFiDisplayElementaryStreamPacketizer::kFirstAudioStreamId;
   uint16_t audio_stream_packet_id = widi::kFirstAudioStreamPacketId;
   uint8_t private_stream_1_id =
       WiFiDisplayElementaryStreamPacketizer::kPrivateStream1Id;
-  uint16_t video_stream_packet_id = widi::kVideoStreamPacketId;
+  uint8_t video_stream_id =
+      WiFiDisplayElementaryStreamPacketizer::kFirstVideoStreamId;
 
-  for (auto& stream_info : stream_infos) {
+  for (const auto& stream_info : stream_infos) {
     uint16_t packet_id;
     uint8_t stream_id;
 
@@ -682,24 +689,32 @@ bool WiFiDisplayTransportStreamPacketizer::SetElementaryStreams(
         stream_id = private_stream_1_id++;
         break;
       case VIDEO_H264:
-        if (video_stream_packet_id != widi::kVideoStreamPacketId)
+        if (video_stream_id !=
+            WiFiDisplayElementaryStreamPacketizer::kFirstVideoStreamId) {
           return false;
-        packet_id = video_stream_packet_id++;
-        stream_id = WiFiDisplayElementaryStreamPacketizer::kFirstVideoStreamId;
+        }
+        packet_id = widi::kVideoStreamPacketId;
+        stream_id = video_stream_id++;
         break;
     }
 
-    new_stream_states.emplace_back(std::move(stream_info), packet_id,
-                                   stream_id);
+    new_stream_states.emplace_back(stream_info, packet_id, stream_id);
   }
 
-  // If there are no previous states, there is no previous program map table
-  // to change, either. This ensures that the first encoded program map table
-  // has version 0.
-  if (!stream_states_.empty())
-    ++counters_.program_map_table_version;
+  // Build a new program map table.
+  std::vector<uint8_t> new_program_map_table = BuildProgramMapTable(
+      counters_.program_map_table_version, stream_infos, new_stream_states);
+  if (new_program_map_table.size() >
+      WiFiDisplayTransportStreamPacket::kPacketSize - ts::kPacketHeaderSize) {
+    return false;
+  }
 
+  // Activate the new program map table and the new states.
+  ++counters_.program_map_table_version;
+  program_map_table_.swap(new_program_map_table);
   stream_states_.swap(new_stream_states);
+
+  ForceEncodeMetaInformationBeforeNextUnit();
 
   return true;
 }

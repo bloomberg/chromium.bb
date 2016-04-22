@@ -105,11 +105,12 @@ class FakeMediaPacketizer
     : public WiFiDisplayMediaPacketizer,
       public PacketCollector<std::vector<std::vector<uint8_t>>> {
  public:
-  FakeMediaPacketizer(const base::TimeDelta& delay_for_unit_time_stamps,
-                      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos)
+  FakeMediaPacketizer(
+      const base::TimeDelta& delay_for_unit_time_stamps,
+      const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos)
       : WiFiDisplayMediaPacketizer(
             delay_for_unit_time_stamps,
-            std::move(stream_infos),
+            stream_infos,
             base::Bind(&FakeMediaPacketizer::OnPacketizedMediaDatagramPacket,
                        base::Unretained(this))) {}
 
@@ -137,9 +138,9 @@ class FakeTransportStreamPacketizer
  public:
   FakeTransportStreamPacketizer(
       const base::TimeDelta& delay_for_unit_time_stamps,
-      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos)
+      const std::vector<WiFiDisplayElementaryStreamInfo>& stream_infos)
       : WiFiDisplayTransportStreamPacketizer(delay_for_unit_time_stamps,
-                                             std::move(stream_infos)) {}
+                                             stream_infos) {}
 
   using WiFiDisplayTransportStreamPacketizer::NormalizeUnitTimeStamps;
 
@@ -151,12 +152,9 @@ class FakeTransportStreamPacketizer
     headers_.emplace_back(transport_stream_packet.header().begin(),
                           transport_stream_packet.header().end());
     const auto& header = headers_.back();
-    if (transport_stream_packet.payload().empty()) {
-      packets_.emplace_back(header.data(), header.size());
-    } else {
-      packets_.emplace_back(header.data(), header.size(),
-                            transport_stream_packet.payload().begin());
-    }
+    const auto& payload = transport_stream_packet.payload();
+    packets_.emplace_back(header.data(), header.size(), payload.data(),
+                          payload.size());
     EXPECT_EQ(transport_stream_packet.header().size(),
               packets_.back().header().size());
     EXPECT_EQ(transport_stream_packet.payload().size(),
@@ -400,18 +398,12 @@ class WiFiDisplayElementaryStreamUnitPacketizationTest
     base::BigEndianReader header_reader(
         reinterpret_cast<const char*>(packet.header().begin()),
         packet.header().size());
-
     CheckTransportStreamPacketHeader(
         &header_reader, true, widi::kProgramAssociationTablePacketId, nullptr,
         continuity_.program_assication_table++);
-
-    EXPECT_EQ(PacketPart(kProgramAssicationTable),
-              PacketPart(packet.header().end() - header_reader.remaining(),
-                         static_cast<size_t>(header_reader.remaining())));
-    EXPECT_TRUE(header_reader.Skip(header_reader.remaining()));
-
     EXPECT_EQ(0, header_reader.remaining());
-    EXPECT_EQ(0u, packet.payload().size());
+
+    EXPECT_EQ(PacketPart(kProgramAssicationTable), packet.payload());
   }
 
   void CheckTransportStreamProgramMapTablePacket(
@@ -420,18 +412,12 @@ class WiFiDisplayElementaryStreamUnitPacketizationTest
     base::BigEndianReader header_reader(
         reinterpret_cast<const char*>(packet.header().begin()),
         packet.header().size());
-
     CheckTransportStreamPacketHeader(&header_reader, true,
                                      widi::kProgramMapTablePacketId, nullptr,
                                      continuity_.program_map_table++);
-
-    EXPECT_EQ(program_map_table,
-              PacketPart(packet.header().end() - header_reader.remaining(),
-                         static_cast<size_t>(header_reader.remaining())));
-    EXPECT_TRUE(header_reader.Skip(header_reader.remaining()));
-
     EXPECT_EQ(0, header_reader.remaining());
-    EXPECT_EQ(0u, packet.payload().size());
+
+    EXPECT_EQ(program_map_table, packet.payload());
   }
 
   void CheckTransportStreamProgramClockReferencePacket(
@@ -688,7 +674,7 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
   stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::AUDIO_AAC);
   WiFiDisplayElementaryStreamPacketizer elementary_stream_packetizer;
   FakeTransportStreamPacketizer packetizer(
-      base::TimeDelta::FromMilliseconds(200), std::move(stream_infos));
+      base::TimeDelta::FromMilliseconds(200), stream_infos);
 
   size_t packet_index = 0u;
   for (unsigned stream_index = 0; stream_index < kStreamCount; ++stream_index) {
@@ -772,7 +758,7 @@ TEST(WiFiDisplayTransportStreamPacketizationTest, EncodeToMediaDatagramPacket) {
   std::vector<WiFiDisplayElementaryStreamInfo> stream_infos;
   stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::VIDEO_H264);
   FakeTransportStreamPacketizer transport_stream_packetizer(
-      base::TimeDelta::FromMilliseconds(0), std::move(stream_infos));
+      base::TimeDelta::FromMilliseconds(0), stream_infos);
   for (const auto& unit : units) {
     EXPECT_TRUE(transport_stream_packetizer.EncodeElementaryStreamUnit(
         0u, unit.data(), unit.size(), false, base::TimeTicks(),
