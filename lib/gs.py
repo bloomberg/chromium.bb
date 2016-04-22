@@ -1001,10 +1001,12 @@ class GSContext(object):
     if not res.output.startswith('gs://'):
       raise GSContextException('Unexpected stat output: %s' % res.output)
 
-    def _GetField(name):
+    def _GetField(name, optional=False):
       m = re.search(r'%s:\s*(.+)' % re.escape(name), res.output)
       if m:
         return m.group(1)
+      elif optional:
+        return None
       else:
         raise GSContextException('Field "%s" missing in "%s"' %
                                  (name, res.output))
@@ -1015,7 +1017,7 @@ class GSContext(object):
         content_length=int(_GetField('Content-Length')),
         content_type=_GetField('Content-Type'),
         hash_crc32c=_GetField('Hash (crc32c)'),
-        hash_md5=_GetField('Hash (md5)'),
+        hash_md5=_GetField('Hash (md5)', optional=True),
         etag=_GetField('ETag'),
         generation=int(_GetField('Generation')),
         metageneration=int(_GetField('Metageneration')))

@@ -209,8 +209,8 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
 
         # Check a pre-existing file with the original source.
         if gs_context.Exists(arc_path):
-          if (gs_context.Stat(zipfile.url).hash_md5 !=
-              gs_context.Stat(arc_path).hash_md5):
+          if (gs_context.Stat(zipfile.url).hash_crc32c !=
+              gs_context.Stat(arc_path).hash_crc32c):
             logging.warn('Removing incorrect file %s', arc_path)
             gs_context.Remove(arc_path)
           else:
