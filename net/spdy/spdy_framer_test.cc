@@ -559,6 +559,12 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     return SpdyFramer::kMaxControlFrameSize;
   }
 
+  // Largest control frame that the SPDY implementation is willing to receive,
+  // excluding the size of the header.
+  static size_t received_control_frame_max_size() {
+    return kSpdyInitialFrameSizeLimit;
+  }
+
   static size_t header_data_chunk_max_size() {
     return SpdyFramer::kHeaderDataChunkMaxSize;
   }
@@ -3371,7 +3377,7 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   EXPECT_LT(kBigValueSize, visitor.header_buffer_length_);
 }
 
-TEST_P(SpdyFramerTest, ControlFrameMaximumSize) {
+TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   if (!IsSpdy3()) {
     // TODO(jgraettinger): This test setup doesn't work with HPACK.
     return;
@@ -3386,23 +3392,34 @@ TEST_P(SpdyFramerTest, ControlFrameMaximumSize) {
   syn_stream.set_priority(1);
   SpdySerializedFrame control_frame(framer.SerializeSynStream(syn_stream));
   const size_t kBigValueSize =
-      SpdyConstants::GetFrameMaximumSize(spdy_version_) - control_frame.size();
+      TestSpdyVisitor::received_control_frame_max_size() +
+      SpdyConstants::GetControlFrameHeaderSize(spdy_version_) -
+      control_frame.size() + 1;
 
   // Create a frame at exatly that size.
   string big_value(kBigValueSize, 'x');
   syn_stream.SetHeader("aa", big_value);
-  control_frame = framer.SerializeSynStream(syn_stream);
-
-  EXPECT_EQ(SpdyConstants::GetFrameMaximumSize(spdy_version_),
+  if (IsSpdy3()) {
+    control_frame = framer.SerializeSynStream(syn_stream);
+  } else {
+    EXPECT_SPDY_BUG({ control_frame = framer.SerializeSynStream(syn_stream); },
+                    "Serializing frame over-capacity.");
+  }
+  EXPECT_EQ(TestSpdyVisitor::received_control_frame_max_size() +
+                SpdyConstants::GetControlFrameHeaderSize(spdy_version_) + 1,
             control_frame.size());
 
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.data()),
       control_frame.size());
-  EXPECT_TRUE(visitor.header_buffer_valid_);
-  EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1, visitor.syn_frame_count_);
+  EXPECT_FALSE(visitor.header_buffer_valid_);
+  EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE,
+            visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
+  EXPECT_EQ(0, visitor.syn_frame_count_);
+  EXPECT_EQ(0u, visitor.header_buffer_length_);
 }
 
 TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {

@@ -48,11 +48,12 @@ typedef uint32_t SpdyStreamId;
 // flow control).
 const SpdyStreamId kSessionFlowControlStreamId = 0;
 
-// The maxmium possible control frame size allowed by the spec.
-const int32_t kSpdyMaxControlFrameSize = (1 << 24) - 1;
+// The maxmium possible frame payload size allowed by the spec.
+const uint32_t kSpdyMaxFrameSizeLimit = (1 << 24) - 1;
 
-// The maximum control frame size we accept.
-const int32_t kControlFrameSizeLimit = 1 << 14;
+// The initial value for the maximum frame payload size as per the spec. This is
+// the maximum control frame size we accept.
+const uint32_t kSpdyInitialFrameSizeLimit = 1 << 14;
 
 // Maximum window size for a Spdy stream or session.
 const int32_t kSpdyMaximumWindowSize = 0x7FFFFFFF;  // Max signed 32bit int

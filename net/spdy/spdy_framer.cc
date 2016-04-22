@@ -178,9 +178,11 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
       end_stream_when_done_(false),
       spdy_on_stream_end_(FLAGS_spdy_on_stream_end) {
   DCHECK(protocol_version_ == SPDY3 || protocol_version_ == HTTP2);
-  DCHECK_LE(kMaxControlFrameSize,
-            SpdyConstants::GetFrameMaximumSize(protocol_version_) +
-                SpdyConstants::GetControlFrameHeaderSize(protocol_version_));
+  // TODO(bnc): The way kMaxControlFrameSize is currently interpreted, it
+  // includes the frame header, whereas kSpdyInitialFrameSizeLimit does not.
+  // Therefore this assertion is unnecessarily strict.
+  static_assert(kMaxControlFrameSize <= kSpdyInitialFrameSizeLimit,
+                "Our send limit should be at most our receive limit");
   Reset();
 }
 
@@ -1110,7 +1112,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   }
 
   if (current_frame_length_ >
-      SpdyConstants::GetFrameMaximumSize(protocol_version_) +
+      kSpdyInitialFrameSizeLimit +
           SpdyConstants::GetControlFrameHeaderSize(protocol_version_)) {
     DLOG(WARNING) << "Received control frame of type " << current_frame_type_
                   << " with way too big of a payload: "

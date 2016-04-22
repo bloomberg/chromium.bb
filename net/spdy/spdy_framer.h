@@ -709,10 +709,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // frame data is streamed to the visitor.
   static const size_t kControlFrameBufferSize;
 
-  // The maximum size of the control frames that we support.
-  // This limit is arbitrary. We can enforce it here or at the application
-  // layer. We chose the framing layer, but this can be changed (or removed)
-  // if necessary later down the line.
+  // The maximum size of the control frames that we send, including the size of
+  // the header. This limit is arbitrary. We can enforce it here or at the
+  // application layer. We chose the framing layer, but this can be changed (or
+  // removed) if necessary later down the line.
+  // TODO(diannahu): Rename to make it clear that this limit is for sending.
   static const size_t kMaxControlFrameSize;
 
   SpdyState state_;
