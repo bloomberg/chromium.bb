@@ -114,12 +114,9 @@ TEST_F(DialogButtonBorderMacTest, DrawMinimumSize) {
   EXPECT_LE(border_min_size.width(), view_preferred_size.width());
   EXPECT_LE(border_min_size.height(), view_preferred_size.height());
 
-  // Calling SetStyle(STYLE_BUTTON) sets a default minimum height that is larger
-  // than the border minimum height. Override that to match the border.
-  button.SetMinSize(gfx::Size());
-  view_preferred_size = button.GetPreferredSize();
-  EXPECT_EQ(border_min_size.width(), view_preferred_size.width());
-  EXPECT_EQ(border_min_size.height(), view_preferred_size.height());
+  // Note that Mac's PlatformStyle specifies a minimum button size, but it
+  // shouldn't be larger than the size of the button's label plus border insets.
+  // If it was, a Button::SetMinSize() call would be needed here to override it.
 
   button.SizeToPreferredSize();
   EXPECT_EQ(view_preferred_size.width(), button.width());
@@ -148,19 +145,24 @@ TEST_F(DialogButtonBorderMacTest, DrawMinimumSize) {
 
 // Test drawing with some text. The usual case.
 TEST_F(DialogButtonBorderMacTest, DrawWithLabel) {
-  TestLabelButton button("Label Text That Exceeds the Minimum Button Size");
+  TestLabelButton button("");
   button.SetStyle(Button::STYLE_BUTTON);
   button.SimulateAddToWidget();
 
   EXPECT_TRUE(BorderIsDialogButton(button));
 
-  button.SetMinSize(gfx::Size());
+  button.SizeToPreferredSize();
+  const gfx::Size no_label_size = button.size();
+
+  button.SetText(
+      base::ASCIIToUTF16("Label Text That Exceeds the Minimum Button Size"));
   button.SizeToPreferredSize();
 
-  // Long label, so the button width should be greater than in DrawMinimumSize.
-  const gfx::Size border_min_size = DialogButtonBorderMacSize();
-  EXPECT_LT(border_min_size.width(), button.width());
-  EXPECT_EQ(border_min_size.height(), button.height());
+  // Long label, so the button width should be greater than the empty button.
+  EXPECT_LT(no_label_size.width(), button.width());
+
+  // The height shouldn't change.
+  EXPECT_EQ(no_label_size.height(), button.height());
 
   TestPaintAllStates(&button, true);
 }

@@ -117,7 +117,9 @@ void DialogButtonBorderMac::Paint(const View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Size DialogButtonBorderMac::GetMinimumSize() const {
-  return gfx::Size(28, 4);
+  // Overridden by PlatformStyle. Here, just ensure the minimum size is
+  // consistent with the padding.
+  return gfx::Size(2 * kPaddingX, 2 * kPaddingY);
 }
 
 }  // namespace views

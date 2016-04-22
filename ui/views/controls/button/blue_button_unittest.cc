@@ -44,12 +44,15 @@ TEST_F(BlueButtonTest, Border) {
   widget->GetContentsView()->AddChildView(blue_button);
   blue_button->SizeToPreferredSize();
 #if defined(OS_MACOSX)
-  // On Mac, the default styled border has a large minimum width. To ensure that
-  // the bitmaps are comparable, the size needs to match (checked below).
-  // Increase the minimum size of the blue button to pass the size check.
+  // On Mac, themed STYLE_BUTTON buttons provide blue theming for dialog-default
+  // buttons. This makes it unlikely that they will appear together with a
+  // BlueButton on the same dialog. So the sizes don't really need to be
+  // consistent. However, for the purposes of this test (e.g. to ensure we don't
+  // accidentally make BlueButtons look like themed buttons on Mac), force the
+  // sizes to match (ignoring the minimum size) so that the bitmaps can be
+  // compared.
   EXPECT_NE(button->size(), blue_button->size());  // Verify this is needed.
-  blue_button->SetMinSize(button->border()->GetMinimumSize());
-  blue_button->SizeToPreferredSize();
+  blue_button->SetSize(button->size());
 #endif
 
   gfx::Canvas canvas(blue_button->size(), 1.0, true);
