@@ -291,13 +291,12 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         }
     }
 
-    ScriptState* scriptState = m_resolver->getScriptState();
     FetchResponseData* responseData = nullptr;
     CompositeDataConsumerHandle::Updater* updater = nullptr;
     if (m_request->integrity().isEmpty())
-        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(handle)));
+        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle)));
     else
-        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle(), &updater))));
+        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle(), &updater))));
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
@@ -567,7 +566,7 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
 
     if (m_request->method() != HTTPNames::GET && m_request->method() != HTTPNames::HEAD) {
         if (m_request->buffer())
-            request.setHTTPBody(m_request->buffer()->drainAsFormData());
+            request.setHTTPBody(m_request->buffer()->drainAsFormData(m_executionContext));
         if (m_request->attachedCredential())
             request.setAttachedCredential(m_request->attachedCredential());
     }

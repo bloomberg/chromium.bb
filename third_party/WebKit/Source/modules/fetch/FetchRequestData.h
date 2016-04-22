@@ -24,7 +24,6 @@ class ExecutionContext;
 class FetchHeaderList;
 class PasswordCredential;
 class SecurityOrigin;
-class ScriptState;
 class WebServiceWorkerRequest;
 
 class FetchRequestData final : public GarbageCollectedFinalized<FetchRequestData> {
@@ -33,10 +32,10 @@ public:
     enum Tainting { BasicTainting, CORSTainting, OpaqueTainting };
 
     static FetchRequestData* create();
-    static FetchRequestData* create(ScriptState*, const WebServiceWorkerRequest&);
+    static FetchRequestData* create(ExecutionContext*, const WebServiceWorkerRequest&);
     // Call Request::refreshBody() after calling clone() or pass().
-    FetchRequestData* clone(ScriptState*);
-    FetchRequestData* pass(ScriptState*);
+    FetchRequestData* clone(ExecutionContext*);
+    FetchRequestData* pass(ExecutionContext*);
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }

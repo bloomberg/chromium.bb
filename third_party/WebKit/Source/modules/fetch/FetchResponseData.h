@@ -15,8 +15,8 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class ExecutionContext;
 class FetchHeaderList;
-class ScriptState;
 class WebServiceWorkerResponse;
 
 class MODULES_EXPORT FetchResponseData final : public GarbageCollectedFinalized<FetchResponseData> {
@@ -39,7 +39,7 @@ public:
     FetchResponseData* createOpaqueFilteredResponse();
     FetchResponseData* createOpaqueRedirectFilteredResponse();
 
-    FetchResponseData* clone(ScriptState*);
+    FetchResponseData* clone(ExecutionContext*);
 
     Type getType() const { return m_type; }
     const KURL& url() const { return m_url; }

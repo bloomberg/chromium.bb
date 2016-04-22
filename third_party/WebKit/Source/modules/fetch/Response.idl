@@ -25,9 +25,10 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     readonly attribute ByteString statusText;
     readonly attribute Headers headers;
 
-    [RaisesException, CallWith=ScriptState] Response clone();
+    [RaisesException] Response clone();
 
-    [CallWith=ScriptState, ImplementedAs=bodyWithUseCounter] readonly attribute any body;
+    [ImplementedAs=bodyWithUseCounter] readonly attribute ReadableByteStream body;
+    [RuntimeEnabled=ResponseBodyWithV8ExtraStream, CallWith=ScriptState] any v8ExtraStreamBody();
 };
 
 Response implements Body;

@@ -4511,6 +4511,7 @@ interface Response
     method constructor
     method json
     method text
+    method v8ExtraStreamBody
 interface Rotation : TransformComponent
     attribute @@toStringTag
     getter angle

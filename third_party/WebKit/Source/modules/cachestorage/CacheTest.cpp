@@ -427,7 +427,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments)
 
     WebServiceWorkerResponse webResponse;
     webResponse.setURL(KURL(ParsedURLString, url));
-    Response* response = Response::create(getScriptState(), webResponse);
+    Response* response = Response::create(getExecutionContext(), webResponse);
 
     WebVector<WebServiceWorkerCache::BatchOperation> expectedDeleteOperations(size_t(1));
     {
@@ -459,7 +459,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments)
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise putResult = cache->put(getScriptState(), requestToRequestInfo(request), response->clone(getScriptState(), exceptionState()), exceptionState());
+    ScriptPromise putResult = cache->put(getScriptState(), requestToRequestInfo(request), response->clone(exceptionState()), exceptionState());
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(putResult));
 
@@ -625,7 +625,7 @@ TEST_F(CacheStorageTest, Add)
     fetcher->setExpectedFetchUrl(&url);
 
     Request* request = newRequestFromUrl(url);
-    Response* response = Response::create(getScriptState(), FetchFormDataConsumerHandle::create(content), contentType, ResponseInit(), exceptionState());
+    Response* response = Response::create(getExecutionContext(), FetchFormDataConsumerHandle::create(content), contentType, ResponseInit(), exceptionState());
     fetcher->setResponse(response);
 
     WebVector<WebServiceWorkerCache::BatchOperation> expectedPutOperations(size_t(1));

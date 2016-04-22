@@ -135,7 +135,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
     RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
-    Request* request = Request::create(workerGlobalScope()->scriptController()->getScriptState(), webRequest);
+    Request* request = Request::create(workerGlobalScope(), webRequest);
     request->getHeaders()->setGuard(Headers::ImmutableGuard);
     FetchEventInit eventInit;
     eventInit.setCancelable(true);
@@ -150,7 +150,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
     ForeignFetchRespondWithObserver* observer = ForeignFetchRespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
-    Request* request = Request::create(workerGlobalScope()->scriptController()->getScriptState(), webRequest);
+    Request* request = Request::create(workerGlobalScope(), webRequest);
     request->getHeaders()->setGuard(Headers::ImmutableGuard);
     ForeignFetchEventInit eventInit;
     eventInit.setCancelable(true);

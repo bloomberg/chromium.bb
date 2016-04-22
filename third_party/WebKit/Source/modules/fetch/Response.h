@@ -38,9 +38,9 @@ public:
     static Response* create(ScriptState*, ExceptionState&);
     static Response* create(ScriptState*, ScriptValue body, const Dictionary&, ExceptionState&);
 
-    static Response* create(ScriptState*, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit&, ExceptionState&);
+    static Response* create(ExecutionContext*, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
-    static Response* create(ScriptState*, const WebServiceWorkerResponse&);
+    static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);
 
     static Response* createClone(const Response&);
 
@@ -58,7 +58,7 @@ public:
     Headers* headers() const;
 
     // From Response.idl:
-    Response* clone(ScriptState*, ExceptionState&);
+    Response* clone(ExceptionState&);
 
     // ActiveScriptWrappable
     bool hasPendingActivity() const final;

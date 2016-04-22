@@ -129,7 +129,7 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(Response::create(m_resolver->getScriptState(), webResponse));
+        m_resolver->resolve(Response::create(m_resolver->getScriptState()->getExecutionContext(), webResponse));
         m_resolver.clear();
     }
 

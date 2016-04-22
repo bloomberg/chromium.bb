@@ -39,7 +39,7 @@ public:
     void notifyLockReleased();
 
     // ActiveScriptWrappable
-    bool hasPendingActivity() const;
+    bool hasPendingActivity() const final;
 
     // ActiveDOMObject
     void stop() override;
