@@ -122,6 +122,14 @@ class MEDIA_EXPORT DecoderStream {
     return previous_decoder_.get();
   }
 
+  int get_pending_buffers_size_for_testing() const {
+    return pending_buffers_.size();
+  }
+
+  int get_fallback_buffers_size_for_testing() const {
+    return fallback_buffers_.size();
+  }
+
  private:
   enum State {
     STATE_UNINITIALIZED,
@@ -131,7 +139,10 @@ class MEDIA_EXPORT DecoderStream {
     STATE_PENDING_DEMUXER_READ,
     STATE_REINITIALIZING_DECODER,
     STATE_END_OF_STREAM,  // End of stream reached; returns EOS on all reads.
-    STATE_ERROR
+    STATE_ERROR,
+    // TODO(tguilbert): support config changes during decoder fallback, see
+    // crbug.com/603713
+    STATE_CONFIG_CHANGE_RECEIVED_WHILE_REINITIALIZING_DECODER
   };
 
   void SelectDecoder(CdmContext* cdm_context);
@@ -148,7 +159,11 @@ class MEDIA_EXPORT DecoderStream {
                    const scoped_refptr<Output>& output);
 
   // Decodes |buffer| and returns the result via OnDecodeOutputReady().
+  // Saves |buffer| into |pending_buffers_| if appropriate.
   void Decode(const scoped_refptr<DecoderBuffer>& buffer);
+
+  // Performs the heavy lifting of the decode call.
+  void DecodeInternal(const scoped_refptr<DecoderBuffer>& buffer);
 
   // Flushes the decoder with an EOS buffer to retrieve internally buffered
   // decoder output.
@@ -225,8 +240,21 @@ class MEDIA_EXPORT DecoderStream {
   // Tracks the duration of incoming packets over time.
   MovingAverage duration_tracker_;
 
+  // Stores buffers that might be reused if the decoder fails right after
+  // Initialize().
+  std::deque<scoped_refptr<DecoderBuffer>> pending_buffers_;
+
+  // Stores buffers that are guaranteed to be fed to the decoder before fetching
+  // more from the demuxer stream. All buffers in this queue first were in
+  // |pending_buffers_|.
+  std::deque<scoped_refptr<DecoderBuffer>> fallback_buffers_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;
+  base::WeakPtrFactory<DecoderStream<StreamType>> weak_factory_;
+
+  // Used to invalidate pending decode requests and output callbacks when
+  // falling back to a new decoder (on first decode error).
+  base::WeakPtrFactory<DecoderStream<StreamType>> fallback_weak_factory_;
 };
 
 template <>

@@ -188,12 +188,6 @@ class VideoFrameStreamTest
     pending_read_ = false;
   }
 
-  void FrameReadyHoldDemuxer(VideoFrameStream::Status status,
-                             const scoped_refptr<VideoFrame>& frame) {
-    FrameReady(status, frame);
-
-  }
-
   void OnReset() {
     DCHECK(!pending_read_);
     DCHECK(pending_reset_);
@@ -214,15 +208,19 @@ class VideoFrameStreamTest
     } while (!pending_read_);
   }
 
-  void ReadAllFrames() {
+  void ReadAllFrames(int expected_decoded_frames) {
     do {
       ReadOneFrame();
     } while (frame_read_.get() &&
              !frame_read_->metadata()->IsTrue(
                  VideoFrameMetadata::END_OF_STREAM));
 
-    const int total_num_frames = kNumConfigs * kNumBuffersInOneConfig;
-    DCHECK_EQ(num_decoded_frames_, total_num_frames);
+    DCHECK_EQ(expected_decoded_frames, num_decoded_frames_);
+  }
+
+  void ReadAllFrames() {
+    // No frames should have been dropped.
+    ReadAllFrames(kNumConfigs * kNumBuffersInOneConfig);
   }
 
   enum PendingState {
@@ -410,12 +408,19 @@ TEST_P(VideoFrameStreamTest, Initialization) {
   Initialize();
 }
 
-TEST_P(VideoFrameStreamTest, DecoderInitializationFails) {
+TEST_P(VideoFrameStreamTest, AllDecoderInitializationFails) {
   decoder1_->SimulateFailureToInit();
   decoder2_->SimulateFailureToInit();
   decoder3_->SimulateFailureToInit();
   Initialize();
   EXPECT_FALSE(is_initialized_);
+}
+
+TEST_P(VideoFrameStreamTest, PartialDecoderInitializationFails) {
+  decoder1_->SimulateFailureToInit();
+  decoder2_->SimulateFailureToInit();
+  Initialize();
+  EXPECT_TRUE(is_initialized_);
 }
 
 TEST_P(VideoFrameStreamTest, ReadOneFrame) {
@@ -747,18 +752,239 @@ TEST_P(VideoFrameStreamTest, Destroy_AfterRead_AfterReset) {
   Reset();
 }
 
-TEST_P(VideoFrameStreamTest, DecoderErrorWhenReading) {
+TEST_P(VideoFrameStreamTest, FallbackDecoder_SelectedOnInitialDecodeError) {
   Initialize();
-  EnterPendingState(DECODER_DECODE);
+  decoder1_->SimulateError();
+  ReadOneFrame();
+
+  // |video_frame_stream_| should have fallen back to |decoder2_|.
+  ASSERT_FALSE(pending_read_);
+  ASSERT_EQ(VideoFrameStream::OK, last_read_status_);
+
+  // Can't check |decoder1_| right now, it might have been destroyed already.
+  ASSERT_GT(decoder2_->total_bytes_decoded(), 0);
+
+  // Verify no frame was dropped.
+  ReadAllFrames();
+}
+
+TEST_P(VideoFrameStreamTest,
+       FallbackDecoder_SelectedOnInitialDecodeError_Twice) {
+  Initialize();
+  decoder1_->SimulateError();
+  decoder2_->HoldNextInit();
+  ReadOneFrame();
+
+  decoder2_->SatisfyInit();
+  decoder2_->SimulateError();
+  message_loop_.RunUntilIdle();
+
+  // |video_frame_stream_| should have fallen back to |decoder3_|.
+  ASSERT_FALSE(pending_read_);
+  ASSERT_EQ(VideoFrameStream::OK, last_read_status_);
+
+  // Can't check |decoder1_| or |decoder2_| right now, they might have been
+  // destroyed already.
+  ASSERT_GT(decoder3_->total_bytes_decoded(), 0);
+
+  // Verify no frame was dropped.
+  ReadAllFrames();
+}
+
+TEST_P(VideoFrameStreamTest, FallbackDecoder_ConfigChangeClearsPendingBuffers) {
+  // Test case is only interesting if the decoder can receive a config change
+  // before returning its first frame.
+  if (GetParam().decoding_delay < kNumBuffersInOneConfig)
+    return;
+
+  Initialize();
+  EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
+  ASSERT_GT(video_frame_stream_->get_pending_buffers_size_for_testing(), 0);
+
+  SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
+  ASSERT_EQ(video_frame_stream_->get_pending_buffers_size_for_testing(), 0);
+  EXPECT_FALSE(pending_read_);
+
+  ReadAllFrames();
+}
+
+TEST_P(VideoFrameStreamTest, FallbackDecoder_ErrorDuringConfigChangeFlushing) {
+  // Test case is only interesting if the decoder can receive a config change
+  // before returning its first frame.
+  if (GetParam().decoding_delay < kNumBuffersInOneConfig)
+    return;
+
+  Initialize();
+  EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
+  EXPECT_GT(video_frame_stream_->get_pending_buffers_size_for_testing(), 0);
+
+  decoder1_->HoldDecode();
+  SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
+
+  // The flush request should have been sent and held.
+  EXPECT_EQ(video_frame_stream_->get_pending_buffers_size_for_testing(), 0);
+  EXPECT_TRUE(pending_read_);
+
+  // Triggering an error here will cause the frames in |decoder1_| to be lost.
+  // There are no pending buffers buffers to give to give to |decoder2_| due to
+  // crbug.com/603713.
   decoder1_->SimulateError();
   message_loop_.RunUntilIdle();
+
+  // We want to make sure that |decoder2_| can decode the rest of the frames
+  // in the demuxer stream.
+  ReadAllFrames(kNumBuffersInOneConfig * (kNumConfigs - 1));
+}
+
+TEST_P(VideoFrameStreamTest, FallbackDecoder_PendingBuffersIsFilledAndCleared) {
+  // Test applies only when there is a decoder delay, and the decoder will not
+  // receive a config change before outputing its first frame. Parallel decoding
+  // is also disabled in this test case, for readability and simplicity of the
+  // unit test.
+  if (GetParam().decoding_delay == 0 ||
+      GetParam().decoding_delay > kNumBuffersInOneConfig ||
+      GetParam().parallel_decoding > 1) {
+    return;
+  }
+  Initialize();
+
+  // Block on demuxer read and decoder decode so we can step through.
+  demuxer_stream_->HoldNextRead();
+  decoder1_->HoldDecode();
+  ReadOneFrame();
+
+  int demuxer_reads_satisfied = 0;
+  // Send back and requests buffers until the next one would fill the decoder
+  // delay.
+  while (demuxer_reads_satisfied < GetParam().decoding_delay - 1) {
+    // Send a buffer back.
+    demuxer_stream_->SatisfyReadAndHoldNext();
+    message_loop_.RunUntilIdle();
+    ++demuxer_reads_satisfied;
+
+    // Decode one buffer.
+    decoder1_->SatisfySingleDecode();
+    message_loop_.RunUntilIdle();
+    EXPECT_TRUE(pending_read_);
+    EXPECT_EQ(demuxer_reads_satisfied,
+              video_frame_stream_->get_pending_buffers_size_for_testing());
+    // No fallback buffers should be queued up yet.
+    EXPECT_EQ(0, video_frame_stream_->get_fallback_buffers_size_for_testing());
+  }
+
+  // Hold the init before triggering the error, to verify internal state.
+  demuxer_stream_->SatisfyReadAndHoldNext();
+  ++demuxer_reads_satisfied;
+  decoder2_->HoldNextInit();
+  decoder1_->SimulateError();
+  message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(pending_read_);
+  EXPECT_EQ(demuxer_reads_satisfied,
+            video_frame_stream_->get_pending_buffers_size_for_testing());
+
+  decoder2_->SatisfyInit();
+  decoder2_->HoldDecode();
+  message_loop_.RunUntilIdle();
+
+  // Make sure the pending buffers have been transfered to fallback buffers.
+  // One call to Decode() during the initialization process, so we expect one
+  // buffer to already have been consumed from the fallback buffers.
+  // Pending buffers should never go down (unless we encounter a config change)
+  EXPECT_EQ(demuxer_reads_satisfied - 1,
+            video_frame_stream_->get_fallback_buffers_size_for_testing());
+  EXPECT_EQ(demuxer_reads_satisfied,
+            video_frame_stream_->get_pending_buffers_size_for_testing());
+
+  decoder2_->SatisfyDecode();
+  message_loop_.RunUntilIdle();
+
+  // Make sure all buffers consumed by |decoder2_| have come from the fallback.
+  // Pending buffers should not have been cleared yet.
+  EXPECT_EQ(0, video_frame_stream_->get_fallback_buffers_size_for_testing());
+  EXPECT_EQ(demuxer_reads_satisfied,
+            video_frame_stream_->get_pending_buffers_size_for_testing());
+  EXPECT_EQ(video_frame_stream_->get_previous_decoder_for_testing(), decoder1_);
+  EXPECT_TRUE(pending_read_);
+
+  // Give the decoder one more buffer, enough to release a frame.
+  demuxer_stream_->SatisfyReadAndHoldNext();
+  message_loop_.RunUntilIdle();
+
+  // New buffers should not have been added after the frame was released.
+  EXPECT_EQ(video_frame_stream_->get_pending_buffers_size_for_testing(), 0);
+  EXPECT_FALSE(pending_read_);
+
+  demuxer_stream_->SatisfyRead();
+
+  // Confirm no frames were dropped.
+  ReadAllFrames();
+}
+
+TEST_P(VideoFrameStreamTest, FallbackDecoder_SelectedOnDecodeThenInitErrors) {
+  Initialize();
+  decoder1_->SimulateError();
+  decoder2_->SimulateFailureToInit();
+  ReadOneFrame();
+
+  // |video_frame_stream_| should have fallen back to |decoder3_|
   ASSERT_FALSE(pending_read_);
+  ASSERT_EQ(VideoFrameStream::OK, last_read_status_);
+
+  // Can't check |decoder1_| or |decoder2_| right now, they might have been
+  // destroyed already.
+  ASSERT_GT(decoder3_->total_bytes_decoded(), 0);
+
+  // Verify no frame was dropped.
+  ReadAllFrames();
+}
+
+TEST_P(VideoFrameStreamTest, FallbackDecoder_SelectedOnInitThenDecodeErrors) {
+  decoder1_->SimulateFailureToInit();
+  decoder2_->HoldDecode();
+  Initialize();
+  ReadOneFrame();
+  decoder2_->SimulateError();
+  message_loop_.RunUntilIdle();
+
+  // |video_frame_stream_| should have fallen back to |decoder3_|
+  ASSERT_FALSE(pending_read_);
+  ASSERT_EQ(VideoFrameStream::OK, last_read_status_);
+
+  // Can't check |decoder1_| or |decoder2_| right now, they might have been
+  // destroyed already.
+  ASSERT_GT(decoder3_->total_bytes_decoded(), 0);
+
+  // Verify no frame was dropped.
+  ReadAllFrames();
+}
+
+TEST_P(VideoFrameStreamTest,
+       FallbackDecoder_NotSelectedOnMidstreamDecodeError) {
+  Initialize();
+  ReadOneFrame();
+
+  // Successfully received a frame.
+  EXPECT_FALSE(pending_read_);
+  ASSERT_GT(decoder1_->total_bytes_decoded(), 0);
+
+  decoder1_->SimulateError();
+
+  // The error must surface from Read() as DECODE_ERROR.
+  while (last_read_status_ == VideoFrameStream::OK) {
+    ReadOneFrame();
+    message_loop_.RunUntilIdle();
+    EXPECT_FALSE(pending_read_);
+  }
+
+  // Verify the error was surfaced, rather than falling back to |decoder2_|.
+  EXPECT_FALSE(pending_read_);
+  ASSERT_EQ(decoder2_->total_bytes_decoded(), 0);
   ASSERT_EQ(VideoFrameStream::DECODE_ERROR, last_read_status_);
 }
 
 TEST_P(VideoFrameStreamTest, DecoderErrorWhenNotReading) {
   Initialize();
-
   decoder1_->HoldDecode();
   ReadOneFrame();
   EXPECT_TRUE(pending_read_);
@@ -784,8 +1010,13 @@ TEST_P(VideoFrameStreamTest, DecoderErrorWhenNotReading) {
 TEST_P(VideoFrameStreamTest, FallbackDecoderSelectedOnFailureToReinitialize) {
   Initialize();
   decoder1_->SimulateFailureToInit();
+  // Holding decode, because large decoder delays might cause us to get rid of
+  // |previous_decoder_| before we are in a pending state again.
+  decoder2_->HoldDecode();
   ReadUntilDecoderReinitialized(decoder1_);
   ASSERT_TRUE(video_frame_stream_->get_previous_decoder_for_testing());
+  decoder2_->SatisfyDecode();
+  message_loop_.RunUntilIdle();
   ReadAllFrames();
   ASSERT_FALSE(video_frame_stream_->get_previous_decoder_for_testing());
 }
