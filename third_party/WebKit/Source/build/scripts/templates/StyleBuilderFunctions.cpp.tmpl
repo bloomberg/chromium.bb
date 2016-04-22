@@ -147,11 +147,9 @@ namespace blink {
 }
 {% endmacro %}
 {{apply_auto('CSSPropertyClip')}}
-{{apply_auto('CSSPropertyOrphans')}}
 {{apply_auto('CSSPropertyColumnCount')}}
 {{apply_auto('CSSPropertyColumnGap', auto_getter='hasNormalColumnGap', auto_setter='setHasNormalColumnGap', auto_identity='CSSValueNormal')}}
 {{apply_auto('CSSPropertyColumnWidth')}}
-{{apply_auto('CSSPropertyWidows')}}
 {{apply_auto('CSSPropertyZIndex')}}
 
 static bool lengthMatchesAllSides(const LengthBox& lengthBox, const Length& length)

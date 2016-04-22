@@ -250,7 +250,7 @@ object-fit type_name=ObjectFit
 object-position interpolable, converter=convertPosition
 opacity interpolable, type_name=float
 order type_name=int
-orphans interpolable, inherited, type_name=short, custom_all
+orphans interpolable, inherited, type_name=short
 outline-color interpolable, custom_all
 outline-offset interpolable, converter=convertComputedLength<int>
 outline-style custom_all
@@ -400,7 +400,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-user-modify inherited
 -webkit-user-select inherited
 white-space inherited
-widows interpolable, inherited, type_name=short, custom_all
+widows interpolable, inherited, type_name=short
 width interpolable, initial=initialSize, converter=convertLengthSizing, typedom_types=[Length], keywords=[auto], supports_percentage
 will-change custom_all
 word-break inherited

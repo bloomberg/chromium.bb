@@ -63,7 +63,6 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_effectiveZoom(ComputedStyle::initialZoom())
     , widows(ComputedStyle::initialWidows())
     , orphans(ComputedStyle::initialOrphans())
-    , m_hasAutoOrphans(true)
     , m_textStrokeColorIsCurrentColor(true)
     , m_textFillColorIsCurrentColor(true)
     , m_textEmphasisColorIsCurrentColor(true)
@@ -120,7 +119,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_effectiveZoom(o.m_effectiveZoom)
     , widows(o.widows)
     , orphans(o.orphans)
-    , m_hasAutoOrphans(o.m_hasAutoOrphans)
     , m_textStrokeColorIsCurrentColor(o.m_textStrokeColorIsCurrentColor)
     , m_textFillColorIsCurrentColor(o.m_textFillColorIsCurrentColor)
     , m_textEmphasisColorIsCurrentColor(o.m_textEmphasisColorIsCurrentColor)
@@ -185,7 +183,6 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_effectiveZoom == o.m_effectiveZoom
         && widows == o.widows
         && orphans == o.orphans
-        && m_hasAutoOrphans == o.m_hasAutoOrphans
         && m_textStrokeColorIsCurrentColor == o.m_textStrokeColorIsCurrentColor
         && m_textFillColorIsCurrentColor == o.m_textFillColorIsCurrentColor
         && m_textEmphasisColorIsCurrentColor == o.m_textEmphasisColorIsCurrentColor

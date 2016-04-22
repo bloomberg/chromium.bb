@@ -978,7 +978,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     // In case we already adjusted the line positions during this layout to avoid widows
     // then we need to ignore the possibility of having a new widows situation.
     // Otherwise, we risk leaving empty containers which is against the block fragmentation principles.
-    if (paginated && !style()->hasAutoWidows() && !didBreakAtLineToAvoidWidow()) {
+    if (paginated && style()->widows() > 1 && !didBreakAtLineToAvoidWidow()) {
         // Check the line boxes to make sure we didn't create unacceptable widows.
         // However, we'll prioritize orphans - so nothing we do here should create
         // a new orphan.
@@ -1018,7 +1018,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
             // This means that setting widows implies we also care about orphans, but given
             // the specification says the initial orphan value is non-zero, this is ok. The
             // author is always free to set orphans explicitly as well.
-            int orphans = style()->hasAutoOrphans() ? style()->initialOrphans() : style()->orphans();
+            int orphans = style()->orphans();
             int numLinesAvailable = numLinesInPreviousPage - orphans;
             if (numLinesAvailable <= 0)
                 return;

@@ -478,7 +478,7 @@ TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrame)
 TEST_F(MapCoordinatesTest, MulticolWithText)
 {
     setBodyInnerHTML(
-        "<div id='multicol' style='-webkit-columns:2; -webkit-column-gap:20px; width:400px; line-height:50px; padding:5px;'>"
+        "<div id='multicol' style='columns:2; column-gap:20px; width:400px; line-height:50px; padding:5px; orphans:1; widows:1;'>"
         "    <br id='sibling'>"
         "    text"
         "</div>");
@@ -505,7 +505,7 @@ TEST_F(MapCoordinatesTest, MulticolWithText)
 TEST_F(MapCoordinatesTest, MulticolWithInline)
 {
     setBodyInnerHTML(
-        "<div id='multicol' style='-webkit-columns:2; -webkit-column-gap:20px; width:400px; line-height:50px; padding:5px;'>"
+        "<div id='multicol' style='columns:2; column-gap:20px; width:400px; line-height:50px; padding:5px; orphans:1; widows:1;'>"
         "    <span id='target'><br>text</span>"
         "</div>");
 

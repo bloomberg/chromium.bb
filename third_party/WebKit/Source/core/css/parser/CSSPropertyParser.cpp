@@ -1224,14 +1224,6 @@ bool CSSPropertyParser::consumeAnimationShorthand(const StylePropertyShorthand& 
     return m_range.atEnd();
 }
 
-static CSSValue* consumeWidowsOrOrphans(CSSParserTokenRange& range)
-{
-    // Support for auto is non-standard and for backwards compatibility.
-    if (range.peek().id() == CSSValueAuto)
-        return consumeIdent(range);
-    return consumePositiveInteger(range);
-}
-
 static CSSValue* consumeZIndex(CSSParserTokenRange& range)
 {
     if (range.peek().id() == CSSValueAuto)
@@ -3574,10 +3566,9 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
     case CSSPropertyShapeImageThreshold:
         return consumeNumber(m_range, ValueRangeAll);
     case CSSPropertyWebkitBoxOrdinalGroup:
-        return consumePositiveInteger(m_range);
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
-        return consumeWidowsOrOrphans(m_range);
+        return consumePositiveInteger(m_range);
     case CSSPropertyTextDecorationColor:
         ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
         return consumeColor(m_range, m_context.mode());

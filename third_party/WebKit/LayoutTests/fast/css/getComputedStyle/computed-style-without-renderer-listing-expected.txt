@@ -211,7 +211,7 @@ object-fit: fill
 object-position: 50% 50%
 opacity: 1
 order: 0
-orphans: auto
+orphans: 2
 outline-color: rgb(0, 0, 0)
 outline-offset: 0px
 outline-style: none
@@ -289,7 +289,7 @@ vector-effect: none
 vertical-align: baseline
 visibility: visible
 white-space: normal
-widows: 1
+widows: 2
 width: auto
 will-change: auto
 word-break: normal

@@ -751,8 +751,6 @@ public:
 
     short widows() const { return rareInheritedData->widows; }
     short orphans() const { return rareInheritedData->orphans; }
-    bool hasAutoWidows() const { return rareInheritedData->widows == 1; }
-    bool hasAutoOrphans() const { return rareInheritedData->m_hasAutoOrphans; }
     EBreak breakAfter() const { return static_cast<EBreak>(noninherited_flags.breakAfter); }
     EBreak breakBefore() const { return static_cast<EBreak>(noninherited_flags.breakBefore); }
     EBreak breakInside() const { return static_cast<EBreak>(noninherited_flags.breakInside); }
@@ -1302,13 +1300,8 @@ public:
     void setHasAutoZIndex() { SET_VAR(m_box, m_hasAutoZIndex, true); SET_VAR(m_box, m_zIndex, 0); }
     int zIndex() const { return m_box->zIndex(); }
     void setZIndex(int v) { SET_VAR(m_box, m_hasAutoZIndex, false); SET_VAR(m_box, m_zIndex, v); }
-
-    void setHasAutoWidows() { SET_VAR(rareInheritedData, widows, initialWidows()); }
     void setWidows(short w) { SET_VAR(rareInheritedData, widows, w); }
-
-    void setHasAutoOrphans() { SET_VAR(rareInheritedData, m_hasAutoOrphans, true); SET_VAR(rareInheritedData, orphans, initialOrphans()); }
-    void setOrphans(short o) { SET_VAR(rareInheritedData, m_hasAutoOrphans, false); SET_VAR(rareInheritedData, orphans, o); }
-
+    void setOrphans(short o) { SET_VAR(rareInheritedData, orphans, o); }
     void setBreakAfter(EBreak b) { ASSERT(b <= BreakValueLastAllowedForBreakAfterAndBefore); noninherited_flags.breakAfter = b; }
     void setBreakBefore(EBreak b) { ASSERT(b <= BreakValueLastAllowedForBreakAfterAndBefore); noninherited_flags.breakBefore = b;  }
     void setBreakInside(EBreak b) { ASSERT(b <= BreakValueLastAllowedForBreakInside); noninherited_flags.breakInside = b;  }
@@ -1712,7 +1705,7 @@ public:
     static TextIndentLine initialTextIndentLine() { return TextIndentFirstLine; }
     static TextIndentType initialTextIndentType() { return TextIndentNormal; }
     static EVerticalAlign initialVerticalAlign() { return VerticalAlignBaseline; }
-    static short initialWidows() { return 1; }
+    static short initialWidows() { return 2; }
     static short initialOrphans() { return 2; }
     static Length initialLineHeight() { return Length(-100.0, Percent); }
     static ETextAlign initialTextAlign() { return TASTART; }

@@ -818,7 +818,7 @@ static bool shouldSetStrutOnBlock(const LayoutBlockFlow& block, const RootInline
         if (totalLogicalHeight > pageLogicalHeight)
             return false;
     } else {
-        if (block.style()->hasAutoOrphans() || lineIndex > block.style()->orphans())
+        if (lineIndex > block.style()->orphans())
             return false;
 
         // Not enough orphans here. Push the entire block to the next column / page as an attempt to

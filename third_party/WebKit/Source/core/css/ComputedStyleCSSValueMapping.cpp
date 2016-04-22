@@ -1933,8 +1933,6 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
     case CSSPropertyOpacity:
         return cssValuePool().createValue(style.opacity(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyOrphans:
-        if (style.hasAutoOrphans())
-            return cssValuePool().createIdentifierValue(CSSValueAuto);
         return cssValuePool().createValue(style.orphans(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyOutlineColor:
         return allowVisitedStyle ? cssValuePool().createColorValue(style.visitedDependentColor(CSSPropertyOutlineColor).rgb()) : currentColorOrValidColor(style, style.outlineColor());

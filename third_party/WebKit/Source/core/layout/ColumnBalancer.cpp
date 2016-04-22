@@ -139,7 +139,7 @@ static inline LayoutUnit columnLogicalHeightRequirementForLine(const ComputedSty
 {
     // We may require a certain minimum number of lines per page in order to satisfy
     // orphans and widows, and that may affect the minimum page height.
-    unsigned minimumLineCount = std::max<unsigned>(style.hasAutoOrphans() ? 1 : style.orphans(), style.widows());
+    unsigned minimumLineCount = std::max<unsigned>(style.orphans(), style.widows());
     const RootInlineBox* firstLine = &lastLine;
     for (unsigned i = 1; i < minimumLineCount && firstLine->prevRootBox(); i++)
         firstLine = firstLine->prevRootBox();
