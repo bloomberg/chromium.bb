@@ -52,8 +52,14 @@ var gDoneFrameCapturing = false;
 function startFrameCapture(videoTag, frameRate, duration) {
   gFrameCaptureInterval = 1000 / frameRate;
   gCaptureDuration = 1000 * duration;
-  var width = videoTag.videoWidth;
-  var height = videoTag.videoHeight;
+  inputElement = document.getElementById("local-view");
+  var width = inputElement.videoWidth;
+  var height = inputElement.videoHeight;
+  // The WebRTC code is free to start in VGA, so make sure that the output video
+  // tag scales up to whatever the input size is (otherwise the video quality
+  // comparison will go poorly.
+  videoTag.width = width;
+  videoTag.height = height;
 
   if (width == 0 || height == 0) {
     throw failTest('Trying to capture from ' + videoTag.id +
