@@ -77,29 +77,193 @@ TEST(IPAddressTest, IsValid) {
   EXPECT_TRUE(ip_address4.empty());
 }
 
-TEST(IPAddressTest, IsReserved) {
+enum IPAddressReservedResult : bool { NOT_RESERVED = false, RESERVED = true };
+
+// Tests for the reserved IPv4 ranges and the (unreserved) blocks in between.
+// The reserved ranges are tested by checking the first and last address of each
+// range. The unreserved blocks are tested similarly. These tests cover the
+// entire IPv4 address range.
+TEST(IPAddressTest, IsReservedIPv4) {
   struct {
     const char* const address;
-    bool is_reserved;
-  } tests[] = {{"10.10.10.10", true},
-               {"9.9.255.255", false},
-               {"127.0.0.1", true},
-               {"128.0.0.1", false},
-               {"198.18.0.0", true},
-               {"198.18.255.255", true},
-               {"198.17.255.255", false},
-               {"198.19.255.255", true},
-               {"198.20.0.0", false},
-               {"0000::", true},
-               {"FFC0:ba98:7654:3210:FEDC:BA98:7654:3210", false},
-               {"2000:ba98:7654:2301:EFCD:BA98:7654:3210", false},
-               {"::192.9.5.5", true},
-               {"FEED::BEEF", true}};
+    IPAddressReservedResult is_reserved;
+  } tests[] = {// 0.0.0.0/8
+               {"0.0.0.0", RESERVED},
+               {"0.255.255.255", RESERVED},
+               // Unreserved block(s)
+               {"1.0.0.0", NOT_RESERVED},
+               {"9.255.255.255", NOT_RESERVED},
+               // 10.0.0.0/8
+               {"10.0.0.0", RESERVED},
+               {"10.255.255.255", RESERVED},
+               // Unreserved block(s)
+               {"11.0.0.0", NOT_RESERVED},
+               {"100.63.255.255", NOT_RESERVED},
+               // 100.64.0.0/10
+               {"100.64.0.0", RESERVED},
+               {"100.127.255.255", RESERVED},
+               // Unreserved block(s)
+               {"100.128.0.0", NOT_RESERVED},
+               {"126.255.255.255", NOT_RESERVED},
+               // 127.0.0.0/8
+               {"127.0.0.0", RESERVED},
+               {"127.255.255.255", RESERVED},
+               // Unreserved block(s)
+               {"128.0.0.0", NOT_RESERVED},
+               {"169.253.255.255", NOT_RESERVED},
+               // 169.254.0.0/16
+               {"169.254.0.0", RESERVED},
+               {"169.254.255.255", RESERVED},
+               // Unreserved block(s)
+               {"169.255.0.0", NOT_RESERVED},
+               {"172.15.255.255", NOT_RESERVED},
+               // 172.16.0.0/12
+               {"172.16.0.0", RESERVED},
+               {"172.31.255.255", RESERVED},
+               // Unreserved block(s)
+               {"172.32.0.0", NOT_RESERVED},
+               {"191.255.255.255", NOT_RESERVED},
+               // 192.0.0.0/24 (including sub ranges)
+               {"192.0.0.0", NOT_RESERVED},
+               {"192.0.0.255", NOT_RESERVED},
+               // Unreserved block(s)
+               {"192.0.1.0", NOT_RESERVED},
+               {"192.0.1.255", NOT_RESERVED},
+               // 192.0.2.0/24
+               {"192.0.2.0", RESERVED},
+               {"192.0.2.255", RESERVED},
+               // Unreserved block(s)
+               {"192.0.3.0", NOT_RESERVED},
+               {"192.31.195.255", NOT_RESERVED},
+               // 192.31.196.0/24
+               {"192.31.196.0", NOT_RESERVED},
+               {"192.31.196.255", NOT_RESERVED},
+               // Unreserved block(s)
+               {"192.32.197.0", NOT_RESERVED},
+               {"192.52.192.255", NOT_RESERVED},
+               // 192.52.193.0/24
+               {"192.52.193.0", NOT_RESERVED},
+               {"192.52.193.255", NOT_RESERVED},
+               // Unreserved block(s)
+               {"192.52.194.0", NOT_RESERVED},
+               {"192.88.98.255", NOT_RESERVED},
+               // 192.88.99.0/24
+               {"192.88.99.0", RESERVED},
+               {"192.88.99.255", RESERVED},
+               // Unreserved block(s)
+               {"192.88.100.0", NOT_RESERVED},
+               {"192.167.255.255", NOT_RESERVED},
+               // 192.168.0.0/16
+               {"192.168.0.0", RESERVED},
+               {"192.168.255.255", RESERVED},
+               // Unreserved block(s)
+               {"192.169.0.0", NOT_RESERVED},
+               {"192.175.47.255", NOT_RESERVED},
+               // 192.175.48.0/24
+               {"192.175.48.0", NOT_RESERVED},
+               {"192.175.48.255", NOT_RESERVED},
+               // Unreserved block(s)
+               {"192.175.49.0", NOT_RESERVED},
+               {"198.17.255.255", NOT_RESERVED},
+               // 198.18.0.0/15
+               {"198.18.0.0", RESERVED},
+               {"198.19.255.255", RESERVED},
+               // Unreserved block(s)
+               {"198.20.0.0", NOT_RESERVED},
+               {"198.51.99.255", NOT_RESERVED},
+               // 198.51.100.0/24
+               {"198.51.100.0", RESERVED},
+               {"198.51.100.255", RESERVED},
+               // Unreserved block(s)
+               {"198.51.101.0", NOT_RESERVED},
+               {"203.0.112.255", NOT_RESERVED},
+               // 203.0.113.0/24
+               {"203.0.113.0", RESERVED},
+               {"203.0.113.255", RESERVED},
+               // Unreserved block(s)
+               {"203.0.114.0", NOT_RESERVED},
+               {"223.255.255.255", NOT_RESERVED},
+               // 224.0.0.0/8 - 255.0.0.0/8
+               {"224.0.0.0", RESERVED},
+               {"255.255.255.255", RESERVED}};
 
   IPAddress address;
   for (const auto& test : tests) {
     EXPECT_TRUE(address.AssignFromIPLiteral(test.address));
-    EXPECT_EQ(test.is_reserved, address.IsReserved());
+    EXPECT_EQ(!!test.is_reserved, address.IsReserved());
+  }
+}
+
+// Tests for the reserved IPv6 ranges and the (unreserved) blocks in between.
+// The reserved ranges are tested by checking the first and last address of each
+// range. The unreserved blocks are tested similarly. These tests cover the
+// entire IPv6 address range.
+TEST(IPAddressTest, IsReservedIPv6) {
+  struct {
+    const char* const address;
+    IPAddressReservedResult is_reserved;
+  } tests[] = {// 0000::/8
+               {"0:0:0:0:0:0:0:0", RESERVED},
+               {"ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 0100::/8
+               {"100:0:0:0:0:0:0:0", RESERVED},
+               {"1ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 0200::/7
+               {"200:0:0:0:0:0:0:0", RESERVED},
+               {"3ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 0400::/6
+               {"400:0:0:0:0:0:0:0", RESERVED},
+               {"7ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 0800::/5
+               {"800:0:0:0:0:0:0:0", RESERVED},
+               {"fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 1000::/4
+               {"1000:0:0:0:0:0:0:0", RESERVED},
+               {"1fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 2000::/3 (Global Unicast)
+               {"2000:0:0:0:0:0:0:0", NOT_RESERVED},
+               {"3fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", NOT_RESERVED},
+               // 4000::/3
+               {"4000:0:0:0:0:0:0:0", RESERVED},
+               {"5fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 6000::/3
+               {"6000:0:0:0:0:0:0:0", RESERVED},
+               {"7fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // 8000::/3
+               {"8000:0:0:0:0:0:0:0", RESERVED},
+               {"9fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // c000::/3
+               {"c000:0:0:0:0:0:0:0", RESERVED},
+               {"dfff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // e000::/4
+               {"e000:0:0:0:0:0:0:0", RESERVED},
+               {"efff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // f000::/5
+               {"f000:0:0:0:0:0:0:0", RESERVED},
+               {"f7ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // f800::/6
+               {"f800:0:0:0:0:0:0:0", RESERVED},
+               {"fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // fc00::/7
+               {"fc00:0:0:0:0:0:0:0", RESERVED},
+               {"fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // fe00::/9
+               {"fe00:0:0:0:0:0:0:0", RESERVED},
+               {"fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // fe80::/10
+               {"fe80:0:0:0:0:0:0:0", RESERVED},
+               {"febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // fec0::/10
+               {"fec0:0:0:0:0:0:0:0", RESERVED},
+               {"feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
+               // ff00::/8 (Multicast)
+               {"ff00:0:0:0:0:0:0:0", NOT_RESERVED},
+               {"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", NOT_RESERVED}};
+
+  IPAddress address;
+  for (const auto& test : tests) {
+    EXPECT_TRUE(address.AssignFromIPLiteral(test.address));
+    EXPECT_EQ(!!test.is_reserved, address.IsReserved());
   }
 }
 
