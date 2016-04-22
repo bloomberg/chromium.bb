@@ -128,18 +128,6 @@
     <dimen name="data_reduction_promo_button_text_size">13sp</dimen>
     <dimen name="data_reduction_promo_illustration_margin_bottom">30dp</dimen>
 
-    <!-- Text bubble dimensions -->
-    <!-- Tooltip min distance from the edge of the screen. -->
-    <dimen name="tooltip_min_edge_margin">3dp</dimen>
-    <!-- Tooltip margin above click target. -->
-    <dimen name="tooltip_top_margin">2dp</dimen>
-    <!-- Tooltip border width around the main content bubble. -->
-    <dimen name="tooltip_border_width">1dp</dimen>
-    <!-- Padding for tooltip content -->
-    <dimen name="tooltip_content_padding">5dp</dimen>
-    <!-- Tooltip x margin for text bubble -->
-    <dimen name="bubble_tip_margin">8dp</dimen>
-
     <!-- Compositor Tab Title Dimensions -->
     <dimen name="compositor_tab_title_bar_shadow_x_offset">0.6667dp</dimen>            <!-- 1px hdpi -->
     <dimen name="compositor_tab_title_bar_shadow_y_offset">0.6667dp</dimen>            <!-- 1px hdpi -->

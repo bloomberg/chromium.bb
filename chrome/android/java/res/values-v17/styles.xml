@@ -219,10 +219,11 @@
         <item name="android:paddingStart">4dp</item>
         <item name="android:paddingEnd">4dp</item>
     </style>
-    <style name="info_bubble">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">18sp</item>
+
+    <!-- Bubble styles -->
+    <style name="TabSwitcherCalloutAnimation">
+        <item name="android:windowEnterAnimation">@anim/tab_switcher_callout_in</item>
+        <item name="android:windowExitAnimation">@anim/tab_switcher_callout_out</item>
     </style>
     <style name="FullscreenNotificationBubble" parent="@android:style/Animation.Toast">
         <item name="android:windowEnterAnimation">@anim/fullscreen_notification_in</item>
