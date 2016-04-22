@@ -796,13 +796,6 @@ class UpdateJobTestHelper
     return context()->job_coordinator();
   }
 
-  bool force_bypass_cache_for_scripts() const {
-    return force_bypass_cache_for_scripts_;
-  }
-  void set_force_bypass_cache_for_scripts(bool force_bypass_cache_for_scripts) {
-    force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
-  }
-
   void set_force_start_worker_failure(bool force_start_worker_failure) {
     force_start_worker_failure_ = force_start_worker_failure;
   }
@@ -843,26 +836,35 @@ class UpdateJobTestHelper
     ASSERT_TRUE(version);
     version->AddListener(this);
 
-    if (force_bypass_cache_for_scripts())
-      version->set_force_bypass_cache_for_scripts(true);
+    // Simulate network access.
+    base::TimeDelta time_since_last_check =
+        base::Time::Now() - registration->last_update_check();
+    if (!is_update || script.GetOrigin() != kNoChangeOrigin ||
+        time_since_last_check > base::TimeDelta::FromHours(
+                                    kServiceWorkerScriptMaxCacheAgeInHours)) {
+      version->embedded_worker()->OnNetworkAccessedForScriptLoad();
+    }
 
+    int64_t resource_id = storage()->NewResourceId();
+    version->script_cache_map()->NotifyStartedCaching(script, resource_id);
     if (!is_update) {
       // Spoof caching the script for the initial version.
-      int64_t resource_id = storage()->NewResourceId();
-      version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::URLRequestStatus(), std::string());
     } else {
       if (script.GetOrigin() == kNoChangeOrigin) {
-        version->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_EXISTS);
-        EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
+        // Simulate fetching the updated script and finding it's identical to
+        // the incumbent.
+        net::URLRequestStatus status =
+            net::URLRequestStatus::FromError(net::ERR_FILE_EXISTS);
+        version->script_cache_map()->NotifyFinishedCaching(
+            script, kMockScriptSize, status, std::string());
+        SimulateWorkerScriptLoaded(embedded_worker_id);
         return;
       }
 
       // Spoof caching the script for the new version.
-      int64_t resource_id = storage()->NewResourceId();
-      version->script_cache_map()->NotifyStartedCaching(script, resource_id);
       WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::URLRequestStatus(), std::string());
@@ -914,7 +916,6 @@ class UpdateJobTestHelper
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;
   bool update_found_ = false;
-  bool force_bypass_cache_for_scripts_ = false;
   bool force_start_worker_failure_ = false;
 };
 
@@ -1004,12 +1005,21 @@ TEST_F(ServiceWorkerJobTest, Update_BumpLastUpdateCheckTime) {
 
   registration->AddListener(update_helper);
 
-  // Run an update that does not bypass the network cache. The check time
-  // should not be updated.
+  // Run an update where the script did not change and the network was not
+  // accessed. The check time should not be updated.
   registration->set_last_update_check(kToday);
   registration->active_version()->StartUpdate();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kToday, registration->last_update_check());
+  EXPECT_FALSE(update_helper->update_found_);
+
+  // Run an update where the script did not change and the network was accessed.
+  // The check time should be updated.
+  registration->set_last_update_check(kYesterday);
+  registration->active_version()->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LT(kYesterday, registration->last_update_check());
+  EXPECT_FALSE(update_helper->update_found_);
   registration->RemoveListener(update_helper);
 
   registration = update_helper->SetupInitialRegistration(kNewVersionOrigin);
@@ -1017,9 +1027,7 @@ TEST_F(ServiceWorkerJobTest, Update_BumpLastUpdateCheckTime) {
 
   registration->AddListener(update_helper);
 
-  // Run an update that bypasses the network cache. The check time should be
-  // updated.
-  update_helper->set_force_bypass_cache_for_scripts(true);
+  // Run an update where the script changed. The check time should be updated.
   registration->set_last_update_check(kYesterday);
   registration->active_version()->StartUpdate();
   base::RunLoop().RunUntilIdle();
@@ -1027,7 +1035,6 @@ TEST_F(ServiceWorkerJobTest, Update_BumpLastUpdateCheckTime) {
 
   // Run an update to a worker that loads successfully but fails to start up
   // (script evaluation failure). The check time should be updated.
-  update_helper->set_force_bypass_cache_for_scripts(true);
   update_helper->set_force_start_worker_failure(true);
   registration->set_last_update_check(kYesterday);
   registration->active_version()->StartUpdate();

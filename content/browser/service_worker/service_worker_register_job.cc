@@ -358,19 +358,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
 
 void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     ServiceWorkerStatusCode status) {
-  // Bump the last update check time only when the register/update job fetched
-  // the version having bypassed the network cache. We assume that the
-  // BYPASS_CACHE flag evicts an existing cache entry, so even if the install
-  // ultimately failed for whatever reason, we know the version in the HTTP
-  // cache is not stale, so it's OK to bump the update check time.
-  if (new_version()->embedded_worker()->network_accessed_for_script() ||
-      new_version()->force_bypass_cache_for_scripts() ||
-      registration()->last_update_check().is_null()) {
-    registration()->set_last_update_check(base::Time::Now());
-
-    if (registration()->has_installed_version())
-      context_->storage()->UpdateLastUpdateCheckTime(registration());
-  }
+  BumpLastUpdateCheckTimeIfNeeded();
 
   if (status == SERVICE_WORKER_OK) {
     InstallAndContinue();
@@ -589,6 +577,8 @@ void ServiceWorkerRegisterJob::OnScriptLoaded() {
     // a script cache error only in the byte-for-byte identical case.
     DCHECK_EQ(status.error(),
               ServiceWorkerWriteToCacheJob::kIdenticalScriptError);
+
+    BumpLastUpdateCheckTimeIfNeeded();
     ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
     Complete(SERVICE_WORKER_ERROR_EXISTS,
              "The updated worker is identical to the incumbent.");
@@ -596,6 +586,22 @@ void ServiceWorkerRegisterJob::OnScriptLoaded() {
   }
 
   new_version()->embedded_worker()->ResumeAfterDownload();
+}
+
+void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
+  // Bump the last update check time only when the register/update job fetched
+  // the version having bypassed the network cache. We assume that the
+  // BYPASS_CACHE flag evicts an existing cache entry, so even if the install
+  // ultimately failed for whatever reason, we know the version in the HTTP
+  // cache is not stale, so it's OK to bump the update check time.
+  if (new_version()->embedded_worker()->network_accessed_for_script() ||
+      new_version()->force_bypass_cache_for_scripts() ||
+      registration()->last_update_check().is_null()) {
+    registration()->set_last_update_check(base::Time::Now());
+
+    if (registration()->has_installed_version())
+      context_->storage()->UpdateLastUpdateCheckTime(registration());
+  }
 }
 
 }  // namespace content

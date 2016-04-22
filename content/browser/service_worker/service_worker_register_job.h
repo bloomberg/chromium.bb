@@ -139,6 +139,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   // EmbeddedWorkerInstance::Listener implementation:
   void OnScriptLoaded() override;
 
+  void BumpLastUpdateCheckTimeIfNeeded();
+
   // The ServiceWorkerContextCore object should always outlive this.
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
