@@ -257,8 +257,6 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
       GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG));
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
-  EXPECT_FALSE(info_->validators()->read_pixel_format.IsValid(
-      GL_BGRA_EXT));
   EXPECT_FALSE(info_->validators()->texture_parameter.IsValid(
       GL_TEXTURE_MAX_ANISOTROPY_EXT));
   EXPECT_FALSE(info_->validators()->g_l_state.IsValid(
@@ -366,49 +364,60 @@ TEST_P(FeatureInfoTest, InitializeDXTExtensionGL) {
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GLES2) {
-  SetupInitExpectations("GL_EXT_texture_format_BGRA8888");
+  SetupInitExpectationsWithGLVersion("GL_EXT_texture_format_BGRA8888", "",
+                                     "OpenGL ES 2.0");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_texture_format_BGRA8888"));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_BGRA_EXT));
+
+  // On GL ES, render buffer and read pixels functionality is unrelated to
+  // GL_EXT_texture_format_BGRA8888, make sure we don't enable it.
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
   EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
+  EXPECT_FALSE(info_->validators()->read_pixel_format.IsValid(GL_BGRA8_EXT));
+  EXPECT_FALSE(info_->feature_flags().ext_read_format_bgra);
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
-  SetupInitExpectations("GL_EXT_bgra");
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL 2.0");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_texture_format_BGRA8888"));
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_EXT_read_format_bgra"));
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
-  EXPECT_TRUE(info_->feature_flags().ext_render_buffer_format_bgra8888);
-  EXPECT_TRUE(info_->feature_flags().ext_read_format_bgra);
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_BGRA_EXT));
-  EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(
-      GL_BGRA_EXT));
-  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(
-      GL_BGRA8_EXT));
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888Apple) {
-  SetupInitExpectations("GL_APPLE_texture_format_BGRA8888");
+  SetupInitExpectationsWithGLVersion("GL_APPLE_texture_format_BGRA8888", "",
+                                     "OpenGL ES 2.0");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_texture_format_BGRA8888"));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_BGRA_EXT));
+
+  // On GL ES, render buffer and read pixels functionality is unrelated to
+  // GL_APPLE_texture_format_BGRA8888, make sure we don't enable it.
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
   EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
+  EXPECT_FALSE(info_->validators()->read_pixel_format.IsValid(GL_BGRA8_EXT));
+  EXPECT_FALSE(info_->feature_flags().ext_read_format_bgra);
+}
+
+TEST_P(FeatureInfoTest, InitializeGLES_no_EXT_texture_format_BGRA8888GL) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 2.0");
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_EXT_texture_format_BGRA8888")));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_BGRA_EXT));
+  EXPECT_FALSE(
+      info_->validators()->texture_internal_format.IsValid(GL_BGRA_EXT));
 }
 
 TEST_P(FeatureInfoTest, InitializeGLES2EXT_read_format_bgra) {
@@ -417,31 +426,33 @@ TEST_P(FeatureInfoTest, InitializeGLES2EXT_read_format_bgra) {
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_read_format_bgra"));
   EXPECT_TRUE(info_->feature_flags().ext_read_format_bgra);
-  EXPECT_FALSE(info_->validators()->texture_format.IsValid(
-      GL_BGRA_EXT));
-  EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
-      GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
+
+  // On GL ES, texture and render buffer functionality is unrelated to
+  // GL_EXT_read_format_bgra, make sure we don't enable it.
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_BGRA8_EXT));
   EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_BGRA_EXT));
+  EXPECT_FALSE(
+      info_->validators()->texture_internal_format.IsValid(GL_BGRA_EXT));
 }
 
-TEST_P(FeatureInfoTest, InitializeEXT_read_format_bgra) {
-  SetupInitExpectations("GL_EXT_read_format_bgra");
+TEST_P(FeatureInfoTest, InitializeGLEXT_read_format_bgra) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL 2.0");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_read_format_bgra"));
   EXPECT_TRUE(info_->feature_flags().ext_read_format_bgra);
-  EXPECT_TRUE(info_->validators()->texture_format.IsValid(
-      GL_BGRA_EXT));
-  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
-      GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
-  EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
-      GL_BGRA8_EXT));
-  EXPECT_FALSE(info_->feature_flags().ext_render_buffer_format_bgra8888);
+}
+
+TEST_P(FeatureInfoTest, InitializeGLES_no_EXT_read_format_bgra) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 2.0");
+  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_read_format_bgra")));
+  EXPECT_FALSE(info_->feature_flags().ext_read_format_bgra);
+  EXPECT_FALSE(info_->validators()->read_pixel_format.IsValid(GL_BGRA_EXT));
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
@@ -532,7 +543,8 @@ TEST_P(FeatureInfoTest, InitializeARB_texture_storage) {
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_texture_storage_BGRA) {
-  SetupInitExpectations("GL_EXT_texture_storage GL_EXT_bgra");
+  SetupInitExpectationsWithGLVersion("GL_EXT_texture_storage", "",
+                                     "OpenGL 2.0");
   EXPECT_TRUE(info_->feature_flags().ext_texture_storage);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_texture_storage"));
   EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
@@ -541,7 +553,8 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_storage_BGRA) {
 }
 
 TEST_P(FeatureInfoTest, InitializeARB_texture_storage_BGRA) {
-  SetupInitExpectations("GL_ARB_texture_storage GL_EXT_bgra");
+  SetupInitExpectationsWithGLVersion("GL_ARB_texture_storage", "",
+                                     "OpenGL 2.0");
   EXPECT_TRUE(info_->feature_flags().ext_texture_storage);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_texture_storage"));
   EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
@@ -590,6 +603,17 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_storage_half_float) {
       GL_LUMINANCE16F_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format_storage.IsValid(
       GL_LUMINANCE_ALPHA16F_EXT));
+}
+
+// Check that desktop (unlike ES, handled below) always supports BGRA render
+// buffers.
+TEST_P(FeatureInfoTest, InitializeGL_renderbuffer_format_BGRA8888) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL 2.0");
+
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
+  EXPECT_TRUE(info_->feature_flags().ext_render_buffer_format_bgra8888);
+  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_BGRA8_EXT));
 }
 
 // Check how to handle ES, texture_storage and BGRA combination; 10 tests.

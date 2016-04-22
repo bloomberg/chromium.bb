@@ -562,21 +562,26 @@ void FeatureInfo::InitializeFeatures() {
   bool enable_immutable_texture_format_bgra_on_es3 =
       extensions.Contains("GL_APPLE_texture_format_BGRA8888");
 
-  // Check if we should allow GL_EXT_texture_format_BGRA8888
+  // Check if we should allow GL_EXT_texture_format_BGRA8888.
   if (extensions.Contains("GL_EXT_texture_format_BGRA8888") ||
       enable_immutable_texture_format_bgra_on_es3 ||
       !gl_version_info_->is_es) {
     enable_texture_format_bgra8888 = true;
   }
 
-  // Only desktop GL extension GL_EXT_bgra or ANGLE guarantee that we can
-  // allocate a renderbuffer with this format.
-  if (extensions.Contains("GL_EXT_bgra") || gl_version_info_->is_angle) {
+  // On desktop, all devices support BGRA render buffers (note that on desktop
+  // BGRA internal formats are converted to RGBA in the API implementation).
+  // For ES, there is no extension that exposes BGRA renderbuffers, however
+  // Angle does support these.
+  if (gl_version_info_->is_angle || !gl_version_info_->is_es) {
     enable_render_buffer_bgra = true;
   }
 
+  // On desktop, all devices support BGRA readback since OpenGL 2.0, which we
+  // require. On ES, support is indicated by the GL_EXT_read_format_bgra
+  // extension.
   if (extensions.Contains("GL_EXT_read_format_bgra") ||
-      extensions.Contains("GL_EXT_bgra")) {
+      !gl_version_info_->is_es) {
     enable_read_format_bgra = true;
   }
 
