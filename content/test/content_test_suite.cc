@@ -32,10 +32,6 @@
 #include "content/browser/android/in_process_surface_texture_manager.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory.h"
-#endif
-
 namespace content {
 namespace {
 
@@ -102,13 +98,6 @@ void ContentTestSuite::Initialize() {
 #if defined(OS_ANDROID)
   gpu::SurfaceTextureManager::SetInstance(
       InProcessSurfaceTextureManager::GetInstance());
-#endif
-#if defined(USE_OZONE)
-  if (!is_child_process) {
-    client_native_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
-    ui::ClientNativePixmapFactory::SetInstance(
-        client_native_pixmap_factory_.get());
-  }
 #endif
 }
 

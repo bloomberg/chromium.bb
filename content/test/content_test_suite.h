@@ -16,12 +16,6 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
-#if defined(USE_OZONE)
-namespace ui {
-class ClientNativePixmapFactory;
-}  // namespace ui
-#endif
-
 namespace content {
 
 class ContentTestSuite : public ContentTestSuiteBase {
@@ -35,9 +29,6 @@ class ContentTestSuite : public ContentTestSuiteBase {
  private:
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;
-#endif
-#if defined(USE_OZONE)
-  std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuite);
