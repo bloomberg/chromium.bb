@@ -148,7 +148,7 @@ call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.preloadindex true
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.fscache true
 
 :SYNC_GIT_HELP_FILES
-:: Copy all the depot_tools docs into the mingw64 git docs root.
+:: Copy all the depot_tools docs into the mingw{bits} git docs root.
 :: /i : Make sure xcopy knows that the destination names a folder, not a file
 :: /q : Make xcopy quiet (though it still prints a `X File(s) copied` message
 ::      which is why we have the > NUL)
@@ -156,7 +156,7 @@ call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.fscache true
 ::      files only. This prevents excessive copying when none of the docs
 ::      actually changed.
 :: /y : Don't prompt for overwrites (yes)
-xcopy /i /q /d /y "%WIN_TOOLS_ROOT_DIR%\man\html\*" "%GIT_INST_DIR%\mingw64\share\doc\git-doc" > NUL
+xcopy /i /q /d /y "%WIN_TOOLS_ROOT_DIR%\man\html\*" "%GIT_INST_DIR%\mingw%OS_BITS%\share\doc\git-doc" > NUL
 
 :: MSYS users need to restart their shell.
 if defined MSYSTEM if defined DID_UPGRADE (
