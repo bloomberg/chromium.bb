@@ -71,31 +71,61 @@ void WiFiDisplayMediaPipeline::RequestIDRPicture() {
   video_encoder_->RequestIDRPicture();
 }
 
+enum WiFiDisplayMediaPipeline::InitializationStep : unsigned {
+  INITIALIZE_FIRST,
+  INITIALIZE_MEDIA_PACKETIZER = INITIALIZE_FIRST,
+  INITIALIZE_VIDEO_ENCODER,
+  INITIALIZE_MEDIA_SERVICE,
+  INITIALIZE_LAST = INITIALIZE_MEDIA_SERVICE
+};
+
 void WiFiDisplayMediaPipeline::Initialize(
     const InitCompletionCallback& callback) {
-  DCHECK(init_completion_callback_.is_null());
-  init_completion_callback_ = callback;
+  DCHECK(!video_encoder_ && !packetizer_);
+  OnInitialize(callback, INITIALIZE_FIRST, true);
+}
 
-  CreateMediaPacketizer();
-
-  if (type_ & wds::VideoSession) {
-    CreateVideoEncoder();
+void WiFiDisplayMediaPipeline::OnInitialize(
+    const InitCompletionCallback& callback,
+    InitializationStep current_step,
+    bool success) {
+  if (!success) {
+    callback.Run(false);
     return;
   }
 
-  service_callback_.Run(
-      mojo::GetProxy(&media_service_),
-      base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
-                 weak_factory_.GetWeakPtr()));
-}
+  InitStepCompletionCallback init_step_callback;
+  if (current_step < INITIALIZE_LAST) {
+    InitializationStep next_step =
+        static_cast<InitializationStep>(current_step + 1u);
+    init_step_callback = base::Bind(&WiFiDisplayMediaPipeline::OnInitialize,
+                               weak_factory_.GetWeakPtr(), callback, next_step);
+  }
 
-void WiFiDisplayMediaPipeline::CreateVideoEncoder() {
-  DCHECK(!video_encoder_);
-  auto result_callback =
-      base::Bind(&WiFiDisplayMediaPipeline::OnVideoEncoderCreated,
-                 weak_factory_.GetWeakPtr());
-  WiFiDisplayVideoEncoder::Create(video_parameters_,
-                                  result_callback);
+  switch (current_step) {
+    case INITIALIZE_MEDIA_PACKETIZER:
+      DCHECK(!packetizer_);
+      CreateMediaPacketizer();
+      init_step_callback.Run(true);
+      break;
+    case INITIALIZE_VIDEO_ENCODER:
+      DCHECK(!video_encoder_);
+      if (type_ & wds::VideoSession) {
+        auto result_callback =
+            base::Bind(&WiFiDisplayMediaPipeline::OnVideoEncoderCreated,
+                       weak_factory_.GetWeakPtr(), init_step_callback);
+        WiFiDisplayVideoEncoder::Create(video_parameters_, result_callback);
+      } else {
+        init_step_callback.Run(true);
+      }
+      break;
+    case INITIALIZE_MEDIA_SERVICE:
+      service_callback_.Run(
+          mojo::GetProxy(&media_service_),
+          base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
+                     weak_factory_.GetWeakPtr(), callback));
+      break;
+  }
 }
 
 void WiFiDisplayMediaPipeline::CreateMediaPacketizer() {
@@ -133,11 +163,15 @@ void WiFiDisplayMediaPipeline::CreateMediaPacketizer() {
 }
 
 void WiFiDisplayMediaPipeline::OnVideoEncoderCreated(
+    const InitStepCompletionCallback& callback,
     scoped_refptr<WiFiDisplayVideoEncoder> video_encoder) {
+  DCHECK(!video_encoder_);
+
   if (!video_encoder) {
-    init_completion_callback_.Run(false);
+    callback.Run(false);
     return;
   }
+
   video_encoder_ = std::move(video_encoder);
   auto encoded_callback = base::Bind(
       &WiFiDisplayMediaPipeline::OnEncodedVideoFrame,
@@ -145,20 +179,18 @@ void WiFiDisplayMediaPipeline::OnVideoEncoderCreated(
   auto error_callback = base::Bind(error_callback_, kErrorVideoEncoderError);
   video_encoder_->SetCallbacks(encoded_callback, error_callback);
 
-  service_callback_.Run(
-      mojo::GetProxy(&media_service_),
-      base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
-                 weak_factory_.GetWeakPtr()));
+  callback.Run(true);
 }
 
-void WiFiDisplayMediaPipeline::OnMediaServiceRegistered() {
+void WiFiDisplayMediaPipeline::OnMediaServiceRegistered(
+    const InitCompletionCallback& callback) {
   DCHECK(media_service_);
   auto error_callback = base::Bind(error_callback_, kErrorUnableSendMedia);
   media_service_.set_connection_error_handler(error_callback);
   media_service_->SetDesinationPoint(
       sink_ip_address_,
       static_cast<int32_t>(sink_rtp_ports_.first),
-      init_completion_callback_);
+      callback);
 }
 
 void WiFiDisplayMediaPipeline::OnEncodedVideoFrame(
