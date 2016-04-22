@@ -781,14 +781,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         float lastWidthMeasurement;
         WordMeasurement& wordMeasurement = calculateWordWidth(wordMeasurements, layoutText, lastSpace, lastWidthMeasurement, wordSpacingForWordMeasurement, font, wordTrailingSpaceWidth, c);
         lastWidthMeasurement += lastSpaceWordSpacing;
-
-        midWordBreak = false;
-        if (canBreakMidWord && !m_width.fitsOnLine(lastWidthMeasurement)
-            && rewindToMidWordBreak(layoutText, style, font, breakAll, wordMeasurement)) {
-            lastWidthMeasurement = wordMeasurement.width;
-            midWordBreak = true;
-        }
-
         m_width.addUncommittedWidth(lastWidthMeasurement);
 
         // We keep track of the total width contributed by trailing space as we often want to exclude it when determining
@@ -807,6 +799,16 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         // If we haven't hit a breakable position yet and already don't fit on the line try to move below any floats.
         if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() && !widthMeasurementAtLastBreakOpportunity)
             m_width.fitBelowFloats(m_lineInfo.isFirstLine());
+
+        midWordBreak = false;
+        if (canBreakMidWord && !m_width.fitsOnLine()) {
+            m_width.addUncommittedWidth(-wordMeasurement.width);
+            if (rewindToMidWordBreak(layoutText, style, font, breakAll, wordMeasurement)) {
+                lastWidthMeasurement = wordMeasurement.width + lastSpaceWordSpacing;
+                midWordBreak = true;
+            }
+            m_width.addUncommittedWidth(wordMeasurement.width);
+        }
 
         // If there is a soft-break available at this whitespace position then take it.
         applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
