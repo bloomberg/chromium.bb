@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/signin/ios/browser/account_consistency_service.h"
+
 #import <WebKit/WebKit.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -13,7 +16,6 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/signin/ios/browser/account_consistency_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_state.h"
@@ -204,10 +206,10 @@ class AccountConsistencyServiceTest : public PlatformTest {
   TestWebState web_state_;
   // AccountConsistencyService being tested. Actually a
   // FakeAccountConsistencyService to be able to use a mock web view.
-  scoped_ptr<AccountConsistencyService> account_consistency_service_;
-  scoped_ptr<TestSigninClient> signin_client_;
-  scoped_ptr<FakeSigninManager> signin_manager_;
-  scoped_ptr<MockGaiaCookieManagerService> gaia_cookie_manager_service_;
+  std::unique_ptr<AccountConsistencyService> account_consistency_service_;
+  std::unique_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<FakeSigninManager> signin_manager_;
+  std::unique_ptr<MockGaiaCookieManagerService> gaia_cookie_manager_service_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 };

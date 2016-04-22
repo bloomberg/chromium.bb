@@ -6,13 +6,13 @@
 
 #include <Foundation/Foundation.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"

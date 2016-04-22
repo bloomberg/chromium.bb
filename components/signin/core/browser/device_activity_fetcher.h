@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_DEVICE_ACTVITIY_FETCHER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_DEVICE_ACTVITIY_FETCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -60,9 +60,9 @@ class DeviceActivityFetcher : public GaiaAuthConsumer,
   void StartFetchingListDevices();
 
   // Gaia fetcher used for acquiring an access token.
-  scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+  std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   // URL Fetcher used for calling List Devices.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // If either fetcher fails, retry with exponential backoff.
   net::BackoffEntry fetcher_backoff_;

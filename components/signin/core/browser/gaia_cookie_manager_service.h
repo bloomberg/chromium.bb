@@ -129,7 +129,7 @@ class GaiaCookieManagerService : public KeyedService,
         const GoogleServiceAuthError& error) override;
 
     // Creates and initializes a URL fetcher for doing a connection check.
-    scoped_ptr<net::URLFetcher> CreateFetcher(const GURL& url);
+    std::unique_ptr<net::URLFetcher> CreateFetcher(const GURL& url);
 
     // Overridden from URLFetcherDelgate.
     void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -254,8 +254,8 @@ class GaiaCookieManagerService : public KeyedService,
 
   OAuth2TokenService* token_service_;
   SigninClient* signin_client_;
-  scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
-  scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
+  std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+  std::unique_ptr<UbertokenFetcher> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
 
   // If the GaiaAuthFetcher or URLFetcher fails, retry with exponential backoff
@@ -271,7 +271,7 @@ class GaiaCookieManagerService : public KeyedService,
   std::string access_token_;
 
   // Subscription to be called whenever the GAIA cookies change.
-  scoped_ptr<SigninClient::CookieChangedSubscription>
+  std::unique_ptr<SigninClient::CookieChangedSubscription>
       cookie_changed_subscription_;
 
   // A worklist for this class. Stores any pending requests that couldn't be

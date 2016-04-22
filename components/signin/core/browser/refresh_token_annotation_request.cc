@@ -45,7 +45,7 @@ RefreshTokenAnnotationRequest::~RefreshTokenAnnotationRequest() {
 }
 
 // static
-scoped_ptr<RefreshTokenAnnotationRequest>
+std::unique_ptr<RefreshTokenAnnotationRequest>
 RefreshTokenAnnotationRequest::SendIfNeeded(
     PrefService* pref_service,
     OAuth2TokenService* token_service,
@@ -53,7 +53,7 @@ RefreshTokenAnnotationRequest::SendIfNeeded(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const std::string& account_id,
     const base::Closure& request_callback) {
-  scoped_ptr<RefreshTokenAnnotationRequest> request;
+  std::unique_ptr<RefreshTokenAnnotationRequest> request;
 
   if (!ShouldSendNow(pref_service))
     return request;

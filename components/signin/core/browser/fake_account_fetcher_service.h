@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 
 class KeyedService;

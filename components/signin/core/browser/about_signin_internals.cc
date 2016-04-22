@@ -37,7 +37,7 @@ std::string GetTimeStr(base::Time time) {
 
 base::ListValue* AddSection(base::ListValue* parent_list,
                             const std::string& title) {
-  scoped_ptr<base::DictionaryValue> section(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> section(new base::DictionaryValue());
   base::ListValue* section_contents = new base::ListValue();
 
   section->SetString("title", title);
@@ -50,7 +50,7 @@ void AddSectionEntry(base::ListValue* section_list,
                      const std::string& field_name,
                      const std::string& field_status,
                      const std::string& field_time = "") {
-  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
   entry->SetString("label", field_name);
   entry->SetString("status", field_status);
   entry->SetString("time", field_time);
@@ -61,7 +61,7 @@ void AddCookieEntry(base::ListValue* accounts_list,
                      const std::string& field_email,
                      const std::string& field_gaia_id,
                      const std::string& field_valid) {
-  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
   entry->SetString("email", field_email);
   entry->SetString("gaia_id", field_gaia_id);
   entry->SetString("valid", field_valid);
@@ -269,13 +269,10 @@ void AboutSigninInternals::NotifyObservers() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AboutSigninInternals::NotifyObservers 0.5"));
 
-  scoped_ptr<base::DictionaryValue> signin_status_value =
-      signin_status_.ToValue(account_tracker_,
-                             signin_manager_,
-                             signin_error_controller_,
-                             token_service_,
-                             cookie_manager_service_,
-                             product_version);
+  std::unique_ptr<base::DictionaryValue> signin_status_value =
+      signin_status_.ToValue(account_tracker_, signin_manager_,
+                             signin_error_controller_, token_service_,
+                             cookie_manager_service_, product_version);
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -288,7 +285,7 @@ void AboutSigninInternals::NotifyObservers() {
                     OnSigninStateChanged(signin_status_value.get()));
 }
 
-scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
+std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
   return signin_status_.ToValue(
       account_tracker_, signin_manager_, signin_error_controller_,
       token_service_, cookie_manager_service_, client_->GetProductVersion());
@@ -430,7 +427,8 @@ bool AboutSigninInternals::TokenInfo::LessThan(const TokenInfo* a,
 void AboutSigninInternals::TokenInfo::Invalidate() { removed_ = true; }
 
 base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
-  scoped_ptr<base::DictionaryValue> token_info(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> token_info(
+      new base::DictionaryValue());
   token_info->SetString("service", consumer_id);
 
   std::string scopes_str;
@@ -496,7 +494,8 @@ AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
   return NULL;
 }
 
-scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
+std::unique_ptr<base::DictionaryValue>
+AboutSigninInternals::SigninStatus::ToValue(
     AccountTrackerService* account_tracker,
     SigninManagerBase* signin_manager,
     SigninErrorController* signin_error_controller,
@@ -509,7 +508,8 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AboutSigninInternals::SigninStatus::ToValue1"));
 
-  scoped_ptr<base::DictionaryValue> signin_status(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> signin_status(
+      new base::DictionaryValue());
   base::ListValue* signin_info = new base::ListValue();
   signin_status->Set("signin_info", signin_info);
 

@@ -5,6 +5,7 @@
 #include "components/signin/core/browser/test_signin_client.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -57,7 +58,7 @@ void TestSigninClient::LoadTokenDatabase() {
   scoped_refptr<WebDatabaseService> web_database =
       new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());
-  web_database->AddTable(scoped_ptr<WebDatabaseTable>(new TokenServiceTable()));
+  web_database->AddTable(base::WrapUnique(new TokenServiceTable()));
   web_database->LoadDatabase();
   database_ =
       new TokenWebData(web_database, base::ThreadTaskRunnerHandle::Get(),
@@ -70,13 +71,12 @@ bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
   return true;
 }
 
-scoped_ptr<SigninClient::CookieChangedSubscription>
+std::unique_ptr<SigninClient::CookieChangedSubscription>
 TestSigninClient::AddCookieChangedCallback(
     const GURL& url,
     const std::string& name,
     const net::CookieStore::CookieChangedCallback& callback) {
-  return scoped_ptr<SigninClient::CookieChangedSubscription>(
-      new SigninClient::CookieChangedSubscription);
+  return base::WrapUnique(new SigninClient::CookieChangedSubscription);
 }
 
 bool TestSigninClient::IsFirstRun() const {

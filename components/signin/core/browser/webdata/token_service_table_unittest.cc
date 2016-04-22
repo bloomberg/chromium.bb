@@ -35,8 +35,9 @@ class TokenServiceTableTest : public testing::Test {
 
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TokenServiceTable> table_;
-  scoped_ptr<WebDatabase> db_;
+  std::unique_ptr<TokenServiceTable> table_;
+  std::unique_ptr<WebDatabase> db_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TokenServiceTableTest);
 };

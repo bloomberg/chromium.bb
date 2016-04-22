@@ -61,7 +61,7 @@ void AccountInfoFetcher::OnGetTokenFailure(
 }
 
 void AccountInfoFetcher::OnGetUserInfoResponse(
-    scoped_ptr<base::DictionaryValue> user_info) {
+    std::unique_ptr<base::DictionaryValue> user_info) {
   TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetUserInfoResponse", "account_id",
                                account_id_);

@@ -154,7 +154,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoSuccess(const std::string& data) {
   helper_->fetcher_backoff_.InformOfRequest(true);
   gaia_auth_fetcher_timer_.Stop();
-  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
   const base::ListValue* list;
   if (!value || !value->GetAsList(&list)) {
     CleanupTransientState();
@@ -201,10 +201,10 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
   GetCheckConnectionInfoCompleted(false);
 }
 
-scoped_ptr<net::URLFetcher>
+std::unique_ptr<net::URLFetcher>
 GaiaCookieManagerService::ExternalCcResultFetcher::CreateFetcher(
     const GURL& url) {
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   fetcher->SetRequestContext(helper_->request_context());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

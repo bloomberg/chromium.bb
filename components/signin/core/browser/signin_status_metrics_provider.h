@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -37,7 +38,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
 
   // Factory method, creates a new instance of this class.
   static SigninStatusMetricsProvider* CreateInstance(
-      scoped_ptr<SigninStatusMetricsProviderDelegate> delegate);
+      std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate);
 
   // Update the sign-in status when a SigninManager is created.
   void OnSigninManagerCreated(SigninManagerBase* manager);
@@ -64,7 +65,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   // purpose, this class's instance should be created through the static
   // CreateInstance() method.
   SigninStatusMetricsProvider(
-      scoped_ptr<SigninStatusMetricsProviderDelegate> delegate,
+      std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate,
       bool is_test);
 
   // SigninManagerBase::Observer:
@@ -87,7 +88,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   // Compute current sign-in status of all opened profiles.
   void ComputeCurrentSigninStatus();
 
-  scoped_ptr<SigninStatusMetricsProviderDelegate> delegate_;
+  std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate_;
 
   // Used to track the SigninManagers that this instance is observing so that
   // this instance can be removed as an observer on its destruction.

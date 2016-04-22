@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_REFRESH_TOKEN_ANNOTATION_REQUEST_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_REFRESH_TOKEN_ANNOTATION_REQUEST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -38,7 +39,7 @@ class RefreshTokenAnnotationRequest : public base::NonThreadSafe,
   // cancelled and callback will not be posted.
   //
   // If SendIfNeeded returns nullptr then callback will not be posted.
-  static scoped_ptr<RefreshTokenAnnotationRequest> SendIfNeeded(
+  static std::unique_ptr<RefreshTokenAnnotationRequest> SendIfNeeded(
       PrefService* pref_service,
       OAuth2TokenService* token_service,
       SigninClient* signin_client,
@@ -81,7 +82,7 @@ class RefreshTokenAnnotationRequest : public base::NonThreadSafe,
   std::string client_id_;
   base::Closure request_callback_;
 
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(RefreshTokenAnnotationRequest);
 };

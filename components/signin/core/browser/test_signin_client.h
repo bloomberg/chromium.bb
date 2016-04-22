@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_TEST_SIGNIN_CLIENT_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_TEST_SIGNIN_CLIENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -67,7 +68,8 @@ class TestSigninClient : public SigninClient {
 
   // Registers |callback| and returns the subscription.
   // Note that |callback| will never be called.
-  scoped_ptr<SigninClient::CookieChangedSubscription> AddCookieChangedCallback(
+  std::unique_ptr<SigninClient::CookieChangedSubscription>
+  AddCookieChangedCallback(
       const GURL& url,
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;

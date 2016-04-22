@@ -17,6 +17,8 @@
 
 #if defined(OS_CHROMEOS)
 // On Chrome OS, SigninManagerBase is all that exists.
+#include <memory>
+
 #include "components/signin/core/browser/signin_manager_base.h"
 
 #else
@@ -28,7 +30,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"

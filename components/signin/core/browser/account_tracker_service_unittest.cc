@@ -334,11 +334,11 @@ class AccountTrackerServiceTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   net::TestURLFetcherFactory test_fetcher_factory_;
-  scoped_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
+  std::unique_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
   TestingPrefServiceSimple pref_service_;
-  scoped_ptr<AccountFetcherService> account_fetcher_;
-  scoped_ptr<AccountTrackerService> account_tracker_;
-  scoped_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<AccountFetcherService> account_fetcher_;
+  std::unique_ptr<AccountTrackerService> account_tracker_;
+  std::unique_ptr<TestSigninClient> signin_client_;
 };
 
 void AccountTrackerServiceTest::ReturnOAuthUrlFetchResults(
@@ -916,7 +916,7 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
     dict->SetString("email", base::UTF8ToUTF16(email_beta));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
 
-    scoped_ptr<TestSigninClient> client;
+    std::unique_ptr<TestSigninClient> client;
     client.reset(new TestSigninClient(&pref));
     tracker.Initialize(client.get());
 
@@ -968,7 +968,7 @@ TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
     dict->SetString("email", base::UTF8ToUTF16(email_beta));
     dict->SetString("gaia", base::UTF8ToUTF16(std::string()));
 
-    scoped_ptr<TestSigninClient> client;
+    std::unique_ptr<TestSigninClient> client;
     client.reset(new TestSigninClient(&pref));
     tracker.Initialize(client.get());
 
@@ -1027,7 +1027,7 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
     dict->SetString("email", base::UTF8ToUTF16(email_alpha));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
 
-    scoped_ptr<TestSigninClient> client;
+    std::unique_ptr<TestSigninClient> client;
     client.reset(new TestSigninClient(&pref));
     tracker.Initialize(client.get());
 

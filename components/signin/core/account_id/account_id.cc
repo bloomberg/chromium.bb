@@ -5,10 +5,10 @@
 #include "components/signin/core/account_id/account_id.h"
 
 #include <functional>
+#include <memory>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -159,7 +159,7 @@ std::string AccountId::Serialize() const {
 bool AccountId::Deserialize(const std::string& serialized,
                             AccountId* account_id) {
   base::JSONReader reader;
-  scoped_ptr<const base::Value> value(reader.Read(serialized));
+  std::unique_ptr<const base::Value> value(reader.Read(serialized));
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value || !value->GetAsDictionary(&dictionary_value))

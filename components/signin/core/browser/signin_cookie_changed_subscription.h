@@ -29,7 +29,7 @@ class SigninCookieChangedSubscription
  private:
   // Holder of a cookie store cookie changed subscription.
   struct SubscriptionHolder {
-    scoped_ptr<net::CookieStore::CookieChangedSubscription> subscription;
+    std::unique_ptr<net::CookieStore::CookieChangedSubscription> subscription;
     SubscriptionHolder();
     ~SubscriptionHolder();
   };
@@ -65,7 +65,7 @@ class SigninCookieChangedSubscription
 
   // The holder of a cookie changed subscription. Must be destroyed on the
   // network thread.
-  scoped_ptr<SubscriptionHolder> subscription_holder_io_;
+  std::unique_ptr<SubscriptionHolder> subscription_holder_io_;
 
   // Callback to be run on cookie changed events.
   net::CookieStore::CookieChangedCallback callback_;

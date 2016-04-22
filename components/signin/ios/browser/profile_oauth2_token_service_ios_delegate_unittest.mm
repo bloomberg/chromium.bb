@@ -108,7 +108,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   AccountTrackerService account_tracker_;
   SigninErrorController signin_error_controller_;
   FakeProfileOAuth2TokenServiceIOSProvider fake_provider_;
-  scoped_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_delegate_;
+  std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_delegate_;
   TestingOAuth2TokenServiceConsumer consumer_;
   int token_available_count_;
   int token_revoked_count_;
@@ -240,7 +240,7 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestSuccess) {
   ResetObserverCounts();
   std::vector<std::string> scopes;
   scopes.push_back("scope");
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher1(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
       oauth2_delegate_->CreateAccessTokenFetcher(
           GetAccountId(account1), oauth2_delegate_->GetRequestContext(), this));
   fetcher1->Start("foo", "bar", scopes);
@@ -263,7 +263,7 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestFailure) {
   ResetObserverCounts();
   std::vector<std::string> scopes;
   scopes.push_back("scope");
-  scoped_ptr<OAuth2AccessTokenFetcher> fetcher1(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
       oauth2_delegate_->CreateAccessTokenFetcher(
           GetAccountId(account1), oauth2_delegate_->GetRequestContext(), this));
   fetcher1->Start("foo", "bar", scopes);

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_TRACKER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_TRACKER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"

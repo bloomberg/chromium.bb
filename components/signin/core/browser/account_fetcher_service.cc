@@ -203,7 +203,7 @@ void AccountFetcherService::StartFetchingUserInfo(
 
   if (!ContainsKey(user_info_requests_, account_id)) {
     DVLOG(1) << "StartFetching " << account_id;
-    scoped_ptr<AccountInfoFetcher> fetcher(new AccountInfoFetcher(
+    std::unique_ptr<AccountInfoFetcher> fetcher(new AccountInfoFetcher(
         token_service_, signin_client_->GetURLRequestContext(), this,
         account_id));
     user_info_requests_.set(account_id, std::move(fetcher));
@@ -261,7 +261,7 @@ void AccountFetcherService::SendRefreshTokenAnnotationRequest(
   if (IsRefreshTokenDeviceIdExperimentEnabled() ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRefreshTokenAnnotationRequest)) {
-    scoped_ptr<RefreshTokenAnnotationRequest> request =
+    std::unique_ptr<RefreshTokenAnnotationRequest> request =
         RefreshTokenAnnotationRequest::SendIfNeeded(
             signin_client_->GetPrefs(), token_service_, signin_client_,
             signin_client_->GetURLRequestContext(), account_id,
@@ -283,7 +283,7 @@ void AccountFetcherService::RefreshTokenAnnotationRequestDone(
 
 void AccountFetcherService::OnUserInfoFetchSuccess(
     const std::string& account_id,
-    scoped_ptr<base::DictionaryValue> user_info) {
+    std::unique_ptr<base::DictionaryValue> user_info) {
   account_tracker_service_->SetAccountStateFromUserInfo(account_id,
                                                         user_info.get());
   user_info_requests_.erase(account_id);

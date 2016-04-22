@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_INFO_FETCHER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_INFO_FETCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -43,7 +44,7 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) override;
+      std::unique_ptr<base::DictionaryValue> user_info) override;
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
@@ -53,8 +54,8 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
   AccountFetcherService* service_;
   const std::string account_id_;
 
-  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountInfoFetcher);
 };

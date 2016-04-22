@@ -35,7 +35,7 @@ void RecordComputeSigninStatusHistogram(ComputeSigninStatus status) {
 }  // namespace
 
 SigninStatusMetricsProvider::SigninStatusMetricsProvider(
-    scoped_ptr<SigninStatusMetricsProviderDelegate> delegate,
+    std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate,
     bool is_test)
     : delegate_(std::move(delegate)),
       scoped_observer_(this),
@@ -67,7 +67,7 @@ void SigninStatusMetricsProvider::ProvideGeneralMetrics(
 
 // static
 SigninStatusMetricsProvider* SigninStatusMetricsProvider::CreateInstance(
-    scoped_ptr<SigninStatusMetricsProviderDelegate> delegate) {
+    std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate) {
   return new SigninStatusMetricsProvider(std::move(delegate), false);
 }
 

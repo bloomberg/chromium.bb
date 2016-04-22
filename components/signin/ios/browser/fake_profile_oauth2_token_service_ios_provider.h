@@ -5,12 +5,12 @@
 #ifndef IOS_TEST_MOCK_PROFILE_OAUTH2_TOKEN_SERVICE_PROVIDER_IOS_H_
 #define IOS_TEST_MOCK_PROFILE_OAUTH2_TOKEN_SERVICE_PROVIDER_IOS_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 
 // Mock class of ProfileOAuth2TokenServiceIOSProvider for testing.

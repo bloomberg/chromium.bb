@@ -81,7 +81,7 @@ class SigninClient : public KeyedService {
   // changes.
   // Note that |callback| will always be called on the thread that
   // |AddCookieChangedCallback| was called on.
-  virtual scoped_ptr<CookieChangedSubscription> AddCookieChangedCallback(
+  virtual std::unique_ptr<CookieChangedSubscription> AddCookieChangedCallback(
       const GURL& url,
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) = 0;
