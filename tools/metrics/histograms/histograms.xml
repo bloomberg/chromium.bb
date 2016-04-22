@@ -12078,6 +12078,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.PassiveListeners.ForcedNonBlockingLatency"
+    units="microseconds">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Time between when a forced non-blocking event was generated and the event
+    processed. This histogram tracks the benefit of forcing non-blocking events
+    listeners.
+  </summary>
+</histogram>
+
 <histogram name="Event.PassiveListeners.Latency" units="microseconds">
   <owner>dtapuska@chromium.org</owner>
   <summary>

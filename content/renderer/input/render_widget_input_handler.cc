@@ -117,11 +117,6 @@ void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
 #undef CASE_TYPE
 }
 
-void LogPassiveLatency(int64_t latency) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency", latency, 1,
-                              10000000, 100);
-}
-
 void LogPassiveEventListenersUma(WebInputEventResult result,
                                  WebInputEvent::DispatchType dispatch_type,
                                  double event_timestamp,
@@ -163,10 +158,18 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
   UMA_HISTOGRAM_ENUMERATION("Event.PassiveListeners", enum_value,
                             PASSIVE_LISTENER_UMA_ENUM_COUNT);
 
-  if (enum_value == PASSIVE_LISTENER_UMA_ENUM_CANCELABLE &&
-      base::TimeTicks::IsHighResolution()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    LogPassiveLatency(GetEventLatencyMicros(event_timestamp, now));
+  if (base::TimeTicks::IsHighResolution()) {
+    if (enum_value == PASSIVE_LISTENER_UMA_ENUM_CANCELABLE) {
+      base::TimeTicks now = base::TimeTicks::Now();
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency",
+                                  GetEventLatencyMicros(event_timestamp, now),
+                                  1, 10000000, 100);
+    } else if (enum_value == PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING) {
+      base::TimeTicks now = base::TimeTicks::Now();
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.PassiveListeners.ForcedNonBlockingLatency",
+          GetEventLatencyMicros(event_timestamp, now), 1, 10000000, 100);
+    }
   }
 }
 
