@@ -22,8 +22,6 @@
       ],
       'sources': [
         'offline_pages/offline_page_archiver.h',
-	'offline_pages/offline_page_bookmark_bridge.h',
-	'offline_pages/offline_page_bookmark_bridge.cc',
         'offline_pages/offline_page_feature.cc',
         'offline_pages/offline_page_feature.h',
         'offline_pages/offline_page_item.cc',

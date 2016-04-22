@@ -104,7 +104,7 @@ int64_t OfflinePageUtils::GetBookmarkIdForOfflineURL(
   if (!offline_page)
     return -1;
 
-  if (offline_page->client_id.name_space != offline_pages::BOOKMARK_NAMESPACE) {
+  if (offline_page->client_id.name_space != offline_pages::kBookmarkNamespace) {
     return -1;
   }
 

@@ -10,8 +10,6 @@ if (is_android) {
 static_library("offline_pages") {
   sources = [
     "offline_page_archiver.h",
-    "offline_page_bookmark_bridge.cc",
-    "offline_page_bookmark_bridge.h",
     "offline_page_item.cc",
     "offline_page_item.h",
     "offline_page_metadata_store.cc",
@@ -78,8 +76,6 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//components/bookmarks/browser",
-    "//components/bookmarks/test",
     "//components/leveldb_proto",
     "//components/offline_pages/proto:offline_pages_proto",
     "//testing/gtest",

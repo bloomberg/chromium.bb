@@ -17,8 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"
 #include "url/gurl.h"
@@ -153,7 +151,7 @@ void OfflinePageModel::SavePage(const GURL& url,
   // Skip saving the page that is not intended to be saved, like local file
   // page.
   if (!CanSavePage(url)) {
-    InformSavePageDone(callback, SavePageResult::SKIPPED, INVALID_OFFLINE_ID);
+    InformSavePageDone(callback, SavePageResult::SKIPPED, kInvalidOfflineId);
     return;
   }
 

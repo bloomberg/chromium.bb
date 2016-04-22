@@ -26,13 +26,6 @@
 #include "components/undo/bookmark_undo_service.h"
 #include "content/public/browser/browser_thread.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "components/offline_pages/offline_page_bookmark_bridge.h"
-#include "components/offline_pages/offline_page_feature.h"
-#include "components/offline_pages/offline_page_model.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
-
 using bookmarks::BookmarkModel;
 
 // static
@@ -59,10 +52,6 @@ BookmarkModelFactory::BookmarkModelFactory()
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ManagedBookmarkServiceFactory::GetInstance());
   DependsOn(StartupTaskRunnerServiceFactory::GetInstance());
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  if (offline_pages::IsOfflinePagesEnabled())
-    DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
-#endif
 }
 
 BookmarkModelFactory::~BookmarkModelFactory() {
@@ -88,15 +77,6 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
 #endif  // !BUILDFLAG(ANDROID_JAVA_UI)
   if (register_bookmark_undo_service_as_observer)
     BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  if (offline_pages::IsOfflinePagesEnabled()) {
-    // This observer will delete itself when BookmarkModelDeleted is called.
-    bookmark_model->AddObserver(new offline_pages::OfflinePageBookmarkBridge(
-        offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile),
-        bookmark_model));
-  }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
   return bookmark_model;
 }

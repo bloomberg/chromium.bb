@@ -308,7 +308,7 @@ void NetErrorTabHelper::UpdateHasOfflinePages(
     return;
 
   offline_page_model->HasPages(
-      offline_pages::BOOKMARK_NAMESPACE,
+      offline_pages::kBookmarkNamespace,
       base::Bind(&NetErrorTabHelper::SetHasOfflinePages,
                  weak_factory_.GetWeakPtr(),
                  render_frame_host->GetFrameTreeNodeId()));

@@ -139,7 +139,7 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPage1Url, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   offline_pages::ClientId client_id;
-  client_id.name_space = BOOKMARK_NAMESPACE;
+  client_id.name_space = kBookmarkNamespace;
   client_id.id = kTestPage1ClientId;
   model->SavePage(
       kTestPage1Url, client_id, std::move(archiver),

@@ -174,7 +174,7 @@ void OfflinePageMetadataStoreImpl::LoadDone(
           LOG(ERROR) << "unexpected entry missing bookmark id";
           continue;
         }
-        item.client_id.name_space = offline_pages::BOOKMARK_NAMESPACE;
+        item.client_id.name_space = offline_pages::kBookmarkNamespace;
         item.client_id.id = base::Int64ToString(entry.deprecated_bookmark_id());
 
         OfflinePageEntry upgraded_entry;

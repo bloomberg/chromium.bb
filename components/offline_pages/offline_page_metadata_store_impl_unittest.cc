@@ -26,9 +26,10 @@ namespace offline_pages {
 
 namespace {
 
+const char kTestClientNamespace[] = "CLIENT_NAMESPACE";
 const char kTestURL[] = "https://example.com";
-const ClientId kTestBookmarkId(BOOKMARK_NAMESPACE, "1234");
-const ClientId kTestBookmarkId2(BOOKMARK_NAMESPACE, "5678");
+const ClientId kTestClientId1(kTestClientNamespace, "1234");
+const ClientId kTestClientId2(kTestClientNamespace, "5678");
 const base::FilePath::CharType kFilePath[] =
     FILE_PATH_LITERAL("/offline_pages/example_com.mhtml");
 int64_t kFileSize = 234567;
@@ -146,7 +147,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadEmptyStore) {
 TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
-  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -183,7 +184,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Add an offline page.
-  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -237,12 +238,12 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Add an offline page.
-  OfflinePageItem offline_page_1(GURL(kTestURL), 12345LL, kTestBookmarkId,
+  OfflinePageItem offline_page_1(GURL(kTestURL), 12345LL, kTestClientId1,
                                  base::FilePath(kFilePath), kFileSize);
   base::FilePath file_path_2 =
       base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
   OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
-                                 kTestBookmarkId2, file_path_2, 12345,
+                                 kTestClientId2, file_path_2, 12345,
                                  base::Time::Now());
   store->AddOrUpdateOfflinePage(
       offline_page_1,
@@ -314,7 +315,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // First, adds a fresh page.
-  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -379,7 +380,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Write one ok page.
-  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestClientId1,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -490,7 +491,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpgradeStoreFromBookmarkIdToClientId) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(1U, offline_pages_.size());
   EXPECT_TRUE(offline_pages_[0].offline_id != 0);
-  EXPECT_EQ(offline_pages::BOOKMARK_NAMESPACE,
+  EXPECT_EQ(offline_pages::kBookmarkNamespace,
             offline_pages_[0].client_id.name_space);
   EXPECT_EQ(base::Int64ToString(offline_page_proto.deprecated_bookmark_id()),
             offline_pages_[0].client_id.id);

@@ -29,7 +29,7 @@ namespace offline_pages {
 namespace {
 
 const GURL kTestPageUrl("http://test.org/page1");
-const ClientId kTestPageBookmarkId = ClientId(BOOKMARK_NAMESPACE, "1234");
+const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
 const int64_t kTestFileSize = 876543LL;
 
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
@@ -120,7 +120,7 @@ void OfflinePageTabHelperTest::SetUp() {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPageUrl, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
   model->SavePage(
-      kTestPageUrl, kTestPageBookmarkId, std::move(archiver),
+      kTestPageUrl, kTestClientId, std::move(archiver),
       base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
   RunUntilIdle();
 }
