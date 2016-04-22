@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -19,6 +20,7 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/api/time.h"
+#include "sync/syncable/syncable_util.h"
 
 using sessions::SerializedNavigationEntry;
 using sync_driver::DeviceInfo;
@@ -57,6 +59,17 @@ bool TabsRecencyComparator(const sessions::SessionTab* t1,
 bool SessionsRecencyComparator(const sync_driver::SyncedSession* s1,
                                const sync_driver::SyncedSession* s2) {
   return s1->modified_time > s2->modified_time;
+}
+
+std::string TagFromSpecifics(const sync_pb::SessionSpecifics& specifics) {
+  if (specifics.has_header()) {
+    return specifics.session_tag();
+  } else if (specifics.has_tab()) {
+    return TabNodePool::TabIdToTag(specifics.session_tag(),
+                                   specifics.tab_node_id());
+  } else {
+    return std::string();
+  }
 }
 
 }  // namespace
@@ -577,10 +590,12 @@ bool SessionsSyncManager::InitFromSyncModel(
     syncer::SyncDataList* restored_tabs,
     syncer::SyncChangeList* new_changes) {
   bool found_current_header = false;
+  int bad_foreign_hash_count = 0;
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end(); ++it) {
     const syncer::SyncData& data = *it;
     DCHECK(data.GetSpecifics().has_session());
+    syncer::SyncDataRemote remote(data);
     const sync_pb::SessionSpecifics& specifics = data.GetSpecifics().session();
     if (specifics.session_tag().empty() ||
         (specifics.has_tab() &&
@@ -589,8 +604,19 @@ bool SessionsSyncManager::InitFromSyncModel(
       if (tombstone.IsValid())
         new_changes->push_back(tombstone);
     } else if (specifics.session_tag() != current_machine_tag()) {
-      UpdateTrackerWithForeignSession(
-          specifics, syncer::SyncDataRemote(data).GetModifiedTime());
+      if (TagHashFromSpecifics(specifics) == remote.GetClientTagHash()) {
+        UpdateTrackerWithForeignSession(specifics, remote.GetModifiedTime());
+      } else {
+        // In the past, like years ago, we believe that some session data was
+        // created with bad tag hashes. This causes any change this client makes
+        // to that foreign data (like deletion through garbage collection) to
+        // trigger a data type error because the tag looking mechanism fails. So
+        // look for these and delete via remote SyncData, which uses a server id
+        // lookup mechanism instead, see crbug.com/604657.
+        bad_foreign_hash_count++;
+        new_changes->push_back(
+            syncer::SyncChange(FROM_HERE, SyncChange::ACTION_DELETE, remote));
+      }
     } else {
       // This is previously stored local session information.
       if (specifics.has_header() && !found_current_header) {
@@ -623,6 +649,9 @@ bool SessionsSyncManager::InitFromSyncModel(
   for (const auto* session : sessions) {
     session_tracker_.CleanupSession(session->session_tag);
   }
+
+  UMA_HISTOGRAM_COUNTS_100("Sync.SessionsBadForeignHashOnMergeCount",
+                           bad_foreign_hash_count);
 
   return found_current_header;
 }
@@ -1063,6 +1092,13 @@ void SessionsSyncManager::DoGarbageCollection() {
 
   if (!changes.empty())
     sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+}
+
+// static
+std::string SessionsSyncManager::TagHashFromSpecifics(
+    const sync_pb::SessionSpecifics& specifics) {
+  return syncer::syncable::GenerateSyncableHash(syncer::SESSIONS,
+                                                TagFromSpecifics(specifics));
 }
 
 };  // namespace browser_sync

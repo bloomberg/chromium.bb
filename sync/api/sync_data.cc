@@ -124,10 +124,12 @@ SyncData SyncData::CreateRemoteData(
     const sync_pb::EntitySpecifics& specifics,
     const base::Time& modification_time,
     const AttachmentIdList& attachment_ids,
-    const AttachmentServiceProxy& attachment_service) {
+    const AttachmentServiceProxy& attachment_service,
+    const std::string& client_tag_hash) {
   DCHECK_NE(id, kInvalidId);
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->CopyFrom(specifics);
+  entity.set_client_defined_unique_tag(client_tag_hash);
   std::transform(attachment_ids.begin(),
                  attachment_ids.end(),
                  RepeatedFieldBackInserter(entity.mutable_attachment_id()),
@@ -213,6 +215,18 @@ const base::Time& SyncDataRemote::GetModifiedTime() const {
 
 int64_t SyncDataRemote::GetId() const {
   return id_;
+}
+
+const std::string& SyncDataRemote::GetClientTagHash() const {
+  // It seems that client_defined_unique_tag has a bit of an overloaded use,
+  // holding onto the un-hashed tag while local, and then the hashed value when
+  // communicating with the server. This usage is copying the latter of these
+  // cases, where this is the hashed tag value. The original tag is not sent to
+  // the server so we wouldn't be able to set this value anyways. The only way
+  // to recreate an un-hashed tag is for the service to do so with a specifics.
+  // Should only be used by sessions, see crbug.com/604657.
+  DCHECK_EQ(syncer::SESSIONS, GetDataType());
+  return immutable_entity_.Get().client_defined_unique_tag();
 }
 
 void SyncDataRemote::GetOrDownloadAttachments(

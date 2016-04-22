@@ -47,6 +47,10 @@ class SessionWindow;
 class TabNavigation;
 }  // namespace sync_pb
 
+namespace extensions {
+class ExtensionSessionsTest;
+}  // namespace extensions
+
 namespace browser_sync {
 
 class DataTypeErrorHandler;
@@ -149,6 +153,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Container for accessing local tab data by tab id.
   typedef std::map<SessionID::id_type, linked_ptr<TabLink>> TabLinksMap;
 
+  friend class extensions::ExtensionSessionsTest;
+  friend class SessionsSyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, ValidTabs);
@@ -166,6 +172,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            SaveUnassociatedNodesForReassociation);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, MergeDeletesCorruptNode);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, MergeDeletesBadHash);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            MergeLocalSessionExistingTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
@@ -302,6 +309,16 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Validates the content of a SessionHeader protobuf.
   // Returns false if validation fails.
   static bool IsValidSessionHeader(const sync_pb::SessionHeader& header);
+
+  // Calculates the tag hash from a specifics object. Calculating the hash is
+  // something we typically want to avoid doing in the model type like this.
+  // However, the only place that understands how to generate a tag from the
+  // specifics is the model type, ie us. We need to generate the tag because it
+  // is not passed over the wire for remote data. The use case this function was
+  // created for is detecting bad tag hashes from remote data, see
+  // crbug.com/604657.
+  static std::string TagHashFromSpecifics(
+      const sync_pb::SessionSpecifics& specifics);
 
   SyncedWindowDelegatesGetter* synced_window_delegates_getter() const;
 

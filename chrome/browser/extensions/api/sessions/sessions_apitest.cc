@@ -30,6 +30,7 @@
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
+#include "components/sync_sessions/sessions_sync_manager.h"
 #include "extensions/browser/api_test_utils.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/fake_sync_change_processor.h"
@@ -91,6 +92,57 @@ void BuildTabSpecifics(const std::string& tag,
   navigation->set_title("MyTitle");
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 }
+
+testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
+                                            size_t num_sessions) {
+  EXPECT_EQ(5u, devices.GetSize());
+  const base::DictionaryValue* device = NULL;
+  const base::ListValue* sessions = NULL;
+  for (size_t i = 0; i < devices.GetSize(); ++i) {
+    EXPECT_TRUE(devices.GetDictionary(i, &device));
+    EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "info"));
+    EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "deviceName"));
+    EXPECT_TRUE(device->GetList("sessions", &sessions));
+    EXPECT_EQ(num_sessions, sessions->GetSize());
+    // Because this test is hurried, really there are only ever 0 or 1
+    // sessions, and if 1, that will be a Window. Grab it.
+    if (num_sessions == 0)
+      continue;
+    const base::DictionaryValue* session = NULL;
+    EXPECT_TRUE(sessions->GetDictionary(0, &session));
+    const base::DictionaryValue* window = NULL;
+    EXPECT_TRUE(session->GetDictionary("window", &window));
+    // Only the tabs are interesting.
+    const base::ListValue* tabs = NULL;
+    EXPECT_TRUE(window->GetList("tabs", &tabs));
+    EXPECT_EQ(arraysize(kTabIDs), tabs->GetSize());
+    for (size_t j = 0; j < tabs->GetSize(); ++j) {
+      const base::DictionaryValue* tab = NULL;
+      EXPECT_TRUE(tabs->GetDictionary(j, &tab));
+      EXPECT_FALSE(tab->HasKey("id"));  // sessions API does not give tab IDs
+      EXPECT_EQ(static_cast<int>(j), api_test_utils::GetInteger(tab, "index"));
+      EXPECT_EQ(0, api_test_utils::GetInteger(tab, "windowId"));
+      // Test setup code always sets tab 0 to selected (which means active in
+      // extension terminology).
+      EXPECT_EQ(j == 0, api_test_utils::GetBoolean(tab, "active"));
+      // While selected/highlighted are different to active, and should always
+      // be false.
+      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "selected"));
+      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "highlighted"));
+      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "incognito"));
+      EXPECT_TRUE(api_test_utils::GetBoolean(tab, "pinned"));
+      EXPECT_EQ("http://foo/1", api_test_utils::GetString(tab, "url"));
+      EXPECT_EQ("MyTitle", api_test_utils::GetString(tab, "title"));
+      EXPECT_EQ("http://foo/favicon.ico",
+                api_test_utils::GetString(tab, "favIconUrl"));
+      EXPECT_EQ(base::StringPrintf("%s.%d", kSessionTags[i], kTabIDs[j]),
+                api_test_utils::GetString(tab, "sessionId"));
+    }
+  }
+  return testing::AssertionSuccess();
+}
+
+}  // namespace
 
 class ExtensionSessionsTest : public InProcessBrowserTest {
  public:
@@ -211,20 +263,18 @@ void ExtensionSessionsTest::CreateSessionModels() {
     sync_pb::EntitySpecifics entity;
     entity.mutable_session()->CopyFrom(meta);
     initial_data.push_back(syncer::SyncData::CreateRemoteData(
-        1,
-        entity,
-        base::Time(),
-        syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create()));
+        1, entity, base::Time(), syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create(),
+        browser_sync::SessionsSyncManager::TagHashFromSpecifics(
+            entity.session())));
     for (size_t i = 0; i < tabs.size(); i++) {
       sync_pb::EntitySpecifics entity;
       entity.mutable_session()->CopyFrom(tabs[i]);
       initial_data.push_back(syncer::SyncData::CreateRemoteData(
-          i + 2,
-          entity,
-          base::Time(),
-          syncer::AttachmentIdList(),
-          syncer::AttachmentServiceProxyForTest::Create()));
+          i + 2, entity, base::Time(), syncer::AttachmentIdList(),
+          syncer::AttachmentServiceProxyForTest::Create(),
+          browser_sync::SessionsSyncManager::TagHashFromSpecifics(
+              entity.session())));
     }
   }
 
@@ -235,55 +285,6 @@ void ExtensionSessionsTest::CreateSessionModels() {
                                      new syncer::FakeSyncChangeProcessor()),
                                  std::unique_ptr<syncer::SyncErrorFactory>(
                                      new syncer::SyncErrorFactoryMock()));
-}
-
-testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
-                                            size_t num_sessions) {
-  EXPECT_EQ(5u, devices.GetSize());
-  const base::DictionaryValue* device = NULL;
-  const base::ListValue* sessions = NULL;
-  for (size_t i = 0; i < devices.GetSize(); ++i) {
-    EXPECT_TRUE(devices.GetDictionary(i, &device));
-    EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "info"));
-    EXPECT_EQ(kSessionTags[i], api_test_utils::GetString(device, "deviceName"));
-    EXPECT_TRUE(device->GetList("sessions", &sessions));
-    EXPECT_EQ(num_sessions, sessions->GetSize());
-    // Because this test is hurried, really there are only ever 0 or 1
-    // sessions, and if 1, that will be a Window. Grab it.
-    if (num_sessions == 0)
-      continue;
-    const base::DictionaryValue* session = NULL;
-    EXPECT_TRUE(sessions->GetDictionary(0, &session));
-    const base::DictionaryValue* window = NULL;
-    EXPECT_TRUE(session->GetDictionary("window", &window));
-    // Only the tabs are interesting.
-    const base::ListValue* tabs = NULL;
-    EXPECT_TRUE(window->GetList("tabs", &tabs));
-    EXPECT_EQ(arraysize(kTabIDs), tabs->GetSize());
-    for (size_t j = 0; j < tabs->GetSize(); ++j) {
-      const base::DictionaryValue* tab = NULL;
-      EXPECT_TRUE(tabs->GetDictionary(j, &tab));
-      EXPECT_FALSE(tab->HasKey("id"));  // sessions API does not give tab IDs
-      EXPECT_EQ(static_cast<int>(j), api_test_utils::GetInteger(tab, "index"));
-      EXPECT_EQ(0, api_test_utils::GetInteger(tab, "windowId"));
-      // Test setup code always sets tab 0 to selected (which means active in
-      // extension terminology).
-      EXPECT_EQ(j == 0, api_test_utils::GetBoolean(tab, "active"));
-      // While selected/highlighted are different to active, and should always
-      // be false.
-      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "selected"));
-      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "highlighted"));
-      EXPECT_FALSE(api_test_utils::GetBoolean(tab, "incognito"));
-      EXPECT_TRUE(api_test_utils::GetBoolean(tab, "pinned"));
-      EXPECT_EQ("http://foo/1", api_test_utils::GetString(tab, "url"));
-      EXPECT_EQ("MyTitle", api_test_utils::GetString(tab, "title"));
-      EXPECT_EQ("http://foo/favicon.ico",
-                api_test_utils::GetString(tab, "favIconUrl"));
-      EXPECT_EQ(base::StringPrintf("%s.%d", kSessionTags[i], kTabIDs[j]),
-                api_test_utils::GetString(tab, "sessionId"));
-    }
-  }
-  return testing::AssertionSuccess();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
@@ -389,7 +390,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_SessionsApis) {
   ASSERT_TRUE(RunExtensionSubtest("sessions",
                                   "sessions.html")) << message_;
 }
-
-}  // namespace
 
 }  // namespace extensions

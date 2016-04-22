@@ -541,6 +541,7 @@ TEST_F(SyncGenericChangeProcessorTest, AddExistingEntry) {
   ASSERT_EQ(sync_data.size(), 1U);
   ASSERT_EQ("session tag 2",
             sync_data[0].GetSpecifics().session().session_tag());
+  EXPECT_FALSE(syncer::SyncDataRemote(sync_data[0]).GetClientTagHash().empty());
 }
 
 }  // namespace

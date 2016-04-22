@@ -67,29 +67,40 @@ void SetAttachmentMetadata(const syncer::AttachmentIdList& attachment_ids,
 
 syncer::SyncData BuildRemoteSyncData(
     int64_t sync_id,
-    const syncer::BaseNode& read_node,
+    const syncer::ReadNode& read_node,
     const syncer::AttachmentServiceProxy& attachment_service_proxy) {
   const syncer::AttachmentIdList& attachment_ids = read_node.GetAttachmentIds();
-  // Use the specifics of non-password datatypes directly (encryption has
-  // already been handled).
-  if (read_node.GetModelType() != syncer::PASSWORDS) {
-    return syncer::SyncData::CreateRemoteData(sync_id,
-                                              read_node.GetEntitySpecifics(),
-                                              read_node.GetModificationTime(),
-                                              attachment_ids,
-                                              attachment_service_proxy);
+  switch (read_node.GetModelType()) {
+    case syncer::PASSWORDS: {
+      // Passwords must be accessed differently, to account for their
+      // encryption, and stored into a temporary EntitySpecifics.
+      sync_pb::EntitySpecifics password_holder;
+      password_holder.mutable_password()
+          ->mutable_client_only_encrypted_data()
+          ->CopyFrom(read_node.GetPasswordSpecifics());
+      return syncer::SyncData::CreateRemoteData(
+          sync_id, password_holder, read_node.GetModificationTime(),
+          attachment_ids, attachment_service_proxy);
+    }
+    case syncer::SESSIONS:
+      // Include tag hashes for sessions data type to allow discarding during
+      // merge if re-hashing by the service gives a different value. This is to
+      // allow removal of incorrectly hashed values, see crbug.com/604657. This
+      // cannot be done in the processor because only the service knows how to
+      // generate a tag from the specifics. We don't set this value for other
+      // data types because they shouldn't need it and it costs memory to hold
+      // another copy of this string around.
+      return syncer::SyncData::CreateRemoteData(
+          sync_id, read_node.GetEntitySpecifics(),
+          read_node.GetModificationTime(), attachment_ids,
+          attachment_service_proxy, read_node.GetEntry()->GetUniqueClientTag());
+    default:
+      // Use the specifics directly, encryption has already been handled.
+      return syncer::SyncData::CreateRemoteData(
+          sync_id, read_node.GetEntitySpecifics(),
+          read_node.GetModificationTime(), attachment_ids,
+          attachment_service_proxy);
   }
-
-  // Passwords must be accessed differently, to account for their encryption,
-  // and stored into a temporary EntitySpecifics.
-  sync_pb::EntitySpecifics password_holder;
-  password_holder.mutable_password()->mutable_client_only_encrypted_data()->
-      CopyFrom(read_node.GetPasswordSpecifics());
-  return syncer::SyncData::CreateRemoteData(sync_id,
-                                            password_holder,
-                                            read_node.GetModificationTime(),
-                                            attachment_ids,
-                                            attachment_service_proxy);
 }
 
 }  // namespace

@@ -53327,6 +53327,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time taken during session association.</summary>
 </histogram>
 
+<histogram name="Sync.SessionsBadForeignHashOnMergeCount"
+    units="Sessions Entries">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Number of foreign sessions entries detected with bad client tag hash value
+    during MergeDataAndStartSyncing. These will be immediately deleted. The
+    overwhelming majority of clients should report a value of 0 upon startup.
+  </summary>
+</histogram>
+
 <histogram name="Sync.SessionsConfigureFailure" enum="SyncConfigureResult">
   <owner>zea@chromium.org</owner>
   <summary>Enumeration of types of session configuration failures.</summary>

@@ -190,58 +190,28 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   syncer::SyncDataList sync_data_to_return_;
 };
 
-syncer::SyncChange MakeRemoteChange(int64_t id,
-                                    const sync_pb::SessionSpecifics& specifics,
-                                    SyncChange::SyncChangeType type) {
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(specifics);
-  return syncer::SyncChange(
-      FROM_HERE,
-      type,
-      syncer::SyncData::CreateRemoteData(
-          id,
-          entity,
-          base::Time(),
-          syncer::AttachmentIdList(),
-          syncer::AttachmentServiceProxyForTest::Create()));
-}
-
-void AddTabsToChangeList(
-      const std::vector<sync_pb::SessionSpecifics>& batch,
-      SyncChange::SyncChangeType type,
-      syncer::SyncChangeList* change_list) {
-  std::vector<sync_pb::SessionSpecifics>::const_iterator iter;
-  for (iter = batch.begin();
-       iter != batch.end(); ++iter) {
-    sync_pb::EntitySpecifics entity;
-    entity.mutable_session()->CopyFrom(*iter);
-    change_list->push_back(syncer::SyncChange(
-        FROM_HERE,
-        type,
-        syncer::SyncData::CreateRemoteData(
-            iter->tab_node_id(),
-            entity,
-            base::Time(),
-            syncer::AttachmentIdList(),
-            syncer::AttachmentServiceProxyForTest::Create())));
+void ExpectAllOfChangesType(const syncer::SyncChangeList& changes,
+                            const syncer::SyncChange::SyncChangeType type) {
+  for (const syncer::SyncChange& change : changes) {
+    EXPECT_EQ(type, change.change_type());
   }
 }
 
-void AddToSyncDataList(const sync_pb::SessionSpecifics& specifics,
-                       syncer::SyncDataList* list,
-                       base::Time mtime) {
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(specifics);
-  list->push_back(SyncData::CreateRemoteData(
-      1, entity, mtime, syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+int CountIfTagMatches(const syncer::SyncChangeList& changes,
+                      const std::string& tag) {
+  return std::count_if(
+      changes.begin(), changes.end(), [&tag](const syncer::SyncChange& change) {
+        return change.sync_data().GetSpecifics().session().session_tag() == tag;
+      });
 }
 
-void AddTabsToSyncDataList(const std::vector<sync_pb::SessionSpecifics> tabs,
-                           syncer::SyncDataList* list) {
-  for (size_t i = 0; i < tabs.size(); i++) {
-    AddToSyncDataList(tabs[i], list, base::Time::FromInternalValue(i + 1));
-  }
+int CountIfTagMatches(
+    const std::vector<const sync_driver::SyncedSession*>& sessions,
+    const std::string& tag) {
+  return std::count_if(sessions.begin(), sessions.end(),
+                       [&tag](const sync_driver::SyncedSession* session) {
+                         return session->session_tag == tag;
+                       });
 }
 
 // Creates a field trial with the specified |trial_name| and |group_name| and
@@ -324,7 +294,7 @@ class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
 
 class SessionsSyncManagerTest
     : public BrowserWithTestWindowTest {
- public:
+ protected:
   SessionsSyncManagerTest()
       : test_processor_(NULL) {
     local_device_.reset(new LocalDeviceInfoProviderMock(
@@ -402,8 +372,9 @@ class SessionsSyncManagerTest
     syncer::SyncChangeList::iterator it = list->begin();
     bool found = false;
     while (it != list->end()) {
-      if (syncer::SyncDataLocal(it->sync_data()).GetTag() ==
-          manager_->current_machine_tag()) {
+      if (it->sync_data().IsLocal() &&
+          syncer::SyncDataLocal(it->sync_data()).GetTag() ==
+              manager_->current_machine_tag()) {
         EXPECT_TRUE(SyncChange::ACTION_ADD == it->change_type() ||
                     SyncChange::ACTION_UPDATE == it->change_type());
         it = list->erase(it);
@@ -425,6 +396,53 @@ class SessionsSyncManagerTest
   void set_synced_window_getter(
       browser_sync::SyncedWindowDelegatesGetter* synced_window_getter) {
     sessions_client_shim_->set_synced_window_getter(synced_window_getter);
+  }
+
+  syncer::SyncChange MakeRemoteChange(
+      int64_t id,
+      const sync_pb::SessionSpecifics& specifics,
+      SyncChange::SyncChangeType type) const {
+    return syncer::SyncChange(FROM_HERE, type, CreateRemoteData(specifics, id));
+  }
+
+  void AddTabsToChangeList(const std::vector<sync_pb::SessionSpecifics>& batch,
+                           SyncChange::SyncChangeType type,
+                           syncer::SyncChangeList* change_list) const {
+    for (const auto& specifics : batch) {
+      change_list->push_back(syncer::SyncChange(
+          FROM_HERE, type,
+          CreateRemoteData(specifics, specifics.tab_node_id())));
+    }
+  }
+
+  void AddToSyncDataList(const sync_pb::SessionSpecifics& specifics,
+                         syncer::SyncDataList* list,
+                         base::Time mtime) const {
+    list->push_back(CreateRemoteData(specifics, 1, mtime));
+  }
+
+  void AddTabsToSyncDataList(const std::vector<sync_pb::SessionSpecifics>& tabs,
+                             syncer::SyncDataList* list) const {
+    for (size_t i = 0; i < tabs.size(); i++) {
+      AddToSyncDataList(tabs[i], list, base::Time::FromInternalValue(i + 1));
+    }
+  }
+
+  syncer::SyncData CreateRemoteData(const sync_pb::SessionSpecifics& specifics,
+                                    int64_t id = 1,
+                                    base::Time mtime = base::Time()) const {
+    sync_pb::EntitySpecifics entity;
+    entity.mutable_session()->CopyFrom(specifics);
+    return CreateRemoteData(entity, id, mtime);
+  }
+
+  syncer::SyncData CreateRemoteData(const sync_pb::EntitySpecifics& entity,
+                                    int64_t id,
+                                    base::Time mtime) const {
+    return SyncData::CreateRemoteData(
+        id, entity, mtime, syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create(),
+        SessionsSyncManager::TagHashFromSpecifics(entity.session()));
   }
 
  private:
@@ -1037,26 +1055,14 @@ TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
 
   // Set up initial data.
   syncer::SyncDataList initial_data;
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(meta);
-  initial_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity,
-      base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(CreateRemoteData(meta));
   AddTabsToSyncDataList(tabs1, &initial_data);
 
   for (size_t i = 0; i < tab_list2.size(); ++i) {
     sync_pb::EntitySpecifics entity;
     helper()->BuildTabSpecifics(tag, 0, tab_list2[i],
                                 entity.mutable_session());
-    initial_data.push_back(SyncData::CreateRemoteData(
-        i + 10,
-        entity,
-        base::Time(),
-        syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create()));
+    initial_data.push_back(CreateRemoteData(entity, i + 10, base::Time()));
   }
 
   syncer::SyncChangeList output;
@@ -1088,14 +1094,7 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
       tag, tab_list1, &tabs1));
   syncer::SyncDataList foreign_data;
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(meta);
-  foreign_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity,
-      base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  foreign_data.push_back(CreateRemoteData(meta));
   AddTabsToSyncDataList(tabs1, &foreign_data);
 
   syncer::SyncChangeList output;
@@ -1171,14 +1170,7 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   meta1_reference.push_back(tab_list1);
   std::vector<sync_pb::SessionSpecifics> tabs1;
   meta1 = helper()->BuildForeignSession(tag1, tab_list1, &tabs1);
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(meta1);
-  foreign_data1.push_back(SyncData::CreateRemoteData(
-      1,
-      entity,
-      base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  foreign_data1.push_back(CreateRemoteData(meta1));
   AddTabsToSyncDataList(tabs1, &foreign_data1);
 
   syncer::SyncChangeList output1;
@@ -1724,6 +1716,56 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesCorruptNode) {
             syncer::SyncDataLocal(changes[0].sync_data()).GetTag());
 }
 
+// Verifies that we drop both headers and tabs during merge if their stored tag
+// hash doesn't match a computer tag hash. This mitigates potential failures
+// while cleaning up bad foreign data, see crbug.com/604657.
+TEST_F(SessionsSyncManagerTest, MergeDeletesBadHash) {
+  syncer::SyncDataList foreign_data;
+  std::vector<SessionID::id_type> empty_ids;
+  std::vector<sync_pb::SessionSpecifics> empty_tabs;
+  sync_pb::EntitySpecifics entity;
+
+  const std::string good_header_tag = "good_header_tag";
+  sync_pb::SessionSpecifics good_header(
+      helper()->BuildForeignSession(good_header_tag, empty_ids, &empty_tabs));
+  foreign_data.push_back(CreateRemoteData(good_header));
+
+  const std::string bad_header_tag = "bad_header_tag";
+  sync_pb::SessionSpecifics bad_header(
+      helper()->BuildForeignSession(bad_header_tag, empty_ids, &empty_tabs));
+  entity.mutable_session()->CopyFrom(bad_header);
+  foreign_data.push_back(SyncData::CreateRemoteData(
+      1, entity, base::Time(), syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create(), "bad_header_tag_hash"));
+
+  const std::string good_tag_tab = "good_tag_tab";
+  sync_pb::SessionSpecifics good_tab;
+  helper()->BuildTabSpecifics(good_tag_tab, 0, 1, &good_tab);
+  foreign_data.push_back(CreateRemoteData(good_tab));
+
+  const std::string bad_tab_tag = "bad_tab_tag";
+  sync_pb::SessionSpecifics bad_tab;
+  helper()->BuildTabSpecifics(bad_tab_tag, 0, 2, &bad_tab);
+  entity.mutable_session()->CopyFrom(bad_tab);
+  foreign_data.push_back(SyncData::CreateRemoteData(
+      1, entity, base::Time(), syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create(), "bad_tab_tag_hash"));
+
+  syncer::SyncChangeList output;
+  InitWithSyncDataTakeOutput(foreign_data, &output);
+  ASSERT_EQ(2U, FilterOutLocalHeaderChanges(&output)->size());
+  ExpectAllOfChangesType(output, SyncChange::ACTION_DELETE);
+  EXPECT_EQ(1, CountIfTagMatches(output, bad_header_tag));
+  EXPECT_EQ(1, CountIfTagMatches(output, bad_tab_tag));
+
+  std::vector<const sync_driver::SyncedSession*> sessions;
+  manager()->session_tracker_.LookupAllForeignSessions(
+      &sessions, SyncedSessionTracker::RAW);
+  ASSERT_EQ(2U, sessions.size());
+  EXPECT_EQ(1, CountIfTagMatches(sessions, good_header_tag));
+  EXPECT_EQ(1, CountIfTagMatches(sessions, good_tag_tab));
+}
+
 // Test that things work if a tab is initially ignored.
 TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
   syncer::SyncChangeList out;
@@ -2086,21 +2128,8 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
   base::Time tag2_time = base::Time::Now() - base::TimeDelta::FromDays(5);
 
   syncer::SyncDataList foreign_data;
-  sync_pb::EntitySpecifics entity1, entity2;
-  entity1.mutable_session()->CopyFrom(meta);
-  entity2.mutable_session()->CopyFrom(meta2);
-  foreign_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity1,
-      tag1_time,
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
-  foreign_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity2,
-      tag2_time,
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  foreign_data.push_back(CreateRemoteData(meta, 1, tag1_time));
+  foreign_data.push_back(CreateRemoteData(meta2, 1, tag2_time));
   AddTabsToSyncDataList(tabs1, &foreign_data);
   AddTabsToSyncDataList(tabs2, &foreign_data);
 
@@ -2208,15 +2237,8 @@ TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
   sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
       tag1, tab_list1, &tabs1));
   syncer::SyncDataList foreign_data;
-  sync_pb::EntitySpecifics entity1;
   base::Time tag1_time = base::Time::Now() - base::TimeDelta::FromDays(21);
-  entity1.mutable_session()->CopyFrom(meta);
-  foreign_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity1,
-      tag1_time,
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  foreign_data.push_back(CreateRemoteData(meta, 1, tag1_time));
   AddTabsToSyncDataList(tabs1, &foreign_data);
   syncer::SyncChangeList output;
   InitWithSyncDataTakeOutput(foreign_data, &output);
@@ -2227,14 +2249,8 @@ TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
   update_entity.mutable_session()->CopyFrom(tabs1[0]);
   syncer::SyncChangeList changes;
   changes.push_back(
-      syncer::SyncChange(FROM_HERE,
-                         SyncChange::ACTION_UPDATE,
-                         syncer::SyncData::CreateRemoteData(
-                             1,
-                             update_entity,
-                             base::Time::Now(),
-                             syncer::AttachmentIdList(),
-                             syncer::AttachmentServiceProxyForTest::Create())));
+      syncer::SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
+                         CreateRemoteData(tabs1[0], 1, base::Time::Now())));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   // Check that the foreign session was associated and retrieve the data.
@@ -2454,25 +2470,15 @@ TEST_F(SessionsSyncManagerTest, ReceiveDuplicateUnassociatedTabs) {
 
   // Set up initial data.
   syncer::SyncDataList initial_data;
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(meta);
-  initial_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity,
-      base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(CreateRemoteData(meta));
 
   int node_id = 2;
+  sync_pb::EntitySpecifics entity;
 
   for (size_t i = 0; i < tabs1.size(); i++) {
     entity.mutable_session()->CopyFrom(tabs1[i]);
-    initial_data.push_back(SyncData::CreateRemoteData(
-        node_id++,
-        entity,
-        base::Time::FromDoubleT(2000),
-        syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create()));
+    initial_data.push_back(
+        CreateRemoteData(entity, node_id++, base::Time::FromDoubleT(2000)));
   }
 
   // Add two more tabs with duplicating IDs but with different modification
@@ -2483,23 +2489,15 @@ TEST_F(SessionsSyncManagerTest, ReceiveDuplicateUnassociatedTabs) {
   helper()->BuildTabSpecifics(tag, 0, 10, &duplicating_tab1);
   duplicating_tab1.mutable_tab()->set_tab_visual_index(2);
   entity.mutable_session()->CopyFrom(duplicating_tab1);
-  initial_data.push_back(SyncData::CreateRemoteData(
-      node_id++,
-      entity,
-      base::Time::FromDoubleT(1000),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(
+      CreateRemoteData(entity, node_id++, base::Time::FromDoubleT(1000)));
 
   sync_pb::SessionSpecifics duplicating_tab2;
   helper()->BuildTabSpecifics(tag, 0, 17, &duplicating_tab2);
   duplicating_tab2.mutable_tab()->set_tab_visual_index(3);
   entity.mutable_session()->CopyFrom(duplicating_tab2);
-  initial_data.push_back(SyncData::CreateRemoteData(
-      node_id++,
-      entity,
-      base::Time::FromDoubleT(3000),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(
+      CreateRemoteData(entity, node_id++, base::Time::FromDoubleT(3000)));
 
   syncer::SyncChangeList output;
   InitWithSyncDataTakeOutput(initial_data, &output);
@@ -2533,25 +2531,12 @@ TEST_F(SessionsSyncManagerTest, GetAllForeignSessions) {
   sync_pb::SessionSpecifics meta2(helper()->BuildForeignSession(
       kTag2, tab_list, &tabs2));
 
-  sync_pb::EntitySpecifics entity1;
-  entity1.mutable_session()->CopyFrom(meta1);
-  sync_pb::EntitySpecifics entity2;
-  entity2.mutable_session()->CopyFrom(meta2);
-
   syncer::SyncDataList initial_data;
-  initial_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity1,
-      base::Time::FromInternalValue(10),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(
+      CreateRemoteData(meta1, 1, base::Time::FromInternalValue(10)));
   AddTabsToSyncDataList(tabs1, &initial_data);
-  initial_data.push_back(SyncData::CreateRemoteData(
-      2,
-      entity2,
-      base::Time::FromInternalValue(200),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(
+      CreateRemoteData(meta2, 2, base::Time::FromInternalValue(200)));
   AddTabsToSyncDataList(tabs2, &initial_data);
 
   syncer::SyncChangeList output;
@@ -2581,14 +2566,7 @@ TEST_F(SessionsSyncManagerTest, GetForeignSessionTabs) {
 
   // Set up initial data.
   syncer::SyncDataList initial_data;
-  sync_pb::EntitySpecifics entity;
-  entity.mutable_session()->CopyFrom(meta);
-  initial_data.push_back(SyncData::CreateRemoteData(
-      1,
-      entity,
-      base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create()));
+  initial_data.push_back(CreateRemoteData(meta));
 
   // Add the first window's tabs.
   AddTabsToSyncDataList(tabs1, &initial_data);
@@ -2600,12 +2578,8 @@ TEST_F(SessionsSyncManagerTest, GetForeignSessionTabs) {
                                 entity.mutable_session());
     // Order the tabs oldest to most ReceiveDuplicateUnassociatedTabs and
     // left to right visually.
-    initial_data.push_back(SyncData::CreateRemoteData(
-        i + 10,
-        entity,
-        base::Time::FromInternalValue(i + 1),
-        syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create()));
+    initial_data.push_back(
+        CreateRemoteData(entity, i + 10, base::Time::FromInternalValue(i + 1)));
   }
 
   syncer::SyncChangeList output;

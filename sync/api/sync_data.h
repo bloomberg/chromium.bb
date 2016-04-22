@@ -77,7 +77,8 @@ class SYNC_EXPORT SyncData {
       const sync_pb::EntitySpecifics& specifics,
       const base::Time& last_modified_time,
       const AttachmentIdList& attachment_ids,
-      const syncer::AttachmentServiceProxy& attachment_service);
+      const syncer::AttachmentServiceProxy& attachment_service,
+      const std::string& client_tag_hash = std::string());
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
@@ -179,6 +180,10 @@ class SYNC_EXPORT SyncDataRemote : public SyncData {
   const base::Time& GetModifiedTime() const;
 
   int64_t GetId() const;
+
+  // Returns the tag hash value. May not always be present, in which case an
+  // empty string will be returned.
+  const std::string& GetClientTagHash() const;
 
   // Retrieve the attachments indentified by |attachment_ids|. Invoke
   // |callback| with the requested attachments.
