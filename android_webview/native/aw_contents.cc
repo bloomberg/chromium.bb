@@ -310,16 +310,12 @@ void AwContents::SetAwGLFunctor(AwGLFunctor* functor) {
   if (functor == functor_) {
     return;
   }
-  if (functor_) {
-    functor_->SetBrowserViewRenderer(nullptr);
-  }
   functor_ = functor;
   if (functor_) {
-    browser_view_renderer_.SetRenderThreadManager(
-        functor_->GetRenderThreadManager());
-    functor_->SetBrowserViewRenderer(&browser_view_renderer_);
+    browser_view_renderer_.SetCompositorFrameConsumer(
+        functor_->GetCompositorFrameConsumer());
   } else {
-    browser_view_renderer_.SetRenderThreadManager(nullptr);
+    browser_view_renderer_.SetCompositorFrameConsumer(nullptr);
   }
 }
 
@@ -746,10 +742,6 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
 
   Java_AwContents_onReceivedTouchIconUrl(
       env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
-}
-
-void AwContents::OnParentDrawConstraintsUpdated() {
-  browser_view_renderer_.OnParentDrawConstraintsUpdated();
 }
 
 void AwContents::PostInvalidate() {

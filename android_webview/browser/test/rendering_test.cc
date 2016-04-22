@@ -16,6 +16,30 @@
 
 namespace android_webview {
 
+namespace {
+// BrowserViewRenderer subclass used for enabling tests to observe
+// OnParentDrawConstraintsUpdated.
+class TestBrowserViewRenderer : public BrowserViewRenderer {
+ public:
+  TestBrowserViewRenderer(
+      RenderingTest* rendering_test,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      bool disable_page_visibility)
+      : BrowserViewRenderer(rendering_test,
+                            ui_task_runner,
+                            disable_page_visibility),
+        rendering_test_(rendering_test) {}
+
+  void OnParentDrawConstraintsUpdated() override {
+    BrowserViewRenderer::OnParentDrawConstraintsUpdated();
+    rendering_test_->OnParentDrawConstraintsUpdated();
+  }
+
+ private:
+  RenderingTest* const rendering_test_;
+};
+}
+
 RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
@@ -30,11 +54,20 @@ void RenderingTest::SetUpTestHarness() {
   DCHECK(!render_thread_manager_.get());
   render_thread_manager_.reset(
       new RenderThreadManager(this, base::ThreadTaskRunnerHandle::Get()));
-  browser_view_renderer_.reset(new BrowserViewRenderer(
+  browser_view_renderer_.reset(new TestBrowserViewRenderer(
       this, base::ThreadTaskRunnerHandle::Get(), false));
-  browser_view_renderer_->SetRenderThreadManager(render_thread_manager_.get());
+  browser_view_renderer_->SetCompositorFrameConsumer(
+      render_thread_manager_.get());
   InitializeCompositor();
   Attach();
+}
+
+CompositorFrameConsumer* RenderingTest::GetCompositorFrameConsumer() {
+  return render_thread_manager_.get();
+}
+
+CompositorFrameProducer* RenderingTest::GetCompositorFrameProducer() {
+  return browser_view_renderer_.get();
 }
 
 void RenderingTest::InitializeCompositor() {
@@ -112,10 +145,6 @@ void RenderingTest::OnNewPicture() {
 void RenderingTest::PostInvalidate() {
   if (window_)
     window_->PostInvalidate();
-}
-
-void RenderingTest::OnParentDrawConstraintsUpdated() {
-  browser_view_renderer_->OnParentDrawConstraintsUpdated();
 }
 
 void RenderingTest::DetachFunctorFromView() {

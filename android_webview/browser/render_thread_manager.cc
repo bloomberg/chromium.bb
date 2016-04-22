@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "android_webview/browser/child_frame.h"
+#include "android_webview/browser/compositor_frame_producer.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/render_thread_manager_client.h"
@@ -91,6 +92,7 @@ RenderThreadManager::RenderThreadManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop)
     : ui_loop_(ui_loop),
       client_(client),
+      compositor_frame_producer_(nullptr),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
       hardware_renderer_has_frame_(false),
       inside_hardware_release_(false),
@@ -104,6 +106,9 @@ RenderThreadManager::RenderThreadManager(
 RenderThreadManager::~RenderThreadManager() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(!hardware_renderer_.get());
+  if (compositor_frame_producer_) {
+    compositor_frame_producer_->OnCompositorFrameConsumerWillDestroy();
+  }
 }
 
 void RenderThreadManager::ClientRequestInvokeGL(bool for_idle) {
@@ -152,7 +157,9 @@ void RenderThreadManager::ClientRequestInvokeGLOnUI() {
 
 void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  client_->OnParentDrawConstraintsUpdated();
+  if (compositor_frame_producer_) {
+    compositor_frame_producer_->OnParentDrawConstraintsUpdated();
+  }
 }
 
 void RenderThreadManager::SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) {
@@ -351,6 +358,11 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
     // Flush any invoke functors that's caused by ReleaseHardware.
     client_->RequestInvokeGL(true);
   }
+}
+
+void RenderThreadManager::SetCompositorFrameProducer(
+    CompositorFrameProducer* compositor_frame_producer) {
+  compositor_frame_producer_ = compositor_frame_producer;
 }
 
 bool RenderThreadManager::HasFrameOnUI() const {

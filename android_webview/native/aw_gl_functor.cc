@@ -4,7 +4,6 @@
 
 #include "android_webview/native/aw_gl_functor.h"
 
-#include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AwGLFunctor_jni.h"
@@ -30,16 +29,9 @@ AwGLFunctor::AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref)
     : java_ref_(java_ref),
       render_thread_manager_(
           this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-      browser_view_renderer_(nullptr) {}
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {}
 
 AwGLFunctor::~AwGLFunctor() {}
-
-void AwGLFunctor::OnParentDrawConstraintsUpdated() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (browser_view_renderer_)
-    browser_view_renderer_->OnParentDrawConstraintsUpdated();
-}
 
 bool AwGLFunctor::RequestInvokeGL(bool wait_for_completion) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -56,12 +48,6 @@ void AwGLFunctor::DetachFunctorFromView() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_AwGLFunctor_detachFunctorFromView(env, obj.obj());
-}
-
-void AwGLFunctor::SetBrowserViewRenderer(
-    BrowserViewRenderer* browser_view_renderer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  browser_view_renderer_ = browser_view_renderer;
 }
 
 void AwGLFunctor::Destroy(JNIEnv* env,

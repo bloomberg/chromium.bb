@@ -238,9 +238,6 @@ class AwContents : public FindHelper::Listener,
       const base::Callback<void(bool)>& callback) override;
   void CancelMIDISysexPermissionRequests(const GURL& origin) override;
 
-  // ex-SharedRendererStateClient implementation.
-  void OnParentDrawConstraintsUpdated();
-
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,

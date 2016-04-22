@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
+#include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/test/rendering_test.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -124,9 +125,8 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   }
 
   void OnParentDrawConstraintsUpdated() override {
-    RenderingTest::OnParentDrawConstraintsUpdated();
     ParentCompositorDrawConstraints constraints =
-        render_thread_manager_->GetParentDrawConstraintsOnUI();
+        GetCompositorFrameConsumer()->GetParentDrawConstraintsOnUI();
     switch (on_draw_count_) {
       case 1u:
         EXPECT_TRUE(DrawConstraintsEquals(constraints, new_constraints_));

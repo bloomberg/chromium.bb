@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "base/cancelable_callback.h"
@@ -26,40 +27,35 @@ class RequestInvokeGLTracker;
 }
 
 class RenderThreadManagerClient;
+class CompositorFrameProducer;
 class ChildFrame;
 class HardwareRenderer;
 class InsideHardwareReleaseReset;
 
 // This class is used to pass data between UI thread and RenderThread.
-class RenderThreadManager {
+class RenderThreadManager : public CompositorFrameConsumer {
  public:
-  struct ReturnedResources {
-    ReturnedResources();
-    ~ReturnedResources();
-
-    uint32_t output_surface_id;
-    cc::ReturnedResourceArray resources;
-  };
-  using ReturnedResourcesMap = std::map<uint32_t, ReturnedResources>;
-
   RenderThreadManager(
       RenderThreadManagerClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop);
-  ~RenderThreadManager();
+  ~RenderThreadManager() override;
 
   // This function can be called from any thread.
   void ClientRequestInvokeGL(bool for_idle);
 
-  // UI thread methods.
-  void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);
-  void SetFrameOnUI(std::unique_ptr<ChildFrame> frame);
-  void InitializeHardwareDrawIfNeededOnUI();
-  ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
-  void SwapReturnedResourcesOnUI(ReturnedResourcesMap* returned_resource_map);
-  bool ReturnedResourcesEmptyOnUI() const;
-  std::unique_ptr<ChildFrame> PassUncommittedFrameOnUI();
-  bool HasFrameOnUI() const;
-  void DeleteHardwareRendererOnUI();
+  // CompositorFrameConsumer methods.
+  void SetCompositorFrameProducer(
+      CompositorFrameProducer* compositor_frame_producer) override;
+  void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) override;
+  void SetFrameOnUI(std::unique_ptr<ChildFrame> frame) override;
+  void InitializeHardwareDrawIfNeededOnUI() override;
+  ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const override;
+  void SwapReturnedResourcesOnUI(
+      ReturnedResourcesMap* returned_resource_map) override;
+  bool ReturnedResourcesEmptyOnUI() const override;
+  std::unique_ptr<ChildFrame> PassUncommittedFrameOnUI() override;
+  bool HasFrameOnUI() const override;
+  void DeleteHardwareRendererOnUI() override;
 
   // RT thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
@@ -97,6 +93,7 @@ class RenderThreadManager {
   // Accessed by UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;
   RenderThreadManagerClient* const client_;
+  CompositorFrameProducer* compositor_frame_producer_;
   base::WeakPtr<RenderThreadManager> ui_thread_weak_ptr_;
   base::CancelableClosure request_draw_gl_cancelable_closure_;
 
