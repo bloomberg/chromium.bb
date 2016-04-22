@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
@@ -61,9 +61,9 @@ class SuggestionsService : public KeyedService,
                      OAuth2TokenService* token_service,
                      sync_driver::SyncService* sync_service,
                      net::URLRequestContextGetter* url_request_context,
-                     scoped_ptr<SuggestionsStore> suggestions_store,
-                     scoped_ptr<ImageManager> thumbnail_manager,
-                     scoped_ptr<BlacklistStore> blacklist_store);
+                     std::unique_ptr<SuggestionsStore> suggestions_store,
+                     std::unique_ptr<ImageManager> thumbnail_manager,
+                     std::unique_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
 
   // Initiates a network request for suggestions if sync state allows and there
@@ -75,7 +75,7 @@ class SuggestionsService : public KeyedService,
   SuggestionsProfile GetSuggestionsDataFromCache() const;
 
   // Adds a callback that is called when the suggestions are updated.
-  scoped_ptr<ResponseCallbackList::Subscription> AddCallback(
+  std::unique_ptr<ResponseCallbackList::Subscription> AddCallback(
       const ResponseCallback& callback) WARN_UNUSED_RESULT;
 
   // Retrieves stored thumbnail for website |url| asynchronously. Calls
@@ -153,7 +153,7 @@ class SuggestionsService : public KeyedService,
   // Creates a request to the suggestions service, properly setting headers.
   // If OAuth2 authentication is enabled, |access_token| should be a valid
   // OAuth2 access token, and will be written into an auth header.
-  scoped_ptr<net::URLFetcher> CreateSuggestionsRequest(
+  std::unique_ptr<net::URLFetcher> CreateSuggestionsRequest(
       const GURL& url,
       const std::string& access_token);
 
@@ -192,25 +192,25 @@ class SuggestionsService : public KeyedService,
   net::URLRequestContextGetter* url_request_context_;
 
   // The cache for the suggestions.
-  scoped_ptr<SuggestionsStore> suggestions_store_;
+  std::unique_ptr<SuggestionsStore> suggestions_store_;
 
   // Used to obtain server thumbnails, if available.
-  scoped_ptr<ImageManager> thumbnail_manager_;
+  std::unique_ptr<ImageManager> thumbnail_manager_;
 
   // The local cache for temporary blacklist, until uploaded to the server.
-  scoped_ptr<BlacklistStore> blacklist_store_;
+  std::unique_ptr<BlacklistStore> blacklist_store_;
 
   // Delay used when scheduling a blacklisting task.
   base::TimeDelta scheduling_delay_;
 
   // Helper for fetching OAuth2 access tokens.
   class AccessTokenFetcher;
-  scoped_ptr<AccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<AccessTokenFetcher> token_fetcher_;
 
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete| or
   // if cancelled.
-  scoped_ptr<net::URLFetcher> pending_request_;
+  std::unique_ptr<net::URLFetcher> pending_request_;
 
   // The start time of the previous suggestions request. This is used to measure
   // the latency of requests. Initially zero.

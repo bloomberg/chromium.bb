@@ -4,6 +4,7 @@
 
 #include "components/suggestions/suggestions_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -189,7 +190,7 @@ class SuggestionsService::AccessTokenFetcher
   OAuth2TokenService* token_service_;
 
   TokenCallback callback_;
-  scoped_ptr<OAuth2TokenService::Request> token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> token_request_;
 };
 
 SuggestionsService::SuggestionsService(
@@ -197,9 +198,9 @@ SuggestionsService::SuggestionsService(
     OAuth2TokenService* token_service,
     sync_driver::SyncService* sync_service,
     net::URLRequestContextGetter* url_request_context,
-    scoped_ptr<SuggestionsStore> suggestions_store,
-    scoped_ptr<ImageManager> thumbnail_manager,
-    scoped_ptr<BlacklistStore> blacklist_store)
+    std::unique_ptr<SuggestionsStore> suggestions_store,
+    std::unique_ptr<ImageManager> thumbnail_manager,
+    std::unique_ptr<BlacklistStore> blacklist_store)
     : sync_service_(sync_service),
       sync_service_observer_(this),
       url_request_context_(url_request_context),
@@ -237,7 +238,7 @@ SuggestionsProfile SuggestionsService::GetSuggestionsDataFromCache() const {
   return suggestions;
 }
 
-scoped_ptr<SuggestionsService::ResponseCallbackList::Subscription>
+std::unique_ptr<SuggestionsService::ResponseCallbackList::Subscription>
 SuggestionsService::AddCallback(const ResponseCallback& callback) {
   return callback_list_.Add(callback);
 }
@@ -408,9 +409,10 @@ void SuggestionsService::IssueSuggestionsRequest(
   last_request_started_time_ = TimeTicks::Now();
 }
 
-scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
-    const GURL& url, const std::string& access_token) {
-  scoped_ptr<net::URLFetcher> request =
+std::unique_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
+    const GURL& url,
+    const std::string& access_token) {
+  std::unique_ptr<net::URLFetcher> request =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request.get(), data_use_measurement::DataUseUserData::SUGGESTIONS);
@@ -436,7 +438,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_request_.get(), source);
 
   // The fetcher will be deleted when the request is handled.
-  scoped_ptr<const net::URLFetcher> request(std::move(pending_request_));
+  std::unique_ptr<const net::URLFetcher> request(std::move(pending_request_));
 
   const net::URLRequestStatus& request_status = request->GetStatus();
   if (request_status.status() != net::URLRequestStatus::SUCCESS) {

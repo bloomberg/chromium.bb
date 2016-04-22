@@ -4,6 +4,7 @@
 
 #include "components/suggestions/image_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -22,10 +23,10 @@ namespace {
 // browsers still reporting the previous values.
 const char kDatabaseUMAClientName[] = "ImageManager";
 
-scoped_ptr<SkBitmap> DecodeImage(
+std::unique_ptr<SkBitmap> DecodeImage(
     scoped_refptr<base::RefCountedMemory> encoded_data) {
-  return scoped_ptr<SkBitmap>(suggestions::DecodeJPEGToSkBitmap(
-      encoded_data->front(), encoded_data->size()));
+  return suggestions::DecodeJPEGToSkBitmap(encoded_data->front(),
+                                           encoded_data->size());
 }
 
 }  // namespace
@@ -35,8 +36,8 @@ namespace suggestions {
 ImageManager::ImageManager() : weak_ptr_factory_(this) {}
 
 ImageManager::ImageManager(
-    scoped_ptr<ImageFetcher> image_fetcher,
-    scoped_ptr<ProtoDatabase<ImageData>> database,
+    std::unique_ptr<ImageFetcher> image_fetcher,
+    std::unique_ptr<ProtoDatabase<ImageData>> database,
     const base::FilePath& database_dir,
     scoped_refptr<base::TaskRunner> background_task_runner)
     : image_fetcher_(std::move(image_fetcher)),
@@ -131,7 +132,7 @@ void ImageManager::OnCacheImageDecoded(
     const GURL& url,
     const GURL& image_url,
     base::Callback<void(const GURL&, const SkBitmap*)> callback,
-    scoped_ptr<SkBitmap> bitmap) {
+    std::unique_ptr<SkBitmap> bitmap) {
   if (bitmap.get()) {
     callback.Run(url, bitmap.get());
   } else {
@@ -181,9 +182,9 @@ void ImageManager::SaveImage(const GURL& url, const SkBitmap& bitmap) {
   ImageData data;
   data.set_url(url.spec());
   data.set_data(encoded_data->front(), encoded_data->size());
-  scoped_ptr<ProtoDatabase<ImageData>::KeyEntryVector> entries_to_save(
+  std::unique_ptr<ProtoDatabase<ImageData>::KeyEntryVector> entries_to_save(
       new ProtoDatabase<ImageData>::KeyEntryVector());
-  scoped_ptr<std::vector<std::string>> keys_to_remove(
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
   entries_to_save->push_back(std::make_pair(data.url(), data));
   database_->UpdateEntries(std::move(entries_to_save),
@@ -204,7 +205,7 @@ void ImageManager::OnDatabaseInit(bool success) {
 }
 
 void ImageManager::OnDatabaseLoad(bool success,
-                                  scoped_ptr<ImageDataVector> entries) {
+                                  std::unique_ptr<ImageDataVector> entries) {
   if (!success) {
     DVLOG(1) << "Image database load failed.";
     database_.reset();
@@ -225,7 +226,8 @@ void ImageManager::OnDatabaseSave(bool success) {
   }
 }
 
-void ImageManager::LoadEntriesInCache(scoped_ptr<ImageDataVector> entries) {
+void ImageManager::LoadEntriesInCache(
+    std::unique_ptr<ImageDataVector> entries) {
   for (ImageDataVector::iterator it = entries->begin(); it != entries->end();
        ++it) {
     std::vector<unsigned char> encoded_data(it->data().begin(),

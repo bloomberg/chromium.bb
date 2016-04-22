@@ -6,7 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
@@ -88,12 +91,12 @@ class SuggestionsStoreTest : public testing::Test {
     base::SimpleTestClock* test_clock(new base::SimpleTestClock());
     current_time = base::Time::FromInternalValue(13063394337546738);
     test_clock->SetNow(current_time);
-    suggestions_store_->SetClockForTesting(scoped_ptr<base::Clock>(test_clock));
+    suggestions_store_->SetClockForTesting(base::WrapUnique(test_clock));
   }
 
  protected:
-  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
-  scoped_ptr<SuggestionsStore> suggestions_store_;
+  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<SuggestionsStore> suggestions_store_;
   base::Time current_time;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsStoreTest);

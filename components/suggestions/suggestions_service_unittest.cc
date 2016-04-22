@@ -6,12 +6,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
@@ -56,11 +57,13 @@ const char kBlacklistedUrlAlt[] = "http://blacklist-atl.com";
 const int64_t kTestDefaultExpiry = 1402200000000000;
 const int64_t kTestSetExpiry = 1404792000000000;
 
-scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
-    const GURL& url, net::URLFetcherDelegate* delegate,
-    const std::string& response_data, net::HttpStatusCode response_code,
+std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
+    const GURL& url,
+    net::URLFetcherDelegate* delegate,
+    const std::string& response_data,
+    net::HttpStatusCode response_code,
     net::URLRequestStatus::Status status) {
-  scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
       url, delegate, response_data, response_code, status));
 
   if (response_code == net::HTTP_OK) {
@@ -231,13 +234,10 @@ class SuggestionsServiceTest : public testing::Test {
     mock_thumbnail_manager_ = new StrictMock<MockImageManager>();
     mock_blacklist_store_ = new StrictMock<MockBlacklistStore>();
     return new SuggestionsService(
-        nullptr /* signin_manager */,
-        &token_service_,
-        mock_sync_service_.get(),
-        request_context_.get(),
-        scoped_ptr<SuggestionsStore>(test_suggestions_store_),
-        scoped_ptr<ImageManager>(mock_thumbnail_manager_),
-        scoped_ptr<BlacklistStore>(mock_blacklist_store_));
+        nullptr /* signin_manager */, &token_service_, mock_sync_service_.get(),
+        request_context_.get(), base::WrapUnique(test_suggestions_store_),
+        base::WrapUnique(mock_thumbnail_manager_),
+        base::WrapUnique(mock_blacklist_store_));
   }
 
   void Blacklist(SuggestionsService* suggestions_service, GURL url) {
@@ -252,7 +252,7 @@ class SuggestionsServiceTest : public testing::Test {
   // the case where the URL is no longer in the local blacklist or the case
   // in which it's not yet candidate for upload.
   void UndoBlacklistURLFailsHelper(bool is_uploaded) {
-    scoped_ptr<SuggestionsService> suggestions_service(
+    std::unique_ptr<SuggestionsService> suggestions_service(
         CreateSuggestionsServiceWithMocks());
     EXPECT_TRUE(suggestions_service != nullptr);
     // Ensure scheduling the request doesn't happen before undo.
@@ -303,7 +303,7 @@ class SuggestionsServiceTest : public testing::Test {
   base::MessageLoopForIO io_message_loop_;
   net::FakeURLFetcherFactory factory_;
   FakeProfileOAuth2TokenService token_service_;
-  scoped_ptr<MockSyncService> mock_sync_service_;
+  std::unique_ptr<MockSyncService> mock_sync_service_;
   // Only used if the SuggestionsService is built with mocks. Not owned.
   MockImageManager* mock_thumbnail_manager_;
   MockBlacklistStore* mock_blacklist_store_;
@@ -315,7 +315,7 @@ class SuggestionsServiceTest : public testing::Test {
 };
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
   auto subscription = suggestions_service->AddCallback(base::Bind(
@@ -347,7 +347,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
   EXPECT_CALL(*mock_sync_service_, IsSyncActive())
@@ -374,7 +374,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
   EXPECT_CALL(*mock_sync_service_, CanSyncStart())
@@ -405,7 +405,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
   token_service_.RevokeCredentials(kAccountId);
 
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
 
@@ -424,7 +424,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
 
@@ -445,7 +445,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingError) {
 }
 
 TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
 
@@ -471,7 +471,7 @@ TEST_F(SuggestionsServiceTest, IssueRequestIfNoneOngoingResponseNotOK) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURL) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   EXPECT_TRUE(suggestions_service != nullptr);
   base::TimeDelta no_delay = base::TimeDelta::FromSeconds(0);
@@ -518,7 +518,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURL) {
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
 
@@ -537,7 +537,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURLFails) {
 
 // Initial blacklist request fails, triggering a second which succeeds.
 TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
   base::TimeDelta no_delay = base::TimeDelta::FromSeconds(0);
@@ -597,7 +597,7 @@ TEST_F(SuggestionsServiceTest, BlacklistURLRequestFails) {
 }
 
 TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
   // Ensure scheduling the request doesn't happen before undo.
@@ -636,7 +636,7 @@ TEST_F(SuggestionsServiceTest, UndoBlacklistURL) {
 }
 
 TEST_F(SuggestionsServiceTest, ClearBlacklist) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
   // Ensure scheduling the request doesn't happen before undo.
@@ -681,8 +681,8 @@ TEST_F(SuggestionsServiceTest, UndoBlacklistURLFailsIfAlreadyCandidate) {
 }
 
 TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
-  scoped_ptr<GURL> request_url;
-  scoped_ptr<net::FakeURLFetcher> fetcher;
+  std::unique_ptr<GURL> request_url;
+  std::unique_ptr<net::FakeURLFetcher> fetcher;
   GURL retrieved_url;
 
   // Not a blacklist request.
@@ -707,7 +707,7 @@ TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
 }
 
 TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   base::TimeDelta initial_delay = suggestions_service->blacklist_delay();
 
@@ -725,7 +725,7 @@ TEST_F(SuggestionsServiceTest, UpdateBlacklistDelay) {
 }
 
 TEST_F(SuggestionsServiceTest, CheckDefaultTimeStamps) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   SuggestionsProfile suggestions =
       CreateSuggestionsProfileWithExpiryTimestamps();
@@ -736,7 +736,7 @@ TEST_F(SuggestionsServiceTest, CheckDefaultTimeStamps) {
 }
 
 TEST_F(SuggestionsServiceTest, GetPageThumbnail) {
-  scoped_ptr<SuggestionsService> suggestions_service(
+  std::unique_ptr<SuggestionsService> suggestions_service(
       CreateSuggestionsServiceWithMocks());
   ASSERT_TRUE(suggestions_service != nullptr);
 

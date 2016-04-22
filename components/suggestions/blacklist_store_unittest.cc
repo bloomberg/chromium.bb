@@ -4,12 +4,11 @@
 
 #include "components/suggestions/blacklist_store.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-
 #include "base/test/histogram_tester.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -65,7 +64,7 @@ class BlacklistStoreTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BlacklistStoreTest);
 };
@@ -119,7 +118,7 @@ TEST_F(BlacklistStoreTest, TestGetTimeUntilReadyForUpload) {
   // Tests assumes completion within 1 hour.
   base::TimeDelta upload_delay = base::TimeDelta::FromHours(1);
   base::TimeDelta no_delay = base::TimeDelta::FromHours(0);
-  scoped_ptr<BlacklistStore> blacklist_store(
+  std::unique_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(pref_service(), upload_delay));
   base::TimeDelta candidate_delta;
 
@@ -178,7 +177,7 @@ TEST_F(BlacklistStoreTest, LogsBlacklistSize) {
   base::HistogramTester histogram_tester;
 
   // Create a first store - blacklist is empty at this point.
-  scoped_ptr<BlacklistStore> blacklist_store(
+  std::unique_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(pref_service()));
   histogram_tester.ExpectTotalCount("Suggestions.LocalBlacklistSize", 1);
   histogram_tester.ExpectUniqueSample("Suggestions.LocalBlacklistSize", 0, 1);

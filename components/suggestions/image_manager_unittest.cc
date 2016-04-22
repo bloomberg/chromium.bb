@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/suggestions/image_manager.h"
+
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -12,7 +16,6 @@
 #include "components/suggestions/image_encoder.h"
 #include "components/suggestions/image_fetcher.h"
 #include "components/suggestions/image_fetcher_delegate.h"
-#include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,11 +115,10 @@ class ImageManagerTest : public testing::Test {
   ImageManager* CreateImageManager(FakeDB<ImageData>* fake_db) {
     mock_image_fetcher_ = new StrictMock<MockImageFetcher>();
     EXPECT_CALL(*mock_image_fetcher_, SetImageFetcherDelegate(_));
-    return new ImageManager(
-        scoped_ptr<ImageFetcher>(mock_image_fetcher_),
-        scoped_ptr<leveldb_proto::ProtoDatabase<ImageData>>(fake_db),
-        FakeDB<ImageData>::DirectoryForTestDB(),
-        base::ThreadTaskRunnerHandle::Get());
+    return new ImageManager(base::WrapUnique(mock_image_fetcher_),
+                            base::WrapUnique(fake_db),
+                            FakeDB<ImageData>::DirectoryForTestDB(),
+                            base::ThreadTaskRunnerHandle::Get());
   }
 
   EntryMap db_model_;
@@ -131,7 +133,7 @@ class ImageManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   // Under test.
-  scoped_ptr<ImageManager> image_manager_;
+  std::unique_ptr<ImageManager> image_manager_;
 };
 
 TEST_F(ImageManagerTest, InitializeTest) {

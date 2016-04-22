@@ -5,6 +5,8 @@
 #include "components/suggestions/suggestions_store.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -27,7 +29,8 @@ SuggestionsStore::SuggestionsStore() {
 
 SuggestionsStore::~SuggestionsStore() {}
 
-void SuggestionsStore::SetClockForTesting(scoped_ptr<base::Clock> test_clock) {
+void SuggestionsStore::SetClockForTesting(
+    std::unique_ptr<base::Clock> test_clock) {
   this->clock_ = std::move(test_clock);
 }
 

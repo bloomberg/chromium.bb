@@ -6,6 +6,7 @@
 #define COMPONENTS_SUGGESTIONS_IMAGE_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -40,10 +40,11 @@ class ImageManager : public ImageFetcherDelegate {
  public:
   typedef std::vector<ImageData> ImageDataVector;
 
-  ImageManager(scoped_ptr<ImageFetcher> image_fetcher,
-               scoped_ptr<leveldb_proto::ProtoDatabase<ImageData>> database,
-               const base::FilePath& database_dir,
-               scoped_refptr<base::TaskRunner> background_task_runner);
+  ImageManager(
+      std::unique_ptr<ImageFetcher> image_fetcher,
+      std::unique_ptr<leveldb_proto::ProtoDatabase<ImageData>> database,
+      const base::FilePath& database_dir,
+      scoped_refptr<base::TaskRunner> background_task_runner);
   ~ImageManager() override;
 
   virtual void Initialize(const SuggestionsProfile& suggestions);
@@ -109,7 +110,7 @@ class ImageManager : public ImageFetcherDelegate {
       const GURL& url,
       const GURL& image_url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback,
-      scoped_ptr<SkBitmap> bitmap);
+      std::unique_ptr<SkBitmap> bitmap);
 
   // Returns null if the |url| had no entry in the cache.
   scoped_refptr<base::RefCountedMemory> GetEncodedImageFromCache(
@@ -122,11 +123,11 @@ class ImageManager : public ImageFetcherDelegate {
   // Will initiate loading the entries.
   void OnDatabaseInit(bool success);
   // Will transfer the loaded |entries| in memory (|image_map_|).
-  void OnDatabaseLoad(bool success, scoped_ptr<ImageDataVector> entries);
+  void OnDatabaseLoad(bool success, std::unique_ptr<ImageDataVector> entries);
   void OnDatabaseSave(bool success);
 
   // Take entries from the database and put them in the local cache.
-  void LoadEntriesInCache(scoped_ptr<ImageDataVector> entries);
+  void LoadEntriesInCache(std::unique_ptr<ImageDataVector> entries);
 
   void ServePendingCacheRequests();
 
@@ -141,9 +142,9 @@ class ImageManager : public ImageFetcherDelegate {
   // Holding the bitmaps in memory, keyed by website URL string.
   ImageMap image_map_;
 
-  scoped_ptr<ImageFetcher> image_fetcher_;
+  std::unique_ptr<ImageFetcher> image_fetcher_;
 
-  scoped_ptr<leveldb_proto::ProtoDatabase<ImageData> > database_;
+  std::unique_ptr<leveldb_proto::ProtoDatabase<ImageData>> database_;
 
   scoped_refptr<base::TaskRunner> background_task_runner_;
 
