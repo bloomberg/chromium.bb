@@ -471,6 +471,7 @@
       'password_manager/core/browser/facet_manager_unittest.cc',
       'password_manager/core/browser/import/csv_reader_unittest.cc',
       'password_manager/core/browser/import/password_importer_unittest.cc',
+      'password_manager/core/browser/import/password_csv_reader_unittest.cc',
       'password_manager/core/browser/log_manager_unittest.cc',
       'password_manager/core/browser/log_router_unittest.cc',
       'password_manager/core/browser/login_database_ios_unittest.cc',

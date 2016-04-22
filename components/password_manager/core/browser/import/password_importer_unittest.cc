@@ -30,7 +30,7 @@ const char kTestFileName[] = "test_only.csv";
 class PasswordImporterTest : public testing::Test {
  public:
   PasswordImporterTest()
-      : callback_called_(false), result_(PasswordImporter::SUCCESS) {
+      : callback_called_(false), result_(PasswordImporter::NUM_IMPORT_RESULTS) {
     CHECK(temp_directory_.CreateUniqueTempDir());
   }
 

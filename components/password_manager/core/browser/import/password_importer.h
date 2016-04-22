@@ -18,12 +18,13 @@ struct PasswordForm;
 }
 
 namespace base {
-class FilePath;
 class TaskRunner;
 }
 
 namespace password_manager {
 
+// Static-only class bundling together the API for importing passwords from a
+// file.
 class PasswordImporter {
  public:
   enum Result {
@@ -40,8 +41,8 @@ class PasswordImporter {
 
   // Imports passwords from the file at |path|, and fires |completion| callback
   // on the calling thread with the passwords when ready. Blocking IO operations
-  // will be posted to |blocking_task_runner|. The file format should correspond
-  // to the extension of the file.
+  // will be posted to |blocking_task_runner|. The only supported file format is
+  // CSV.
   static void Import(const base::FilePath& path,
                      scoped_refptr<base::TaskRunner> blocking_task_runner,
                      const CompletionCallback& completion);
