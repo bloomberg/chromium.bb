@@ -8,9 +8,10 @@
 #ifndef MEDIA_CAPTURE_DEVICE_MONITOR_UDEV_H_
 #define MEDIA_CAPTURE_DEVICE_MONITOR_UDEV_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_export.h"
@@ -46,7 +47,7 @@ class MEDIA_EXPORT DeviceMonitorLinux
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  scoped_ptr<device::UdevLinux> udev_;
+  std::unique_ptr<device::UdevLinux> udev_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorLinux);
 };

@@ -5,8 +5,9 @@
 #ifndef MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
 #define MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
@@ -38,7 +39,7 @@ class MEDIA_EXPORT DeviceMonitorMac {
   void NotifyDeviceChanged(base::SystemMonitor::DeviceType type);
 
  private:
-  scoped_ptr<DeviceMonitorMacImpl> device_monitor_impl_;
+  std::unique_ptr<DeviceMonitorMacImpl> device_monitor_impl_;
 
   // |thread_checker_| is used to check that constructor and StartMonitoring()
   // are called in the correct thread, the UI thread, that also owns the object.

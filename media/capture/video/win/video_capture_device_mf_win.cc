@@ -231,7 +231,7 @@ bool VideoCaptureDeviceMFWin::Init(
 
 void VideoCaptureDeviceMFWin::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(CalledOnValidThread());
 
   base::AutoLock lock(lock_);

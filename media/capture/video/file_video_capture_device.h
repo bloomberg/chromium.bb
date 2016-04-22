@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "media/capture/video/video_capture_device.h"
@@ -47,21 +47,22 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
 
   // VideoCaptureDevice implementation, class methods.
   ~FileVideoCaptureDevice() override;
-  void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void AllocateAndStart(
+      const VideoCaptureParams& params,
+      std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
 
  private:
   // Opens a given file |file_path| for reading, and stores collected format
   // information in |video_format|. Returns the parsed file to the
   // caller, who is responsible for closing it.
-  static scoped_ptr<VideoFileParser> GetVideoFileParser(
+  static std::unique_ptr<VideoFileParser> GetVideoFileParser(
       const base::FilePath& file_path,
       media::VideoCaptureFormat* video_format);
 
   // Called on the |capture_thread_|.
   void OnAllocateAndStart(const VideoCaptureParams& params,
-                          scoped_ptr<Client> client);
+                          std::unique_ptr<Client> client);
   void OnStopAndDeAllocate();
   const uint8_t* GetNextFrame();
   void OnCaptureTask();
@@ -74,9 +75,9 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   // It is active between OnAllocateAndStart() and OnStopAndDeAllocate().
   base::Thread capture_thread_;
   // The following members belong to |capture_thread_|.
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
   const base::FilePath file_path_;
-  scoped_ptr<VideoFileParser> file_parser_;
+  std::unique_ptr<VideoFileParser> file_parser_;
   VideoCaptureFormat capture_format_;
   // Target time for the next frame.
   base::TimeTicks next_frame_time_;

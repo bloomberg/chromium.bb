@@ -34,21 +34,21 @@ VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
       nativeVideoCaptureDeviceAndroid));
 }
 
-scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryAndroid::Create(
+std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryAndroid::Create(
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int id;
   if (!base::StringToInt(device_name.id(), &id))
-    return scoped_ptr<VideoCaptureDevice>();
+    return std::unique_ptr<VideoCaptureDevice>();
 
-  scoped_ptr<VideoCaptureDeviceAndroid> video_capture_device(
+  std::unique_ptr<VideoCaptureDeviceAndroid> video_capture_device(
       new VideoCaptureDeviceAndroid(device_name));
 
   if (video_capture_device->Init())
     return std::move(video_capture_device);
 
   DLOG(ERROR) << "Error creating Video Capture Device.";
-  return scoped_ptr<VideoCaptureDevice>();
+  return std::unique_ptr<VideoCaptureDevice>();
 }
 
 void VideoCaptureDeviceFactoryAndroid::GetDeviceNames(

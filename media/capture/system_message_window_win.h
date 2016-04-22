@@ -7,8 +7,9 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -43,7 +44,7 @@ class MEDIA_EXPORT SystemMessageWindowWin {
   HMODULE instance_;
   HWND window_;
   class DeviceNotifications;
-  scoped_ptr<DeviceNotifications> device_notifications_;
+  std::unique_ptr<DeviceNotifications> device_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);
 };

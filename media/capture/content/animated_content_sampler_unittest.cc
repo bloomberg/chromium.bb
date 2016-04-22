@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -93,7 +93,7 @@ class AnimatedContentSamplerTest : public ::testing::Test {
   }
 
   int rand_seed_;
-  scoped_ptr<AnimatedContentSampler> sampler_;
+  std::unique_ptr<AnimatedContentSampler> sampler_;
 };
 
 TEST_F(AnimatedContentSamplerTest, ElectsNoneFromZeroDamageRects) {

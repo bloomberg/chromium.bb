@@ -70,8 +70,9 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   bool Init();
 
   // VideoCaptureDevice implementation.
-  void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void AllocateAndStart(
+      const VideoCaptureParams& params,
+      std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
 
  private:
@@ -94,7 +95,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
 
   const Name device_name_;
   InternalState state_;
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   base::win::ScopedComPtr<IBaseFilter> capture_filter_;
 

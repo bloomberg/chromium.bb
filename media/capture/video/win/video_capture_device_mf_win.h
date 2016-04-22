@@ -47,8 +47,9 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
   bool Init(const base::win::ScopedComPtr<IMFMediaSource>& source);
 
   // VideoCaptureDevice implementation.
-  void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void AllocateAndStart(
+      const VideoCaptureParams& params,
+      std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
 
   // Captured new video data.
@@ -65,7 +66,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
   scoped_refptr<MFReaderCallback> callback_;
 
   base::Lock lock_;  // Used to guard the below variables.
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
   base::win::ScopedComPtr<IMFSourceReader> reader_;
   VideoCaptureFormat capture_format_;
   bool capture_;

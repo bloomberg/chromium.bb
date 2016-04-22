@@ -52,7 +52,7 @@ class V4L2CaptureDelegate final
   void AllocateAndStart(int width,
                         int height,
                         float frame_rate,
-                        scoped_ptr<VideoCaptureDevice::Client> client);
+                        std::unique_ptr<VideoCaptureDevice::Client> client);
   void StopAndDeAllocate();
 
   void SetRotation(int rotation);
@@ -77,7 +77,7 @@ class V4L2CaptureDelegate final
   // The following members are only known on AllocateAndStart().
   VideoCaptureFormat capture_format_;
   v4l2_format video_fmt_;
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
   base::ScopedFD device_fd_;
 
   // Vector of BufferTracker to keep track of mmap()ed pointers and their use.

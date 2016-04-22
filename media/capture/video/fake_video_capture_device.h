@@ -10,11 +10,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/atomicops.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -35,7 +35,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<Client> client) override;
+                        std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
 
  private:
@@ -53,9 +53,9 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // Frame rate of the fake video device.
   const float fake_capture_rate_;
 
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
   // |fake_frame_| is used for capturing on Own Buffers.
-  scoped_ptr<uint8_t[]> fake_frame_;
+  std::unique_ptr<uint8_t[]> fake_frame_;
   // Time when the next beep occurs.
   base::TimeDelta beep_time_;
   // Time since the fake video started rendering frames.

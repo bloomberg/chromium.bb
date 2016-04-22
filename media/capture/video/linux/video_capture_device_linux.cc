@@ -92,7 +92,7 @@ VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
 
 void VideoCaptureDeviceLinux::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(!capture_impl_);
   if (v4l2_thread_.IsRunning())
     return;  // Wrong state.

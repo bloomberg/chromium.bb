@@ -5,10 +5,10 @@
 #ifndef MEDIA_CAPTURE_SCREEN_CAPTURE_DEVICE_CORE_H_
 #define MEDIA_CAPTURE_SCREEN_CAPTURE_DEVICE_CORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
@@ -75,12 +75,12 @@ class MEDIA_EXPORT VideoCaptureMachine {
 class MEDIA_EXPORT ScreenCaptureDeviceCore
     : public base::SupportsWeakPtr<ScreenCaptureDeviceCore> {
  public:
-  ScreenCaptureDeviceCore(scoped_ptr<VideoCaptureMachine> capture_machine);
+  ScreenCaptureDeviceCore(std::unique_ptr<VideoCaptureMachine> capture_machine);
   virtual ~ScreenCaptureDeviceCore();
 
   // Asynchronous requests to change ScreenCaptureDeviceCore state.
   void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client);
+                        std::unique_ptr<VideoCaptureDevice::Client> client);
   void RequestRefreshFrame();
   void StopAndDeAllocate();
 
@@ -107,7 +107,7 @@ class MEDIA_EXPORT ScreenCaptureDeviceCore
   // Tracks the CaptureMachine that's doing work on our behalf
   // on the device thread or UI thread.
   // This value should never be dereferenced by this class.
-  scoped_ptr<VideoCaptureMachine> capture_machine_;
+  std::unique_ptr<VideoCaptureMachine> capture_machine_;
 
   // Our thread-safe capture oracle which serves as the gateway to the video
   // capture pipeline. Besides the VideoCaptureDevice itself, it is the only

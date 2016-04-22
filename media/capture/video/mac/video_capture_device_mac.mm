@@ -326,7 +326,7 @@ VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
 
 void VideoCaptureDeviceMac::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ != kIdle) {
     return;

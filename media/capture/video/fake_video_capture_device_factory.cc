@@ -26,7 +26,7 @@ FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory()
       fake_vcd_ownership_(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS),
       frame_rate_(kFakeCaptureDefaultFrameRate) {}
 
-scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
+std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -35,11 +35,11 @@ scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0) {
-      return scoped_ptr<VideoCaptureDevice>(
+      return std::unique_ptr<VideoCaptureDevice>(
           new FakeVideoCaptureDevice(fake_vcd_ownership_, frame_rate_));
     }
   }
-  return scoped_ptr<VideoCaptureDevice>();
+  return std::unique_ptr<VideoCaptureDevice>();
 }
 
 void FakeVideoCaptureDeviceFactory::GetDeviceNames(

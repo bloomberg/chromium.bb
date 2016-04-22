@@ -169,7 +169,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
     int width,
     int height,
     float frame_rate,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   DCHECK(client);
   client_ = std::move(client);

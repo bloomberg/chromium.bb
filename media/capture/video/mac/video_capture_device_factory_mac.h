@@ -19,11 +19,13 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryMac
   VideoCaptureDeviceFactoryMac();
   ~VideoCaptureDeviceFactoryMac() override;
 
-  scoped_ptr<VideoCaptureDevice> Create(
+  std::unique_ptr<VideoCaptureDevice> Create(
       const VideoCaptureDevice::Name& device_name) override;
   void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
-  void EnumerateDeviceNames(const base::Callback<
-      void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) override;
+  void EnumerateDeviceNames(
+      const base::Callback<
+          void(std::unique_ptr<media::VideoCaptureDevice::Names>)>& callback)
+      override;
   void GetDeviceSupportedFormats(
       const VideoCaptureDevice::Name& device,
       VideoCaptureFormats* supported_formats) override;

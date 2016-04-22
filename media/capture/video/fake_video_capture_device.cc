@@ -84,7 +84,7 @@ FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
 
 void FakeVideoCaptureDevice::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   client_ = std::move(client);
@@ -160,7 +160,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<VideoCaptureDevice::Client::Buffer> capture_buffer(
+  std::unique_ptr<VideoCaptureDevice::Client::Buffer> capture_buffer(
       client_->ReserveOutputBuffer(capture_format_.frame_size,
                                    capture_format_.pixel_format,
                                    capture_format_.pixel_storage));

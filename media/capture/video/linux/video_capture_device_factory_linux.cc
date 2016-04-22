@@ -128,7 +128,7 @@ VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
 VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() {
 }
 
-scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
+std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_CHROMEOS)
@@ -138,7 +138,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
   VideoCaptureDeviceLinux* self = new VideoCaptureDeviceLinux(device_name);
 #endif
   if (!self)
-    return scoped_ptr<VideoCaptureDevice>();
+    return std::unique_ptr<VideoCaptureDevice>();
   // Test opening the device driver. This is to make sure it is available.
   // We will reopen it again in our worker thread when someone
   // allocates the camera.
@@ -146,10 +146,10 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryLinux::Create(
   if (!fd.is_valid()) {
     DLOG(ERROR) << "Cannot open device";
     delete self;
-    return scoped_ptr<VideoCaptureDevice>();
+    return std::unique_ptr<VideoCaptureDevice>();
   }
 
-  return scoped_ptr<VideoCaptureDevice>(self);
+  return std::unique_ptr<VideoCaptureDevice>(self);
 }
 
 void VideoCaptureDeviceFactoryLinux::GetDeviceNames(

@@ -52,13 +52,13 @@ VideoCaptureDeviceFactoryMac::VideoCaptureDeviceFactoryMac() {
 VideoCaptureDeviceFactoryMac::~VideoCaptureDeviceFactoryMac() {
 }
 
-scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
+std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(device_name.capture_api_type(),
             VideoCaptureDevice::Name::API_TYPE_UNKNOWN);
 
-  scoped_ptr<VideoCaptureDevice> capture_device;
+  std::unique_ptr<VideoCaptureDevice> capture_device;
   if (device_name.capture_api_type() == VideoCaptureDevice::Name::DECKLINK) {
     capture_device.reset(new VideoCaptureDeviceDeckLinkMac(device_name));
   } else {
@@ -69,7 +69,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::Create(
       capture_device.reset();
     }
   }
-  return scoped_ptr<VideoCaptureDevice>(std::move(capture_device));
+  return std::unique_ptr<VideoCaptureDevice>(std::move(capture_device));
 }
 
 void VideoCaptureDeviceFactoryMac::GetDeviceNames(
@@ -106,10 +106,11 @@ void VideoCaptureDeviceFactoryMac::GetDeviceNames(
   VideoCaptureDeviceDeckLinkMac::EnumerateDevices(device_names);
 }
 
-void VideoCaptureDeviceFactoryMac::EnumerateDeviceNames(const base::Callback<
-    void(scoped_ptr<media::VideoCaptureDevice::Names>)>& callback) {
+void VideoCaptureDeviceFactoryMac::EnumerateDeviceNames(
+    const base::Callback<
+        void(std::unique_ptr<media::VideoCaptureDevice::Names>)>& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<VideoCaptureDevice::Names> device_names(
+  std::unique_ptr<VideoCaptureDevice::Names> device_names(
       new VideoCaptureDevice::Names());
   GetDeviceNames(device_names.get());
   callback.Run(std::move(device_names));

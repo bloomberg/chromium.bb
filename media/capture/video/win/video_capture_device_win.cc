@@ -330,7 +330,7 @@ bool VideoCaptureDeviceWin::Init() {
 
 void VideoCaptureDeviceWin::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ != kIdle)
     return;
@@ -361,7 +361,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     return;
   }
 
-  scoped_ptr<BYTE[]> caps(new BYTE[size]);
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
   ScopedMediaType media_type;
 
   // Get the windows capability from the capture device.
@@ -480,7 +480,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
     return false;
   }
 
-  scoped_ptr<BYTE[]> caps(new BYTE[size]);
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
   for (int stream_index = 0; stream_index < count; ++stream_index) {
     ScopedMediaType media_type;
     hr = stream_config->GetStreamCaps(stream_index, media_type.Receive(),

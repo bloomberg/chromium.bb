@@ -22,7 +22,7 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryWin
   VideoCaptureDeviceFactoryWin();
   ~VideoCaptureDeviceFactoryWin() override {}
 
-  scoped_ptr<VideoCaptureDevice> Create(
+  std::unique_ptr<VideoCaptureDevice> Create(
       const VideoCaptureDevice::Name& device_name) override;
   void GetDeviceNames(VideoCaptureDevice::Names* device_names) override;
   void GetDeviceSupportedFormats(

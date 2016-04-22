@@ -477,7 +477,7 @@ void VideoCaptureDeviceDeckLinkMac::SendLogString(const std::string& message) {
 
 void VideoCaptureDeviceDeckLinkMac::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   client_ = std::move(client);
   if (decklink_capture_delegate_.get())

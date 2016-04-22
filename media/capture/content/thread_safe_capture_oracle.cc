@@ -5,12 +5,13 @@
 #include "media/capture/content/thread_safe_capture_oracle.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -34,7 +35,7 @@ const int kTargetMaxPoolUtilizationPercent = 60;
 }  // namespace
 
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
-    scoped_ptr<VideoCaptureDevice::Client> client,
+    std::unique_ptr<VideoCaptureDevice::Client> client,
     const VideoCaptureParams& params,
     bool enable_auto_throttling)
     : client_(std::move(client)),
@@ -60,7 +61,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
   gfx::Size visible_size;
   gfx::Size coded_size;
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer;
+  std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer;
   double attenuated_utilization;
   int frame_number;
   base::TimeDelta estimated_frame_duration;
@@ -190,7 +191,7 @@ void ThreadSafeCaptureOracle::ReportError(
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
-    scoped_ptr<VideoCaptureDevice::Client::Buffer> buffer,
+    std::unique_ptr<VideoCaptureDevice::Client::Buffer> buffer,
     base::TimeTicks capture_begin_time,
     base::TimeDelta estimated_frame_duration,
     const scoped_refptr<VideoFrame>& frame,

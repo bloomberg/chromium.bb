@@ -5,10 +5,10 @@
 #ifndef MEDIA_CAPTURE_CONTENT_THREAD_SAFE_CAPTURE_ORACLE_H_
 #define MEDIA_CAPTURE_CONTENT_THREAD_SAFE_CAPTURE_ORACLE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
@@ -30,7 +30,7 @@ class VideoFrame;
 class MEDIA_EXPORT ThreadSafeCaptureOracle
     : public base::RefCountedThreadSafe<ThreadSafeCaptureOracle> {
  public:
-  ThreadSafeCaptureOracle(scoped_ptr<VideoCaptureDevice::Client> client,
+  ThreadSafeCaptureOracle(std::unique_ptr<VideoCaptureDevice::Client> client,
                           const VideoCaptureParams& params,
                           bool enable_auto_throttling);
 
@@ -94,13 +94,14 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
   virtual ~ThreadSafeCaptureOracle();
 
   // Callback invoked on completion of all captures.
-  void DidCaptureFrame(int frame_number,
-                       scoped_ptr<VideoCaptureDevice::Client::Buffer> buffer,
-                       base::TimeTicks capture_begin_time,
-                       base::TimeDelta estimated_frame_duration,
-                       const scoped_refptr<VideoFrame>& frame,
-                       base::TimeTicks timestamp,
-                       bool success);
+  void DidCaptureFrame(
+      int frame_number,
+      std::unique_ptr<VideoCaptureDevice::Client::Buffer> buffer,
+      base::TimeTicks capture_begin_time,
+      base::TimeDelta estimated_frame_duration,
+      const scoped_refptr<VideoFrame>& frame,
+      base::TimeTicks timestamp,
+      bool success);
 
   // Callback invoked once all consumers have finished with a delivered video
   // frame.  Consumer feedback signals are scanned from the frame's |metadata|.
@@ -111,7 +112,7 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
   mutable base::Lock lock_;
 
   // Recipient of our capture activity.
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   // Makes the decision to capture a frame.
   VideoCaptureOracle oracle_;

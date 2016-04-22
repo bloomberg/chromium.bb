@@ -67,13 +67,14 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
 
  private:
   // VideoCaptureDevice implementation.
-  void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void AllocateAndStart(
+      const VideoCaptureParams& params,
+      std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
 
   // Protects concurrent setting and using of |client_|.
   base::Lock lock_;
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   // Reference counted handle to the DeckLink capture delegate, ref counted by
   // the DeckLink SDK as well.

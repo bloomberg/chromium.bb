@@ -6,7 +6,6 @@
 #define MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/capture/content/animated_content_sampler.h"

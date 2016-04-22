@@ -132,8 +132,8 @@ class Y4mFileParser final : public VideoFileParser {
   const uint8_t* GetNextFrame(int* frame_size) override;
 
  private:
-  scoped_ptr<base::File> file_;
-  scoped_ptr<uint8_t[]> video_frame_;
+  std::unique_ptr<base::File> file_;
+  std::unique_ptr<uint8_t[]> video_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(Y4mFileParser);
 };
@@ -148,7 +148,7 @@ class MjpegFileParser final : public VideoFileParser {
   const uint8_t* GetNextFrame(int* frame_size) override;
 
  private:
-  scoped_ptr<base::MemoryMappedFile> mapped_file_;
+  std::unique_ptr<base::MemoryMappedFile> mapped_file_;
 
   DISALLOW_COPY_AND_ASSIGN(MjpegFileParser);
 };
@@ -264,17 +264,16 @@ const uint8_t* MjpegFileParser::GetNextFrame(int* frame_size) {
 bool FileVideoCaptureDevice::GetVideoCaptureFormat(
     const base::FilePath& file_path,
     media::VideoCaptureFormat* video_format) {
-  scoped_ptr<VideoFileParser> file_parser =
+  std::unique_ptr<VideoFileParser> file_parser =
       GetVideoFileParser(file_path, video_format);
   return file_parser != nullptr;
 }
 
 // static
-scoped_ptr<VideoFileParser>
-FileVideoCaptureDevice::GetVideoFileParser(
+std::unique_ptr<VideoFileParser> FileVideoCaptureDevice::GetVideoFileParser(
     const base::FilePath& file_path,
     media::VideoCaptureFormat* video_format) {
-  scoped_ptr<VideoFileParser> file_parser;
+  std::unique_ptr<VideoFileParser> file_parser;
   std::string file_name(file_path.value().begin(), file_path.value().end());
 
   if (base::EndsWith(file_name, "y4m",
@@ -306,7 +305,7 @@ FileVideoCaptureDevice::~FileVideoCaptureDevice() {
 
 void FileVideoCaptureDevice::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(!capture_thread_.IsRunning());
 
@@ -329,7 +328,7 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
 
 void FileVideoCaptureDevice::OnAllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<VideoCaptureDevice::Client> client) {
+    std::unique_ptr<VideoCaptureDevice::Client> client) {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
 
   client_ = std::move(client);

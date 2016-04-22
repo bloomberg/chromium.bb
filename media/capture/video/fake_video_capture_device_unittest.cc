@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -76,36 +78,37 @@ class MockClient : public VideoCaptureDevice::Client {
     frame_cb_.Run(format);
   }
   // Virtual methods for capturing using Client's Buffers.
-  scoped_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
-                                         media::VideoPixelFormat format,
-                                         media::VideoPixelStorage storage) {
+  std::unique_ptr<Buffer> ReserveOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage) {
     EXPECT_TRUE((format == media::PIXEL_FORMAT_ARGB &&
                  storage == media::PIXEL_STORAGE_CPU) ||
                 (format == media::PIXEL_FORMAT_I420 &&
                  storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new MockBuffer(0, frame_format.ImageAllocationSize()));
   }
-  void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const VideoCaptureFormat& frame_format,
                                 const base::TimeTicks& timestamp) {
     frame_cb_.Run(frame_format);
   }
   void OnIncomingCapturedVideoFrame(
-      scoped_ptr<Buffer> buffer,
+      std::unique_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) {
     VideoCaptureFormat format(frame->natural_size(), 30.0,
                               PIXEL_FORMAT_I420);
     frame_cb_.Run(format);
   }
-  scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+  std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
       media::VideoPixelStorage storage) {
-    return scoped_ptr<Buffer>();
+    return std::unique_ptr<Buffer>();
   }
   double GetBufferPoolUtilization() const override { return 0.0; }
 
@@ -120,7 +123,7 @@ class DeviceEnumerationListener
                void(VideoCaptureDevice::Names* names));
   // GMock doesn't support move-only arguments, so we use this forward method.
   void OnEnumeratedDevicesCallback(
-      scoped_ptr<VideoCaptureDevice::Names> names) {
+      std::unique_ptr<VideoCaptureDevice::Names> names) {
     OnEnumeratedDevicesCallbackPtr(names.release());
   }
 
@@ -154,7 +157,7 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
     run_loop_->Run();
   }
 
-  scoped_ptr<VideoCaptureDevice::Names> EnumerateDevices() {
+  std::unique_ptr<VideoCaptureDevice::Names> EnumerateDevices() {
     VideoCaptureDevice::Names* names;
     EXPECT_CALL(*device_enumeration_listener_.get(),
                 OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
@@ -163,18 +166,19 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
         base::Bind(&DeviceEnumerationListener::OnEnumeratedDevicesCallback,
                    device_enumeration_listener_));
     base::MessageLoop::current()->RunUntilIdle();
-    return scoped_ptr<VideoCaptureDevice::Names>(names);
+    return std::unique_ptr<VideoCaptureDevice::Names>(names);
   }
 
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
   VideoCaptureDevice::Names names_;
-  const scoped_ptr<base::MessageLoop> loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<MockClient> client_;
+  const std::unique_ptr<base::MessageLoop> loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<MockClient> client_;
   scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
   VideoCaptureFormat last_format_;
-  const scoped_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
+  const std::unique_ptr<VideoCaptureDeviceFactory>
+      video_capture_device_factory_;
 };
 
 class FakeVideoCaptureDeviceTest
@@ -194,10 +198,10 @@ class FakeVideoCaptureDeviceCommandLineTest
       public ::testing::WithParamInterface<CommandLineTestData> {};
 
 TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
-  const scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
+  const std::unique_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
   ASSERT_FALSE(names->empty());
 
-  scoped_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
+  std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
       testing::get<0>(GetParam()), testing::get<1>(GetParam())));
   ASSERT_TRUE(device);
 
@@ -221,7 +225,7 @@ INSTANTIATE_TEST_CASE_P(
             Values(20, 29.97, 30, 50, 60)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-  scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
+  std::unique_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
 
   VideoCaptureFormats supported_formats;
 
@@ -251,11 +255,11 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
 TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseFakeDeviceForMediaStream, GetParam().argument);
-  const scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
+  const std::unique_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
   ASSERT_FALSE(names->empty());
 
   for (const auto& names_iterator : *names) {
-    scoped_ptr<VideoCaptureDevice> device =
+    std::unique_ptr<VideoCaptureDevice> device =
         video_capture_device_factory_->Create(names_iterator);
     ASSERT_TRUE(device);
 

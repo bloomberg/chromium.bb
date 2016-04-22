@@ -25,14 +25,14 @@ base::FilePath GetFilePathFromCommandLine() {
   return command_line_file_path;
 }
 
-scoped_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::Create(
+std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::Create(
     const VideoCaptureDevice::Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_WIN)
-  return scoped_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
+  return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
       base::FilePath(base::SysUTF8ToWide(device_name.name()))));
 #else
-  return scoped_ptr<VideoCaptureDevice>(
+  return std::unique_ptr<VideoCaptureDevice>(
       new FileVideoCaptureDevice(base::FilePath(device_name.name())));
 #endif
 }

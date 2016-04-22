@@ -54,7 +54,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<Client> client) override;
+                        std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
@@ -87,7 +87,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   bool got_first_frame_;
   base::TimeTicks expected_next_frame_time_;
   base::TimeDelta frame_interval_;
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   Name device_name_;
   VideoCaptureFormat capture_format_;

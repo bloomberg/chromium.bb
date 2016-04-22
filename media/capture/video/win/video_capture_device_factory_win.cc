@@ -259,7 +259,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
     return;
   }
 
-  scoped_ptr<BYTE[]> caps(new BYTE[size]);
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
   for (int i = 0; i < count; ++i) {
     VideoCaptureDeviceWin::ScopedMediaType media_type;
     hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
@@ -376,10 +376,10 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
                             base::CommandLine::ForCurrentProcess()->HasSwitch(
                                 switches::kForceMediaFoundationVideoCapture)) {}
 
-scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
+std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     const Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<VideoCaptureDevice> device;
+  std::unique_ptr<VideoCaptureDevice> device;
   if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {
     DCHECK(PlatformSupportsMediaFoundation());
     device.reset(new VideoCaptureDeviceMFWin(device_name));
@@ -387,7 +387,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     ScopedComPtr<IMFMediaSource> source;
     if (!CreateVideoCaptureDeviceMediaFoundation(device_name.id().c_str(),
                                                  source.Receive())) {
-      return scoped_ptr<VideoCaptureDevice>();
+      return std::unique_ptr<VideoCaptureDevice>();
     }
     if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init(source))
       device.reset();

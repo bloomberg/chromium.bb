@@ -58,8 +58,9 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   ~VideoCaptureDeviceMac() override;
 
   // VideoCaptureDevice implementation.
-  void AllocateAndStart(const VideoCaptureParams& params,
-                        scoped_ptr<VideoCaptureDevice::Client> client) override;
+  void AllocateAndStart(
+      const VideoCaptureParams& params,
+      std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
 
   bool Init(VideoCaptureDevice::Name::CaptureApiType capture_api_type);
@@ -88,7 +89,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   enum InternalState { kNotInitialized, kIdle, kCapturing, kError };
 
   Name device_name_;
-  scoped_ptr<VideoCaptureDevice::Client> client_;
+  std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   VideoCaptureFormat capture_format_;
 

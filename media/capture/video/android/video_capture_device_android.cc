@@ -54,7 +54,7 @@ bool VideoCaptureDeviceAndroid::Init() {
 
 void VideoCaptureDeviceAndroid::AllocateAndStart(
     const VideoCaptureParams& params,
-    scoped_ptr<Client> client) {
+    std::unique_ptr<Client> client) {
   DVLOG(1) << "VideoCaptureDeviceAndroid::AllocateAndStart";
   {
     base::AutoLock lock(lock_);
