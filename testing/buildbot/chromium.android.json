@@ -43,9 +43,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -61,27 +58,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -103,15 +88,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -121,33 +100,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -177,9 +144,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -195,27 +159,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -237,15 +189,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -255,33 +201,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -314,9 +248,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -332,27 +263,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -374,15 +293,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -392,33 +305,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -451,9 +352,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -469,27 +367,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -511,15 +397,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -529,33 +409,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -588,9 +456,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -606,27 +471,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -648,15 +501,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -666,33 +513,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -725,9 +560,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -743,27 +575,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -785,15 +605,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -803,33 +617,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -862,24 +664,15 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate"
-        ],
         "test": "blink_heap_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/third_party/WebKit/Source/platform/blink_platform_unittests.isolate"
-        ],
         "test": "blink_platform_unittests"
       },
       {
@@ -892,27 +685,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -934,15 +715,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -952,33 +727,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
@@ -1011,9 +774,6 @@
         "test": "android_webview_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/base/base_unittests.isolate"
-        ],
         "test": "base_unittests"
       },
       {
@@ -1029,27 +789,15 @@
         "test": "cc_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_browsertests.isolate"
-        ],
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/components/components_unittests.isolate"
-        ],
         "test": "components_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_browsertests.isolate"
-        ],
         "test": "content_browsertests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/content/content_unittests.isolate"
-        ],
         "test": "content_unittests"
       },
       {
@@ -1071,15 +819,9 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/media/media_unittests.isolate"
-        ],
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/net/net_unittests.isolate"
-        ],
         "test": "net_unittests"
       },
       {
@@ -1089,33 +831,21 @@
         "test": "sandbox_linux_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sql/sql_unittests.isolate"
-        ],
         "test": "sql_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/sync/sync_unit_tests.isolate"
-        ],
         "test": "sync_unit_tests"
       },
       {
         "test": "ui_android_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/ui/base/ui_base_tests.isolate"
-        ],
         "test": "ui_base_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/chrome/unit_tests.isolate"
-        ],
         "test": "unit_tests"
       }
     ],
