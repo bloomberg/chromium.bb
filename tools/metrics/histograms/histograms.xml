@@ -88733,9 +88733,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
   <affected-histogram name="DataReductionProxy.AutoLoFiAccuracy"/>
-  <obsolete>
-    Replaced by DataReductionProxy.LoFi.Accuracy.
-  </obsolete>
   <affected-histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"/>
   <affected-histogram name="DataReductionProxy.LoFi.Accuracy.15"/>
   <affected-histogram name="DataReductionProxy.LoFi.Accuracy.30"/>
