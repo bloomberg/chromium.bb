@@ -462,6 +462,9 @@ bool Font::computeCanShapeWordByWord() const
     if (!getFontDescription().getTypesettingFeatures())
         return true;
 
+    if (!primaryFont())
+        return false;
+
     const FontPlatformData& platformData = primaryFont()->platformData();
     TypesettingFeatures features = getFontDescription().getTypesettingFeatures();
     return !platformData.hasSpaceInLigaturesOrKerning(features);
