@@ -101,7 +101,7 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
     sendConsoleMessageToFrontend(consoleMessage, true);
     if (consoleMessage->type() != AssertMessageType)
         return;
-    if (!m_debuggerAgent || !m_debuggerAgent->enabled())
+    if (!m_debuggerAgent)
         return;
     m_debuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::Assert, nullptr);
 }

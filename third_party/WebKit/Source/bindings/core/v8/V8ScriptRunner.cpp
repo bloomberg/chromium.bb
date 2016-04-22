@@ -33,8 +33,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -404,9 +404,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate
             return v8::MaybeLocal<v8::Value>();
         }
         v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, script->GetUnboundScript()->GetId());
+        ThreadDebugger::willExecuteScript(isolate, script->GetUnboundScript()->GetId());
         result = script->Run(isolate->GetCurrentContext());
-        InspectorInstrumentation::didExecuteScript(cookie);
+        ThreadDebugger::didExecuteScript(isolate);
     }
 
     crashIfIsolateIsDead(isolate);
@@ -452,10 +452,10 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
         return v8::MaybeLocal<v8::Value>();
     }
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kRunMicrotasks);
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, function->ScriptId());
+    ThreadDebugger::willExecuteScript(isolate, function->ScriptId());
     v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
     crashIfIsolateIsDead(isolate);
-    InspectorInstrumentation::didExecuteScript(cookie);
+    ThreadDebugger::didExecuteScript(isolate);
     return result;
 }
 

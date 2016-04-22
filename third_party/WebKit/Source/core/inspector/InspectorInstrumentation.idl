@@ -128,12 +128,6 @@ class XMLHttpRequest;
     [DOMDebugger]
     void didFireWebGLErrorOrWarning(Element*, const String& message);
 
-    [Debugger]
-    InspectorInstrumentationCookie willExecuteScript(ExecutionContext*, int scriptId);
-
-    [Debugger]
-    void didExecuteScript(const InspectorInstrumentationCookie&);
-
     [Page]
     void didUpdateLayout(LocalFrame*);
 

@@ -42,6 +42,7 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorSession.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
@@ -157,16 +158,9 @@ InspectorInstrumentationCookie::~InspectorInstrumentationCookie()
 
 namespace InspectorInstrumentation {
 
-bool isDebuggerPaused(LocalFrame* frame)
+bool isDebuggerPaused(LocalFrame*)
 {
-    InstrumentingSessions* instrumentingSessions = instrumentingSessionsFor(frame);
-    if (!instrumentingSessions || instrumentingSessions->isEmpty())
-        return false;
-    for (InspectorSession* session : *instrumentingSessions) {
-        if (InspectorDebuggerAgent* debuggerAgent = session->instrumentingAgents()->inspectorDebuggerAgent())
-            return debuggerAgent->isPaused();
-    }
-    return false;
+    return MainThreadDebugger::instance()->debugger()->isPaused();
 }
 
 void didReceiveResourceResponseButCanceled(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)

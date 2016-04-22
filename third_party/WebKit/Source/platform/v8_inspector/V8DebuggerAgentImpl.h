@@ -51,8 +51,6 @@ public:
     void restore() override;
     void disable(ErrorString*) override;
 
-    bool isPaused() override;
-
     // Part of the protocol.
     void enable(ErrorString*) override;
     void setBreakpointsActive(ErrorString*, bool active) override;
@@ -136,13 +134,10 @@ public:
 
     void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
     void cancelPauseOnNextStatement() override;
-    bool canBreakProgram() override;
     void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
     void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
-    void willExecuteScript(int scriptId) override;
-    void didExecuteScript() override;
 
-    bool enabled() override;
+    bool enabled();
     V8DebuggerImpl& debugger() override { return *m_debugger; }
 
     void setBreakpointAt(const String16& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String16& condition = String16());
@@ -163,6 +158,8 @@ public:
     void didParseSource(const V8DebuggerParsedScript&);
     bool v8AsyncTaskEventsEnabled() const;
     void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String16& eventType, const String16& eventName, int id);
+    void willExecuteScript(int scriptId);
+    void didExecuteScript();
 
     v8::Isolate* isolate() { return m_isolate; }
     int maxAsyncCallChainDepth() { return m_maxAsyncCallStackDepth; }

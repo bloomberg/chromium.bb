@@ -122,8 +122,8 @@ int MainThreadDebugger::contextGroupId(LocalFrame* frame)
 MainThreadDebugger* MainThreadDebugger::instance()
 {
     ASSERT(isMainThread());
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    V8PerIsolateData* data = V8PerIsolateData::from(V8PerIsolateData::mainThreadIsolate());
+    ASSERT(data->threadDebugger() && !data->threadDebugger()->isWorker());
     return static_cast<MainThreadDebugger*>(data->threadDebugger());
 }
 

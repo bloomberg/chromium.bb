@@ -76,10 +76,7 @@ public:
     void setBlackboxedRanges(ErrorString*, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
     // Called by InspectorInstrumentation.
-    bool isPaused();
     void scriptExecutionBlockedByCSP(const String& directiveText);
-    void willExecuteScript(int scriptId);
-    void didExecuteScript();
 
     // Async stack implementation.
     void asyncTaskScheduled(const String& taskName, void* task);

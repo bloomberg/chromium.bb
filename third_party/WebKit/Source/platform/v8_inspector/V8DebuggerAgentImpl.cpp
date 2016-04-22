@@ -305,11 +305,6 @@ void V8DebuggerAgentImpl::setSkipAllPauses(ErrorString*, bool skipped)
     m_state->setBoolean(DebuggerAgentState::skipAllPauses, m_skipAllPauses);
 }
 
-bool V8DebuggerAgentImpl::isPaused()
-{
-    return debugger().isPaused();
-}
-
 static PassOwnPtr<protocol::DictionaryValue> buildObjectForBreakpointCookie(const String16& url, int lineNumber, int columnNumber, const String16& condition, bool isRegex)
 {
     OwnPtr<protocol::DictionaryValue> breakpointObject = protocol::DictionaryValue::create();
@@ -759,8 +754,7 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    ASSERT(enabled());
-    if (m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || isPaused() || !debugger().breakpointsActivated())
+    if (!enabled() || m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || debugger().isPaused() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
@@ -772,7 +766,7 @@ void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReas
 void V8DebuggerAgentImpl::schedulePauseOnNextStatementIfSteppingInto()
 {
     ASSERT(enabled());
-    if (m_scheduledDebuggerStep != StepInto || m_javaScriptPauseScheduled || isPaused())
+    if (m_scheduledDebuggerStep != StepInto || m_javaScriptPauseScheduled || debugger().isPaused())
         return;
     clearBreakDetails();
     m_pausingOnNativeEvent = false;
@@ -783,7 +777,7 @@ void V8DebuggerAgentImpl::schedulePauseOnNextStatementIfSteppingInto()
 
 void V8DebuggerAgentImpl::cancelPauseOnNextStatement()
 {
-    if (m_javaScriptPauseScheduled || isPaused())
+    if (m_javaScriptPauseScheduled || debugger().isPaused())
         return;
     clearBreakDetails();
     m_pausingOnNativeEvent = false;
@@ -814,7 +808,7 @@ void V8DebuggerAgentImpl::pause(ErrorString* errorString)
 {
     if (!checkEnabled(errorString))
         return;
-    if (m_javaScriptPauseScheduled || isPaused())
+    if (m_javaScriptPauseScheduled || debugger().isPaused())
         return;
     clearBreakDetails();
     m_javaScriptPauseScheduled = true;
@@ -1107,7 +1101,7 @@ void V8DebuggerAgentImpl::didExecuteScript()
 
 void V8DebuggerAgentImpl::changeJavaScriptRecursionLevel(int step)
 {
-    if (m_javaScriptPauseScheduled && !m_skipAllPauses && !isPaused()) {
+    if (m_javaScriptPauseScheduled && !m_skipAllPauses && !debugger().isPaused()) {
         // Do not ever loose user's pause request until we have actually paused.
         debugger().setPauseOnNextStatement(true);
     }
@@ -1357,15 +1351,9 @@ void V8DebuggerAgentImpl::didContinue()
     m_frontend->resumed();
 }
 
-bool V8DebuggerAgentImpl::canBreakProgram()
-{
-    return debugger().canBreakProgram();
-}
-
 void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    ASSERT(enabled());
-    if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCurrentCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
+    if (!enabled() || m_skipAllPauses || !m_pausedContext.IsEmpty() || isCurrentCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
@@ -1377,7 +1365,7 @@ void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<p
 
 void V8DebuggerAgentImpl::breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
-    if (m_debugger->getPauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
+    if (!enabled() || m_debugger->getPauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;
     breakProgram(breakReason, data);
 }

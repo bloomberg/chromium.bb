@@ -475,7 +475,7 @@ void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpo
 
 bool InspectorDOMDebuggerAgent::hasBreakpoint(Node* node, int type)
 {
-    if (!m_domAgent->enabled() || !m_debuggerAgent->enabled())
+    if (!m_domAgent->enabled())
         return false;
     uint32_t rootBit = 1 << type;
     uint32_t derivedBit = rootBit << domBreakpointDerivedTypeShift;
@@ -503,8 +503,6 @@ void InspectorDOMDebuggerAgent::updateSubtreeBreakpoints(Node* node, uint32_t ro
 void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassOwnPtr<protocol::DictionaryValue> eventData, bool synchronous)
 {
     if (!eventData)
-        return;
-    if (!m_debuggerAgent->enabled())
         return;
     if (synchronous)
         m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::EventListener, eventData);
@@ -541,12 +539,12 @@ void InspectorDOMDebuggerAgent::didFireWebGLError(const String& errorName)
         return;
     if (!errorName.isEmpty())
         eventData->setString(webglErrorNameProperty, errorName);
-    pauseOnNativeEventIfNeeded(eventData.release(), m_debuggerAgent->canBreakProgram());
+    pauseOnNativeEventIfNeeded(eventData.release(), false);
 }
 
 void InspectorDOMDebuggerAgent::didFireWebGLWarning()
 {
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(webglWarningFiredEventName, 0), m_debuggerAgent->canBreakProgram());
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(webglWarningFiredEventName, 0), false);
 }
 
 void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message)
@@ -597,8 +595,6 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
     }
 
     if (breakpointURL.isNull())
-        return;
-    if (!m_debuggerAgent->enabled())
         return;
 
     OwnPtr<protocol::DictionaryValue> eventData = protocol::DictionaryValue::create();

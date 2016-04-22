@@ -23,6 +23,9 @@ public:
     explicit ThreadDebugger(v8::Isolate*);
     ~ThreadDebugger() override;
 
+    static void willExecuteScript(v8::Isolate*, int scriptId);
+    static void didExecuteScript(v8::Isolate*);
+
     // V8DebuggerClient implementation.
     void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;

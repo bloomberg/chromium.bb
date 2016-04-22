@@ -251,26 +251,11 @@ void InspectorDebuggerAgent::setBlackboxedRanges(
     m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, inPositions);
 }
 
-bool InspectorDebuggerAgent::isPaused()
-{
-    return m_v8DebuggerAgent->isPaused();
-}
-
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
 {
     OwnPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
     directive->setString("directiveText", directiveText);
     m_v8DebuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
-}
-
-void InspectorDebuggerAgent::willExecuteScript(int scriptId)
-{
-    m_v8DebuggerAgent->willExecuteScript(scriptId);
-}
-
-void InspectorDebuggerAgent::didExecuteScript()
-{
-    m_v8DebuggerAgent->didExecuteScript();
 }
 
 void InspectorDebuggerAgent::asyncTaskScheduled(const String& taskName, void* task)

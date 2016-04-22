@@ -797,6 +797,18 @@ void V8DebuggerImpl::resetContextGroup(int contextGroupId)
     m_contexts.remove(contextGroupId);
 }
 
+void V8DebuggerImpl::willExecuteScript(v8::Local<v8::Context> context, int scriptId)
+{
+    if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(context))
+        agent->willExecuteScript(scriptId);
+}
+
+void V8DebuggerImpl::didExecuteScript(v8::Local<v8::Context> context)
+{
+    if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(context))
+        agent->didExecuteScript();
+}
+
 PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
 {
     V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());

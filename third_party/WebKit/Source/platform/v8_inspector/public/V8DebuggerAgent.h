@@ -22,14 +22,9 @@ public:
     // API for the embedder to report native activities.
     virtual void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
-    virtual bool canBreakProgram() = 0;
     virtual void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
-    virtual void willExecuteScript(int scriptId) = 0;
-    virtual void didExecuteScript() = 0;
 
-    virtual bool isPaused() = 0;
-    virtual bool enabled() = 0;
     virtual V8Debugger& debugger() = 0;
 
     // Async call stacks implementation.

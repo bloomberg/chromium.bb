@@ -32,6 +32,20 @@ ThreadDebugger::~ThreadDebugger()
 {
 }
 
+void ThreadDebugger::willExecuteScript(v8::Isolate* isolate, int scriptId)
+{
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    if (data && data->threadDebugger())
+        data->threadDebugger()->debugger()->willExecuteScript(isolate->GetCurrentContext(), scriptId);
+}
+
+void ThreadDebugger::didExecuteScript(v8::Isolate* isolate)
+{
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    if (data && data->threadDebugger())
+        data->threadDebugger()->debugger()->didExecuteScript(isolate->GetCurrentContext());
+}
+
 void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, V8EventListenerInfoList& result)
 {
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
