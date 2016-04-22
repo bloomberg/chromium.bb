@@ -13,8 +13,9 @@
 #include "ui/events/events_export.h"
 #include "ui/gfx/x/x11_types.h"
 
-typedef union _XEvent XEvent;
-typedef unsigned long XID;
+using Time = unsigned long;
+using XEvent = union _XEvent;
+using XID = unsigned long;
 
 namespace ui {
 
@@ -59,6 +60,7 @@ class EVENTS_EXPORT X11EventSource {
   void BlockUntilWindowMapped(XID window);
 
   XDisplay* display() { return display_; }
+  Time last_seen_server_time() const { return last_seen_server_time_; }
 
   void StopCurrentEventStream();
   void OnDispatcherListChanged();
@@ -79,6 +81,9 @@ class EVENTS_EXPORT X11EventSource {
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
+
+  // The last timestamp seen in an XEvent.
+  Time last_seen_server_time_;
 
   // Keeps track of whether this source should continue to dispatch all the
   // available events.

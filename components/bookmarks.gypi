@@ -85,6 +85,12 @@
             '<(DEPTH)/ui/views/views.gyp:views',
           ],
         }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
+            '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
       ],
     },
     {

@@ -399,6 +399,7 @@ component("base") {
       "x/selection_utils.cc",
       "x/selection_utils.h",
     ]
+    deps += [ "//ui/events/platform/x11" ]
   }
 
   if (use_aura) {

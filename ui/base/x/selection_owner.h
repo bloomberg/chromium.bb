@@ -119,6 +119,9 @@ class UI_BASE_EXPORT SelectionOwner {
   // The X11 selection that this instance communicates on.
   XAtom selection_name_;
 
+  // The time that this instance took ownership of its selection.
+  Time acquired_selection_timestamp_;
+
   // The maximum size of data we can put in XChangeProperty().
   size_t max_request_size_;
 

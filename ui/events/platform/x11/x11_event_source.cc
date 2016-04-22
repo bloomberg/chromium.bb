@@ -40,13 +40,46 @@ bool InitializeXkb(XDisplay* display) {
   return true;
 }
 
+Time ExtractTimeFromXEvent(const XEvent& xevent) {
+  switch (xevent.type) {
+    case KeyPress:
+    case KeyRelease:
+      return xevent.xkey.time;
+    case ButtonPress:
+    case ButtonRelease:
+      return xevent.xbutton.time;
+    case MotionNotify:
+      return xevent.xmotion.time;
+    case EnterNotify:
+    case LeaveNotify:
+      return xevent.xcrossing.time;
+    case PropertyNotify:
+      return xevent.xproperty.time;
+    case SelectionClear:
+      return xevent.xselectionclear.time;
+    case SelectionRequest:
+      return xevent.xselectionrequest.time;
+    case SelectionNotify:
+      return xevent.xselection.time;
+    case GenericEvent:
+      if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(xevent))
+        return static_cast<XIDeviceEvent*>(xevent.xcookie.data)->time;
+      else
+        break;
+  }
+  return CurrentTime;
+}
+
 }  // namespace
 
 X11EventSource* X11EventSource::instance_ = nullptr;
 
 X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
                                XDisplay* display)
-    : delegate_(delegate), display_(display), continue_stream_(true) {
+    : delegate_(delegate),
+      display_(display),
+      last_seen_server_time_(CurrentTime),
+      continue_stream_(true) {
   DCHECK(!instance_);
   instance_ = this;
 
@@ -101,6 +134,16 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
   if (xevent->type == GenericEvent &&
       XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     have_cookie = true;
+  }
+  Time event_time = ExtractTimeFromXEvent(*xevent);
+  if (event_time != CurrentTime) {
+    int64_t event_time_64 = event_time;
+    int64_t time_difference = last_seen_server_time_ - event_time_64;
+    // Ignore timestamps that go backwards. However, X server time is a 32-bit
+    // millisecond counter, so if the time goes backwards by more than half the
+    // range of the 32-bit counter, treat it as a rollover.
+    if (time_difference < 0 || time_difference > (UINT32_MAX >> 1))
+      last_seen_server_time_ = event_time;
   }
   delegate_->ProcessXEvent(xevent);
   PostDispatchEvent(xevent);

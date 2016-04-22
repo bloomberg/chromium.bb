@@ -452,7 +452,7 @@
             'x/selection_requestor.h',
             'x/selection_utils.cc',
             'x/selection_utils.h',
-          ]
+          ],
         }],
         ['use_aura==0 or OS!="linux"', {
           'sources!': [
