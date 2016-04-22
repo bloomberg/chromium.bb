@@ -61,6 +61,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'])
 
     # Android general
+    self.Fail('WebglExtension.EXT_disjoint_timer_query',
+        ['android'])
     self.Fail('WebglExtension.EXT_frag_depth',
         ['android'])
     self.Fail('WebglExtension.EXT_shader_texture_lod',
@@ -77,16 +79,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'])
 
     # Nexus 5
-    self.Fail('WebglExtension.EXT_disjoint_timer_query',
-        ['android', ('qualcomm', 'Adreno (TM) 330')])
     self.Fail('WebglExtension.OES_texture_float_linear',
         ['android', ('qualcomm', 'Adreno (TM) 330')])
 
     # Nexus 6
-    self.Fail('WebglExtension.EXT_disjoint_timer_query',
-        ['android', ('qualcomm', 'Adreno (TM) 420')])
     self.Fail('WebglExtension.EXT_sRGB',
         ['android', ('qualcomm', 'Adreno (TM) 420')])
+
+    # Nexus 9
+    self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
+        ['android', ('nvidia', 'NVIDIA Tegra')])
 
     # ========================
     # Conformance expectations
