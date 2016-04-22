@@ -142,9 +142,14 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
 
 void HttpStreamFactoryImpl::PreconnectStreams(
     int num_streams,
-    const HttpRequestInfo& request_info,
-    const SSLConfig& server_ssl_config,
-    const SSLConfig& proxy_ssl_config) {
+    const HttpRequestInfo& request_info) {
+  SSLConfig server_ssl_config;
+  SSLConfig proxy_ssl_config;
+  session_->GetSSLConfig(request_info, &server_ssl_config, &proxy_ssl_config);
+  // All preconnects should perform EV certificate verification.
+  server_ssl_config.verify_ev_cert = true;
+  proxy_ssl_config.verify_ev_cert = true;
+
   DCHECK(!for_websockets_);
   AlternativeService alternative_service = GetAlternativeServiceFor(
       request_info, nullptr, HttpStreamRequest::HTTP_STREAM);

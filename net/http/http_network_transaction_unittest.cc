@@ -1495,12 +1495,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   // Preconnect a socket.
-  SSLConfig ssl_config;
-  session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  session->GetAlpnProtos(&ssl_config.alpn_protos);
-  session->GetNpnProtos(&ssl_config.npn_protos);
-  session->http_stream_factory()->PreconnectStreams(1, request, ssl_config,
-                                                    ssl_config);
+  session->http_stream_factory()->PreconnectStreams(1, request);
   // Wait for the preconnect to complete.
   // TODO(davidben): Some way to wait for an idle socket count might be handy.
   base::RunLoop().RunUntilIdle();
@@ -14683,9 +14678,7 @@ class FakeStreamFactory : public HttpStreamFactory {
   }
 
   void PreconnectStreams(int num_streams,
-                         const HttpRequestInfo& info,
-                         const SSLConfig& server_ssl_config,
-                         const SSLConfig& proxy_ssl_config) override {
+                         const HttpRequestInfo& info) override {
     ADD_FAILURE();
   }
 
@@ -15095,10 +15088,7 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
   // Preconnect an SSL socket.  A preconnect is needed because connect jobs are
   // cancelled when a normal transaction is cancelled.
   HttpStreamFactory* http_stream_factory = session->http_stream_factory();
-  SSLConfig ssl_config;
-  session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  http_stream_factory->PreconnectStreams(1, ssl_request, ssl_config,
-                                         ssl_config);
+  http_stream_factory->PreconnectStreams(1, ssl_request);
   EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
 
   // Start the HTTP request.  Pool should stall.
@@ -15925,6 +15915,10 @@ TEST_P(HttpNetworkTransactionTest, EnableNPN) {
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  HttpRequestInfo request;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans.Start(&request, callback.callback(), BoundNetLog()));
 
   EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
               testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));
@@ -15937,6 +15931,10 @@ TEST_P(HttpNetworkTransactionTest, DisableNPN) {
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  HttpRequestInfo request;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans.Start(&request, callback.callback(), BoundNetLog()));
 
   EXPECT_THAT(trans.server_ssl_config_.alpn_protos,
               testing::ElementsAre(kProtoHTTP2, kProtoSPDY31, kProtoHTTP11));

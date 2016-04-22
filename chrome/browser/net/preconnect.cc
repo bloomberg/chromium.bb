@@ -100,18 +100,8 @@ void PreconnectOnIOThread(const GURL& url,
       break;
   }
 
-  // Setup the SSL Configuration.
-  net::SSLConfig ssl_config;
-  session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  session->GetAlpnProtos(&ssl_config.alpn_protos);
-  session->GetNpnProtos(&ssl_config.npn_protos);
-
-  // All preconnects should perform EV certificate verification.
-  ssl_config.verify_ev_cert = true;
-
   net::HttpStreamFactory* http_stream_factory = session->http_stream_factory();
-  http_stream_factory->PreconnectStreams(count, request_info, ssl_config,
-                                         ssl_config);
+  http_stream_factory->PreconnectStreams(count, request_info);
 }
 
 }  // namespace chrome_browser_net

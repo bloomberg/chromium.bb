@@ -121,10 +121,6 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       establishing_tunnel_(false),
       websocket_handshake_stream_base_create_helper_(NULL),
       net_error_details_() {
-  session->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
-  session->GetAlpnProtos(&server_ssl_config_.alpn_protos);
-  session->GetNpnProtos(&server_ssl_config_.npn_protos);
-  proxy_ssl_config_ = server_ssl_config_;
 }
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
@@ -154,6 +150,9 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   net_log_ = net_log;
   request_ = request_info;
 
+  // Now that we have an HttpRequestInfo object, update server_ssl_config_.
+  session_->GetSSLConfig(*request_, &server_ssl_config_, &proxy_ssl_config_);
+
   if (request_->load_flags & LOAD_DISABLE_CERT_REVOCATION_CHECKING) {
     server_ssl_config_.rev_checking_enabled = false;
     proxy_ssl_config_.rev_checking_enabled = false;
@@ -161,14 +160,6 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
 
   if (request_->load_flags & LOAD_PREFETCH)
     response_.unused_since_prefetch = true;
-
-  // Channel ID is disabled if privacy mode is enabled for this request.
-  if (request_->privacy_mode == PRIVACY_MODE_ENABLED) {
-    server_ssl_config_.channel_id_enabled = false;
-  } else if (session_->params().enable_token_binding &&
-             session_->params().channel_id_service) {
-    server_ssl_config_.token_binding_params.push_back(TB_PARAM_ECDSAP256);
-  }
 
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
   int rv = DoLoop(OK);

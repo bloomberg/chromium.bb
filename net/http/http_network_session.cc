@@ -385,6 +385,20 @@ void HttpNetworkSession::GetNpnProtos(NextProtoVector* npn_protos) const {
   }
 }
 
+void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
+                                      SSLConfig* server_config,
+                                      SSLConfig* proxy_config) const {
+  ssl_config_service_->GetSSLConfig(server_config);
+  GetAlpnProtos(&server_config->alpn_protos);
+  GetNpnProtos(&server_config->npn_protos);
+  *proxy_config = *server_config;
+  if (request.privacy_mode == PRIVACY_MODE_ENABLED) {
+    server_config->channel_id_enabled = false;
+  } else if (params_.enable_token_binding && params_.channel_id_service) {
+    server_config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
+  }
+}
+
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
     SocketPoolType pool_type) {
   switch (pool_type) {
