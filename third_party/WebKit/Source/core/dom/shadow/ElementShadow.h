@@ -32,7 +32,6 @@
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "platform/heap/Handle.h"
-#include "wtf/DoublyLinkedList.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
@@ -45,8 +44,8 @@ public:
     ~ElementShadow();
 
     Element* host() const;
-    ShadowRoot& youngestShadowRoot() const { DCHECK(m_shadowRoots.head()); return *m_shadowRoots.head(); }
-    ShadowRoot* oldestShadowRoot() const { return m_shadowRoots.tail(); }
+    ShadowRoot& youngestShadowRoot() const;
+    ShadowRoot* oldestShadowRoot() const { return m_shadowRoot; }
     ElementShadow* containingShadow() const;
 
     ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);
@@ -76,6 +75,8 @@ public:
 private:
     ElementShadow();
 
+    void appendShadowRoot(ShadowRoot&);
+
     void distribute();
     void clearDistribution();
 
@@ -92,16 +93,15 @@ private:
     NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
 
     SelectRuleFeatureSet m_selectFeatures;
-    // TODO(Oilpan): add a heap-based version of DoublyLinkedList<>.
-    DoublyLinkedList<ShadowRoot> m_shadowRoots;
+    Member<ShadowRoot> m_shadowRoot;
     bool m_needsDistributionRecalc;
     bool m_needsSelectFeatureSet;
 };
 
 inline Element* ElementShadow::host() const
 {
-    DCHECK(!m_shadowRoots.isEmpty());
-    return youngestShadowRoot().host();
+    DCHECK(m_shadowRoot);
+    return m_shadowRoot->host();
 }
 
 inline ShadowRoot* Node::youngestShadowRoot() const

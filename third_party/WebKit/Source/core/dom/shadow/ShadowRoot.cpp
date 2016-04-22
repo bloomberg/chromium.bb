@@ -43,9 +43,9 @@
 
 namespace blink {
 
-struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope {
     char emptyClassFieldsDueToGCMixinMarker[1];
-    Member<void*> willbeMember[5];
+    Member<void*> willbeMember[3];
     unsigned countersAndFlags[1];
 };
 
@@ -54,9 +54,6 @@ static_assert(sizeof(ShadowRoot) == sizeof(SameSizeAsShadowRoot), "ShadowRoot sh
 ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(0, CreateShadowRoot)
     , TreeScope(*this, document)
-    , m_prev(nullptr)
-    , m_next(nullptr)
-    , m_slotAssignment(nullptr)
     , m_numberOfStyles(0)
     , m_type(static_cast<unsigned>(type))
     , m_registeredWithParentShadowRoot(false)
@@ -70,6 +67,20 @@ ShadowRoot::~ShadowRoot()
 {
 }
 
+ShadowRoot* ShadowRoot::youngerShadowRoot() const
+{
+    if (type() == ShadowRootType::V0 && m_shadowRootRareDataV0)
+        return m_shadowRootRareDataV0->youngerShadowRoot();
+    return nullptr;
+}
+
+ShadowRoot* ShadowRoot::olderShadowRoot() const
+{
+    if (type() == ShadowRootType::V0 && m_shadowRootRareDataV0)
+        return m_shadowRootRareDataV0->olderShadowRoot();
+    return nullptr;
+}
+
 ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
 {
     ShadowRoot* older = olderShadowRoot();
@@ -77,6 +88,18 @@ ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
         older = older->olderShadowRoot();
     DCHECK(!older || older->isOpenOrV0());
     return older;
+}
+
+void ShadowRoot::setYoungerShadowRoot(ShadowRoot& root)
+{
+    DCHECK_EQ(type(), ShadowRootType::V0);
+    ensureShadowRootRareDataV0().setYoungerShadowRoot(root);
+}
+
+void ShadowRoot::setOlderShadowRoot(ShadowRoot& root)
+{
+    DCHECK_EQ(type(), ShadowRootType::V0);
+    ensureShadowRootRareDataV0().setOlderShadowRoot(root);
 }
 
 Node* ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
@@ -186,22 +209,22 @@ void ShadowRoot::unregisterScopedHTMLStyleChild()
     --m_numberOfStyles;
 }
 
-ShadowRootRareData* ShadowRoot::ensureShadowRootRareData()
+ShadowRootRareData& ShadowRoot::ensureShadowRootRareData()
 {
     if (m_shadowRootRareData)
-        return m_shadowRootRareData.get();
+        return *m_shadowRootRareData;
 
     m_shadowRootRareData = new ShadowRootRareData;
-    return m_shadowRootRareData.get();
+    return *m_shadowRootRareData;
 }
 
-ShadowRootRareDataV0* ShadowRoot::ensureShadowRootRareDataV0()
+ShadowRootRareDataV0& ShadowRoot::ensureShadowRootRareDataV0()
 {
     if (m_shadowRootRareDataV0)
-        return m_shadowRootRareDataV0.get();
+        return *m_shadowRootRareDataV0;
 
     m_shadowRootRareDataV0 = new ShadowRootRareDataV0;
-    return m_shadowRootRareDataV0.get();
+    return *m_shadowRootRareDataV0;
 }
 
 bool ShadowRoot::containsShadowElements() const
@@ -233,12 +256,12 @@ void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(HTMLShadowElement* s
 {
     if (!m_shadowRootRareDataV0 && !shadowInsertionPoint)
         return;
-    ensureShadowRootRareDataV0()->setShadowInsertionPointOfYoungerShadowRoot(shadowInsertionPoint);
+    ensureShadowRootRareDataV0().setShadowInsertionPointOfYoungerShadowRoot(shadowInsertionPoint);
 }
 
 void ShadowRoot::didAddInsertionPoint(InsertionPoint* insertionPoint)
 {
-    ensureShadowRootRareDataV0()->didAddInsertionPoint(insertionPoint);
+    ensureShadowRootRareDataV0().didAddInsertionPoint(insertionPoint);
     invalidateDescendantInsertionPoints();
 }
 
@@ -250,7 +273,7 @@ void ShadowRoot::didRemoveInsertionPoint(InsertionPoint* insertionPoint)
 
 void ShadowRoot::addChildShadowRoot()
 {
-    ensureShadowRootRareData()->didAddChildShadowRoot();
+    ensureShadowRootRareData().didAddChildShadowRoot();
 }
 
 void ShadowRoot::removeChildShadowRoot()
@@ -287,14 +310,14 @@ const HeapVector<Member<InsertionPoint>>& ShadowRoot::descendantInsertionPoints(
     for (InsertionPoint& insertionPoint : Traversal<InsertionPoint>::descendantsOf(*this))
         insertionPoints.append(&insertionPoint);
 
-    ensureShadowRootRareDataV0()->setDescendantInsertionPoints(insertionPoints);
+    ensureShadowRootRareDataV0().setDescendantInsertionPoints(insertionPoints);
 
     return m_shadowRootRareDataV0->descendantInsertionPoints();
 }
 
 StyleSheetList* ShadowRoot::styleSheets()
 {
-    if (!ensureShadowRootRareData()->styleSheets())
+    if (!ensureShadowRootRareData().styleSheets())
         m_shadowRootRareData->setStyleSheets(StyleSheetList::create(this));
 
     return m_shadowRootRareData->styleSheets();
@@ -302,7 +325,7 @@ StyleSheetList* ShadowRoot::styleSheets()
 
 void ShadowRoot::didAddSlot()
 {
-    ensureShadowRootRareData()->didAddSlot();
+    ensureShadowRootRareData().didAddSlot();
     invalidateDescendantSlots();
 }
 
@@ -353,8 +376,6 @@ void ShadowRoot::distributeV1()
 
 DEFINE_TRACE(ShadowRoot)
 {
-    visitor->trace(m_prev);
-    visitor->trace(m_next);
     visitor->trace(m_shadowRootRareData);
     visitor->trace(m_shadowRootRareDataV0);
     visitor->trace(m_slotAssignment);

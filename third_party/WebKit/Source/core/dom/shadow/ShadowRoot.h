@@ -33,8 +33,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/shadow/SlotAssignment.h"
-#include "wtf/DoublyLinkedList.h"
-#include <iosfwd>
 
 namespace blink {
 
@@ -54,10 +52,9 @@ enum class ShadowRootType {
     Closed
 };
 
-class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
-    friend class WTF::DoublyLinkedListNode<ShadowRoot>;
 public:
     // FIXME: Current implementation does not work well if a shadow root is dynamically created.
     // So multiple shadow subtrees in several elements are prohibited.
@@ -78,9 +75,12 @@ public:
     Element* host() const { return toElement(parentOrShadowHostNode()); }
     ElementShadow* owner() const { return host() ? host()->shadow() : 0; }
 
-    ShadowRoot* youngerShadowRoot() const { return prev(); }
-
+    ShadowRoot* youngerShadowRoot() const;
+    ShadowRoot* olderShadowRoot() const;
     ShadowRoot* olderShadowRootForBindings() const;
+
+    void setYoungerShadowRoot(ShadowRoot&);
+    void setOlderShadowRoot(ShadowRoot&);
 
     String mode() const { return (type() == ShadowRootType::V0 || type() == ShadowRootType::Open) ? "open" : "closed"; };
 
@@ -135,10 +135,7 @@ public:
     using TreeScope::setDocument;
     using TreeScope::setParentTreeScope;
 
-public:
     Element* activeElement() const;
-
-    ShadowRoot* olderShadowRoot() const { return next(); }
 
     String innerHTML() const;
     void setInnerHTML(const String&, ExceptionState&);
@@ -158,8 +155,8 @@ private:
 
     void childrenChanged(const ChildrenChange&) override;
 
-    ShadowRootRareData* ensureShadowRootRareData();
-    ShadowRootRareDataV0* ensureShadowRootRareDataV0();
+    ShadowRootRareData& ensureShadowRootRareData();
+    ShadowRootRareDataV0& ensureShadowRootRareDataV0();
 
     void addChildShadowRoot();
     void removeChildShadowRoot();
@@ -174,11 +171,8 @@ private:
     void invalidateDescendantSlots();
     unsigned descendantSlotCount() const;
 
-    Member<ShadowRoot> m_prev;
-    Member<ShadowRoot> m_next;
     Member<ShadowRootRareData> m_shadowRootRareData;
     Member<ShadowRootRareDataV0> m_shadowRootRareDataV0;
-
     Member<SlotAssignment> m_slotAssignment;
     unsigned m_numberOfStyles : 26;
     unsigned m_type : 2;

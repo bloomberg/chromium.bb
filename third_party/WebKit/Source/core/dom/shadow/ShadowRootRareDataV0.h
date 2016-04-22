@@ -59,13 +59,23 @@ public:
     void setDescendantInsertionPoints(HeapVector<Member<InsertionPoint>>& list) { m_descendantInsertionPoints.swap(list); }
     void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
+    void setYoungerShadowRoot(ShadowRoot& youngerShadowRoot) { m_youngerShadowRoot = &youngerShadowRoot; }
+    void setOlderShadowRoot(ShadowRoot& olderShadowRoot) { m_olderShadowRoot = &olderShadowRoot; }
+
+    ShadowRoot* youngerShadowRoot() const { return m_youngerShadowRoot; }
+    ShadowRoot* olderShadowRoot() const { return m_olderShadowRoot; }
+
     DEFINE_INLINE_TRACE()
     {
+        visitor->trace(m_youngerShadowRoot);
+        visitor->trace(m_olderShadowRoot);
         visitor->trace(m_shadowInsertionPointOfYoungerShadowRoot);
         visitor->trace(m_descendantInsertionPoints);
     }
 
 private:
+    Member<ShadowRoot> m_youngerShadowRoot;
+    Member<ShadowRoot> m_olderShadowRoot;
     Member<HTMLShadowElement> m_shadowInsertionPointOfYoungerShadowRoot;
     unsigned m_descendantShadowElementCount;
     unsigned m_descendantContentElementCount;

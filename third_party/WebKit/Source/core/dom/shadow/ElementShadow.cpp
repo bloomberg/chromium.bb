@@ -144,23 +144,35 @@ ElementShadow::~ElementShadow()
 {
 }
 
+ShadowRoot& ElementShadow::youngestShadowRoot() const
+{
+    ShadowRoot* current = m_shadowRoot;
+    DCHECK(current);
+    while (current->youngerShadowRoot())
+        current = current->youngerShadowRoot();
+    return *current;
+}
+
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType type)
 {
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    if (type == ShadowRootType::V0 && !m_shadowRoots.isEmpty()) {
-        DCHECK_NE(ShadowRootType::UserAgent, m_shadowRoots.head()->type());
+    if (type == ShadowRootType::V0 && m_shadowRoot) {
+        DCHECK_EQ(m_shadowRoot->type(), ShadowRootType::V0);
         Deprecation::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);
     }
 
-    for (ShadowRoot* root = m_shadowRoots.head(); root; root = root->olderShadowRoot())
-        root->lazyReattachIfAttached();
+    if (m_shadowRoot) {
+        // TODO(hayato): Is the order, from the youngest to the oldest, important?
+        for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot())
+            root->lazyReattachIfAttached();
+    }
 
     ShadowRoot* shadowRoot = ShadowRoot::create(shadowHost.document(), type);
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
     shadowRoot->setParentTreeScope(shadowHost.treeScope());
-    m_shadowRoots.push(shadowRoot);
+    appendShadowRoot(*shadowRoot);
     setNeedsDistributionRecalc();
 
     shadowRoot->insertedInto(&shadowHost);
@@ -170,6 +182,19 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot);
 
     return *shadowRoot;
+}
+
+void ElementShadow::appendShadowRoot(ShadowRoot& shadowRoot)
+{
+    if (!m_shadowRoot) {
+        m_shadowRoot = &shadowRoot;
+        return;
+    }
+    ShadowRoot& youngest = youngestShadowRoot();
+    DCHECK(shadowRoot.type() == ShadowRootType::V0);
+    DCHECK(youngest.type() == ShadowRootType::V0);
+    youngest.setYoungerShadowRoot(shadowRoot);
+    shadowRoot.setOlderShadowRoot(youngest);
 }
 
 void ElementShadow::attach(const Node::AttachContext& context)
@@ -354,10 +379,7 @@ DEFINE_TRACE(ElementShadow)
 {
     visitor->trace(m_nodeToInsertionPoints);
     visitor->trace(m_selectFeatures);
-    // Shadow roots are linked with previous and next pointers which are traced.
-    // It is therefore enough to trace one of the shadow roots here and the
-    // rest will be traced from there.
-    visitor->trace(m_shadowRoots.head());
+    visitor->trace(m_shadowRoot);
 }
 
 } // namespace blink
