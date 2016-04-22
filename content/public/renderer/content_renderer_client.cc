@@ -167,6 +167,9 @@ void ContentRendererClient::AddKeySystems(
     std::vector<media::KeySystemInfo>* key_systems) {
 }
 
+void ContentRendererClient::AddSupportedKeySystems(
+    std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {}
+
 std::unique_ptr<media::RendererFactory>
 ContentRendererClient::CreateMediaRendererFactory(
     RenderFrame* render_frame,

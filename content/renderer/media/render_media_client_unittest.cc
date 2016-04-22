@@ -66,9 +66,10 @@ class TestContentRendererClient : public ContentRendererClient {
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 bool ContainsWidevine(
-    const std::vector<media::KeySystemInfo>& key_systems_info) {
-  for (const auto& key_system_info : key_systems_info) {
-    if (key_system_info.key_system == kWidevineKeySystem)
+    const std::vector<std::unique_ptr<media::KeySystemProperties>>&
+        key_systems_properties) {
+  for (const auto& key_system_properties : key_systems_properties) {
+    if (key_system_properties->GetKeySystemName() == kWidevineKeySystem)
       return true;
   }
   return false;
@@ -131,15 +132,16 @@ TEST_F(RenderMediaClientTest, IsKeySystemsUpdateNeeded) {
   // IsKeySystemsUpdateNeeded() always returns true after construction.
   EXPECT_TRUE(render_media_client_->IsKeySystemsUpdateNeeded());
 
-  std::vector<media::KeySystemInfo> key_systems_info;
-  render_media_client_->AddSupportedKeySystems(&key_systems_info);
+  std::vector<std::unique_ptr<media::KeySystemProperties>>
+      key_systems_properties;
+  render_media_client_->AddSupportedKeySystems(&key_systems_properties);
 
   // No update needed immediately after AddSupportedKeySystems() call.
   EXPECT_FALSE(render_media_client_->IsKeySystemsUpdateNeeded());
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
   // Widevine not supported because extra key system isn't enabled.
-  EXPECT_FALSE(ContainsWidevine(key_systems_info));
+  EXPECT_FALSE(ContainsWidevine(key_systems_properties));
 
   // This is timing related. The update interval for Widevine is 1000 ms.
   EXPECT_FALSE(render_media_client_->IsKeySystemsUpdateNeeded());
@@ -150,9 +152,9 @@ TEST_F(RenderMediaClientTest, IsKeySystemsUpdateNeeded) {
 
   EnableExtraKeySystem();
 
-  key_systems_info.clear();
-  render_media_client_->AddSupportedKeySystems(&key_systems_info);
-  EXPECT_TRUE(ContainsWidevine(key_systems_info));
+  key_systems_properties.clear();
+  render_media_client_->AddSupportedKeySystems(&key_systems_properties);
+  EXPECT_TRUE(ContainsWidevine(key_systems_properties));
 
   EXPECT_FALSE(render_media_client_->IsKeySystemsUpdateNeeded());
   tick_clock->Advance(base::TimeDelta::FromMilliseconds(1000));

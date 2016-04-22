@@ -120,8 +120,8 @@ class TestMediaClient : public MediaClient {
   void AddKeySystemsInfoForUMA(
       std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) final;
   bool IsKeySystemsUpdateNeeded() final;
-  void AddSupportedKeySystems(
-      std::vector<KeySystemInfo>* key_systems_info) override;
+  void AddSupportedKeySystems(std::vector<std::unique_ptr<KeySystemProperties>>*
+                                  key_systems_properties) override;
   void RecordRapporURL(const std::string& metric, const GURL& url) final;
 
   // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
@@ -134,9 +134,10 @@ class TestMediaClient : public MediaClient {
 
  protected:
   void AddUsesAesKeySystem(const std::string& name,
-                           std::vector<KeySystemInfo>* key_systems_info);
-  void AddExternalKeySystem(
-      std::vector<KeySystemInfo>* key_systems_info);
+                           std::vector<std::unique_ptr<KeySystemProperties>>*
+                               key_systems_properties);
+  void AddExternalKeySystem(std::vector<std::unique_ptr<KeySystemProperties>>*
+                                key_systems_properties);
 
  private:
   bool is_update_needed_;
@@ -163,7 +164,7 @@ bool TestMediaClient::IsKeySystemsUpdateNeeded() {
 }
 
 void TestMediaClient::AddSupportedKeySystems(
-    std::vector<KeySystemInfo>* key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   DCHECK(is_update_needed_);
 
   AddUsesAesKeySystem(kUsesAes, key_systems);
@@ -189,7 +190,7 @@ void TestMediaClient::DisableExternalKeySystemSupport() {
 
 void TestMediaClient::AddUsesAesKeySystem(
     const std::string& name,
-    std::vector<KeySystemInfo>* key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   KeySystemInfo system;
   system.key_system = name;
   system.supported_codecs = EME_CODEC_WEBM_ALL;
@@ -203,11 +204,11 @@ void TestMediaClient::AddUsesAesKeySystem(
   system.persistent_state_support = EmeFeatureSupport::NOT_SUPPORTED;
   system.distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
   system.use_aes_decryptor = true;
-  key_systems->push_back(system);
+  key_systems->emplace_back(new InfoBasedKeySystemProperties(system));
 }
 
 void TestMediaClient::AddExternalKeySystem(
-    std::vector<KeySystemInfo>* key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   KeySystemInfo ext;
   ext.key_system = kExternal;
   ext.supported_codecs = EME_CODEC_WEBM_ALL;
@@ -222,16 +223,16 @@ void TestMediaClient::AddExternalKeySystem(
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
 #endif  // defined(ENABLE_PEPPER_CDMS)
-  key_systems->push_back(ext);
+  key_systems->emplace_back(new InfoBasedKeySystemProperties(ext));
 }
 
 class PotentiallySupportedNamesTestMediaClient : public TestMediaClient {
-  void AddSupportedKeySystems(
-      std::vector<KeySystemInfo>* key_systems_info) final;
+  void AddSupportedKeySystems(std::vector<std::unique_ptr<KeySystemProperties>>*
+                                  key_systems_properties) final;
 };
 
 void PotentiallySupportedNamesTestMediaClient::AddSupportedKeySystems(
-    std::vector<KeySystemInfo>* key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   // org.w3.clearkey is automatically registered.
   AddUsesAesKeySystem("com.widevine.alpha", key_systems);
   AddUsesAesKeySystem("org.chromium.externalclearkey", key_systems);

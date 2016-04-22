@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "media/base/key_system_info.h"
+#include "media/base/key_system_properties.h"
 #include "media/base/media_export.h"
 #include "url/gurl.h"
 
@@ -53,12 +53,13 @@ class MEDIA_EXPORT MediaClient {
   virtual void AddKeySystemsInfoForUMA(
       std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) = 0;
 
-  // Returns whether client key systems info should be updated.
+  // Returns whether client key systems properties should be updated.
   virtual bool IsKeySystemsUpdateNeeded() = 0;
 
-  // Adds info for supported key systems.
+  // Adds properties for supported key systems.
   virtual void AddSupportedKeySystems(
-      std::vector<KeySystemInfo>* key_systems_info) = 0;
+      std::vector<std::unique_ptr<KeySystemProperties>>*
+          key_systems_properties) = 0;
 
   // Records a domain and registry of a url to a Rappor privacy-preserving
   // metric. See: https://www.chromium.org/developers/design-documents/rappor

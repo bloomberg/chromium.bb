@@ -83,7 +83,8 @@ static EmeRobustness ConvertRobustness(const std::string& robustness) {
   return EmeRobustness::INVALID;
 }
 
-static void AddClearKey(std::vector<KeySystemInfo>* key_systems) {
+static void AddClearKey(
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   KeySystemInfo info;
   info.key_system = kClearKeyKeySystem;
 
@@ -120,7 +121,7 @@ static void AddClearKey(std::vector<KeySystemInfo>* key_systems) {
 
   info.use_aes_decryptor = true;
 
-  key_systems->push_back(info);
+  key_systems->emplace_back(new InfoBasedKeySystemProperties(info));
 }
 
 // Returns whether the |key_system| is known to Chromium and is thus likely to
@@ -173,41 +174,25 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
   return false;
 }
 
-// TODO(halliwell): remove this before M52.  Replace with subclasses that
-// directly implement the different cases (e.g. ClearKey, Widevine, Cast).
-class InfoBasedKeySystemProperties : public KeySystemProperties {
- public:
-  explicit InfoBasedKeySystemProperties(const KeySystemInfo& info)
-      : info_(info) {}
+InfoBasedKeySystemProperties::InfoBasedKeySystemProperties(
+    const KeySystemInfo& info)
+    : info_(info) {
+  DCHECK(info.max_audio_robustness != EmeRobustness::INVALID);
+  DCHECK(info.max_video_robustness != EmeRobustness::INVALID);
+}
 
-  bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override;
+std::string InfoBasedKeySystemProperties::GetKeySystemName() const {
+  return info_.key_system;
+}
 
-  SupportedCodecs GetSupportedCodecs() const override {
-    return info_.supported_codecs;
-  }
+SupportedCodecs InfoBasedKeySystemProperties::GetSupportedCodecs() const {
+  return info_.supported_codecs;
+}
 #if defined(OS_ANDROID)
-  SupportedCodecs GetSupportedSecureCodecs() const override {
-    return info_.supported_secure_codecs;
-  }
+SupportedCodecs InfoBasedKeySystemProperties::GetSupportedSecureCodecs() const {
+  return info_.supported_secure_codecs;
+}
 #endif
-
-  EmeConfigRule GetRobustnessConfigRule(
-      EmeMediaType media_type,
-      const std::string& requested_robustness) const override;
-  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override;
-  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
-      const override;
-  EmeFeatureSupport GetPersistentStateSupport() const override;
-  EmeFeatureSupport GetDistinctiveIdentifierSupport() const override;
-  bool UseAesDecryptor() const override;
-
-#if defined(ENABLE_PEPPER_CDMS)
-  std::string GetPepperType() const override;
-#endif
-
- private:
-  const KeySystemInfo info_;
-};
 
 class KeySystemsImpl : public KeySystems {
  public:
@@ -266,7 +251,8 @@ class KeySystemsImpl : public KeySystems {
 
   void UpdateSupportedKeySystems();
 
-  void AddSupportedKeySystems(const std::vector<KeySystemInfo>& key_systems);
+  void AddSupportedKeySystems(
+      std::vector<std::unique_ptr<KeySystemProperties>>* key_systems);
 
   void RegisterMimeType(const std::string& mime_type, EmeCodec codecs_mask);
   bool IsValidMimeTypeCodecsCombination(const std::string& mime_type,
@@ -383,55 +369,56 @@ void KeySystemsImpl::UpdateSupportedKeySystems() {
   DCHECK(thread_checker_.CalledOnValidThread());
   key_system_properties_map_.clear();
 
-  // Build KeySystemInfo.
-  std::vector<KeySystemInfo> key_systems_info;
+  std::vector<std::unique_ptr<KeySystemProperties>> key_systems_properties;
 
   // Add key systems supported by the MediaClient implementation.
   if (GetMediaClient())
-    GetMediaClient()->AddSupportedKeySystems(&key_systems_info);
+    GetMediaClient()->AddSupportedKeySystems(&key_systems_properties);
 
   // Clear Key is always supported.
-  AddClearKey(&key_systems_info);
+  AddClearKey(&key_systems_properties);
 
-  AddSupportedKeySystems(key_systems_info);
+  AddSupportedKeySystems(&key_systems_properties);
 }
 
 void KeySystemsImpl::AddSupportedKeySystems(
-    const std::vector<KeySystemInfo>& key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(key_system_properties_map_.empty());
 
-  for (const KeySystemInfo& info : key_systems) {
-    DCHECK(!info.key_system.empty());
-    DCHECK(info.max_audio_robustness != EmeRobustness::INVALID);
-    DCHECK(info.max_video_robustness != EmeRobustness::INVALID);
-    DCHECK(info.persistent_license_support != EmeSessionTypeSupport::INVALID);
-    DCHECK(info.persistent_release_message_support !=
+  for (auto& properties : *key_systems) {
+    DCHECK(!properties->GetKeySystemName().empty());
+    DCHECK(properties->GetPersistentLicenseSessionSupport() !=
            EmeSessionTypeSupport::INVALID);
-    DCHECK(info.persistent_state_support != EmeFeatureSupport::INVALID);
-    DCHECK(info.distinctive_identifier_support != EmeFeatureSupport::INVALID);
+    DCHECK(properties->GetPersistentReleaseMessageSessionSupport() !=
+           EmeSessionTypeSupport::INVALID);
+    DCHECK(properties->GetPersistentStateSupport() !=
+           EmeFeatureSupport::INVALID);
+    DCHECK(properties->GetDistinctiveIdentifierSupport() !=
+           EmeFeatureSupport::INVALID);
 
     // Supporting persistent state is a prerequsite for supporting persistent
     // sessions.
-    if (info.persistent_state_support == EmeFeatureSupport::NOT_SUPPORTED) {
-      DCHECK(info.persistent_license_support ==
+    if (properties->GetPersistentStateSupport() ==
+        EmeFeatureSupport::NOT_SUPPORTED) {
+      DCHECK(properties->GetPersistentLicenseSessionSupport() ==
              EmeSessionTypeSupport::NOT_SUPPORTED);
-      DCHECK(info.persistent_release_message_support ==
+      DCHECK(properties->GetPersistentReleaseMessageSessionSupport() ==
              EmeSessionTypeSupport::NOT_SUPPORTED);
     }
 
     // persistent-release-message sessions are not currently supported.
     // http://crbug.com/448888
-    DCHECK(info.persistent_release_message_support ==
+    DCHECK(properties->GetPersistentReleaseMessageSessionSupport() ==
            EmeSessionTypeSupport::NOT_SUPPORTED);
 
     // If distinctive identifiers are not supported, then no other features can
     // require them.
-    if (info.distinctive_identifier_support ==
+    if (properties->GetDistinctiveIdentifierSupport() ==
         EmeFeatureSupport::NOT_SUPPORTED) {
-      DCHECK(info.persistent_license_support !=
+      DCHECK(properties->GetPersistentLicenseSessionSupport() !=
              EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
-      DCHECK(info.persistent_release_message_support !=
+      DCHECK(properties->GetPersistentReleaseMessageSessionSupport() !=
              EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
     }
 
@@ -439,34 +426,36 @@ void KeySystemsImpl::AddSupportedKeySystems(
     // (and therefore be safely configurable) for Pepper-hosted key systems. For
     // other platforms, (except for the AES decryptor) assume that the CDM can
     // and will do anything.
-    bool can_block = info.use_aes_decryptor;
+    bool can_block = properties->UseAesDecryptor();
 #if defined(ENABLE_PEPPER_CDMS)
-    DCHECK_EQ(info.use_aes_decryptor, info.pepper_type.empty());
-    if (!info.pepper_type.empty())
+    DCHECK_EQ(properties->UseAesDecryptor(),
+              properties->GetPepperType().empty());
+    if (!properties->GetPepperType().empty())
       can_block = true;
 #endif
     if (!can_block) {
-      DCHECK(info.distinctive_identifier_support ==
+      DCHECK(properties->GetDistinctiveIdentifierSupport() ==
              EmeFeatureSupport::ALWAYS_ENABLED);
-      DCHECK(info.persistent_state_support ==
+      DCHECK(properties->GetPersistentStateSupport() ==
              EmeFeatureSupport::ALWAYS_ENABLED);
     }
 
-    DCHECK_EQ(key_system_properties_map_.count(info.key_system), 0u)
-        << "Key system '" << info.key_system << "' already registered";
+    DCHECK_EQ(key_system_properties_map_.count(properties->GetKeySystemName()),
+              0u)
+        << "Key system '" << properties->GetKeySystemName()
+        << "' already registered";
 
 #if defined(OS_ANDROID)
     // Ensure that the renderer can access the decoders necessary to use the
     // key system.
-    if (!info.use_aes_decryptor && !ArePlatformDecodersAvailable()) {
-      DLOG(WARNING) << info.key_system << " not registered";
+    if (!properties->UseAesDecryptor() && !ArePlatformDecodersAvailable()) {
+      DLOG(WARNING) << properties->GetKeySystemName() << " not registered";
       continue;
     }
 #endif  // defined(OS_ANDROID)
 
-    std::unique_ptr<KeySystemProperties> properties(
-        new InfoBasedKeySystemProperties(info));
-    key_system_properties_map_[info.key_system] = std::move(properties);
+    key_system_properties_map_[properties->GetKeySystemName()] =
+        std::move(properties);
   }
 }
 
@@ -568,13 +557,14 @@ std::string KeySystemsImpl::GetPepperType(const std::string& key_system) const {
     DLOG(FATAL) << key_system << " is not a known system";
     return std::string();
   }
-  return key_system_iter->second->GetPepperType();
+  const std::string& type = key_system_iter->second->GetPepperType();
+  DLOG_IF(FATAL, type.empty()) << key_system_iter->second->GetKeySystemName()
+                               << " is not Pepper-based";
+  return type;
 }
 
 std::string InfoBasedKeySystemProperties::GetPepperType() const {
-  const std::string& type = info_.pepper_type;
-  DLOG_IF(FATAL, type.empty()) << info_.key_system << " is not Pepper-based";
-  return type;
+  return info_.pepper_type;
 }
 #endif
 

@@ -62,6 +62,7 @@ class ImageSerializationProcessor;
 
 namespace media {
 class GpuVideoAcceleratorFactories;
+class KeySystemProperties;
 class MediaLog;
 class RendererFactory;
 struct KeySystemInfo;
@@ -269,9 +270,16 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows an embedder to provde a cc::ImageSerializationProcessor.
   virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor();
 
+  // DEPRECATED: Gives the embedder a chance to register the key system(s) it
+  // supports by populating |key_systems|.
+  // TODO(halliwell): move all clients to KeySystemProperties API below, then
+  // remove KeySystemInfo API.  See crbug.com/457438.
+  virtual void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems);
+
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.
-  virtual void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems);
+  virtual void AddSupportedKeySystems(
+      std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems);
 
   // Returns true if we should report a detailed message (including a stack
   // trace) for console [logs|errors|exceptions]. |source| is the WebKit-

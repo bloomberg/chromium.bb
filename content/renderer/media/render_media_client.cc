@@ -9,6 +9,7 @@
 #include "base/time/default_tick_clock.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "media/base/key_system_info.h"
 
 namespace content {
 
@@ -65,11 +66,19 @@ bool RenderMediaClient::IsKeySystemsUpdateNeeded() {
 }
 
 void RenderMediaClient::AddSupportedKeySystems(
-    std::vector<media::KeySystemInfo>* key_systems_info) {
+    std::vector<std::unique_ptr<media::KeySystemProperties>>*
+        key_systems_properties) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  GetContentClient()->renderer()->AddKeySystems(key_systems_info);
+  std::vector<media::KeySystemInfo> key_systems_info;
+  GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
+  for (const auto& info : key_systems_info) {
+    key_systems_properties->emplace_back(
+        new media::InfoBasedKeySystemProperties(info));
+  }
+  GetContentClient()->renderer()->AddSupportedKeySystems(
+      key_systems_properties);
 
   has_updated_ = true;
   last_update_time_ticks_ = tick_clock_->NowTicks();
@@ -77,8 +86,8 @@ void RenderMediaClient::AddSupportedKeySystems(
   // Check whether all potentially supported key systems are supported. If so,
   // no need to update again.
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-  for (const media::KeySystemInfo& key_system_info : *key_systems_info) {
-    if (key_system_info.key_system == kWidevineKeySystem)
+  for (const auto& properties : *key_systems_properties) {
+    if (properties->GetKeySystemName() == kWidevineKeySystem)
       is_update_needed_ = false;
   }
 #else
