@@ -23,10 +23,13 @@
 #include "sync/api/model_type_store.h"
 #include "sync/internal_api/public/test/model_type_store_test_util.h"
 #include "sync/protocol/data_type_state.pb.h"
+#include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver_v2 {
 
+using base::Time;
+using base::TimeDelta;
 using syncer::SyncError;
 using syncer_v2::DataBatch;
 using syncer_v2::EntityChange;
@@ -297,6 +300,10 @@ class DeviceInfoServiceTest : public testing::Test,
     std::swap(store_, service_->store_);
     service_->RemoveObserver(this);
     service_.reset();
+  }
+
+  Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
+    return DeviceInfoService::GetLastUpdateTime(specifics);
   }
 
  private:
@@ -594,6 +601,15 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
   EXPECT_TRUE(
       service()->GetDeviceInfo(local_device()->GetLocalDeviceInfo()->guid()));
   EXPECT_EQ(1, change_count());
+  // Ensure |last_updated| is about now, plus or minus a little bit.
+  Time last_updated(
+      syncer::ProtoTimeToTime(processor()
+                                  ->put_map()
+                                  .begin()
+                                  ->second->specifics.device_info()
+                                  .last_updated_timestamp()));
+  EXPECT_LT(Time::Now() - TimeDelta::FromMinutes(1), last_updated);
+  EXPECT_GT(Time::Now() + TimeDelta::FromMinutes(1), last_updated);
 
   EXPECT_FALSE(
       service()
@@ -697,6 +713,7 @@ TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
   const DeviceInfo* local_device_info = local_device()->GetLocalDeviceInfo();
   std::unique_ptr<DeviceInfoSpecifics> specifics(
       CopyToSpecifics(*local_device_info));
+  specifics->set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
   const std::string guid = local_device_info->guid();
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
@@ -716,6 +733,44 @@ TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
   EXPECT_EQ(1u, service()->GetAllDeviceInfo().size());
   EXPECT_TRUE(processor()->delete_set().empty());
   EXPECT_TRUE(processor()->put_map().empty());
+}
+
+TEST_F(DeviceInfoServiceTest, GetLastUpdateTime) {
+  Time time1(Time() + TimeDelta::FromDays(1));
+
+  DeviceInfoSpecifics specifics1(GenerateTestSpecifics());
+  DeviceInfoSpecifics specifics2(GenerateTestSpecifics());
+  specifics2.set_last_updated_timestamp(syncer::TimeToProtoTime(time1));
+
+  EXPECT_EQ(Time(), GetLastUpdateTime(specifics1));
+  EXPECT_EQ(time1, GetLastUpdateTime(specifics2));
+}
+
+TEST_F(DeviceInfoServiceTest, CountActiveDevices) {
+  InitializeAndPump();
+  EXPECT_EQ(0, service()->CountActiveDevices());
+
+  DeviceInfoSpecifics specifics =
+      GenerateTestSpecifics(local_device()->GetLocalDeviceInfo()->guid());
+  EntityChangeList change_list;
+  PushBackEntityChangeAdd(specifics, &change_list);
+  service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
+                              change_list);
+  EXPECT_EQ(0, service()->CountActiveDevices());
+
+  change_list.clear();
+  specifics.set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
+  PushBackEntityChangeAdd(specifics, &change_list);
+  service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
+                              change_list);
+  EXPECT_EQ(0, service()->CountActiveDevices());
+
+  change_list.clear();
+  specifics.set_cache_guid("non-local");
+  PushBackEntityChangeAdd(specifics, &change_list);
+  service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
+                              change_list);
+  EXPECT_EQ(1, service()->CountActiveDevices());
 }
 
 }  // namespace

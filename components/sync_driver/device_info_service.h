@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/sync_driver/device_info_tracker.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "sync/api/model_type_service.h"
@@ -77,12 +79,9 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
  private:
   friend class DeviceInfoServiceTest;
 
-  // Formats ClientTag form DeviceInfoSpecifics.
-  static std::string SpecificsToTag(
-      const sync_pb::DeviceInfoSpecifics& specifics);
-
-  // Extracts cache_guid from ClientTag.
-  static std::string TagToCacheGuid(const std::string& tag);
+  // Cache of all syncable and local data, stored by device cache guid.
+  using ClientIdToSpecifics =
+      std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
 
   static std::unique_ptr<sync_pb::DeviceInfoSpecifics> CopyToSpecifics(
       const sync_driver::DeviceInfo& info);
@@ -126,8 +125,10 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // and we send it to the processor.
   void TryReconcileLocalAndStored();
 
-  // Writes the given device info to both local storage and to sync.
-  void PutAndStore(const sync_driver::DeviceInfo& device_info);
+  // Stores the updated version of the local copy of device info in durable
+  // storage, in memory, and informs sync of the change. Should not be called
+  // before the provider and processor have initialized.
+  void SendLocalData();
 
   // Persists the changes in the given aggregators and notifies observers if
   // indicated to do as such.
@@ -136,12 +137,19 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       std::unique_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
       bool should_notify);
 
+  // Counts the number of active devices relative to |now|. The activeness of a
+  // device depends on the amount of time since it was updated, which means
+  // comparing it against the current time. |now| is passed into this method to
+  // allow unit tests to control expected results.
+  int CountActiveDevices(const base::Time now) const;
+
+  // Find the timestamp for the last time this |device_info| was edited.
+  static base::Time GetLastUpdateTime(
+      const sync_pb::DeviceInfoSpecifics& specifics);
+
   // |local_device_info_provider_| isn't owned.
   const sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
 
-  // Cache of all syncable and local data, stored by device cache guid.
-  using ClientIdToSpecifics =
-      std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
   ClientIdToSpecifics all_data_;
 
   // Registered observers, not owned.
@@ -159,6 +167,9 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   bool has_provider_initialized_ = false;
   // if |change_processor()| has been given metadata.
   bool has_metadata_loaded_ = false;
+
+  // Used to update our local device info once every pulse interval.
+  base::OneShotTimer pulse_timer_;
 
   // Should always be last member.
   base::WeakPtrFactory<DeviceInfoService> weak_factory_;

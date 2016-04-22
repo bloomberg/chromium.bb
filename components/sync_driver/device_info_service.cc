@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "components/sync_driver/device_info_util.h"
 #include "sync/api/entity_change.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/sync_error.h"
@@ -19,9 +20,12 @@
 #include "sync/internal_api/public/simple_metadata_change_list.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/util/time.h"
 
 namespace sync_driver_v2 {
 
+using base::Time;
+using base::TimeDelta;
 using syncer::SyncError;
 using syncer_v2::DataBatchImpl;
 using syncer_v2::EntityChange;
@@ -33,6 +37,7 @@ using syncer_v2::MetadataChangeList;
 using syncer_v2::ModelTypeStore;
 using syncer_v2::SimpleMetadataChangeList;
 using sync_driver::DeviceInfo;
+using sync_driver::DeviceInfoUtil;
 using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
@@ -41,12 +46,6 @@ using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
 using WriteBatch = ModelTypeStore::WriteBatch;
-
-namespace {
-
-const char kClientTagPrefix[] = "DeviceInfo_";
-
-}  // namespace
 
 DeviceInfoService::DeviceInfoService(
     sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
@@ -107,11 +106,16 @@ SyncError DeviceInfoService::MergeSyncData(
   for (const auto& kv : entity_data_map) {
     const DeviceInfoSpecifics& specifics =
         kv.second.value().specifics.device_info();
-    DCHECK_EQ(kv.first, SpecificsToTag(specifics));
+    DCHECK_EQ(kv.first, DeviceInfoUtil::SpecificsToTag(specifics));
     if (specifics.cache_guid() == local_guid) {
       // Don't Put local data if it's the same as the remote copy.
       if (local_info->Equals(*CopyToModel(specifics))) {
         local_guids_to_put.erase(local_guid);
+      } else {
+        // This device is valid right now and this entry is about to be
+        // committed, use this as an opportunity to refresh the timestamp.
+        all_data_[local_guid]->set_last_updated_timestamp(
+            syncer::TimeToProtoTime(Time::Now()));
       }
     } else {
       // Remote data wins conflicts.
@@ -123,7 +127,7 @@ SyncError DeviceInfoService::MergeSyncData(
   }
 
   for (const std::string& guid : local_guids_to_put) {
-    change_processor()->Put(SpecificsToTag(*all_data_[guid]),
+    change_processor()->Put(DeviceInfoUtil::SpecificsToTag(*all_data_[guid]),
                             CopyToEntityData(*all_data_[guid]),
                             metadata_change_list.get());
   }
@@ -146,7 +150,8 @@ SyncError DeviceInfoService::ApplySyncChanges(
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
   for (EntityChange& change : entity_changes) {
-    const std::string guid = TagToCacheGuid(change.client_tag());
+    const std::string guid =
+        DeviceInfoUtil::TagToCacheGuid(change.client_tag());
     // Each device is the authoritative source for itself, ignore any remote
     // changes that have our local cache guid.
     if (guid == local_device_info_provider_->GetLocalDeviceInfo()->guid()) {
@@ -183,9 +188,9 @@ void DeviceInfoService::GetData(ClientTagList client_tags,
 
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& tag : client_tags) {
-    const auto& iter = all_data_.find(TagToCacheGuid(tag));
+    const auto& iter = all_data_.find(DeviceInfoUtil::TagToCacheGuid(tag));
     if (iter != all_data_.end()) {
-      DCHECK_EQ(tag, SpecificsToTag(*iter->second));
+      DCHECK_EQ(tag, DeviceInfoUtil::SpecificsToTag(*iter->second));
       batch->Put(tag, CopyToEntityData(*iter->second));
     }
   }
@@ -204,14 +209,15 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
 
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : all_data_) {
-    batch->Put(SpecificsToTag(*kv.second), CopyToEntityData(*kv.second));
+    batch->Put(DeviceInfoUtil::SpecificsToTag(*kv.second),
+               CopyToEntityData(*kv.second));
   }
   callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_device_info());
-  return SpecificsToTag(entity_data.specifics.device_info());
+  return DeviceInfoUtil::SpecificsToTag(entity_data.specifics.device_info());
 }
 
 void DeviceInfoService::OnChangeProcessorSet() {
@@ -261,26 +267,13 @@ void DeviceInfoService::RemoveObserver(Observer* observer) {
 }
 
 int DeviceInfoService::CountActiveDevices() const {
-  // TODO(skym): crbug.com/590006: Implementation.
-  return 0;
+  return CountActiveDevices(Time::Now());
 }
 
 void DeviceInfoService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
 }
 
-std::string DeviceInfoService::SpecificsToTag(
-    const sync_pb::DeviceInfoSpecifics& specifics) {
-  return kClientTagPrefix + specifics.cache_guid();
-}
-
-std::string DeviceInfoService::TagToCacheGuid(const std::string& tag) {
-  DCHECK(base::StartsWith(tag, kClientTagPrefix, base::CompareCase::SENSITIVE));
-  return tag.substr(strlen(kClientTagPrefix));
-}
-
-// TODO(skym): crbug.com/543406: It might not make sense for this to be a
-// scoped_ptr.
 // Static.
 std::unique_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
     const DeviceInfo& info) {
@@ -458,27 +451,46 @@ void DeviceInfoService::TryReconcileLocalAndStored() {
     const DeviceInfo* current_info =
         local_device_info_provider_->GetLocalDeviceInfo();
     auto iter = all_data_.find(current_info->guid());
+
     // Convert to DeviceInfo for Equals function.
-    if (iter == all_data_.end() ||
-        !current_info->Equals(*CopyToModel(*iter->second))) {
-      PutAndStore(*current_info);
+    if (iter != all_data_.end() &&
+        current_info->Equals(*CopyToModel(*iter->second))) {
+      const TimeDelta pulse_delay(DeviceInfoUtil::CalculatePulseDelay(
+          GetLastUpdateTime(*iter->second), Time::Now()));
+      if (!pulse_delay.is_zero()) {
+        pulse_timer_.Start(FROM_HERE, pulse_delay,
+                           base::Bind(&DeviceInfoService::SendLocalData,
+                                      base::Unretained(this)));
+        return;
+      }
     }
+    SendLocalData();
   }
 }
 
-void DeviceInfoService::PutAndStore(const DeviceInfo& device_info) {
-  std::unique_ptr<DeviceInfoSpecifics> specifics = CopyToSpecifics(device_info);
+void DeviceInfoService::SendLocalData() {
+  DCHECK(has_provider_initialized_);
+  // TODO(skym): Handle disconnecting and reconnecting, this will currently halt
+  // the pulse timer and never restart it.
+  if (change_processor()) {
+    std::unique_ptr<DeviceInfoSpecifics> specifics =
+        CopyToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo());
+    specifics->set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
 
-  std::unique_ptr<MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-  change_processor()->Put(SpecificsToTag(*specifics),
-                          CopyToEntityData(*specifics),
-                          metadata_change_list.get());
+    std::unique_ptr<MetadataChangeList> metadata_change_list =
+        CreateMetadataChangeList();
+    change_processor()->Put(DeviceInfoUtil::SpecificsToTag(*specifics),
+                            CopyToEntityData(*specifics),
+                            metadata_change_list.get());
 
-  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  StoreSpecifics(std::move(specifics), batch.get());
+    std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+    StoreSpecifics(std::move(specifics), batch.get());
 
-  CommitAndNotify(std::move(batch), std::move(metadata_change_list), true);
+    CommitAndNotify(std::move(batch), std::move(metadata_change_list), true);
+    pulse_timer_.Start(
+        FROM_HERE, DeviceInfoUtil::kPulseInterval,
+        base::Bind(&DeviceInfoService::SendLocalData, base::Unretained(this)));
+  }
 }
 
 void DeviceInfoService::CommitAndNotify(
@@ -492,6 +504,24 @@ void DeviceInfoService::CommitAndNotify(
       base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
   if (should_notify) {
     NotifyObservers();
+  }
+}
+
+int DeviceInfoService::CountActiveDevices(const Time now) const {
+  return std::count_if(all_data_.begin(), all_data_.end(),
+                       [now](ClientIdToSpecifics::const_reference pair) {
+                         return DeviceInfoUtil::IsActive(
+                             GetLastUpdateTime(*pair.second), now);
+                       });
+}
+
+// static
+Time DeviceInfoService::GetLastUpdateTime(
+    const DeviceInfoSpecifics& specifics) {
+  if (specifics.has_last_updated_timestamp()) {
+    return syncer::ProtoTimeToTime(specifics.last_updated_timestamp());
+  } else {
+    return Time();
   }
 }
 

@@ -63,6 +63,8 @@
         'sync_driver/device_info_sync_service.cc',
         'sync_driver/device_info_sync_service.h',
         'sync_driver/device_info_tracker.h',
+        'sync_driver/device_info_util.cc',
+        'sync_driver/device_info_util.h',
         'sync_driver/directory_data_type_controller.cc',
         'sync_driver/directory_data_type_controller.h',
         'sync_driver/frontend_data_type_controller.cc',

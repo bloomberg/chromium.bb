@@ -762,6 +762,7 @@
       'sync_driver/device_info_data_type_controller_unittest.cc',
       'sync_driver/device_info_service_unittest.cc',
       'sync_driver/device_info_sync_service_unittest.cc',
+      'sync_driver/device_info_util_unittest.cc',
       'sync_driver/frontend_data_type_controller_unittest.cc',
       'sync_driver/generic_change_processor_unittest.cc',
       'sync_driver/glue/sync_backend_host_impl_unittest.cc',

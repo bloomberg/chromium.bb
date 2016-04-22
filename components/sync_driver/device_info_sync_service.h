@@ -27,13 +27,6 @@ namespace sync_driver {
 
 class LocalDeviceInfoProvider;
 
-// The delay between periodic updates to the entry corresponding to this device.
-extern const base::TimeDelta kDeviceInfoPulseInterval;
-
-// The amount of time a device can go without an updates before we consider it
-// stale/inactive, and start ignoring it for active device counts.
-extern const base::TimeDelta kStaleDeviceInfoThreshold;
-
 // SyncableService implementation for DEVICE_INFO model type.
 class DeviceInfoSyncService : public syncer::SyncableService,
                               public DeviceInfoTracker {
@@ -82,32 +75,15 @@ class DeviceInfoSyncService : public syncer::SyncableService,
   // Notify all registered observers.
   void NotifyObservers();
 
-  // Find the timestamp for the last time this |device_info| was edited.
-  static base::Time GetLastUpdateTime(const syncer::SyncData& device_info);
-
-  // Finds the amount of time since this |device_info| was last edited. If this
-  // |device_info| claims to have been edited in the future, the smallest age
-  // this returns will be an age of zero and never negative.
-  static base::TimeDelta GetLastUpdateAge(const syncer::SyncData& device_info,
-                                          const base::Time now);
-
-  // Determines the amount of time before we should pulse and update the entity
-  // that corresponds to this device. This value is calculated by looking at
-  // time |now|, the last updated timestamp in |device_info|, and using the
-  // pulse interval. The smallest delay this will ever return will be the
-  // instant delay and never negative.
-  static base::TimeDelta CalculatePulseDelay(
-      const syncer::SyncData& device_info,
-      const base::Time now);
-
   // Sends a copy of the current device's state to the processor/sync.
   void SendLocalData(const syncer::SyncChange::SyncChangeType change_type);
 
-  // Counts the number of active devices relative to |now|. The activeness of a
-  // device depends on the amount of time since it was updated, which means
-  // comparing it against the current time. |now| is passed into this method to
-  // allow unit tests to control expected results.
+  // Finds the number of active devices give the current time, which allows for
+  // better unit tests.
   int CountActiveDevices(const base::Time now) const;
+
+  // Find the timestamp for the last time this |device_info| was edited.
+  static base::Time GetLastUpdateTime(const syncer::SyncData& device_info);
 
   // |local_device_info_provider_| isn't owned.
   const LocalDeviceInfoProvider* const local_device_info_provider_;
