@@ -3,7 +3,10 @@
   "name": "mojo:views_examples",
   "display_name": "Views Examples",
   "capabilities": {
-    "provided": { "launchable": ["mash::mojom::Launchable"] },
-    "required": { "*": { "interfaces": [ "*" ] } }
+    "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:mus": { "classes": [ "mus:core" ] }
+    }
   }
 }

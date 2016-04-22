@@ -1,5 +1,11 @@
 {
+  "manifest_version":  1,
   "name": "mojo:ash_sysui",
   "display_name": "System UI",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*":  { "interfaces":  ["*"] },
+      "mojo:mus": { "classes": [ "mus:core" ] }
+    }
+  }
 }

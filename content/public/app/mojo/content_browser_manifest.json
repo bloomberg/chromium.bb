@@ -7,7 +7,11 @@
     "required": {
       "*": { "interfaces": [ "*" ] },
       "mojo:shell": {
-        "classes": [ "client_process", "instance_name", "user_id" ],
+        "classes": [
+          "shell:client_process",
+          "shell:instance_name",
+          "shell:user_id"
+        ],
         "interfaces": [ "*" ]
       }
     }

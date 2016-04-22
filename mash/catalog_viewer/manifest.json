@@ -3,7 +3,10 @@
   "name": "mojo:catalog_viewer",
   "display_name": "Catalog Viewer",
   "capabilities": {
-    "provided": { "launchable": ["mash::mojom::Launchable"] },
-    "required": { "*": { "interfaces": [ "*" ] } }
+    "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:mus": { "classes": [ "mus:core" ] }
+    }
   }
 }

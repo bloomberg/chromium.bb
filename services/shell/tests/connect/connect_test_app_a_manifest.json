@@ -2,5 +2,9 @@
   "manifest_version": 1,
   "name": "mojo:connect_test_a",
   "display_name": "Connect Test A",
-  "capabilities": { }
+  "capabilities": {
+    "required": {
+      "mojo:connect_test_class_app": { "classes":  [ "class" ] }
+    }
+  }
 }
