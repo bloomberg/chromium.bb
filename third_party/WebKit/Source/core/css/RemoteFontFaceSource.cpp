@@ -30,8 +30,8 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* 
     m_font->addClient(this);
 
     // TODO(crbug.com/578029): Connect NQE signal for V2 mode.
-    if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled()
-        || (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto)) {
+    bool triggered = RuntimeEnabledFeatures::webFontsInterventionV2Enabled() ? false : networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+    if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled() || (triggered && display == FontDisplayAuto)) {
         m_isInterventionTriggered = true;
         m_period = SwapPeriod;
     }

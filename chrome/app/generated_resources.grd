@@ -14672,6 +14672,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_FLAGS_ENABLE_BROTLI_DESCRIPTION" desc="Description for the flag to enable Brotli Content-Encoding.">
       Enable Brotli Content-Encoding support.
     </message>
+    <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_NAME" desc="Title for the flag to enable WebFonts User Agent Intervention.">
+      New version of User Agent Intervention for WebFonts loading.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_DESCRIPTION" desc="Description for the flag to enable WebFonts User Agent Intervention.">
+      Enable New version of User Agent Intervention for WebFonts loading.
+    </message>
     <message name="IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_TRIGGER_NAME" desc="Title for the flag to trigger WebFonts User Agent Intervention always.">
       Trigger User Agent Intervention for WebFonts loading always.
     </message>

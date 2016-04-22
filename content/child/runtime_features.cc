@@ -172,8 +172,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::enablePresentationAPI(false);
 
-  if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
-    WebRuntimeFeatures::enableWebFontsInterventionTrigger(true);
+  if (base::FeatureList::IsEnabled(features::kWebFontsInterventionV2)) {
+    WebRuntimeFeatures::enableWebFontsInterventionV2(true);
+    if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
+      WebRuntimeFeatures::enableWebFontsInterventionTrigger(true);
+  }
 
   if (base::FeatureList::IsEnabled(features::kScrollAnchoring))
     WebRuntimeFeatures::enableScrollAnchoring(true);

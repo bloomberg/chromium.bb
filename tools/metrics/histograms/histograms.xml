@@ -75595,6 +75595,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1649778035" label="disable-clear-browsing-data-counters"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
+  <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1599538279" label="enable-md-policy-page"/>

@@ -290,6 +290,11 @@ void WebRuntimeFeatures::enablePresentationAPI(bool enable)
     RuntimeEnabledFeatures::setPresentationEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableWebFontsInterventionV2(bool enable)
+{
+    RuntimeEnabledFeatures::setWebFontsInterventionV2Enabled(enable);
+}
+
 void WebRuntimeFeatures::enableWebFontsInterventionTrigger(bool enable)
 {
     RuntimeEnabledFeatures::setWebFontsInterventionTriggerEnabled(enable);
