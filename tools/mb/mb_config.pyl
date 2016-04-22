@@ -37,7 +37,6 @@
           'android_cronet_gn_release_bot_minimal_symbols_x86',
       'Android Cronet x86 Builder (dbg)':
           'android_cronet_gn_debug_static_bot_x86',
-
       'Android GN Builder (dbg)': 'android_gn_debug_bot_minimal_symbols',
       'Android MIPS Builder (dbg)': 'android_gn_debug_static_bot_mipsel',
       'Android Swarm Builder':
@@ -83,9 +82,6 @@
     },
 
     'chromium.fyi': {
-      'Chromium Builder': 'tbd',
-      'Chromium Builder (dbg)': 'tbd',
-      'Chromium Win x64 Clobber': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
       'ClangToTAndroidASan':
         'android_clang_no_chrome_plugins_asan_gn_debug_bot_minimal_symbols',
@@ -110,9 +106,6 @@
       'CrWinClangLLD64': 'tbd',
       'CrWinClngLLD64dbg': 'tbd',
       'CrWinClngLLDdbg': 'tbd',
-      'Ozone ECS Linux': 'tbd',
-      'Windows 8 App Certification': 'tbd',
-      'Windows Builder (DrMemory)': 'tbd',
 
       'Android ChromeDriver Tests (dbg)': 'none',
       'Android Cloud Tests': 'android_gn_debug_static_bot_x86',
@@ -137,14 +130,9 @@
       'Chromium Mac 10.9 Goma Canary (clobber)': 'gyp_release_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)': 'gyp_debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'gyp_debug_bot',
-      'Chromium Win 10': 'gyp_release_trybot',
-      'Chromium Win MiniInstaller Tests': 'none',
       'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
       'Chromium Windows Analyze': 'gn_windows_analyze',
-      'Chromium_iOS_Device': 'ios_gyp',
-      'Chromium_iOS_Device_(ninja)': 'ios_gyp',
-      'Chromium_iOS_Simulator_(dbg)': 'ios_gyp',
       'CrWin7Goma': 'gyp_release_bot_minimal_symbols_x86',
       'CrWin7Goma(clbr)': 'gyp_shared_release_bot_minimal_symbols_x86',
       'CrWin7Goma(dbg)': 'gyp_debug_bot_minimal_symbols_x86',
@@ -206,24 +194,16 @@
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
       'Linux ARM': 'swarming_gyp_release_bot_arm',
+      'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
+      'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
       'Linux V8 API Stability': 'gyp_release_bot',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
       'UBSanVptr Linux': 'gn_ubsan_vptr_release_bot',
-      'Vista Tests (dbg)(1)': 'none',
-      'Vista Tests (dbg)(2)': 'none',
       'WebKit Linux - TraceWrappables': 'swarming_gn_release_bot_x64',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
-      'Win8 Tests (1)': 'none',
-      'Win8 Tests (2)': 'none',
       'Win 10 Fast Ring': 'gn_release_trybot_x64',
-      'Windows Browser (DrMemory light) (1)': 'none',
-      'Windows Browser (DrMemory light) (2)': 'none',
-      'Windows Tests (DrMemory)': 'none',
-
-      'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
-      'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
     },
 
     'chromium.gpu': {
@@ -243,8 +223,6 @@
       'Mac 10.10 Release (Intel)': 'none',
       'Mac 10.10 Retina Debug (AMD)': 'none',
       'Mac 10.10 Retina Release (AMD)': 'none',
-      'Mac Retina Debug': 'none',
-      'Mac Retina Release': 'none',
       'Win7 Debug (NVIDIA)': 'none',
       'Win7 Release (ATI)': 'none',
       'Win7 Release (NVIDIA)': 'none',
@@ -371,32 +349,18 @@
     },
 
     'chromium.memory.fyi': {
-
-      'Chromium Linux Builder (valgrind)': 'gyp_valgrind_release_bot',
       'Chromium Linux ChromeOS MSan Builder':
         'swarming_gyp_chromeos_msan_release_bot',
       'Chromium Linux MSan Builder':
         'swarming_gyp_msan_release_bot',
       'Chromium Linux TSan Builder':
         'swarming_gyp_tsan_disable_nacl_release_bot',
-      'Chromium OS (valgrind)(1)': 'none',
-      'Chromium OS (valgrind)(2)': 'none',
-      'Chromium OS (valgrind)(3)': 'none',
-      'Chromium OS (valgrind)(4)': 'none',
-      'Chromium OS (valgrind)(5)': 'none',
-      'Chromium OS (valgrind)(6)': 'none',
-      'Chromium OS Builder (valgrind)': 'gyp_valgrind_chromeos_release_bot',
       'Chromium Windows Builder (DrMemory x64)':
         'gyp_drmemory_shared_release_x64',
       'Chromium Windows Builder (DrMemory)': 'gyp_drmemory_shared_release_x86',
       'Linux ChromeOS MSan Tests': 'none',
       'Linux MSan Tests': 'none',
       'Linux TSan Tests': 'none',
-      'Linux Tests (valgrind)(1)': 'none',
-      'Linux Tests (valgrind)(2)': 'none',
-      'Linux Tests (valgrind)(3)': 'none',
-      'Linux Tests (valgrind)(4)': 'none',
-      'Linux Tests (valgrind)(5)': 'none',
       'Windows Browser (DrMemory full) (1)': 'none',
       'Windows Browser (DrMemory full) (10)': 'none',
       'Windows Browser (DrMemory full) (11)': 'none',
@@ -769,7 +733,6 @@
       'linux_chromium_webkit_leak_variable': 'findit',
       'linux_chromium_webkit_msan_variable': 'findit',
       'linux_chromium_webkit_variable': 'findit',
-      'linux_ecs_ozone': 'embedded_gyp_debug_bot',
       'linux_full_bisect_builder': 'swarming_gyp_release_bot',
       'linux_nacl_sdk': 'nacl_annotator',
       'linux_nacl_sdk_build': 'nacl_annotator',
@@ -777,7 +740,6 @@
         'swarming_gpu_fyi_tests_gn_release_trybot',
       'linux_site_isolation': 'gn_release_trybot',
       'linux_upload_clang': 'gn_release_bot',
-      'linux_valgrind': 'gyp_valgrind_release_bot',
     },
 
     'tryserver.chromium.mac': {
@@ -861,6 +823,8 @@
       'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
       'win8_chromium_ng': 'gn_release_trybot_x86',
+      'win_x64_archive':
+        'noswarming_gyp_release_trybot_minimal_symbols_x64',
       'win_archive': 'noswarming_gyp_release_trybot_minimal_symbols_x86',
       'win_chromium_compile_dbg_ng':
         'swarming_gyp_debug_bot_minimal_symbols_x86',
@@ -1085,10 +1049,6 @@
     # wrapper and need to be looked at specially.
     'cros_chrome_sdk_gyp': [
       'gyp', 'error',
-    ],
-
-    'embedded_gyp_debug_bot': [
-      'embedded', 'gyp', 'debug_bot',
     ],
 
     # The 'findit' config is used by the *_variable_* bots, which run
@@ -1379,14 +1339,6 @@
       'shared', 'x86', 'win_analyze',
     ],
 
-    'gyp_valgrind_release_bot': [
-      'gyp', 'valgrind', 'release_bot',
-    ],
-
-    'gyp_valgrind_chromeos_release_bot': [
-      'gyp', 'chromeos', 'valgrind', 'release_bot',
-    ],
-
     'gyp_drmemory_shared_release_x86': [
       'gyp', 'drmemory', 'shared', 'release', 'x86',
     ],
@@ -1436,6 +1388,10 @@
 
     'noswarming_gyp_release_trybot': [
       'noswarming', 'gyp', 'release_trybot',
+    ],
+
+    'noswarming_gyp_release_trybot_minimal_symbols_x64': [
+      'noswarming', 'gyp', 'release_trybot', 'minimal_symbols', 'x64',
     ],
 
     'noswarming_gyp_release_trybot_minimal_symbols_x86': [
@@ -2012,11 +1968,6 @@
       'gyp_defines': 'sanitizer_coverage=edge',
     },
 
-    'embedded': {
-      'gn_args': 'error',
-      'gyp_defines': 'embedded=1',
-    },
-
     # This mixin is used to force configs that use it to fail. It
     # is used in two cases: when we have bots that we haven't looked
     # at yet and don't know whether they need MB or not, and for bots
@@ -2268,10 +2219,5 @@
       'gn_args': 'is_component_build=true enable_iterator_debugging=false',
       'gyp_defines': 'component=shared_library build_for_tool=drmemory',
     },
-
-    'valgrind': {
-      'gn_args': 'error', # TODO(GYP): implement build_for_tool=memcheck
-      'gyp_defines': 'build_for_tool=memcheck',
-    }
   },
 }
