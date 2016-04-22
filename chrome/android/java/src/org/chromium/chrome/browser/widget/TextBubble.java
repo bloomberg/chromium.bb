@@ -32,6 +32,9 @@ public abstract class TextBubble extends PopupWindow implements OnLayoutChangeLi
 
     private int mXPosition;
     private int mYPosition;
+    private int mWidth;
+    private int mHeight;
+
     private View mAnchorView;
     private View mContentView;
 
@@ -84,15 +87,17 @@ public abstract class TextBubble extends PopupWindow implements OnLayoutChangeLi
         anchorCoordinates[0] += mAnchorView.getWidth() / 2;
         anchorCoordinates[1] += (int) (mAnchorView.getHeight() * (1.0 - mYOverlapPercentage));
 
-        int bubbleWidth = mContentView.getMeasuredWidth()
+        mWidth = mContentView.getMeasuredWidth()
                 + mCachedPaddingRect.left + mCachedPaddingRect.right;
-        mXPosition = anchorCoordinates[0] - (bubbleWidth / 2);
+        mHeight = mContentView.getMeasuredHeight()
+                + mCachedPaddingRect.top + mCachedPaddingRect.bottom;
+        mXPosition = anchorCoordinates[0] - (mWidth / 2);
         mYPosition = anchorCoordinates[1];
 
         // Make sure the bubble stays on screen.
         View rootView = mAnchorView.getRootView();
-        if (mXPosition > rootView.getWidth() - bubbleWidth) {
-            mXPosition = rootView.getWidth() - bubbleWidth;
+        if (mXPosition > rootView.getWidth() - mWidth) {
+            mXPosition = rootView.getWidth() - mWidth;
         } else if (mXPosition < 0) {
             mXPosition = 0;
         }
@@ -102,7 +107,8 @@ public abstract class TextBubble extends PopupWindow implements OnLayoutChangeLi
         ((BubbleBackgroundDrawable) getBackground()).setBubbleArrowXCenter(tipCenterXPosition);
 
         // Update the popup's dimensions.
-        setWidth(MeasureSpec.makeMeasureSpec(bubbleWidth, MeasureSpec.EXACTLY));
+        setWidth(MeasureSpec.makeMeasureSpec(mWidth, MeasureSpec.EXACTLY));
+        setHeight(MeasureSpec.makeMeasureSpec(mHeight, MeasureSpec.EXACTLY));
     }
 
     private void measureContentView() {
@@ -157,8 +163,7 @@ public abstract class TextBubble extends PopupWindow implements OnLayoutChangeLi
         if (willDisappear) {
             dismiss();
         } else if (changePosition) {
-            dismiss();
-            showAtCalculatedPosition();
+            update(mXPosition, mYPosition, mWidth, mHeight);
         }
     }
 

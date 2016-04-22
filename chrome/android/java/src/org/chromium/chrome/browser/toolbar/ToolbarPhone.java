@@ -39,6 +39,7 @@ import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -49,6 +50,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
@@ -198,6 +200,18 @@ public class ToolbarPhone extends ToolbarLayout
     private boolean mIsHomeButtonEnabled;
 
     private LayoutUpdateHost mLayoutUpdateHost;
+
+    /** Callout for the tab switcher button. */
+    private TabSwitcherCallout mTabSwitcherCallout;
+
+    /** Whether or not we've checked if the TabSwitcherCallout needs to be shown. */
+    private boolean mHasCheckedIfTabSwitcherCalloutIsNecessary;
+
+    /** Manages when the Toolbar hides and unhides. */
+    private FullscreenManager mFullscreenManager;
+
+    /** Token held when the TabSwitcherCallout is displayed to prevent the Toolbar from hiding. */
+    private int mFullscreenCalloutToken = FullscreenManager.INVALID_TOKEN;
 
     /**
      * Used to specify the visual state of the toolbar.
@@ -387,6 +401,12 @@ public class ToolbarPhone extends ToolbarLayout
         removeView(newTabButton);
     }
 
+    @Override
+    protected boolean onMenuButtonTouchEvent(View v, MotionEvent event) {
+        dismissTabSwitcherCallout();
+        return super.onMenuButtonTouchEvent(v, event);
+    }
+
     /**
      * Sets up click and key listeners once we have native library available to handle clicks.
      */
@@ -452,6 +472,7 @@ public class ToolbarPhone extends ToolbarLayout
             // and the listener is setup.
             if (mToggleTabStackButton != null && mToggleTabStackButton.isClickable()
                     && mTabSwitcherListener != null) {
+                dismissTabSwitcherCallout();
                 cancelAppMenuUpdateBadgeAnimation();
                 mTabSwitcherListener.onClick(mToggleTabStackButton);
                 RecordUserAction.record("MobileToolbarShowStackView");
@@ -1690,6 +1711,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         TransitionDrawable shadowDrawable = (TransitionDrawable) mToolbarShadow.getDrawable();
         if (hasFocus) {
+            dismissTabSwitcherCallout();
             shadowDrawable.startTransition(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         } else {
             shadowDrawable.reverseTransition(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
@@ -1800,6 +1822,13 @@ public class ToolbarPhone extends ToolbarLayout
         super.onTabOrModelChanged();
         updateNtpAnimationState();
         updateVisualsForToolbarState(mIsInTabSwitcherMode);
+
+        if (mHasCheckedIfTabSwitcherCalloutIsNecessary) {
+            dismissTabSwitcherCallout();
+        } else {
+            mHasCheckedIfTabSwitcherCalloutIsNecessary = true;
+            showTabSwitcherCalloutIfNecessary();
+        }
     }
 
     private static boolean isVisualStateValidForBrandColorTransition(VisualState state) {
@@ -2135,6 +2164,12 @@ public class ToolbarPhone extends ToolbarLayout
         mReturnButton.setOnClickListener(listener);
     }
 
+    @Override
+    public void setFullscreenManager(FullscreenManager manager) {
+        super.setFullscreenManager(manager);
+        mFullscreenManager = manager;
+    }
+
     private boolean isReturnButtonVisible() {
         String herbFlavor = FeatureUtilities.getHerbFlavor();
         if (!TextUtils.equals(ChromeSwitches.HERB_FLAVOR_BASIL, herbFlavor)
@@ -2152,6 +2187,34 @@ public class ToolbarPhone extends ToolbarLayout
         mUseLightDrawablesForTextureCapture = isIncognito()
                 || (currentPrimaryColor != 0
                 && ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor));
+    }
+
+    private void dismissTabSwitcherCallout() {
+        if (mTabSwitcherCallout != null) mTabSwitcherCallout.dismiss();
+    }
+
+    private void showTabSwitcherCalloutIfNecessary() {
+        assert mTabSwitcherCallout == null;
+        mTabSwitcherCallout =
+                TabSwitcherCallout.showIfNecessary(getContext(), mToggleTabStackButton);
+        if (mTabSwitcherCallout == null) return;
+
+        mTabSwitcherCallout.setOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                if (mFullscreenManager != null) {
+                    mFullscreenManager.hideControlsPersistent(mFullscreenCalloutToken);
+                    mFullscreenCalloutToken = FullscreenManager.INVALID_TOKEN;
+                }
+                mTabSwitcherCallout = null;
+            }
+        });
+
+        if (mFullscreenManager != null) {
+            mFullscreenCalloutToken =
+                    mFullscreenManager.showControlsPersistentAndClearOldToken(
+                            mFullscreenCalloutToken);
+        }
     }
 }
 

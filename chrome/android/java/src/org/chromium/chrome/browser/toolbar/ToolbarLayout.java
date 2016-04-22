@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -190,10 +191,15 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             @Override
             @SuppressLint("ClickableViewAccessibility")
             public boolean onTouch(View v, MotionEvent event) {
-                return mAppMenuButtonHelper.onTouch(v, event);
+                return onMenuButtonTouchEvent(v, event);
             }
         });
         mAppMenuButtonHelper = appMenuButtonHelper;
+    }
+
+    /** @return Whether or not the event is handled. */
+    protected boolean onMenuButtonTouchEvent(View v, MotionEvent event) {
+        return mAppMenuButtonHelper.onTouch(v, event);
     }
 
     /**
@@ -317,6 +323,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void handleFindToolbarStateChange(boolean showing) {
         mFindInPageToolbarShowing = showing;
     }
+
+    /**
+     * Sets the FullscreenManager, which controls when the toolbar is shown.
+     */
+    public void setFullscreenManager(FullscreenManager manager) { }
 
     /**
      * Sets the OnClickListener that will be notified when the TabSwitcher button is pressed.

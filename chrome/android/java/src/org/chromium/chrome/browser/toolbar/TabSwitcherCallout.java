@@ -27,8 +27,6 @@ public class TabSwitcherCallout extends TextBubble {
     private static final int TAB_SWITCHER_CALLOUT_DISMISS_MS = 10000;
     private static final float Y_OVERLAP_PERCENTAGE = 0.33f;
 
-    private static Boolean sIsTabSwitcherCalloutNecessary = null;
-
     /**
      * Show the TabSwitcherCallout, if necessary.
      * @param context           Context to draw resources from.
@@ -71,12 +69,8 @@ public class TabSwitcherCallout extends TextBubble {
 
     /** @return Whether or not the tab switcher button callout needs to be shown. */
     public static boolean isTabSwitcherCalloutNecessary(Context context) {
-        if (sIsTabSwitcherCalloutNecessary == null) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            sIsTabSwitcherCalloutNecessary =
-                    prefs.getBoolean(PREF_NEED_TO_SHOW_TAB_SWITCHER_CALLOUT, false);
-        }
-        return sIsTabSwitcherCalloutNecessary;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(PREF_NEED_TO_SHOW_TAB_SWITCHER_CALLOUT, false);
     }
 
     /**
@@ -85,7 +79,6 @@ public class TabSwitcherCallout extends TextBubble {
     public static void setIsTabSwitcherCalloutNecessary(Context context, boolean shouldShow) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean(PREF_NEED_TO_SHOW_TAB_SWITCHER_CALLOUT, shouldShow).apply();
-        sIsTabSwitcherCalloutNecessary = shouldShow;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
