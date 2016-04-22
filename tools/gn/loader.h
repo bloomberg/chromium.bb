@@ -129,6 +129,7 @@ class LoaderImpl : public Loader {
   // input file manager.
   void BackgroundLoadFile(const Settings* settings,
                           const SourceFile& file_name,
+                          const LocationRange& origin,
                           const ParseNode* root);
   void BackgroundLoadBuildConfig(
       Settings* settings,

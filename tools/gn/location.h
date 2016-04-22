@@ -19,6 +19,7 @@ class Location {
   int line_number() const { return line_number_; }
   int column_number() const { return column_number_; }
   int byte() const { return byte_; }
+  bool is_null() const { return *this == Location(); }
 
   bool operator==(const Location& other) const;
   bool operator!=(const Location& other) const;
@@ -45,6 +46,10 @@ class LocationRange {
 
   const Location& begin() const { return begin_; }
   const Location& end() const { return end_; }
+  bool is_null() const {
+    return begin_.is_null();  // No need to check both for the null case.
+  }
+
 
   LocationRange Union(const LocationRange& other) const;
 

@@ -211,7 +211,7 @@ void LoaderImpl::ScheduleLoadFile(const Settings* settings,
   pending_loads_++;
   if (!AsyncLoadFile(origin, settings->build_settings(), file,
                      base::Bind(&LoaderImpl::BackgroundLoadFile, this,
-                                settings, file),
+                                settings, file, origin),
                      &err)) {
     g_scheduler->FailWithError(err);
     DecrementPendingLoads();
@@ -235,6 +235,7 @@ void LoaderImpl::ScheduleLoadBuildConfig(
 
 void LoaderImpl::BackgroundLoadFile(const Settings* settings,
                                     const SourceFile& file_name,
+                                    const LocationRange& origin,
                                     const ParseNode* root) {
   if (!root) {
     main_loop_->PostTask(FROM_HERE,
@@ -260,11 +261,15 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
 
   Err err;
   root->Execute(&our_scope, &err);
-  if (err.has_error())
-    g_scheduler->FailWithError(err);
+  if (!err.has_error())
+    our_scope.CheckForUnusedVars(&err);
 
-  if (!our_scope.CheckForUnusedVars(&err))
+  if (err.has_error()) {
+    if (!origin.is_null())
+      err.AppendSubErr(Err(origin, "which caused the file to be included."));
     g_scheduler->FailWithError(err);
+  }
+
 
   // Pass all of the items that were defined off to the builder.
   for (auto& item : collected_items) {
