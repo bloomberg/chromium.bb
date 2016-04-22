@@ -49470,6 +49470,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteEngagementService.EngagementPercentageForHTTPS">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The percentage of total site engagement accumulated by this profile for
+    HTTPS URLs as a proportion of all engagement for HTTPS and HTTP URLs.
+    Recorded at startup per non-incognito profile, and then upon the first
+    engagement-increasing event every hour thereafter.
+  </summary>
+</histogram>
+
 <histogram name="SiteEngagementService.EngagementScore">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>

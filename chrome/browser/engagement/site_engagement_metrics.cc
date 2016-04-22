@@ -30,6 +30,9 @@ const char SiteEngagementMetrics::kMeanEngagementHistogram[] =
 const char SiteEngagementMetrics::kMedianEngagementHistogram[] =
     "SiteEngagementService.MedianEngagement";
 
+const char SiteEngagementMetrics::kEngagementPercentageForHTTPSHistogram[] =
+    "SiteEngagementService.EngagementPercentageForHTTPS";
+
 const char SiteEngagementMetrics::kEngagementScoreHistogram[] =
     "SiteEngagementService.EngagementScore";
 
@@ -84,18 +87,27 @@ void SiteEngagementMetrics::RecordEngagementScores(
   if (score_map.size() == 0)
     return;
 
+  // Total up all HTTP and HTTPS engagement so we can log the percentage of
+  // engagement to HTTPS origins.
+  double total_http_https_engagement = 0;
+  double https_engagement = 0;
   std::map<int, int> score_buckets;
   for (size_t i = 0; i < arraysize(kEngagementBucketHistogramBuckets); ++i)
     score_buckets[kEngagementBucketHistogramBuckets[i]] = 0;
 
   for (const auto& value : score_map) {
-    UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, value.second);
-    if (value.first.SchemeIs(url::kHttpsScheme))
-      UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTPS, value.second);
-    else if (value.first.SchemeIs(url::kHttpScheme))
-      UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTP, value.second);
+    double score = value.second;
+    UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogram, score);
+    if (value.first.SchemeIs(url::kHttpsScheme)) {
+      UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTPS, score);
+      https_engagement += score;
+      total_http_https_engagement += score;
+    } else if (value.first.SchemeIs(url::kHttpScheme)) {
+      UMA_HISTOGRAM_COUNTS_100(kEngagementScoreHistogramHTTP, score);
+      total_http_https_engagement += score;
+    }
 
-    auto bucket = score_buckets.lower_bound(value.second);
+    auto bucket = score_buckets.lower_bound(score);
     if (bucket == score_buckets.end())
       continue;
 
@@ -111,6 +123,11 @@ void SiteEngagementMetrics::RecordEngagementScores(
         base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(b.second * 100 / score_map.size());
   }
+
+  double percentage = 0;
+  if (total_http_https_engagement > 0)
+    percentage = (https_engagement / total_http_https_engagement) * 100;
+  UMA_HISTOGRAM_PERCENTAGE(kEngagementPercentageForHTTPSHistogram, percentage);
 }
 
 void SiteEngagementMetrics::RecordOriginsWithMaxEngagement(int total_origins) {
