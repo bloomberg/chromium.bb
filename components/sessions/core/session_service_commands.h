@@ -24,60 +24,55 @@ class SessionCommand;
 // The following functions create sequentialized change commands which are
 // used to reconstruct the current/previous session state.
 // It is up to the caller to delete the returned SessionCommand* object.
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetSelectedTabInWindowCommand(
-    const SessionID& window_id,
-    int index);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetTabWindowCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetSelectedTabInWindowCommand(const SessionID& window_id, int index);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabWindowCommand(
     const SessionID& window_id,
     const SessionID& tab_id);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetWindowBoundsCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowBoundsCommand(
     const SessionID& window_id,
     const gfx::Rect& bounds,
     ui::WindowShowState show_state);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetTabIndexInWindowCommand(
-    const SessionID& tab_id,
-    int new_index);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateTabClosedCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetTabIndexInWindowCommand(const SessionID& tab_id, int new_index);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateTabClosedCommand(
     SessionID::id_type tab_id);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateWindowClosedCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateWindowClosedCommand(
     SessionID::id_type tab_id);
-SESSIONS_EXPORT scoped_ptr<SessionCommand>
-CreateSetSelectedNavigationIndexCommand(
-    const SessionID& tab_id,
-    int index);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetWindowTypeCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetSelectedNavigationIndexCommand(const SessionID& tab_id, int index);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
     const SessionID& window_id,
     SessionWindow::WindowType type);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreatePinnedStateCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreatePinnedStateCommand(
     const SessionID& tab_id,
     bool is_pinned);
-SESSIONS_EXPORT scoped_ptr<SessionCommand>
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
 CreateSessionStorageAssociatedCommand(
     const SessionID& tab_id,
     const std::string& session_storage_persistent_id);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetActiveWindowCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetActiveWindowCommand(
     const SessionID& window_id);
-SESSIONS_EXPORT scoped_ptr<SessionCommand>
-CreateTabNavigationPathPrunedFromBackCommand(
-    const SessionID& tab_id,
-    int count);
-SESSIONS_EXPORT scoped_ptr<SessionCommand>
-CreateTabNavigationPathPrunedFromFrontCommand(
-    const SessionID& tab_id,
-    int count);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateTabNavigationPathPrunedFromBackCommand(const SessionID& tab_id,
+                                             int count);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateTabNavigationPathPrunedFromFrontCommand(const SessionID& tab_id,
+                                              int count);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateUpdateTabNavigationCommand(
     const SessionID& tab_id,
     const sessions::SerializedNavigationEntry& navigation);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
-    const SessionID& tab_id,
-    const std::string& extension_id);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
-    const SessionID& tab_id,
-    const std::string& user_agent_override);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetTabExtensionAppIDCommand(const SessionID& tab_id,
+                                  const std::string& extension_id);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetTabUserAgentOverrideCommand(const SessionID& tab_id,
+                                     const std::string& user_agent_override);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     const SessionID& window_id,
     const std::string& app_name);
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateLastActiveTimeCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateLastActiveTimeCommand(
     const SessionID& tab_id,
     base::TimeTicks last_active_time);
 
@@ -87,7 +82,7 @@ SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateLastActiveTimeCommand(
 // returned.
 SESSIONS_EXPORT bool ReplacePendingCommand(
     BaseSessionService* base_session_service,
-    scoped_ptr<SessionCommand>* command);
+    std::unique_ptr<SessionCommand>* command);
 
 // Returns true if provided |command| either closes a window or a tab.
 SESSIONS_EXPORT bool IsClosingCommand(SessionCommand* command);

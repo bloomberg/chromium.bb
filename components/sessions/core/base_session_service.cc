@@ -76,7 +76,8 @@ void BaseSessionService::DeleteLastSession() {
       base::Bind(&SessionBackend::DeleteLastSession, backend_));
 }
 
-void BaseSessionService::ScheduleCommand(scoped_ptr<SessionCommand> command) {
+void BaseSessionService::ScheduleCommand(
+    std::unique_ptr<SessionCommand> command) {
   DCHECK(command);
   commands_since_reset_++;
   pending_commands_.push_back(command.release());
@@ -84,7 +85,7 @@ void BaseSessionService::ScheduleCommand(scoped_ptr<SessionCommand> command) {
 }
 
 void BaseSessionService::AppendRebuildCommand(
-    scoped_ptr<SessionCommand> command) {
+    std::unique_ptr<SessionCommand> command) {
   DCHECK(command);
   pending_commands_.push_back(command.release());
 }
@@ -98,8 +99,9 @@ void BaseSessionService::EraseCommand(SessionCommand* old_command) {
   pending_commands_.erase(it);
 }
 
-void BaseSessionService::SwapCommand(SessionCommand* old_command,
-                                     scoped_ptr<SessionCommand> new_command) {
+void BaseSessionService::SwapCommand(
+    SessionCommand* old_command,
+    std::unique_ptr<SessionCommand> new_command) {
   ScopedVector<SessionCommand>::iterator it =
       std::find(pending_commands_.begin(),
                 pending_commands_.end(),

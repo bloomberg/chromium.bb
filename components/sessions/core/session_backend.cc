@@ -80,7 +80,7 @@ class SessionFileReader {
   std::string buffer_;
 
   // The file.
-  scoped_ptr<base::File> file_;
+  std::unique_ptr<base::File> file_;
 
   // Position in buffer_ of the data.
   size_t buffer_position_;
@@ -374,10 +374,10 @@ void SessionBackend::ResetFile() {
 
 base::File* SessionBackend::OpenAndWriteHeader(const base::FilePath& path) {
   DCHECK(!path.empty());
-  scoped_ptr<base::File> file(new base::File(
-      path,
-      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
-      base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_EXCLUSIVE_READ));
+  std::unique_ptr<base::File> file(new base::File(
+      path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
+                base::File::FLAG_EXCLUSIVE_WRITE |
+                base::File::FLAG_EXCLUSIVE_READ));
   if (!file->IsValid())
     return NULL;
   FileHeader header;

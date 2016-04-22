@@ -16,8 +16,8 @@ namespace sessions {
 namespace {
 // Creates a NavigationItem from the test_data constants in
 // serialized_navigation_entry_test_helper.h.
-scoped_ptr<web::NavigationItem> MakeNavigationItemForTest() {
-  scoped_ptr<web::NavigationItem> navigation_item(
+std::unique_ptr<web::NavigationItem> MakeNavigationItemForTest() {
+  std::unique_ptr<web::NavigationItem> navigation_item(
       web::NavigationItem::Create());
   navigation_item->SetReferrer(web::Referrer(
       test_data::kReferrerURL,
@@ -37,7 +37,7 @@ scoped_ptr<web::NavigationItem> MakeNavigationItemForTest() {
 // Create a SerializedNavigationEntry from a NavigationItem.  All its fields
 // should match the NavigationItem's.
 TEST(IOSSerializedNavigationBuilderTest, FromNavigationItem) {
-  const scoped_ptr<web::NavigationItem> navigation_item(
+  const std::unique_ptr<web::NavigationItem> navigation_item(
       MakeNavigationItemForTest());
 
   const SerializedNavigationEntry& navigation =
@@ -75,14 +75,14 @@ TEST(IOSSerializedNavigationBuilderTest, FromNavigationItem) {
 // except for fields that aren't preserved, which should be set to
 // expected values.
 TEST(IOSSerializedNavigationBuilderTest, ToNavigationItem) {
-  const scoped_ptr<web::NavigationItem> old_navigation_item(
+  const std::unique_ptr<web::NavigationItem> old_navigation_item(
       MakeNavigationItemForTest());
 
   const SerializedNavigationEntry& navigation =
       IOSSerializedNavigationBuilder::FromNavigationItem(
           test_data::kIndex, *old_navigation_item);
 
-  const scoped_ptr<web::NavigationItem> new_navigation_item(
+  const std::unique_ptr<web::NavigationItem> new_navigation_item(
       IOSSerializedNavigationBuilder::ToNavigationItem(&navigation));
 
   EXPECT_EQ(old_navigation_item->GetURL(),

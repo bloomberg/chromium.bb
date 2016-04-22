@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #include <cstddef>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

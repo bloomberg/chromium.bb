@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/sessions/content/content_live_tab.h"
+
+#include "base/memory/ptr_util.h"
 #include "components/sessions/content/content_platform_specific_tab_data.h"
 
 namespace {
@@ -54,9 +56,9 @@ int ContentLiveTab::GetEntryCount() {
   return navigation_controller().GetEntryCount();
 }
 
-scoped_ptr<sessions::PlatformSpecificTabData>
+std::unique_ptr<sessions::PlatformSpecificTabData>
 ContentLiveTab::GetPlatformSpecificTabData() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new sessions::ContentPlatformSpecificTabData(web_contents()));
 }
 

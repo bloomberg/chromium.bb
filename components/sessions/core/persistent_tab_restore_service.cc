@@ -161,19 +161,20 @@ class PersistentTabRestoreService::Delegate
   void ScheduleCommandsForTab(const Tab& tab, int selected_index);
 
   // Creates a window close command.
-  static scoped_ptr<SessionCommand> CreateWindowCommand(SessionID::id_type id,
-                                                        int selected_tab_index,
-                                                        int num_tabs,
-                                                        base::Time timestamp);
+  static std::unique_ptr<SessionCommand> CreateWindowCommand(
+      SessionID::id_type id,
+      int selected_tab_index,
+      int num_tabs,
+      base::Time timestamp);
 
   // Creates a tab close command.
-  static scoped_ptr<SessionCommand> CreateSelectedNavigationInTabCommand(
+  static std::unique_ptr<SessionCommand> CreateSelectedNavigationInTabCommand(
       SessionID::id_type tab_id,
       int32_t index,
       base::Time timestamp);
 
   // Creates a restore command.
-  static scoped_ptr<SessionCommand> CreateRestoredEntryCommand(
+  static std::unique_ptr<SessionCommand> CreateRestoredEntryCommand(
       SessionID::id_type entry_id);
 
   // Returns the index to persist as the selected index. This is the same as
@@ -223,7 +224,7 @@ class PersistentTabRestoreService::Delegate
   // The associated client.
   TabRestoreServiceClient* client_;
 
-  scoped_ptr<BaseSessionService> base_session_service_;
+  std::unique_ptr<BaseSessionService> base_session_service_;
 
   TabRestoreServiceHelper* tab_restore_service_helper_;
 
@@ -381,7 +382,7 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromWindows(
     std::vector<SessionWindow*>* windows,
     std::vector<Entry*>* entries) {
   for (size_t i = 0; i < windows->size(); ++i) {
-    scoped_ptr<Window> window(new Window());
+    std::unique_ptr<Window> window(new Window());
     if (ConvertSessionWindowToWindow((*windows)[i], window.get()))
       entries->push_back(window.release());
   }
@@ -447,7 +448,7 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 
   if (tab.pinned) {
     PinnedStatePayload payload = true;
-    scoped_ptr<SessionCommand> command(
+    std::unique_ptr<SessionCommand> command(
         new SessionCommand(kCommandPinnedState, sizeof(payload)));
     memcpy(command->contents(), &payload, sizeof(payload));
     base_session_service_->ScheduleCommand(std::move(command));
@@ -476,7 +477,7 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 }
 
 // static
-scoped_ptr<SessionCommand>
+std::unique_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateWindowCommand(
     SessionID::id_type id,
     int selected_tab_index,
@@ -491,14 +492,14 @@ PersistentTabRestoreService::Delegate::CreateWindowCommand(
   payload.num_tabs = num_tabs;
   payload.timestamp = timestamp.ToInternalValue();
 
-  scoped_ptr<SessionCommand> command(
+  std::unique_ptr<SessionCommand> command(
       new SessionCommand(kCommandWindow, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
 
 // static
-scoped_ptr<SessionCommand>
+std::unique_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
     SessionID::id_type tab_id,
     int32_t index,
@@ -507,18 +508,18 @@ PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
   payload.id = tab_id;
   payload.index = index;
   payload.timestamp = timestamp.ToInternalValue();
-  scoped_ptr<SessionCommand> command(
+  std::unique_ptr<SessionCommand> command(
       new SessionCommand(kCommandSelectedNavigationInTab, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
 
 // static
-scoped_ptr<SessionCommand>
+std::unique_ptr<SessionCommand>
 PersistentTabRestoreService::Delegate::CreateRestoredEntryCommand(
     SessionID::id_type entry_id) {
   RestoredEntryPayload payload = entry_id;
-  scoped_ptr<SessionCommand> command(
+  std::unique_ptr<SessionCommand> command(
       new SessionCommand(kCommandRestoredEntry, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
@@ -906,7 +907,7 @@ void PersistentTabRestoreService::Delegate::RemoveEntryByID(
 // PersistentTabRestoreService -------------------------------------------------
 
 PersistentTabRestoreService::PersistentTabRestoreService(
-    scoped_ptr<TabRestoreServiceClient> client,
+    std::unique_ptr<TabRestoreServiceClient> client,
     TimeFactory* time_factory)
     : client_(std::move(client)),
       delegate_(new Delegate(client_.get())),

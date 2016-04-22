@@ -44,14 +44,14 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
 }
 
 // static
-scoped_ptr<content::NavigationEntry>
+std::unique_ptr<content::NavigationEntry>
 ContentSerializedNavigationBuilder::ToNavigationEntry(
     const SerializedNavigationEntry* navigation,
     int page_id,
     content::BrowserContext* browser_context) {
   blink::WebReferrerPolicy policy =
       static_cast<blink::WebReferrerPolicy>(navigation->referrer_policy_);
-  scoped_ptr<content::NavigationEntry> entry(
+  std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(
           navigation->virtual_url_,
           content::Referrer::SanitizeForRequest(
@@ -85,12 +85,12 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
 }
 
 // static
-std::vector<scoped_ptr<content::NavigationEntry>>
+std::vector<std::unique_ptr<content::NavigationEntry>>
 ContentSerializedNavigationBuilder::ToNavigationEntries(
     const std::vector<SerializedNavigationEntry>& navigations,
     content::BrowserContext* browser_context) {
   int page_id = 0;
-  std::vector<scoped_ptr<content::NavigationEntry>> entries;
+  std::vector<std::unique_ptr<content::NavigationEntry>> entries;
   entries.reserve(navigations.size());
   for (const auto& navigation : navigations) {
     entries.push_back(ToNavigationEntry(&navigation, page_id, browser_context));

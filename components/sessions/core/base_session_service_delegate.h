@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_
 #define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
-
 namespace base {
 class SequencedWorkerPool;
 }

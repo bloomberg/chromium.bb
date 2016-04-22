@@ -102,7 +102,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     std::string extension_app_id;
 
     // The associated client data.
-    scoped_ptr<PlatformSpecificTabData> platform_data;
+    std::unique_ptr<PlatformSpecificTabData> platform_data;
 
     // The user agent override used for the tab's navigations (if applicable).
     std::string user_agent_override;
@@ -197,7 +197,7 @@ class SESSIONS_EXPORT PlatformSpecificTabData {
  private:
   friend TabRestoreService::Tab;
 
-  virtual scoped_ptr<PlatformSpecificTabData> Clone() = 0;
+  virtual std::unique_ptr<PlatformSpecificTabData> Clone() = 0;
 };
 
 }  // namespace sessions

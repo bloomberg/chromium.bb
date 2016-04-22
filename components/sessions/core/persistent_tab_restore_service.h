@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
 #define COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_client.h"
@@ -23,7 +23,7 @@ namespace sessions {
 class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
  public:
   // Does not take ownership of |time_factory|.
-  PersistentTabRestoreService(scoped_ptr<TabRestoreServiceClient> client,
+  PersistentTabRestoreService(std::unique_ptr<TabRestoreServiceClient> client,
                               TimeFactory* time_factory);
 
   ~PersistentTabRestoreService() override;
@@ -57,8 +57,8 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   Entries* mutable_entries();
   void PruneEntries();
 
-  scoped_ptr<TabRestoreServiceClient> client_;
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<TabRestoreServiceClient> client_;
+  std::unique_ptr<Delegate> delegate_;
   TabRestoreServiceHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentTabRestoreService);

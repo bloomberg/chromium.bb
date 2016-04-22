@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_COMMANDS_H_
 #define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_COMMANDS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
 
@@ -19,26 +19,27 @@ class SerializedNavigationEntry;
 // PersistentTabRestoreService.
 
 // Creates a SessionCommand that represents a navigation.
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const sessions::SerializedNavigationEntry& navigation);
 
 // Creates a SessionCommand that represents marking a tab as an application.
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
-    SessionID::id_type command_id,
-    SessionID::id_type tab_id,
-    const std::string& extension_id);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetTabExtensionAppIDCommand(SessionID::id_type command_id,
+                                  SessionID::id_type tab_id,
+                                  const std::string& extension_id);
 
 // Creates a SessionCommand that containing user agent override used by a
 // tab's navigations.
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
-    SessionID::id_type command_id,
-    SessionID::id_type tab_id,
-    const std::string& user_agent_override);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateSetTabUserAgentOverrideCommand(SessionID::id_type command_id,
+                                     SessionID::id_type tab_id,
+                                     const std::string& user_agent_override);
 
 // Creates a SessionCommand stores a browser window's app name.
-SESSIONS_EXPORT scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
+SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     SessionID::id_type command_id,
     SessionID::id_type window_id,
     const std::string& app_name);

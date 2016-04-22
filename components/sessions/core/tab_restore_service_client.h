@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_CLIENT_H_
 #define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"

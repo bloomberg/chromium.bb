@@ -31,10 +31,10 @@ IOSSerializedNavigationBuilder::FromNavigationItem(
 }
 
 // static
-scoped_ptr<web::NavigationItem>
+std::unique_ptr<web::NavigationItem>
 IOSSerializedNavigationBuilder::ToNavigationItem(
     const SerializedNavigationEntry* navigation) {
-  scoped_ptr<web::NavigationItem> item(web::NavigationItem::Create());
+  std::unique_ptr<web::NavigationItem> item(web::NavigationItem::Create());
 
   item->SetURL(navigation->virtual_url_);
   item->SetReferrer(web::Referrer(

@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/core/base_session_service.h"
 #include "components/sessions/core/session_command.h"
@@ -131,7 +131,7 @@ class SESSIONS_EXPORT SessionBackend
   bool last_session_valid_;
 
   // Handle to the target file.
-  scoped_ptr<base::File> current_session_file_;
+  std::unique_ptr<base::File> current_session_file_;
 
   // Whether we've inited. Remember, the constructor is run on the
   // Main thread, all others on the IO thread, hence lazy initialization.

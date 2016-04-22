@@ -12,7 +12,7 @@
 namespace sessions {
 
 InMemoryTabRestoreService::InMemoryTabRestoreService(
-    scoped_ptr<TabRestoreServiceClient> client,
+    std::unique_ptr<TabRestoreServiceClient> client,
     TabRestoreService::TimeFactory* time_factory)
     : client_(std::move(client)),
       helper_(this, NULL, client_.get(), time_factory) {}

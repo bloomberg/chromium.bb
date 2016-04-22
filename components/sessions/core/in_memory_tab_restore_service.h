@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SESSIONS_CORE_IN_MEMORY_TAB_RESTORE_SERVICE_H_
 #define COMPONENTS_SESSIONS_CORE_IN_MEMORY_TAB_RESTORE_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_client.h"
@@ -27,7 +27,7 @@ class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
   // Creates a new TabRestoreService and provides an object that provides the
   // current time. The TabRestoreService does not take ownership of
   // |time_factory|.
-  InMemoryTabRestoreService(scoped_ptr<TabRestoreServiceClient> client,
+  InMemoryTabRestoreService(std::unique_ptr<TabRestoreServiceClient> client,
                             TimeFactory* time_factory);
 
   ~InMemoryTabRestoreService() override;
@@ -53,7 +53,7 @@ class SESSIONS_EXPORT InMemoryTabRestoreService : public TabRestoreService {
   void Shutdown() override;
 
  private:
-  scoped_ptr<TabRestoreServiceClient> client_;
+  std::unique_ptr<TabRestoreServiceClient> client_;
   TabRestoreServiceHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryTabRestoreService);

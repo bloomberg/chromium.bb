@@ -33,7 +33,7 @@ class SESSIONS_EXPORT ContentPlatformSpecificTabData
 
  private:
   // PlatformSpecificTabData:
-  scoped_ptr<PlatformSpecificTabData> Clone() override;
+  std::unique_ptr<PlatformSpecificTabData> Clone() override;
 
   scoped_refptr<content::SessionStorageNamespace> session_storage_namespace_;
 };

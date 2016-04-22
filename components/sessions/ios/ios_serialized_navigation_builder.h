@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SESSIONS_IOS_IOS_SERIALIZED_NAVIGATION_BUILDER_H_
 #define COMPONENTS_SESSIONS_IOS_IOS_SERIALIZED_NAVIGATION_BUILDER_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace web {
@@ -29,7 +29,7 @@ class IOSSerializedNavigationBuilder {
   // Convert the given SerializedNavigationEntry into a NavigationItem with the
   // given page ID.  The NavigationItem will have a transition type of
   // PAGE_TRANSITION_RELOAD and a new unique ID.
-  static scoped_ptr<web::NavigationItem> ToNavigationItem(
+  static std::unique_ptr<web::NavigationItem> ToNavigationItem(
       const SerializedNavigationEntry* navigation);
 
   // Converts a set of SerializedNavigationEntrys into a list of

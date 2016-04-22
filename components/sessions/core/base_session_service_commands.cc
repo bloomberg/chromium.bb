@@ -31,7 +31,7 @@ void WriteStringToPickle(base::Pickle& pickle,
 
 }  // namespace
 
-scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
+std::unique_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const sessions::SerializedNavigationEntry& navigation) {
@@ -43,10 +43,11 @@ scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
   static const size_t max_state_size =
       std::numeric_limits<SessionCommand::size_type>::max() - 1024;
   navigation.WriteToPickle(max_state_size, &pickle);
-  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
+  return std::unique_ptr<SessionCommand>(
+      new SessionCommand(command_id, pickle));
 }
 
-scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
+std::unique_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const std::string& extension_id) {
@@ -62,10 +63,11 @@ scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, extension_id);
 
-  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
+  return std::unique_ptr<SessionCommand>(
+      new SessionCommand(command_id, pickle));
 }
 
-scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
+std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
     SessionID::id_type command_id,
     SessionID::id_type tab_id,
     const std::string& user_agent_override) {
@@ -83,10 +85,11 @@ scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
   WriteStringToPickle(pickle, &bytes_written, max_user_agent_size,
       user_agent_override);
 
-  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
+  return std::unique_ptr<SessionCommand>(
+      new SessionCommand(command_id, pickle));
 }
 
-scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
+std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     SessionID::id_type command_id,
     SessionID::id_type window_id,
     const std::string& app_name) {
@@ -102,14 +105,15 @@ scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, app_name);
 
-  return scoped_ptr<SessionCommand>(new SessionCommand(command_id, pickle));
+  return std::unique_ptr<SessionCommand>(
+      new SessionCommand(command_id, pickle));
 }
 
 bool RestoreUpdateTabNavigationCommand(
     const SessionCommand& command,
     sessions::SerializedNavigationEntry* navigation,
     SessionID::id_type* tab_id) {
-  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
+  std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
   base::PickleIterator iterator(*pickle);
@@ -119,7 +123,7 @@ bool RestoreUpdateTabNavigationCommand(
 bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
                                         SessionID::id_type* tab_id,
                                         std::string* extension_app_id) {
-  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
+  std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
@@ -130,7 +134,7 @@ bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
 bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
                                            SessionID::id_type* tab_id,
                                            std::string* user_agent_override) {
-  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
+  std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
@@ -141,7 +145,7 @@ bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
 bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
                                     SessionID::id_type* window_id,
                                     std::string* app_name) {
-  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
+  std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 

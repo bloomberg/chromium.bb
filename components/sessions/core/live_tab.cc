@@ -8,7 +8,7 @@ namespace sessions {
 
 LiveTab::~LiveTab() {}
 
-scoped_ptr<PlatformSpecificTabData> LiveTab::GetPlatformSpecificTabData() {
+std::unique_ptr<PlatformSpecificTabData> LiveTab::GetPlatformSpecificTabData() {
   return nullptr;
 }
 

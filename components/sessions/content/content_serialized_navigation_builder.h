@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_SESSIONS_CONTENT_CONTENT_SERIALIZED_NAVIGATION_BUILDER_H_
 #define COMPONENTS_SESSIONS_CONTENT_CONTENT_SERIALIZED_NAVIGATION_BUILDER_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/sessions/core/sessions_export.h"
 
 namespace content {
@@ -31,16 +31,16 @@ class SESSIONS_EXPORT ContentSerializedNavigationBuilder {
   // Convert the given SerializedNavigationEntry into a NavigationEntry with the
   // given page ID and context.  The NavigationEntry will have a transition type
   // of PAGE_TRANSITION_RELOAD and a new unique ID.
-  static scoped_ptr<content::NavigationEntry> ToNavigationEntry(
+  static std::unique_ptr<content::NavigationEntry> ToNavigationEntry(
       const SerializedNavigationEntry* navigation,
       int page_id,
       content::BrowserContext* browser_context);
 
   // Converts a set of SerializedNavigationEntrys into a list of
   // NavigationEntrys with sequential page IDs and the given context.
-  static std::vector<scoped_ptr<content::NavigationEntry>> ToNavigationEntries(
-      const std::vector<SerializedNavigationEntry>& navigations,
-      content::BrowserContext* browser_context);
+  static std::vector<std::unique_ptr<content::NavigationEntry>>
+  ToNavigationEntries(const std::vector<SerializedNavigationEntry>& navigations,
+                      content::BrowserContext* browser_context);
 };
 
 }  // namespace sessions

@@ -17,8 +17,8 @@ namespace sessions {
 namespace {
 // Create a NavigationEntry from the test_data constants in
 // serialized_navigation_entry_test_helper.h.
-scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
-  scoped_ptr<content::NavigationEntry> navigation_entry(
+std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
+  std::unique_ptr<content::NavigationEntry> navigation_entry(
       content::NavigationEntry::Create());
   navigation_entry->SetReferrer(content::Referrer(
       test_data::kReferrerURL,
@@ -52,7 +52,7 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
 // Create a SerializedNavigationEntry from a NavigationEntry.  All its fields
 // should match the NavigationEntry's.
 TEST(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
-  const scoped_ptr<content::NavigationEntry> navigation_entry(
+  const std::unique_ptr<content::NavigationEntry> navigation_entry(
       MakeNavigationEntryForTest());
 
   const SerializedNavigationEntry& navigation =
@@ -87,14 +87,14 @@ TEST(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
 // except for fields that aren't preserved, which should be set to
 // expected values.
 TEST(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
-  const scoped_ptr<content::NavigationEntry> old_navigation_entry(
+  const std::unique_ptr<content::NavigationEntry> old_navigation_entry(
       MakeNavigationEntryForTest());
 
   const SerializedNavigationEntry& navigation =
       ContentSerializedNavigationBuilder::FromNavigationEntry(
           test_data::kIndex, *old_navigation_entry);
 
-  const scoped_ptr<content::NavigationEntry> new_navigation_entry(
+  const std::unique_ptr<content::NavigationEntry> new_navigation_entry(
       ContentSerializedNavigationBuilder::ToNavigationEntry(
           &navigation, test_data::kPageID, NULL));
 

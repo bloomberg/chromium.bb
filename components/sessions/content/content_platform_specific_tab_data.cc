@@ -4,6 +4,7 @@
 
 #include "components/sessions/content/content_platform_specific_tab_data.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 
@@ -20,10 +21,11 @@ ContentPlatformSpecificTabData::ContentPlatformSpecificTabData() {}
 
 ContentPlatformSpecificTabData::~ContentPlatformSpecificTabData() {}
 
-scoped_ptr<PlatformSpecificTabData> ContentPlatformSpecificTabData::Clone() {
+std::unique_ptr<PlatformSpecificTabData>
+ContentPlatformSpecificTabData::Clone() {
   ContentPlatformSpecificTabData* clone = new ContentPlatformSpecificTabData();
   clone->session_storage_namespace_ = session_storage_namespace_;
-  return make_scoped_ptr(clone);
+  return base::WrapUnique(clone);
 }
 
 }  // namespace sessions
