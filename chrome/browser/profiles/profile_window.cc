@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 
 #include <stddef.h>
+
 #include <string>
 #include <vector>
 
@@ -18,6 +19,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -143,12 +146,13 @@ void OpenBrowserWindowForProfile(
   // The signin bit will still be set if the profile is being unlocked and the
   // browser window for it is opening. As part of this unlock process, unblock
   // all the extensions.
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  int index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  if (!profile->IsGuestSession() &&
-      cache.ProfileIsSigninRequiredAtIndex(index)) {
-    UnblockExtensions(profile);
+  if (!profile->IsGuestSession()) {
+    ProfileAttributesEntry* entry;
+    if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
+            GetProfileAttributesWithPath(profile->GetPath(), &entry) &&
+        entry->IsSigninRequired()) {
+      UnblockExtensions(profile);
+    }
   }
 #endif  // defined(ENABLE_EXTENSIONS)
 
@@ -251,7 +255,7 @@ base::FilePath GetPathOfProfileWithEmail(ProfileManager* profile_manager,
                                          const std::string& email) {
   base::string16 profile_email = base::UTF8ToUTF16(email);
   std::vector<ProfileAttributesEntry*> entries =
-      profile_manager->GetProfileInfoCache().GetAllProfilesAttributes();
+      profile_manager->GetProfileAttributesStorage().GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     if (entry->GetUserName() == profile_email)
       return entry->GetPath();
@@ -315,12 +319,12 @@ bool HasProfileSwitchTargets(Profile* profile) {
 
 void CreateAndSwitchToNewProfile(ProfileManager::CreateCallback callback,
                                  ProfileMetrics::ProfileAdd metric) {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
 
   int placeholder_avatar_index = profiles::GetPlaceholderAvatarIndex();
   ProfileManager::CreateMultiProfileAsync(
-      cache.ChooseNameForNewProfile(placeholder_avatar_index),
+      storage.ChooseNameForNewProfile(placeholder_avatar_index),
       profiles::GetDefaultAvatarIconUrl(placeholder_avatar_index),
       base::Bind(&OpenBrowserWindowForProfile, callback, true, true),
       std::string());
@@ -346,10 +350,11 @@ void CloseGuestProfileWindows() {
 
 void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache* cache = &profile_manager->GetProfileInfoCache();
-
-  cache->SetProfileSigninRequiredAtIndex(
-      cache->GetIndexOfProfileWithPath(profile_path), true);
+  ProfileAttributesEntry* entry;
+  bool has_entry = profile_manager->GetProfileAttributesStorage().
+                       GetProfileAttributesWithPath(profile_path, &entry);
+  DCHECK(has_entry);
+  entry->SetIsSigninRequired(true);
 
 #if defined(ENABLE_EXTENSIONS)
   // Profile guaranteed to exist for it to have been locked.
@@ -396,10 +401,12 @@ bool IsLockAvailable(Profile* profile) {
     return false;
   }
 
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-    if (cache.ProfileIsSupervisedAtIndex(i))
+  // Lock only when there is at least one supervised user on the machine.
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
+    if (entry->IsSupervised())
       return true;
   }
   return false;

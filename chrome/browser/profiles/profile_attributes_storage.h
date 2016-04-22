@@ -61,6 +61,9 @@ class ProfileAttributesStorage {
   // Returns a unique name that can be assigned to a newly created profile.
   virtual base::string16 ChooseNameForNewProfile(size_t icon_index) const = 0;
 
+  // Determines whether |name| is one of the default assigned names.
+  virtual bool IsDefaultProfileName(const base::string16& name) const = 0;
+
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
   // set of default icons.
