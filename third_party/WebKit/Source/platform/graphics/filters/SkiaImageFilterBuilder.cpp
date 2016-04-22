@@ -36,7 +36,9 @@
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
 namespace blink {
@@ -182,9 +184,19 @@ sk_sp<SkImageFilter> buildTransform(const AffineTransform& transform, sk_sp<SkIm
 
 sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection, sk_sp<SkImageFilter> input)
 {
-    sk_sp<SkImageFilter> maskedInput = input;
-    // TODO(jbroman): If a mask image is provided, mask!
-
+    sk_sp<SkImageFilter> maskedInput;
+    if (SkPicture* maskPicture = reflection.mask()) {
+        // SkXfermodeImageFilter can choose an excessively large size if the
+        // mask is smaller than the filtered contents (due to overflow).
+        // http://skbug.com/5210
+        SkImageFilter::CropRect cropRect(maskPicture->cullRect());
+        maskedInput = SkXfermodeImageFilter::Make(
+            SkXfermode::Make(SkXfermode::kSrcIn_Mode),
+            SkPictureImageFilter::Make(sk_ref_sp(maskPicture)),
+            input, &cropRect);
+    } else {
+        maskedInput = input;
+    }
     sk_sp<SkImageFilter> flipImageFilter = SkImageFilter::MakeMatrixFilter(
         reflection.reflectionMatrix(), kLow_SkFilterQuality, std::move(maskedInput));
     return SkXfermodeImageFilter::Make(nullptr, std::move(flipImageFilter), std::move(input), nullptr);

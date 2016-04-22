@@ -2018,6 +2018,8 @@
             'paint/BoxDecorationData.h',
             'paint/BoxPainter.cpp',
             'paint/BoxPainter.h',
+            'paint/BoxReflectionUtils.cpp',
+            'paint/BoxReflectionUtils.h',
             'paint/ClipScope.cpp',
             'paint/ClipScope.h',
             'paint/DetailsMarkerPainter.cpp',

@@ -72,6 +72,7 @@
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/BoxReflectionUtils.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/PaintTiming.h"
 #include "platform/LengthFunctions.h"
@@ -2652,39 +2653,7 @@ FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style)
 {
     FilterOperations filterOperations = style.filter();
     if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && layoutObject()->hasReflection() && layoutObject()->isBox()) {
-        // TODO(jbroman): Incorporate the mask image.
-        const auto* reflectStyle = style.boxReflect();
-        FloatRect frameRect(toLayoutBox(layoutObject())->frameRect());
-        BoxReflection::ReflectionDirection direction = BoxReflection::VerticalReflection;
-        float offset = 0;
-        switch (reflectStyle->direction()) {
-        case ReflectionAbove:
-            direction = BoxReflection::VerticalReflection;
-            offset = -floatValueForLength(reflectStyle->offset(), frameRect.height());
-            break;
-        case ReflectionBelow:
-            direction = BoxReflection::VerticalReflection;
-            offset = 2 * frameRect.height() + floatValueForLength(reflectStyle->offset(), frameRect.height());
-            break;
-        case ReflectionLeft:
-            direction = BoxReflection::HorizontalReflection;
-            offset = -floatValueForLength(reflectStyle->offset(), frameRect.width());
-            break;
-        case ReflectionRight:
-            direction = BoxReflection::HorizontalReflection;
-            offset = 2 * frameRect.width() + floatValueForLength(reflectStyle->offset(), frameRect.width());
-            break;
-        }
-
-        // Since the filter origin is the corner of the input bounds, which may
-        // include visual overflow (e.g. due to box-shadow), we must adjust the
-        // offset to also account for this offset (this is equivalent to using
-        // SkLocalMatrixImageFilter, but simpler).
-        // The rect used here should match the one used in FilterPainter.
-        LayoutRect filterInputBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint());
-        offset -= 2 * (direction == BoxReflection::VerticalReflection ? filterInputBounds.y() : filterInputBounds.x()).toFloat();
-
-        BoxReflection reflection(direction, offset);
+        BoxReflection reflection = boxReflectionForPaintLayer(*this, style);
         filterOperations.operations().append(BoxReflectFilterOperation::create(reflection));
     }
     return computeFilterOperationsHandleReferenceFilters(filterOperations, style.effectiveZoom(), enclosingNode());
