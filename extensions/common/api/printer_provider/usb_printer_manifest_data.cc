@@ -28,16 +28,16 @@ const UsbPrinterManifestData* UsbPrinterManifestData::Get(
 }
 
 // static
-scoped_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
+std::unique_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
     const base::Value& value,
     base::string16* error) {
-  scoped_ptr<api::extensions_manifest_types::UsbPrinters> usb_printers =
+  std::unique_ptr<api::extensions_manifest_types::UsbPrinters> usb_printers =
       api::extensions_manifest_types::UsbPrinters::FromValue(value, error);
   if (!usb_printers) {
     return nullptr;
   }
 
-  scoped_ptr<UsbPrinterManifestData> result(new UsbPrinterManifestData());
+  std::unique_ptr<UsbPrinterManifestData> result(new UsbPrinterManifestData());
   for (const auto& input : usb_printers->filters) {
     UsbDeviceFilter output;
     output.SetVendorId(input.vendor_id);

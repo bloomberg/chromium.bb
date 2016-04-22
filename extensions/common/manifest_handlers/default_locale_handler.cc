@@ -4,9 +4,10 @@
 
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 
+#include <memory>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +38,7 @@ DefaultLocaleHandler::~DefaultLocaleHandler() {
 }
 
 bool DefaultLocaleHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<LocaleInfo> info(new LocaleInfo);
+  std::unique_ptr<LocaleInfo> info(new LocaleInfo);
   if (!extension->manifest()->GetString(keys::kDefaultLocale,
                                         &info->default_locale) ||
       !l10n_util::IsValidLocaleSyntax(info->default_locale)) {

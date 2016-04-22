@@ -61,7 +61,7 @@ void IdentityGetAuthTokenFunction::SetMintTokenFlowForTesting(
 }
 
 ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
-  scoped_ptr<api::identity::GetAuthToken::Params> params(
+  std::unique_ptr<api::identity::GetAuthToken::Params> params(
       api::identity::GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -152,7 +152,7 @@ IdentityRemoveCachedAuthTokenFunction::
 }
 
 ExtensionFunction::ResponseAction IdentityRemoveCachedAuthTokenFunction::Run() {
-  scoped_ptr<api::identity::RemoveCachedAuthToken::Params> params(
+  std::unique_ptr<api::identity::RemoveCachedAuthToken::Params> params(
       api::identity::RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   // This stub identity API does not maintain a token cache, so there is nothing

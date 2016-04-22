@@ -4,9 +4,10 @@
 
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -50,7 +51,7 @@ ContentCapabilitiesHandler::~ContentCapabilitiesHandler() {
 
 bool ContentCapabilitiesHandler::Parse(Extension* extension,
                                        base::string16* error) {
-  scoped_ptr<ContentCapabilitiesInfo> info(new ContentCapabilitiesInfo);
+  std::unique_ptr<ContentCapabilitiesInfo> info(new ContentCapabilitiesInfo);
 
   const base::Value* value = NULL;
   if (!extension->manifest()->Get(keys::kContentCapabilities, &value)) {
@@ -58,8 +59,8 @@ bool ContentCapabilitiesHandler::Parse(Extension* extension,
     return false;
   }
 
-  scoped_ptr<ContentCapabilities> capabilities(ContentCapabilities::FromValue(
-      *value, error));
+  std::unique_ptr<ContentCapabilities> capabilities(
+      ContentCapabilities::FromValue(*value, error));
   if (!capabilities)
     return false;
 

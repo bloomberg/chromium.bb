@@ -6,9 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/extended_key_usage.h"
@@ -97,8 +100,8 @@ net::der::Input AudioOnlyPolicyOid() {
 //   * Supported EC curves: P-256, P-384, P-521.
 //   * Hashes: All SHA hashes including SHA-1 (despite being known weak).
 //   * RSA keys must have a modulus at least 2048-bits long.
-scoped_ptr<net::SignaturePolicy> CreateCastSignaturePolicy() {
-  return make_scoped_ptr(new net::SimpleSignaturePolicy(2048));
+std::unique_ptr<net::SignaturePolicy> CreateCastSignaturePolicy() {
+  return base::WrapUnique(new net::SimpleSignaturePolicy(2048));
 }
 
 class CertVerificationContextImpl : public CertVerificationContext {
@@ -171,7 +174,7 @@ bool HasClientAuth(const std::vector<net::der::Input>& ekus) {
 //     is an audio-only device.
 WARN_UNUSED_RESULT bool CheckTargetCertificate(
     const net::der::Input& cert_der,
-    scoped_ptr<CertVerificationContext>* context,
+    std::unique_ptr<CertVerificationContext>* context,
     CastDeviceCertPolicy* policy) {
   // TODO(eroman): Simplify this. The certificate chain verification
   // function already parses this stuff, awkward to re-do it here.
@@ -257,7 +260,7 @@ net::der::GeneralizedTime ConvertExplodedTime(
 
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const base::Time::Exploded& time,
-                      scoped_ptr<CertVerificationContext>* context,
+                      std::unique_ptr<CertVerificationContext>* context,
                       CastDeviceCertPolicy* policy) {
   // The underlying verification function expects a sequence of
   // der::Input, so wrap the data in it (cheap).
@@ -281,11 +284,11 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
   return CheckTargetCertificate(input_chain[0], context, policy);
 }
 
-scoped_ptr<CertVerificationContext> CertVerificationContextImplForTest(
+std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki) {
   // Use a bogus CommonName, since this is just exposed for testing signature
   // verification by unittests.
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new CertVerificationContextImpl(net::der::Input(spki), "CommonName"));
 }
 

@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 #define EXTENSIONS_SHELL_APP_SHELL_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
@@ -53,10 +54,10 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   // process needs data from resources.pak.
   static bool ProcessNeedsResourceBundle(const std::string& process_type);
 
-  scoped_ptr<content::ContentClient> content_client_;
-  scoped_ptr<content::ContentBrowserClient> browser_client_;
-  scoped_ptr<content::ContentRendererClient> renderer_client_;
-  scoped_ptr<content::ContentUtilityClient> utility_client_;
+  std::unique_ptr<content::ContentClient> content_client_;
+  std::unique_ptr<content::ContentBrowserClient> browser_client_;
+  std::unique_ptr<content::ContentRendererClient> renderer_client_;
+  std::unique_ptr<content::ContentUtilityClient> utility_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);
 };

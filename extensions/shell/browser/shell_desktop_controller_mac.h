@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_MAC_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_DESKTOP_CONTROLLER_MAC_H_
 
-#include "extensions/shell/browser/desktop_controller.h"
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "extensions/shell/browser/desktop_controller.h"
 
 namespace extensions {
 
@@ -31,7 +31,7 @@ class ShellDesktopControllerMac : public DesktopController {
   void CloseAppWindows() override;
 
  private:
-  scoped_ptr<AppWindowClient> app_window_client_;
+  std::unique_ptr<AppWindowClient> app_window_client_;
 
   // The desktop only supports a single app window.
   // TODO(yoz): Support multiple app windows, as we do in Aura.

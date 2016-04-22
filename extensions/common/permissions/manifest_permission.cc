@@ -20,7 +20,7 @@ ManifestPermission* ManifestPermission::Clone() const {
 }
 
 bool ManifestPermission::Contains(const ManifestPermission* rhs) const {
-  return scoped_ptr<ManifestPermission>(Intersect(rhs))->Equal(rhs);
+  return std::unique_ptr<ManifestPermission>(Intersect(rhs))->Equal(rhs);
 }
 
 bool ManifestPermission::Equal(const ManifestPermission* rhs) const {

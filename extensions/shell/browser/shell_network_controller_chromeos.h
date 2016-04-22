@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_NETWORK_CONTROLLER_CHROMEOS_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_NETWORK_CONTROLLER_CHROMEOS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -63,7 +63,7 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   // Handles a successful or failed connection attempt.
   void HandleConnectionSuccess();
   void HandleConnectionError(const std::string& error_name,
-                             scoped_ptr<base::DictionaryValue> error_data);
+                             std::unique_ptr<base::DictionaryValue> error_data);
 
   // Current status of communication with the chromeos::NetworkStateHandler.
   // This is tracked to avoid sending duplicate requests before the handler has

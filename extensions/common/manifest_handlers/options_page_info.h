@@ -46,7 +46,7 @@ class OptionsPageInfo : public Extension::ManifestData {
   // new tab instead of an embedded popup.
   static bool ShouldOpenInTab(const Extension* extension);
 
-  static scoped_ptr<OptionsPageInfo> Create(
+  static std::unique_ptr<OptionsPageInfo> Create(
       Extension* extension,
       const base::Value* options_ui_value,
       const std::string& options_page_string,

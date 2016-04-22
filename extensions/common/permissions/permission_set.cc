@@ -4,6 +4,9 @@
 
 #include "extensions/common/permissions/permission_set.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
@@ -46,7 +49,7 @@ PermissionSet::PermissionSet(
 PermissionSet::~PermissionSet() {}
 
 // static
-scoped_ptr<const PermissionSet> PermissionSet::CreateDifference(
+std::unique_ptr<const PermissionSet> PermissionSet::CreateDifference(
     const PermissionSet& set1,
     const PermissionSet& set2) {
   APIPermissionSet apis;
@@ -63,12 +66,12 @@ scoped_ptr<const PermissionSet> PermissionSet::CreateDifference(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateDifference(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
-                                           explicit_hosts, scriptable_hosts));
+  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+                                            explicit_hosts, scriptable_hosts));
 }
 
 // static
-scoped_ptr<const PermissionSet> PermissionSet::CreateIntersection(
+std::unique_ptr<const PermissionSet> PermissionSet::CreateIntersection(
     const PermissionSet& set1,
     const PermissionSet& set2) {
   APIPermissionSet apis;
@@ -84,12 +87,12 @@ scoped_ptr<const PermissionSet> PermissionSet::CreateIntersection(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateSemanticIntersection(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
-                                           explicit_hosts, scriptable_hosts));
+  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+                                            explicit_hosts, scriptable_hosts));
 }
 
 // static
-scoped_ptr<const PermissionSet> PermissionSet::CreateUnion(
+std::unique_ptr<const PermissionSet> PermissionSet::CreateUnion(
     const PermissionSet& set1,
     const PermissionSet& set2) {
   APIPermissionSet apis;
@@ -106,8 +109,8 @@ scoped_ptr<const PermissionSet> PermissionSet::CreateUnion(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateUnion(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
-                                           explicit_hosts, scriptable_hosts));
+  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+                                            explicit_hosts, scriptable_hosts));
 }
 
 bool PermissionSet::operator==(
@@ -122,8 +125,8 @@ bool PermissionSet::operator!=(const PermissionSet& rhs) const {
   return !(*this == rhs);
 }
 
-scoped_ptr<const PermissionSet> PermissionSet::Clone() const {
-  return make_scoped_ptr(new PermissionSet(*this));
+std::unique_ptr<const PermissionSet> PermissionSet::Clone() const {
+  return base::WrapUnique(new PermissionSet(*this));
 }
 
 bool PermissionSet::Contains(const PermissionSet& set) const {

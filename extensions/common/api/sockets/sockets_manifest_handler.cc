@@ -19,7 +19,7 @@ bool SocketsManifestHandler::Parse(Extension* extension,
                                    base::string16* error) {
   const base::Value* sockets = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kSockets, &sockets));
-  scoped_ptr<SocketsManifestData> data =
+  std::unique_ptr<SocketsManifestData> data =
       SocketsManifestData::FromValue(*sockets, error);
   if (!data)
     return false;

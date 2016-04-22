@@ -5,10 +5,10 @@
 #include "extensions/common/features/feature_provider.h"
 
 #include <map>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
@@ -59,7 +59,7 @@ class Static {
     }
   }
 
-  std::map<std::string, scoped_ptr<FeatureProvider>> feature_providers_;
+  std::map<std::string, std::unique_ptr<FeatureProvider>> feature_providers_;
 };
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;

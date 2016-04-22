@@ -5,7 +5,7 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_PREFS_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_PREFS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class PrefService;
 
@@ -23,10 +23,10 @@ namespace extensions {
 namespace shell_prefs {
 
 // Creates a pref service for device-wide preferences stored in |data_dir|.
-scoped_ptr<PrefService> CreateLocalState(const base::FilePath& data_dir);
+std::unique_ptr<PrefService> CreateLocalState(const base::FilePath& data_dir);
 
 // Creates a pref service that loads user preferences for |browser_context|.
-scoped_ptr<PrefService> CreateUserPrefService(
+std::unique_ptr<PrefService> CreateUserPrefService(
     content::BrowserContext* browser_context);
 
 }  // namespace shell_prefs

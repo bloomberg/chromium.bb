@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -160,7 +160,7 @@ class MessageBundleTest : public testing::Test {
     handler_->dictionary_.clear();
   }
 
-  scoped_ptr<MessageBundle> handler_;
+  std::unique_ptr<MessageBundle> handler_;
   std::vector<linked_ptr<base::DictionaryValue> > catalogs_;
 };
 

@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_COMMON_FEATURES_COMPLEX_FEATURE_H_
 #define EXTENSIONS_COMMON_FEATURES_COMPLEX_FEATURE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
@@ -22,9 +22,9 @@ namespace extensions {
 // available, but not if only some combination of Features is available.
 class ComplexFeature : public Feature {
  public:
-  using FeatureList = std::vector<scoped_ptr<Feature>>;
+  using FeatureList = std::vector<std::unique_ptr<Feature>>;
 
-  explicit ComplexFeature(scoped_ptr<FeatureList> features);
+  explicit ComplexFeature(std::unique_ptr<FeatureList> features);
   ~ComplexFeature() override;
 
   // extensions::Feature:

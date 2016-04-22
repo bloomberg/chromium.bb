@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -41,10 +44,10 @@ ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
 ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {
 }
 
-scoped_ptr<const PermissionSet>
+std::unique_ptr<const PermissionSet>
 ExtensionMsg_PermissionSetStruct::ToPermissionSet() const {
-  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
-                                           explicit_hosts, scriptable_hosts));
+  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+                                            explicit_hosts, scriptable_hosts));
 }
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
@@ -214,7 +217,7 @@ bool ParamTraits<APIPermissionSet>::Read(const base::Pickle* m,
       extensions::PermissionsInfo::GetInstance()->GetByID(id);
     if (!permission_info)
       return false;
-    scoped_ptr<APIPermission> p(permission_info->CreateAPIPermission());
+    std::unique_ptr<APIPermission> p(permission_info->CreateAPIPermission());
     if (!p->Read(m, iter))
       return false;
     r->insert(p.release());
@@ -248,7 +251,8 @@ bool ParamTraits<ManifestPermissionSet>::Read(const base::Pickle* m,
     std::string name;
     if (!ReadParam(m, iter, &name))
       return false;
-    scoped_ptr<ManifestPermission> p(ManifestHandler::CreatePermission(name));
+    std::unique_ptr<ManifestPermission> p(
+        ManifestHandler::CreatePermission(name));
     if (!p)
       return false;
     if (!p->Read(m, iter))

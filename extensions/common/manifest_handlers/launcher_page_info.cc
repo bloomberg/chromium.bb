@@ -27,7 +27,7 @@ LauncherPageInfo* LauncherPageHandler::GetInfo(const Extension* extension) {
 
 bool LauncherPageHandler::Parse(Extension* extension, base::string16* error) {
   const extensions::Manifest* manifest = extension->manifest();
-  scoped_ptr<LauncherPageInfo> launcher_page_info(new LauncherPageInfo);
+  std::unique_ptr<LauncherPageInfo> launcher_page_info(new LauncherPageInfo);
   const base::DictionaryValue* launcher_page_dict = NULL;
   if (!manifest->GetDictionary(manifest_keys::kLauncherPage,
                                &launcher_page_dict)) {

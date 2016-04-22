@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_EXTERNALLY_CONNECTABLE_H_
 #define EXTENSIONS_COMMON_MANIFEST_HANDLERS_EXTERNALLY_CONNECTABLE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_handler.h"
@@ -56,7 +56,7 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<ExternallyConnectableInfo> FromValue(
+  static std::unique_ptr<ExternallyConnectableInfo> FromValue(
       const base::Value& value,
       bool allow_all_urls,
       std::vector<InstallWarning>* install_warnings,

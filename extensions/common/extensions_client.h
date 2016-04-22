@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_COMMON_EXTENSIONS_CLIENT_H_
 #define EXTENSIONS_COMMON_EXTENSIONS_CLIENT_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/permissions/api_permission_set.h"
 
@@ -54,15 +54,15 @@ class ExtensionsClient {
   virtual const std::string GetProductName() = 0;
 
   // Create a FeatureProvider for a specific feature type, e.g. "permission".
-  virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(
+  virtual std::unique_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const = 0;
 
   // Create a JSONFeatureProviderSource for a specific feature type,
   // e.g. "permission". Currently, all features are loaded from
   // JSONFeatureProviderSources.
   // This is used primarily in CreateFeatureProvider, above.
-  virtual scoped_ptr<JSONFeatureProviderSource> CreateFeatureProviderSource(
-      const std::string& name) const = 0;
+  virtual std::unique_ptr<JSONFeatureProviderSource>
+  CreateFeatureProviderSource(const std::string& name) const = 0;
 
   // Takes the list of all hosts and filters out those with special
   // permission strings. Adds the regular hosts to |new_hosts|,

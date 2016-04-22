@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/values.h"
 
@@ -308,7 +308,7 @@ class APIPermission {
                          std::vector<std::string>* unhandled_permissions) = 0;
 
   // Stores this into a new created |value|.
-  virtual scoped_ptr<base::Value> ToValue() const = 0;
+  virtual std::unique_ptr<base::Value> ToValue() const = 0;
 
   // Clones this.
   virtual APIPermission* Clone() const = 0;

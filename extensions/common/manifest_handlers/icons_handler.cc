@@ -4,9 +4,10 @@
 
 #include "extensions/common/manifest_handlers/icons_handler.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -56,7 +57,7 @@ IconsHandler::~IconsHandler() {
 }
 
 bool IconsHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<IconsInfo> icons_info(new IconsInfo);
+  std::unique_ptr<IconsInfo> icons_info(new IconsInfo);
   const base::DictionaryValue* icons_dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kIcons, &icons_dict)) {
     *error = base::ASCIIToUTF16(manifest_errors::kInvalidIcons);

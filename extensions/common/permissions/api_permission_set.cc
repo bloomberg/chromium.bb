@@ -38,7 +38,7 @@ bool CreateAPIPermission(
   const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByName(permission_str);
   if (permission_info) {
-    scoped_ptr<APIPermission> permission(
+    std::unique_ptr<APIPermission> permission(
         permission_info->CreateAPIPermission());
     if (source != APIPermissionSet::kAllowInternalPermissions &&
         permission_info->is_internal()) {

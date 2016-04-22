@@ -25,7 +25,7 @@ class MockManifestPermission : public ManifestPermission {
 
   bool FromValue(const base::Value* value) override { return true; }
 
-  scoped_ptr<base::Value> ToValue() const override {
+  std::unique_ptr<base::Value> ToValue() const override {
     return base::Value::CreateNullValue();
   }
 

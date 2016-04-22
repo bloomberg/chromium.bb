@@ -286,7 +286,7 @@ TEST(URLPatternSetTest, ToValueAndPopulate) {
 
   std::string error;
   bool allow_file_access = false;
-  scoped_ptr<base::ListValue> value(set1.ToValue());
+  std::unique_ptr<base::ListValue> value(set1.ToValue());
   set2.Populate(*value, URLPattern::SCHEME_ALL, allow_file_access, &error);
   EXPECT_EQ(set1, set2);
 
@@ -463,7 +463,7 @@ TEST(URLPatternSetTest, ToStringVector) {
   AddPattern(&set, "https://google.com/");
   AddPattern(&set, "https://yahoo.com/");
 
-  scoped_ptr<std::vector<std::string>> string_vector(set.ToStringVector());
+  std::unique_ptr<std::vector<std::string>> string_vector(set.ToStringVector());
 
   EXPECT_EQ(2UL, string_vector->size());
 

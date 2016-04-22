@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_SHELL_RENDERER_SHELL_CONTENT_RENDERER_CLIENT_H_
 #define EXTENSIONS_SHELL_RENDERER_SHELL_CONTENT_RENDERER_CLIENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace extensions {
@@ -56,11 +57,11 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   virtual ExtensionsClient* CreateExtensionsClient();
 
  private:
-  scoped_ptr<ExtensionsClient> extensions_client_;
-  scoped_ptr<ShellExtensionsRendererClient> extensions_renderer_client_;
-  scoped_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
-  scoped_ptr<Dispatcher> extension_dispatcher_;
-  scoped_ptr<ExtensionsGuestViewContainerDispatcher>
+  std::unique_ptr<ExtensionsClient> extensions_client_;
+  std::unique_ptr<ShellExtensionsRendererClient> extensions_renderer_client_;
+  std::unique_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
+  std::unique_ptr<Dispatcher> extension_dispatcher_;
+  std::unique_ptr<ExtensionsGuestViewContainerDispatcher>
       guest_view_container_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentRendererClient);

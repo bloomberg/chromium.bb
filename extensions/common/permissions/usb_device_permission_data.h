@@ -6,9 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/permissions/api_permission.h"
 
 namespace base {
@@ -45,7 +45,7 @@ class UsbDevicePermissionData {
   bool Check(const APIPermission::CheckParam* param) const;
 
   // Convert |this| into a base::Value.
-  scoped_ptr<base::Value> ToValue() const;
+  std::unique_ptr<base::Value> ToValue() const;
 
   // Populate |this| from a base::Value.
   bool FromValue(const base::Value* value);

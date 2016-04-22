@@ -74,10 +74,10 @@ class IdentityGetAuthTokenFunction : public UIThreadExtensionFunction,
  private:
   // A pending token fetch request to get a login-scoped access token for the
   // current user for the Chrome project id.
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
 
   // A request for an access token for the current app and its scopes.
-  scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;
+  std::unique_ptr<OAuth2MintTokenFlow> mint_token_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityGetAuthTokenFunction);
 };

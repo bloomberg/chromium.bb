@@ -5,11 +5,11 @@
 #include "extensions/common/permissions/socket_permission_data.h"
 
 #include <cstdlib>
+#include <memory>
 #include <sstream>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -102,8 +102,8 @@ bool SocketPermissionData::Check(const APIPermission::CheckParam* param) const {
   return entry_.Check(request);
 }
 
-scoped_ptr<base::Value> SocketPermissionData::ToValue() const {
-  return scoped_ptr<base::Value>(new base::StringValue(GetAsString()));
+std::unique_ptr<base::Value> SocketPermissionData::ToValue() const {
+  return std::unique_ptr<base::Value>(new base::StringValue(GetAsString()));
 }
 
 bool SocketPermissionData::FromValue(const base::Value* value) {

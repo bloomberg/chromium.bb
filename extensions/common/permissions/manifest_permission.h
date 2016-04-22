@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_MANIFEST_PERMISSION_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_MANIFEST_PERMISSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "extensions/common/permissions/api_permission_set.h"
 
@@ -45,7 +45,7 @@ class ManifestPermission {
   virtual bool FromValue(const base::Value* value) = 0;
 
   // Stores this into a new created Value.
-  virtual scoped_ptr<base::Value> ToValue() const = 0;
+  virtual std::unique_ptr<base::Value> ToValue() const = 0;
 
   // Clones this.
   ManifestPermission* Clone() const;

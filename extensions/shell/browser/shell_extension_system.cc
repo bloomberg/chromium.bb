@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -178,9 +179,9 @@ ContentVerifier* ShellExtensionSystem::content_verifier() {
   return nullptr;
 }
 
-scoped_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
+std::unique_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
-  return make_scoped_ptr(new ExtensionSet());
+  return base::WrapUnique(new ExtensionSet());
 }
 
 void ShellExtensionSystem::InstallUpdate(const std::string& extension_id,

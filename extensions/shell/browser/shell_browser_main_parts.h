@@ -5,9 +5,10 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_BROWSER_MAIN_PARTS_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_BROWSER_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -81,20 +82,21 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   void CreateExtensionSystem();
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<ShellNetworkController> network_controller_;
-  scoped_ptr<ShellAudioController> audio_controller_;
+  std::unique_ptr<ShellNetworkController> network_controller_;
+  std::unique_ptr<ShellAudioController> audio_controller_;
 #endif
-  scoped_ptr<DesktopController> desktop_controller_;
-  scoped_ptr<ShellBrowserContext> browser_context_;
-  scoped_ptr<PrefService> local_state_;
-  scoped_ptr<PrefService> user_pref_service_;
-  scoped_ptr<ShellDeviceClient> device_client_;
-  scoped_ptr<AppWindowClient> app_window_client_;
-  scoped_ptr<ExtensionsClient> extensions_client_;
-  scoped_ptr<ExtensionsBrowserClient> extensions_browser_client_;
-  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
-  scoped_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
-  scoped_ptr<ShellOAuth2TokenService> oauth2_token_service_;
+  std::unique_ptr<DesktopController> desktop_controller_;
+  std::unique_ptr<ShellBrowserContext> browser_context_;
+  std::unique_ptr<PrefService> local_state_;
+  std::unique_ptr<PrefService> user_pref_service_;
+  std::unique_ptr<ShellDeviceClient> device_client_;
+  std::unique_ptr<AppWindowClient> app_window_client_;
+  std::unique_ptr<ExtensionsClient> extensions_client_;
+  std::unique_ptr<ExtensionsBrowserClient> extensions_browser_client_;
+  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
+      devtools_http_handler_;
+  std::unique_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
+  std::unique_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 
   // Owned by the KeyedService system.
   ShellExtensionSystem* extension_system_;
@@ -106,7 +108,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   // in MainMessageLoopRun. If false, it has already been run.
   bool run_message_loop_;
 
-  scoped_ptr<ShellBrowserMainDelegate> browser_main_delegate_;
+  std::unique_ptr<ShellBrowserMainDelegate> browser_main_delegate_;
 
 #if !defined(DISABLE_NACL)
   base::CancelableTaskTracker task_tracker_;

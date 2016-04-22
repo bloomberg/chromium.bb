@@ -18,7 +18,7 @@ namespace extensions {
 
 const char kEventFilterServiceTypeKey[] = "serviceType";
 
-EventMatcher::EventMatcher(scoped_ptr<base::DictionaryValue> filter,
+EventMatcher::EventMatcher(std::unique_ptr<base::DictionaryValue> filter,
                            int routing_id)
     : filter_(std::move(filter)), routing_id_(routing_id) {}
 

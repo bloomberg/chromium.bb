@@ -26,7 +26,7 @@ namespace {
 const int kScanIntervalSec = 10;
 
 void HandleEnableWifiError(const std::string& error_name,
-                           scoped_ptr<base::DictionaryValue> error_data) {
+                           std::unique_ptr<base::DictionaryValue> error_data) {
   LOG(WARNING) << "Unable to enable wifi: " << error_name;
 }
 
@@ -207,7 +207,7 @@ void ShellNetworkController::HandleConnectionSuccess() {
 
 void ShellNetworkController::HandleConnectionError(
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   LOG(WARNING) << "Unable to connect to network: " << error_name;
   state_ = STATE_IDLE;
 }

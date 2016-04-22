@@ -30,8 +30,9 @@ class DeclarativeManifestData : public Extension::ManifestData {
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<DeclarativeManifestData> FromValue(const base::Value& value,
-                                                       base::string16* error);
+  static std::unique_ptr<DeclarativeManifestData> FromValue(
+      const base::Value& value,
+      base::string16* error);
 
   std::vector<linked_ptr<DeclarativeManifestData::Rule>>& RulesForEvent(
       const std::string& event);

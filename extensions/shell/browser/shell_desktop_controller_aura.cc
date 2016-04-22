@@ -150,7 +150,7 @@ class ShellNativeCursorManager : public wm::NativeCursorManager {
 
   aura::WindowTreeHost* host_;  // Not owned.
 
-  scoped_ptr<ui::ImageCursors> image_cursors_;
+  std::unique_ptr<ui::ImageCursors> image_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNativeCursorManager);
 };
@@ -283,7 +283,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
   host_->window()->SetLayoutManager(new FillLayout);
 
   cursor_manager_.reset(
-      new wm::CursorManager(scoped_ptr<wm::NativeCursorManager>(
+      new wm::CursorManager(std::unique_ptr<wm::NativeCursorManager>(
           new ShellNativeCursorManager(host_.get()))));
   cursor_manager_->SetDisplay(gfx::Screen::GetScreen()->GetPrimaryDisplay());
   cursor_manager_->SetCursor(ui::kCursorPointer);

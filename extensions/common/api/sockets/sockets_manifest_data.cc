@@ -12,7 +12,7 @@
 namespace extensions {
 
 SocketsManifestData::SocketsManifestData(
-    scoped_ptr<SocketsManifestPermission> permission)
+    std::unique_ptr<SocketsManifestPermission> permission)
     : permission_(std::move(permission)) {
   DCHECK(permission_);
 }
@@ -37,15 +37,15 @@ bool SocketsManifestData::CheckRequest(
 }
 
 // static
-scoped_ptr<SocketsManifestData> SocketsManifestData::FromValue(
+std::unique_ptr<SocketsManifestData> SocketsManifestData::FromValue(
     const base::Value& value,
     base::string16* error) {
-  scoped_ptr<SocketsManifestPermission> permission =
+  std::unique_ptr<SocketsManifestPermission> permission =
       SocketsManifestPermission::FromValue(value, error);
   if (!permission)
-    return scoped_ptr<SocketsManifestData>();
+    return std::unique_ptr<SocketsManifestData>();
 
-  return scoped_ptr<SocketsManifestData>(
+  return std::unique_ptr<SocketsManifestData>(
       new SocketsManifestData(std::move(permission)));
 }
 

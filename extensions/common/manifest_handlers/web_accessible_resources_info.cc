@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -65,7 +66,8 @@ WebAccessibleResourcesHandler::~WebAccessibleResourcesHandler() {
 
 bool WebAccessibleResourcesHandler::Parse(Extension* extension,
                                           base::string16* error) {
-  scoped_ptr<WebAccessibleResourcesInfo> info(new WebAccessibleResourcesInfo);
+  std::unique_ptr<WebAccessibleResourcesInfo> info(
+      new WebAccessibleResourcesInfo);
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kWebAccessibleResources,
                                       &list_value)) {

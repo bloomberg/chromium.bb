@@ -103,7 +103,7 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
     return false;
   }
 
-  scoped_ptr<MimeTypesHandlerInfo> info(new MimeTypesHandlerInfo);
+  std::unique_ptr<MimeTypesHandlerInfo> info(new MimeTypesHandlerInfo);
   info->handler_.set_extension_id(extension->id());
   for (size_t i = 0; i < mime_types_value->GetSize(); ++i) {
     std::string filter;

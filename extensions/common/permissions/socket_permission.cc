@@ -5,9 +5,9 @@
 #include "extensions/common/permissions/socket_permission.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/api/sockets/sockets_manifest_permission.h"
 #include "extensions/common/permissions/permissions_info.h"

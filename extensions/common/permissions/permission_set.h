@@ -42,25 +42,26 @@ class PermissionSet {
   ~PermissionSet();
 
   // Creates a new permission set equal to |set1| - |set2|.
-  static scoped_ptr<const PermissionSet> CreateDifference(
+  static std::unique_ptr<const PermissionSet> CreateDifference(
       const PermissionSet& set1,
       const PermissionSet& set2);
 
   // Creates a new permission set equal to the intersection of |set1| and
   // |set2|.
-  static scoped_ptr<const PermissionSet> CreateIntersection(
+  static std::unique_ptr<const PermissionSet> CreateIntersection(
       const PermissionSet& set1,
       const PermissionSet& set2);
 
   // Creates a new permission set equal to the union of |set1| and |set2|.
-  static scoped_ptr<const PermissionSet> CreateUnion(const PermissionSet& set1,
-                                                     const PermissionSet& set2);
+  static std::unique_ptr<const PermissionSet> CreateUnion(
+      const PermissionSet& set1,
+      const PermissionSet& set2);
 
   bool operator==(const PermissionSet& rhs) const;
   bool operator!=(const PermissionSet& rhs) const;
 
   // Returns a copy of this PermissionSet.
-  scoped_ptr<const PermissionSet> Clone() const;
+  std::unique_ptr<const PermissionSet> Clone() const;
 
   // Returns true if every API or host permission available to |set| is also
   // available to this. In other words, if the API permissions of |set| are a

@@ -5,17 +5,19 @@
 #include "extensions/common/value_counter.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace extensions {
 
 struct ValueCounter::Entry {
-  explicit Entry(scoped_ptr<base::Value> value)
+  explicit Entry(std::unique_ptr<base::Value> value)
       : value(std::move(value)), count(1) {}
 
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   int count;
 };
 
@@ -32,7 +34,7 @@ bool ValueCounter::Add(const base::Value& value) {
       return false;
     }
   }
-  entries_.push_back(make_scoped_ptr(new Entry(value.CreateDeepCopy())));
+  entries_.push_back(base::WrapUnique(new Entry(value.CreateDeepCopy())));
   return true;
 }
 

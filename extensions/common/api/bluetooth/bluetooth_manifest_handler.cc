@@ -19,7 +19,7 @@ bool BluetoothManifestHandler::Parse(Extension* extension,
                                      base::string16* error) {
   const base::Value* bluetooth = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kBluetooth, &bluetooth));
-  scoped_ptr<BluetoothManifestData> data =
+  std::unique_ptr<BluetoothManifestData> data =
       BluetoothManifestData::FromValue(*bluetooth, error);
   if (!data)
     return false;

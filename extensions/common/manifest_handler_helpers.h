@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_COMMON_MANIFEST_HANDLER_HELPERS_H_
 #define EXTENSIONS_COMMON_MANIFEST_HANDLER_HELPERS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 class ExtensionIconSet;

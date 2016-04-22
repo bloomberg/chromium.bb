@@ -53,7 +53,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
     }
 
     if (iter.value().GetType() == base::Value::TYPE_DICTIONARY) {
-      scoped_ptr<SimpleFeature> feature((*factory_)());
+      std::unique_ptr<SimpleFeature> feature((*factory_)());
 
       std::vector<std::string> split = base::SplitString(
           iter.key(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -114,7 +114,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
           static_cast<const base::ListValue*>(&iter.value());
       CHECK_GT(list->GetSize(), 0UL);
 
-      scoped_ptr<ComplexFeature::FeatureList> features(
+      std::unique_ptr<ComplexFeature::FeatureList> features(
           new ComplexFeature::FeatureList());
 
       // Parse and add all SimpleFeatures from the list.
@@ -125,7 +125,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
           continue;
         }
 
-        scoped_ptr<SimpleFeature> feature((*factory_)());
+        std::unique_ptr<SimpleFeature> feature((*factory_)());
         if (!ParseFeature(static_cast<const base::DictionaryValue*>(*list_iter),
                           iter.key(),
                           feature.get()))
@@ -134,7 +134,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
         features->push_back(std::move(feature));
       }
 
-      scoped_ptr<ComplexFeature> feature(
+      std::unique_ptr<ComplexFeature> feature(
           new ComplexFeature(std::move(features)));
       feature->set_name(iter.key());
 

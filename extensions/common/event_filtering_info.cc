@@ -44,11 +44,11 @@ void EventFilteringInfo::SetInstanceID(int instance_id) {
   has_instance_id_ = true;
 }
 
-scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
+std::unique_ptr<base::Value> EventFilteringInfo::AsValue() const {
   if (IsEmpty())
     return base::Value::CreateNullValue();
 
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   if (has_url_)
     result->SetString("url", url_.spec());
 

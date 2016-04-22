@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/common/value_builder.h"
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ValueBuilderTest = testing::Test;
@@ -17,7 +18,7 @@ TEST(ValueBuilderTest, Basic) {
   ListBuilder permission_list;
   permission_list.Append("tabs").Append("history");
 
-  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
 
   ASSERT_FALSE(settings->GetList("permissions", nullptr));
   settings =

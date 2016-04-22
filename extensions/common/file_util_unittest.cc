@@ -49,7 +49,7 @@ scoped_refptr<Extension> LoadExtensionManifest(
     int extra_flags,
     std::string* error) {
   JSONStringValueDeserializer deserializer(manifest_value);
-  scoped_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
+  std::unique_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
   if (!result.get())
     return NULL;
   CHECK_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
@@ -284,7 +284,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("name", "test");
   value->SetString("version", "1");
   value->SetInteger("manifest_version", 1);

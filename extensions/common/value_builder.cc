@@ -51,8 +51,9 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
   return *this;
 }
 
-DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          scoped_ptr<base::Value> in_value) {
+DictionaryBuilder& DictionaryBuilder::Set(
+    const std::string& path,
+    std::unique_ptr<base::Value> in_value) {
   dict_->SetWithoutPathExpansion(path, std::move(in_value));
   return *this;
 }
@@ -90,7 +91,7 @@ ListBuilder& ListBuilder::Append(const base::string16& in_value) {
   return *this;
 }
 
-ListBuilder& ListBuilder::Append(scoped_ptr<base::Value> in_value) {
+ListBuilder& ListBuilder::Append(std::unique_ptr<base::Value> in_value) {
   list_->Append(std::move(in_value));
   return *this;
 }

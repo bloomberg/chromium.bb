@@ -61,8 +61,8 @@ class ErrorBuilder {
 bool ConvertManifestRule(const linked_ptr<DeclarativeManifestData::Rule>& rule,
                          ErrorBuilder* error_builder) {
   auto convert_list =
-      [error_builder](std::vector<scoped_ptr<base::Value>>& list) {
-        for (const scoped_ptr<base::Value>& value : list) {
+      [error_builder](std::vector<std::unique_ptr<base::Value>>& list) {
+        for (const std::unique_ptr<base::Value>& value : list) {
           base::DictionaryValue* dictionary = nullptr;
           if (!value->GetAsDictionary(&dictionary)) {
             error_builder->Append("expected dictionary, got %s",
@@ -98,7 +98,7 @@ DeclarativeManifestData* DeclarativeManifestData::Get(
 }
 
 // static
-scoped_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
+std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
     const base::Value& value,
     base::string16* error) {
   //  The following is an example of how an event programmatic rule definition
@@ -134,12 +134,13 @@ scoped_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
   //  event it applies to.
   //
   ErrorBuilder error_builder(error);
-  scoped_ptr<DeclarativeManifestData> result(new DeclarativeManifestData());
+  std::unique_ptr<DeclarativeManifestData> result(
+      new DeclarativeManifestData());
   const base::ListValue* list = nullptr;
   if (!value.GetAsList(&list)) {
     error_builder.Append("'event_rules' expected list, got %s",
                          ValueTypeToString(&value));
-    return scoped_ptr<DeclarativeManifestData>();
+    return std::unique_ptr<DeclarativeManifestData>();
   }
 
   for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -151,22 +152,22 @@ scoped_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
                              ValueTypeToString(value));
       else
         error_builder.Append("expected dictionary");
-      return scoped_ptr<DeclarativeManifestData>();
+      return std::unique_ptr<DeclarativeManifestData>();
     }
     std::string event;
     if (!dict->GetString("event", &event)) {
       error_builder.Append("'event' is required");
-      return scoped_ptr<DeclarativeManifestData>();
+      return std::unique_ptr<DeclarativeManifestData>();
     }
 
     linked_ptr<Rule> rule(new Rule());
     if (!Rule::Populate(*dict, rule.get())) {
       error_builder.Append("rule failed to populate");
-      return scoped_ptr<DeclarativeManifestData>();
+      return std::unique_ptr<DeclarativeManifestData>();
     }
 
     if (!ConvertManifestRule(rule, &error_builder))
-      return scoped_ptr<DeclarativeManifestData>();
+      return std::unique_ptr<DeclarativeManifestData>();
 
     result->event_rules_map_[event].push_back(rule);
   }

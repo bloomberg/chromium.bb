@@ -47,7 +47,7 @@ void RunTest(TestResult expected_result,
              const std::string& optional_signed_data_file_name) {
   auto certs = cast_test_helpers::ReadCertificateChainFromFile(certs_file_name);
 
-  scoped_ptr<CertVerificationContext> context;
+  std::unique_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
   bool result = VerifyDeviceCert(certs, time, &context, &policy);
 

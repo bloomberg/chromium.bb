@@ -21,7 +21,7 @@ TEST_F(DeclarativeManifestTest, Valid) {
   std::vector<linked_ptr<DeclarativeManifestData::Rule>>& rules =
       manifest_data->RulesForEvent("foo");
   EXPECT_EQ(1u, rules.size());
-  scoped_ptr<base::DictionaryValue> expected_rule = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> expected_rule = ParseDictionary(
       "{"
       "  \"actions\": [{"
       "    \"instanceType\": \"action_type\""
@@ -35,7 +35,7 @@ TEST_F(DeclarativeManifestTest, Valid) {
 
 TEST_F(DeclarativeManifestTest, ConditionMissingType) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -57,7 +57,7 @@ TEST_F(DeclarativeManifestTest, ConditionMissingType) {
 
 TEST_F(DeclarativeManifestTest, ConditionNotDictionary) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -77,7 +77,7 @@ TEST_F(DeclarativeManifestTest, ConditionNotDictionary) {
 
 TEST_F(DeclarativeManifestTest, ActionMissingType) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -98,7 +98,7 @@ TEST_F(DeclarativeManifestTest, ActionMissingType) {
 
 TEST_F(DeclarativeManifestTest, ActionNotDictionary) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -119,7 +119,7 @@ TEST_F(DeclarativeManifestTest, ActionNotDictionary) {
 
 TEST_F(DeclarativeManifestTest, EventRulesNotList) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -131,7 +131,7 @@ TEST_F(DeclarativeManifestTest, EventRulesNotList) {
 
 TEST_F(DeclarativeManifestTest, EventRuleNotDictionary) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -143,7 +143,7 @@ TEST_F(DeclarativeManifestTest, EventRuleNotDictionary) {
 
 TEST_F(DeclarativeManifestTest, EventMissingFromRule) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
@@ -165,7 +165,7 @@ TEST_F(DeclarativeManifestTest, EventMissingFromRule) {
 
 TEST_F(DeclarativeManifestTest, RuleFailedToPopulate) {
   // Create extension
-  scoped_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
+  std::unique_ptr<base::DictionaryValue> manifest_data = ParseDictionary(
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","

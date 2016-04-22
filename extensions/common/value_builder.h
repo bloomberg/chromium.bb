@@ -8,7 +8,7 @@
 //
 // The pattern is to write:
 //
-//  scoped_ptr<BuiltType> result(FooBuilder()
+//  std::unique_ptr<BuiltType> result(FooBuilder()
 //                               .Set(args)
 //                               .Set(args)
 //                               .Build());
@@ -23,11 +23,11 @@
 #ifndef EXTENSIONS_COMMON_VALUE_BUILDER_H_
 #define EXTENSIONS_COMMON_VALUE_BUILDER_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace base {
@@ -47,7 +47,7 @@ class DictionaryBuilder {
   ~DictionaryBuilder();
 
   // Can only be called once, after which it's invalid to use the builder.
-  scoped_ptr<base::DictionaryValue> Build() { return std::move(dict_); }
+  std::unique_ptr<base::DictionaryValue> Build() { return std::move(dict_); }
 
   // Immediately serializes the current state to JSON. Can be called as many
   // times as you like.
@@ -59,14 +59,14 @@ class DictionaryBuilder {
   DictionaryBuilder& Set(const std::string& path,
                          const base::string16& in_value);
   DictionaryBuilder& Set(const std::string& path,
-                         scoped_ptr<base::Value> in_value);
+                         std::unique_ptr<base::Value> in_value);
 
   // Named differently because overload resolution is too eager to
   // convert implicitly to bool.
   DictionaryBuilder& SetBoolean(const std::string& path, bool in_value);
 
  private:
-  scoped_ptr<base::DictionaryValue> dict_;
+  std::unique_ptr<base::DictionaryValue> dict_;
 };
 
 class ListBuilder {
@@ -76,20 +76,20 @@ class ListBuilder {
   ~ListBuilder();
 
   // Can only be called once, after which it's invalid to use the builder.
-  scoped_ptr<base::ListValue> Build() { return std::move(list_); }
+  std::unique_ptr<base::ListValue> Build() { return std::move(list_); }
 
   ListBuilder& Append(int in_value);
   ListBuilder& Append(double in_value);
   ListBuilder& Append(const std::string& in_value);
   ListBuilder& Append(const base::string16& in_value);
-  ListBuilder& Append(scoped_ptr<base::Value> in_value);
+  ListBuilder& Append(std::unique_ptr<base::Value> in_value);
 
   // Named differently because overload resolution is too eager to
   // convert implicitly to bool.
   ListBuilder& AppendBoolean(bool in_value);
 
  private:
-  scoped_ptr<base::ListValue> list_;
+  std::unique_ptr<base::ListValue> list_;
 
   DISALLOW_COPY_AND_ASSIGN(ListBuilder);
 };

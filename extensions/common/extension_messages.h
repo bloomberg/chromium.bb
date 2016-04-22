@@ -252,7 +252,7 @@ struct ExtensionMsg_PermissionSetStruct {
       const ExtensionMsg_PermissionSetStruct& other);
   ~ExtensionMsg_PermissionSetStruct();
 
-  scoped_ptr<const extensions::PermissionSet> ToPermissionSet() const;
+  std::unique_ptr<const extensions::PermissionSet> ToPermissionSet() const;
 
   extensions::APIPermissionSet apis;
   extensions::ManifestPermissionSet manifest_permissions;

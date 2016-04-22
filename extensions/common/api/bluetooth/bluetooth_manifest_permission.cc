@@ -4,7 +4,8 @@
 
 #include "extensions/common/api/bluetooth/bluetooth_manifest_permission.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -43,7 +44,7 @@ bool ParseUuid(BluetoothManifestPermission* permission,
 }
 
 bool ParseUuidArray(BluetoothManifestPermission* permission,
-                    const scoped_ptr<std::vector<std::string> >& uuids,
+                    const std::unique_ptr<std::vector<std::string>>& uuids,
                     base::string16* error) {
   for (std::vector<std::string>::const_iterator it = uuids->begin();
        it != uuids->end();
@@ -64,19 +65,19 @@ BluetoothManifestPermission::BluetoothManifestPermission()
 BluetoothManifestPermission::~BluetoothManifestPermission() {}
 
 // static
-scoped_ptr<BluetoothManifestPermission> BluetoothManifestPermission::FromValue(
-    const base::Value& value,
-    base::string16* error) {
-  scoped_ptr<api::extensions_manifest_types::Bluetooth> bluetooth =
+std::unique_ptr<BluetoothManifestPermission>
+BluetoothManifestPermission::FromValue(const base::Value& value,
+                                       base::string16* error) {
+  std::unique_ptr<api::extensions_manifest_types::Bluetooth> bluetooth =
       api::extensions_manifest_types::Bluetooth::FromValue(value, error);
   if (!bluetooth)
-    return scoped_ptr<BluetoothManifestPermission>();
+    return std::unique_ptr<BluetoothManifestPermission>();
 
-  scoped_ptr<BluetoothManifestPermission> result(
+  std::unique_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
   if (bluetooth->uuids) {
     if (!ParseUuidArray(result.get(), bluetooth->uuids, error)) {
-      return scoped_ptr<BluetoothManifestPermission>();
+      return std::unique_ptr<BluetoothManifestPermission>();
     }
   }
   if (bluetooth->socket) {
@@ -140,7 +141,7 @@ bool BluetoothManifestPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;
   base::string16 error;
-  scoped_ptr<BluetoothManifestPermission> manifest_permission(
+  std::unique_ptr<BluetoothManifestPermission> manifest_permission(
       BluetoothManifestPermission::FromValue(*value, &error));
 
   if (!manifest_permission)
@@ -150,7 +151,7 @@ bool BluetoothManifestPermission::FromValue(const base::Value* value) {
   return true;
 }
 
-scoped_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
+std::unique_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
   api::extensions_manifest_types::Bluetooth bluetooth;
   bluetooth.uuids.reset(new std::vector<std::string>(uuids_.begin(),
                                                      uuids_.end()));
@@ -162,7 +163,7 @@ ManifestPermission* BluetoothManifestPermission::Diff(
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  scoped_ptr<BluetoothManifestPermission> result(
+  std::unique_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
   result->uuids_ = base::STLSetDifference<BluetoothUuidSet>(
       uuids_, other->uuids_);
@@ -174,7 +175,7 @@ ManifestPermission* BluetoothManifestPermission::Union(
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  scoped_ptr<BluetoothManifestPermission> result(
+  std::unique_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
   result->uuids_ = base::STLSetUnion<BluetoothUuidSet>(
       uuids_, other->uuids_);
@@ -186,7 +187,7 @@ ManifestPermission* BluetoothManifestPermission::Intersect(
   const BluetoothManifestPermission* other =
       static_cast<const BluetoothManifestPermission*>(rhs);
 
-  scoped_ptr<BluetoothManifestPermission> result(
+  std::unique_ptr<BluetoothManifestPermission> result(
       new BluetoothManifestPermission());
   result->uuids_ = base::STLSetIntersection<BluetoothUuidSet>(
       uuids_, other->uuids_);

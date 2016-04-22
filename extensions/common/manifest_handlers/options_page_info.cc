@@ -4,9 +4,11 @@
 
 #include "extensions/common/manifest_handlers/options_page_info.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
@@ -105,7 +107,7 @@ bool OptionsPageInfo::ShouldOpenInTab(const Extension* extension) {
   return info && info->open_in_tab_;
 }
 
-scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
+std::unique_ptr<OptionsPageInfo> OptionsPageInfo::Create(
     Extension* extension,
     const base::Value* options_ui_value,
     const std::string& options_page_string,
@@ -122,7 +124,7 @@ scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
   if (options_ui_value) {
     base::string16 options_ui_error;
 
-    scoped_ptr<OptionsUI> options_ui =
+    std::unique_ptr<OptionsUI> options_ui =
         OptionsUI::FromValue(*options_ui_value, &options_ui_error);
     if (!options_ui_error.empty()) {
       // OptionsUI::FromValue populates |error| both when there are
@@ -159,11 +161,11 @@ scoped_ptr<OptionsPageInfo> OptionsPageInfo::Create(
                          keys::kOptionsPage,
                          error,
                          &options_page)) {
-      return scoped_ptr<OptionsPageInfo>();
+      return std::unique_ptr<OptionsPageInfo>();
     }
   }
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new OptionsPageInfo(options_page, chrome_style, open_in_tab));
 }
 
@@ -189,12 +191,9 @@ bool OptionsPageManifestHandler::Parse(Extension* extension,
   const base::Value* options_ui_value = NULL;
   ignore_result(manifest->Get(keys::kOptionsUI, &options_ui_value));
 
-  scoped_ptr<OptionsPageInfo> info =
-      OptionsPageInfo::Create(extension,
-                              options_ui_value,
-                              options_page_string,
-                              &install_warnings,
-                              error);
+  std::unique_ptr<OptionsPageInfo> info =
+      OptionsPageInfo::Create(extension, options_ui_value, options_page_string,
+                              &install_warnings, error);
   if (!info)
     return false;
 

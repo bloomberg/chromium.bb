@@ -45,15 +45,15 @@ base::StringPiece ReadFromResource(int resource_id) {
       resource_id);
 }
 
-scoped_ptr<base::ListValue> LoadSchemaList(const std::string& name,
-                                           const base::StringPiece& schema) {
+std::unique_ptr<base::ListValue> LoadSchemaList(
+    const std::string& name,
+    const base::StringPiece& schema) {
   std::string error_message;
-  scoped_ptr<base::Value> result(
-      base::JSONReader::ReadAndReturnError(
-          schema,
-          base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN,  // options
-          NULL,  // error code
-          &error_message));
+  std::unique_ptr<base::Value> result(base::JSONReader::ReadAndReturnError(
+      schema,
+      base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN,  // options
+      NULL,                                                   // error code
+      &error_message));
 
   // Tracking down http://crbug.com/121424
   char buf[128];
@@ -102,7 +102,7 @@ struct Static {
   Static()
       : api(ExtensionAPI::CreateWithDefaultConfiguration()) {
   }
-  scoped_ptr<ExtensionAPI> api;
+  std::unique_ptr<ExtensionAPI> api;
 };
 
 base::LazyInstance<Static> g_lazy_instance = LAZY_INSTANCE_INITIALIZER;
@@ -213,7 +213,7 @@ ExtensionAPI::OverrideSharedInstanceForTest::~OverrideSharedInstanceForTest() {
 
 void ExtensionAPI::LoadSchema(const std::string& name,
                               const base::StringPiece& schema) {
-  scoped_ptr<base::ListValue> schema_list(LoadSchemaList(name, schema));
+  std::unique_ptr<base::ListValue> schema_list(LoadSchemaList(name, schema));
   std::string schema_namespace;
   extensions::ExtensionsClient* extensions_client =
       extensions::ExtensionsClient::Get();
@@ -221,7 +221,7 @@ void ExtensionAPI::LoadSchema(const std::string& name,
   while (!schema_list->empty()) {
     base::DictionaryValue* schema = NULL;
     {
-      scoped_ptr<base::Value> value;
+      std::unique_ptr<base::Value> value;
       schema_list->Remove(schema_list->GetSize() - 1, &value);
       CHECK(value.release()->GetAsDictionary(&schema));
     }

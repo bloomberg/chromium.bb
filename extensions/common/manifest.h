@@ -6,11 +6,11 @@
 #define EXTENSIONS_COMMON_MANIFEST_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 
@@ -116,7 +116,7 @@ class Manifest {
     return IsUnpackedLocation(location);
   }
 
-  Manifest(Location location, scoped_ptr<base::DictionaryValue> value);
+  Manifest(Location location, std::unique_ptr<base::DictionaryValue> value);
   virtual ~Manifest();
 
   const std::string& extension_id() const { return extension_id_; }
@@ -191,7 +191,7 @@ class Manifest {
   Location location_;
 
   // The underlying dictionary representation of the manifest.
-  scoped_ptr<base::DictionaryValue> value_;
+  std::unique_ptr<base::DictionaryValue> value_;
 
   Type type_;
 

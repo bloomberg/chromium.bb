@@ -6,7 +6,7 @@
 
 namespace extensions {
 
-ComplexFeature::ComplexFeature(scoped_ptr<FeatureList> features) {
+ComplexFeature::ComplexFeature(std::unique_ptr<FeatureList> features) {
   DCHECK_GT(features->size(), 0UL);
   features_.swap(*features);
   no_parent_ = features_[0]->no_parent();

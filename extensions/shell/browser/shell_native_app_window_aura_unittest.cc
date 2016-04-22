@@ -4,7 +4,9 @@
 
 #include "extensions/shell/browser/shell_native_app_window_aura.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -33,14 +35,14 @@ class ShellNativeAppWindowAuraTest : public ExtensionsTest {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<content::NotificationService> notification_service_;
+  std::unique_ptr<content::NotificationService> notification_service_;
   ShellAppWindowClient app_window_client_;
 };
 
 TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
   // The BrowserContext used here must be destroyed before the thread bundle,
   // because of destructors of things spawned from creating a WebContents.
-  scoped_ptr<content::BrowserContext> browser_context(
+  std::unique_ptr<content::BrowserContext> browser_context(
       new content::TestBrowserContext);
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
@@ -56,7 +58,7 @@ TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
   content::WebContents* web_contents = content::WebContents::Create(
       content::WebContents::CreateParams(browser_context.get()));
   app_window->SetAppWindowContentsForTesting(
-      make_scoped_ptr(new TestAppWindowContents(web_contents)));
+      base::WrapUnique(new TestAppWindowContents(web_contents)));
 
   AppWindow::BoundsSpecification window_spec;
   window_spec.bounds = gfx::Rect(100, 200, 300, 400);

@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/crx_file/id_util.h"
@@ -69,7 +71,7 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
       extension, APIPermission::kExternallyConnectableAllUrls);
 
   std::vector<InstallWarning> install_warnings;
-  scoped_ptr<ExternallyConnectableInfo> info =
+  std::unique_ptr<ExternallyConnectableInfo> info =
       ExternallyConnectableInfo::FromValue(
           *externally_connectable, allow_all_urls, &install_warnings, error);
   if (!info)
@@ -95,15 +97,15 @@ ExternallyConnectableInfo* ExternallyConnectableInfo::Get(
 }
 
 // static
-scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
+std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
     const base::Value& value,
     bool allow_all_urls,
     std::vector<InstallWarning>* install_warnings,
     base::string16* error) {
-  scoped_ptr<ExternallyConnectable> externally_connectable =
+  std::unique_ptr<ExternallyConnectable> externally_connectable =
       ExternallyConnectable::FromValue(value, error);
   if (!externally_connectable)
-    return scoped_ptr<ExternallyConnectableInfo>();
+    return std::unique_ptr<ExternallyConnectableInfo>();
 
   URLPatternSet matches;
 
@@ -118,7 +120,7 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       if (pattern.Parse(*it) != URLPattern::PARSE_SUCCESS) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kErrorInvalidMatchPattern, *it);
-        return scoped_ptr<ExternallyConnectableInfo>();
+        return std::unique_ptr<ExternallyConnectableInfo>();
       }
 
       if (allow_all_urls && pattern.match_all_urls()) {
@@ -152,7 +154,7 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         NOTREACHED() << *it;
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kErrorInvalidMatchPattern, *it);
-        return scoped_ptr<ExternallyConnectableInfo>();
+        return std::unique_ptr<ExternallyConnectableInfo>();
       }
 
       // Broad match patterns like "*.com", "*.co.uk", and even "*.appspot.com"
@@ -188,7 +190,7 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       } else {
         *error =
             ErrorUtils::FormatErrorMessageUTF16(errors::kErrorInvalidId, *it);
-        return scoped_ptr<ExternallyConnectableInfo>();
+        return std::unique_ptr<ExternallyConnectableInfo>();
       }
     }
   }
@@ -201,7 +203,7 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
   bool accepts_tls_channel_id =
       externally_connectable->accepts_tls_channel_id.get() &&
       *externally_connectable->accepts_tls_channel_id;
-  return make_scoped_ptr(new ExternallyConnectableInfo(
+  return base::WrapUnique(new ExternallyConnectableInfo(
       matches, ids, all_ids, accepts_tls_channel_id));
 }
 

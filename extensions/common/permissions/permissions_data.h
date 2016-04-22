@@ -6,12 +6,12 @@
 #define EXTENSIONS_COMMON_PERMISSIONS_PERMISSIONS_DATA_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -46,7 +46,7 @@ class PermissionsData {
                      // the given page.
   };
 
-  using TabPermissionsMap = std::map<int, scoped_ptr<const PermissionSet>>;
+  using TabPermissionsMap = std::map<int, std::unique_ptr<const PermissionSet>>;
 
   // Delegate class to allow different contexts (e.g. browser vs renderer) to
   // have control over policy decisions.
@@ -88,11 +88,11 @@ class PermissionsData {
 
   // Sets the runtime permissions of the given |extension| to |active| and
   // |withheld|.
-  void SetPermissions(scoped_ptr<const PermissionSet> active,
-                      scoped_ptr<const PermissionSet> withheld) const;
+  void SetPermissions(std::unique_ptr<const PermissionSet> active,
+                      std::unique_ptr<const PermissionSet> withheld) const;
 
   // Sets the active permissions, leaving withheld the same.
-  void SetActivePermissions(scoped_ptr<const PermissionSet> active) const;
+  void SetActivePermissions(std::unique_ptr<const PermissionSet> active) const;
 
   // Updates the tab-specific permissions of |tab_id| to include those from
   // |permissions|.
@@ -246,18 +246,18 @@ class PermissionsData {
   // Unsafe indicates that we must lock anytime this is directly accessed.
   // Unless you need to change |active_permissions_unsafe_|, use the (safe)
   // active_permissions() accessor.
-  mutable scoped_ptr<const PermissionSet> active_permissions_unsafe_;
+  mutable std::unique_ptr<const PermissionSet> active_permissions_unsafe_;
 
   // The permissions the extension requested, but was not granted due because
   // they are too powerful. This includes things like all_hosts.
   // Unsafe indicates that we must lock anytime this is directly accessed.
   // Unless you need to change |withheld_permissions_unsafe_|, use the (safe)
   // withheld_permissions() accessor.
-  mutable scoped_ptr<const PermissionSet> withheld_permissions_unsafe_;
+  mutable std::unique_ptr<const PermissionSet> withheld_permissions_unsafe_;
 
   mutable TabPermissionsMap tab_specific_permissions_;
 
-  mutable scoped_ptr<base::ThreadChecker> thread_checker_;
+  mutable std::unique_ptr<base::ThreadChecker> thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsData);
 };

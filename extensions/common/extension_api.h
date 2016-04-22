@@ -6,12 +6,12 @@
 #define EXTENSIONS_COMMON_EXTENSION_API_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"

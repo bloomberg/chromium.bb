@@ -4,8 +4,9 @@
 
 #include "extensions/common/manifest_url_handlers.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -87,7 +88,7 @@ HomepageURLHandler::~HomepageURLHandler() {
 }
 
 bool HomepageURLHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::unique_ptr<ManifestURL> manifest_url(new ManifestURL);
   std::string homepage_url_str;
   if (!extension->manifest()->GetString(keys::kHomepageURL,
                                         &homepage_url_str)) {
@@ -117,7 +118,7 @@ UpdateURLHandler::~UpdateURLHandler() {
 }
 
 bool UpdateURLHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::unique_ptr<ManifestURL> manifest_url(new ManifestURL);
   std::string tmp_update_url;
 
   if (!extension->manifest()->GetString(keys::kUpdateURL, &tmp_update_url)) {
@@ -149,7 +150,7 @@ AboutPageHandler::~AboutPageHandler() {
 }
 
 bool AboutPageHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::unique_ptr<ManifestURL> manifest_url(new ManifestURL);
   std::string about_str;
   if (!extension->manifest()->GetString(keys::kAboutPage, &about_str)) {
     *error = base::ASCIIToUTF16(errors::kInvalidAboutPage);

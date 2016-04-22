@@ -17,12 +17,12 @@ namespace extensions {
 TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdBar("barabbbbccccddddeeeeffffgggghhhh");
-  scoped_ptr<ComplexFeature::FeatureList> features(
+  std::unique_ptr<ComplexFeature::FeatureList> features(
       new ComplexFeature::FeatureList());
 
   // Rule: "extension", whitelist "foo".
-  scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature);
-  scoped_ptr<base::DictionaryValue> rule(
+  std::unique_ptr<SimpleFeature> simple_feature(new SimpleFeature);
+  std::unique_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("whitelist", ListBuilder().Append(kIdFoo).Build())
           .Set("extension_types", ListBuilder().Append("extension").Build())
@@ -40,7 +40,8 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
 
-  scoped_ptr<ComplexFeature> feature(new ComplexFeature(std::move(features)));
+  std::unique_ptr<ComplexFeature> feature(
+      new ComplexFeature(std::move(features)));
 
   // Test match 1st rule.
   EXPECT_EQ(
@@ -79,12 +80,12 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
 
 // Tests that dependencies are correctly checked.
 TEST(ComplexFeatureTest, Dependencies) {
-  scoped_ptr<ComplexFeature::FeatureList> features(
+  std::unique_ptr<ComplexFeature::FeatureList> features(
       new ComplexFeature::FeatureList());
 
   // Rule which depends on an extension-only feature (content_security_policy).
-  scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature);
-  scoped_ptr<base::DictionaryValue> rule =
+  std::unique_ptr<SimpleFeature> simple_feature(new SimpleFeature);
+  std::unique_ptr<base::DictionaryValue> rule =
       DictionaryBuilder()
           .Set("dependencies",
                ListBuilder().Append("manifest:content_security_policy").Build())
@@ -101,7 +102,8 @@ TEST(ComplexFeatureTest, Dependencies) {
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
 
-  scoped_ptr<ComplexFeature> feature(new ComplexFeature(std::move(features)));
+  std::unique_ptr<ComplexFeature> feature(
+      new ComplexFeature(std::move(features)));
 
   // Available to extensions because of the content_security_policy rule.
   EXPECT_EQ(

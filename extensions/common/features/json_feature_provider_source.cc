@@ -4,11 +4,11 @@
 
 #include "extensions/common/features/json_feature_provider_source.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
@@ -25,11 +25,11 @@ void JSONFeatureProviderSource::LoadJSON(int resource_id) {
       ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
       features_file, base::JSON_PARSE_RFC, &error_code, &error_message));
   DCHECK(value) << "Could not load features: " << name_ << " " << error_message;
 
-  scoped_ptr<base::DictionaryValue> value_as_dict;
+  std::unique_ptr<base::DictionaryValue> value_as_dict;
   if (value) {
     CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name_;
     value_as_dict = base::DictionaryValue::From(std::move(value));

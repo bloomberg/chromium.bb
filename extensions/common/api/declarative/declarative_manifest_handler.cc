@@ -20,7 +20,7 @@ bool DeclarativeManifestHandler::Parse(Extension* extension,
                                        base::string16* error) {
   const base::Value* event_rules = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kEventRules, &event_rules));
-  scoped_ptr<DeclarativeManifestData> data =
+  std::unique_ptr<DeclarativeManifestData> data =
       DeclarativeManifestData::FromValue(*event_rules, error);
   if (!data)
     return false;

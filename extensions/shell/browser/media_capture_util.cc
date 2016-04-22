@@ -64,7 +64,7 @@ void GrantMediaStreamRequest(content::WebContents* web_contents,
   }
 
   // TODO(jamescook): Should we show a recording icon somewhere? If so, where?
-  scoped_ptr<MediaStreamUI> ui;
+  std::unique_ptr<MediaStreamUI> ui;
   callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
                                         : content::MEDIA_DEVICE_OK,
                std::move(ui));

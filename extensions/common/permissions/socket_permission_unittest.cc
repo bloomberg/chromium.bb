@@ -125,7 +125,7 @@ TEST(SocketPermissionTest, Parse) {
 
 TEST(SocketPermissionTest, Match) {
   SocketPermissionData data;
-  scoped_ptr<SocketPermission::CheckParam> param;
+  std::unique_ptr<SocketPermission::CheckParam> param;
 
   CHECK(data.ParseForTest("tcp-connect"));
   param.reset(new SocketPermission::CheckParam(
@@ -269,9 +269,9 @@ TEST(SocketPermissionTest, IPC) {
   {
     IPC::Message m;
 
-    scoped_ptr<APIPermission> permission1(
+    std::unique_ptr<APIPermission> permission1(
         permission_info->CreateAPIPermission());
-    scoped_ptr<APIPermission> permission2(
+    std::unique_ptr<APIPermission> permission2(
         permission_info->CreateAPIPermission());
 
     permission1->Write(&m);
@@ -284,12 +284,12 @@ TEST(SocketPermissionTest, IPC) {
   {
     IPC::Message m;
 
-    scoped_ptr<APIPermission> permission1(
+    std::unique_ptr<APIPermission> permission1(
         permission_info->CreateAPIPermission());
-    scoped_ptr<APIPermission> permission2(
+    std::unique_ptr<APIPermission> permission2(
         permission_info->CreateAPIPermission());
 
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
@@ -308,10 +308,12 @@ TEST(SocketPermissionTest, Value) {
   const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
-  scoped_ptr<APIPermission> permission1(permission_info->CreateAPIPermission());
-  scoped_ptr<APIPermission> permission2(permission_info->CreateAPIPermission());
+  std::unique_ptr<APIPermission> permission1(
+      permission_info->CreateAPIPermission());
+  std::unique_ptr<APIPermission> permission2(
+      permission_info->CreateAPIPermission());
 
-  scoped_ptr<base::ListValue> value(new base::ListValue());
+  std::unique_ptr<base::ListValue> value(new base::ListValue());
   value->AppendString("tcp-connect:*.example.com:80");
   value->AppendString("udp-bind::8080");
   value->AppendString("udp-send-to::8888");
@@ -319,7 +321,7 @@ TEST(SocketPermissionTest, Value) {
 
   EXPECT_FALSE(permission1->Equal(permission2.get()));
 
-  scoped_ptr<base::Value> vtmp(permission1->ToValue());
+  std::unique_ptr<base::Value> vtmp(permission1->ToValue());
   ASSERT_TRUE(vtmp);
   ASSERT_TRUE(permission2->FromValue(vtmp.get(), NULL, NULL));
   EXPECT_TRUE(permission1->Equal(permission2.get()));

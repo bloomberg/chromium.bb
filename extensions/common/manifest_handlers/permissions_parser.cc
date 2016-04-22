@@ -34,14 +34,14 @@ namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
 struct ManifestPermissions : public Extension::ManifestData {
-  ManifestPermissions(scoped_ptr<const PermissionSet> permissions);
+  ManifestPermissions(std::unique_ptr<const PermissionSet> permissions);
   ~ManifestPermissions() override;
 
-  scoped_ptr<const PermissionSet> permissions;
+  std::unique_ptr<const PermissionSet> permissions;
 };
 
 ManifestPermissions::ManifestPermissions(
-    scoped_ptr<const PermissionSet> permissions)
+    std::unique_ptr<const PermissionSet> permissions)
     : permissions(std::move(permissions)) {}
 
 ManifestPermissions::~ManifestPermissions() {
@@ -268,7 +268,7 @@ void PermissionsParser::Finalize(Extension* extension) {
   ManifestHandler::AddExtensionInitialRequiredPermissions(
       extension, &initial_required_permissions_->manifest_permissions);
 
-  scoped_ptr<const PermissionSet> required_permissions(
+  std::unique_ptr<const PermissionSet> required_permissions(
       new PermissionSet(initial_required_permissions_->api_permissions,
                         initial_required_permissions_->manifest_permissions,
                         initial_required_permissions_->host_permissions,
@@ -277,7 +277,7 @@ void PermissionsParser::Finalize(Extension* extension) {
       keys::kPermissions,
       new ManifestPermissions(std::move(required_permissions)));
 
-  scoped_ptr<const PermissionSet> optional_permissions(new PermissionSet(
+  std::unique_ptr<const PermissionSet> optional_permissions(new PermissionSet(
       initial_optional_permissions_->api_permissions,
       initial_optional_permissions_->manifest_permissions,
       initial_optional_permissions_->host_permissions, URLPatternSet()));

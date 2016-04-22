@@ -133,15 +133,15 @@ void PermissionsData::BindToCurrentThread() const {
 }
 
 void PermissionsData::SetPermissions(
-    scoped_ptr<const PermissionSet> active,
-    scoped_ptr<const PermissionSet> withheld) const {
+    std::unique_ptr<const PermissionSet> active,
+    std::unique_ptr<const PermissionSet> withheld) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
   active_permissions_unsafe_ = std::move(active);
   withheld_permissions_unsafe_ = std::move(withheld);
 }
 
 void PermissionsData::SetActivePermissions(
-    scoped_ptr<const PermissionSet> active) const {
+    std::unique_ptr<const PermissionSet> active) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
   active_permissions_unsafe_ = std::move(active);
 }
@@ -153,11 +153,12 @@ void PermissionsData::UpdateTabSpecificPermissions(
   CHECK_GE(tab_id, 0);
   TabPermissionsMap::const_iterator iter =
       tab_specific_permissions_.find(tab_id);
-  scoped_ptr<const PermissionSet> new_permissions = PermissionSet::CreateUnion(
-      iter == tab_specific_permissions_.end()
-          ? static_cast<const PermissionSet&>(PermissionSet())
-          : *iter->second,
-      permissions);
+  std::unique_ptr<const PermissionSet> new_permissions =
+      PermissionSet::CreateUnion(
+          iter == tab_specific_permissions_.end()
+              ? static_cast<const PermissionSet&>(PermissionSet())
+              : *iter->second,
+          permissions);
   tab_specific_permissions_[tab_id] = std::move(new_permissions);
 }
 

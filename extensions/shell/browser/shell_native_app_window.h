@@ -52,7 +52,7 @@ class ShellNativeAppWindow : public NativeAppWindow {
   void UpdateDraggableRegions(
       const std::vector<DraggableRegion>& regions) override;
   SkRegion* GetDraggableRegion() override;
-  void UpdateShape(scoped_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<SkRegion> region) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   bool IsFrameless() const override;

@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_H_
 #define EXTENSIONS_COMMON_CAST_CAST_CERT_VALIDATOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
@@ -75,7 +75,7 @@ class CertVerificationContext {
 //     (i.e. is it for audio-only devices or is it unrestricted?)
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const base::Time::Exploded& time,
-                      scoped_ptr<CertVerificationContext>* context,
+                      std::unique_ptr<CertVerificationContext>* context,
                       CastDeviceCertPolicy* policy) WARN_UNUSED_RESULT;
 
 // Exposed only for unit-tests, not for use in production code.
@@ -83,9 +83,8 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
 //
 // Constructs a VerificationContext that uses the provided public key.
 // The common name will be hardcoded to some test value.
-scoped_ptr<CertVerificationContext> CertVerificationContextImplForTest(
+std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki);
-
 
 }  // namespace cast_crypto
 }  // namespace api

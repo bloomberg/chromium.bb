@@ -25,7 +25,7 @@ namespace extensions {
 class SocketsManifestData : public Extension::ManifestData {
  public:
   explicit SocketsManifestData(
-      scoped_ptr<SocketsManifestPermission> permission);
+      std::unique_ptr<SocketsManifestPermission> permission);
   ~SocketsManifestData() override;
 
   // Gets the SocketsManifestData for |extension|, or NULL if none was
@@ -37,15 +37,16 @@ class SocketsManifestData : public Extension::ManifestData {
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<SocketsManifestData> FromValue(const base::Value& value,
-                                                   base::string16* error);
+  static std::unique_ptr<SocketsManifestData> FromValue(
+      const base::Value& value,
+      base::string16* error);
 
   const SocketsManifestPermission* permission() const {
     return permission_.get();
   }
 
  private:
-  scoped_ptr<SocketsManifestPermission> permission_;
+  std::unique_ptr<SocketsManifestPermission> permission_;
 };
 
 }  // namespace extensions

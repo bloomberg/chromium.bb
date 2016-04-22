@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -72,7 +72,7 @@ class SetDisjunctionPermission : public APIPermission {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
-    scoped_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
+    std::unique_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
     result->data_set_ = base::STLSetDifference<std::set<PermissionDataType> >(
         data_set_, perm->data_set_);
     return result->data_set_.empty() ? NULL : result.release();
@@ -82,7 +82,7 @@ class SetDisjunctionPermission : public APIPermission {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
-    scoped_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
+    std::unique_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
     result->data_set_ = base::STLSetUnion<std::set<PermissionDataType> >(
         data_set_, perm->data_set_);
     return result.release();
@@ -92,7 +92,7 @@ class SetDisjunctionPermission : public APIPermission {
     CHECK(rhs->info() == info());
     const SetDisjunctionPermission* perm =
         static_cast<const SetDisjunctionPermission*>(rhs);
-    scoped_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
+    std::unique_ptr<SetDisjunctionPermission> result(new DerivedType(info()));
     result->data_set_ = base::STLSetIntersection<std::set<PermissionDataType> >(
         data_set_, perm->data_set_);
     return result->data_set_.empty() ? NULL : result.release();
@@ -142,14 +142,14 @@ class SetDisjunctionPermission : public APIPermission {
     return true;
   }
 
-  scoped_ptr<base::Value> ToValue() const override {
+  std::unique_ptr<base::Value> ToValue() const override {
     base::ListValue* list = new base::ListValue();
     typename std::set<PermissionDataType>::const_iterator i;
     for (i = data_set_.begin(); i != data_set_.end(); ++i) {
-      scoped_ptr<base::Value> item_value(i->ToValue());
+      std::unique_ptr<base::Value> item_value(i->ToValue());
       list->Append(item_value.release());
     }
-    return scoped_ptr<base::Value>(list);
+    return std::unique_ptr<base::Value>(list);
   }
 
   void Write(base::Pickle* m) const override { IPC::WriteParam(m, data_set_); }

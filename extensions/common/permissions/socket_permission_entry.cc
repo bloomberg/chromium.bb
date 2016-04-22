@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include <cstdlib>
+#include <memory>
 #include <sstream>
 #include <tuple>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

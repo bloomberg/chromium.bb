@@ -4,7 +4,8 @@
 
 #include "extensions/common/manifest_handlers/csp_info.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

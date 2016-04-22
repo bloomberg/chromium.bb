@@ -109,7 +109,8 @@ Manifest::Location Manifest::GetHigherPriorityLocation(
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
-Manifest::Manifest(Location location, scoped_ptr<base::DictionaryValue> value)
+Manifest::Manifest(Location location,
+                   std::unique_ptr<base::DictionaryValue> value)
     : location_(location), value_(std::move(value)), type_(TYPE_UNKNOWN) {
   if (value_->HasKey(keys::kTheme)) {
     type_ = TYPE_THEME;
@@ -216,7 +217,7 @@ bool Manifest::GetList(
 
 Manifest* Manifest::DeepCopy() const {
   Manifest* manifest = new Manifest(
-      location_, scoped_ptr<base::DictionaryValue>(value_->DeepCopy()));
+      location_, std::unique_ptr<base::DictionaryValue>(value_->DeepCopy()));
   manifest->set_extension_id(extension_id_);
   return manifest;
 }

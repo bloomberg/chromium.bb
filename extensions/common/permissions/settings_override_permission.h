@@ -28,7 +28,7 @@ class SettingsOverrideAPIPermission : public APIPermission {
   bool FromValue(const base::Value* value,
                  std::string* error,
                  std::vector<std::string>* unhandled_permissions) override;
-  scoped_ptr<base::Value> ToValue() const override;
+  std::unique_ptr<base::Value> ToValue() const override;
   APIPermission* Clone() const override;
   APIPermission* Diff(const APIPermission* rhs) const override;
   APIPermission* Union(const APIPermission* rhs) const override;

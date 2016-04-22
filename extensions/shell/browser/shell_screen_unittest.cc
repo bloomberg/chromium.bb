@@ -4,7 +4,8 @@
 
 #include "extensions/shell/browser/shell_screen.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
@@ -31,7 +32,8 @@ TEST_F(ShellScreenTest, ShellScreen) {
   // Tests that reshaping the host window reshapes the display.
   // NOTE: AuraTestBase already has its own WindowTreeHost. This is creating a
   // second one.
-  scoped_ptr<aura::WindowTreeHost> host(screen.CreateHostForPrimaryDisplay());
+  std::unique_ptr<aura::WindowTreeHost> host(
+      screen.CreateHostForPrimaryDisplay());
   EXPECT_TRUE(host->window());
   host->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
   EXPECT_EQ("800x600", screen.GetPrimaryDisplay().size().ToString());

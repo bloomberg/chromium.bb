@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -49,7 +50,7 @@ bool NaClModulesHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  scoped_ptr<NaClModuleData> nacl_module_data(new NaClModuleData);
+  std::unique_ptr<NaClModuleData> nacl_module_data(new NaClModuleData);
 
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
     const base::DictionaryValue* module_value = NULL;

@@ -4,6 +4,7 @@
 
 #include "extensions/common/message_bundle.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,6 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -59,7 +59,7 @@ static bool BadKeyMessage(const std::string& name, std::string* error) {
 // static
 MessageBundle* MessageBundle::Create(const CatalogVector& locale_catalogs,
                                      std::string* error) {
-  scoped_ptr<MessageBundle> message_bundle(new MessageBundle);
+  std::unique_ptr<MessageBundle> message_bundle(new MessageBundle);
   if (!message_bundle->Init(locale_catalogs, error))
     return NULL;
 

@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_COMMON_VALUE_COUNTER_H_
 #define EXTENSIONS_COMMON_VALUE_COUNTER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -42,7 +42,7 @@ class ValueCounter {
 
  private:
   struct Entry;
-  std::vector<scoped_ptr<Entry>> entries_;
+  std::vector<std::unique_ptr<Entry>> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(ValueCounter);
 };

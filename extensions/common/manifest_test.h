@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -34,8 +35,8 @@ class ManifestTest : public testing::Test {
    public:
     explicit ManifestData(const char* name);
     ManifestData(base::DictionaryValue* manifest, const char* name);
-    explicit ManifestData(scoped_ptr<base::DictionaryValue> manifest);
-    explicit ManifestData(scoped_ptr<base::DictionaryValue> manifest,
+    explicit ManifestData(std::unique_ptr<base::DictionaryValue> manifest);
+    explicit ManifestData(std::unique_ptr<base::DictionaryValue> manifest,
                           const char* name);
     // C++98 requires the copy constructor for a type to be visible if you
     // take a const-ref of a temporary for that type.  Since Manifest
@@ -58,7 +59,7 @@ class ManifestTest : public testing::Test {
    private:
     const std::string name_;
     mutable base::DictionaryValue* manifest_;
-    mutable scoped_ptr<base::DictionaryValue> manifest_holder_;
+    mutable std::unique_ptr<base::DictionaryValue> manifest_holder_;
   };
 
   // Allows the test implementation to override a loaded test manifest's
@@ -69,9 +70,8 @@ class ManifestTest : public testing::Test {
   // extensions/test/data/manifest_tests.
   virtual base::FilePath GetTestDataDir();
 
-  scoped_ptr<base::DictionaryValue> LoadManifest(
-      char const* manifest_name,
-      std::string* error);
+  std::unique_ptr<base::DictionaryValue> LoadManifest(char const* manifest_name,
+                                                      std::string* error);
 
   scoped_refptr<extensions::Extension> LoadExtension(
       const ManifestData& manifest,

@@ -5,11 +5,11 @@
 #include "extensions/common/permissions/usb_device_permission_data.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -49,12 +49,12 @@ bool UsbDevicePermissionData::Check(
           interface_id_ == specific_param.interface_id);
 }
 
-scoped_ptr<base::Value> UsbDevicePermissionData::ToValue() const {
+std::unique_ptr<base::Value> UsbDevicePermissionData::ToValue() const {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kVendorIdKey, vendor_id_);
   result->SetInteger(kProductIdKey, product_id_);
   result->SetInteger(kInterfaceIdKey, interface_id_);
-  return scoped_ptr<base::Value>(result);
+  return std::unique_ptr<base::Value>(result);
 }
 
 bool UsbDevicePermissionData::FromValue(const base::Value* value) {

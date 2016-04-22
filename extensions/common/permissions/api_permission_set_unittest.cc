@@ -44,7 +44,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
@@ -79,7 +79,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
 
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-send-to::8899"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
@@ -93,7 +93,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
 
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
@@ -131,7 +131,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   apis1.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
@@ -159,7 +159,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   apis2.insert(APIPermission::kSerial);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
     value->Append(new base::StringValue("udp-send-to::8899"));
@@ -170,7 +170,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   expected_apis.insert(APIPermission::kAudioCapture);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
@@ -205,7 +205,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
   apis1.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
@@ -225,7 +225,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
   apis2.insert(APIPermission::kSerial);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-send-to::8899"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
@@ -235,7 +235,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
   expected_apis.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
@@ -268,7 +268,7 @@ TEST(APIPermissionSetTest, IPC) {
   apis.insert(APIPermission::kDns);
   permission = permission_info->CreateAPIPermission();
   {
-    scoped_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));

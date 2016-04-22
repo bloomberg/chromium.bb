@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 namespace extensions {
@@ -24,7 +24,7 @@ struct StackFrame {
   ~StackFrame();
 
   // Construct a stack frame from a reported plain-text frame.
-  static scoped_ptr<StackFrame> CreateFromText(
+  static std::unique_ptr<StackFrame> CreateFromText(
       const base::string16& frame_text);
 
   bool operator==(const StackFrame& rhs) const;

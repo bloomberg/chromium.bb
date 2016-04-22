@@ -17,7 +17,7 @@ using url_matcher::URLMatcherFactory;
 namespace extensions {
 
 EventFilter::EventMatcherEntry::EventMatcherEntry(
-    scoped_ptr<EventMatcher> event_matcher,
+    std::unique_ptr<EventMatcher> event_matcher,
     URLMatcher* url_matcher,
     const URLMatcherConditionSet::Vector& condition_sets)
     : event_matcher_(std::move(event_matcher)), url_matcher_(url_matcher) {
@@ -53,9 +53,9 @@ EventFilter::~EventFilter() {
   }
 }
 
-EventFilter::MatcherID
-EventFilter::AddEventMatcher(const std::string& event_name,
-                             scoped_ptr<EventMatcher> matcher) {
+EventFilter::MatcherID EventFilter::AddEventMatcher(
+    const std::string& event_name,
+    std::unique_ptr<EventMatcher> matcher) {
   MatcherID id = next_id_++;
   URLMatcherConditionSet::Vector condition_sets;
   if (!CreateConditionSets(id, matcher.get(), &condition_sets))

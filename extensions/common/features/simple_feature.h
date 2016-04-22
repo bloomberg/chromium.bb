@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
@@ -52,7 +52,7 @@ class SimpleFeature : public Feature {
   bool HasDependencies() const;
 
   // Adds a filter to this feature. The feature takes ownership of the filter.
-  void AddFilter(scoped_ptr<SimpleFeatureFilter> filter);
+  void AddFilter(std::unique_ptr<SimpleFeatureFilter> filter);
 
   // Parses the JSON representation of a feature into the fields of this object.
   // Unspecified values in the JSON are not modified in the object. This allows
@@ -205,7 +205,7 @@ class SimpleFeature : public Feature {
   bool component_extensions_auto_granted_;
   std::string command_line_switch_;
 
-  std::vector<scoped_ptr<SimpleFeatureFilter>> filters_;
+  std::vector<std::unique_ptr<SimpleFeatureFilter>> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };

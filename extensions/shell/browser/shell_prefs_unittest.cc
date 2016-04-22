@@ -45,7 +45,7 @@ class ShellPrefsTest : public testing::Test {
 };
 
 TEST_F(ShellPrefsTest, CreateLocalState) {
-  scoped_ptr<PrefService> local_state =
+  std::unique_ptr<PrefService> local_state =
       shell_prefs::CreateLocalState(browser_context_.GetPath());
   ASSERT_TRUE(local_state);
 
@@ -60,7 +60,7 @@ TEST_F(ShellPrefsTest, CreateLocalState) {
 
 TEST_F(ShellPrefsTest, CreateUserPrefService) {
   // Create the pref service. This loads the test pref file.
-  scoped_ptr<PrefService> service =
+  std::unique_ptr<PrefService> service =
       shell_prefs::CreateUserPrefService(&browser_context_);
 
   // Some basic extension preferences are registered.

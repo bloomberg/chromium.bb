@@ -66,7 +66,7 @@ class ShellExtensionSystem : public ExtensionSystem {
       const UnloadedExtensionInfo::Reason reason) override;
   const OneShotEvent& ready() const override;
   ContentVerifier* content_verifier() override;
-  scoped_ptr<ExtensionSet> GetDependentExtensions(
+  std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
   void InstallUpdate(const std::string& extension_id,
                      const base::FilePath& temp_dir) override;
@@ -79,10 +79,10 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Data to be accessed on the IO thread. Must outlive process_manager_.
   scoped_refptr<InfoMap> info_map_;
 
-  scoped_ptr<ServiceWorkerManager> service_worker_manager_;
-  scoped_ptr<RuntimeData> runtime_data_;
-  scoped_ptr<QuotaService> quota_service_;
-  scoped_ptr<AppSorting> app_sorting_;
+  std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
+  std::unique_ptr<RuntimeData> runtime_data_;
+  std::unique_ptr<QuotaService> quota_service_;
+  std::unique_ptr<AppSorting> app_sorting_;
 
   scoped_refptr<ValueStoreFactory> store_factory_;
 

@@ -229,8 +229,8 @@ bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
   return false;
 }
 
-scoped_ptr<base::ListValue> URLPatternSet::ToValue() const {
-  scoped_ptr<base::ListValue> value(new base::ListValue);
+std::unique_ptr<base::ListValue> URLPatternSet::ToValue() const {
+  std::unique_ptr<base::ListValue> value(new base::ListValue);
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i)
     value->AppendIfNotPresent(new base::StringValue(i->GetAsString()));
@@ -262,8 +262,9 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
   return true;
 }
 
-scoped_ptr<std::vector<std::string> > URLPatternSet::ToStringVector() const {
-  scoped_ptr<std::vector<std::string> > value(new std::vector<std::string>);
+std::unique_ptr<std::vector<std::string>> URLPatternSet::ToStringVector()
+    const {
+  std::unique_ptr<std::vector<std::string>> value(new std::vector<std::string>);
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end();
        ++i) {

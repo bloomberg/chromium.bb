@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_WEBVIEW_INFO_H_
 #define EXTENSIONS_COMMON_MANIFEST_HANDLERS_WEBVIEW_INFO_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 
@@ -32,11 +32,11 @@ class WebviewInfo : public Extension::ManifestData {
   WebviewInfo(const std::string& extension_id);
   ~WebviewInfo() override;
 
-  void AddPartitionItem(scoped_ptr<PartitionItem> item);
+  void AddPartitionItem(std::unique_ptr<PartitionItem> item);
 
  private:
   std::string extension_id_;
-  std::vector<scoped_ptr<PartitionItem>> partition_items_;
+  std::vector<std::unique_ptr<PartitionItem>> partition_items_;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewInfo);
 };

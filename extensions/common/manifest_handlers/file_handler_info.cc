@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -134,7 +135,7 @@ bool LoadFileHandler(const std::string& handler_id,
 }
 
 bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<FileHandlers> info(new FileHandlers);
+  std::unique_ptr<FileHandlers> info(new FileHandlers);
   const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(keys::kFileHandlers,
                                             &all_handlers)) {

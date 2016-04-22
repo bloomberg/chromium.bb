@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/common/extension_set.h"
+
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -131,7 +133,7 @@ TEST(ExtensionSetTest, ExtensionSet) {
       CreateTestExtension("e", std::string(), std::string()));
   ASSERT_TRUE(ext5.get() && ext6.get());
 
-  scoped_ptr<ExtensionSet> to_add(new ExtensionSet());
+  std::unique_ptr<ExtensionSet> to_add(new ExtensionSet());
   // |ext3| is already in |extensions|, should not affect size.
   EXPECT_TRUE(to_add->Insert(ext3));
   EXPECT_TRUE(to_add->Insert(ext5));

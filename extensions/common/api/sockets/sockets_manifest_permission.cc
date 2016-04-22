@@ -4,7 +4,8 @@
 
 #include "extensions/common/api/sockets/sockets_manifest_permission.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,7 +50,7 @@ static bool ParseHostPattern(
 static bool ParseHostPatterns(
     SocketsManifestPermission* permission,
     content::SocketPermissionRequest::OperationType operation_type,
-    const scoped_ptr<SocketHostPatterns>& host_patterns,
+    const std::unique_ptr<SocketHostPatterns>& host_patterns,
     base::string16* error) {
   if (!host_patterns)
     return true;
@@ -72,7 +73,7 @@ static bool ParseHostPatterns(
 }
 
 static void SetHostPatterns(
-    scoped_ptr<SocketHostPatterns>& host_patterns,
+    std::unique_ptr<SocketHostPatterns>& host_patterns,
     const SocketsManifestPermission* permission,
     content::SocketPermissionRequest::OperationType operation_type) {
   host_patterns.reset(new SocketHostPatterns());
@@ -149,32 +150,33 @@ SocketsManifestPermission::SocketsManifestPermission() {}
 SocketsManifestPermission::~SocketsManifestPermission() {}
 
 // static
-scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
+std::unique_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
     const base::Value& value,
     base::string16* error) {
-  scoped_ptr<Sockets> sockets = Sockets::FromValue(value, error);
+  std::unique_ptr<Sockets> sockets = Sockets::FromValue(value, error);
   if (!sockets)
-    return scoped_ptr<SocketsManifestPermission>();
+    return std::unique_ptr<SocketsManifestPermission>();
 
-  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
+  std::unique_ptr<SocketsManifestPermission> result(
+      new SocketsManifestPermission());
   if (sockets->udp) {
     if (!ParseHostPatterns(result.get(),
                            SocketPermissionRequest::UDP_BIND,
                            sockets->udp->bind,
                            error)) {
-      return scoped_ptr<SocketsManifestPermission>();
+      return std::unique_ptr<SocketsManifestPermission>();
     }
     if (!ParseHostPatterns(result.get(),
                            SocketPermissionRequest::UDP_SEND_TO,
                            sockets->udp->send,
                            error)) {
-      return scoped_ptr<SocketsManifestPermission>();
+      return std::unique_ptr<SocketsManifestPermission>();
     }
     if (!ParseHostPatterns(result.get(),
                            SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
                            sockets->udp->multicast_membership,
                            error)) {
-      return scoped_ptr<SocketsManifestPermission>();
+      return std::unique_ptr<SocketsManifestPermission>();
     }
   }
   if (sockets->tcp) {
@@ -182,7 +184,7 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
                            SocketPermissionRequest::TCP_CONNECT,
                            sockets->tcp->connect,
                            error)) {
-      return scoped_ptr<SocketsManifestPermission>();
+      return std::unique_ptr<SocketsManifestPermission>();
     }
   }
   if (sockets->tcp_server) {
@@ -190,7 +192,7 @@ scoped_ptr<SocketsManifestPermission> SocketsManifestPermission::FromValue(
                            SocketPermissionRequest::TCP_LISTEN,
                            sockets->tcp_server->listen,
                            error)) {
-      return scoped_ptr<SocketsManifestPermission>();
+      return std::unique_ptr<SocketsManifestPermission>();
     }
   }
   return result;
@@ -224,7 +226,7 @@ bool SocketsManifestPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;
   base::string16 error;
-  scoped_ptr<SocketsManifestPermission> manifest_permission(
+  std::unique_ptr<SocketsManifestPermission> manifest_permission(
       SocketsManifestPermission::FromValue(*value, &error));
 
   if (!manifest_permission)
@@ -234,7 +236,7 @@ bool SocketsManifestPermission::FromValue(const base::Value* value) {
   return true;
 }
 
-scoped_ptr<base::Value> SocketsManifestPermission::ToValue() const {
+std::unique_ptr<base::Value> SocketsManifestPermission::ToValue() const {
   Sockets sockets;
 
   sockets.udp.reset(new Sockets::Udp());
@@ -264,7 +266,7 @@ scoped_ptr<base::Value> SocketsManifestPermission::ToValue() const {
     sockets.tcp_server.reset(NULL);
   }
 
-  return scoped_ptr<base::Value>(sockets.ToValue().release());
+  return std::unique_ptr<base::Value>(sockets.ToValue().release());
 }
 
 ManifestPermission* SocketsManifestPermission::Diff(
@@ -272,7 +274,8 @@ ManifestPermission* SocketsManifestPermission::Diff(
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
+  std::unique_ptr<SocketsManifestPermission> result(
+      new SocketsManifestPermission());
   result->permissions_ = base::STLSetDifference<SocketPermissionEntrySet>(
       permissions_, other->permissions_);
   return result.release();
@@ -283,7 +286,8 @@ ManifestPermission* SocketsManifestPermission::Union(
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
+  std::unique_ptr<SocketsManifestPermission> result(
+      new SocketsManifestPermission());
   result->permissions_ = base::STLSetUnion<SocketPermissionEntrySet>(
       permissions_, other->permissions_);
   return result.release();
@@ -294,7 +298,8 @@ ManifestPermission* SocketsManifestPermission::Intersect(
   const SocketsManifestPermission* other =
       static_cast<const SocketsManifestPermission*>(rhs);
 
-  scoped_ptr<SocketsManifestPermission> result(new SocketsManifestPermission());
+  std::unique_ptr<SocketsManifestPermission> result(
+      new SocketsManifestPermission());
   result->permissions_ = base::STLSetIntersection<SocketPermissionEntrySet>(
       permissions_, other->permissions_);
   return result.release();

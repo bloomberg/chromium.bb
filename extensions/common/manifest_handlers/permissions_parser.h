@@ -5,7 +5,8 @@
 #ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_PERMISSIONS_PARSER_H_
 #define EXTENSIONS_COMMON_MANIFEST_HANDLERS_PERMISSIONS_PARSER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -54,8 +55,8 @@ class PermissionsParser {
   struct InitialPermissions;
 
   // The initial permissions for the extension, which can still be modified.
-  scoped_ptr<InitialPermissions> initial_required_permissions_;
-  scoped_ptr<InitialPermissions> initial_optional_permissions_;
+  std::unique_ptr<InitialPermissions> initial_required_permissions_;
+  std::unique_ptr<InitialPermissions> initial_optional_permissions_;
 };
 
 }  // namespace extensions

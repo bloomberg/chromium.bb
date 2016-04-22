@@ -28,8 +28,7 @@ bool CreateManifestPermission(
     ManifestPermissionSet* manifest_permissions,
     base::string16* error,
     std::vector<std::string>* unhandled_permissions) {
-
-  scoped_ptr<ManifestPermission> permission(
+  std::unique_ptr<ManifestPermission> permission(
       ManifestHandler::CreatePermission(permission_name));
 
   if (!permission) {

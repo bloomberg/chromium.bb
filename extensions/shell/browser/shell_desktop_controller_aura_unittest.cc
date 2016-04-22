@@ -4,8 +4,10 @@
 
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -29,10 +31,10 @@ class ShellDesktopControllerAuraTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
 #if defined(OS_CHROMEOS)
-    scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     power_manager_client_ = new chromeos::FakePowerManagerClient();
-    dbus_setter->SetPowerManagerClient(make_scoped_ptr(power_manager_client_));
+    dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
 #endif
     aura::test::AuraTestBase::SetUp();
     controller_.reset(new ShellDesktopControllerAura());
@@ -47,7 +49,7 @@ class ShellDesktopControllerAuraTest : public aura::test::AuraTestBase {
   }
 
  protected:
-  scoped_ptr<ShellDesktopControllerAura> controller_;
+  std::unique_ptr<ShellDesktopControllerAura> controller_;
 
 #if defined(OS_CHROMEOS)
   chromeos::FakePowerManagerClient* power_manager_client_;  // Not owned.

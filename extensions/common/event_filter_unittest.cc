@@ -4,10 +4,10 @@
 
 #include "extensions/common/event_filter.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"
@@ -30,32 +30,35 @@ class EventFilterUnittest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::Value> HostSuffixDict(const std::string& host_suffix) {
-    scoped_ptr<base::DictionaryValue> dict(new DictionaryValue());
+  std::unique_ptr<base::Value> HostSuffixDict(const std::string& host_suffix) {
+    std::unique_ptr<base::DictionaryValue> dict(new DictionaryValue());
     dict->Set("hostSuffix", new base::StringValue(host_suffix));
-    return scoped_ptr<base::Value>(dict.release());
+    return std::unique_ptr<base::Value>(dict.release());
   }
 
-  scoped_ptr<base::ListValue> ValueAsList(scoped_ptr<base::Value> value) {
-    scoped_ptr<base::ListValue> result(new base::ListValue());
+  std::unique_ptr<base::ListValue> ValueAsList(
+      std::unique_ptr<base::Value> value) {
+    std::unique_ptr<base::ListValue> result(new base::ListValue());
     result->Append(value.release());
     return result;
   }
 
-  scoped_ptr<EventMatcher> AllURLs() {
-    return scoped_ptr<EventMatcher>(new EventMatcher(
-        scoped_ptr<DictionaryValue>(new DictionaryValue), MSG_ROUTING_NONE));
+  std::unique_ptr<EventMatcher> AllURLs() {
+    return std::unique_ptr<EventMatcher>(
+        new EventMatcher(std::unique_ptr<DictionaryValue>(new DictionaryValue),
+                         MSG_ROUTING_NONE));
   }
 
-  scoped_ptr<EventMatcher> HostSuffixMatcher(const std::string& host_suffix) {
+  std::unique_ptr<EventMatcher> HostSuffixMatcher(
+      const std::string& host_suffix) {
     return MatcherFromURLFilterList(ValueAsList(HostSuffixDict(host_suffix)));
   }
 
-  scoped_ptr<EventMatcher> MatcherFromURLFilterList(
-      scoped_ptr<ListValue> url_filter_list) {
-    scoped_ptr<DictionaryValue> filter_dict(new DictionaryValue);
+  std::unique_ptr<EventMatcher> MatcherFromURLFilterList(
+      std::unique_ptr<ListValue> url_filter_list) {
+    std::unique_ptr<DictionaryValue> filter_dict(new DictionaryValue);
     filter_dict->Set("url", url_filter_list.release());
-    return scoped_ptr<EventMatcher>(
+    return std::unique_ptr<EventMatcher>(
         new EventMatcher(std::move(filter_dict), MSG_ROUTING_NONE));
   }
 
@@ -135,11 +138,11 @@ TEST_F(EventFilterUnittest, TestURLMatching) {
 }
 
 TEST_F(EventFilterUnittest, TestMultipleURLFiltersMatchOnAny) {
-  scoped_ptr<base::ListValue> filters(new base::ListValue());
+  std::unique_ptr<base::ListValue> filters(new base::ListValue());
   filters->Append(HostSuffixDict("google.com").release());
   filters->Append(HostSuffixDict("yahoo.com").release());
 
-  scoped_ptr<EventMatcher> matcher(
+  std::unique_ptr<EventMatcher> matcher(
       MatcherFromURLFilterList(std::move(filters)));
   int id = event_filter_.AddEventMatcher("event1", std::move(matcher));
 
@@ -210,9 +213,9 @@ TEST_F(EventFilterUnittest, RemoveEventMatcherReturnsEventName) {
 }
 
 TEST_F(EventFilterUnittest, InvalidURLFilterCantBeAdded) {
-  scoped_ptr<base::ListValue> filter_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> filter_list(new base::ListValue());
   filter_list->Append(new base::ListValue());  // Should be a dict.
-  scoped_ptr<EventMatcher> matcher(
+  std::unique_ptr<EventMatcher> matcher(
       MatcherFromURLFilterList(std::move(filter_list)));
   int id1 = event_filter_.AddEventMatcher("event1", std::move(matcher));
   EXPECT_TRUE(event_filter_.IsURLMatcherEmpty());
@@ -220,9 +223,9 @@ TEST_F(EventFilterUnittest, InvalidURLFilterCantBeAdded) {
 }
 
 TEST_F(EventFilterUnittest, EmptyListOfURLFiltersMatchesAllURLs) {
-  scoped_ptr<base::ListValue> filter_list(new base::ListValue());
-  scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(
-      scoped_ptr<ListValue>(new ListValue)));
+  std::unique_ptr<base::ListValue> filter_list(new base::ListValue());
+  std::unique_ptr<EventMatcher> matcher(
+      MatcherFromURLFilterList(std::unique_ptr<ListValue>(new ListValue)));
   int id = event_filter_.AddEventMatcher("event1", std::move(matcher));
   std::set<int> matches = event_filter_.MatchEvent("event1",
       google_event_, MSG_ROUTING_NONE);
@@ -250,8 +253,8 @@ TEST_F(EventFilterUnittest, EmptyURLsShouldBeMatchedByEmptyURLFilters) {
 
 TEST_F(EventFilterUnittest,
     EmptyURLsShouldBeMatchedByEmptyURLFiltersWithAnEmptyItem) {
-  scoped_ptr<EventMatcher> matcher(MatcherFromURLFilterList(ValueAsList(
-      scoped_ptr<Value>(new DictionaryValue()))));
+  std::unique_ptr<EventMatcher> matcher(MatcherFromURLFilterList(
+      ValueAsList(std::unique_ptr<Value>(new DictionaryValue()))));
   int id = event_filter_.AddEventMatcher("event1", std::move(matcher));
   std::set<int> matches = event_filter_.MatchEvent(
       "event1", empty_url_event_, MSG_ROUTING_NONE);

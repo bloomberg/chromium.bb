@@ -118,9 +118,8 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            std::string* utf8_error) {
   DCHECK(utf8_error);
   base::string16 error;
-  scoped_ptr<extensions::Manifest> manifest(
-      new extensions::Manifest(
-          location, scoped_ptr<base::DictionaryValue>(value.DeepCopy())));
+  std::unique_ptr<extensions::Manifest> manifest(new extensions::Manifest(
+      location, std::unique_ptr<base::DictionaryValue>(value.DeepCopy())));
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
@@ -384,7 +383,7 @@ Extension::ManifestData* Extension::GetManifestData(const std::string& key)
 void Extension::SetManifestData(const std::string& key,
                                 Extension::ManifestData* data) {
   DCHECK(!finished_parsing_manifest_ && thread_checker_.CalledOnValidThread());
-  manifest_data_[key] = scoped_ptr<ManifestData>(data);
+  manifest_data_[key] = std::unique_ptr<ManifestData>(data);
 }
 
 Manifest::Location Extension::location() const {
@@ -493,7 +492,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
 }
 
 Extension::Extension(const base::FilePath& path,
-                     scoped_ptr<extensions::Manifest> manifest)
+                     std::unique_ptr<extensions::Manifest> manifest)
     : manifest_version_(0),
       converted_from_user_script_(false),
       manifest_(manifest.release()),

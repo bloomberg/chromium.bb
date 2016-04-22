@@ -4,8 +4,9 @@
 
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
@@ -61,7 +62,7 @@ bool RequirementsHandler::AlwaysParseForType(Manifest::Type type) const {
 }
 
 bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<RequirementsInfo> requirements(
+  std::unique_ptr<RequirementsInfo> requirements(
       new RequirementsInfo(extension->manifest()));
 
   if (!extension->manifest()->HasKey(keys::kRequirements)) {

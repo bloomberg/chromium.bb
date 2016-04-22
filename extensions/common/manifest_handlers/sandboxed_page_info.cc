@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -64,7 +65,7 @@ SandboxedPageHandler::~SandboxedPageHandler() {
 }
 
 bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<SandboxedPageInfo> sandboxed_info(new SandboxedPageInfo);
+  std::unique_ptr<SandboxedPageInfo> sandboxed_info(new SandboxedPageInfo);
 
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kSandboxedPages, &list_value)) {

@@ -6,10 +6,10 @@
 #define EXTENSIONS_COMMON_FEATURES_BASE_FEATURE_PROVIDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
 
@@ -38,7 +38,7 @@ class BaseFeatureProvider : public FeatureProvider {
   const FeatureMap& GetAllFeatures() const override;
 
  private:
-  std::map<std::string, scoped_ptr<Feature>> features_;
+  std::map<std::string, std::unique_ptr<Feature>> features_;
 
   // Populated on first use.
   mutable std::vector<std::string> feature_names_;

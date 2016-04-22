@@ -293,7 +293,7 @@ bool SimpleFeature::HasDependencies() const {
   return !dependencies_.empty();
 }
 
-void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
+void SimpleFeature::AddFilter(std::unique_ptr<SimpleFeatureFilter> filter) {
   filters_.push_back(std::move(filter));
 }
 

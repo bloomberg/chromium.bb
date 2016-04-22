@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -206,7 +207,7 @@ SharedModuleHandler::~SharedModuleHandler() {
 }
 
 bool SharedModuleHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<SharedModuleInfo> info(new SharedModuleInfo);
+  std::unique_ptr<SharedModuleInfo> info(new SharedModuleInfo);
   if (!info->Parse(extension, error))
     return false;
   extension->SetManifestData(kSharedModule, info.release());

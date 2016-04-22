@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,7 +21,6 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
@@ -207,7 +207,7 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
                                        Manifest::Location location,
                                        int flags,
                                        std::string* error) {
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       LoadManifest(extension_path, error);
   if (!manifest.get())
     return NULL;
@@ -229,13 +229,13 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
   return extension;
 }
 
-scoped_ptr<base::DictionaryValue> LoadManifest(
+std::unique_ptr<base::DictionaryValue> LoadManifest(
     const base::FilePath& extension_path,
     std::string* error) {
   return LoadManifest(extension_path, kManifestFilename, error);
 }
 
-scoped_ptr<base::DictionaryValue> LoadManifest(
+std::unique_ptr<base::DictionaryValue> LoadManifest(
     const base::FilePath& extension_path,
     const base::FilePath::CharType* manifest_filename,
     std::string* error) {
@@ -246,7 +246,7 @@ scoped_ptr<base::DictionaryValue> LoadManifest(
   }
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, error));
+  std::unique_ptr<base::Value> root(deserializer.Deserialize(NULL, error));
   if (!root.get()) {
     if (error->empty()) {
       // If |error| is empty, than the file could not be read.
@@ -541,7 +541,7 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
   if (!default_locale.empty()) {
     // Touch disk only if extension is localized.
     std::string error;
-    scoped_ptr<MessageBundle> bundle(
+    std::unique_ptr<MessageBundle> bundle(
         LoadMessageBundle(extension_path, default_locale, &error));
 
     if (bundle.get())
@@ -582,7 +582,7 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapWithImports(
   }
 
   std::string error;
-  scoped_ptr<MessageBundle> bundle(
+  std::unique_ptr<MessageBundle> bundle(
       LoadMessageBundle(extension->path(), default_locale, &error));
 
   if (bundle.get()) {
@@ -602,7 +602,7 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapWithImports(
       NOTREACHED() << "Missing shared module " << it->extension_id;
       continue;
     }
-    scoped_ptr<MessageBundle> imported_bundle(
+    std::unique_ptr<MessageBundle> imported_bundle(
         LoadMessageBundle(imported_extension->path(), default_locale, &error));
 
     if (imported_bundle.get()) {

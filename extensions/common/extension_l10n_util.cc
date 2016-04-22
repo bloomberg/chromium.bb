@@ -41,8 +41,9 @@ base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
   base::FilePath file =
       locale_path.AppendASCII(locale).Append(extensions::kMessagesFilename);
   JSONFileValueDeserializer messages_deserializer(file);
-  scoped_ptr<base::DictionaryValue> dictionary = base::DictionaryValue::From(
-      messages_deserializer.Deserialize(NULL, error));
+  std::unique_ptr<base::DictionaryValue> dictionary =
+      base::DictionaryValue::From(
+          messages_deserializer.Deserialize(NULL, error));
   if (!dictionary) {
     if (error->empty()) {
       // JSONFileValueSerializer just returns NULL if file cannot be found. It
@@ -265,9 +266,9 @@ bool LocalizeExtension(const base::FilePath& extension_path,
 
   std::string default_locale = GetDefaultLocaleFromManifest(*manifest, error);
 
-  scoped_ptr<extensions::MessageBundle> message_bundle(
-      extensions::file_util::LoadMessageBundle(
-          extension_path, default_locale, error));
+  std::unique_ptr<extensions::MessageBundle> message_bundle(
+      extensions::file_util::LoadMessageBundle(extension_path, default_locale,
+                                               error));
 
   if (!message_bundle.get() && !error->empty())
     return false;
@@ -415,7 +416,7 @@ bool ValidateExtensionLocales(const base::FilePath& extension_path,
        locale != valid_locales.end();
        ++locale) {
     std::string locale_error;
-    scoped_ptr<base::DictionaryValue> catalog(
+    std::unique_ptr<base::DictionaryValue> catalog(
         LoadMessageFile(locale_path, *locale, &locale_error));
 
     if (!locale_error.empty()) {

@@ -5,8 +5,9 @@
 #ifndef EXTENSIONS_COMMON_EVENT_MATCHER_H_
 #define EXTENSIONS_COMMON_EVENT_MATCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace extensions {
@@ -21,8 +22,7 @@ extern const char kEventFilterServiceTypeKey[];
 // MatchNonURLCriteria() - URL matching is handled by EventFilter.
 class EventMatcher {
  public:
-  EventMatcher(scoped_ptr<base::DictionaryValue> filter,
-               int routing_id);
+  EventMatcher(std::unique_ptr<base::DictionaryValue> filter, int routing_id);
   ~EventMatcher();
 
   // Returns true if |event_info| satisfies this matcher's criteria, not taking
@@ -55,7 +55,7 @@ class EventMatcher {
   // {url: [{hostSuffix: 'google.com'}]}
   //
   // The valid filter keys are event-specific.
-  scoped_ptr<base::DictionaryValue> filter_;
+  std::unique_ptr<base::DictionaryValue> filter_;
 
   int routing_id_;
 
