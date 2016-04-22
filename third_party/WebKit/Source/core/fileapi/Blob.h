@@ -52,12 +52,12 @@ class ExecutionContext;
 class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static Blob* create(ExceptionState&)
+    static Blob* create(ExecutionContext*, ExceptionState&)
     {
         return new Blob(BlobDataHandle::create());
     }
 
-    static Blob* create(const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>&, const BlobPropertyBag&, ExceptionState&);
+    static Blob* create(ExecutionContext*, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>&, const BlobPropertyBag&, ExceptionState&);
 
     static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {

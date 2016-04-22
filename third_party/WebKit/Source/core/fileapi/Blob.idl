@@ -32,6 +32,7 @@
 
 [
     Constructor(optional sequence<(ArrayBuffer or ArrayBufferView or Blob or DOMString)> blobParts, optional BlobPropertyBag options),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=(Window,Worker),
 ] interface Blob {

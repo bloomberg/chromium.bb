@@ -29,6 +29,7 @@
     // TODO(jsbell): fileName parameter has [EnsureUTF16] in the spec; use
     // USVString? https://github.com/w3c/FileAPI/issues/9
     Constructor(sequence<(Blob or DOMString or ArrayBufferView or ArrayBuffer)> fileBits, DOMString fileName, optional FilePropertyBag options),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=(Window,Worker),
 ] interface File : Blob {

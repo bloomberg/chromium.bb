@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FilePropertyBag.h"
+#include "core/frame/UseCounter.h"
 #include "platform/FileMetadata.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/blob/BlobData.h"
@@ -88,7 +89,7 @@ static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSyste
 }
 
 // static
-File* File::create(const HeapVector<BlobOrStringOrArrayBufferViewOrArrayBuffer>& fileBits, const String& fileName, const FilePropertyBag& options, ExceptionState& exceptionState)
+File* File::create(ExecutionContext* context, const HeapVector<BlobOrStringOrArrayBufferViewOrArrayBuffer>& fileBits, const String& fileName, const FilePropertyBag& options, ExceptionState& exceptionState)
 {
     ASSERT(options.hasType());
     if (!options.type().containsOnlyASCII()) {
@@ -103,6 +104,8 @@ File* File::create(const HeapVector<BlobOrStringOrArrayBufferViewOrArrayBuffer>&
         lastModified = currentTimeMS();
     ASSERT(options.hasEndings());
     bool normalizeLineEndingsToNative = options.endings() == "native";
+    if (normalizeLineEndingsToNative)
+        UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
 
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(options.type().lower());

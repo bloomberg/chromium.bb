@@ -35,6 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/BlobPropertyBag.h"
+#include "core/frame/UseCounter.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 
@@ -85,7 +86,7 @@ Blob::~Blob()
 }
 
 // static
-Blob* Blob::create(const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
+Blob* Blob::create(ExecutionContext* context, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
 {
     ASSERT(options.hasType());
     if (!options.type().containsOnlyASCII()) {
@@ -95,6 +96,8 @@ Blob* Blob::create(const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>&
 
     ASSERT(options.hasEndings());
     bool normalizeLineEndingsToNative = options.endings() == "native";
+    if (normalizeLineEndingsToNative)
+        UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
 
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(options.type().lower());

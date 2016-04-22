@@ -1135,6 +1135,7 @@ public:
         TextDocument = 1317,
         TextDocumentInFrame = 1318,
         ViewSourceDocument = 1319,
+        FileAPINativeLineEndings = 1320,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
