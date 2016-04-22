@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "content/public/test/browser_test.h"
+#include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"
 #include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -57,7 +58,8 @@ class HeadlessDevToolsClientTest : public HeadlessBrowserTest,
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 };
 
-class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest {
+class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest,
+                                             page::Observer {
  public:
   void RunDevToolsClientTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
@@ -65,14 +67,18 @@ class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest {
         page::NavigateParams::Builder()
             .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .Build();
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(std::move(params));
   }
 
-  // TODO(skyostil): Wait for a load event once we support them.
-  void DidFinishNavigation(bool success) override {
-    EXPECT_TRUE(success);
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetPage()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
+
+  // Check that events with no parameters still get a parameters object.
+  void OnFrameResized(const page::FrameResizedParams& params) override {}
 };
 
 DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientNavigationTest);
@@ -145,5 +151,39 @@ class HeadlessDevToolsClientCallbackTest : public HeadlessDevToolsClientTest {
 };
 
 DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientCallbackTest);
+
+class HeadlessDevToolsClientObserverTest : public HeadlessDevToolsClientTest,
+                                           network::Observer {
+ public:
+  void RunDevToolsClientTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetNetwork()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnRequestWillBeSent(
+      const network::RequestWillBeSentParams& params) override {
+    EXPECT_EQ("GET", params.GetRequest()->GetMethod());
+    EXPECT_EQ(embedded_test_server()->GetURL("/hello.html").spec(),
+              params.GetRequest()->GetUrl());
+  }
+
+  void OnResponseReceived(
+      const network::ResponseReceivedParams& params) override {
+    EXPECT_EQ(200, params.GetResponse()->GetStatus());
+    EXPECT_EQ("OK", params.GetResponse()->GetStatusText());
+    std::string content_type;
+    EXPECT_TRUE(params.GetResponse()->GetHeaders()->GetString("Content-Type",
+                                                              &content_type));
+    EXPECT_EQ("text/html", content_type);
+
+    devtools_client_->GetNetwork()->RemoveObserver(this);
+    FinishAsynchronousTest();
+  }
+};
+
+DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientObserverTest);
 
 }  // namespace headless

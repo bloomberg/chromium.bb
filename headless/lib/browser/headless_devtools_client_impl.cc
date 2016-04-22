@@ -83,29 +83,58 @@ void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
   DCHECK_EQ(agent_host_, agent_host);
   std::unique_ptr<base::Value> message =
       base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
-  base::DictionaryValue* message_dict;
+  const base::DictionaryValue* message_dict;
   if (!message || !message->GetAsDictionary(&message_dict)) {
     NOTREACHED() << "Badly formed reply";
     return;
   }
+  if (!DispatchMessageReply(*message_dict) && !DispatchEvent(*message_dict))
+    DLOG(ERROR) << "Unhandled protocol message: " << json_message;
+}
+
+bool HeadlessDevToolsClientImpl::DispatchMessageReply(
+    const base::DictionaryValue& message_dict) {
   int id = 0;
-  DCHECK(message_dict->GetInteger("id", &id));
+  if (!message_dict.GetInteger("id", &id))
+    return false;
   auto it = pending_messages_.find(id);
   if (it == pending_messages_.end()) {
     NOTREACHED() << "Unexpected reply";
-    return;
+    return false;
   }
   if (!it->second.callback_with_result.is_null()) {
-    base::DictionaryValue* result_dict;
-    if (!message_dict->GetDictionary("result", &result_dict)) {
+    const base::DictionaryValue* result_dict;
+    if (!message_dict.GetDictionary("result", &result_dict)) {
       NOTREACHED() << "Badly formed reply result";
-      return;
+      return false;
     }
     it->second.callback_with_result.Run(*result_dict);
   } else if (!it->second.callback.is_null()) {
     it->second.callback.Run();
   }
   pending_messages_.erase(it);
+  return true;
+}
+
+bool HeadlessDevToolsClientImpl::DispatchEvent(
+    const base::DictionaryValue& message_dict) {
+  std::string method;
+  if (!message_dict.GetString("method", &method))
+    return false;
+  auto it = event_handlers_.find(method);
+  if (it == event_handlers_.end()) {
+    NOTREACHED() << "Unknown event: " << method;
+    return false;
+  }
+  if (!it->second.is_null()) {
+    const base::DictionaryValue* result_dict;
+    if (!message_dict.GetDictionary("params", &result_dict)) {
+      NOTREACHED() << "Badly formed event parameters";
+      return false;
+    }
+    it->second.Run(*result_dict);
+  }
+  return true;
 }
 
 void HeadlessDevToolsClientImpl::AgentHostClosed(
@@ -241,7 +270,7 @@ void HeadlessDevToolsClientImpl::FinalizeAndSendMessage(
   message->SetInteger("id", id);
   std::string json_message;
   base::JSONWriter::Write(*message, &json_message);
-  pending_messages_[id] = PendingMessage(callback);
+  pending_messages_[id] = Callback(callback);
   agent_host_->DispatchProtocolMessage(json_message);
 }
 
@@ -290,23 +319,27 @@ void HeadlessDevToolsClientImpl::SendMessage(const char* method,
   SendMessageWithoutParams(method, std::move(callback));
 }
 
-HeadlessDevToolsClientImpl::PendingMessage::PendingMessage() {}
+void HeadlessDevToolsClientImpl::RegisterEventHandler(
+    const char* method,
+    base::Callback<void(const base::Value&)> callback) {
+  DCHECK(event_handlers_.find(method) == event_handlers_.end());
+  event_handlers_[method] = callback;
+}
 
-HeadlessDevToolsClientImpl::PendingMessage::PendingMessage(
-    PendingMessage&& other) = default;
+HeadlessDevToolsClientImpl::Callback::Callback() {}
 
-HeadlessDevToolsClientImpl::PendingMessage::PendingMessage(
-    base::Callback<void()> callback)
+HeadlessDevToolsClientImpl::Callback::Callback(Callback&& other) = default;
+
+HeadlessDevToolsClientImpl::Callback::Callback(base::Callback<void()> callback)
     : callback(callback) {}
 
-HeadlessDevToolsClientImpl::PendingMessage::PendingMessage(
+HeadlessDevToolsClientImpl::Callback::Callback(
     base::Callback<void(const base::Value&)> callback)
     : callback_with_result(callback) {}
 
-HeadlessDevToolsClientImpl::PendingMessage::~PendingMessage() {}
+HeadlessDevToolsClientImpl::Callback::~Callback() {}
 
-HeadlessDevToolsClientImpl::PendingMessage&
-HeadlessDevToolsClientImpl::PendingMessage::operator=(PendingMessage&& other) =
-    default;
+HeadlessDevToolsClientImpl::Callback& HeadlessDevToolsClientImpl::Callback::
+operator=(Callback&& other) = default;
 
 }  // namespace headless

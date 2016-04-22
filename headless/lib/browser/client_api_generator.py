@@ -114,7 +114,7 @@ def CreateUserTypeDefinition(domain, type):
     'type': 'std::unique_ptr<headless::%s::%s>' % (namespace, type['id']),
     'raw_type': 'headless::%s::%s' % (namespace, type['id']),
     'raw_pass_type': 'headless::%s::%s*' % (namespace, type['id']),
-    'raw_return_type': 'headless::%s::%s*' % (namespace, type['id']),
+    'raw_return_type': 'const headless::%s::%s*' % (namespace, type['id']),
   }
 
 
@@ -143,7 +143,7 @@ def CreateObjectTypeDefinition():
     'type': 'std::unique_ptr<base::DictionaryValue>',
     'raw_type': 'base::DictionaryValue',
     'raw_pass_type': 'base::DictionaryValue*',
-    'raw_return_type': 'base::DictionaryValue*',
+    'raw_return_type': 'const base::DictionaryValue*',
   }
 
 
@@ -158,7 +158,7 @@ def WrapObjectTypeDefinition(type):
     'type': 'std::unique_ptr<%s>' % id,
     'raw_type': id,
     'raw_pass_type': '%s*' % id,
-    'raw_return_type': '%s*' % id,
+    'raw_return_type': 'const %s*' % id,
   }
 
 
@@ -172,7 +172,7 @@ def CreateAnyTypeDefinition():
     'type': 'std::unique_ptr<base::Value>',
     'raw_type': 'base::Value',
     'raw_pass_type': 'base::Value*',
-    'raw_return_type': 'base::Value*',
+    'raw_return_type': 'const base::Value*',
   }
 
 
@@ -229,7 +229,7 @@ def WrapArrayDefinition(type):
     'type': 'std::vector<%s>' % type['type'],
     'raw_type': 'std::vector<%s>' % type['type'],
     'raw_pass_type': 'std::vector<%s>*' % type['type'],
-    'raw_return_type': 'std::vector<%s>*' % type['type'],
+    'raw_return_type': 'const std::vector<%s>*' % type['type'],
   }
 
 
@@ -330,6 +330,29 @@ def SynthesizeCommandTypes(json_api):
         domain['types'].append(result_type)
 
 
+def SynthesizeEventTypes(json_api):
+  """Generate types for events and their properties.
+
+  Note that parameter objects are also created for events without parameters to
+  make it easier to introduce parameters later.
+  """
+  for domain in json_api['domains']:
+    if not 'types' in domain:
+      domain['types'] = []
+    for event in domain.get('events', []):
+      for parameter in event.get('parameters', []):
+        if 'enum' in parameter and not '$ref' in parameter:
+          SynthesizeEnumType(domain, event['name'], parameter)
+      event_type = {
+        'id': ToTitleCase(event['name']) + 'Params',
+        'type': 'object',
+        'description': 'Parameters for the %s event.' % ToTitleCase(
+            event['name']),
+        'properties': event.get('parameters', [])
+      }
+      domain['types'].append(event_type)
+
+
 def Generate(jinja_env, output_dirname, json_api, class_name, file_types):
   template_context = {
     'api': json_api,
@@ -365,6 +388,7 @@ if __name__ == '__main__':
   json_api, output_dirname = ParseArguments(sys.argv[1:])
   jinja_env = InitializeJinjaEnv(output_dirname)
   SynthesizeCommandTypes(json_api)
+  SynthesizeEventTypes(json_api)
   PatchFullQualifiedRefs(json_api)
   CreateTypeDefinitions(json_api)
   Generate(jinja_env, output_dirname, json_api, 'types', ['cc', 'h'])

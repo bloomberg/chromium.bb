@@ -23,6 +23,10 @@ class MessageDispatcher {
       base::Callback<void(const base::Value&)> callback) = 0;
   virtual void SendMessage(const char* method,
                            base::Callback<void()> callback) = 0;
+
+  virtual void RegisterEventHandler(
+      const char* method,
+      base::Callback<void(const base::Value&)> callback) = 0;
 };
 
 }  // namespace internal

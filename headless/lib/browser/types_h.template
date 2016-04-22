@@ -69,11 +69,11 @@ class HEADLESS_EXPORT {{type.id}} {
   // {{property.description}}
     {% endif %}
       {% if property.optional %}
-  bool Has{{property.name | to_title_case}}() { return !!{{property.name | camelcase_to_hacker_style}}_; }
-  {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_return_type % ("%s_.value()" % property.name | camelcase_to_hacker_style)}}; }
+  bool Has{{property.name | to_title_case}}() const { return !!{{property.name | camelcase_to_hacker_style}}_; }
+  {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() const { return {{resolve_type(property).to_raw_return_type % ("%s_.value()" % property.name | camelcase_to_hacker_style)}}; }
   void Set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { {{property.name | camelcase_to_hacker_style}}_ = {{resolve_type(property).to_pass_type % 'value'}}; }
       {% else %}
-  {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_return_type % ("%s_" % property.name | camelcase_to_hacker_style)}}; }
+  {{resolve_type(property).raw_return_type}} Get{{property.name | to_title_case}}() const { return {{resolve_type(property).to_raw_return_type % ("%s_" % property.name | camelcase_to_hacker_style)}}; }
   void Set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { {{property.name | camelcase_to_hacker_style}}_ = {{resolve_type(property).to_pass_type % 'value'}}; }
       {% endif %}
     {% endfor %}

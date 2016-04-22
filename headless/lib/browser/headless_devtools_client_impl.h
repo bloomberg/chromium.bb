@@ -107,24 +107,25 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
                    base::Callback<void(const base::Value&)> callback) override;
   void SendMessage(const char* method,
                    base::Callback<void()> callback) override;
+  void RegisterEventHandler(
+      const char* method,
+      base::Callback<void(const base::Value&)> callback) override;
 
   void AttachToHost(content::DevToolsAgentHost* agent_host);
   void DetachFromHost(content::DevToolsAgentHost* agent_host);
 
  private:
-  // Represents a message for which we are still waiting for a reply. Contains
-  // a callback with or without a result parameter depending on the message that
-  // is pending.
-  struct PendingMessage {
-    PendingMessage();
-    PendingMessage(PendingMessage&& other);
-    explicit PendingMessage(base::Callback<void()> callback);
-    explicit PendingMessage(base::Callback<void(const base::Value&)> callback);
-    ~PendingMessage();
+  // Contains a callback with or without a result parameter depending on the
+  // message type.
+  struct Callback {
+    Callback();
+    Callback(Callback&& other);
+    explicit Callback(base::Callback<void()> callback);
+    explicit Callback(base::Callback<void(const base::Value&)> callback);
+    ~Callback();
 
-    PendingMessage& operator=(PendingMessage&& other);
+    Callback& operator=(Callback&& other);
 
-    // TODO(skyostil): Use a class union once allowed.
     base::Callback<void()> callback;
     base::Callback<void(const base::Value&)> callback_with_result;
   };
@@ -141,9 +142,14 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   template <typename CallbackType>
   void SendMessageWithoutParams(const char* method, CallbackType callback);
 
+  bool DispatchMessageReply(const base::DictionaryValue& message_dict);
+  bool DispatchEvent(const base::DictionaryValue& message_dict);
+
   content::DevToolsAgentHost* agent_host_;  // Not owned.
   int next_message_id_;
-  std::unordered_map<int, PendingMessage> pending_messages_;
+  std::unordered_map<int, Callback> pending_messages_;
+  std::unordered_map<std::string, base::Callback<void(const base::Value&)>>
+      event_handlers_;
 
   accessibility::Domain accessibility_domain_;
   animation::Domain animation_domain_;

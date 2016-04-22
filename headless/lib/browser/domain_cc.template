@@ -12,7 +12,28 @@ namespace headless {
 
 namespace {{domain.domain | camelcase_to_hacker_style}} {
 
-Domain::Domain(internal::MessageDispatcher* dispatcher) : dispatcher_(dispatcher) {}
+Domain::Domain(internal::MessageDispatcher* dispatcher)
+    : dispatcher_(dispatcher) {
+  {% if "events" in domain %}
+    {# Register all events in this domain. #}
+    {% for event in domain.events %}
+  dispatcher_->RegisterEventHandler(
+      "{{domain.domain}}.{{event.name}}",
+      base::Bind(&Domain::Dispatch{{event.name | to_title_case}}Event,
+                 base::Unretained(this)));
+    {% endfor %}
+  {% endif %}
+}
+
+  {% if "events" in domain %}
+void Domain::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Domain::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+  {% endif %}
 
 Domain::~Domain() {}
   {% for command in domain.commands %}
@@ -80,6 +101,18 @@ void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{
   callback.Run(std::move(result));
 }
 {% endfor %}
+{% if "events" in domain %}
+  {% for event in domain.events %}
+
+{# Generate dispatchers which call registered observers for an event. #}
+void Domain::Dispatch{{event.name | to_title_case}}Event(const base::Value& params) {
+  ErrorReporter errors;
+  std::unique_ptr<{{event.name | to_title_case}}Params> parsed_params({{event.name | to_title_case}}Params::Parse(params, &errors));
+  DCHECK(!errors.HasErrors());
+  FOR_EACH_OBSERVER(Observer, observers_, On{{event.name | to_title_case}}(*parsed_params));
+}
+  {% endfor %}
+{% endif %}
 
 }  // namespace {{domain.domain | camelcase_to_hacker_style}}
 

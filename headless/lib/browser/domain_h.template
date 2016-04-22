@@ -8,6 +8,7 @@
 #define HEADLESS_PUBLIC_DOMAINS_{{domain.domain | camelcase_to_hacker_style | upper}}_H_
 
 #include "base/callback.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "headless/public/domains/types.h"
 #include "headless/public/headless_export.h"
@@ -15,6 +16,15 @@
 
 namespace headless {
 namespace {{domain.domain | camelcase_to_hacker_style}} {
+{% if "events" in domain %}
+class Observer {
+ public:
+  virtual ~Observer() {}
+  {% for event in domain.events %}
+  virtual void On{{event.name | to_title_case}}(const {{event.name | to_title_case}}Params& params) {}
+  {% endfor %}
+};
+{% endif %}
 
 {% if domain.description %}
 // {{domain.description}}
@@ -23,6 +33,13 @@ class HEADLESS_EXPORT Domain {
  public:
   Domain(internal::MessageDispatcher* dispatcher);
   ~Domain();
+
+  {% if "events" in domain %}
+  // Add or remove an observer. |observer| must be removed before being
+  // destroyed.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+  {% endif %}
 
   {# Generate methods for each command. #}
   {% for command in domain.commands %}
@@ -66,7 +83,15 @@ class HEADLESS_EXPORT Domain {
   static void Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback, const base::Value& response);
   {% endfor %}
 
+  {# Generate event dispatchers. #}
+  {% for event in domain.events %}
+  void Dispatch{{event.name | to_title_case}}Event(const base::Value& params);
+  {% endfor %}
+
   internal::MessageDispatcher* dispatcher_;  // Not owned.
+  {% if "events" in domain %}
+  base::ObserverList<Observer> observers_;
+  {% endif %}
 
   DISALLOW_COPY_AND_ASSIGN(Domain);
 };
