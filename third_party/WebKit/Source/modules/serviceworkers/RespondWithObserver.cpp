@@ -242,7 +242,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     response->populateWebServiceWorkerResponse(webResponse);
     BodyStreamBuffer* buffer = response->internalBodyBuffer();
     if (buffer) {
-        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+        RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(getExecutionContext(), FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
         if (blobDataHandle) {
             webResponse.setBlobDataHandle(blobDataHandle);
         } else {

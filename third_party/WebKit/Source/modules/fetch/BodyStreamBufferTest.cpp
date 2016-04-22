@@ -4,8 +4,14 @@
 
 #include "modules/fetch/BodyStreamBuffer.h"
 
+#include "core/html/FormData.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
+#include "modules/fetch/FetchBlobDataConsumerHandle.h"
+#include "modules/fetch/FetchFormDataConsumerHandle.h"
+#include "platform/blob/BlobData.h"
+#include "platform/blob/BlobURL.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +28,15 @@ using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using Command = DataConsumerHandleTestUtil::Command;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoaderClient;
+
+class FakeLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
+public:
+    PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+};
 
 class BodyStreamBufferTest : public ::testing::Test {
 public:
@@ -55,6 +70,79 @@ TEST_F(BodyStreamBufferTest, ReleaseHandle)
     EXPECT_TRUE(buffer->isStreamLocked());
     EXPECT_TRUE(buffer->isStreamDisturbed());
     EXPECT_TRUE(buffer->isStreamClosed());
+}
+
+TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle)
+{
+    OwnPtr<BlobData> data = BlobData::create();
+    data->appendText("hello", false);
+    auto size = data->length();
+    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(data.release(), size);
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(getExecutionContext(), blobDataHandle, new FakeLoaderFactory));
+
+    EXPECT_FALSE(buffer->isStreamLocked());
+    EXPECT_FALSE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+    RefPtr<BlobDataHandle> outputBlobDataHandle = buffer->drainAsBlobDataHandle(getExecutionContext(), FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
+
+    EXPECT_TRUE(buffer->isStreamLocked());
+    EXPECT_TRUE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+    EXPECT_EQ(blobDataHandle, outputBlobDataHandle);
+}
+
+TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull)
+{
+    // This handle is not drainable.
+    OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(handle.release());
+
+    EXPECT_FALSE(buffer->isStreamLocked());
+    EXPECT_FALSE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+
+    EXPECT_FALSE(buffer->drainAsBlobDataHandle(getExecutionContext(), FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize));
+
+    EXPECT_FALSE(buffer->isStreamLocked());
+    EXPECT_FALSE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, DrainAsFormData)
+{
+    FormData* data = FormData::create(UTF8Encoding());
+    data->append("name1", "value1");
+    data->append("name2", "value2");
+    RefPtr<EncodedFormData> inputFormData = data->encodeMultiPartFormData();
+
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(FetchFormDataConsumerHandle::create(getExecutionContext(), inputFormData));
+
+    EXPECT_FALSE(buffer->isStreamLocked());
+    EXPECT_FALSE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+    RefPtr<EncodedFormData> outputFormData = buffer->drainAsFormData(getExecutionContext());
+
+    EXPECT_TRUE(buffer->isStreamLocked());
+    EXPECT_TRUE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+    EXPECT_EQ(outputFormData->flattenToString(), inputFormData->flattenToString());
+}
+
+TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull)
+{
+    // This handle is not drainable.
+    OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(handle.release());
+
+    EXPECT_FALSE(buffer->isStreamLocked());
+    EXPECT_FALSE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+
+    EXPECT_FALSE(buffer->drainAsFormData(getExecutionContext()));
+
+    EXPECT_FALSE(buffer->isStreamLocked());
+    EXPECT_FALSE(buffer->isStreamDisturbed());
+    EXPECT_FALSE(buffer->hasPendingActivity());
 }
 
 TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer)

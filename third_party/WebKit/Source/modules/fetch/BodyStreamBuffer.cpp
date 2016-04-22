@@ -82,30 +82,36 @@ BodyStreamBuffer::BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> handle)
     m_stream->didSourceStart();
 }
 
-PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy policy)
+PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(ExecutionContext* executionContext, FetchDataConsumerHandle::Reader::BlobSizePolicy policy)
 {
     ASSERT(!isStreamLocked());
-    m_stream->setIsDisturbed();
+    ASSERT(!isStreamDisturbed());
     if (isStreamClosed() || isStreamErrored())
         return nullptr;
 
     RefPtr<BlobDataHandle> blobDataHandle = m_reader->drainAsBlobDataHandle(policy);
     if (blobDataHandle) {
+        NonThrowableExceptionState exceptionState;
+        m_stream->getBytesReader(executionContext, exceptionState);
+        m_stream->setIsDisturbed();
         close();
         return blobDataHandle.release();
     }
     return nullptr;
 }
 
-PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData()
+PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData(ExecutionContext* executionContext)
 {
     ASSERT(!isStreamLocked());
-    m_stream->setIsDisturbed();
+    ASSERT(!isStreamDisturbed());
     if (isStreamClosed() || isStreamErrored())
         return nullptr;
 
     RefPtr<EncodedFormData> formData = m_reader->drainAsFormData();
     if (formData) {
+        NonThrowableExceptionState exceptionState;
+        m_stream->getBytesReader(executionContext, exceptionState);
+        m_stream->setIsDisturbed();
         close();
         return formData.release();
     }
@@ -115,9 +121,10 @@ PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData()
 PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle(ExecutionContext* executionContext)
 {
     ASSERT(!isStreamLocked());
+    ASSERT(!isStreamDisturbed());
     m_reader = nullptr;
     m_stream->setIsDisturbed();
-    TrackExceptionState exceptionState;
+    NonThrowableExceptionState exceptionState;
     m_stream->getBytesReader(executionContext, exceptionState);
 
     if (isStreamClosed())

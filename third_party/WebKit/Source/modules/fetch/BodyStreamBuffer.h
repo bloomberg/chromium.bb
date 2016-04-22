@@ -33,9 +33,9 @@ public:
 
     ReadableByteStream* stream() { return m_stream; }
 
-    // Callable only when not locked.
-    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
-    PassRefPtr<EncodedFormData> drainAsFormData();
+    // Callable only when neither locked nor disturbed.
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(ExecutionContext*, FetchDataConsumerHandle::Reader::BlobSizePolicy);
+    PassRefPtr<EncodedFormData> drainAsFormData(ExecutionContext*);
     void startLoading(ExecutionContext*, FetchDataLoader*, FetchDataLoader::Client* /* client */);
 
     // Callable only when not locked. Returns a non-null handle.
