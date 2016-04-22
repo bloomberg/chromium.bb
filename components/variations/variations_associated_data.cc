@@ -109,7 +109,9 @@ class VariationsParamAssociator {
 
   // Retrieve the singleton.
   static VariationsParamAssociator* GetInstance() {
-    return base::Singleton<VariationsParamAssociator>::get();
+    return base::Singleton<
+        VariationsParamAssociator,
+        base::LeakySingletonTraits<VariationsParamAssociator>>::get();
   }
 
   bool AssociateVariationParams(const std::string& trial_name,
