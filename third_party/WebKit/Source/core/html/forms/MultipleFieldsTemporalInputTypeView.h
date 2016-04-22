@@ -43,7 +43,8 @@ class BaseTemporalInputType;
 struct DateTimeChooserParameters;
 
 class MultipleFieldsTemporalInputTypeView final
-    : public InputTypeView
+    : public GarbageCollectedFinalized<MultipleFieldsTemporalInputTypeView>
+    , public InputTypeView
     , protected DateTimeEditElement::EditControlOwner
     , protected PickerIndicatorElement::PickerIndicatorOwner
     , protected SpinButtonElement::SpinButtonOwner

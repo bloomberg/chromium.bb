@@ -52,13 +52,15 @@ class FormData;
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
 // FIXME: InputType should not inherit InputTypeView. It's conceptually wrong.
-class CORE_EXPORT InputType : public InputTypeView {
+class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType>, public InputTypeView {
     WTF_MAKE_NONCOPYABLE(InputType);
+    USING_GARBAGE_COLLECTED_MIXIN(InputType);
 public:
     static InputType* create(HTMLInputElement&, const AtomicString&);
     static InputType* createText(HTMLInputElement&);
     static const AtomicString& normalizeTypeName(const AtomicString&);
     ~InputType() override;
+    DECLARE_VIRTUAL_TRACE();
 
     virtual InputTypeView* createView();
     virtual const AtomicString& formControlType() const = 0;

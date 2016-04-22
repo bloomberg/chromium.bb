@@ -139,6 +139,11 @@ InputType::~InputType()
 {
 }
 
+DEFINE_TRACE(InputType)
+{
+    InputTypeView::trace(visitor);
+}
+
 InputTypeView* InputType::createView()
 {
     return this;

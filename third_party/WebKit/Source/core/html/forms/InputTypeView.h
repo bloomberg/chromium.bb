@@ -69,10 +69,9 @@ public:
 // An InputTypeView object represents the UI-specific part of an
 // HTMLInputElement. Do not expose instances of InputTypeView and classes
 // derived from it to classes other than HTMLInputElement.
-class CORE_EXPORT InputTypeView : public GarbageCollectedFinalized<InputTypeView> {
+class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
 public:
-    static InputTypeView* create(HTMLInputElement&);
     virtual ~InputTypeView();
     DECLARE_VIRTUAL_TRACE();
 

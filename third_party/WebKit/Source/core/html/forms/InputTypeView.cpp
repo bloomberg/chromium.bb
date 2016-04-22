@@ -36,11 +36,6 @@
 
 namespace blink {
 
-InputTypeView* InputTypeView::create(HTMLInputElement& input)
-{
-    return new InputTypeView(input);
-}
-
 InputTypeView::~InputTypeView()
 {
 }
