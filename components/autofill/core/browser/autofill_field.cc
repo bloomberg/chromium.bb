@@ -199,12 +199,16 @@ bool FillExpirationMonthSelectControl(const base::string16& value,
   if (!StringToInt(value, &month) || month <= 0 || month > 12)
     return false;
 
-  // We trim the whitespace from the select values before attempting to convert
-  // them to months.
+  // We trim the whitespace and a specific prefix used in AngularJS from the
+  // select values before attempting to convert them to months.
   std::vector<base::string16> trimmed_values(field->option_values.size());
-  for (size_t i = 0; i < field->option_values.size(); ++i)
+  const base::string16 kNumberPrefix = ASCIIToUTF16("number:");
+  for (size_t i = 0; i < field->option_values.size(); ++i) {
     base::TrimWhitespace(field->option_values[i], base::TRIM_ALL,
                          &trimmed_values[i]);
+    base::ReplaceFirstSubstringAfterOffset(&trimmed_values[i], 0, kNumberPrefix,
+                                           ASCIIToUTF16(""));
+  }
 
   if (trimmed_values.size() == 12) {
     // The select presumable only contains the year's months.
@@ -376,8 +380,7 @@ bool FillSelectControl(const AutofillType& type,
 bool FillMonthControl(const base::string16& value, FormFieldData* field) {
   // Autofill formats a combined date as month/year.
   std::vector<base::string16> pieces = base::SplitString(
-      value, base::ASCIIToUTF16("/"),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      value, ASCIIToUTF16("/"), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (pieces.size() != 2)
     return false;
 

@@ -517,6 +517,12 @@ TEST_F(AutofillFieldTest, FillSelectControlWithExpirationMonth) {
       // Values start at 00.
       {{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"},
        NotNumericMonthsContentsNoPlaceholder()},
+      // The AngularJS framework adds a prefix to number types. Test that it is
+      // removed.
+      {{"number:1", "number:2", "number:3", "number:4", "number:5", "number:6",
+        "number:7", "number:8", "number:9", "number:10", "number:11",
+        "number:12"},
+       NotNumericMonthsContentsNoPlaceholder()},
       // Values start at 0 and the first content is a placeholder.
       {{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
        NotNumericMonthsContentsWithPlaceholder()},
