@@ -187,6 +187,7 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
   }
 
   void ShowSigninView() {
+    DCHECK(!switches::UsePasswordSeparatedSigninFlow());
     DCHECK(current_profile_bubble());
     DCHECK(current_profile_bubble()->avatar_menu_);
     current_profile_bubble()->ShowView(
@@ -224,6 +225,11 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ContentAreaHasFocus) {
+  // The ProfileChooserView doesn't handle sign in under the new password
+  // separated signin flow.
+  if (switches::UsePasswordSeparatedSigninFlow())
+    return;
+
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));

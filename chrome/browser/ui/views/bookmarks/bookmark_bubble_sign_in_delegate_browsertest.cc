@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/event_constants.h"
@@ -66,7 +67,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
   delegate->OnSignInLinkClicked();
 
   if (kHasProfileChooser) {
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
+    if (switches::UsePasswordSeparatedSigninFlow()) {
+      EXPECT_TRUE(browser()->signin_view_controller()->delegate());
+    } else {
+      EXPECT_TRUE(ProfileChooserView::IsShowing());
+    }
+
     EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
   } else {
     EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
@@ -83,7 +89,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest,
   delegate->OnSignInLinkClicked();
 
   if (kHasProfileChooser) {
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
+    if (switches::UsePasswordSeparatedSigninFlow()) {
+      EXPECT_TRUE(browser()->signin_view_controller()->delegate());
+    } else {
+      EXPECT_TRUE(ProfileChooserView::IsShowing());
+    }
+
     EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
   } else {
     EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
@@ -140,7 +151,11 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleSignInDelegateTest, BrowserRemoved) {
   delegate->OnSignInLinkClicked();
 
   if (kHasProfileChooser) {
-    EXPECT_TRUE(ProfileChooserView::IsShowing());
+    if (switches::UsePasswordSeparatedSigninFlow()) {
+      EXPECT_TRUE(extra_browser->signin_view_controller()->delegate());
+    } else {
+      EXPECT_TRUE(ProfileChooserView::IsShowing());
+    }
   } else {
     // A new tab should have been opened in the extra browser, which should be
     // visible.
