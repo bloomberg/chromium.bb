@@ -19,6 +19,8 @@
       'sources': [
         'default_pref_store.cc',
         'default_pref_store.h',
+        'in_memory_pref_store.cc',
+        'in_memory_pref_store.h',
         'json_pref_store.cc',
         'json_pref_store.h',
         'overlay_user_pref_store.cc',

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_PREF_STORE_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_IN_MEMORY_PREF_STORE_H_
+#define COMPONENTS_PREFS_IN_MEMORY_PREF_STORE_H_
 
 #include <stdint.h>
 
@@ -18,12 +18,12 @@
 // A light-weight prefstore implementation that keeps preferences
 // in a memory backed store. This is not a persistent prefstore -- we
 // subclass the PersistentPrefStore here since it is needed by the
-// PrefService, which in turn is needed by the Autofill component.
-class AwPrefStore : public PersistentPrefStore {
+// PrefService, which in turn is needed by various components.
+class COMPONENTS_PREFS_EXPORT InMemoryPrefStore : public PersistentPrefStore {
  public:
-  AwPrefStore();
+  InMemoryPrefStore();
 
-  // Overriden from PrefStore.
+  // PrefStore implementation.
   bool GetValue(const std::string& key,
                 const base::Value** result) const override;
   void AddObserver(PrefStore::Observer* observer) override;
@@ -31,7 +31,7 @@ class AwPrefStore : public PersistentPrefStore {
   bool HasObservers() const override;
   bool IsInitializationComplete() const override;
 
-  // PersistentPrefStore overrides:
+  // PersistentPrefStore implementation.
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
   void SetValue(const std::string& key,
@@ -44,13 +44,13 @@ class AwPrefStore : public PersistentPrefStore {
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   PersistentPrefStore::PrefReadError ReadPrefs() override;
-  void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
+  void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override {}
   void CommitPendingWrite() override {}
   void SchedulePendingLossyWrites() override {}
   void ClearMutableValues() override {}
 
  protected:
-  ~AwPrefStore() override;
+  ~InMemoryPrefStore() override;
 
  private:
   // Stores the preference values.
@@ -58,7 +58,7 @@ class AwPrefStore : public PersistentPrefStore {
 
   base::ObserverList<PrefStore::Observer, true> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AwPrefStore);
+  DISALLOW_COPY_AND_ASSIGN(InMemoryPrefStore);
 };
 
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_IN_MEMORY_PREF_STORE_H_

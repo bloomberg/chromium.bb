@@ -312,8 +312,6 @@
         'browser/aw_metrics_service_client.h',
         'browser/aw_permission_manager.cc',
         'browser/aw_permission_manager.h',
-        'browser/aw_pref_store.cc',
-        'browser/aw_pref_store.h',
         'browser/aw_print_manager.cc',
         'browser/aw_print_manager.h',
         'browser/aw_printing_message_filter.cc',

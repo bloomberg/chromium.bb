@@ -6,6 +6,8 @@ component("prefs") {
   sources = [
     "default_pref_store.cc",
     "default_pref_store.h",
+    "in_memory_pref_store.cc",
+    "in_memory_pref_store.h",
     "json_pref_store.cc",
     "json_pref_store.h",
     "overlay_user_pref_store.cc",
@@ -85,6 +87,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "default_pref_store_unittest.cc",
+    "in_memory_pref_store_unittest.cc",
     "json_pref_store_unittest.cc",
     "overlay_user_pref_store_unittest.cc",
     "pref_change_registrar_unittest.cc",
