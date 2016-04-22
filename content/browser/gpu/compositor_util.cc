@@ -55,114 +55,83 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
-      {
-          "2d_canvas",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
-          command_line.HasSwitch(switches::kDisableAccelerated2dCanvas) ||
-          !GpuDataManagerImpl::GetInstance()->
-              GetGPUInfo().SupportsAccelerated2dCanvas(),
-          "Accelerated 2D canvas is unavailable: either disabled at the command"
-          " line or not supported by the current system.",
-          true
-      },
-      {
-          kGpuCompositingFeatureName,
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
-          command_line.HasSwitch(switches::kDisableGpuCompositing),
-          "Gpu compositing has been disabled, either via about:flags or"
-          " command line. The browser will fall back to software compositing"
-          " and hardware acceleration will be unavailable.",
-          true
-      },
-      {
-          kWebGLFeatureName,
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
-          command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-          "WebGL has been disabled via the command line.",
-          false
-      },
-      {
-          "flash_3d",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
-          command_line.HasSwitch(switches::kDisableFlash3d),
-          "Using 3d in flash has been disabled, either via about:flags or"
-          " command line.",
-          true
-      },
-      {
-          "flash_stage3d",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
-          command_line.HasSwitch(switches::kDisableFlashStage3d),
-          "Using Stage3d in Flash has been disabled, either via about:flags or"
-          " command line.",
-          true
-      },
-      {
-          "flash_stage3d_baseline",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE) ||
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
-          command_line.HasSwitch(switches::kDisableFlashStage3d),
-          "Using Stage3d Baseline profile in Flash has been disabled, either"
-          " via about:flags or command line.",
-          true
-      },
-      {
-          "video_decode",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
-          command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
-          "Accelerated video decode has been disabled, either via about:flags"
-          " or command line.",
-          true
-      },
+    {"2d_canvas",
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
+     command_line.HasSwitch(switches::kDisableAccelerated2dCanvas) ||
+         !GpuDataManagerImpl::GetInstance()
+              ->GetGPUInfo()
+              .SupportsAccelerated2dCanvas(),
+     "Accelerated 2D canvas is unavailable: either disabled via blacklist or"
+     " the command line.",
+     true},
+    {kGpuCompositingFeatureName,
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
+     command_line.HasSwitch(switches::kDisableGpuCompositing),
+     "Gpu compositing has been disabled, either via blacklist, about:flags"
+     " or the command line. The browser will fall back to software compositing"
+     " and hardware acceleration will be unavailable.",
+     true},
+    {kWebGLFeatureName,
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
+     command_line.HasSwitch(switches::kDisableExperimentalWebGL),
+     "WebGL has been disabled via blacklist or the command line.", false},
+    {"flash_3d", manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
+     command_line.HasSwitch(switches::kDisableFlash3d),
+     "Using 3d in flash has been disabled, either via blacklist, about:flags or"
+     " the command line.",
+     true},
+    {"flash_stage3d",
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
+     command_line.HasSwitch(switches::kDisableFlashStage3d),
+     "Using Stage3d in Flash has been disabled, either via blacklist,"
+     " about:flags or the command line.",
+     true},
+    {"flash_stage3d_baseline",
+     manager->IsFeatureBlacklisted(
+         gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE) ||
+         manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
+     command_line.HasSwitch(switches::kDisableFlashStage3d),
+     "Using Stage3d Baseline profile in Flash has been disabled, either"
+     " via blacklist, about:flags or the command line.",
+     true},
+    {"video_decode", manager->IsFeatureBlacklisted(
+                         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+     command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
+     "Accelerated video decode has been disabled, either via blacklist,"
+     " about:flags or the command line.",
+     true},
 #if defined(ENABLE_WEBRTC)
-      {
-          "video_encode",
-          manager->IsFeatureBlacklisted(
-              gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
-          command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),
-          "Accelerated video encode has been disabled, either via about:flags"
-          " or command line.",
-          true
-      },
+    {"video_encode", manager->IsFeatureBlacklisted(
+                         gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE),
+     command_line.HasSwitch(switches::kDisableWebRtcHWEncoding),
+     "Accelerated video encode has been disabled, either via blacklist,"
+     " about:flags or the command line.",
+     true},
 #endif
 #if defined(OS_CHROMEOS)
-      {
-          "panel_fitting",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
-          command_line.HasSwitch(switches::kDisablePanelFitting),
-          "Panel fitting has been disabled, either via about:flags or command"
-          " line.",
-          false
-      },
+    {"panel_fitting",
+     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
+     command_line.HasSwitch(switches::kDisablePanelFitting),
+     "Panel fitting has been disabled, either via blacklist, about:flags or"
+     " the command line.",
+     false},
 #endif
-      {
-          kRasterizationFeatureName,
-          IsGpuRasterizationBlacklisted() &&
-          !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled(),
-          !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled() &&
-          !IsGpuRasterizationBlacklisted(),
-          "Accelerated rasterization has been disabled, either via about:flags"
-          " or command line.",
-          true
-      },
-      {
-          kMultipleRasterThreadsFeatureName,
-          false,
-          NumberOfRendererRasterThreads() == 1,
-          "Raster is using a single thread.",
-          false
-      },
-      {
-          kNativeGpuMemoryBuffersFeatureName,
-          false,
-          !BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled(),
-          "Native GpuMemoryBuffers have been disabled, either via about:flags"
-          " or command line.",
-          true
-      },
+    {kRasterizationFeatureName,
+     IsGpuRasterizationBlacklisted() && !IsGpuRasterizationEnabled() &&
+         !IsForceGpuRasterizationEnabled(),
+     !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled() &&
+         !IsGpuRasterizationBlacklisted(),
+     "Accelerated rasterization has been disabled, either via blacklist,"
+     " about:flags or the command line.",
+     true},
+    {kMultipleRasterThreadsFeatureName, false,
+     NumberOfRendererRasterThreads() == 1, "Raster is using a single thread.",
+     false},
+    {kNativeGpuMemoryBuffersFeatureName, false,
+     !BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled(),
+     "Native GpuMemoryBuffers have been disabled, either via about:flags"
+     " or command line.",
+     true},
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);
