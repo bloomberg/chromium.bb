@@ -45,6 +45,10 @@ falco-chrome-pfq
 falco-full-compile-paladin
 falco-paladin
 gale-release
+[gcc-toolchain-group]
+  daisy-toolchain-gcc
+  peppy-toolchain-gcc
+  x86-alex-toolchain-gcc
 [glados-b-release-group]
   cave-release
   chell-cheets-release
@@ -59,7 +63,6 @@ glados-paladin
   kevin-release
 guado_moblab-paladin
 guado_moblab-release
-internal-minor-toolchain
 [ivybridge-release-group]
   link-release
   parrot_ivb-release

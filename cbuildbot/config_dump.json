@@ -682,6 +682,60 @@
             "trybot_list": true,
             "usepkg_build_packages": false
         },
+        "gcc": {
+            "_template": "gcc",
+            "afdo_use": true,
+            "archive_build_debug": true,
+            "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+            "binhost_bucket": "gs://chromeos-dev-installer",
+            "binhost_key": "RELEASE_BINHOST",
+            "build_timeout": 28200,
+            "build_type": "toolchain",
+            "chrome_sdk": true,
+            "chromeos_official": true,
+            "description": "Full release build with next minor GCC toolchain revision.",
+            "dev_installer_prebuilts": true,
+            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+            "gcc_githash": "svn-mirror/google/gcc-4_9",
+            "git_sync": false,
+            "hw_tests": [
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+            ],
+            "hw_tests_override": [
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+            ],
+            "hwqual": true,
+            "image_test": true,
+            "images": [
+                "base",
+                "test"
+            ],
+            "internal": true,
+            "latest_toolchain": true,
+            "manifest": "official.xml",
+            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+            "manifest_version": true,
+            "overlays": "both",
+            "paygen": false,
+            "prebuilts": false,
+            "push_image": true,
+            "run_gce_tests": false,
+            "sign_types": [
+                "recovery"
+            ],
+            "signer_tests": false,
+            "trybot_list": false,
+            "upload_symbols": true,
+            "useflags": [
+                "-cros-debug",
+                "chrome_internal"
+            ],
+            "usepkg_build_packages": false,
+            "vm_tests": [],
+            "vm_tests_override": null
+        },
         "incremental": {
             "_template": "incremental",
             "build_type": "binary",
@@ -737,10 +791,12 @@
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
             "git_sync": false,
             "hw_tests": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
             ],
             "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
+                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
             ],
             "hwqual": true,
             "image_test": true,
@@ -1571,12 +1627,6 @@
             "amd64-generic"
         ]
     },
-    "amd64-generic-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "amd64-generic"
-        ]
-    },
     "amd64-generic-pre-cq": {
         "_template": "pre-cq",
         "boards": [
@@ -1806,12 +1856,6 @@
         ],
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "arm-generic-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "arm-generic"
-        ]
     },
     "arm-generic-pre-cq": {
         "_template": "pre-cq",
@@ -6313,6 +6357,16 @@
         "important": true,
         "vm_tests": []
     },
+    "daisy-toolchain-gcc": {
+        "_template": "gcc",
+        "boards": [
+            "daisy"
+        ],
+        "build_packages_in_background": true,
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false
+    },
     "daisy-toolchain-llvm": {
         "_template": "llvm",
         "boards": [
@@ -8121,6 +8175,47 @@
             "-chrome_internal"
         ]
     },
+    "gcc-toolchain-group": {
+        "_template": "gcc",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "peppy"
+        ],
+        "child_configs": [
+            {
+                "_template": "gcc",
+                "boards": [
+                    "peppy"
+                ],
+                "grouped": true,
+                "name": "peppy-toolchain-gcc"
+            },
+            {
+                "_template": "gcc",
+                "boards": [
+                    "daisy"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "daisy-toolchain-gcc"
+            },
+            {
+                "_template": "gcc",
+                "boards": [
+                    "x86-alex"
+                ],
+                "build_packages_in_background": true,
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "x86-alex-toolchain-gcc"
+            }
+        ]
+    },
     "glados-b-full-group": {
         "_template": "full",
         "boards": [
@@ -9781,23 +9876,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "internal-minor-toolchain": {
-        "_template": "toolchain",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "x86-alex",
-            "stumpy",
-            "daisy",
-            "lakitu"
-        ],
-        "description": "Test next minor toolchain revision (internal)",
-        "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "latest_toolchain": true,
-        "trybot_list": false,
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "ivybridge-full-group": {
@@ -12700,18 +12778,6 @@
         "useflags": [
             "-chrome_internal"
         ]
-    },
-    "minor-toolchain": {
-        "_template": "toolchain",
-        "boards": [
-            "x86-generic",
-            "arm-generic",
-            "amd64-generic"
-        ],
-        "description": "Test next minor toolchain revision",
-        "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "latest_toolchain": true,
-        "trybot_list": false
     },
     "mixed-a-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -16507,6 +16573,12 @@
     },
     "peppy-release-afdo-use": {
         "_template": "release-afdo-use",
+        "boards": [
+            "peppy"
+        ]
+    },
+    "peppy-toolchain-gcc": {
+        "_template": "gcc",
         "boards": [
             "peppy"
         ]
@@ -26823,6 +26895,16 @@
             }
         ]
     },
+    "x86-alex-toolchain-gcc": {
+        "_template": "gcc",
+        "boards": [
+            "x86-alex"
+        ],
+        "build_packages_in_background": true,
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false
+    },
     "x86-alex-toolchain-llvm": {
         "_template": "llvm",
         "boards": [
@@ -27021,10 +27103,12 @@
         "description": "Build with Address Sanitizer (Clang)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}"
         ],
         "trybot_list": true,
         "uprev": false
@@ -27114,12 +27198,6 @@
     "x86-generic-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromiumos",
-        "boards": [
-            "x86-generic"
-        ]
-    },
-    "x86-generic-payloads": {
-        "_template": "payloads",
         "boards": [
             "x86-generic"
         ]

@@ -301,7 +301,10 @@ class HWTestList(object):
                         priority=constants.HWTEST_DEFAULT_PRIORITY)
     default_dict.update(kwargs)
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict)]
+
 
 
 def append_useflags(useflags):
@@ -655,7 +658,7 @@ _waterfall_config_map = {
         'link-depthcharge-full-firmware',
 
         # Toolchain Builders.
-        'internal-minor-toolchain',
+        'gcc-toolchain-group',
 
         # LLVM
         'llvm-toolchain-group',
@@ -2170,26 +2173,49 @@ def GetConfig():
       ),
   )
 
-  _toolchain_minor = site_config.Add(
-      'minor-toolchain',
+  gcc = site_config.AddTemplate(
+      'gcc',
+      # Use release builder as a base. Make sure that we are doing a full
+      # build and that we are using AFDO.
       _toolchain,
-      boards=[
-          'x86-generic', 'arm-generic', 'amd64-generic'
-      ],
-      build_type=constants.TOOLCHAIN_TYPE,
-      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
+      no_vmtest_builder,
+      hw_tests=HWTestList.AsanTest(),
+      hw_tests_override=HWTestList.AsanTest(),
+      images=['base', 'test'],
+      description='Full release build with next minor GCC toolchain revision.',
+      paygen=False,
+      signer_tests=False,
+      # This config is only for toolchain use. No need to list with general
+      # configs.
+      trybot_list=False,
       latest_toolchain=True,
       prebuilts=False,
-      trybot_list=False,
       gcc_githash='svn-mirror/google/gcc-4_9',
-      description='Test next minor toolchain revision',
   )
 
-  site_config.Add(
-      'internal-minor-toolchain',
-      config_lib.BuildConfig(), _toolchain_minor, internal, official,
-      boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
-      description=_toolchain_minor['description'] + ' (internal)',
+  _grouped_toolchain_gcc = config_lib.BuildConfig(
+      build_packages_in_background=True,
+      chrome_sdk=False,
+      chrome_sdk_build_chrome=False,
+      chroot_replace=False,
+  )
+
+  _gcc_grouped = gcc.derive(_grouped_toolchain_gcc)
+
+  site_config.AddGroup(
+      'gcc-toolchain-group',
+      site_config.Add(
+          'peppy-toolchain-gcc', gcc,
+          boards=['peppy'],
+      ),
+      site_config.Add(
+          'daisy-toolchain-gcc', _gcc_grouped,
+          boards=['daisy'],
+      ),
+      site_config.Add(
+          'x86-alex-toolchain-gcc', _gcc_grouped,
+          boards=['x86-alex'],
+      ),
   )
 
   ### Master release config.
