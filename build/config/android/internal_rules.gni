@@ -2095,6 +2095,7 @@ template("test_runner_script") {
     depfile = "$target_gen_dir/$target_name.d"
 
     data_deps += [ "//build/android:test_runner_py" ]
+    data = []
 
     test_runner_args = [
       _test_type,
@@ -2179,6 +2180,7 @@ template("test_runner_script") {
       }
     }
     if (defined(invoker.isolate_file)) {
+      data += [ invoker.isolate_file ]
       test_runner_args += [
         "--isolate-file-path",
         rebase_path(invoker.isolate_file, root_build_dir),
@@ -2209,9 +2211,7 @@ template("test_runner_script") {
       depfile,
       generated_script,
     ]
-    data = [
-      generated_script,
-    ]
+    data += [ generated_script ]
 
     args = [
       "--depfile",

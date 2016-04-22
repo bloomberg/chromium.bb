@@ -921,9 +921,11 @@ test("cc_unittests") {
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
-  data = [
-    "test/data/",
-  ]
+  if (!is_android) {
+    data = [
+      "test/data/",
+    ]
+  }
 
   deps = [
     ":cc",
