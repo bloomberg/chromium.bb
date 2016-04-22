@@ -456,7 +456,9 @@ crbug.com/589265 virtual/spv2/fast/overflow/overflow-float-stacking.html [ Failu
 crbug.com/589265 virtual/spv2/fast/overflow/overflow-focus-ring.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/overflow-stacking.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/overflow-text-hit-testing.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/overflow-update-transform.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/overflow-with-local-background-attachment.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-overflow.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
 crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
 
@@ -472,9 +474,6 @@ crbug.com/593525 virtual/spv2/fast/overflow/002.html [ Failure ]
 crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl-vertical.html [ Failure ]
 crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl.html [ Failure ]
 crbug.com/593525 virtual/spv2/fast/overflow/table-overflow-float.html [ Failure ]
-# [SPv2] PaintLayerPainter should adjust cull rect between transform spaces.
-crbug.com/593596 virtual/spv2/fast/overflow/overflow-update-transform.html [ Failure ]
-crbug.com/593596 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-overflow.html [ Failure ]
 # [SPv2] Handle transform space reversion in PaintArtifactCompositor
 crbug.com/597156 virtual/spv2/fast/clip/010.html [ Crash Failure ]
 # [SPv2] Implement border radius rasterizing / drawing
@@ -484,6 +483,9 @@ crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited-parent
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited.html [ Failure ]
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-fixed-position.html [ Failure ]
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-transformed.html [ Failure ]
+# SkiaBitLocker should avoid allocating huge offscreen buffer
+crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
+crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
 
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-3d.html [ Pass ]
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-simple.html [ Pass ]

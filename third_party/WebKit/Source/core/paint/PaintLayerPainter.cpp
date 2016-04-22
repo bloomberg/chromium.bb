@@ -337,6 +337,16 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             m_paintLayer.appendSingleFragmentIgnoringPagination(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
         else
             m_paintLayer.collectFragments(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
+
+        // TODO(trchen): Needs to adjust cull rect between transform spaces. https://crbug.com/593596
+        // Disables layer culling for SPv2 for now because the space of the cull rect doesn't match
+        // the space we paint in. Clipping will still be done by clip nodes, so this won't cause
+        // rendering issues, only performance.
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            layerFragments[0].backgroundRect = LayoutRect(LayoutRect::infiniteIntRect());
+            layerFragments[0].foregroundRect = LayoutRect(LayoutRect::infiniteIntRect());
+        }
+
         if (shouldPaintContent) {
             // TODO(wangxianzhu): This is for old slow scrolling. Implement similar optimization for slimming paint v2.
             shouldPaintContent = atLeastOneFragmentIntersectsDamageRect(layerFragments, localPaintingInfo, paintFlags, offsetFromRoot);
@@ -414,6 +424,10 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
 
 bool PaintLayerPainter::needsToClip(const PaintLayerPaintingInfo& localPaintingInfo, const ClipRect& clipRect)
 {
+    // Clipping will be applied by property nodes directly for SPv2.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return false;
+
     return clipRect.rect() != localPaintingInfo.paintDirtyRect || clipRect.hasRadius();
 }
 
