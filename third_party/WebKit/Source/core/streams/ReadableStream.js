@@ -276,6 +276,15 @@
         throw new TypeError(errReaderConstructorStreamAlreadyLocked);
       }
 
+      // TODO(yhirano): Remove this when we don't need hasPendingActivity in
+      // blink::UnderlyingSourceBase.
+      if (stream[readableStreamController] === null) {
+        // The stream is created with an external controller (i.e. made in
+        // Blink).
+        const underlyingSource = stream[readableStreamUnderlyingSource];
+        callFunction(underlyingSource.notifyLockAcquired, underlyingSource);
+      }
+
       this[readableStreamReaderOwnerReadableStream] = stream;
       stream[readableStreamReader] = this;
 
@@ -340,6 +349,15 @@
 
       if (this[readableStreamReaderReadRequests].length > 0) {
         throw new TypeError(errReleaseReaderWithPendingRead);
+      }
+
+      // TODO(yhirano): Remove this when we don't need hasPendingActivity in
+      // blink::UnderlyingSourceBase.
+      if (stream[readableStreamController] === null) {
+        // The stream is created with an external controller (i.e. made in
+        // Blink).
+        const underlyingSource = stream[readableStreamUnderlyingSource];
+        callFunction(underlyingSource.notifyLockReleased, underlyingSource);
       }
 
       if (stream[readableStreamState] === STATE_READABLE) {

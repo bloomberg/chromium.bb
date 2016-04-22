@@ -334,6 +334,31 @@ TEST_F(ReadableStreamOperationsTest, CreateReadableStreamWithCustomUnderlyingSou
     EXPECT_TRUE(it3->isDone());
 }
 
+TEST_F(ReadableStreamOperationsTest, UnderlyingSourceShouldHavePendingActivityWhenLockedAndControllerIsActive)
+{
+    auto underlyingSource = new TestUnderlyingSource(getScriptState());
+
+    ScriptValue strategy = ReadableStreamOperations::createCountQueuingStrategy(getScriptState(), 10);
+    ASSERT_FALSE(strategy.isEmpty());
+
+    ScriptValue stream = ReadableStreamOperations::createReadableStream(getScriptState(), underlyingSource, strategy);
+    ASSERT_FALSE(stream.isEmpty());
+
+    v8::Local<v8::Object> global = getScriptState()->context()->Global();
+    ASSERT_TRUE(global->Set(getScriptState()->context(), v8String(getScriptState()->isolate(), "stream"), stream.v8Value()).IsJust());
+
+    EXPECT_FALSE(underlyingSource->hasPendingActivity());
+    evalWithPrintingError("let reader = stream.getReader();");
+    EXPECT_TRUE(underlyingSource->hasPendingActivity());
+    evalWithPrintingError("reader.releaseLock();");
+    EXPECT_FALSE(underlyingSource->hasPendingActivity());
+    evalWithPrintingError("reader = stream.getReader();");
+    EXPECT_TRUE(underlyingSource->hasPendingActivity());
+    underlyingSource->enqueue(ScriptValue(getScriptState(), v8::Undefined(getScriptState()->isolate())));
+    underlyingSource->close();
+    EXPECT_FALSE(underlyingSource->hasPendingActivity());
+}
+
 TEST_F(ReadableStreamOperationsTest, SetDisturbed)
 {
     ScriptValue stream = evalWithPrintingError("new ReadableStream()");

@@ -46,13 +46,23 @@ ScriptPromise UnderlyingSourceBase::cancel(ScriptState* scriptState, ScriptValue
     return ScriptPromise::castUndefined(scriptState);
 }
 
+void UnderlyingSourceBase::notifyLockAcquired()
+{
+    m_isStreamLocked = true;
+}
+
+void UnderlyingSourceBase::notifyLockReleased()
+{
+    m_isStreamLocked = false;
+}
+
 bool UnderlyingSourceBase::hasPendingActivity() const
 {
     // This will return false within a finite time period _assuming_ that
     // consumers use the controller to close or error the stream.
     // Browser-created readable streams should always close or error within a
     // finite time period, due to timeouts etc.
-    return m_controller && m_controller->isActive();
+    return m_controller && m_controller->isActive() && m_isStreamLocked;
 }
 
 void UnderlyingSourceBase::stop()
