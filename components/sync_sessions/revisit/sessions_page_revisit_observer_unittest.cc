@@ -4,9 +4,10 @@
 
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
@@ -75,7 +76,7 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
     std::vector<const SyncedSession*> sessions;
     sessions.push_back(session);
     SessionsPageRevisitObserver observer(
-        make_scoped_ptr(new TestForeignSessionsProvider(sessions, true)));
+        base::WrapUnique(new TestForeignSessionsProvider(sessions, true)));
     CheckAndExpect(&observer, url, current_match, offset_match);
   }
 };
@@ -83,44 +84,44 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoSessions) {
   std::vector<const SyncedSession*> sessions;
   SessionsPageRevisitObserver observer(
-      make_scoped_ptr(new TestForeignSessionsProvider(sessions, true)));
+      base::WrapUnique(new TestForeignSessionsProvider(sessions, true)));
   CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoWindows) {
-  scoped_ptr<SyncedSession> session(new SyncedSession());
+  std::unique_ptr<SyncedSession> session(new SyncedSession());
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoTabs) {
-  scoped_ptr<SyncedSession> session(new SyncedSession());
+  std::unique_ptr<SyncedSession> session(new SyncedSession());
   session->windows[0] = new SessionWindow();
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoEntries) {
-  scoped_ptr<SessionWindow> window(new SessionWindow());
+  std::unique_ptr<SessionWindow> window(new SessionWindow());
   window->tabs.push_back(new SessionTab());
-  scoped_ptr<SyncedSession> session(new SyncedSession());
+  std::unique_ptr<SyncedSession> session(new SyncedSession());
   session->windows[0] = window.release();
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersSingle) {
-  scoped_ptr<SessionTab> tab(new SessionTab());
+  std::unique_ptr<SessionTab> tab(new SessionTab());
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab->current_navigation_index = 0;
-  scoped_ptr<SessionWindow> window(new SessionWindow());
+  std::unique_ptr<SessionWindow> window(new SessionWindow());
   window->tabs.push_back(tab.release());
-  scoped_ptr<SyncedSession> session(new SyncedSession());
+  std::unique_ptr<SyncedSession> session(new SyncedSession());
   session->windows[0] = window.release();
   CheckAndExpect(session.get(), GURL(kExampleUrl), true, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
-  scoped_ptr<SessionTab> tab(new SessionTab());
+  std::unique_ptr<SessionTab> tab(new SessionTab());
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
@@ -128,9 +129,9 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab->current_navigation_index = 1;
-  scoped_ptr<SessionWindow> window(new SessionWindow());
+  std::unique_ptr<SessionWindow> window(new SessionWindow());
   window->tabs.push_back(tab.release());
-  scoped_ptr<SyncedSession> session(new SyncedSession());
+  std::unique_ptr<SyncedSession> session(new SyncedSession());
   session->windows[0] = window.release();
 
   // The provider returns false when asked for foreign sessions, even though
@@ -138,30 +139,30 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
   std::vector<const SyncedSession*> sessions;
   sessions.push_back(session.get());
   SessionsPageRevisitObserver observer(
-      make_scoped_ptr(new TestForeignSessionsProvider(sessions, false)));
+      base::WrapUnique(new TestForeignSessionsProvider(sessions, false)));
   CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
-  scoped_ptr<SessionTab> tab1(new SessionTab());
+  std::unique_ptr<SessionTab> tab1(new SessionTab());
   tab1->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab1->current_navigation_index = 0;
 
-  scoped_ptr<SessionTab> tab2(new SessionTab());
+  std::unique_ptr<SessionTab> tab2(new SessionTab());
   tab2->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kDifferentUrl, ""));
   tab2->current_navigation_index = 0;
 
-  scoped_ptr<SessionTab> tab3(new SessionTab());
+  std::unique_ptr<SessionTab> tab3(new SessionTab());
   tab3->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kDifferentUrl, ""));
   tab3->current_navigation_index = 0;
 
-  scoped_ptr<SessionTab> tab4(new SessionTab());
+  std::unique_ptr<SessionTab> tab4(new SessionTab());
   tab4->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
@@ -170,17 +171,17 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
           kDifferentUrl, ""));
   tab4->current_navigation_index = 1;
 
-  scoped_ptr<SessionWindow> window1(new SessionWindow());
+  std::unique_ptr<SessionWindow> window1(new SessionWindow());
   window1->tabs.push_back(tab1.release());
-  scoped_ptr<SessionWindow> window2(new SessionWindow());
+  std::unique_ptr<SessionWindow> window2(new SessionWindow());
   window2->tabs.push_back(tab2.release());
-  scoped_ptr<SessionWindow> window3(new SessionWindow());
+  std::unique_ptr<SessionWindow> window3(new SessionWindow());
   window3->tabs.push_back(tab3.release());
   window3->tabs.push_back(tab4.release());
 
-  scoped_ptr<SyncedSession> session1(new SyncedSession());
+  std::unique_ptr<SyncedSession> session1(new SyncedSession());
   session1->windows[1] = window1.release();
-  scoped_ptr<SyncedSession> session2(new SyncedSession());
+  std::unique_ptr<SyncedSession> session2(new SyncedSession());
   session2->windows[2] = window2.release();
   session2->windows[3] = window3.release();
 
@@ -188,7 +189,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
   sessions.push_back(session1.get());
   sessions.push_back(session2.get());
   SessionsPageRevisitObserver observer(
-      make_scoped_ptr(new TestForeignSessionsProvider(sessions, true)));
+      base::WrapUnique(new TestForeignSessionsProvider(sessions, true)));
 
   base::HistogramTester histogram_tester;
   CheckAndExpect(&observer, GURL(kExampleUrl), true, true);

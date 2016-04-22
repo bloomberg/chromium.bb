@@ -4,9 +4,9 @@
 
 #include "components/sync_sessions/revisit/current_tab_matcher.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -31,8 +31,8 @@ sessions::SerializedNavigationEntry Entry(const std::string& url) {
                                                                          "");
 }
 
-scoped_ptr<SessionTab> Tab(const int index, const base::Time timestamp) {
-  scoped_ptr<SessionTab> tab(new SessionTab());
+std::unique_ptr<SessionTab> Tab(const int index, const base::Time timestamp) {
+  std::unique_ptr<SessionTab> tab(new SessionTab());
   tab->current_navigation_index = index;
   tab->timestamp = timestamp;
   return tab;
@@ -61,14 +61,14 @@ TEST(CurrentTabMatcherTest, NoCheck) {
 }
 
 TEST(CurrentTabMatcherTest, EmptyTab) {
-  scoped_ptr<SessionTab> tab = Tab(0, base::Time::Now());
+  std::unique_ptr<SessionTab> tab = Tab(0, base::Time::Now());
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
   VerifyMiss(&matcher);
 }
 
 TEST(CurrentTabMatcherTest, SameUrl) {
-  scoped_ptr<SessionTab> tab = Tab(0, base::Time::Now());
+  std::unique_ptr<SessionTab> tab = Tab(0, base::Time::Now());
   tab->navigations.push_back(Entry(kExampleUrl));
 
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
@@ -77,7 +77,7 @@ TEST(CurrentTabMatcherTest, SameUrl) {
 }
 
 TEST(CurrentTabMatcherTest, DifferentUrl) {
-  scoped_ptr<SessionTab> tab = Tab(0, base::Time::Now());
+  std::unique_ptr<SessionTab> tab = Tab(0, base::Time::Now());
   tab->navigations.push_back(Entry(kDifferentUrl));
 
   CurrentTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
@@ -86,7 +86,7 @@ TEST(CurrentTabMatcherTest, DifferentUrl) {
 }
 
 TEST(CurrentTabMatcherTest, DifferentIndex) {
-  scoped_ptr<SessionTab> tab = Tab(0, base::Time::Now());
+  std::unique_ptr<SessionTab> tab = Tab(0, base::Time::Now());
   tab->navigations.push_back(Entry(kDifferentUrl));
   tab->navigations.push_back(Entry(kExampleUrl));
 
@@ -96,10 +96,10 @@ TEST(CurrentTabMatcherTest, DifferentIndex) {
 }
 
 TEST(CurrentTabMatcherTest, Timestamp) {
-  scoped_ptr<SessionTab> tab1 = Tab(0, base::Time::UnixEpoch());
+  std::unique_ptr<SessionTab> tab1 = Tab(0, base::Time::UnixEpoch());
   tab1->navigations.push_back(Entry(kExampleUrl));
 
-  scoped_ptr<SessionTab> tab2 = Tab(0, base::Time::Now());
+  std::unique_ptr<SessionTab> tab2 = Tab(0, base::Time::Now());
   tab2->navigations.push_back(Entry(kExampleUrl));
 
   CurrentTabMatcher matcher1((PageEquality(GURL(kExampleUrl))));

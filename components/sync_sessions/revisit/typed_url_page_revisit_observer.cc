@@ -4,7 +4,7 @@
 
 #include "components/sync_sessions/revisit/typed_url_page_revisit_observer.h"
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync_sessions/revisit/typed_url_page_revisit_task.h"
 #include "url/gurl.h"
@@ -21,9 +21,9 @@ void TypedUrlPageRevisitObserver::OnPageVisit(
     const GURL& url,
     const PageVisitObserver::TransitionType transition) {
   if (history_) {
-    history_->ScheduleDBTask(scoped_ptr<history::HistoryDBTask>(
-                                 new TypedUrlPageRevisitTask(url, transition)),
-                             &task_tracker_);
+    history_->ScheduleDBTask(
+        base::WrapUnique(new TypedUrlPageRevisitTask(url, transition)),
+        &task_tracker_);
   }
 }
 

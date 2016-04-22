@@ -184,10 +184,10 @@ class SessionDataTypeControllerTest : public testing::Test,
   }
 
   scoped_refptr<SessionDataTypeController> controller_;
-  scoped_ptr<MockSyncedWindowDelegatesGetter> synced_window_getter_;
-  scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
-  scoped_ptr<MockSyncedWindowDelegate> synced_window_delegate_;
-  scoped_ptr<TestSyncSessionsClient> sync_sessions_client_;
+  std::unique_ptr<MockSyncedWindowDelegatesGetter> synced_window_getter_;
+  std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<MockSyncedWindowDelegate> synced_window_delegate_;
+  std::unique_ptr<TestSyncSessionsClient> sync_sessions_client_;
   bool load_finished_;
 
  private:

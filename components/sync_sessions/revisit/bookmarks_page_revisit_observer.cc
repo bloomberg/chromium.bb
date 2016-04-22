@@ -16,7 +16,7 @@
 namespace sync_sessions {
 
 BookmarksPageRevisitObserver::BookmarksPageRevisitObserver(
-    scoped_ptr<BookmarksByUrlProvider> provider)
+    std::unique_ptr<BookmarksByUrlProvider> provider)
     : provider_(std::move(provider)) {}
 
 BookmarksPageRevisitObserver::~BookmarksPageRevisitObserver() {}

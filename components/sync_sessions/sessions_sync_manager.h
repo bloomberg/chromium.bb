@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -66,7 +67,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   SessionsSyncManager(sync_sessions::SyncSessionsClient* sessions_client,
                       sync_driver::SyncPrefs* sync_prefs,
                       sync_driver::LocalDeviceInfoProvider* local_device,
-                      scoped_ptr<LocalSessionEventRouter> router,
+                      std::unique_ptr<LocalSessionEventRouter> router,
                       const base::Closure& sessions_updated_callback,
                       const base::Closure& datatype_refresh_callback);
   ~SessionsSyncManager() override;
@@ -75,8 +76,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -345,8 +346,8 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   sync_driver::SyncPrefs* sync_prefs_;
 
-  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Local device info provider, owned by ProfileSyncService.
   const sync_driver::LocalDeviceInfoProvider* const local_device_;
@@ -365,7 +366,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   // stale and a candidate for garbage collection.
   int stale_session_threshold_days_;
 
-  scoped_ptr<LocalSessionEventRouter> local_event_router_;
+  std::unique_ptr<LocalSessionEventRouter> local_event_router_;
 
   // Owns revisiting instrumentation logic for page visit events.
   PageRevisitBroadcaster page_revisit_broadcaster_;

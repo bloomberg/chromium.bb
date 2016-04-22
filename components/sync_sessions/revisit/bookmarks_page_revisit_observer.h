@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_BOOKMARKS_PAGE_REVISIT_OBSERVER_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_BOOKMARKS_PAGE_REVISIT_OBSERVER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
 
 class GURL;
@@ -40,12 +40,12 @@ class BookmarksByUrlProvider {
 class BookmarksPageRevisitObserver : public sync_sessions::PageVisitObserver {
  public:
   explicit BookmarksPageRevisitObserver(
-      scoped_ptr<BookmarksByUrlProvider> provider);
+      std::unique_ptr<BookmarksByUrlProvider> provider);
   ~BookmarksPageRevisitObserver() override;
   void OnPageVisit(const GURL& url, const TransitionType transition) override;
 
  private:
-  scoped_ptr<BookmarksByUrlProvider> provider_;
+  std::unique_ptr<BookmarksByUrlProvider> provider_;
   DISALLOW_COPY_AND_ASSIGN(BookmarksPageRevisitObserver);
 };
 

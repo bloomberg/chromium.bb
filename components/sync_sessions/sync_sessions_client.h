@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_SYNC_SESSIONS_CLIENT_H_
 #define COMPONENTS_SYNC_SESSIONS_SYNC_SESSIONS_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -54,7 +55,7 @@ class SyncSessionsClient {
 
   // Returns a LocalSessionEventRouter instance that is customized for the
   // embedder's context.
-  virtual scoped_ptr<browser_sync::LocalSessionEventRouter>
+  virtual std::unique_ptr<browser_sync::LocalSessionEventRouter>
   GetLocalSessionEventRouter() = 0;
 
   // TODO(zea): add getters for the history and favicon services for the favicon

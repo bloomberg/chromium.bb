@@ -4,11 +4,12 @@
 
 #include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
@@ -53,8 +54,7 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(
   bool shouldInstrument = group_name == "Enabled";
   if (shouldInstrument) {
     revisit_observers_.push_back(new sync_sessions::SessionsPageRevisitObserver(
-        scoped_ptr<sync_sessions::ForeignSessionsProvider>(
-            new SessionsSyncManagerWrapper(manager))));
+        base::WrapUnique(new SessionsSyncManagerWrapper(manager))));
 
     history::HistoryService* history = sessions_client_->GetHistoryService();
     if (history) {
@@ -65,9 +65,8 @@ PageRevisitBroadcaster::PageRevisitBroadcaster(
     bookmarks::BookmarkModel* bookmarks = sessions_client_->GetBookmarkModel();
     if (bookmarks) {
       revisit_observers_.push_back(
-          new sync_sessions::BookmarksPageRevisitObserver(
-              scoped_ptr<sync_sessions::BookmarksByUrlProvider>(
-                  new sync_sessions::BookmarksByUrlProviderImpl(bookmarks))));
+          new sync_sessions::BookmarksPageRevisitObserver(base::WrapUnique(
+              new sync_sessions::BookmarksByUrlProviderImpl(bookmarks))));
     }
   }
 }

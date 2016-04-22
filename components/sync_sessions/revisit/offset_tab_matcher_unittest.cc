@@ -4,9 +4,9 @@
 
 #include "components/sync_sessions/revisit/offset_tab_matcher.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -31,9 +31,10 @@ sessions::SerializedNavigationEntry Entry(const std::string& url) {
                                                                          "");
 }
 
-scoped_ptr<SessionTab> Tab(const int index,
-                           const base::Time timestamp = base::Time::Now()) {
-  scoped_ptr<SessionTab> tab(new SessionTab());
+std::unique_ptr<SessionTab> Tab(
+    const int index,
+    const base::Time timestamp = base::Time::Now()) {
+  std::unique_ptr<SessionTab> tab(new SessionTab());
   tab->current_navigation_index = index;
   tab->timestamp = timestamp;
   return tab;
@@ -66,14 +67,14 @@ TEST(OffsetTabMatcherTest, NoCheck) {
 }
 
 TEST(OffsetTabMatcherTest, EmptyTab) {
-  scoped_ptr<SessionTab> tab = Tab(0);
+  std::unique_ptr<SessionTab> tab = Tab(0);
   OffsetTabMatcher matcher((PageEquality(GURL(kExampleUrl))));
   matcher.Check(tab.get());
   VerifyMiss(&matcher);
 }
 
 TEST(OffsetTabMatcherTest, HasMatchForward) {
-  scoped_ptr<SessionTab> tab = Tab(0);
+  std::unique_ptr<SessionTab> tab = Tab(0);
   tab->navigations.push_back(Entry(kDifferentUrl));
   tab->navigations.push_back(Entry(kExampleUrl));
 
@@ -83,7 +84,7 @@ TEST(OffsetTabMatcherTest, HasMatchForward) {
 }
 
 TEST(OffsetTabMatcherTest, HasMatchBackward) {
-  scoped_ptr<SessionTab> tab = Tab(1);
+  std::unique_ptr<SessionTab> tab = Tab(1);
   tab->navigations.push_back(Entry(kExampleUrl));
   tab->navigations.push_back(Entry(kDifferentUrl));
 
@@ -93,7 +94,7 @@ TEST(OffsetTabMatcherTest, HasMatchBackward) {
 }
 
 TEST(OffsetTabMatcherTest, NoMatch) {
-  scoped_ptr<SessionTab> tab = Tab(0);
+  std::unique_ptr<SessionTab> tab = Tab(0);
   tab->navigations.push_back(Entry(kExampleUrl));
   tab->navigations.push_back(Entry(kDifferentUrl));
 
@@ -103,7 +104,7 @@ TEST(OffsetTabMatcherTest, NoMatch) {
 }
 
 TEST(OffsetTabMatcherTest, MultipleBackwardOffsets) {
-  scoped_ptr<SessionTab> tab = Tab(4);
+  std::unique_ptr<SessionTab> tab = Tab(4);
   tab->navigations.push_back(Entry(kExampleUrl));
   tab->navigations.push_back(Entry(kExampleUrl));
   tab->navigations.push_back(Entry(kExampleUrl));  // Expected.
@@ -116,7 +117,7 @@ TEST(OffsetTabMatcherTest, MultipleBackwardOffsets) {
 }
 
 TEST(OffsetTabMatcherTest, MultipleOffsets) {
-  scoped_ptr<SessionTab> tab = Tab(1);
+  std::unique_ptr<SessionTab> tab = Tab(1);
   tab->navigations.push_back(Entry(kExampleUrl));
   tab->navigations.push_back(Entry(kExampleUrl));  // Current.
   tab->navigations.push_back(Entry(kExampleUrl));
@@ -129,7 +130,7 @@ TEST(OffsetTabMatcherTest, MultipleOffsets) {
 }
 
 TEST(OffsetTabMatcherTest, VeryForwardOffset) {
-  scoped_ptr<SessionTab> tab = Tab(0);
+  std::unique_ptr<SessionTab> tab = Tab(0);
   for (int i = 0; i < 20; i++) {
     tab->navigations.push_back(Entry(kDifferentUrl));
   }
@@ -142,7 +143,7 @@ TEST(OffsetTabMatcherTest, VeryForwardOffset) {
 }
 
 TEST(OffsetTabMatcherTest, VeryBackwardOffset) {
-  scoped_ptr<SessionTab> tab = Tab(20);
+  std::unique_ptr<SessionTab> tab = Tab(20);
   tab->navigations.push_back(Entry(kExampleUrl));
   for (int i = 0; i < 20; i++) {
     tab->navigations.push_back(Entry(kDifferentUrl));
@@ -155,11 +156,11 @@ TEST(OffsetTabMatcherTest, VeryBackwardOffset) {
 }
 
 TEST(OffsetTabMatcherTest, MultipleTabs) {
-  scoped_ptr<SessionTab> tab1 = Tab(0, base::Time::UnixEpoch());
+  std::unique_ptr<SessionTab> tab1 = Tab(0, base::Time::UnixEpoch());
   tab1->navigations.push_back(Entry(kExampleUrl));
   tab1->navigations.push_back(Entry(kExampleUrl));
 
-  scoped_ptr<SessionTab> tab2 = Tab(1, base::Time::Now());
+  std::unique_ptr<SessionTab> tab2 = Tab(1, base::Time::Now());
   tab2->navigations.push_back(Entry(kExampleUrl));
   tab2->navigations.push_back(Entry(kExampleUrl));
 
@@ -172,11 +173,11 @@ TEST(OffsetTabMatcherTest, MultipleTabs) {
 TEST(OffsetTabMatcherTest, MultipleTabsSameTime) {
   base::Time shared_now = base::Time::Now();
 
-  scoped_ptr<SessionTab> tab1 = Tab(0, shared_now);
+  std::unique_ptr<SessionTab> tab1 = Tab(0, shared_now);
   tab1->navigations.push_back(Entry(kExampleUrl));
   tab1->navigations.push_back(Entry(kExampleUrl));
 
-  scoped_ptr<SessionTab> tab2 = Tab(1, shared_now);
+  std::unique_ptr<SessionTab> tab2 = Tab(1, shared_now);
   tab2->navigations.push_back(Entry(kExampleUrl));
   tab2->navigations.push_back(Entry(kExampleUrl));
 

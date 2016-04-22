@@ -23,8 +23,8 @@ class FakeSyncSessionsClient : public SyncSessionsClient {
   bool ShouldSyncURL(const GURL& url) const override;
   browser_sync::SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter()
       override;
-  scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
-      override;
+  std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  GetLocalSessionEventRouter() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSyncSessionsClient);

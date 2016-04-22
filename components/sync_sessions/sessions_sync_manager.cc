@@ -80,7 +80,7 @@ SessionsSyncManager::SessionsSyncManager(
     sync_sessions::SyncSessionsClient* sessions_client,
     sync_driver::SyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
-    scoped_ptr<LocalSessionEventRouter> router,
+    std::unique_ptr<LocalSessionEventRouter> router,
     const base::Closure& sessions_updated_callback,
     const base::Closure& datatype_refresh_callback)
     : sessions_client_(sessions_client),
@@ -111,8 +111,8 @@ static std::string BuildMachineTag(const std::string& cache_guid) {
 syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   syncer::SyncMergeResult merge_result(type);
   DCHECK(session_tracker_.Empty());
   DCHECK_EQ(0U, local_tab_pool_.Capacity());
@@ -364,8 +364,10 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
 
 void SessionsSyncManager::RebuildAssociations() {
   syncer::SyncDataList data(sync_processor_->GetAllSyncData(syncer::SESSIONS));
-  scoped_ptr<syncer::SyncErrorFactory> error_handler(std::move(error_handler_));
-  scoped_ptr<syncer::SyncChangeProcessor> processor(std::move(sync_processor_));
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler(
+      std::move(error_handler_));
+  std::unique_ptr<syncer::SyncChangeProcessor> processor(
+      std::move(sync_processor_));
 
   StopSyncing(syncer::SESSIONS);
   MergeDataAndStartSyncing(syncer::SESSIONS, data, std::move(processor),

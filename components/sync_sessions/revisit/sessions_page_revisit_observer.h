@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
 #define COMPONENTS_SYNC_SESSIONS_REVISIT_SESSIONS_PAGE_REVISIT_OBSERVER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
 
@@ -47,7 +47,7 @@ class SessionsPageRevisitObserver
       public base::SupportsWeakPtr<SessionsPageRevisitObserver> {
  public:
   explicit SessionsPageRevisitObserver(
-      scoped_ptr<ForeignSessionsProvider> provider);
+      std::unique_ptr<ForeignSessionsProvider> provider);
   ~SessionsPageRevisitObserver() override;
   void OnPageVisit(const GURL& url, const TransitionType transition) override;
 
@@ -59,7 +59,7 @@ class SessionsPageRevisitObserver
   // target of a PostTask call coming from OnPageVisit(...).
   void CheckForRevisit(const GURL& url, const TransitionType transition);
 
-  scoped_ptr<ForeignSessionsProvider> provider_;
+  std::unique_ptr<ForeignSessionsProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsPageRevisitObserver);
 };

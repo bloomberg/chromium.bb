@@ -4,9 +4,10 @@
 
 #include "components/sync_sessions/revisit/bookmarks_page_revisit_observer.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync_sessions/revisit/page_visit_observer.h"
@@ -37,8 +38,8 @@ class TestBookmarksByUrlProvider : public BookmarksByUrlProvider {
 }  // namespace
 
 void RunObserver(const std::vector<const bookmarks::BookmarkNode*>& nodes) {
-  BookmarksPageRevisitObserver observer(scoped_ptr<BookmarksByUrlProvider>(
-      new TestBookmarksByUrlProvider(nodes)));
+  BookmarksPageRevisitObserver observer(
+      base::WrapUnique(new TestBookmarksByUrlProvider(nodes)));
   observer.OnPageVisit(kExampleGurl, PageVisitObserver::kTransitionPage);
 }
 

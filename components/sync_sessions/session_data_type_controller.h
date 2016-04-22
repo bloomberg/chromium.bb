@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
@@ -45,7 +46,8 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController {
   sync_driver::SyncClient* const sync_client_;
 
   sync_driver::LocalDeviceInfoProvider* const local_device_;
-  scoped_ptr<sync_driver::LocalDeviceInfoProvider::Subscription> subscription_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
+      subscription_;
 
   // Name of the pref that indicates whether saving history is disabled.
   const char* history_disabled_pref_name_;

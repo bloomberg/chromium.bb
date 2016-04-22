@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -276,8 +277,8 @@ class SyncFaviconCacheTest : public testing::Test {
   testing::AssertionResult VerifyLocalCustomIcons(
       const std::vector<TestFaviconData>& expected_icons);
 
-  scoped_ptr<syncer::SyncChangeProcessor> CreateAndPassProcessor();
-  scoped_ptr<syncer::SyncErrorFactory> CreateAndPassSyncErrorFactory();
+  std::unique_ptr<syncer::SyncChangeProcessor> CreateAndPassProcessor();
+  std::unique_ptr<syncer::SyncErrorFactory> CreateAndPassSyncErrorFactory();
 
   FaviconCache* cache() { return &cache_; }
   TestChangeProcessor* processor() { return sync_processor_.get(); }
@@ -297,8 +298,9 @@ class SyncFaviconCacheTest : public testing::Test {
   FaviconCache cache_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
-  scoped_ptr<TestChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> sync_processor_wrapper_;
+  std::unique_ptr<TestChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessorWrapperForTest>
+      sync_processor_wrapper_;
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
@@ -397,16 +399,15 @@ testing::AssertionResult SyncFaviconCacheTest::VerifyLocalCustomIcons(
   return testing::AssertionSuccess();
 }
 
-scoped_ptr<syncer::SyncChangeProcessor>
+std::unique_ptr<syncer::SyncChangeProcessor>
 SyncFaviconCacheTest::CreateAndPassProcessor() {
-  return scoped_ptr<syncer::SyncChangeProcessor>(
+  return base::WrapUnique(
       new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
 }
 
-scoped_ptr<syncer::SyncErrorFactory> SyncFaviconCacheTest::
-    CreateAndPassSyncErrorFactory() {
-  return scoped_ptr<syncer::SyncErrorFactory>(
-      new syncer::SyncErrorFactoryMock());
+std::unique_ptr<syncer::SyncErrorFactory>
+SyncFaviconCacheTest::CreateAndPassSyncErrorFactory() {
+  return base::WrapUnique(new syncer::SyncErrorFactoryMock);
 }
 
 void SyncFaviconCacheTest::OnCustomFaviconDataAvailable(

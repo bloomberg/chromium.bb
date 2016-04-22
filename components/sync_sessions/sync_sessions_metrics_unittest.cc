@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_types.h"
@@ -27,14 +28,13 @@ namespace {
 class FakeSessionsSyncManager : public browser_sync::SessionsSyncManager {
  public:
   FakeSessionsSyncManager(SyncSessionsClient* sessions_client,
-                          std::vector<scoped_ptr<SyncedSession>>* sessions)
-      : browser_sync::SessionsSyncManager(
-            sessions_client,
-            nullptr,
-            nullptr,
-            scoped_ptr<browser_sync::LocalSessionEventRouter>(),
-            base::Closure(),
-            base::Closure()),
+                          std::vector<std::unique_ptr<SyncedSession>>* sessions)
+      : browser_sync::SessionsSyncManager(sessions_client,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          base::Closure(),
+                                          base::Closure()),
         sessions_(sessions) {}
 
   bool GetAllForeignSessions(
@@ -46,7 +46,7 @@ class FakeSessionsSyncManager : public browser_sync::SessionsSyncManager {
   }
 
  private:
-  std::vector<scoped_ptr<SyncedSession>>* sessions_;
+  std::vector<std::unique_ptr<SyncedSession>>* sessions_;
 };
 
 Time SecondsFromEpoch(int seconds) {
@@ -65,7 +65,7 @@ class SyncSessionsMetricsTest : public ::testing::Test {
   void PushTab(size_t tabIndex, int windowIndex, Time timestamp) {
     // First add sessions/windows as necessary.
     while (tabIndex >= sessions_.size()) {
-      sessions_.push_back(make_scoped_ptr(new SyncedSession()));
+      sessions_.push_back(base::WrapUnique(new SyncedSession()));
     }
     if (sessions_[tabIndex]->windows.find(windowIndex) ==
         sessions_[tabIndex]->windows.end()) {
@@ -107,7 +107,7 @@ class SyncSessionsMetricsTest : public ::testing::Test {
   }
 
  private:
-  std::vector<scoped_ptr<SyncedSession>> sessions_;
+  std::vector<std::unique_ptr<SyncedSession>> sessions_;
   FakeSyncSessionsClient fake_client_;
   FakeSessionsSyncManager fake_manager_;
 };

@@ -19,7 +19,7 @@
 namespace sync_sessions {
 
 SessionsPageRevisitObserver::SessionsPageRevisitObserver(
-    scoped_ptr<ForeignSessionsProvider> provider)
+    std::unique_ptr<ForeignSessionsProvider> provider)
     : provider_(std::move(provider)) {}
 
 SessionsPageRevisitObserver::~SessionsPageRevisitObserver() {}
