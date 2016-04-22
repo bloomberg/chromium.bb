@@ -1253,17 +1253,6 @@ struct FuzzTraits<gpu::MailboxHolder> {
 };
 
 template <>
-struct FuzzTraits<gpu::ValueState> {
-  static bool Fuzz(gpu::ValueState* p, Fuzzer* fuzzer) {
-    if (!FuzzParamArray(&p->float_value[0], 4, fuzzer))
-      return false;
-    if (!FuzzParamArray(&p->int_value[0], 4, fuzzer))
-      return false;
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<GURL> {
   static bool Fuzz(GURL* p, Fuzzer* fuzzer) {
     if (!fuzzer->ShouldGenerate()) {
