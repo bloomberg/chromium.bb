@@ -36,14 +36,14 @@
     var e;
     try {
         var req = new XMLHttpRequest;
-        req.open('GET', 'resources/infinite-loop.php', false);
+        req.open('GET', '../resources/infinite-loop.php', false);
         req.send(null);
         // raises NETWORK_ERR
     } catch (err) {
         e = err;
     }
 
-    shouldBeEqualToString("e.toString()", "NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/xmlhttprequest/resources/infinite-loop.php'.");
+    shouldBeEqualToString("e.toString()", "NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/resources/infinite-loop.php'.");
     shouldBeEqualToString("Object.prototype.toString.call(e)", "[object DOMException]");
     shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object DOMExceptionPrototype]");
     shouldBeEqualToString("e.constructor.toString()", "function DOMException() { [native code] }");
