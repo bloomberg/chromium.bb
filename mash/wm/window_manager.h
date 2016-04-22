@@ -13,8 +13,10 @@
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_tracker.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
+#include "mash/wm/disconnected_app_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mash {
@@ -22,7 +24,7 @@ namespace wm {
 
 class RootWindowController;
 
-class WindowManager : public mus::WindowObserver,
+class WindowManager : public mus::WindowTracker,
                       public mus::WindowManagerDelegate,
                       public session::mojom::ScreenlockStateListener {
  public:
@@ -45,7 +47,6 @@ class WindowManager : public mus::WindowObserver,
 
   // mus::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
-  void OnWindowEmbeddedAppDisconnected(mus::Window* window) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(mus::WindowManagerClient* client) override;
@@ -63,6 +64,7 @@ class WindowManager : public mus::WindowObserver,
 
   RootWindowController* root_controller_;
   mus::WindowManagerClient* window_manager_client_;
+  DisconnectedAppHandler disconnected_app_handler_;
 
   mojo::Binding<session::mojom::ScreenlockStateListener> binding_;
 

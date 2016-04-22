@@ -73,7 +73,9 @@ mus::Window* RootWindowController::GetWindowForContainer(
 }
 
 bool RootWindowController::WindowIsContainer(const mus::Window* window) const {
-  return window && window->parent() == root_;
+  return window &&
+         window->local_id() > ContainerToLocalId(mojom::Container::ROOT) &&
+         window->local_id() < ContainerToLocalId(mojom::Container::COUNT);
 }
 
 mus::WindowManagerClient* RootWindowController::window_manager_client() {

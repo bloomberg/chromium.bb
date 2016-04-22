@@ -30,13 +30,6 @@ WindowManager::WindowManager()
       binding_(this) {}
 
 WindowManager::~WindowManager() {
-  if (!root_controller_)
-    return;
-  for (auto container : root_controller_->root()->children()) {
-    container->RemoveObserver(this);
-    for (auto child : container->children())
-      child->RemoveObserver(this);
-  }
 }
 
 void WindowManager::Initialize(RootWindowController* root_controller,
@@ -44,11 +37,22 @@ void WindowManager::Initialize(RootWindowController* root_controller,
   DCHECK(root_controller);
   DCHECK(!root_controller_);
   root_controller_ = root_controller;
-  // The children of the root are considered containers.
-  for (auto container : root_controller_->root()->children()) {
-    container->AddObserver(this);
-    for (auto child : container->children())
-      child->AddObserver(this);
+
+  // Observe all the containers so that windows can be added to/removed from the
+  // |disconnected_app_handler_|.
+  int count = static_cast<int>(mojom::Container::COUNT);
+  for (int id = static_cast<int>(mojom::Container::ROOT) + 1; id < count;
+       ++id) {
+    mus::Window* container = root_controller_->GetWindowForContainer(
+        static_cast<mojom::Container>(id));
+    Add(container);
+
+    // Add any pre-existing windows in the container to
+    // |disconnected_app_handler_|.
+    for (auto child : container->children()) {
+      if (!root_controller_->WindowIsContainer(child))
+        disconnected_app_handler_.Add(child);
+    }
   }
 
   // The insets are roughly what is needed by CustomFrameView. The expectation
@@ -111,7 +115,10 @@ mus::Window* WindowManager::NewTopLevelWindow(
   window->SetBounds(CalculateDefaultBounds(window));
 
   mojom::Container container = GetRequestedContainer(window);
-  root_controller_->GetWindowForContainer(container)->AddChild(window);
+  mus::Window* container_window =
+      root_controller_->GetWindowForContainer(container);
+  DCHECK(root_controller_->WindowIsContainer(container_window));
+  container_window->AddChild(window);
 
   if (provide_non_client_frame) {
     NonClientFrameController::Create(root_controller_->GetConnector(), window,
@@ -125,14 +132,15 @@ mus::Window* WindowManager::NewTopLevelWindow(
 
 void WindowManager::OnTreeChanging(const TreeChangeParams& params) {
   DCHECK(root_controller_);
-  if (root_controller_->WindowIsContainer(params.old_parent))
-    params.target->RemoveObserver(this);
-  else if (root_controller_->WindowIsContainer(params.new_parent))
-    params.target->AddObserver(this);
-}
+  if (params.old_parent == params.receiver &&
+      root_controller_->WindowIsContainer(params.old_parent))
+    disconnected_app_handler_.Remove(params.target);
 
-void WindowManager::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
-  window->Destroy();
+  if (params.new_parent == params.receiver &&
+      root_controller_->WindowIsContainer(params.new_parent))
+    disconnected_app_handler_.Add(params.target);
+
+  mus::WindowTracker::OnTreeChanging(params);
 }
 
 void WindowManager::SetWindowManagerClient(mus::WindowManagerClient* client) {
