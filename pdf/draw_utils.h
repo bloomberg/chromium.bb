@@ -17,44 +17,6 @@ namespace chrome_pdf {
 const uint8_t kOpaqueAlpha = 0xFF;
 const uint8_t kTransparentAlpha = 0x00;
 
-void AlphaBlend(const pp::ImageData& src,
-                const pp::Rect& src_rc,
-                pp::ImageData* dest,
-                const pp::Point& dest_origin,
-                uint8_t alpha_adjustment);
-
-// Fill rectangle with gradient horizontally or vertically. Start is a color of
-// top-left point of the rectangle, end color is a color of
-// top-right (horizontal==true) or bottom-left (horizontal==false) point.
-void GradientFill(pp::ImageData* image,
-                  const pp::Rect& rc,
-                  uint32_t start_color,
-                  uint32_t end_color,
-                  bool horizontal);
-
-// Fill dirty rectangle with gradient, where gradient color set for corners of
-// gradient rectangle. Parts of the dirty rect outside of gradient rect will
-// be unchanged.
-void GradientFill(pp::Instance* instance,
-                  pp::ImageData* image,
-                  const pp::Rect& dirty_rc,
-                  const pp::Rect& gradient_rc,
-                  uint32_t start_color,
-                  uint32_t end_color,
-                  bool horizontal,
-                  uint8_t transparency);
-
-// Copy one image into another. If stretch is true, the result occupy the entire
-// dest_rc. If stretch is false, dest_rc.point will be used as an origin of the
-// result image. Copy will ignore all pixels with transparent alpha from the
-// source image.
-void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
-               pp::ImageData* dest, const pp::Rect& dest_rc,
-               bool stretch);
-
-// Fill in rectangle with specified color.
-void FillRect(pp::ImageData* image, const pp::Rect& rc, uint32_t color);
-
 // Shadow Matrix contains matrix for shadow rendering. To reduce amount of
 // calculations user may choose to cache matrix and reuse it if nothing changed.
 class ShadowMatrix {
