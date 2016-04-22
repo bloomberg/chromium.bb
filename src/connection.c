@@ -838,7 +838,6 @@ wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 			} else if (object == NULL && id != 0) {
 				wl_log("unknown object (%u), message %s(%s)\n",
 				       id, message->name, message->signature);
-				object = NULL;
 				errno = EINVAL;
 				return -1;
 			}
