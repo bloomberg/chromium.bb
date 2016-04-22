@@ -14,6 +14,7 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -93,6 +94,8 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   std::unique_ptr<base::OneShotTimer> configure_timer_;
 
   gfx::DisplayChangeNotifier change_notifier_;
+
+  ui::X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
 };
