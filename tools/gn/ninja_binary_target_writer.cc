@@ -938,7 +938,14 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
   // don't link at all.
   bool can_link_libs = target_->IsFinal();
 
-  if (dep->output_type() == Target::SOURCE_SET) {
+  if (dep->output_type() == Target::SOURCE_SET ||
+      // If a complete static library depends on an incomplete static library,
+      // manually link in the object files of the dependent library as if it
+      // were a source set. This avoids problems with braindead tools such as
+      // ar which don't properly link dependent static libraries.
+      (target_->complete_static_lib() &&
+       dep->output_type() == Target::STATIC_LIBRARY &&
+       !dep->complete_static_lib())) {
     // Source sets have their object files linked into final targets
     // (shared libraries, executables, loadable modules, and complete static
     // libraries). Intermediate static libraries and other source sets
@@ -953,6 +960,8 @@ void NinjaBinaryTargetWriter::ClassifyDependency(
     // depends on (like data deps) are also built before the current target
     // can be complete. Otherwise, these will be skipped since this target
     // will depend only on the source set's object files.
+    non_linkable_deps->push_back(dep);
+  } else if (target_->complete_static_lib() && dep->IsFinal()) {
     non_linkable_deps->push_back(dep);
   } else if (can_link_libs && dep->IsLinkable()) {
     linkable_deps->push_back(dep);

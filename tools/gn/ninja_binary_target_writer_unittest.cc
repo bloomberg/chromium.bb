@@ -179,6 +179,81 @@ TEST(NinjaBinaryTargetWriter, StaticLibrary) {
   EXPECT_EQ(expected, out_str);
 }
 
+TEST(NinjaBinaryTargetWriter, CompleteStaticLibrary) {
+  TestWithScope setup;
+  Err err;
+
+  TestTarget target(setup, "//foo:bar", Target::STATIC_LIBRARY);
+  target.sources().push_back(SourceFile("//foo/input1.cc"));
+  target.config_values().arflags().push_back("--asdf");
+  target.set_complete_static_lib(true);
+
+  TestTarget baz(setup, "//foo:baz", Target::STATIC_LIBRARY);
+  baz.sources().push_back(SourceFile("//foo/input2.cc"));
+
+  target.public_deps().push_back(LabelTargetPair(&baz));
+
+  ASSERT_TRUE(target.OnResolved(&err));
+  ASSERT_TRUE(baz.OnResolved(&err));
+
+  // A complete static library that depends on an incomplete static library
+  // should link in the dependent object files as if the dependent target
+  // were a source set.
+  {
+    std::ostringstream out;
+    NinjaBinaryTargetWriter writer(&target, out);
+    writer.Run();
+
+    const char expected[] =
+        "defines =\n"
+        "include_dirs =\n"
+        "cflags =\n"
+        "cflags_cc =\n"
+        "root_out_dir = .\n"
+        "target_out_dir = obj/foo\n"
+        "target_output_name = libbar\n"
+        "\n"
+        "build obj/foo/libbar.input1.o: cxx ../../foo/input1.cc\n"
+        "\n"
+        "build obj/foo/libbar.a: alink obj/foo/libbar.input1.o "
+            "obj/foo/libbaz.input2.o || obj/foo/libbaz.a\n"
+        "  arflags = --asdf\n"
+        "  output_extension = \n"
+        "  output_dir = \n";
+    std::string out_str = out.str();
+    EXPECT_EQ(expected, out_str);
+  }
+
+  // Make the dependent static library complete.
+  baz.set_complete_static_lib(true);
+
+  // Dependent complete static libraries should not be linked directly.
+  {
+    std::ostringstream out;
+    NinjaBinaryTargetWriter writer(&target, out);
+    writer.Run();
+
+    const char expected[] =
+        "defines =\n"
+        "include_dirs =\n"
+        "cflags =\n"
+        "cflags_cc =\n"
+        "root_out_dir = .\n"
+        "target_out_dir = obj/foo\n"
+        "target_output_name = libbar\n"
+        "\n"
+        "build obj/foo/libbar.input1.o: cxx ../../foo/input1.cc\n"
+        "\n"
+        "build obj/foo/libbar.a: alink obj/foo/libbar.input1.o "
+            "|| obj/foo/libbaz.a\n"
+        "  arflags = --asdf\n"
+        "  output_extension = \n"
+        "  output_dir = \n";
+    std::string out_str = out.str();
+    EXPECT_EQ(expected, out_str);
+  }
+}
+
 // This tests that output extension and output dir overrides apply, and input
 // dependencies are applied.
 TEST(NinjaBinaryTargetWriter, OutputExtensionAndInputDeps) {

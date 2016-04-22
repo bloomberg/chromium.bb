@@ -330,7 +330,6 @@ class Target : public Item {
   // Validates the given thing when a target is resolved.
   bool CheckVisibility(Err* err) const;
   bool CheckTestonly(Err* err) const;
-  bool CheckNoNestedStaticLibs(Err* err) const;
   bool CheckAssertNoDeps(Err* err) const;
   void CheckSourcesGenerated() const;
   void CheckSourceGenerated(const SourceFile& source) const;

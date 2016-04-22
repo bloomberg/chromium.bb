@@ -55,19 +55,6 @@ Err MakeTestOnlyError(const Target* from, const Target* to) {
       "Either mark it test-only or don't do this dependency.");
 }
 
-Err MakeStaticLibDepsError(const Target* from, const Target* to) {
-  return Err(from->defined_from(),
-             "Complete static libraries can't depend on static libraries.",
-             from->label().GetUserVisibleName(false) +
-                 "\n"
-                 "which is a complete static library can't depend on\n" +
-                 to->label().GetUserVisibleName(false) +
-                 "\n"
-                 "which is a static library.\n"
-                 "\n"
-                 "Use source sets for intermediate targets instead.");
-}
-
 // Set check_private_deps to true for the first invocation since a target
 // can see all of its dependencies. For recursive invocations this will be set
 // to false to follow only public dependency paths.
@@ -317,8 +304,6 @@ bool Target::OnResolved(Err* err) {
       return false;
     if (!CheckTestonly(err))
       return false;
-    if (!CheckNoNestedStaticLibs(err))
-      return false;
     if (!CheckAssertNoDeps(err))
       return false;
     CheckSourcesGenerated();
@@ -482,8 +467,24 @@ void Target::PullDependentTargetLibsFrom(const Target* dep, bool is_public) {
     // The current target isn't linked, so propogate linked deps and
     // libraries up the dependency tree.
     inherited_libraries_.AppendInherited(dep->inherited_libraries(), is_public);
+  } else if (dep->complete_static_lib()) {
+    // Inherit only final targets through _complete_ static libraries.
+    //
+    // Inherited final libraries aren't linked into complete static libraries.
+    // They are forwarded here so that targets that depend on complete
+    // static libraries can link them in. Conversely, since complete static
+    // libraries link in non-final targets they shouldn't be inherited.
+    for (const auto& inherited :
+         dep->inherited_libraries().GetOrderedAndPublicFlag()) {
+      if (inherited.first->IsFinal()) {
+        inherited_libraries_.Append(inherited.first,
+                                    is_public && inherited.second);
+      }
+    }
+  }
 
-    // Inherited library settings.
+  // Library settings are always inherited across static library boundaries.
+  if (!dep->IsFinal() || dep->output_type() == STATIC_LIBRARY) {
     all_lib_dirs_.append(dep->all_lib_dirs());
     all_libs_.append(dep->all_libs());
   }
@@ -699,30 +700,6 @@ bool Target::CheckTestonly(Err* err) const {
     }
   }
 
-  return true;
-}
-
-bool Target::CheckNoNestedStaticLibs(Err* err) const {
-  // If the current target is not a complete static library, it can depend on
-  // static library targets with no problem.
-  if (!(output_type() == Target::STATIC_LIBRARY && complete_static_lib()))
-    return true;
-
-  // Verify no deps are static libraries.
-  for (const auto& pair : GetDeps(DEPS_ALL)) {
-    if (pair.ptr->output_type() == Target::STATIC_LIBRARY) {
-      *err = MakeStaticLibDepsError(this, pair.ptr);
-      return false;
-    }
-  }
-
-  // Verify no inherited libraries are static libraries.
-  for (const auto& lib : inherited_libraries().GetOrdered()) {
-    if (lib->output_type() == Target::STATIC_LIBRARY) {
-      *err = MakeStaticLibDepsError(this, lib);
-      return false;
-    }
-  }
   return true;
 }
 

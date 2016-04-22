@@ -183,7 +183,13 @@ TEST(Target, InheritCompleteStaticLib) {
   TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
   TestTarget b(setup, "//foo:b", Target::STATIC_LIBRARY);
   b.set_complete_static_lib(true);
+
+  const LibFile lib("foo");
+  const SourceDir lib_dir("/foo_dir/");
   TestTarget c(setup, "//foo:c", Target::SOURCE_SET);
+  c.config_values().libs().push_back(lib);
+  c.config_values().lib_dirs().push_back(lib_dir);
+
   a.public_deps().push_back(LabelTargetPair(&b));
   b.public_deps().push_back(LabelTargetPair(&c));
 
@@ -199,42 +205,74 @@ TEST(Target, InheritCompleteStaticLib) {
   // A should have B in its inherited libs, but not any others (the complete
   // static library will include the source set).
   std::vector<const Target*> a_inherited = a.inherited_libraries().GetOrdered();
-  EXPECT_EQ(1u, a_inherited.size());
+  ASSERT_EQ(1u, a_inherited.size());
   EXPECT_EQ(&b, a_inherited[0]);
+
+  // A should inherit the libs and lib_dirs from the C.
+  ASSERT_EQ(1u, a.all_libs().size());
+  EXPECT_EQ(lib, a.all_libs()[0]);
+  ASSERT_EQ(1u, a.all_lib_dirs().size());
+  EXPECT_EQ(lib_dir, a.all_lib_dirs()[0]);
 }
 
-TEST(Target, InheritCompleteStaticLibNoDirectStaticLibDeps) {
+TEST(Target, InheritCompleteStaticLibStaticLibDeps) {
   TestWithScope setup;
   Err err;
 
   // Create a dependency chain:
-  //   A (complete static lib) -> B (static lib)
-  TestTarget a(setup, "//foo:a", Target::STATIC_LIBRARY);
-  a.set_complete_static_lib(true);
+  //   A (executable) -> B (complete static lib) -> C (static lib)
+  TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
   TestTarget b(setup, "//foo:b", Target::STATIC_LIBRARY);
-
-  a.public_deps().push_back(LabelTargetPair(&b));
-  ASSERT_TRUE(b.OnResolved(&err));
-  ASSERT_FALSE(a.OnResolved(&err));
-}
-
-TEST(Target, InheritCompleteStaticLibNoIheritedStaticLibDeps) {
-  TestWithScope setup;
-  Err err;
-
-  // Create a dependency chain:
-  //   A (complete static lib) -> B (source set) -> C (static lib)
-  TestTarget a(setup, "//foo:a", Target::STATIC_LIBRARY);
-  a.set_complete_static_lib(true);
-  TestTarget b(setup, "//foo:b", Target::SOURCE_SET);
+  b.set_complete_static_lib(true);
   TestTarget c(setup, "//foo:c", Target::STATIC_LIBRARY);
-
   a.public_deps().push_back(LabelTargetPair(&b));
   b.public_deps().push_back(LabelTargetPair(&c));
 
   ASSERT_TRUE(c.OnResolved(&err));
   ASSERT_TRUE(b.OnResolved(&err));
-  ASSERT_FALSE(a.OnResolved(&err));
+  ASSERT_TRUE(a.OnResolved(&err));
+
+  // B should have C in its inherited libs.
+  std::vector<const Target*> b_inherited = b.inherited_libraries().GetOrdered();
+  ASSERT_EQ(1u, b_inherited.size());
+  EXPECT_EQ(&c, b_inherited[0]);
+
+  // A should have B in its inherited libs, but not any others (the complete
+  // static library will include the static library).
+  std::vector<const Target*> a_inherited = a.inherited_libraries().GetOrdered();
+  ASSERT_EQ(1u, a_inherited.size());
+  EXPECT_EQ(&b, a_inherited[0]);
+}
+
+TEST(Target, InheritCompleteStaticLibInheritedCompleteStaticLibDeps) {
+  TestWithScope setup;
+  Err err;
+
+  // Create a dependency chain:
+  //   A (executable) -> B (complete static lib) -> C (complete static lib)
+  TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
+  TestTarget b(setup, "//foo:b", Target::STATIC_LIBRARY);
+  b.set_complete_static_lib(true);
+  TestTarget c(setup, "//foo:c", Target::STATIC_LIBRARY);
+  c.set_complete_static_lib(true);
+
+  a.private_deps().push_back(LabelTargetPair(&b));
+  b.private_deps().push_back(LabelTargetPair(&c));
+
+  ASSERT_TRUE(c.OnResolved(&err));
+  ASSERT_TRUE(b.OnResolved(&err));
+  ASSERT_TRUE(a.OnResolved(&err));
+
+  // B should have C in its inherited libs.
+  std::vector<const Target*> b_inherited = b.inherited_libraries().GetOrdered();
+  ASSERT_EQ(1u, b_inherited.size());
+  EXPECT_EQ(&c, b_inherited[0]);
+
+  // A should have B and C in its inherited libs.
+  std::vector<const Target*> a_inherited = a.inherited_libraries().GetOrdered();
+  ASSERT_EQ(2u, a_inherited.size());
+  EXPECT_EQ(&b, a_inherited[0]);
+  EXPECT_EQ(&c, a_inherited[1]);
 }
 
 TEST(Target, NoActionDepPropgation) {

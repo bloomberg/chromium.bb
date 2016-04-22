@@ -664,9 +664,16 @@ const char kCompleteStaticLib_Help[] =
     "  In some cases the static library might be the final desired output.\n"
     "  For example, you may be producing a static library for distribution to\n"
     "  third parties. In this case, the static library should include code\n"
-    "  for all dependencies in one complete package. Since GN does not unpack\n"
-    "  static libraries to forward their contents up the dependency chain,\n"
-    "  it is an error for complete static libraries to depend on other static\n"
+    "  for all dependencies in one complete package. However, complete static\n"
+    "  libraries themselves are never linked into other complete static\n"
+    "  libraries. All complete static libraries are for distribution and\n"
+    "  linking them in would cause code duplication in this case. If the\n"
+    "  static library is not for distribution, it should not be complete.\n"
+    "\n"
+    "  GN treats non-complete static libraries as source sets when they are\n"
+    "  linked into complete static libraries. This is done because some tools\n"
+    "  like AR do not handle dependent static libraries properly. This makes\n"
+    "  it easier to write \"alink\" rules.\n"
     "\n"
     "  In rare cases it makes sense to list a header in more than one\n"
     "  target if it could be considered conceptually a member of both.\n"
@@ -756,7 +763,7 @@ const char kConfigs_Help[] =
 
 const char kConsole[] = "console";
 const char kConsole_HelpShort[] =
-    "console [boolean]: Run this action in the console pool.";
+    "console: [boolean] Run this action in the console pool.";
 const char kConsole_Help[] =
     "console: Run this action in the console pool.\n"
     "\n"
