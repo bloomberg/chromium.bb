@@ -132,6 +132,12 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     kError,              // Error in kDecoding state.
   };
 
+  enum OutputRecordState {
+    kFree,      // Ready to be queued to the device.
+    kAtDevice,  // Held by device.
+    kAtClient,  // Held by client of V4L2VideoDecodeAccelerator.
+  };
+
   enum BufferId {
     kFlushBufferId = -2  // Buffer id for flush buffer, queued by FlushTask().
   };
@@ -161,8 +167,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   struct OutputRecord {
     OutputRecord();
     ~OutputRecord();
-    bool at_device;         // held by device.
-    bool at_client;         // held by client.
+    OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
     EGLSyncKHR egl_sync;    // sync the compositor's use of the EGLImage.
     int32_t picture_id;     // picture buffer id as returned to PictureReady().

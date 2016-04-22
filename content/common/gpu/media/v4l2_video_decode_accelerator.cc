@@ -138,8 +138,7 @@ V4L2VideoDecodeAccelerator::InputRecord::~InputRecord() {
 }
 
 V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord()
-    : at_device(false),
-      at_client(false),
+    : state(kFree),
       egl_image(EGL_NO_IMAGE_KHR),
       egl_sync(EGL_NO_SYNC_KHR),
       picture_id(-1),
@@ -375,8 +374,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(buffers[i].size() == coded_size_);
 
     OutputRecord& output_record = output_buffer_map_[i];
-    DCHECK(!output_record.at_device);
-    DCHECK(!output_record.at_client);
+    DCHECK_EQ(output_record.state, kFree);
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
@@ -1128,17 +1126,18 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
       return;
     }
     OutputRecord& output_record = output_buffer_map_[dqbuf.index];
-    DCHECK(output_record.at_device);
-    DCHECK(!output_record.at_client);
+    DCHECK_EQ(output_record.state, kAtDevice);
     DCHECK_NE(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_NE(output_record.picture_id, -1);
-    output_record.at_device = false;
+    output_buffer_queued_count_--;
     if (dqbuf.m.planes[0].bytesused == 0) {
       // This is an empty output buffer returned as part of a flush.
+      output_record.state = kFree;
       free_output_buffers_.push(dqbuf.index);
     } else {
+      output_record.state = kAtClient;
+      decoder_frames_at_client_++;
       DCHECK_GE(dqbuf.timestamp.tv_sec, 0);
-      output_record.at_client = true;
       DVLOG(3) << "Dequeue(): returning input_id=" << dqbuf.timestamp.tv_sec
                << " as picture_id=" << output_record.picture_id;
       const media::Picture& picture =
@@ -1148,9 +1147,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
           PictureRecord(output_record.cleared, picture));
       SendPictureReady();
       output_record.cleared = true;
-      decoder_frames_at_client_++;
     }
-    output_buffer_queued_count_--;
   }
 
   NotifyFlushDoneIfNeeded();
@@ -1191,8 +1188,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
   // Enqueue an output (VIDEO_CAPTURE) buffer.
   const int buffer = free_output_buffers_.front();
   OutputRecord& output_record = output_buffer_map_[buffer];
-  DCHECK(!output_record.at_device);
-  DCHECK(!output_record.at_client);
+  DCHECK_EQ(output_record.state, kFree);
   DCHECK_NE(output_record.egl_image, EGL_NO_IMAGE_KHR);
   DCHECK_NE(output_record.picture_id, -1);
   if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
@@ -1226,7 +1222,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
   qbuf.length = output_planes_count_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   free_output_buffers_.pop();
-  output_record.at_device = true;
+  output_record.state = kAtDevice;
   output_buffer_queued_count_++;
   return true;
 }
@@ -1267,16 +1263,15 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
   }
 
   OutputRecord& output_record = output_buffer_map_[index];
-  if (output_record.at_device || !output_record.at_client) {
+  if (output_record.state != kAtClient) {
     LOG(ERROR) << "ReusePictureBufferTask(): picture_buffer_id not reusable";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
 
   DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
-  DCHECK(!output_record.at_device);
-  output_record.at_client = false;
   output_record.egl_sync = egl_sync_ref->egl_sync;
+  output_record.state = kFree;
   free_output_buffers_.push(index);
   decoder_frames_at_client_--;
   // Take ownership of the EGLSync.
@@ -1527,22 +1522,15 @@ bool V4L2VideoDecodeAccelerator::StopOutputStream() {
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
   output_streamon_ = false;
 
-  // Reset accounting info for output.
-  while (!free_output_buffers_.empty())
-    free_output_buffers_.pop();
-
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
+    // After streamoff, the device drops ownership of all buffers, even if we
+    // don't dequeue them explicitly. Some of them may still be owned by the
+    // client however. Reuse only those that aren't.
     OutputRecord& output_record = output_buffer_map_[i];
-    DCHECK(!(output_record.at_client && output_record.at_device));
-
-    // After streamoff, the device drops ownership of all buffers, even if
-    // we don't dequeue them explicitly.
-    output_buffer_map_[i].at_device = false;
-    // Some of them may still be owned by the client however.
-    // Reuse only those that aren't.
-    if (!output_record.at_client) {
-      DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
+    if (output_record.state == kAtDevice) {
+      output_record.state = kFree;
       free_output_buffers_.push(i);
+      DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
     }
   }
   output_buffer_queued_count_ = 0;
@@ -2002,6 +1990,10 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   output_buffer_map_.clear();
   while (!free_output_buffers_.empty())
     free_output_buffers_.pop();
+  output_buffer_queued_count_ = 0;
+  // The client may still hold some buffers. The texture holds a reference to
+  // the buffer. It is OK to free the buffer and destroy EGLImage here.
+  decoder_frames_at_client_ = 0;
 
   return success;
 }
