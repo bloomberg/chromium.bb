@@ -8,14 +8,6 @@ import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
-# This value will be inherited in the toolchain below.
-if (allow_posix_link_time_opt || is_cfi) {
-  concurrent_links =
-      exec_script("get_concurrent_links.py", [ "--lto" ], "value")
-} else {
-  concurrent_links = exec_script("get_concurrent_links.py", [], "value")
-}
-
 # This template defines a toolchain for something that works like gcc
 # (including clang).
 #
@@ -216,21 +208,13 @@ template("gcc_toolchain") {
 
     tool("alink") {
       rspfile = "{{output}}.rsp"
-      arflags = ""
-      if ((allow_posix_link_time_opt || is_cfi) &&
-          invoker.toolchain_os != "nacl") {
-        gold_plugin_path = rebase_path(
-                "//third_party/llvm-build/Release+Asserts/lib/LLVMgold.so",
-                root_build_dir)
-        arflags = "--plugin \"$gold_plugin_path\""
-      }
 
       # This needs a Python script to avoid using simple sh features in this
       # command, in case the host does not use a POSIX shell (e.g. compiling
       # POSIX-like toolchains such as NaCl on Windows).
       ar_wrapper =
           rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
-      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=\"$ar\" $arflags rcsD @\"$rspfile\""
+      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=\"$ar\" {{arflags}} rcsD @\"$rspfile\""
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
