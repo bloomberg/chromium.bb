@@ -156,8 +156,8 @@ class TranslatePrefTest : public testing::Test {
     return update.GetOldestDenialTime();
   }
 
-  scoped_ptr<user_prefs::TestingPrefServiceSyncable> prefs_;
-  scoped_ptr<translate::TranslatePrefs> translate_prefs_;
+  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> prefs_;
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
   // Shared time constants.
   base::Time now_;

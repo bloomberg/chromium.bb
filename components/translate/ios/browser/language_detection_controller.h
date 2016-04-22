@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_TRANSLATE_IOS_BROWSER_LANGUAGE_DETECTION_CONTROLLER_H_
 #define COMPONENTS_TRANSLATE_IOS_BROWSER_LANGUAGE_DETECTION_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/prefs/pref_member.h"
@@ -55,7 +55,7 @@ class LanguageDetectionController : public web::WebStateObserver {
   typedef base::CallbackList<void(const DetectionDetails&)> CallbackList;
 
   // Registers a callback for language detection events.
-  scoped_ptr<CallbackList::Subscription> RegisterLanguageDetectionCallback(
+  std::unique_ptr<CallbackList::Subscription> RegisterLanguageDetectionCallback(
       const Callback& callback);
 
  private:

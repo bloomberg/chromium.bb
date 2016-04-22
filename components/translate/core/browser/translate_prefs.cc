@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -128,7 +129,7 @@ base::ListValue* DenialTimeUpdate::GetDenialTimes() {
         has_value && denial_value->GetAsDouble(&oldest_denial_time);
     if (has_old_style)
       time_list_->AppendDouble(oldest_denial_time);
-    denial_time_dict->Set(language_, make_scoped_ptr(time_list_));
+    denial_time_dict->Set(language_, base::WrapUnique(time_list_));
   }
   return time_list_;
 }

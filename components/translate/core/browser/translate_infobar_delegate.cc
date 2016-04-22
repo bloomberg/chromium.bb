@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/i18n/string_compare.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
@@ -105,8 +106,8 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Add the new delegate.
-  scoped_ptr<infobars::InfoBar> infobar(translate_client->CreateInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
+  std::unique_ptr<infobars::InfoBar> infobar(translate_client->CreateInfoBar(
+      base::WrapUnique(new TranslateInfoBarDelegate(
           translate_manager, is_off_the_record, step, old_delegate,
           original_language, target_language, error_type,
           triggered_from_menu))));
@@ -146,7 +147,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
   TranslateClient* client = translate_manager_->translate_client();
-  scoped_ptr<TranslatePrefs> translate_prefs(client->GetTranslatePrefs());
+  std::unique_ptr<TranslatePrefs> translate_prefs(client->GetTranslatePrefs());
   TranslateAcceptLanguages* accept_languages =
       client->GetTranslateAcceptLanguages();
   return translate_prefs->CanTranslateLanguage(accept_languages,

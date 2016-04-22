@@ -9,8 +9,9 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_RENDERER_RENDERER_CLD_DATA_PROVIDER_FACTORY_H_
 #define COMPONENTS_TRANSLATE_CONTENT_RENDERER_RENDERER_CLD_DATA_PROVIDER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
 
 namespace content {
@@ -35,7 +36,8 @@ class RendererCldDataProviderFactory {
   // is suitable only when CLD data has been statically linked.
   // Every invocation creates a new provider; the caller is responsible for
   // deleting the object when it is no longer needed.
-  virtual scoped_ptr<RendererCldDataProvider> CreateRendererCldDataProvider(
+  virtual std::unique_ptr<RendererCldDataProvider>
+  CreateRendererCldDataProvider(
       content::RenderFrameObserver* render_frame_observer);
 
   // Returns true if and only if the current instance for this process is not

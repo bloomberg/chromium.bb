@@ -11,10 +11,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
 
@@ -41,7 +42,7 @@ class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
   static void OnCldDataRequestInternal();
 
   content::WebContents* web_contents_;
-  scoped_ptr<base::WeakPtrFactory<DataFileBrowserCldDataProvider> >
+  std::unique_ptr<base::WeakPtrFactory<DataFileBrowserCldDataProvider>>
       weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataFileBrowserCldDataProvider);

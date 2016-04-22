@@ -4,8 +4,9 @@
 
 #include "components/translate/core/browser/translate_browser_metrics.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -119,8 +120,8 @@ class MetricsRecorder {
   }
 
   std::string key_;
-  scoped_ptr<HistogramSamples> base_samples_;
-  scoped_ptr<HistogramSamples> samples_;
+  std::unique_ptr<HistogramSamples> base_samples_;
+  std::unique_ptr<HistogramSamples> samples_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsRecorder);
 };

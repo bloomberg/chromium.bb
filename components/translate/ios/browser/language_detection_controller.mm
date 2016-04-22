@@ -47,7 +47,7 @@ LanguageDetectionController::LanguageDetectionController(
 LanguageDetectionController::~LanguageDetectionController() {
 }
 
-scoped_ptr<LanguageDetectionController::CallbackList::Subscription>
+std::unique_ptr<LanguageDetectionController::CallbackList::Subscription>
 LanguageDetectionController::RegisterLanguageDetectionCallback(
     const Callback& callback) {
   return language_detection_callbacks_.Add(callback);

@@ -255,7 +255,7 @@ void TranslateLanguageList::SetResourceRequestsAllowed(bool allowed) {
   }
 }
 
-scoped_ptr<TranslateLanguageList::EventCallbackList::Subscription>
+std::unique_ptr<TranslateLanguageList::EventCallbackList::Subscription>
 TranslateLanguageList::RegisterEventCallback(const EventCallback& callback) {
   return callback_list_.Add(callback);
 }
@@ -305,7 +305,7 @@ bool TranslateLanguageList::SetSupportedLanguages(
   //   "al": {"XX": 1, ...}
   // }
   // Where "tl" and "al" are set in kTargetLanguagesKey and kAlphaLanguagesKey.
-  scoped_ptr<base::Value> json_value =
+  std::unique_ptr<base::Value> json_value =
       base::JSONReader::Read(language_list, base::JSON_ALLOW_TRAILING_COMMAS);
 
   if (json_value == NULL || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {

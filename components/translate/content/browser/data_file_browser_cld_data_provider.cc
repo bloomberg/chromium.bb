@@ -205,7 +205,7 @@ void DataFileBrowserCldDataProvider::OnCldDataRequestInternal() {
   }
 
   // Attempt to open the file for reading.
-  scoped_ptr<base::File> file(
+  std::unique_ptr<base::File> file(
       new base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   if (!file->IsValid()) {
     LOG(WARNING) << "CLD data file exists but cannot be opened";

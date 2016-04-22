@@ -4,10 +4,10 @@
 
 #include "components/translate/core/browser/translate_ui_delegate.h"
 
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
@@ -47,12 +47,9 @@ class MockTranslateClient : public TranslateClient {
   TranslateDriver* GetTranslateDriver() { return driver_; }
   PrefService* GetPrefs() { return prefs_; }
 
-  scoped_ptr<TranslatePrefs> GetTranslatePrefs() {
-    return make_scoped_ptr(
-        new TranslatePrefs(
-            prefs_,
-            "intl.accept_languages",
-            preferred_languages_prefs));
+  std::unique_ptr<TranslatePrefs> GetTranslatePrefs() {
+    return base::WrapUnique(new TranslatePrefs(prefs_, "intl.accept_languages",
+                                               preferred_languages_prefs));
   }
 
   MOCK_METHOD0(GetTranslateAcceptLanguages, TranslateAcceptLanguages*());
@@ -60,10 +57,9 @@ class MockTranslateClient : public TranslateClient {
 
   MOCK_CONST_METHOD1(CreateInfoBarMock,
                      infobars::InfoBar*(TranslateInfoBarDelegate*));
-  scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate> delegate) const {
-    return scoped_ptr<infobars::InfoBar>(
-        CreateInfoBarMock(std::move(delegate).get()));
+  std::unique_ptr<infobars::InfoBar> CreateInfoBar(
+      std::unique_ptr<TranslateInfoBarDelegate> delegate) const {
+    return base::WrapUnique(CreateInfoBarMock(std::move(delegate).get()));
   }
 
   MOCK_METHOD5(ShowTranslateUI, void(translate::TranslateStep,
@@ -102,10 +98,10 @@ class TranslateUIDelegateTest : public ::testing::Test {
 
 
   MockTranslateDriver driver_;
-  scoped_ptr<MockTranslateClient> client_;
-  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
-  scoped_ptr<TranslateManager> manager_;
-  scoped_ptr<TranslateUIDelegate> delegate_;
+  std::unique_ptr<MockTranslateClient> client_;
+  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<TranslateManager> manager_;
+  std::unique_ptr<TranslateUIDelegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegateTest);
@@ -113,7 +109,7 @@ class TranslateUIDelegateTest : public ::testing::Test {
 
 
 TEST_F(TranslateUIDelegateTest, CheckDeclinedFalse) {
-  scoped_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
+  std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   for (int i = 0; i < 10; i++) {
     prefs->IncrementTranslationAcceptedCount("ar");
   }
@@ -130,7 +126,7 @@ TEST_F(TranslateUIDelegateTest, CheckDeclinedFalse) {
 }
 
 TEST_F(TranslateUIDelegateTest, CheckDeclinedTrue) {
-  scoped_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
+  std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   for (int i = 0; i < 10; i++) {
     prefs->IncrementTranslationAcceptedCount("ar");
   }

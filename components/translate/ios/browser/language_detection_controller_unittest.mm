@@ -44,7 +44,7 @@ class LanguageDetectionControllerTest : public PlatformTest {
  private:
   TestingPrefServiceSimple prefs_;
   web::TestWebState web_state_;
-  scoped_ptr<LanguageDetectionController> controller_;
+  std::unique_ptr<LanguageDetectionController> controller_;
 };
 
 }  // namespace

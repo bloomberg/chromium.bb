@@ -9,6 +9,7 @@
 #include "components/translate/content/renderer/renderer_cld_data_provider_factory.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
 #include "content/public/renderer/render_frame_observer.h"
 
@@ -27,16 +28,15 @@ base::LazyInstance<translate::RendererCldDataProviderFactory>::Leaky
 
 namespace translate {
 
-scoped_ptr<RendererCldDataProvider>
+std::unique_ptr<RendererCldDataProvider>
 RendererCldDataProviderFactory::CreateRendererCldDataProvider(
     content::RenderFrameObserver* render_frame_observer) {
-  return scoped_ptr<RendererCldDataProvider>(
-      new RendererCldDataProvider());
+  return base::WrapUnique(new RendererCldDataProvider());
 }
 
 // static
 bool RendererCldDataProviderFactory::IsInitialized() {
-  return g_instance != NULL;
+  return g_instance != nullptr;
 }
 
 // static

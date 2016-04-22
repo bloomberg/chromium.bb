@@ -9,8 +9,9 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_BROWSER_BROWSER_CLD_DATA_PROVIDER_FACTORY_H_
 #define COMPONENTS_TRANSLATE_CONTENT_BROWSER_BROWSER_CLD_DATA_PROVIDER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
 
 namespace content {
@@ -35,7 +36,7 @@ class BrowserCldDataProviderFactory {
   // is suitable only when CLD data has been statically linked.
   // Every invocation creates a new provider; the caller is responsible for
   // deleting the object when it is no longer needed.
-  virtual scoped_ptr<BrowserCldDataProvider> CreateBrowserCldDataProvider(
+  virtual std::unique_ptr<BrowserCldDataProvider> CreateBrowserCldDataProvider(
       content::WebContents* web_contents);
 
   // Returns true if and only if the current instance for this process is not

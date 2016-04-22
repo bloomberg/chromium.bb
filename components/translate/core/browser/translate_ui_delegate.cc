@@ -33,10 +33,11 @@ const char kShowErrorUI[] = "Translate.ShowErrorUI";
 // null if unable to find the right collator.
 //
 // TODO(hajimehoshi): Write a test for icu::Collator::createInstance.
-scoped_ptr<icu::Collator> CreateCollator(const std::string& locale) {
+std::unique_ptr<icu::Collator> CreateCollator(const std::string& locale) {
   UErrorCode error = U_ZERO_ERROR;
   icu::Locale loc(locale.c_str());
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
+  std::unique_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(loc, error));
   if (!collator || !U_SUCCESS(error))
     return nullptr;
   collator->setStrength(icu::Collator::PRIMARY);
@@ -66,7 +67,7 @@ TranslateUIDelegate::TranslateUIDelegate(
   // Preparing for the alphabetical order in the locale.
   std::string locale =
       TranslateDownloadManager::GetInstance()->application_locale();
-  scoped_ptr<icu::Collator> collator = CreateCollator(locale);
+  std::unique_ptr<icu::Collator> collator = CreateCollator(locale);
 
   languages_.reserve(language_codes.size());
   for (std::vector<std::string>::const_iterator iter = language_codes.begin();

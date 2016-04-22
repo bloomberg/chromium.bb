@@ -6,10 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 
 @implementation JsTranslateManager {
   base::scoped_nsobject<NSString> _translationScript;

@@ -4,8 +4,9 @@
 
 #include "components/translate/core/browser/language_state.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,8 +17,7 @@ using translate::testing::MockTranslateDriver;
 namespace translate {
 
 TEST(LanguageStateTest, IsPageTranslated) {
-  scoped_ptr<MockTranslateDriver> driver(
-      new MockTranslateDriver);
+  std::unique_ptr<MockTranslateDriver> driver(new MockTranslateDriver);
   LanguageState language_state(driver.get());
   EXPECT_FALSE(language_state.IsPageTranslated());
 
@@ -41,9 +41,7 @@ TEST(LanguageStateTest, IsPageTranslated) {
 }
 
 TEST(LanguageStateTest, Driver) {
-
-  scoped_ptr<MockTranslateDriver> driver(
-      new MockTranslateDriver);
+  std::unique_ptr<MockTranslateDriver> driver(new MockTranslateDriver);
   LanguageState language_state(driver.get());
 
   // Enable/Disable translate.

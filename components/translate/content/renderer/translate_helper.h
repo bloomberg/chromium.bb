@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_TRANSLATE_CONTENT_RENDERER_TRANSLATE_HELPER_H_
 #define COMPONENTS_TRANSLATE_CONTENT_RENDERER_TRANSLATE_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -218,7 +218,7 @@ class TranslateHelper : public content::RenderFrameObserver {
   base::TimeTicks language_determined_time_;
 
   // Provides CLD data for this process.
-  scoped_ptr<RendererCldDataProvider> cld_data_provider_;
+  std::unique_ptr<RendererCldDataProvider> cld_data_provider_;
 
   // Whether or not polling for CLD2 data has started.
   bool cld_data_polling_started_;

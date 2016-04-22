@@ -4,8 +4,9 @@
 
 #include "components/translate/core/common/translate_metrics.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -105,8 +106,8 @@ class MetricsRecorder {
   void CheckValueInLogs(double value) {
     Snapshot();
     ASSERT_TRUE(samples_.get());
-    for (scoped_ptr<SampleCountIterator> i = samples_->Iterator(); !i->Done();
-         i->Next()) {
+    for (std::unique_ptr<SampleCountIterator> i = samples_->Iterator();
+         !i->Done(); i->Next()) {
       HistogramBase::Sample min;
       HistogramBase::Sample max;
       HistogramBase::Count count;
@@ -149,8 +150,8 @@ class MetricsRecorder {
   }
 
   std::string key_;
-  scoped_ptr<HistogramSamples> base_samples_;
-  scoped_ptr<HistogramSamples> samples_;
+  std::unique_ptr<HistogramSamples> base_samples_;
+  std::unique_ptr<HistogramSamples> samples_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsRecorder);
 };

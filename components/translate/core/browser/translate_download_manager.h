@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DOWNLOAD_MANAGER_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DOWNLOAD_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_script.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -97,11 +97,11 @@ class TranslateDownloadManager {
   TranslateDownloadManager();
   virtual ~TranslateDownloadManager();
 
-  scoped_ptr<TranslateLanguageList> language_list_;
+  std::unique_ptr<TranslateLanguageList> language_list_;
 
   // An instance of TranslateScript which manages JavaScript source for
   // Translate.
-  scoped_ptr<TranslateScript> script_;
+  std::unique_ptr<TranslateScript> script_;
 
   std::string application_locale_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;

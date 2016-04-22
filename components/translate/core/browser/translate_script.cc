@@ -124,7 +124,7 @@ void TranslateScript::OnScriptFetchComplete(
     int id, bool success, const std::string& data) {
   DCHECK_EQ(kFetcherId, id);
 
-  scoped_ptr<const TranslateURLFetcher> delete_ptr(fetcher_.release());
+  std::unique_ptr<const TranslateURLFetcher> delete_ptr(fetcher_.release());
 
   if (success) {
     DCHECK(data_.empty());

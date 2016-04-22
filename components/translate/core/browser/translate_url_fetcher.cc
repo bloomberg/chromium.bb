@@ -78,7 +78,7 @@ void TranslateURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   // Transfer URLFetcher's ownership before invoking a callback.
-  scoped_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
+  std::unique_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
   callback_.Run(id_, state_ == COMPLETED, data);
 }
 

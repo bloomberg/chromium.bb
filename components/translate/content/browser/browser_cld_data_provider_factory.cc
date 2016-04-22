@@ -9,6 +9,7 @@
 #include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
 
 namespace {
@@ -26,10 +27,10 @@ base::LazyInstance<translate::BrowserCldDataProviderFactory>::Leaky
 
 namespace translate {
 
-scoped_ptr<BrowserCldDataProvider>
+std::unique_ptr<BrowserCldDataProvider>
 BrowserCldDataProviderFactory::CreateBrowserCldDataProvider(
-      content::WebContents* web_contents) {
-  return scoped_ptr<BrowserCldDataProvider>(new BrowserCldDataProvider());
+    content::WebContents* web_contents) {
+  return base::WrapUnique(new BrowserCldDataProvider);
 }
 
 // static

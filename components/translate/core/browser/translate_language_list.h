@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_LANGUAGE_LIST_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_LANGUAGE_LIST_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
 class GURL;
@@ -66,7 +66,7 @@ class TranslateLanguageList {
 
   // Registers a callback for translate events related to the language list,
   // such as updates and download errors.
-  scoped_ptr<EventCallbackList::Subscription> RegisterEventCallback(
+  std::unique_ptr<EventCallbackList::Subscription> RegisterEventCallback(
       const EventCallback& callback);
 
   // Disables the language list updater. This is used only for testing now.
@@ -114,7 +114,7 @@ class TranslateLanguageList {
 
   // A LanguageListFetcher instance to fetch a server providing supported
   // language list including alpha languages.
-  scoped_ptr<TranslateURLFetcher> language_list_fetcher_;
+  std::unique_ptr<TranslateURLFetcher> language_list_fetcher_;
 
   // The last-updated time when the language list is sent.
   base::Time last_updated_;

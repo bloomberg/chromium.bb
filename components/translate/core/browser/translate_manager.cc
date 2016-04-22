@@ -56,7 +56,7 @@ const char kUrlQueryName[] = "u";
 TranslateManager::~TranslateManager() {}
 
 // static
-scoped_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
+std::unique_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
 TranslateManager::RegisterTranslateErrorCallback(
     const TranslateManager::TranslateErrorCallback& callback) {
   if (!g_callback_list_)
@@ -136,7 +136,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  scoped_ptr<TranslatePrefs> translate_prefs(
+  std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
 
   std::string target_lang = GetTargetLanguage(translate_prefs.get());
@@ -183,7 +183,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
   if (!translate_driver_->IsOffTheRecord()) {
-    scoped_ptr<TranslatePrefs> translate_prefs =
+    std::unique_ptr<TranslatePrefs> translate_prefs =
         translate_client_->GetTranslatePrefs();
     std::string auto_target_lang =
         GetAutoTargetLanguage(language_code, translate_prefs.get());

@@ -117,7 +117,7 @@ class ContentTranslateDriver : public TranslateDriver,
   int max_reload_check_attempts_;
 
   // Provides CLD data for this process.
-  scoped_ptr<translate::BrowserCldDataProvider> cld_data_provider_;
+  std::unique_ptr<translate::BrowserCldDataProvider> cld_data_provider_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
 

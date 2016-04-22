@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_
 #define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -40,7 +40,7 @@ class TranslateClient {
   virtual PrefService* GetPrefs() = 0;
 
   // Returns the associated TranslatePrefs.
-  virtual scoped_ptr<TranslatePrefs> GetTranslatePrefs() = 0;
+  virtual std::unique_ptr<TranslatePrefs> GetTranslatePrefs() = 0;
 
   // Returns the associated TranslateAcceptLanguages.
   virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() = 0;
@@ -50,8 +50,8 @@ class TranslateClient {
 
 #if !defined(USE_AURA)
   // Returns a translate infobar that owns |delegate|.
-  virtual scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate> delegate) const = 0;
+  virtual std::unique_ptr<infobars::InfoBar> CreateInfoBar(
+      std::unique_ptr<TranslateInfoBarDelegate> delegate) const = 0;
 #endif
 
   // Called when the embedder should present UI to the user corresponding to the
