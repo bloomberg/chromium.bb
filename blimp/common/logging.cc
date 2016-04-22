@@ -66,20 +66,51 @@ void AddField(const std::string& key, const T& value, LogFields* output) {
 // The following LogExtractor subclasses contain logic for extracting loggable
 // fields from BlimpMessages.
 
-// Logs fields from TAB_CONTROL messages.
-class TabControlLogExtractor : public LogExtractor {
+// Logs fields from COMPOSITOR messages.
+class CompositorLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
                      LogFields* output) const override {
-    switch (message.tab_control().type()) {
-      case TabControlMessage::CREATE_TAB:
-        AddField("subtype", "CREATE_TAB", output);
+    AddField("render_widget_id", message.compositor().render_widget_id(),
+             output);
+  }
+};
+
+// Logs fields from INPUT messages.
+class InputLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    AddField("render_widget_id", message.input().render_widget_id(), output);
+    AddField("timestamp_seconds", message.input().timestamp_seconds(), output);
+    switch (message.input().type()) {
+      case InputMessage::Type_GestureScrollBegin:
+        AddField("subtype", "GestureScrollBegin", output);
         break;
-      case TabControlMessage::CLOSE_TAB:
-        AddField("subtype", "CLOSE_TAB", output);
+      case InputMessage::Type_GestureScrollEnd:
+        AddField("subtype", "GestureScrollEnd", output);
         break;
-      case TabControlMessage::SIZE:
-        AddField("subtype", "SIZE", output);
-        AddField("size", message.tab_control().size(), output);
+      case InputMessage::Type_GestureScrollUpdate:
+        AddField("subtype", "GestureScrollUpdate", output);
+        break;
+      case InputMessage::Type_GestureFlingStart:
+        AddField("subtype", "GestureFlingStart", output);
+        break;
+      case InputMessage::Type_GestureFlingCancel:
+        AddField("subtype", "GestureFlingCancel", output);
+        AddField("prevent_boosting",
+                 message.input().gesture_fling_cancel().prevent_boosting(),
+                 output);
+        break;
+      case InputMessage::Type_GestureTap:
+        AddField("subtype", "GestureTap", output);
+        break;
+      case InputMessage::Type_GesturePinchBegin:
+        AddField("subtype", "GesturePinchBegin", output);
+        break;
+      case InputMessage::Type_GesturePinchEnd:
+        AddField("subtype", "GesturePinchEnd", output);
+        break;
+      case InputMessage::Type_GesturePinchUpdate:
+        AddField("subtype", "GesturePinchUpdate", output);
         break;
       default:  // unknown
         break;
@@ -134,78 +165,6 @@ class NavigationLogExtractor : public LogExtractor {
   }
 };
 
-// Logs fields from COMPOSITOR messages.
-class CompositorLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    AddField("render_widget_id", message.compositor().render_widget_id(),
-             output);
-  }
-};
-
-// Logs fields from INPUT messages.
-class InputLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    AddField("render_widget_id", message.input().render_widget_id(), output);
-    AddField("timestamp_seconds", message.input().timestamp_seconds(), output);
-    switch (message.input().type()) {
-      case InputMessage::Type_GestureScrollBegin:
-        AddField("subtype", "GestureScrollBegin", output);
-        break;
-      case InputMessage::Type_GestureScrollEnd:
-        AddField("subtype", "GestureScrollEnd", output);
-        break;
-      case InputMessage::Type_GestureScrollUpdate:
-        AddField("subtype", "GestureScrollUpdate", output);
-        break;
-      case InputMessage::Type_GestureFlingStart:
-        AddField("subtype", "GestureFlingStart", output);
-        break;
-      case InputMessage::Type_GestureFlingCancel:
-        AddField("subtype", "GestureFlingCancel", output);
-        AddField("prevent_boosting",
-                 message.input().gesture_fling_cancel().prevent_boosting(),
-                 output);
-        break;
-      case InputMessage::Type_GestureTap:
-        AddField("subtype", "GestureTap", output);
-        break;
-      case InputMessage::Type_GesturePinchBegin:
-        AddField("subtype", "GesturePinchBegin", output);
-        break;
-      case InputMessage::Type_GesturePinchEnd:
-        AddField("subtype", "GesturePinchEnd", output);
-        break;
-      case InputMessage::Type_GesturePinchUpdate:
-        AddField("subtype", "GesturePinchUpdate", output);
-        break;
-      default:  // unknown
-        break;
-    }
-  }
-};
-
-// Logs fields from RENDER_WIDGET messages.
-class RenderWidgetLogExtractor : public LogExtractor {
-  void ExtractFields(const BlimpMessage& message,
-                     LogFields* output) const override {
-    switch (message.render_widget().type()) {
-      case RenderWidgetMessage::INITIALIZE:
-        AddField("subtype", "INITIALIZE", output);
-        break;
-      case RenderWidgetMessage::CREATED:
-        AddField("subtype", "CREATED", output);
-        break;
-      case RenderWidgetMessage::DELETED:
-        AddField("subtype", "DELETED", output);
-        break;
-    }
-    AddField("render_widget_id", message.render_widget().render_widget_id(),
-             output);
-  }
-};
-
 // Logs fields from PROTOCOL_CONTROL messages.
 class ProtocolControlLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
@@ -233,6 +192,62 @@ class ProtocolControlLogExtractor : public LogExtractor {
   }
 };
 
+// Logs fields from RENDER_WIDGET messages.
+class RenderWidgetLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    switch (message.render_widget().type()) {
+      case RenderWidgetMessage::INITIALIZE:
+        AddField("subtype", "INITIALIZE", output);
+        break;
+      case RenderWidgetMessage::CREATED:
+        AddField("subtype", "CREATED", output);
+        break;
+      case RenderWidgetMessage::DELETED:
+        AddField("subtype", "DELETED", output);
+        break;
+    }
+    AddField("render_widget_id", message.render_widget().render_widget_id(),
+             output);
+  }
+};
+
+// Logs fields from SETTINGS messages.
+class SettingsLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    if (message.settings().has_engine_settings()) {
+      const EngineSettingsMessage& engine_settings =
+          message.settings().engine_settings();
+      AddField("subtype", "ENGINE_SETTINGS", output);
+      AddField("record_whole_document", engine_settings.record_whole_document(),
+               output);
+      AddField("client_os_info", engine_settings.client_os_info(), output);
+    }
+  }
+};
+
+// Logs fields from TAB_CONTROL messages.
+class TabControlLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    switch (message.tab_control().type()) {
+      case TabControlMessage::CREATE_TAB:
+        AddField("subtype", "CREATE_TAB", output);
+        break;
+      case TabControlMessage::CLOSE_TAB:
+        AddField("subtype", "CLOSE_TAB", output);
+        break;
+      case TabControlMessage::SIZE:
+        AddField("subtype", "SIZE", output);
+        AddField("size", message.tab_control().size(), output);
+        break;
+      default:  // unknown
+        break;
+    }
+  }
+};
+
 // No fields are extracted from |message|.
 class NullLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
@@ -252,6 +267,8 @@ BlimpMessageLogger::BlimpMessageLogger() {
              base::WrapUnique(new ProtocolControlLogExtractor));
   AddHandler("RENDER_WIDGET", BlimpMessage::RENDER_WIDGET,
              base::WrapUnique(new RenderWidgetLogExtractor));
+  AddHandler("SETTINGS", BlimpMessage::SETTINGS,
+             base::WrapUnique(new SettingsLogExtractor));
   AddHandler("TAB_CONTROL", BlimpMessage::TAB_CONTROL,
              base::WrapUnique(new TabControlLogExtractor));
 }

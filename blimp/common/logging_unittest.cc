@@ -228,5 +228,19 @@ TEST_F(LoggingTest, RenderWidget) {
                   deleted_msg);
 }
 
+TEST_F(LoggingTest, Settings) {
+  BlimpMessage message;
+  message.set_type(BlimpMessage::SETTINGS);
+  message.mutable_settings()
+      ->mutable_engine_settings()
+      ->set_record_whole_document(true);
+  message.mutable_settings()->mutable_engine_settings()->set_client_os_info(
+      "wibble");
+  VerifyLogOutput(
+      "type=SETTINGS subtype=ENGINE_SETTINGS record_whole_document=true "
+      "client_os_info=\"wibble\"",
+      message);
+}
+
 }  // namespace
 }  // namespace blimp
