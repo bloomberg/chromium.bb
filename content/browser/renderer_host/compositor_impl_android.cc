@@ -86,20 +86,46 @@ class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
   ~ExternalBeginFrameSource() override { compositor_->RemoveObserver(this); }
 
   // cc::BeginFrameSourceBase implementation:
+  void AddObserver(cc::BeginFrameObserver* obs) override {
+    cc::BeginFrameSourceBase::AddObserver(obs);
+    DCHECK(needs_begin_frames());
+    if (!last_begin_frame_args_.IsValid())
+      return;
+
+    // Send a MISSED begin frame if necessary.
+    cc::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() ||
+        (last_begin_frame_args_.frame_time > last_args.frame_time)) {
+      last_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
+      // TODO(crbug.com/602485): A deadline doesn't make too much sense
+      // for a missed BeginFrame (the intention rather is 'immediately'),
+      // but currently the retro frame logic is very strict in discarding
+      // BeginFrames.
+      last_begin_frame_args_.deadline =
+          base::TimeTicks::Now() + last_begin_frame_args_.interval;
+      obs->OnBeginFrame(last_begin_frame_args_);
+    }
+  }
+
   void OnNeedsBeginFramesChanged(bool needs_begin_frames) override {
+    TRACE_EVENT1("compositor", "OnNeedsBeginFramesChanged",
+                 "needs_begin_frames", needs_begin_frames);
     compositor_->OnNeedsBeginFramesChange(needs_begin_frames);
   }
 
   // CompositorImpl::VSyncObserver implementation:
   void OnVSync(base::TimeTicks frame_time,
                base::TimeDelta vsync_period) override {
-    CallOnBeginFrame(cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks::Now(), vsync_period,
-        cc::BeginFrameArgs::NORMAL));
+    base::TimeTicks deadline = std::max(base::TimeTicks::Now(), frame_time);
+    last_begin_frame_args_ =
+        cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                   vsync_period, cc::BeginFrameArgs::NORMAL);
+    CallOnBeginFrame(last_begin_frame_args_);
   }
 
  private:
   CompositorImpl* compositor_;
+  cc::BeginFrameArgs last_begin_frame_args_;
 };
 
 // Used to override capabilities_.adjust_deadline_for_parent to false
@@ -415,6 +441,7 @@ void CompositorImpl::SetHasTransparentBackground(bool flag) {
 void CompositorImpl::SetNeedsComposite() {
   if (!host_->visible())
     return;
+  TRACE_EVENT0("compositor", "Compositor::SetNeedsComposite");
   host_->SetNeedsAnimate();
 }
 
@@ -593,10 +620,12 @@ void CompositorImpl::RemoveObserver(VSyncObserver* observer) {
 
 cc::UIResourceId CompositorImpl::CreateUIResource(
     cc::UIResourceClient* client) {
+  TRACE_EVENT0("compositor", "CompositorImpl::CreateUIResource");
   return host_->CreateUIResource(client);
 }
 
 void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
+  TRACE_EVENT0("compositor", "CompositorImpl::DeleteUIResource");
   host_->DeleteUIResource(resource_id);
 }
 
@@ -657,6 +686,7 @@ void CompositorImpl::SetNeedsAnimate() {
   if (!host_->visible())
     return;
 
+  TRACE_EVENT0("compositor", "Compositor::SetNeedsAnimate");
   host_->SetNeedsAnimate();
 }
 

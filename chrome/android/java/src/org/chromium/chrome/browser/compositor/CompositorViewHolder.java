@@ -452,7 +452,6 @@ public class CompositorViewHolder extends FrameLayout
     public void onVisibleContentOffsetChanged(float offset) {
         mLastVisibleContentOffset = offset;
         propagateViewportToLayouts(getWidth(), getHeight());
-        requestRender();
     }
 
     @Override
