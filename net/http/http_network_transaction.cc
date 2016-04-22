@@ -1248,7 +1248,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   }
 
   session_->http_stream_factory()->ProcessAlternativeServices(
-      session_, response_.headers.get(), HostPortPair::FromURL(request_->url));
+      session_, response_.headers.get(), url::SchemeHostPort(request_->url));
 
   if (IsSecureRequest())
     stream_->GetSSLInfo(&response_.ssl_info);

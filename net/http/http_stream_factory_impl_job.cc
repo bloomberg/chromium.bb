@@ -257,7 +257,7 @@ int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
       session_->http_server_properties();
   if (http_server_properties &&
       http_server_properties->SupportsRequestPriority(
-          HostPortPair::FromURL(request_info_.url))) {
+          url::SchemeHostPort(request_info_.url))) {
     num_streams_ = 1;
   } else {
     num_streams_ = num_streams;
@@ -1416,9 +1416,9 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   SSLInfo ssl_info;
   bool was_npn_negotiated;
   NextProto protocol_negotiated;
-  if (spdy_session->GetProtocolVersion() >= HTTP2 &&
-      spdy_session->GetSSLInfo(&ssl_info, &was_npn_negotiated,
-                               &protocol_negotiated)) {
+  if (spdy_session->GetSSLInfo(&ssl_info, &was_npn_negotiated,
+                               &protocol_negotiated) &&
+      spdy_session->GetProtocolVersion() >= HTTP2) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.Http2SSLCipherSuite",
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
@@ -1426,11 +1426,16 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   new_spdy_session_ = spdy_session;
   spdy_session_direct_ = direct;
-  const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
+  const HostPortPair host_port_pair = spdy_session_key.host_port_pair();
+  bool is_https = ssl_info.is_valid();
+  url::SchemeHostPort scheme_host_port(is_https ? "https" : "http",
+                                       host_port_pair.host(),
+                                       host_port_pair.port());
+
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session_->http_server_properties();
   if (http_server_properties)
-    http_server_properties->SetSupportsSpdy(host_port_pair, true);
+    http_server_properties->SetSupportsSpdy(scheme_host_port, true);
 
   // Create a SpdyHttpStream or a BidirectionalStreamImpl attached to the
   // session; OnNewSpdySessionReadyCallback is not called until an event loop

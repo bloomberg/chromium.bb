@@ -55,6 +55,7 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 namespace net {
 namespace test {
@@ -537,38 +538,38 @@ class QuicNetworkTransactionTest
   void AddQuicAlternateProtocolMapping(
       MockCryptoClientStream::HandshakeMode handshake_mode) {
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
-    HostPortPair host_port_pair = HostPortPair::FromURL(request_.url);
-    AlternativeService alternative_service(QUIC, host_port_pair.host(), 443);
+    url::SchemeHostPort server(request_.url);
+    AlternativeService alternative_service(QUIC, server.host(), 443);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    http_server_properties_.SetAlternativeService(
-        host_port_pair, alternative_service, expiration);
+    http_server_properties_.SetAlternativeService(server, alternative_service,
+                                                  expiration);
   }
 
   void AddQuicRemoteAlternativeServiceMapping(
       MockCryptoClientStream::HandshakeMode handshake_mode,
       const HostPortPair& alternative) {
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
-    HostPortPair host_port_pair = HostPortPair::FromURL(request_.url);
+    url::SchemeHostPort server(request_.url);
     AlternativeService alternative_service(QUIC, alternative.host(),
                                            alternative.port());
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    http_server_properties_.SetAlternativeService(
-        host_port_pair, alternative_service, expiration);
+    http_server_properties_.SetAlternativeService(server, alternative_service,
+                                                  expiration);
   }
 
   void ExpectBrokenAlternateProtocolMapping() {
-    const HostPortPair origin = HostPortPair::FromURL(request_.url);
+    const url::SchemeHostPort server(request_.url);
     const AlternativeServiceVector alternative_service_vector =
-        http_server_properties_.GetAlternativeServices(origin);
+        http_server_properties_.GetAlternativeServices(server);
     EXPECT_EQ(1u, alternative_service_vector.size());
     EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(
         alternative_service_vector[0]));
   }
 
   void ExpectQuicAlternateProtocolMapping() {
-    const HostPortPair origin = HostPortPair::FromURL(request_.url);
+    const url::SchemeHostPort server(request_.url);
     const AlternativeServiceVector alternative_service_vector =
-        http_server_properties_.GetAlternativeServices(origin);
+        http_server_properties_.GetAlternativeServices(server);
     EXPECT_EQ(1u, alternative_service_vector.size());
     EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
   }
@@ -940,6 +941,72 @@ TEST_P(QuicNetworkTransactionTest,
 
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, SetAlternativeServiceWithScheme) {
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Alt-Svc: quic=\"foo.example.org:443\", quic=\":444\"\r\n\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+  // Send http request, ignore alternative service advertising if response
+  // header advertises alternative service for mail.example.org.
+  request_.url = GURL("http://mail.example.org:443");
+  SendRequestAndExpectHttpResponse("hello world");
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session_->http_server_properties();
+  url::SchemeHostPort http_server("http", "mail.example.org", 443);
+  url::SchemeHostPort https_server("https", "mail.example.org", 443);
+  // Check alternative service is set for the correct origin.
+  EXPECT_EQ(2u,
+            http_server_properties->GetAlternativeServices(http_server).size());
+  EXPECT_EQ(
+      0u, http_server_properties->GetAlternativeServices(https_server).size());
+}
+
+TEST_P(QuicNetworkTransactionTest, DoNotGetAltSvcForDifferentOrigin) {
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Alt-Svc: quic=\"foo.example.org:443\", quic=\":444\"\r\n\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+
+  // Send https request and set alternative services if response header
+  // advertises alternative service for mail.example.org.
+  SendRequestAndExpectHttpResponse("hello world");
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session_->http_server_properties();
+
+  const url::SchemeHostPort https_server(request_.url);
+  // Check alternative service is set.
+  AlternativeServiceVector alternative_service_vector =
+      http_server_properties->GetAlternativeServices(https_server);
+  EXPECT_EQ(2u, alternative_service_vector.size());
+
+  // Send http request to the same origin but with diffrent scheme, should not
+  // use QUIC.
+  request_.url = GURL("http://mail.example.org:443");
+  SendRequestAndExpectHttpResponse("hello world");
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceQuicSupportedVersion) {
@@ -1711,14 +1778,15 @@ class QuicAltSvcCertificateVerificationTest
     : public QuicNetworkTransactionTest {
  public:
   void Run(bool valid) {
-    HostPortPair origin(valid ? "mail.example.org" : "mail.example.com", 443);
+    url::SchemeHostPort server(GURL(valid ? "https://mail.example.org:443"
+                                          : "https://mail.example.com:443"));
     HostPortPair alternative("www.example.org", 443);
     std::string url("https://");
-    url.append(origin.host());
+    url.append(server.host());
     url.append(":443");
     request_.url = GURL(url);
 
-    maker_.set_hostname(origin.host());
+    maker_.set_hostname(server.host());
     MockQuicData mock_quic_data;
     mock_quic_data.AddWrite(
         ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
@@ -1736,7 +1804,7 @@ class QuicAltSvcCertificateVerificationTest
     ASSERT_TRUE(cert.get());
     bool common_name_fallback_used;
     EXPECT_EQ(valid,
-              cert->VerifyNameMatch(origin.host(), &common_name_fallback_used));
+              cert->VerifyNameMatch(server.host(), &common_name_fallback_used));
     EXPECT_TRUE(
         cert->VerifyNameMatch(alternative.host(), &common_name_fallback_used));
     ProofVerifyDetailsChromium verify_details;
@@ -1746,7 +1814,7 @@ class QuicAltSvcCertificateVerificationTest
     crypto_client_stream_factory_.set_handshake_mode(
         MockCryptoClientStream::CONFIRM_HANDSHAKE);
 
-    // Connection to |origin| fails, so that success of |request| depends on
+    // Connection to |server| fails, so that success of |request| depends on
     // connection to |alternate| only.
     MockConnect refused_connect(ASYNC, ERR_CONNECTION_REFUSED);
     StaticSocketDataProvider refused_data;
@@ -1757,7 +1825,7 @@ class QuicAltSvcCertificateVerificationTest
     AlternativeService alternative_service(QUIC, alternative);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_->http_server_properties()->SetAlternativeService(
-        origin, alternative_service, expiration);
+        server, alternative_service, expiration);
     std::unique_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback callback;

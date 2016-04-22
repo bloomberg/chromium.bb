@@ -2661,8 +2661,11 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service1, expiration));
 
+  url::SchemeHostPort server("https", kDefaultServerHostName,
+                             kDefaultServerPort);
+
   http_server_properties_.SetAlternativeServices(
-      host_port_pair_, alternative_service_info_vector);
+      server, alternative_service_info_vector);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -3678,7 +3681,9 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
-  http_server_properties_.SetServerNetworkStats(host_port_pair_, stats1);
+  url::SchemeHostPort server("https", kDefaultServerHostName,
+                             kDefaultServerPort);
+  http_server_properties_.SetServerNetworkStats(server, stats1);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -3732,18 +3737,20 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service1, expiration));
-
+  url::SchemeHostPort server("https", kDefaultServerHostName,
+                             kDefaultServerPort);
   http_server_properties_.SetAlternativeServices(
-      host_port_pair_, alternative_service_info_vector);
+      server, alternative_service_info_vector);
 
   HostPortPair host_port_pair2(kServer2HostName, kDefaultServerPort);
+  url::SchemeHostPort server2("https", kServer2HostName, kDefaultServerPort);
   const AlternativeService alternative_service2(QUIC, host_port_pair2.host(),
                                                 host_port_pair2.port());
   AlternativeServiceInfoVector alternative_service_info_vector2;
   alternative_service_info_vector2.push_back(
       AlternativeServiceInfo(alternative_service2, expiration));
   http_server_properties_.SetAlternativeServices(
-      host_port_pair2, alternative_service_info_vector2);
+      server2, alternative_service_info_vector2);
 
   http_server_properties_.SetMaxServerConfigsStoredInProperties(
       kMaxQuicServersToPersist);

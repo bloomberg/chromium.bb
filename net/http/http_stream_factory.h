@@ -203,7 +203,7 @@ class NET_EXPORT HttpStreamFactory {
 
   void ProcessAlternativeServices(HttpNetworkSession* session,
                                   const HttpResponseHeaders* headers,
-                                  const HostPortPair& http_host_port_pair);
+                                  const url::SchemeHostPort& http_server);
 
   GURL ApplyHostMappingRules(const GURL& url, HostPortPair* endpoint);
 
@@ -270,18 +270,18 @@ class NET_EXPORT HttpStreamFactory {
   void ProcessAlternativeService(
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
       base::StringPiece alternative_service_str,
-      const HostPortPair& http_host_port_pair,
+      const url::SchemeHostPort& http_server,
       const HttpNetworkSession& session);
 
   void ProcessAlternateProtocol(
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
       const std::vector<std::string>& alternate_protocol_values,
-      const HostPortPair& http_host_port_pair,
+      const url::SchemeHostPort& http_server,
       const HttpNetworkSession& session);
 
   static bool spdy_enabled_;
 
-  HostPortPair RewriteHost(HostPortPair host_port_pair);
+  url::SchemeHostPort RewriteHost(const url::SchemeHostPort& server);
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactory);
 };

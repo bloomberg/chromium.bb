@@ -110,7 +110,7 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
   if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_deps->http_server_properties.SetAlternativeService(
-        HostPortPair("www.example.org", 80),
+        url::SchemeHostPort("http", "www.example.org", 80),
         AlternativeService(AlternateProtocolFromNextProto(test_params.protocol),
                            "www.example.org", 443),
         expiration);
@@ -4240,9 +4240,13 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
 
   // Verify that no settings exist initially.
   HostPortPair host_port_pair("www.example.org", helper.port());
+  url::SchemeHostPort spdy_server("https", host_port_pair.host(),
+                                  host_port_pair.port());
+
   SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
-  EXPECT_TRUE(spdy_session_pool->http_server_properties()->GetSpdySettings(
-      host_port_pair).empty());
+  EXPECT_TRUE(spdy_session_pool->http_server_properties()
+                  ->GetSpdySettings(spdy_server)
+                  .empty());
 
   // Construct the request.
   std::unique_ptr<SpdySerializedFrame> req(
@@ -4300,7 +4304,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
     // Verify we had two persisted settings.
     const SettingsMap& settings_map =
         spdy_session_pool->http_server_properties()->GetSpdySettings(
-            host_port_pair);
+            spdy_server);
     ASSERT_EQ(2u, settings_map.size());
 
     // Verify the first persisted setting.
@@ -4351,8 +4355,11 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
 
   // Verify that no settings exist initially.
   HostPortPair host_port_pair("www.example.org", helper.port());
-  EXPECT_TRUE(spdy_session_pool->http_server_properties()->GetSpdySettings(
-      host_port_pair).empty());
+  url::SchemeHostPort spdy_server("https", host_port_pair.host(),
+                                  host_port_pair.port());
+  EXPECT_TRUE(spdy_session_pool->http_server_properties()
+                  ->GetSpdySettings(spdy_server)
+                  .empty());
 
   const SpdySettingsIds kSampleId1 = SETTINGS_MAX_CONCURRENT_STREAMS;
   unsigned int kSampleValue1 = 0x0a0a0a0a;
@@ -4361,20 +4368,15 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
 
   // First add a persisted setting.
   spdy_session_pool->http_server_properties()->SetSpdySetting(
-      host_port_pair,
-      kSampleId1,
-      SETTINGS_FLAG_PLEASE_PERSIST,
-      kSampleValue1);
+      spdy_server, kSampleId1, SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue1);
 
   // Next add another persisted setting.
   spdy_session_pool->http_server_properties()->SetSpdySetting(
-      host_port_pair,
-      kSampleId2,
-      SETTINGS_FLAG_PLEASE_PERSIST,
-      kSampleValue2);
+      spdy_server, kSampleId2, SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue2);
 
-  EXPECT_EQ(2u, spdy_session_pool->http_server_properties()->GetSpdySettings(
-      host_port_pair).size());
+  EXPECT_EQ(2u, spdy_session_pool->http_server_properties()
+                    ->GetSpdySettings(spdy_server)
+                    .size());
 
   // Construct the initial SETTINGS frame.
   SettingsMap initial_settings;
@@ -4385,8 +4387,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
 
   // Construct the persisted SETTINGS frame.
   const SettingsMap& settings =
-      spdy_session_pool->http_server_properties()->GetSpdySettings(
-          host_port_pair);
+      spdy_session_pool->http_server_properties()->GetSpdySettings(spdy_server);
   std::unique_ptr<SpdySerializedFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
 
@@ -4428,7 +4429,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
     // Verify we had two persisted settings.
     const SettingsMap& settings_map =
         spdy_session_pool->http_server_properties()->GetSpdySettings(
-            host_port_pair);
+            spdy_server);
     ASSERT_EQ(2u, settings_map.size());
 
     // Verify the first persisted setting.

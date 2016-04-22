@@ -876,8 +876,10 @@ TEST_P(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     alternative_service_info_vector.push_back(
         AlternativeServiceInfo(alternative_service, expiration));
     HostPortPair host_port_pair(alternative_service.host_port_pair());
+    url::SchemeHostPort server("https", host_port_pair.host(),
+                               host_port_pair.port());
     http_server_properties.SetAlternativeServices(
-        host_port_pair, alternative_service_info_vector);
+        server, alternative_service_info_vector);
 
     SpdySessionDependencies session_deps(
         GetParam(), ProxyService::CreateFixed("http_proxy"));
@@ -920,8 +922,10 @@ TEST_P(HttpStreamFactoryTest, QuicDisablePreConnectIfZeroRtt) {
     alternative_service_info_vector.push_back(
         AlternativeServiceInfo(alternative_service, expiration));
     HostPortPair host_port_pair(alternative_service.host_port_pair());
+    url::SchemeHostPort server("https", host_port_pair.host(),
+                               host_port_pair.port());
     http_server_properties.SetAlternativeServices(
-        host_port_pair, alternative_service_info_vector);
+        server, alternative_service_info_vector);
 
     SpdySessionDependencies session_deps(GetParam());
 
@@ -1530,9 +1534,9 @@ class HttpStreamFactoryBidirectionalQuicTest
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     alternative_service_info_vector.push_back(
         AlternativeServiceInfo(alternative_service, expiration));
-    HostPortPair host_port_pair(alternative_service.host_port_pair());
+    url::SchemeHostPort server("https", "www.example.org", 443);
     http_server_properties_.SetAlternativeServices(
-        host_port_pair, alternative_service_info_vector);
+        server, alternative_service_info_vector);
   };
 
   test::QuicTestPacketMaker& packet_maker() { return packet_maker_; }
@@ -1966,8 +1970,11 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   request_info.load_flags = 0;
 
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  HostPortPair host_port_pair("www.google.com", 8888);
+
   session->http_server_properties()->SetAlternativeService(
-      HostPortPair("www.google.com", 8888),
+      url::SchemeHostPort(request_info.url.scheme(), host_port_pair.host(),
+                          host_port_pair.port()),
       AlternativeService(NPN_HTTP_2, "www.google.com", 9999), expiration);
 
   SSLConfig ssl_config;

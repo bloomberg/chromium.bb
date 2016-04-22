@@ -27,6 +27,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "url/scheme_host_port.h"
 
 namespace content {
 
@@ -504,11 +505,10 @@ class ResourceScheduler::Client {
       // Resources below the non_delayable_threshold that are being requested
       // from a server that does not support native prioritization are
       // considered delayable.
-      net::HostPortPair host_port_pair =
-          net::HostPortPair::FromURL(request->url_request()->url());
+      url::SchemeHostPort scheme_host_port(request->url_request()->url());
       net::HttpServerProperties& http_server_properties =
           *request->url_request()->context()->http_server_properties();
-      if (!http_server_properties.SupportsRequestPriority(host_port_pair))
+      if (!http_server_properties.SupportsRequestPriority(scheme_host_port))
         attributes |= kAttributeDelayable;
     }
 
@@ -597,13 +597,14 @@ class ResourceScheduler::Client {
 
     net::HostPortPair host_port_pair =
         net::HostPortPair::FromURL(url_request.url());
+    url::SchemeHostPort scheme_host_port(url_request.url());
     net::HttpServerProperties& http_server_properties =
         *url_request.context()->http_server_properties();
 
     // TODO(willchan): We should really improve this algorithm as described in
     // crbug.com/164101. Also, theoretically we should not count a
     // request-priority capable request against the delayable requests limit.
-    if (http_server_properties.SupportsRequestPriority(host_port_pair))
+    if (http_server_properties.SupportsRequestPriority(scheme_host_port))
       return START_REQUEST;
 
     // Non-delayable requests.

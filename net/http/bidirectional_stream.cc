@@ -154,7 +154,7 @@ void BidirectionalStream::OnHeadersReceived(
 
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_, response_info.headers.get(),
-      HostPortPair::FromURL(request_info_->url));
+      url::SchemeHostPort(request_info_->url));
   delegate_->OnHeadersReceived(response_headers);
 }
 

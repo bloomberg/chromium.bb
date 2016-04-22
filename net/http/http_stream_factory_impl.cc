@@ -184,7 +184,7 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
   if (original_url.SchemeIs("ftp"))
     return AlternativeService();
 
-  HostPortPair origin = HostPortPair::FromURL(original_url);
+  url::SchemeHostPort origin(original_url);
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
   const AlternativeServiceVector alternative_service_vector =
@@ -264,7 +264,7 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
     ignore_result(ApplyHostMappingRules(original_url, &destination));
     QuicServerId server_id(destination, request_info.privacy_mode);
 
-    HostPortPair origin_copy(origin);
+    HostPortPair origin_copy(origin.host(), origin.port());
     ignore_result(ApplyHostMappingRules(original_url, &origin_copy));
 
     if (session_->quic_stream_factory()->CanUseExistingSession(

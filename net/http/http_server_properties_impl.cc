@@ -28,7 +28,7 @@ const uint64_t kBrokenAlternativeProtocolDelaySecs = 300;
 }  // namespace
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
-    : spdy_servers_map_(SpdyServerHostPortMap::NO_AUTO_EVICT),
+    : spdy_servers_map_(SpdyServersMap::NO_AUTO_EVICT),
       alternative_service_map_(AlternativeServiceMap::NO_AUTO_EVICT),
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
       server_network_stats_map_(ServerNetworkStatsMap::NO_AUTO_EVICT),
@@ -52,7 +52,7 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
     return;
 
   // Add the entries from persisted data.
-  SpdyServerHostPortMap spdy_servers_map(SpdyServerHostPortMap::NO_AUTO_EVICT);
+  SpdyServersMap spdy_servers_map(SpdyServersMap::NO_AUTO_EVICT);
   for (std::vector<std::string>::reverse_iterator it = spdy_servers->rbegin();
        it != spdy_servers->rend(); ++it) {
     spdy_servers_map.Put(*it, support_spdy);
@@ -62,7 +62,7 @@ void HttpServerPropertiesImpl::InitializeSpdyServers(
   spdy_servers_map_.Swap(spdy_servers_map);
 
   // Add the entries from the memory cache.
-  for (SpdyServerHostPortMap::reverse_iterator it = spdy_servers_map.rbegin();
+  for (SpdyServersMap::reverse_iterator it = spdy_servers_map.rbegin();
        it != spdy_servers_map.rend(); ++it) {
     // Add the entry if it is not in the cache, otherwise move it to the front
     // of recency list.
@@ -105,29 +105,30 @@ void HttpServerPropertiesImpl::InitializeAlternativeServiceServers(
     }
   }
 
-  // Attempt to find canonical servers.
-  uint16_t canonical_ports[] = {80, 443};
+  // Attempt to find canonical servers. Canonical suffix only apply to HTTPS.
+  uint16_t canonical_port = 443;
+  const char* canonical_scheme = "https";
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    for (size_t j = 0; j < arraysize(canonical_ports); ++j) {
-      HostPortPair canonical_host(canonical_suffix, canonical_ports[j]);
-      // If we already have a valid canonical server, we're done.
-      if (ContainsKey(canonical_host_to_origin_map_, canonical_host) &&
-          (alternative_service_map_.Peek(
-               canonical_host_to_origin_map_[canonical_host]) !=
-           alternative_service_map_.end())) {
-        continue;
-      }
-      // Now attempt to find a server which matches this origin and set it as
-      // canonical.
-      for (AlternativeServiceMap::const_iterator it =
-               alternative_service_map_.begin();
-           it != alternative_service_map_.end(); ++it) {
-        if (base::EndsWith(it->first.host(), canonical_suffixes_[i],
-                           base::CompareCase::INSENSITIVE_ASCII)) {
-          canonical_host_to_origin_map_[canonical_host] = it->first;
-          break;
-        }
+    url::SchemeHostPort canonical_server(canonical_scheme, canonical_suffix,
+                                         canonical_port);
+    // If we already have a valid canonical server, we're done.
+    if (ContainsKey(canonical_host_to_origin_map_, canonical_server) &&
+        (alternative_service_map_.Peek(
+             canonical_host_to_origin_map_[canonical_server]) !=
+         alternative_service_map_.end())) {
+      continue;
+    }
+    // Now attempt to find a server which matches this origin and set it as
+    // canonical.
+    for (AlternativeServiceMap::const_iterator it =
+             alternative_service_map_.begin();
+         it != alternative_service_map_.end(); ++it) {
+      if (base::EndsWith(it->first.host(), canonical_suffixes_[i],
+                         base::CompareCase::INSENSITIVE_ASCII) &&
+          it->first.scheme() == canonical_server.scheme()) {
+        canonical_host_to_origin_map_[canonical_server] = it->first;
+        break;
       }
     }
   }
@@ -208,12 +209,12 @@ void HttpServerPropertiesImpl::GetSpdyServerList(
   DCHECK(spdy_server_list);
   spdy_server_list->Clear();
   size_t count = 0;
-  // Get the list of servers (host/port) that support SPDY.
-  for (SpdyServerHostPortMap::const_iterator it = spdy_servers_map_.begin();
+  // Get the list of servers (scheme/host/port) that support SPDY.
+  for (SpdyServersMap::const_iterator it = spdy_servers_map_.begin();
        it != spdy_servers_map_.end() && count < max_size; ++it) {
-    const std::string spdy_server_host_port = it->first;
+    const std::string spdy_server = it->first;
     if (it->second) {
-      spdy_server_list->Append(new base::StringValue(spdy_server_host_port));
+      spdy_server_list->Append(new base::StringValue(spdy_server));
       ++count;
     }
   }
@@ -235,16 +236,15 @@ void HttpServerPropertiesImpl::Clear() {
 }
 
 bool HttpServerPropertiesImpl::SupportsRequestPriority(
-    const HostPortPair& host_port_pair) {
+    const url::SchemeHostPort& server) {
   DCHECK(CalledOnValidThread());
-  if (host_port_pair.host().empty())
+  if (server.host().empty())
     return false;
 
-  if (GetSupportsSpdy(host_port_pair))
+  if (GetSupportsSpdy(server))
     return true;
-
   const AlternativeServiceVector alternative_service_vector =
-      GetAlternativeServices(host_port_pair);
+      GetAlternativeServices(server);
   for (const AlternativeService& alternative_service :
        alternative_service_vector) {
     if (alternative_service.protocol == QUIC) {
@@ -255,31 +255,31 @@ bool HttpServerPropertiesImpl::SupportsRequestPriority(
 }
 
 bool HttpServerPropertiesImpl::GetSupportsSpdy(
-    const HostPortPair& host_port_pair) {
+    const url::SchemeHostPort& server) {
   DCHECK(CalledOnValidThread());
-  if (host_port_pair.host().empty())
+  if (server.host().empty())
     return false;
 
-  SpdyServerHostPortMap::iterator spdy_host_port =
-      spdy_servers_map_.Get(host_port_pair.ToString());
-  return spdy_host_port != spdy_servers_map_.end() && spdy_host_port->second;
+  SpdyServersMap::iterator spdy_server =
+      spdy_servers_map_.Get(server.Serialize());
+  return spdy_server != spdy_servers_map_.end() && spdy_server->second;
 }
 
 void HttpServerPropertiesImpl::SetSupportsSpdy(
-    const HostPortPair& host_port_pair,
+    const url::SchemeHostPort& server,
     bool support_spdy) {
   DCHECK(CalledOnValidThread());
-  if (host_port_pair.host().empty())
+  if (server.host().empty())
     return;
 
-  SpdyServerHostPortMap::iterator spdy_host_port =
-      spdy_servers_map_.Get(host_port_pair.ToString());
-  if ((spdy_host_port != spdy_servers_map_.end()) &&
-      (spdy_host_port->second == support_spdy)) {
+  SpdyServersMap::iterator spdy_server =
+      spdy_servers_map_.Get(server.Serialize());
+  if ((spdy_server != spdy_servers_map_.end()) &&
+      (spdy_server->second == support_spdy)) {
     return;
   }
   // Cache the data.
-  spdy_servers_map_.Put(host_port_pair.ToString(), support_spdy);
+  spdy_servers_map_.Put(server.Serialize(), support_spdy);
 }
 
 bool HttpServerPropertiesImpl::RequiresHTTP11(
@@ -322,12 +322,13 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
 }
 
 AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
-    const HostPortPair& origin) {
+    const url::SchemeHostPort& origin) {
   // Copy valid alternative services into |valid_alternative_services|.
   AlternativeServiceVector valid_alternative_services;
   const base::Time now = base::Time::Now();
   AlternativeServiceMap::iterator map_it = alternative_service_map_.Get(origin);
   if (map_it != alternative_service_map_.end()) {
+    HostPortPair host_port_pair(origin.host(), origin.port());
     for (AlternativeServiceInfoVector::iterator it = map_it->second.begin();
          it != map_it->second.end();) {
       if (it->expiration < now) {
@@ -339,9 +340,8 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
         alternative_service.host = origin.host();
       }
       // If the alternative service is equivalent to the origin (same host, same
-      // port, and both TCP), then there is already a Job for it, so do not
-      // return it here.
-      if (origin.Equals(alternative_service.host_port_pair()) &&
+      // port, and both TCP), skip it.
+      if (host_port_pair.Equals(alternative_service.host_port_pair()) &&
           NPN_SPDY_MINIMUM_VERSION <= alternative_service.protocol &&
           alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
         ++it;
@@ -392,7 +392,7 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
 }
 
 bool HttpServerPropertiesImpl::SetAlternativeService(
-    const HostPortPair& origin,
+    const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration) {
   return SetAlternativeServices(
@@ -402,7 +402,7 @@ bool HttpServerPropertiesImpl::SetAlternativeService(
 }
 
 bool HttpServerPropertiesImpl::SetAlternativeServices(
-    const HostPortPair& origin,
+    const url::SchemeHostPort& origin,
     const AlternativeServiceInfoVector& alternative_service_info_vector) {
   AlternativeServiceMap::iterator it = alternative_service_map_.Peek(origin);
 
@@ -438,12 +438,16 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
 
   // If this host ends with a canonical suffix, then set it as the
   // canonical host.
+  const char* canonical_scheme = "https";
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    if (base::EndsWith(origin.host(), canonical_suffixes_[i],
+    // canonical suffixes only apply to HTTPS.
+    if (origin.scheme() == canonical_scheme &&
+        base::EndsWith(origin.host(), canonical_suffixes_[i],
                        base::CompareCase::INSENSITIVE_ASCII)) {
-      HostPortPair canonical_host(canonical_suffix, origin.port());
-      canonical_host_to_origin_map_[canonical_host] = origin;
+      url::SchemeHostPort canonical_server(canonical_scheme, canonical_suffix,
+                                           origin.port());
+      canonical_host_to_origin_map_[canonical_server] = origin;
       break;
     }
   }
@@ -507,7 +511,7 @@ void HttpServerPropertiesImpl::ConfirmAlternativeService(
 }
 
 void HttpServerPropertiesImpl::ClearAlternativeServices(
-    const HostPortPair& origin) {
+    const url::SchemeHostPort& origin) {
   RemoveCanonicalHost(origin);
 
   AlternativeServiceMap::iterator it = alternative_service_map_.Peek(origin);
@@ -528,7 +532,7 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue() const {
   for (const auto& alternative_service_map_item : alternative_service_map_) {
     std::unique_ptr<base::ListValue> alternative_service_list(
         new base::ListValue);
-    const HostPortPair& host_port_pair = alternative_service_map_item.first;
+    const url::SchemeHostPort& server = alternative_service_map_item.first;
     for (const AlternativeServiceInfo& alternative_service_info :
          alternative_service_map_item.second) {
       std::string alternative_service_string(
@@ -536,7 +540,7 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue() const {
       AlternativeService alternative_service(
           alternative_service_info.alternative_service);
       if (alternative_service.host.empty()) {
-        alternative_service.host = host_port_pair.host();
+        alternative_service.host = server.host();
       }
       if (IsAlternativeServiceBroken(alternative_service)) {
         alternative_service_string.append(" (broken)");
@@ -547,7 +551,7 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue() const {
     if (alternative_service_list->empty())
       continue;
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("host_port_pair", host_port_pair.ToString());
+    dict->SetString("server", server.Serialize());
     dict->Set("alternative_service", std::unique_ptr<base::Value>(
                                          std::move(alternative_service_list)));
     dict_list->Append(std::move(dict));
@@ -556,8 +560,8 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue() const {
 }
 
 const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(
-    const HostPortPair& host_port_pair) {
-  SpdySettingsMap::iterator it = spdy_settings_map_.Get(host_port_pair);
+    const url::SchemeHostPort& server) {
+  SpdySettingsMap::iterator it = spdy_settings_map_.Get(server);
   if (it == spdy_settings_map_.end()) {
     CR_DEFINE_STATIC_LOCAL(SettingsMap, kEmptySettingsMap, ());
     return kEmptySettingsMap;
@@ -565,20 +569,19 @@ const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(
   return it->second;
 }
 
-bool HttpServerPropertiesImpl::SetSpdySetting(
-    const HostPortPair& host_port_pair,
-    SpdySettingsIds id,
-    SpdySettingsFlags flags,
-    uint32_t value) {
+bool HttpServerPropertiesImpl::SetSpdySetting(const url::SchemeHostPort& server,
+                                              SpdySettingsIds id,
+                                              SpdySettingsFlags flags,
+                                              uint32_t value) {
   if (!(flags & SETTINGS_FLAG_PLEASE_PERSIST))
       return false;
 
   SettingsFlagsAndValue flags_and_value(SETTINGS_FLAG_PERSISTED, value);
-  SpdySettingsMap::iterator it = spdy_settings_map_.Get(host_port_pair);
+  SpdySettingsMap::iterator it = spdy_settings_map_.Get(server);
   if (it == spdy_settings_map_.end()) {
     SettingsMap settings_map;
     settings_map[id] = flags_and_value;
-    spdy_settings_map_.Put(host_port_pair, settings_map);
+    spdy_settings_map_.Put(server, settings_map);
   } else {
     SettingsMap& settings_map = it->second;
     settings_map[id] = flags_and_value;
@@ -587,8 +590,8 @@ bool HttpServerPropertiesImpl::SetSpdySetting(
 }
 
 void HttpServerPropertiesImpl::ClearSpdySettings(
-    const HostPortPair& host_port_pair) {
-  SpdySettingsMap::iterator it = spdy_settings_map_.Peek(host_port_pair);
+    const url::SchemeHostPort& server) {
+  SpdySettingsMap::iterator it = spdy_settings_map_.Peek(server);
   if (it != spdy_settings_map_.end())
     spdy_settings_map_.Erase(it);
 }
@@ -620,15 +623,14 @@ void HttpServerPropertiesImpl::SetSupportsQuic(bool used_quic,
 }
 
 void HttpServerPropertiesImpl::SetServerNetworkStats(
-    const HostPortPair& host_port_pair,
+    const url::SchemeHostPort& server,
     ServerNetworkStats stats) {
-  server_network_stats_map_.Put(host_port_pair, stats);
+  server_network_stats_map_.Put(server, stats);
 }
 
 const ServerNetworkStats* HttpServerPropertiesImpl::GetServerNetworkStats(
-    const HostPortPair& host_port_pair) {
-  ServerNetworkStatsMap::iterator it =
-      server_network_stats_map_.Get(host_port_pair);
+    const url::SchemeHostPort& server) {
+  ServerNetworkStatsMap::iterator it = server_network_stats_map_.Get(server);
   if (it == server_network_stats_map_.end()) {
     return NULL;
   }
@@ -687,7 +689,7 @@ void HttpServerPropertiesImpl::SetMaxServerConfigsStoredInProperties(
 
 AlternativeServiceMap::const_iterator
 HttpServerPropertiesImpl::GetAlternateProtocolIterator(
-    const HostPortPair& server) {
+    const url::SchemeHostPort& server) {
   AlternativeServiceMap::const_iterator it =
       alternative_service_map_.Get(server);
   if (it != alternative_service_map_.end())
@@ -698,8 +700,8 @@ HttpServerPropertiesImpl::GetAlternateProtocolIterator(
     return alternative_service_map_.end();
   }
 
-  const HostPortPair canonical_host_port = canonical->second;
-  it = alternative_service_map_.Get(canonical_host_port);
+  const url::SchemeHostPort canonical_server = canonical->second;
+  it = alternative_service_map_.Get(canonical_server);
   if (it == alternative_service_map_.end()) {
     return alternative_service_map_.end();
   }
@@ -708,25 +710,31 @@ HttpServerPropertiesImpl::GetAlternateProtocolIterator(
     AlternativeService alternative_service(
         alternative_service_info.alternative_service);
     if (alternative_service.host.empty()) {
-      alternative_service.host = canonical_host_port.host();
+      alternative_service.host = canonical_server.host();
     }
     if (!IsAlternativeServiceBroken(alternative_service)) {
       return it;
     }
   }
 
-  RemoveCanonicalHost(canonical_host_port);
+  RemoveCanonicalHost(canonical_server);
   return alternative_service_map_.end();
 }
 
 HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
-HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
+HttpServerPropertiesImpl::GetCanonicalHost(
+    const url::SchemeHostPort& server) const {
+  const char* canonical_scheme = "https";
+  if (server.scheme() != canonical_scheme)
+    return canonical_host_to_origin_map_.end();
+
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
     if (base::EndsWith(server.host(), canonical_suffixes_[i],
                        base::CompareCase::INSENSITIVE_ASCII)) {
-      HostPortPair canonical_host(canonical_suffix, server.port());
-      return canonical_host_to_origin_map_.find(canonical_host);
+      url::SchemeHostPort canonical_server(canonical_scheme, canonical_suffix,
+                                           server.port());
+      return canonical_host_to_origin_map_.find(canonical_server);
     }
   }
 
@@ -734,7 +742,7 @@ HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
 }
 
 void HttpServerPropertiesImpl::RemoveCanonicalHost(
-    const HostPortPair& server) {
+    const url::SchemeHostPort& server) {
   CanonicalHostMap::const_iterator canonical = GetCanonicalHost(server);
   if (canonical == canonical_host_to_origin_map_.end())
     return;

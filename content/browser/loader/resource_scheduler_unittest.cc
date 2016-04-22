@@ -31,6 +31,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/latency_info.h"
+#include "url/scheme_host_port.h"
 
 using std::string;
 
@@ -337,7 +338,7 @@ TEST_F(ResourceSchedulerTest, LowDoesNotBlockCriticalComplete) {
 
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
   http_server_properties_.SetSupportsSpdy(
-      net::HostPortPair("spdyhost", 443), true);
+      url::SchemeHostPort("https", "spdyhost", 443), true);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low_spdy(
@@ -665,7 +666,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
   EXPECT_FALSE(low1->started());
   http_server_properties_.SetSupportsSpdy(
-      net::HostPortPair("spdyhost1", 8080), true);
+      url::SchemeHostPort("http", "spdyhost1", 8080), true);
   low1_spdy.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low1->started());
@@ -677,7 +678,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   // Reprioritize a request after we learn the server supports SPDY.
   EXPECT_TRUE(low2_spdy->started());
   http_server_properties_.SetSupportsSpdy(
-      net::HostPortPair("spdyhost2", 8080), true);
+      url::SchemeHostPort("http", "spdyhost2", 8080), true);
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   base::RunLoop().RunUntilIdle();
   std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
@@ -716,7 +717,7 @@ TEST_F(ResourceSchedulerTest,
   InitializeScheduler();
 
   http_server_properties_.SetSupportsSpdy(
-      net::HostPortPair("spdyhost", 443), true);
+      url::SchemeHostPort("https", "spdyhost", 443), true);
 
   // Throw in requests up to the above limit; make sure they are started.
   ScopedVector<TestRequest> requests;

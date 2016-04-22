@@ -1337,6 +1337,7 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
   };
 
   HostPortPair host_port_pair("www.example.org", 443);
+  url::SchemeHostPort server("https", "www.example.org", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   session_deps_.parse_alternative_services = true;
@@ -1371,8 +1372,7 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
             delegate->GetTotalReceivedBytes());
 
   AlternativeServiceVector alternative_service_vector =
-      http_session_->http_server_properties()->GetAlternativeServices(
-          host_port_pair);
+      http_session_->http_server_properties()->GetAlternativeServices(server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(kProtoQUIC1SPDY3),
             alternative_service_vector[0].protocol);

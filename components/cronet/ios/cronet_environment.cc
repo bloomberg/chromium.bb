@@ -44,6 +44,7 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "url/scheme_host_port.h"
 #include "url/url_util.h"
 
 namespace {
@@ -327,9 +328,10 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   for (const auto& quic_hint : quic_hints_) {
     net::AlternativeService alternative_service(net::AlternateProtocol::QUIC,
                                                 "", quic_hint.port());
-
+    url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
+                                         quic_hint.port());
     main_context_->http_server_properties()->SetAlternativeService(
-        quic_hint, alternative_service, base::Time::Max());
+        quic_hint_server, alternative_service, base::Time::Max());
     params.quic_host_whitelist.insert(quic_hint.host());
   }
 

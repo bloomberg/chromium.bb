@@ -79,19 +79,20 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   base::WeakPtr<HttpServerProperties> GetWeakPtr() override;
   void Clear() override;
-  bool SupportsRequestPriority(const HostPortPair& server) override;
-  bool GetSupportsSpdy(const HostPortPair& server) override;
-  void SetSupportsSpdy(const HostPortPair& server, bool support_spdy) override;
+  bool SupportsRequestPriority(const url::SchemeHostPort& server) override;
+  bool GetSupportsSpdy(const url::SchemeHostPort& server) override;
+  void SetSupportsSpdy(const url::SchemeHostPort& server,
+                       bool support_spdy) override;
   bool RequiresHTTP11(const HostPortPair& server) override;
   void SetHTTP11Required(const HostPortPair& server) override;
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
   AlternativeServiceVector GetAlternativeServices(
-      const HostPortPair& origin) override;
-  bool SetAlternativeService(const HostPortPair& origin,
+      const url::SchemeHostPort& origin) override;
+  bool SetAlternativeService(const url::SchemeHostPort& origin,
                              const AlternativeService& alternative_service,
                              base::Time expiration) override;
-  bool SetAlternativeServices(const HostPortPair& origin,
+  bool SetAlternativeServices(const url::SchemeHostPort& origin,
                               const AlternativeServiceInfoVector&
                                   alternative_service_info_vector) override;
   void MarkAlternativeServiceBroken(
@@ -104,25 +105,25 @@ class NET_EXPORT HttpServerPropertiesImpl
       const AlternativeService& alternative_service) override;
   void ConfirmAlternativeService(
       const AlternativeService& alternative_service) override;
-  void ClearAlternativeServices(const HostPortPair& origin) override;
+  void ClearAlternativeServices(const url::SchemeHostPort& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
       const override;
   const SettingsMap& GetSpdySettings(
-      const HostPortPair& host_port_pair) override;
-  bool SetSpdySetting(const HostPortPair& host_port_pair,
+      const url::SchemeHostPort& server) override;
+  bool SetSpdySetting(const url::SchemeHostPort& server,
                       SpdySettingsIds id,
                       SpdySettingsFlags flags,
                       uint32_t value) override;
-  void ClearSpdySettings(const HostPortPair& host_port_pair) override;
+  void ClearSpdySettings(const url::SchemeHostPort& server) override;
   void ClearAllSpdySettings() override;
   const SpdySettingsMap& spdy_settings_map() const override;
   bool GetSupportsQuic(IPAddress* last_address) const override;
   void SetSupportsQuic(bool used_quic, const IPAddress& address) override;
-  void SetServerNetworkStats(const HostPortPair& host_port_pair,
+  void SetServerNetworkStats(const url::SchemeHostPort& server,
                              ServerNetworkStats stats) override;
   const ServerNetworkStats* GetServerNetworkStats(
-      const HostPortPair& host_port_pair) override;
+      const url::SchemeHostPort& server) override;
   const ServerNetworkStatsMap& server_network_stats_map() const override;
   bool SetQuicServerInfo(const QuicServerId& server_id,
                          const std::string& server_info) override;
@@ -135,10 +136,10 @@ class NET_EXPORT HttpServerPropertiesImpl
  private:
   friend class HttpServerPropertiesImplPeer;
 
-  // |spdy_servers_map_| has flattened representation of servers (host, port)
-  // that either support or not support SPDY protocol.
-  typedef base::MRUCache<std::string, bool> SpdyServerHostPortMap;
-  typedef std::map<HostPortPair, HostPortPair> CanonicalHostMap;
+  // |spdy_servers_map_| has flattened representation of servers
+  // (scheme, host, port) that either support or not support SPDY protocol.
+  typedef base::MRUCache<std::string, bool> SpdyServersMap;
+  typedef std::map<url::SchemeHostPort, url::SchemeHostPort> CanonicalHostMap;
   typedef std::vector<std::string> CanonicalSufficList;
   typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
@@ -154,16 +155,18 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   // Return the iterator for |server|, or for its canonical host, or end.
   AlternativeServiceMap::const_iterator GetAlternateProtocolIterator(
-      const HostPortPair& server);
+      const url::SchemeHostPort& server);
 
   // Return the canonical host for |server|, or end if none exists.
-  CanonicalHostMap::const_iterator GetCanonicalHost(HostPortPair server) const;
+  CanonicalHostMap::const_iterator GetCanonicalHost(
+      const url::SchemeHostPort& server) const;
 
-  void RemoveCanonicalHost(const HostPortPair& server);
+  // Remove the cononical host for |server| if |server| is the value in the map.
+  void RemoveCanonicalHost(const url::SchemeHostPort& server);
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();
 
-  SpdyServerHostPortMap spdy_servers_map_;
+  SpdyServersMap spdy_servers_map_;
   Http11ServerHostPortSet http11_servers_;
 
   AlternativeServiceMap alternative_service_map_;
@@ -176,8 +179,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   SpdySettingsMap spdy_settings_map_;
   ServerNetworkStatsMap server_network_stats_map_;
   // Contains a map of servers which could share the same alternate protocol.
-  // Map from a Canonical host/port (host is some postfix of host names) to an
-  // actual origin, which has a plausible alternate protocol mapping.
+  // Map from a Canonical scheme/host/port (host is some postfix of host names)
+  // to an actual origin, which has a plausible alternate protocol mapping.
   CanonicalHostMap canonical_host_to_origin_map_;
   // Contains list of suffixes (for exmaple ".c.youtube.com",
   // ".googlevideo.com", ".googleusercontent.com") of canonical hostnames.

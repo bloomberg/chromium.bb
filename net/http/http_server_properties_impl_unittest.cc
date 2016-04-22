@@ -13,6 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace base {
 class ListValue;
@@ -48,28 +49,29 @@ const SpdySettingsIds kSpdySettingsId = SETTINGS_UPLOAD_BANDWIDTH;
 const SpdySettingsFlags kSpdySettingsFlags = SETTINGS_FLAG_PERSISTED;
 
 struct SpdySettingsDataToVerify {
-  HostPortPair spdy_server;
+  url::SchemeHostPort spdy_server;
   uint32_t value;
 };
 
 class HttpServerPropertiesImplTest : public testing::Test {
  protected:
-  bool HasAlternativeService(const HostPortPair& origin) {
+  bool HasAlternativeService(const url::SchemeHostPort& origin) {
     const AlternativeServiceVector alternative_service_vector =
         impl_.GetAlternativeServices(origin);
     return !alternative_service_vector.empty();
   }
 
-  bool SetAlternativeService(const HostPortPair& origin,
+  bool SetAlternativeService(const url::SchemeHostPort& origin,
                              const AlternativeService& alternative_service) {
     const base::Time expiration =
         base::Time::Now() + base::TimeDelta::FromDays(1);
     return impl_.SetAlternativeService(origin, alternative_service, expiration);
   }
 
-  void InitializeSpdySettingsUploadBandwidth(SpdySettingsMap* spdy_settings_map,
-                                             const HostPortPair& spdy_server,
-                                             uint32_t value) {
+  void InitializeSpdySettingsUploadBandwidth(
+      SpdySettingsMap* spdy_settings_map,
+      const url::SchemeHostPort& spdy_server,
+      uint32_t value) {
     SettingsMap settings_map;
     settings_map[kSpdySettingsId] =
         SettingsFlagsAndValue(kSpdySettingsFlags, value);
@@ -101,18 +103,44 @@ class HttpServerPropertiesImplTest : public testing::Test {
 
 typedef HttpServerPropertiesImplTest SpdyServerPropertiesTest;
 
+TEST_F(SpdyServerPropertiesTest, InitializeWithSchemeHostPort) {
+  // Check spdy servers are correctly set with SchemeHostPort key.
+  url::SchemeHostPort https_www_server("https", "www.google.com", 443);
+  url::SchemeHostPort http_photo_server("http", "photos.google.com", 80);
+  // Servers with port equal to default port in scheme will drop port components
+  // when calling Serialize().
+  std::string spdy_server_g = https_www_server.Serialize();
+  std::string spdy_server_p = http_photo_server.Serialize();
+
+  url::SchemeHostPort http_google_server("http", "www.google.com", 443);
+  url::SchemeHostPort https_photos_server("https", "photos.google.com", 443);
+  url::SchemeHostPort valid_google_server((GURL("https://www.google.com")));
+
+  // Initializing https://www.google.com:443 and https://photos.google.com:443
+  // as spdy servers.
+  std::vector<std::string> spdy_servers1;
+  spdy_servers1.push_back(spdy_server_g);  // Will be 0th index.
+  spdy_servers1.push_back(spdy_server_p);  // Will be 1st index.
+  impl_.InitializeSpdyServers(&spdy_servers1, true);
+  EXPECT_TRUE(impl_.SupportsRequestPriority(http_photo_server));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(https_www_server));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(http_google_server));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(https_photos_server));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(valid_google_server));
+}
+
 TEST_F(SpdyServerPropertiesTest, Initialize) {
-  HostPortPair spdy_server_google("www.google.com", 443);
-  std::string spdy_server_g = spdy_server_google.ToString();
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
+  std::string spdy_server_g = spdy_server_google.Serialize();
 
-  HostPortPair spdy_server_photos("photos.google.com", 443);
-  std::string spdy_server_p = spdy_server_photos.ToString();
+  url::SchemeHostPort spdy_server_photos("https", "photos.google.com", 443);
+  std::string spdy_server_p = spdy_server_photos.Serialize();
 
-  HostPortPair spdy_server_docs("docs.google.com", 443);
-  std::string spdy_server_d = spdy_server_docs.ToString();
+  url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
+  std::string spdy_server_d = spdy_server_docs.Serialize();
 
-  HostPortPair spdy_server_mail("mail.google.com", 443);
-  std::string spdy_server_m = spdy_server_mail.ToString();
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
+  std::string spdy_server_m = spdy_server_mail.Serialize();
 
   // Check by initializing NULL spdy servers.
   impl_.InitializeSpdyServers(NULL, true);
@@ -200,49 +228,49 @@ TEST_F(SpdyServerPropertiesTest, Initialize) {
 }
 
 TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {
-  HostPortPair spdy_server_empty(std::string(), 443);
+  url::SchemeHostPort spdy_server_empty("https", std::string(), 443);
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_empty));
 
   // Add www.google.com:443 as supporting SPDY.
-  HostPortPair spdy_server_google("www.google.com", 443);
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_google, true);
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
 
   // Add mail.google.com:443 as not supporting SPDY.
-  HostPortPair spdy_server_mail("mail.google.com", 443);
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
 
   // Add docs.google.com:443 as supporting SPDY.
-  HostPortPair spdy_server_docs("docs.google.com", 443);
+  url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_docs, true);
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
 
   // Add www.youtube.com:443 as supporting QUIC.
-  HostPortPair quic_server_youtube("www.youtube.com", 443);
+  url::SchemeHostPort youtube_server("https", "www.youtube.com", 443);
   const AlternativeService alternative_service1(QUIC, "www.youtube.com", 443);
-  SetAlternativeService(quic_server_youtube, alternative_service1);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(quic_server_youtube));
+  SetAlternativeService(youtube_server, alternative_service1);
+  EXPECT_TRUE(impl_.SupportsRequestPriority(youtube_server));
 
   // Add www.example.com:443 with two alternative services, one supporting QUIC.
-  HostPortPair quic_server_example("www.example.com", 443);
+  url::SchemeHostPort example_server("https", "www.example.com", 443);
   const AlternativeService alternative_service2(NPN_HTTP_2, "", 443);
-  SetAlternativeService(quic_server_example, alternative_service2);
-  SetAlternativeService(quic_server_example, alternative_service1);
-  EXPECT_TRUE(impl_.SupportsRequestPriority(quic_server_example));
+  SetAlternativeService(example_server, alternative_service2);
+  SetAlternativeService(example_server, alternative_service1);
+  EXPECT_TRUE(impl_.SupportsRequestPriority(example_server));
 
   // Verify all the entries are the same after additions.
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(quic_server_youtube));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(quic_server_example));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(youtube_server));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(example_server));
 }
 
 TEST_F(SpdyServerPropertiesTest, Clear) {
   // Add www.google.com:443 and mail.google.com:443 as supporting SPDY.
-  HostPortPair spdy_server_google("www.google.com", 443);
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_google, true);
-  HostPortPair spdy_server_mail("mail.google.com", 443);
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_mail, true);
 
   EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
@@ -261,17 +289,17 @@ TEST_F(SpdyServerPropertiesTest, GetSpdyServerList) {
   EXPECT_EQ(0U, spdy_server_list.GetSize());
 
   // Check empty server is not added.
-  HostPortPair spdy_server_empty(std::string(), 443);
+  url::SchemeHostPort spdy_server_empty("https", std::string(), 443);
   impl_.SetSupportsSpdy(spdy_server_empty, true);
   impl_.GetSpdyServerList(&spdy_server_list, kMaxSupportsSpdyServerHosts);
   EXPECT_EQ(0U, spdy_server_list.GetSize());
 
   std::string string_value_g;
   std::string string_value_m;
-  HostPortPair spdy_server_google("www.google.com", 443);
-  std::string spdy_server_g = spdy_server_google.ToString();
-  HostPortPair spdy_server_mail("mail.google.com", 443);
-  std::string spdy_server_m = spdy_server_mail.ToString();
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
+  std::string spdy_server_g = spdy_server_google.Serialize();
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
+  std::string spdy_server_m = spdy_server_mail.Serialize();
 
   // Add www.google.com:443 as not supporting SPDY.
   impl_.SetSupportsSpdy(spdy_server_google, false);
@@ -315,10 +343,10 @@ TEST_F(SpdyServerPropertiesTest, MRUOfGetSpdyServerList) {
 
   std::string string_value_g;
   std::string string_value_m;
-  HostPortPair spdy_server_google("www.google.com", 443);
-  std::string spdy_server_g = spdy_server_google.ToString();
-  HostPortPair spdy_server_mail("mail.google.com", 443);
-  std::string spdy_server_m = spdy_server_mail.ToString();
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
+  std::string spdy_server_g = spdy_server_google.Serialize();
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
+  std::string spdy_server_m = spdy_server_mail.Serialize();
 
   // Add www.google.com:443 as supporting SPDY.
   impl_.SetSupportsSpdy(spdy_server_google, true);
@@ -351,18 +379,18 @@ TEST_F(SpdyServerPropertiesTest, MRUOfGetSpdyServerList) {
 typedef HttpServerPropertiesImplTest AlternateProtocolServerPropertiesTest;
 
 TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
-  HostPortPair test_host_port_pair("foo", 80);
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+  url::SchemeHostPort test_server("http", "foo", 80);
+  EXPECT_FALSE(HasAlternativeService(test_server));
 
   AlternativeService alternative_service(NPN_HTTP_2, "foo", 443);
-  SetAlternativeService(test_host_port_pair, alternative_service);
+  SetAlternativeService(test_server, alternative_service);
   const AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service, alternative_service_vector[0]);
 
   impl_.Clear();
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+  EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
@@ -385,12 +413,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service4, expiration));
 
-  HostPortPair test_host_port_pair("foo", 443);
-  impl_.SetAlternativeServices(test_host_port_pair,
-                               alternative_service_info_vector);
+  url::SchemeHostPort test_server("https", "foo", 443);
+  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
 
   const AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(3u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service2, alternative_service_vector[0]);
   EXPECT_EQ(alternative_service3, alternative_service_vector[1]);
@@ -398,31 +425,29 @@ TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
-  // |test_host_port_pair1| has an alternative service, which will not be
+  // |test_server1| has an alternative service, which will not be
   // affected by InitializeAlternativeServiceServers(), because
   // |alternative_service_map| does not have an entry for
-  // |test_host_port_pair1|.
-  HostPortPair test_host_port_pair1("foo1", 80);
+  // |test_server1|.
+  url::SchemeHostPort test_server1("http", "foo1", 80);
   const AlternativeService alternative_service1(NPN_HTTP_2, "bar1", 443);
   const base::Time now = base::Time::Now();
   base::Time expiration1 = now + base::TimeDelta::FromDays(1);
   // 1st entry in the memory.
-  impl_.SetAlternativeService(test_host_port_pair1, alternative_service1,
-                              expiration1);
+  impl_.SetAlternativeService(test_server1, alternative_service1, expiration1);
 
-  // |test_host_port_pair2| has an alternative service, which will be
+  // |test_server2| has an alternative service, which will be
   // overwritten by InitializeAlternativeServiceServers(), because
   // |alternative_service_map| has an entry for
-  // |test_host_port_pair2|.
+  // |test_server2|.
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService alternative_service2(NPN_SPDY_3_1, "bar2", 443);
   base::Time expiration2 = now + base::TimeDelta::FromDays(2);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, expiration2));
-  HostPortPair test_host_port_pair2("foo2", 80);
+  url::SchemeHostPort test_server2("http", "foo2", 80);
   // 0th entry in the memory.
-  impl_.SetAlternativeServices(test_host_port_pair2,
-                               alternative_service_info_vector);
+  impl_.SetAlternativeServices(test_server2, alternative_service_info_vector);
 
   // Prepare |alternative_service_map| to be loaded by
   // InitializeAlternativeServiceServers().
@@ -434,10 +459,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
                                                          expiration3);
   // Simulate updating data for 0th entry with data from Preferences.
   alternative_service_map.Put(
-      test_host_port_pair2,
+      test_server2,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info1));
 
-  HostPortPair test_host_port_pair3("foo3", 80);
+  url::SchemeHostPort test_server3("http", "foo3", 80);
   const AlternativeService alternative_service4(NPN_HTTP_2, "bar4", 1234);
   base::Time expiration4 = now + base::TimeDelta::FromDays(4);
   const AlternativeServiceInfo alternative_service_info2(alternative_service4,
@@ -445,11 +470,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   // Add an old entry from Preferences, this will be added to end of recency
   // list.
   alternative_service_map.Put(
-      test_host_port_pair3,
+      test_server3,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info2));
 
-  // MRU list will be test_host_port_pair2, test_host_port_pair1,
-  // test_host_port_pair3.
+  // MRU list will be test_server2, test_server1, test_server3.
   impl_.InitializeAlternativeServiceServers(&alternative_service_map);
 
   // Verify alternative_service_map.
@@ -457,17 +481,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   ASSERT_EQ(3u, map.size());
   AlternativeServiceMap::const_iterator map_it = map.begin();
 
-  EXPECT_TRUE(map_it->first.Equals(test_host_port_pair2));
+  EXPECT_TRUE(map_it->first.Equals(test_server2));
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service3, map_it->second[0].alternative_service);
   EXPECT_EQ(expiration3, map_it->second[0].expiration);
   ++map_it;
-  EXPECT_TRUE(map_it->first.Equals(test_host_port_pair1));
+  EXPECT_TRUE(map_it->first.Equals(test_server1));
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service1, map_it->second[0].alternative_service);
   EXPECT_EQ(expiration1, map_it->second[0].expiration);
   ++map_it;
-  EXPECT_TRUE(map_it->first.Equals(test_host_port_pair3));
+  EXPECT_TRUE(map_it->first.Equals(test_server3));
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service4, map_it->second[0].alternative_service);
   EXPECT_EQ(expiration4, map_it->second[0].expiration);
@@ -477,13 +501,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
 // InitializeAlternativeServiceServers() should not crash if there is an empty
 // hostname is the mapping.
 TEST_F(AlternateProtocolServerPropertiesTest, InitializeWithEmptyHostname) {
-  const HostPortPair host_port_pair("foo", 443);
+  url::SchemeHostPort server("https", "foo", 443);
   const AlternativeService alternative_service_with_empty_hostname(NPN_HTTP_2,
                                                                    "", 1234);
   const AlternativeService alternative_service_with_foo_hostname(NPN_HTTP_2,
                                                                  "foo", 1234);
-  SetAlternativeService(host_port_pair,
-                        alternative_service_with_empty_hostname);
+  SetAlternativeService(server, alternative_service_with_empty_hostname);
   impl_.MarkAlternativeServiceBroken(alternative_service_with_foo_hostname);
 
   AlternativeServiceMap alternative_service_map(
@@ -493,7 +516,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, InitializeWithEmptyHostname) {
   EXPECT_TRUE(
       impl_.IsAlternativeServiceBroken(alternative_service_with_foo_hostname));
   const AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(host_port_pair);
+      impl_.GetAlternativeServices(server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service_with_foo_hostname,
             alternative_service_vector[0]);
@@ -503,7 +526,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, InitializeWithEmptyHostname) {
 // GetAlternativeServices() should remove |alternative_service_map_| elements
 // with empty value.
 TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
-  HostPortPair host_port_pair("foo", 443);
+  url::SchemeHostPort server("https", "foo", 443);
   const AlternativeService alternative_service(NPN_HTTP_2, "bar", 443);
   base::Time expiration = base::Time::Now() - base::TimeDelta::FromDays(1);
   const AlternativeServiceInfo alternative_service_info(alternative_service,
@@ -511,7 +534,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
   AlternativeServiceMap alternative_service_map(
       AlternativeServiceMap::NO_AUTO_EVICT);
   alternative_service_map.Put(
-      host_port_pair,
+      server,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
   // Prepare |alternative_service_map_| with a single key that has a single
@@ -520,26 +543,26 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
 
   // GetAlternativeServices() should remove such AlternativeServiceInfo from
   // |alternative_service_map_|, emptying the AlternativeServiceInfoVector
-  // corresponding to |host_port_pair|.
+  // corresponding to |server|.
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(host_port_pair);
+      impl_.GetAlternativeServices(server);
   ASSERT_TRUE(alternative_service_vector.empty());
 
   // GetAlternativeServices() should remove this key from
   // |alternative_service_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(
-      host_port_pair,
+      server,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
-  // There should still be no alternative service assigned to |host_port_pair|.
-  alternative_service_vector = impl_.GetAlternativeServices(host_port_pair);
+  // There should still be no alternative service assigned to |server|.
+  alternative_service_vector = impl_.GetAlternativeServices(server);
   ASSERT_TRUE(alternative_service_vector.empty());
 }
 
 // Regression test for https://crbug.com/516486 for the canonical host case.
 TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
-  HostPortPair host_port_pair("foo.c.youtube.com", 443);
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 443);
+  url::SchemeHostPort server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   const AlternativeService alternative_service(NPN_HTTP_2, "", 443);
   base::Time expiration = base::Time::Now() - base::TimeDelta::FromDays(1);
   const AlternativeServiceInfo alternative_service_info(alternative_service,
@@ -547,7 +570,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
   AlternativeServiceMap alternative_service_map(
       AlternativeServiceMap::NO_AUTO_EVICT);
   alternative_service_map.Put(
-      canonical_host_port_pair,
+      canonical_server,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
   // Prepare |alternative_service_map_| with a single key that has a single
@@ -556,65 +579,63 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
 
   // GetAlternativeServices() should remove such AlternativeServiceInfo from
   // |alternative_service_map_|, emptying the AlternativeServiceInfoVector
-  // corresponding to |canonical_host_port_pair|, even when looking up
-  // alternative services for |host_port_pair|.
+  // corresponding to |canonical_server|, even when looking up
+  // alternative services for |server|.
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(host_port_pair);
+      impl_.GetAlternativeServices(server);
   ASSERT_TRUE(alternative_service_vector.empty());
 
   // GetAlternativeServices() should remove this key from
   // |alternative_service_map_|, and SetAlternativeServices() should not crash.
   impl_.SetAlternativeServices(
-      canonical_host_port_pair,
+      canonical_server,
       AlternativeServiceInfoVector(/*size=*/1, alternative_service_info));
 
   // There should still be no alternative service assigned to
-  // |canonical_host_port_pair|.
-  alternative_service_vector =
-      impl_.GetAlternativeServices(canonical_host_port_pair);
+  // |canonical_server|.
+  alternative_service_vector = impl_.GetAlternativeServices(canonical_server);
   ASSERT_TRUE(alternative_service_vector.empty());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServices) {
-  HostPortPair test_host_port_pair1("foo1", 80);
+  url::SchemeHostPort test_server1("http", "foo1", 80);
   const AlternativeService alternative_service1(NPN_SPDY_3_1, "foo1", 443);
-  SetAlternativeService(test_host_port_pair1, alternative_service1);
-  HostPortPair test_host_port_pair2("foo2", 80);
+  SetAlternativeService(test_server1, alternative_service1);
+  url::SchemeHostPort test_server2("http", "foo2", 80);
   const AlternativeService alternative_service2(NPN_HTTP_2, "foo2", 1234);
-  SetAlternativeService(test_host_port_pair2, alternative_service2);
+  SetAlternativeService(test_server2, alternative_service2);
 
   const AlternativeServiceMap& map = impl_.alternative_service_map();
   AlternativeServiceMap::const_iterator it = map.begin();
-  EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
+  EXPECT_TRUE(it->first.Equals(test_server2));
   ASSERT_EQ(1u, it->second.size());
   EXPECT_EQ(alternative_service2, it->second[0].alternative_service);
 
   const AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair1);
+      impl_.GetAlternativeServices(test_server1);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service1, alternative_service_vector[0]);
 
   // GetAlternativeServices should reorder the AlternateProtocol map.
   it = map.begin();
-  EXPECT_TRUE(it->first.Equals(test_host_port_pair1));
+  EXPECT_TRUE(it->first.Equals(test_server1));
   ASSERT_EQ(1u, it->second.size());
   EXPECT_EQ(alternative_service1, it->second[0].alternative_service);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
-  HostPortPair test_host_port_pair("foo", 80);
+  url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service1(NPN_HTTP_2, "foo", 443);
-  SetAlternativeService(test_host_port_pair, alternative_service1);
+  SetAlternativeService(test_server, alternative_service1);
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service1, alternative_service_vector[0]);
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
 
   // GetAlternativeServices should return the broken alternative service.
   impl_.MarkAlternativeServiceBroken(alternative_service1);
-  alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+  alternative_service_vector = impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service1, alternative_service_vector[0]);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
@@ -627,10 +648,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   const AlternativeService alternative_service2(NPN_HTTP_2, "foo", 1234);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, expiration));
-  impl_.SetAlternativeServices(test_host_port_pair,
-                               alternative_service_info_vector);
-  alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
+  alternative_service_vector = impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(2u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service1, alternative_service_vector[0]);
   EXPECT_EQ(alternative_service2, alternative_service_vector[1]);
@@ -638,9 +657,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service_vector[1]));
 
   // SetAlternativeService should add a broken alternative service to the map.
-  SetAlternativeService(test_host_port_pair, alternative_service1);
-  alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+  SetAlternativeService(test_server, alternative_service1);
+  alternative_service_vector = impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service1, alternative_service_vector[0]);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service_vector[0]));
@@ -663,12 +681,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, MaxAge) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, now + one_day));
 
-  HostPortPair test_host_port_pair("foo", 80);
-  impl_.SetAlternativeServices(test_host_port_pair,
-                               alternative_service_info_vector);
+  url::SchemeHostPort test_server("http", "foo", 80);
+  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
 
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service2, alternative_service_vector[0]);
 }
@@ -690,15 +707,50 @@ TEST_F(AlternateProtocolServerPropertiesTest, MaxAgeCanonical) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, now + one_day));
 
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 80);
-  impl_.SetAlternativeServices(canonical_host_port_pair,
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
+  impl_.SetAlternativeServices(canonical_server,
                                alternative_service_info_vector);
 
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service2, alternative_service_vector[0]);
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  const AlternativeService alternative_service1(NPN_SPDY_3_1, "foo", 443);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service1, expiration));
+  const AlternativeService alternative_service2(NPN_HTTP_2, "bar", 1234);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service2, expiration));
+  // Set Alt-Svc list for |http_server|.
+  url::SchemeHostPort http_server("http", "foo", 80);
+  impl_.SetAlternativeServices(http_server, alternative_service_info_vector);
+
+  const net::AlternativeServiceMap& map = impl_.alternative_service_map();
+  net::AlternativeServiceMap::const_iterator it = map.begin();
+  EXPECT_TRUE(it->first.Equals(http_server));
+  ASSERT_EQ(2u, it->second.size());
+  EXPECT_EQ(alternative_service1, it->second[0].alternative_service);
+  EXPECT_EQ(alternative_service2, it->second[1].alternative_service);
+
+  // Check Alt-Svc list should not be set for |https_server|.
+  url::SchemeHostPort https_server("https", "foo", 80);
+  EXPECT_EQ(0u, impl_.GetAlternativeServices(https_server).size());
+
+  // Set Alt-Svc list for |https_server|.
+  impl_.SetAlternativeServices(https_server, alternative_service_info_vector);
+  EXPECT_EQ(2u, impl_.GetAlternativeServices(https_server).size());
+  EXPECT_EQ(2u, impl_.GetAlternativeServices(http_server).size());
+
+  // Clear Alt-Svc list for |http_server|.
+  impl_.ClearAlternativeServices(http_server);
+  EXPECT_EQ(0u, impl_.GetAlternativeServices(http_server).size());
+  EXPECT_EQ(2u, impl_.GetAlternativeServices(https_server).size());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
@@ -710,18 +762,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   const AlternativeService alternative_service2(NPN_HTTP_2, "bar", 1234);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, expiration));
-  HostPortPair test_host_port_pair("foo", 80);
-  impl_.SetAlternativeServices(test_host_port_pair,
-                               alternative_service_info_vector);
+  url::SchemeHostPort test_server("http", "foo", 80);
+  impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
 
   const net::AlternativeServiceMap& map = impl_.alternative_service_map();
   net::AlternativeServiceMap::const_iterator it = map.begin();
-  EXPECT_TRUE(it->first.Equals(test_host_port_pair));
+  EXPECT_TRUE(it->first.Equals(test_server));
   ASSERT_EQ(2u, it->second.size());
   EXPECT_EQ(alternative_service1, it->second[0].alternative_service);
   EXPECT_EQ(alternative_service2, it->second[1].alternative_service);
 
-  impl_.ClearAlternativeServices(test_host_port_pair);
+  impl_.ClearAlternativeServices(test_server);
   EXPECT_TRUE(map.empty());
 }
 
@@ -730,14 +781,13 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
 // particular, an alternative service mapped to an origin shadows alternative
 // services of canonical hosts.
 TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 80);
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(QUIC, "bar.c.youtube.com",
                                                    1234);
-  SetAlternativeService(canonical_host_port_pair,
-                        canonical_alternative_service);
+  SetAlternativeService(canonical_server, canonical_alternative_service);
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(canonical_alternative_service, alternative_service_vector[0]);
 
@@ -745,31 +795,30 @@ TEST_F(AlternateProtocolServerPropertiesTest, BrokenShadowsCanonical) {
   impl_.MarkAlternativeServiceBroken(broken_alternative_service);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service));
 
-  SetAlternativeService(test_host_port_pair, broken_alternative_service);
-  alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+  SetAlternativeService(test_server, broken_alternative_service);
+  alternative_service_vector = impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(broken_alternative_service, alternative_service_vector[0]);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(broken_alternative_service));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
-  HostPortPair test_host_port_pair("foo", 80);
+  url::SchemeHostPort test_server("http", "foo", 80);
   const AlternativeService alternative_service(NPN_HTTP_2, "foo", 443);
-  SetAlternativeService(test_host_port_pair, alternative_service);
+  SetAlternativeService(test_server, alternative_service);
   impl_.MarkAlternativeServiceBroken(alternative_service);
-  ASSERT_TRUE(HasAlternativeService(test_host_port_pair));
+  ASSERT_TRUE(HasAlternativeService(test_server));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   // ClearAlternativeServices should leave a broken alternative service marked
   // as such.
-  impl_.ClearAlternativeServices(test_host_port_pair);
+  impl_.ClearAlternativeServices(test_server);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
-  HostPortPair host_port_pair("foo", 80);
+  url::SchemeHostPort server("http", "foo", 80);
   const AlternativeService alternative_service(NPN_HTTP_2, "foo", 443);
-  SetAlternativeService(host_port_pair, alternative_service);
+  SetAlternativeService(server, alternative_service);
 
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
@@ -784,11 +833,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, MarkRecentlyBroken) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
+  EXPECT_FALSE(HasAlternativeService(test_server));
 
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 80);
-  EXPECT_FALSE(HasAlternativeService(canonical_host_port_pair));
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
+  EXPECT_FALSE(HasAlternativeService(canonical_server));
 
   AlternativeServiceInfoVector alternative_service_info_vector;
   const AlternativeService canonical_alternative_service1(
@@ -799,94 +848,89 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   const AlternativeService canonical_alternative_service2(NPN_HTTP_2, "", 443);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(canonical_alternative_service2, expiration));
-  impl_.SetAlternativeServices(canonical_host_port_pair,
+  impl_.SetAlternativeServices(canonical_server,
                                alternative_service_info_vector);
 
-  // Since |test_host_port_pair| does not have an alternative service itself,
-  // GetAlternativeServices should return those of |canonical_host_port_pair|.
+  // Since |test_server| does not have an alternative service itself,
+  // GetAlternativeServices should return those of |canonical_server|.
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(test_server);
   ASSERT_EQ(2u, alternative_service_vector.size());
   EXPECT_EQ(canonical_alternative_service1, alternative_service_vector[0]);
 
   // Since |canonical_alternative_service2| has an empty host,
   // GetAlternativeServices should substitute the hostname of its |origin|
   // argument.
-  EXPECT_EQ(test_host_port_pair.host(), alternative_service_vector[1].host);
+  EXPECT_EQ(test_server.host(), alternative_service_vector[1].host);
   EXPECT_EQ(canonical_alternative_service2.protocol,
             alternative_service_vector[1].protocol);
   EXPECT_EQ(canonical_alternative_service2.port,
             alternative_service_vector[1].port);
 
   // Verify the canonical suffix.
+  EXPECT_EQ(".c.youtube.com", impl_.GetCanonicalSuffix(test_server.host()));
   EXPECT_EQ(".c.youtube.com",
-            impl_.GetCanonicalSuffix(test_host_port_pair.host()));
-  EXPECT_EQ(".c.youtube.com",
-            impl_.GetCanonicalSuffix(canonical_host_port_pair.host()));
+            impl_.GetCanonicalSuffix(canonical_server.host()));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 80);
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(QUIC, "bar.c.youtube.com",
                                                    1234);
 
-  SetAlternativeService(canonical_host_port_pair,
-                        canonical_alternative_service);
-  impl_.ClearAlternativeServices(canonical_host_port_pair);
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+  SetAlternativeService(canonical_server, canonical_alternative_service);
+  impl_.ClearAlternativeServices(canonical_server);
+  EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 80);
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(QUIC, "bar.c.youtube.com",
                                                    1234);
 
-  SetAlternativeService(canonical_host_port_pair,
-                        canonical_alternative_service);
+  SetAlternativeService(canonical_server, canonical_alternative_service);
   impl_.MarkAlternativeServiceBroken(canonical_alternative_service);
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+  EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
 // Adding an alternative service for a new host overrides canonical host.
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalOverride) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  HostPortPair bar_host_port_pair("bar.c.youtube.com", 80);
+  url::SchemeHostPort foo_server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort bar_server("https", "bar.c.youtube.com", 443);
   AlternativeService bar_alternative_service(QUIC, "bar.c.youtube.com", 1234);
-  SetAlternativeService(bar_host_port_pair, bar_alternative_service);
+  SetAlternativeService(bar_server, bar_alternative_service);
   AlternativeServiceVector alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+      impl_.GetAlternativeServices(foo_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(bar_alternative_service, alternative_service_vector[0]);
 
-  HostPortPair qux_host_port_pair("qux.c.youtube.com", 80);
+  url::SchemeHostPort qux_server("https", "qux.c.youtube.com", 443);
   AlternativeService qux_alternative_service(QUIC, "qux.c.youtube.com", 443);
-  SetAlternativeService(qux_host_port_pair, qux_alternative_service);
-  alternative_service_vector =
-      impl_.GetAlternativeServices(test_host_port_pair);
+  SetAlternativeService(qux_server, qux_alternative_service);
+  alternative_service_vector = impl_.GetAlternativeServices(foo_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(qux_alternative_service, alternative_service_vector[0]);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  HostPortPair canonical_host_port_pair("bar.c.youtube.com", 80);
+  url::SchemeHostPort test_server("https", "foo.c.youtube.com", 443);
+  url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   AlternativeService canonical_alternative_service(QUIC, "bar.c.youtube.com",
                                                    1234);
 
-  SetAlternativeService(canonical_host_port_pair,
-                        canonical_alternative_service);
+  SetAlternativeService(canonical_server, canonical_alternative_service);
   impl_.Clear();
-  EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
+  EXPECT_FALSE(HasAlternativeService(test_server));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest,
        ExpireBrokenAlternateProtocolMappings) {
-  HostPortPair host_port_pair("foo", 443);
+  url::SchemeHostPort server("https", "foo", 443);
   AlternativeService alternative_service(QUIC, "foo", 443);
-  SetAlternativeService(host_port_pair, alternative_service);
-  EXPECT_TRUE(HasAlternativeService(host_port_pair));
+  SetAlternativeService(server, alternative_service);
+  EXPECT_TRUE(HasAlternativeService(server));
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
@@ -904,20 +948,20 @@ TEST_F(AlternateProtocolServerPropertiesTest,
 
 // Regression test for https://crbug.com/505413.
 TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
-  HostPortPair foo_host_port_pair("foo", 443);
+  url::SchemeHostPort foo_server("https", "foo", 443);
   AlternativeService bar_alternative_service(QUIC, "bar", 443);
-  SetAlternativeService(foo_host_port_pair, bar_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(foo_host_port_pair));
+  SetAlternativeService(foo_server, bar_alternative_service);
+  EXPECT_TRUE(HasAlternativeService(foo_server));
 
-  HostPortPair bar_host_port_pair1("bar", 80);
+  url::SchemeHostPort bar_server1("http", "bar", 80);
   AlternativeService nohost_alternative_service(QUIC, "", 443);
-  SetAlternativeService(bar_host_port_pair1, nohost_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(bar_host_port_pair1));
+  SetAlternativeService(bar_server1, nohost_alternative_service);
+  EXPECT_TRUE(HasAlternativeService(bar_server1));
 
-  HostPortPair bar_host_port_pair2("bar", 443);
+  url::SchemeHostPort bar_server2("https", "bar", 443);
   AlternativeService baz_alternative_service(QUIC, "baz", 1234);
-  SetAlternativeService(bar_host_port_pair2, baz_alternative_service);
-  EXPECT_TRUE(HasAlternativeService(bar_host_port_pair2));
+  SetAlternativeService(bar_server2, baz_alternative_service);
+  EXPECT_TRUE(HasAlternativeService(bar_server2));
 
   // Mark "bar:443" as broken.
   base::TimeTicks past =
@@ -929,11 +973,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
   HttpServerPropertiesImplPeer::ExpireBrokenAlternateProtocolMappings(impl_);
 
   // "foo:443" should have no alternative service now.
-  EXPECT_FALSE(HasAlternativeService(foo_host_port_pair));
+  EXPECT_FALSE(HasAlternativeService(foo_server));
   // "bar:80" should have no alternative service now.
-  EXPECT_FALSE(HasAlternativeService(bar_host_port_pair1));
+  EXPECT_FALSE(HasAlternativeService(bar_server1));
   // The alternative service of "bar:443" should be unaffected.
-  EXPECT_TRUE(HasAlternativeService(bar_host_port_pair2));
+  EXPECT_TRUE(HasAlternativeService(bar_server2));
 
   EXPECT_TRUE(
       impl_.WasAlternativeServiceRecentlyBroken(bar_alternative_service));
@@ -944,10 +988,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
 
 TEST_F(SpdySettingsServerPropertiesTest, Initialize) {
-  HostPortPair spdy_server_google("www.google.com", 443);
-  HostPortPair spdy_server_photos("photos.google.com", 443);
-  HostPortPair spdy_server_docs("docs.google.com", 443);
-  HostPortPair spdy_server_mail("mail.google.com", 443);
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
+  url::SchemeHostPort spdy_server_photos("https", "photos.google.com", 443);
+  url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
 
   // Check by initializing empty spdy settings.
   SpdySettingsMap spdy_settings_map(SpdySettingsMap::NO_AUTO_EVICT);
@@ -1009,12 +1053,12 @@ TEST_F(SpdySettingsServerPropertiesTest, Initialize) {
 }
 
 TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
-  HostPortPair spdy_server_empty(std::string(), 443);
+  url::SchemeHostPort spdy_server_empty("https", std::string(), 443);
   const SettingsMap& settings_map0 = impl_.GetSpdySettings(spdy_server_empty);
   EXPECT_EQ(0U, settings_map0.size());  // Returns kEmptySettingsMap.
 
   // Add www.google.com:443 as persisting.
-  HostPortPair spdy_server_google("www.google.com", 443);
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32_t value1 = 31337;
@@ -1030,7 +1074,7 @@ TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
   // Add mail.google.com:443 as not persisting.
-  HostPortPair spdy_server_mail("mail.google.com", 443);
+  url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
   const SpdySettingsIds id2 = SETTINGS_DOWNLOAD_BANDWIDTH;
   const SpdySettingsFlags flags2 = SETTINGS_FLAG_NONE;
   const uint32_t value2 = 62667;
@@ -1040,7 +1084,7 @@ TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
   EXPECT_EQ(0U, settings_map2_ret.size());  // Returns kEmptySettingsMap.
 
   // Add docs.google.com:443 as persisting
-  HostPortPair spdy_server_docs("docs.google.com", 443);
+  url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
   const SpdySettingsIds id3 = SETTINGS_ROUND_TRIP_TIME;
   const SpdySettingsFlags flags3 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32_t value3 = 93997;
@@ -1079,9 +1123,65 @@ TEST_F(SpdySettingsServerPropertiesTest, SetSpdySetting) {
   ASSERT_EQ(0U, impl_.spdy_settings_map().size());
 }
 
+TEST_F(SpdySettingsServerPropertiesTest, SpdySettingWithSchemeHostPort) {
+  // Test SpdySettingMap is correctly maintained with setting and
+  // clearing method.
+  // Add https://www.google.com:443 as persisting.
+  url::SchemeHostPort https_www_server("https", "www.google.com", 443);
+  url::SchemeHostPort http_www_server("http", "www.google.com", 443);
+  const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
+  const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
+  const uint32_t value1 = 31337;
+  EXPECT_TRUE(impl_.SetSpdySetting(https_www_server, id1, flags1, value1));
+  // Check the values.
+  const SettingsMap& settings_map1_ret =
+      impl_.GetSpdySettings(https_www_server);
+  ASSERT_EQ(1U, settings_map1_ret.size());
+  SettingsMap::const_iterator it1_ret = settings_map1_ret.find(id1);
+  EXPECT_TRUE(it1_ret != settings_map1_ret.end());
+  SettingsFlagsAndValue flags_and_value1_ret = it1_ret->second;
+  EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1_ret.first);
+  EXPECT_EQ(value1, flags_and_value1_ret.second);
+  // Check the values is not set for http server.
+  const SettingsMap& settings_map1_ret2 =
+      impl_.GetSpdySettings(http_www_server);
+  ASSERT_EQ(0U, settings_map1_ret2.size());
+
+  // Add http://www.google.com:443 as persisting
+  const SpdySettingsIds id2 = SETTINGS_ROUND_TRIP_TIME;
+  const SpdySettingsFlags flags2 = SETTINGS_FLAG_PLEASE_PERSIST;
+  const uint32_t value2 = 93997;
+  SettingsFlagsAndValue flags_and_value2(flags2, value2);
+  EXPECT_TRUE(impl_.SetSpdySetting(http_www_server, id2, flags2, value2));
+  // Check the values.
+  const SettingsMap& settings_map2_ret = impl_.GetSpdySettings(http_www_server);
+  ASSERT_EQ(1U, settings_map2_ret.size());
+  SettingsMap::const_iterator it2_ret = settings_map2_ret.find(id2);
+  EXPECT_TRUE(it2_ret != settings_map2_ret.end());
+  SettingsFlagsAndValue flags_and_value2_ret = it2_ret->second;
+  EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value2_ret.first);
+  EXPECT_EQ(value2, flags_and_value2_ret.second);
+
+  // Clear https://www.google.com:443 as persisting.
+  impl_.ClearSpdySettings(https_www_server);
+  // Check the values.
+  const SettingsMap& settings_map3_ret =
+      impl_.GetSpdySettings(https_www_server);
+  ASSERT_EQ(0U, settings_map3_ret.size());
+  // Check the setting is not cleared for http server.
+  const SettingsMap& settings_map3_ret2 =
+      impl_.GetSpdySettings(http_www_server);
+  ASSERT_EQ(1U, settings_map3_ret2.size());
+
+  // Clear all settings.
+  ASSERT_GT(impl_.spdy_settings_map().size(), 0U);
+  impl_.ClearAllSpdySettings();
+  ASSERT_EQ(0U, impl_.spdy_settings_map().size());
+}
+
 TEST_F(SpdySettingsServerPropertiesTest, Clear) {
   // Add www.google.com:443 as persisting.
-  HostPortPair spdy_server_google("www.google.com", 443);
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32_t value1 = 31337;
@@ -1097,7 +1197,7 @@ TEST_F(SpdySettingsServerPropertiesTest, Clear) {
   EXPECT_EQ(value1, flags_and_value1_ret.second);
 
   // Add docs.google.com:443 as persisting
-  HostPortPair spdy_server_docs("docs.google.com", 443);
+  url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
   const SpdySettingsIds id3 = SETTINGS_ROUND_TRIP_TIME;
   const SpdySettingsFlags flags3 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32_t value3 = 93997;
@@ -1119,14 +1219,14 @@ TEST_F(SpdySettingsServerPropertiesTest, Clear) {
 
 TEST_F(SpdySettingsServerPropertiesTest, MRUOfGetSpdySettings) {
   // Add www.google.com:443 as persisting.
-  HostPortPair spdy_server_google("www.google.com", 443);
+  url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   const SpdySettingsIds id1 = SETTINGS_UPLOAD_BANDWIDTH;
   const SpdySettingsFlags flags1 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32_t value1 = 31337;
   EXPECT_TRUE(impl_.SetSpdySetting(spdy_server_google, id1, flags1, value1));
 
   // Add docs.google.com:443 as persisting
-  HostPortPair spdy_server_docs("docs.google.com", 443);
+  url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
   const SpdySettingsIds id2 = SETTINGS_ROUND_TRIP_TIME;
   const SpdySettingsFlags flags2 = SETTINGS_FLAG_PLEASE_PERSIST;
   const uint32_t value2 = 93997;
@@ -1206,7 +1306,7 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
 typedef HttpServerPropertiesImplTest ServerNetworkStatsServerPropertiesTest;
 
 TEST_F(ServerNetworkStatsServerPropertiesTest, Initialize) {
-  HostPortPair google_server("www.google.com", 443);
+  url::SchemeHostPort google_server("https", "www.google.com", 443);
 
   // Check by initializing empty ServerNetworkStats.
   ServerNetworkStatsMap init_server_network_stats_map(
@@ -1231,7 +1331,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Initialize) {
   // |docs_server| has a ServerNetworkStats, which will be overwritten by
   // InitializeServerNetworkStats(), because |server_network_stats_map| has an
   // entry for |docs_server|.
-  HostPortPair docs_server("docs.google.com", 443);
+  url::SchemeHostPort docs_server("https", "docs.google.com", 443);
   ServerNetworkStats stats_docs;
   stats_docs.srtt = base::TimeDelta::FromMicroseconds(20);
   stats_docs.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(200);
@@ -1249,7 +1349,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Initialize) {
   new_stats_docs.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(250);
   server_network_stats_map.Put(docs_server, new_stats_docs);
   // Add data for mail.google.com:443.
-  HostPortPair mail_server("mail.google.com", 443);
+  url::SchemeHostPort mail_server("https", "mail.google.com", 443);
   ServerNetworkStats stats_mail;
   stats_mail.srtt = base::TimeDelta::FromMicroseconds(30);
   stats_mail.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(300);
@@ -1273,22 +1373,26 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Initialize) {
 }
 
 TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
-  HostPortPair foo_server("foo", 80);
-  const ServerNetworkStats* stats = impl_.GetServerNetworkStats(foo_server);
-  EXPECT_EQ(NULL, stats);
+  url::SchemeHostPort foo_http_server("http", "foo", 443);
+  url::SchemeHostPort foo_https_server("https", "foo", 443);
+  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_http_server));
+  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   stats1.bandwidth_estimate = QuicBandwidth::FromBitsPerSecond(100);
-  impl_.SetServerNetworkStats(foo_server, stats1);
+  impl_.SetServerNetworkStats(foo_http_server, stats1);
 
-  const ServerNetworkStats* stats2 = impl_.GetServerNetworkStats(foo_server);
+  const ServerNetworkStats* stats2 =
+      impl_.GetServerNetworkStats(foo_http_server);
   EXPECT_EQ(10, stats2->srtt.ToInternalValue());
   EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
+  // Https server should have nothing set for server network stats.
+  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
 
   impl_.Clear();
-  const ServerNetworkStats* stats3 = impl_.GetServerNetworkStats(foo_server);
-  EXPECT_EQ(NULL, stats3);
+  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_http_server));
+  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
 }
 
 typedef HttpServerPropertiesImplTest QuicServerInfoServerPropertiesTest;

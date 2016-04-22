@@ -8805,7 +8805,8 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
       AlternateProtocolFromNextProto(next_proto), "", 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair("host.with.alternate", 80), alternative_service, expiration);
+      url::SchemeHostPort("http", "host.with.alternate", 80),
+      alternative_service, expiration);
 
   return session;
 }
@@ -9692,11 +9693,11 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -9713,7 +9714,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
             alternative_service_vector[0].protocol);
@@ -9729,13 +9730,13 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   AlternativeService alternative_service(QUIC, "", 80);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties.SetAlternativeService(http_host_port_pair,
-                                               alternative_service, expiration);
+  http_server_properties.SetAlternativeService(test_server, alternative_service,
+                                               expiration);
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_EQ(1u, alternative_service_vector.size());
 
   // Send a clear header.
@@ -9774,7 +9775,7 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 }
 
@@ -9812,11 +9813,11 @@ TEST_P(HttpNetworkTransactionTest, DoNotHonorAlternativeServiceHeader) {
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -9833,7 +9834,7 @@ TEST_P(HttpNetworkTransactionTest, DoNotHonorAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 }
 
@@ -9870,11 +9871,11 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -9891,7 +9892,7 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   ASSERT_EQ(2u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
             alternative_service_vector[0].protocol);
@@ -9937,11 +9938,11 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -9958,7 +9959,7 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(443, alternative_service_vector[0].port);
   EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
@@ -9989,16 +9990,16 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   AlternativeService alternative_service(QUIC, "", 80);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties.SetAlternativeService(http_host_port_pair,
-                                               alternative_service, expiration);
+  http_server_properties.SetAlternativeService(test_server, alternative_service,
+                                               expiration);
 
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
 
@@ -10022,7 +10023,7 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 }
 
@@ -10063,11 +10064,11 @@ TEST_P(HttpNetworkTransactionTest, AltSvcOverwritesAlternateProtocol) {
   int rv = trans->Start(&request, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  HostPortPair http_host_port_pair("www.example.org", 80);
+  url::SchemeHostPort test_server("http", "www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
   AlternativeServiceVector alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -10084,7 +10085,7 @@ TEST_P(HttpNetworkTransactionTest, AltSvcOverwritesAlternateProtocol) {
   EXPECT_EQ("hello world", response_data);
 
   alternative_service_vector =
-      http_server_properties.GetAlternativeServices(http_host_port_pair);
+      http_server_properties.GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
             alternative_service_vector[0].protocol);
@@ -10125,7 +10126,7 @@ TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
       80);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(request.url), alternative_service, expiration);
+      url::SchemeHostPort(request.url), alternative_service, expiration);
 
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -10139,7 +10140,7 @@ TEST_P(HttpNetworkTransactionTest, DisableAlternativeServiceToDifferentHost) {
 }
 
 TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
-  HostPortPair origin("origin.example.org", 443);
+  url::SchemeHostPort server("https", "origin.example.org", 443);
   HostPortPair alternative("alternative.example.org", 443);
   std::string origin_url = "https://origin.example.org:443";
   std::string alternative_url = "https://alternative.example.org:443";
@@ -10170,7 +10171,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
-  // Set up a QUIC alternative service for origin.
+  // Set up a QUIC alternative service for server.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -10178,7 +10179,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
       session->http_server_properties();
   AlternativeService alternative_service(QUIC, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties->SetAlternativeService(origin, alternative_service,
+  http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
   // Mark the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service);
@@ -10199,7 +10200,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicBroken) {
 }
 
 TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
-  HostPortPair origin("origin.example.org", 443);
+  url::SchemeHostPort server("https", "origin.example.org", 443);
   HostPortPair alternative1("alternative1.example.org", 443);
   HostPortPair alternative2("alternative2.example.org", 443);
   std::string origin_url = "https://origin.example.org:443";
@@ -10238,7 +10239,7 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
 
-  // Set up two QUIC alternative services for origin.
+  // Set up two QUIC alternative services for server.
   AlternativeServiceInfoVector alternative_service_info_vector;
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
 
@@ -10252,13 +10253,13 @@ TEST_P(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   alternative_service_info_vector.push_back(alternative_service_info2);
 
   http_server_properties->SetAlternativeServices(
-      origin, alternative_service_info_vector);
+      server, alternative_service_info_vector);
 
   // Mark one of the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service1);
 
   const AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(origin);
+      http_server_properties->GetAlternativeServices(server);
 
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -10303,15 +10304,15 @@ TEST_P(HttpNetworkTransactionTest,
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
-  const HostPortPair host_port_pair = HostPortPair::FromURL(request.url);
+  const url::SchemeHostPort server(request.url);
   // Port must be < 1024, or the header will be ignored (since initial port was
   // port 80 (another restricted port).
   const AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), "www.example.org",
       666);  // Port is ignored by MockConnect anyway.
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties->SetAlternativeService(
-      host_port_pair, alternative_service, expiration);
+  http_server_properties->SetAlternativeService(server, alternative_service,
+                                                expiration);
 
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -10331,7 +10332,7 @@ TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("hello world", response_data);
 
   const AlternativeServiceVector alternative_service_vector =
-      http_server_properties->GetAlternativeServices(host_port_pair);
+      http_server_properties->GetAlternativeServices(server);
   ASSERT_EQ(1u, alternative_service_vector.size());
   EXPECT_EQ(alternative_service, alternative_service_vector[0]);
   EXPECT_TRUE(http_server_properties->IsAlternativeServiceBroken(
@@ -10376,7 +10377,7 @@ TEST_P(HttpNetworkTransactionTest,
       kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(restricted_port_request.url), alternative_service,
+      url::SchemeHostPort(restricted_port_request.url), alternative_service,
       expiration);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -10429,7 +10430,7 @@ TEST_P(HttpNetworkTransactionTest,
       kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(restricted_port_request.url), alternative_service,
+      url::SchemeHostPort(restricted_port_request.url), alternative_service,
       expiration);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -10481,7 +10482,7 @@ TEST_P(HttpNetworkTransactionTest,
       kRestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(restricted_port_request.url), alternative_service,
+      url::SchemeHostPort(restricted_port_request.url), alternative_service,
       expiration);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -10534,7 +10535,7 @@ TEST_P(HttpNetworkTransactionTest,
       kRestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(unrestricted_port_request.url), alternative_service,
+      url::SchemeHostPort(unrestricted_port_request.url), alternative_service,
       expiration);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -10586,7 +10587,7 @@ TEST_P(HttpNetworkTransactionTest,
       kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(unrestricted_port_request.url), alternative_service,
+      url::SchemeHostPort(unrestricted_port_request.url), alternative_service,
       expiration);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -10633,7 +10634,7 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
       kUnsafePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
-      HostPortPair::FromURL(request.url), alternative_service, expiration);
+      url::SchemeHostPort(request.url), alternative_service, expiration);
 
   std::unique_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -13289,8 +13290,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
 class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
  public:
   void Run(bool pooling, bool valid) {
-    HostPortPair origin(valid ? "mail.example.org" : "invalid.example.org",
-                        443);
+    url::SchemeHostPort server(GURL(valid ? "https://mail.example.org:443"
+                                          : "https://invalid.example.org:443"));
     HostPortPair alternative("www.example.org", 443);
 
     base::FilePath certs_dir = GetTestCertsDirectory();
@@ -13299,7 +13300,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     ASSERT_TRUE(cert.get());
     bool common_name_fallback_used;
     EXPECT_EQ(valid,
-              cert->VerifyNameMatch(origin.host(), &common_name_fallback_used));
+              cert->VerifyNameMatch(server.host(), &common_name_fallback_used));
     EXPECT_TRUE(
         cert->VerifyNameMatch(alternative.host(), &common_name_fallback_used));
     SSLSocketDataProvider ssl(ASYNC, OK);
@@ -13310,10 +13311,10 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     // If pooling, then start a request to alternative first to create a
     // SpdySession.
     std::string url0 = "https://www.example.org:443";
-    // Second request to origin, which has an alternative service, and could
+    // Second request to server, which has an alternative service, and could
     // open a connection to the alternative host or pool to the existing one.
     std::string url1("https://");
-    url1.append(origin.host());
+    url1.append(server.host());
     url1.append(":443");
 
     std::unique_ptr<SpdySerializedFrame> req0;
@@ -13361,7 +13362,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
                              writes.size());
     session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-    // Connection to the origin fails.
+    // Connection to the server fails.
     MockConnect mock_connect(ASYNC, ERR_CONNECTION_REFUSED);
     StaticSocketDataProvider data_refused;
     data_refused.set_connect_data(mock_connect);
@@ -13375,7 +13376,7 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
     AlternativeService alternative_service(
         AlternateProtocolFromNextProto(GetProtocol()), alternative);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    http_server_properties->SetAlternativeService(origin, alternative_service,
+    http_server_properties->SetAlternativeService(server, alternative_service,
                                                   expiration);
 
     // First request to alternative.
@@ -13451,7 +13452,7 @@ TEST_P(AltSvcCertificateVerificationTest, NewConnectionInvalid) {
 // Alternative service requires HTTP/2 (or SPDY), but HTTP/1.1 is negotiated
 // with the alternative server.  That connection should not be used.
 TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
-  HostPortPair origin("origin.example.org", 443);
+  url::SchemeHostPort server("https", "origin.example.org", 443);
   HostPortPair alternative("alternative.example.org", 443);
 
   // Negotiate HTTP/1.1 with alternative.example.org.
@@ -13465,13 +13466,13 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // This test documents that an alternate Job should not be used if HTTP/1.1 is
-  // negotiated.  In order to test this, a failed connection to the origin is
+  // negotiated.  In order to test this, a failed connection to the server is
   // mocked.  This way the request relies on the alternate Job.
   StaticSocketDataProvider data_refused;
   data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
-  // Set up alternative service for origin.
+  // Set up alternative service for server.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -13480,7 +13481,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties->SetAlternativeService(origin, alternative_service,
+  http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
 
   std::unique_ptr<HttpTransaction> trans(
@@ -13498,11 +13499,11 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
 }
 
 // A request to a server with an alternative service fires two Jobs: one to the
-// origin, and an alternate one to the alternative server.  If the former
+// server, and an alternate one to the alternative server.  If the former
 // succeeds, the request should succeed,  even if the latter fails because
 // HTTP/1.1 is negotiated which is insufficient for alternative service.
 TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
-  HostPortPair origin("origin.example.org", 443);
+  url::SchemeHostPort server("https", "origin.example.org", 443);
   HostPortPair alternative("alternative.example.org", 443);
 
   // Negotiate HTTP/1.1 with alternative.
@@ -13515,7 +13516,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   StaticSocketDataProvider data;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  // Negotiate HTTP/1.1 with origin.
+  // Negotiate HTTP/1.1 with server.
   SSLSocketDataProvider origin_ssl(ASYNC, OK);
   origin_ssl.SetNextProto(kProtoHTTP11);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&origin_ssl);
@@ -13545,7 +13546,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
                                      http_writes, arraysize(http_writes));
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
-  // Set up alternative service for origin.
+  // Set up alternative service for server.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = true;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -13554,7 +13555,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties->SetAlternativeService(origin, alternative_service,
+  http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
 
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
@@ -13582,9 +13583,9 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   EXPECT_TRUE(
       http_server_properties->IsAlternativeServiceBroken(alternative_service));
 
-  // Since |alternative_service| is broken, a second transaction to origin
+  // Since |alternative_service| is broken, a second transaction to server
   // should not start an alternate Job.  It should pool to existing connection
-  // to origin.
+  // to server.
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -13610,7 +13611,7 @@ TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
 // HTTP/1.1 socket open to the alternative server.  That socket should not be
 // used.
 TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
-  HostPortPair origin("origin.example.org", 443);
+  url::SchemeHostPort server("https", "origin.example.org", 443);
   HostPortPair alternative("alternative.example.org", 443);
   std::string origin_url = "https://origin.example.org:443";
   std::string alternative_url = "https://alternative.example.org:443";
@@ -13650,12 +13651,12 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
 
   // This test documents that an alternate Job should not pool to an already
   // existing HTTP/1.1 connection.  In order to test this, a failed connection
-  // to the origin is mocked.  This way |request2| relies on the alternate Job.
+  // to the server is mocked.  This way |request2| relies on the alternate Job.
   StaticSocketDataProvider data_refused;
   data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
   session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
 
-  // Set up alternative service for origin.
+  // Set up alternative service for server.
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -13664,7 +13665,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  http_server_properties->SetAlternativeService(origin, alternative_service,
+  http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
 
   // First transaction to alternative to open an HTTP/1.1 socket.
@@ -13691,7 +13692,7 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   // Request for origin.example.org, which has an alternative service.  This
   // will start two Jobs: the alternative looks for connections to pool to,
   // finds one which is HTTP/1.1, and should ignore it, and should not try to
-  // open other connections to alternative server.  The Job to origin fails, so
+  // open other connections to alternative server.  The Job to server fails, so
   // this request fails.
   std::unique_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));

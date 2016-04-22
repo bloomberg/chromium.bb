@@ -135,8 +135,8 @@ class SpdySessionTest : public PlatformTest,
         session_deps_(GetProtocol()),
         spdy_session_pool_(nullptr),
         test_url_(kDefaultURL),
-        test_host_port_pair_(HostPortPair::FromURL(test_url_)),
-        key_(test_host_port_pair_,
+        test_server_(test_url_),
+        key_(HostPortPair::FromURL(test_url_),
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED) {
     session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
@@ -210,7 +210,7 @@ class SpdySessionTest : public PlatformTest,
   base::WeakPtr<SpdySession> session_;
   SpdySessionPool* spdy_session_pool_;
   GURL test_url_;
-  HostPortPair test_host_port_pair_;
+  url::SchemeHostPort test_server_;
   SpdySessionKey key_;
   BoundTestNetLog log_;
 };
@@ -1546,14 +1546,12 @@ TEST_P(SpdySessionTest, ClearSettings) {
 
   // Initialize the SpdySetting with the default.
   spdy_session_pool_->http_server_properties()->SetSpdySetting(
-      test_host_port_pair_,
-      SETTINGS_MAX_CONCURRENT_STREAMS,
-      SETTINGS_FLAG_PLEASE_PERSIST,
-      kInitialMaxConcurrentStreams);
+      test_server_, SETTINGS_MAX_CONCURRENT_STREAMS,
+      SETTINGS_FLAG_PLEASE_PERSIST, kInitialMaxConcurrentStreams);
 
-  EXPECT_FALSE(
-      spdy_session_pool_->http_server_properties()->GetSpdySettings(
-          test_host_port_pair_).empty());
+  EXPECT_FALSE(spdy_session_pool_->http_server_properties()
+                   ->GetSpdySettings(test_server_)
+                   .empty());
 
   CreateInsecureSpdySession();
 
@@ -1577,9 +1575,9 @@ TEST_P(SpdySessionTest, ClearSettings) {
   EXPECT_EQ(OK, stream_releaser.WaitForResult());
 
   // Make sure that persisted data is cleared.
-  EXPECT_TRUE(
-      spdy_session_pool_->http_server_properties()->GetSpdySettings(
-          test_host_port_pair_).empty());
+  EXPECT_TRUE(spdy_session_pool_->http_server_properties()
+                  ->GetSpdySettings(test_server_)
+                  .empty());
 
   // Make sure session's max_concurrent_streams is correct.
   EXPECT_EQ(kInitialMaxConcurrentStreams + 1,
@@ -1609,10 +1607,8 @@ TEST_P(SpdySessionTest, CancelPendingCreateStream) {
 
   // Initialize the SpdySetting with 1 max concurrent streams.
   spdy_session_pool_->http_server_properties()->SetSpdySetting(
-      test_host_port_pair_,
-      SETTINGS_MAX_CONCURRENT_STREAMS,
-      SETTINGS_FLAG_PLEASE_PERSIST,
-      1);
+      test_server_, SETTINGS_MAX_CONCURRENT_STREAMS,
+      SETTINGS_FLAG_PLEASE_PERSIST, 1);
 
   CreateInsecureSpdySession();
 
@@ -1687,10 +1683,8 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
   CreateNetworkSession();
 
   spdy_session_pool_->http_server_properties()->SetSpdySetting(
-      test_host_port_pair_,
-      SETTINGS_MAX_CONCURRENT_STREAMS,
-      SETTINGS_FLAG_PLEASE_PERSIST,
-      initial_max_concurrent_streams);
+      test_server_, SETTINGS_MAX_CONCURRENT_STREAMS,
+      SETTINGS_FLAG_PLEASE_PERSIST, initial_max_concurrent_streams);
 
   SpdySessionPoolPeer pool_peer(spdy_session_pool_);
   pool_peer.SetEnableSendingInitialData(true);
@@ -1707,16 +1701,14 @@ TEST_P(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
   base::WeakPtr<HttpServerProperties> test_http_server_properties =
       spdy_session_pool_->http_server_properties();
   SettingsFlagsAndValue flags_and_value1(SETTINGS_FLAG_PLEASE_PERSIST, 2);
-  test_http_server_properties->SetSpdySetting(
-      test_host_port_pair_,
-      SETTINGS_MAX_CONCURRENT_STREAMS,
-      SETTINGS_FLAG_PLEASE_PERSIST,
-      2);
-  EXPECT_NE(0u, test_http_server_properties->GetSpdySettings(
-      test_host_port_pair_).size());
+  test_http_server_properties->SetSpdySetting(test_server_,
+                                              SETTINGS_MAX_CONCURRENT_STREAMS,
+                                              SETTINGS_FLAG_PLEASE_PERSIST, 2);
+  EXPECT_NE(0u,
+            test_http_server_properties->GetSpdySettings(test_server_).size());
   spdy_session_pool_->OnIPAddressChanged();
-  EXPECT_EQ(0u, test_http_server_properties->GetSpdySettings(
-      test_host_port_pair_).size());
+  EXPECT_EQ(0u,
+            test_http_server_properties->GetSpdySettings(test_server_).size());
 }
 
 TEST_P(SpdySessionTest, Initialize) {

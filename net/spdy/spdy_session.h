@@ -42,6 +42,7 @@
 #include "net/spdy/spdy_write_queue.h"
 #include "net/ssl/ssl_config_service.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -405,6 +406,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // The LoadState is used for informing the user of the current network
   // status, such as "resolving host", "connecting", etc.
   LoadState GetLoadState() const;
+
+  // Returns server infomation in the form of (scheme/host/port).
+  url::SchemeHostPort GetServer();
 
   // Fills SSL info in |ssl_info| and returns true when SSL is in use.
   bool GetSSLInfo(SSLInfo* ssl_info,

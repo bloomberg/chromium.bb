@@ -2053,6 +2053,11 @@ base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(const GURL& url) {
   return active_it->second.stream->GetWeakPtr();
 }
 
+url::SchemeHostPort SpdySession::GetServer() {
+  return url::SchemeHostPort(is_secure_ ? "https" : "http",
+                             host_port_pair().host(), host_port_pair().port());
+}
+
 bool SpdySession::GetSSLInfo(SSLInfo* ssl_info,
                              bool* was_npn_negotiated,
                              NextProto* protocol_negotiated) {
@@ -2199,7 +2204,7 @@ void SpdySession::OnSettings(bool clear_persisted) {
   CHECK(in_io_loop_);
 
   if (clear_persisted)
-    http_server_properties_->ClearSpdySettings(host_port_pair());
+    http_server_properties_->ClearSpdySettings(GetServer());
 
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(NetLog::TYPE_HTTP2_SESSION_RECV_SETTINGS,
@@ -2223,10 +2228,7 @@ void SpdySession::OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) {
 
   HandleSetting(id, value);
   http_server_properties_->SetSpdySetting(
-      host_port_pair(),
-      id,
-      static_cast<SpdySettingsFlags>(flags),
-      value);
+      GetServer(), id, static_cast<SpdySettingsFlags>(flags), value);
   received_settings_ = true;
 
   // Log the setting.
@@ -2889,7 +2891,7 @@ void SpdySession::SendInitialData() {
     // previously told us to use when communicating with them (after
     // applying them).
     const SettingsMap& server_settings_map =
-        http_server_properties_->GetSpdySettings(host_port_pair());
+        http_server_properties_->GetSpdySettings(GetServer());
     if (server_settings_map.empty())
       return;
 
@@ -3096,7 +3098,7 @@ void SpdySession::RecordHistograms() {
   if (received_settings_) {
     // Enumerate the saved settings, and set histograms for it.
     const SettingsMap& settings_map =
-        http_server_properties_->GetSpdySettings(host_port_pair());
+        http_server_properties_->GetSpdySettings(GetServer());
 
     SettingsMap::const_iterator it;
     for (it = settings_map.begin(); it != settings_map.end(); ++it) {

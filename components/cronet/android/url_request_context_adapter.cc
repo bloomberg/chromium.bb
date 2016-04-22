@@ -36,6 +36,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "url/scheme_host_port.h"
 
 namespace {
 
@@ -198,13 +199,12 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
         continue;
       }
 
-      net::HostPortPair quic_hint_host_port_pair(canon_host,
-                                                 quic_hint.port);
+      url::SchemeHostPort quic_server("https", canon_host, quic_hint.port);
       net::AlternativeService alternative_service(
           net::AlternateProtocol::QUIC, "",
           static_cast<uint16_t>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
-          quic_hint_host_port_pair, alternative_service, base::Time::Max());
+          quic_server, alternative_service, base::Time::Max());
     }
   }
   load_disable_cache_ = config_->load_disable_cache;

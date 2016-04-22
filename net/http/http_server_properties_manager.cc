@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -34,7 +35,7 @@ const int64_t kUpdatePrefsDelayMs = 60000;
 const int kMissingVersion = 0;
 
 // The version number of persisted http_server_properties.
-const int kVersionNumber = 4;
+const int kVersionNumber = 5;
 
 // Persist 200 MRU AlternateProtocolHostPortPairs.
 const int kMaxAlternateProtocolHostsToPersist = 200;
@@ -145,18 +146,20 @@ void HttpServerPropertiesManager::Clear(const base::Closure& completion) {
 }
 
 bool HttpServerPropertiesManager::SupportsRequestPriority(
-    const HostPortPair& server) {
+    const url::SchemeHostPort& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->SupportsRequestPriority(server);
 }
 
-bool HttpServerPropertiesManager::GetSupportsSpdy(const HostPortPair& server) {
+bool HttpServerPropertiesManager::GetSupportsSpdy(
+    const url::SchemeHostPort& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->GetSupportsSpdy(server);
 }
 
-void HttpServerPropertiesManager::SetSupportsSpdy(const HostPortPair& server,
-                                                  bool support_spdy) {
+void HttpServerPropertiesManager::SetSupportsSpdy(
+    const url::SchemeHostPort& server,
+    bool support_spdy) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
 
   bool old_support_spdy = http_server_properties_impl_->GetSupportsSpdy(server);
@@ -186,13 +189,13 @@ void HttpServerPropertiesManager::MaybeForceHTTP11(const HostPortPair& server,
 }
 
 AlternativeServiceVector HttpServerPropertiesManager::GetAlternativeServices(
-    const HostPortPair& origin) {
+    const url::SchemeHostPort& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->GetAlternativeServices(origin);
 }
 
 bool HttpServerPropertiesManager::SetAlternativeService(
-    const HostPortPair& origin,
+    const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
@@ -205,7 +208,7 @@ bool HttpServerPropertiesManager::SetAlternativeService(
 }
 
 bool HttpServerPropertiesManager::SetAlternativeServices(
-    const HostPortPair& origin,
+    const url::SchemeHostPort& origin,
     const AlternativeServiceInfoVector& alternative_service_info_vector) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   const bool changed = http_server_properties_impl_->SetAlternativeServices(
@@ -261,7 +264,7 @@ void HttpServerPropertiesManager::ConfirmAlternativeService(
 }
 
 void HttpServerPropertiesManager::ClearAlternativeServices(
-    const HostPortPair& origin) {
+    const url::SchemeHostPort& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   const AlternativeServiceMap& map =
       http_server_properties_impl_->alternative_service_map();
@@ -286,28 +289,28 @@ HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue() const {
 }
 
 const SettingsMap& HttpServerPropertiesManager::GetSpdySettings(
-    const HostPortPair& host_port_pair) {
+    const url::SchemeHostPort& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->GetSpdySettings(host_port_pair);
+  return http_server_properties_impl_->GetSpdySettings(server);
 }
 
 bool HttpServerPropertiesManager::SetSpdySetting(
-    const HostPortPair& host_port_pair,
+    const url::SchemeHostPort& server,
     SpdySettingsIds id,
     SpdySettingsFlags flags,
     uint32_t value) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  bool persist = http_server_properties_impl_->SetSpdySetting(
-      host_port_pair, id, flags, value);
+  bool persist =
+      http_server_properties_impl_->SetSpdySetting(server, id, flags, value);
   if (persist)
     ScheduleUpdatePrefsOnNetworkThread(SET_SPDY_SETTING);
   return persist;
 }
 
 void HttpServerPropertiesManager::ClearSpdySettings(
-    const HostPortPair& host_port_pair) {
+    const url::SchemeHostPort& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  http_server_properties_impl_->ClearSpdySettings(host_port_pair);
+  http_server_properties_impl_->ClearSpdySettings(server);
   ScheduleUpdatePrefsOnNetworkThread(CLEAR_SPDY_SETTINGS);
 }
 
@@ -342,25 +345,25 @@ void HttpServerPropertiesManager::SetSupportsQuic(bool used_quic,
 }
 
 void HttpServerPropertiesManager::SetServerNetworkStats(
-    const HostPortPair& host_port_pair,
+    const url::SchemeHostPort& server,
     ServerNetworkStats stats) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   ServerNetworkStats old_stats;
   const ServerNetworkStats* old_stats_ptr =
-      http_server_properties_impl_->GetServerNetworkStats(host_port_pair);
-  if (http_server_properties_impl_->GetServerNetworkStats(host_port_pair))
+      http_server_properties_impl_->GetServerNetworkStats(server);
+  if (http_server_properties_impl_->GetServerNetworkStats(server))
     old_stats = *old_stats_ptr;
-  http_server_properties_impl_->SetServerNetworkStats(host_port_pair, stats);
+  http_server_properties_impl_->SetServerNetworkStats(server, stats);
   ServerNetworkStats new_stats =
-      *(http_server_properties_impl_->GetServerNetworkStats(host_port_pair));
+      *(http_server_properties_impl_->GetServerNetworkStats(server));
   if (old_stats != new_stats)
     ScheduleUpdatePrefsOnNetworkThread(SET_SERVER_NETWORK_STATS);
 }
 
 const ServerNetworkStats* HttpServerPropertiesManager::GetServerNetworkStats(
-    const HostPortPair& host_port_pair) {
+    const url::SchemeHostPort& server) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->GetServerNetworkStats(host_port_pair);
+  return http_server_properties_impl_->GetServerNetworkStats(server);
 }
 
 const ServerNetworkStatsMap&
@@ -457,7 +460,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
     //      "servers": {
     //         "0-edge-chat.facebook.com:443" : {...},
     //         "0.client-channel.google.com:443" : {...},
-    //         "yt3.ggpht.com:443" : {...},
+    //         "yt3.ggpht.com:80" : {...},
     //         ...
     //      }, ...
     // },
@@ -467,14 +470,27 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
       return;
     }
   } else {
-    // From Version 4 onwards, data was stored in the following format.
+    // For Version 4, data was stored in the following format.
     // |servers| are saved in MRU order.
     //
     // "http_server_properties": {
     //      "servers": [
     //          {"yt3.ggpht.com:443" : {...}},
     //          {"0.client-channel.google.com:443" : {...}},
-    //          {"0-edge-chat.facebook.com:443" : {...}},
+    //          {"0-edge-chat.facebook.com:80" : {...}},
+    //          ...
+    //      ], ...
+    // },
+    // For Version 5, data was stored in the following format.
+    // |servers| are saved in MRU order. |servers| are in the format flattened
+    // representation of (scheme/host/port) where port might be ignored if is
+    // default with scheme.
+    //
+    // "http_server_properties": {
+    //      "servers": [
+    //          {"https://yt3.ggpht.com" : {...}},
+    //          {"http://0.client-channel.google.com:443" : {...}},
+    //          {"http://0-edge-chat.facebook.com" : {...}},
     //          ...
     //      ], ...
     // },
@@ -488,7 +504,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   IPAddress* addr = new IPAddress;
   ReadSupportsQuic(http_server_properties_dict, addr);
 
-  // String is host/port pair of spdy server.
+  // String is "scheme://host:port" tuple of spdy server.
   std::unique_ptr<ServerList> spdy_servers(new ServerList);
   std::unique_ptr<SpdySettingsMap> spdy_settings_map(
       new SpdySettingsMap(kMaxSpdySettingsHostsToPersist));
@@ -502,7 +518,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   if (version < 4) {
     if (!AddServersData(*servers_dict, spdy_servers.get(),
                         spdy_settings_map.get(), alternative_service_map.get(),
-                        server_network_stats_map.get())) {
+                        server_network_stats_map.get(), version)) {
       detected_corrupted_prefs = true;
     }
   } else {
@@ -513,9 +529,10 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
         detected_corrupted_prefs = true;
         continue;
       }
-      if (!AddServersData(
-              *servers_dict, spdy_servers.get(), spdy_settings_map.get(),
-              alternative_service_map.get(), server_network_stats_map.get())) {
+      if (!AddServersData(*servers_dict, spdy_servers.get(),
+                          spdy_settings_map.get(),
+                          alternative_service_map.get(),
+                          server_network_stats_map.get(), version)) {
         detected_corrupted_prefs = true;
       }
     }
@@ -543,13 +560,19 @@ bool HttpServerPropertiesManager::AddServersData(
     ServerList* spdy_servers,
     SpdySettingsMap* spdy_settings_map,
     AlternativeServiceMap* alternative_service_map,
-    ServerNetworkStatsMap* network_stats_map) {
+    ServerNetworkStatsMap* network_stats_map,
+    int version) {
   for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
        it.Advance()) {
-    // Get server's host/pair.
+    // Get server's scheme/host/pair.
     const std::string& server_str = it.key();
-    HostPortPair server = HostPortPair::FromString(server_str);
-    if (server.host().empty()) {
+    std::string spdy_server_url = server_str;
+    if (version < 5) {
+      // For old version disk data, always use HTTPS as the scheme.
+      spdy_server_url.insert(0, "https://");
+    }
+    url::SchemeHostPort spdy_server((GURL(spdy_server_url)));
+    if (spdy_server.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
       return false;
     }
@@ -564,13 +587,14 @@ bool HttpServerPropertiesManager::AddServersData(
     bool supports_spdy = false;
     if ((server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy)) &&
         supports_spdy) {
-      spdy_servers->push_back(server_str);
+      spdy_servers->push_back(spdy_server.Serialize());
     }
 
-    AddToSpdySettingsMap(server, *server_pref_dict, spdy_settings_map);
-    if (!AddToAlternativeServiceMap(server, *server_pref_dict,
+    AddToSpdySettingsMap(spdy_server, *server_pref_dict, spdy_settings_map);
+    if (!AddToAlternativeServiceMap(spdy_server, *server_pref_dict,
                                     alternative_service_map) ||
-        !AddToNetworkStatsMap(server, *server_pref_dict, network_stats_map)) {
+        !AddToNetworkStatsMap(spdy_server, *server_pref_dict,
+                              network_stats_map)) {
       return false;
     }
   }
@@ -578,7 +602,7 @@ bool HttpServerPropertiesManager::AddServersData(
 }
 
 void HttpServerPropertiesManager::AddToSpdySettingsMap(
-    const HostPortPair& server,
+    const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
     SpdySettingsMap* spdy_settings_map) {
   // Get SpdySettings.
@@ -595,14 +619,14 @@ void HttpServerPropertiesManager::AddToSpdySettingsMap(
     int id = 0;
     if (!base::StringToInt(id_str, &id)) {
       DVLOG(1) << "Malformed id in SpdySettings for server: "
-               << server.ToString();
+               << server.Serialize();
       NOTREACHED();
       continue;
     }
     int value = 0;
     if (!dict_it.value().GetAsInteger(&value)) {
       DVLOG(1) << "Malformed value in SpdySettings for server: "
-               << server.ToString();
+               << server.Serialize();
       NOTREACHED();
       continue;
     }
@@ -680,7 +704,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
 }
 
 bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
-    const HostPortPair& server,
+    const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
     AlternativeServiceMap* alternative_service_map) {
   DCHECK(alternative_service_map->Peek(server) ==
@@ -700,7 +724,7 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
       return false;
     AlternativeServiceInfo alternative_service_info;
     if (!ParseAlternativeServiceDict(*alternative_service_dict,
-                                     server.ToString(),
+                                     server.Serialize(),
                                      &alternative_service_info)) {
       return false;
     }
@@ -745,7 +769,7 @@ bool HttpServerPropertiesManager::ReadSupportsQuic(
 }
 
 bool HttpServerPropertiesManager::AddToNetworkStatsMap(
-    const HostPortPair& server,
+    const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
     ServerNetworkStatsMap* network_stats_map) {
   DCHECK(network_stats_map->Peek(server) == network_stats_map->end());
@@ -758,7 +782,7 @@ bool HttpServerPropertiesManager::AddToNetworkStatsMap(
   if (!server_network_stats_dict->GetIntegerWithoutPathExpansion(kSrttKey,
                                                                  &srtt)) {
     DVLOG(1) << "Malformed ServerNetworkStats for server: "
-             << server.ToString();
+             << server.Serialize();
     return false;
   }
   ServerNetworkStats server_network_stats;
@@ -917,7 +941,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
   // Maintain MRU order.
   for (AlternativeServiceMap::const_reverse_iterator it = map.rbegin();
        it != map.rend() && count < kMaxAlternateProtocolHostsToPersist; ++it) {
-    const HostPortPair& server = it->first;
+    const url::SchemeHostPort& server = it->first;
     AlternativeServiceInfoVector notbroken_alternative_service_info_vector;
     for (const AlternativeServiceInfo& alternative_service_info : it->second) {
       // Do not persist expired entries.
@@ -1028,16 +1052,16 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     ServerNetworkStatsMap* server_network_stats_map,
     QuicServerInfoMap* quic_server_info_map,
     const base::Closure& completion) {
-  typedef base::MRUCache<HostPortPair, ServerPref> ServerPrefMap;
+  typedef base::MRUCache<url::SchemeHostPort, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map(ServerPrefMap::NO_AUTO_EVICT);
 
   DCHECK(pref_task_runner_->RunsTasksOnCurrentThread());
 
   // Add servers that support spdy to server_pref_map in the MRU order.
   for (size_t index = spdy_server_list->GetSize(); index > 0; --index) {
-    std::string s;
-    if (spdy_server_list->GetString(index - 1, &s)) {
-      HostPortPair server = HostPortPair::FromString(s);
+    std::string server_str;
+    if (spdy_server_list->GetString(index - 1, &server_str)) {
+      url::SchemeHostPort server((GURL(server_str)));
       ServerPrefMap::iterator it = server_pref_map.Get(server);
       if (it == server_pref_map.end()) {
         ServerPref server_pref;
@@ -1052,7 +1076,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   // Add servers that have SpdySettings to server_pref_map in the MRU order.
   for (SpdySettingsMap::reverse_iterator map_it = spdy_settings_map->rbegin();
        map_it != spdy_settings_map->rend(); ++map_it) {
-    const HostPortPair& server = map_it->first;
+    const url::SchemeHostPort server = map_it->first;
     ServerPrefMap::iterator it = server_pref_map.Get(server);
     if (it == server_pref_map.end()) {
       ServerPref server_pref;
@@ -1067,7 +1091,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   for (AlternativeServiceMap::const_reverse_iterator map_it =
            alternative_service_map->rbegin();
        map_it != alternative_service_map->rend(); ++map_it) {
-    const HostPortPair& server = map_it->first;
+    const url::SchemeHostPort server = map_it->first;
     ServerPrefMap::iterator it = server_pref_map.Get(server);
     if (it == server_pref_map.end()) {
       ServerPref server_pref;
@@ -1082,7 +1106,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   for (ServerNetworkStatsMap::const_reverse_iterator map_it =
            server_network_stats_map->rbegin();
        map_it != server_network_stats_map->rend(); ++map_it) {
-    const HostPortPair& server = map_it->first;
+    const url::SchemeHostPort server = map_it->first;
     ServerPrefMap::iterator it = server_pref_map.Get(server);
     if (it == server_pref_map.end()) {
       ServerPref server_pref;
@@ -1098,7 +1122,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   base::ListValue* servers_list = new base::ListValue;
   for (ServerPrefMap::const_reverse_iterator map_it = server_pref_map.rbegin();
        map_it != server_pref_map.rend(); ++map_it) {
-    const HostPortPair& server = map_it->first;
+    const url::SchemeHostPort server = map_it->first;
     const ServerPref& server_pref = map_it->second;
 
     base::DictionaryValue* servers_dict = new base::DictionaryValue;
@@ -1113,7 +1137,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     SaveNetworkStatsToServerPrefs(server_pref.server_network_stats,
                                   server_pref_dict);
 
-    servers_dict->SetWithoutPathExpansion(server.ToString(), server_pref_dict);
+    servers_dict->SetWithoutPathExpansion(server.Serialize(), server_pref_dict);
     bool value = servers_list->AppendIfNotPresent(servers_dict);
     DCHECK(value);  // Should never happen.
   }
