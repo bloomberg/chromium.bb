@@ -11,6 +11,10 @@ Autorename:
 Current patches:
   .gitignore has a "Chromium stuff" section.
 
+  Changes to configure
+    Commented out a section that creates symlink for source_path. Using symlink
+    causes windows builds to fail (cl.exe cant find the files).
+
   Remove add_cflags "-mips64" from configure
     This conflicts with --extra-cflags=-mips64r6 for mips64el. There are a
     series of upstream patches changing how mips arch selection works, this may
