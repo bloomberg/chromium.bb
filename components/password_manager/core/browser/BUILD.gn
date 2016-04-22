@@ -237,6 +237,7 @@ source_set("unit_tests") {
     "affiliation_utils_unittest.cc",
     "browser_save_password_progress_logger_unittest.cc",
     "export/csv_writer_unittest.cc",
+    "export/password_exporter_unittest.cc",
     "facet_manager_unittest.cc",
     "import/csv_reader_unittest.cc",
     "import/password_importer_unittest.cc",
