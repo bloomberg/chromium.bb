@@ -57,7 +57,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_layer_rect = visible_layer_rect;
   layer->SetBounds(layer_size);
-  layer->SetForceRenderSurface(true);
+  layer->test_properties()->force_render_surface = true;
 
   UIResourceId uid = 1;
   bool is_opaque = false;

@@ -59,7 +59,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
           MainThreadScrollingReason::kNotScrollingOnMain),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
-      double_sided_(true),
       should_flatten_transform_(true),
       should_flatten_transform_from_property_tree_(false),
       layer_property_changed_(false),
@@ -90,7 +89,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       element_id_(0),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
-      force_render_surface_(false),
       scrolls_drawn_descendant_(false),
       layer_or_descendant_has_touch_handler_(false) {
   DCHECK_GT(layer_id_, 0);
@@ -488,7 +486,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundColor(background_color_);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(bounds_);
-  layer->SetDoubleSided(double_sided_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   // If whether layer has render surface changes, we need to update draw
@@ -498,7 +495,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   if (layer->has_render_surface() != has_render_surface())
     layer->layer_tree_impl()->set_needs_update_draw_properties();
   layer->SetHasRenderSurface(!!render_surface());
-  layer->SetForceRenderSurface(force_render_surface_);
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
@@ -1312,13 +1308,6 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
   }
 }
 
-void LayerImpl::SetDoubleSided(bool double_sided) {
-  if (double_sided_ == double_sided)
-    return;
-
-  double_sided_ = double_sided;
-}
-
 SimpleEnclosedRegion LayerImpl::VisibleOpaqueRegion() const {
   if (contents_opaque())
     return SimpleEnclosedRegion(visible_layer_rect());
@@ -1512,14 +1501,6 @@ gfx::Transform LayerImpl::ScreenSpaceTransform() const {
   }
 
   return draw_properties().screen_space_transform;
-}
-
-void LayerImpl::SetForceRenderSurface(bool force_render_surface) {
-  if (force_render_surface == force_render_surface_)
-    return;
-
-  force_render_surface_ = force_render_surface;
-  NoteLayerPropertyChanged();
 }
 
 Region LayerImpl::GetInvalidationRegionForDebugging() {

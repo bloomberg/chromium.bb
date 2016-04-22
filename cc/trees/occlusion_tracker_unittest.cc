@@ -107,7 +107,7 @@ class OcclusionTrackerTest : public testing::Test {
 
     host_->host_impl()->active_tree()->SetRootLayer(std::move(layer));
 
-    layer_ptr->SetForceRenderSurface(true);
+    layer_ptr->test_properties()->force_render_surface = true;
     SetRootLayerOnMainThread(layer_ptr);
 
     return layer_ptr;
@@ -131,7 +131,7 @@ class OcclusionTrackerTest : public testing::Test {
                            const gfx::PointF& position,
                            const gfx::Size& bounds) {
     LayerImpl* layer = CreateLayer(parent, transform, position, bounds);
-    layer->SetForceRenderSurface(true);
+    layer->test_properties()->force_render_surface = true;
     return layer;
   }
 
@@ -193,7 +193,7 @@ class OcclusionTrackerTest : public testing::Test {
                                              bool opaque) {
     TestContentLayerImpl* layer =
         CreateDrawingLayer(parent, transform, position, bounds, opaque);
-    layer->SetForceRenderSurface(true);
+    layer->test_properties()->force_render_surface = true;
     return layer;
   }
 
@@ -540,7 +540,7 @@ class OcclusionTrackerTestScaledRenderSurface : public OcclusionTrackerTest {
     layer1_matrix.Scale(2.0, 2.0);
     TestContentLayerImpl* layer1 = this->CreateDrawingLayer(
         parent, layer1_matrix, gfx::PointF(), gfx::Size(100, 100), true);
-    layer1->SetForceRenderSurface(true);
+    layer1->test_properties()->force_render_surface = true;
 
     gfx::Transform layer2_matrix;
     layer2_matrix.Translate(25.0, 25.0);
@@ -921,17 +921,17 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
         parent, layer_transform, gfx::PointF(30.f, 30.f), gfx::Size(500, 500),
         true);
 
-    blur_layer->SetForceRenderSurface(true);
+    blur_layer->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(10.f));
     blur_layer->SetFilters(filters);
 
-    opaque_layer->SetForceRenderSurface(true);
+    opaque_layer->test_properties()->force_render_surface = true;
     filters.Clear();
     filters.Append(FilterOperation::CreateGrayscaleFilter(0.5f));
     opaque_layer->SetFilters(filters);
 
-    opacity_layer->SetForceRenderSurface(true);
+    opacity_layer->test_properties()->force_render_surface = true;
     filters.Clear();
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
     opacity_layer->SetFilters(filters);
@@ -1483,7 +1483,7 @@ class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter
       LayerImpl* occluding_layer = this->CreateDrawingLayer(
           parent, this->identity_matrix, gfx::PointF(occlusion_rect.origin()),
           occlusion_rect.size(), true);
-      occluding_layer->SetForceRenderSurface(false);
+      occluding_layer->test_properties()->force_render_surface = false;
       this->CalcDrawEtc(parent);
 
       TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 200, 200));
@@ -1567,8 +1567,8 @@ class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice
         gfx::Size(50, 50), true);
 
     // Filters make the layers own surfaces.
-    filtered_surface1->SetForceRenderSurface(true);
-    filtered_surface2->SetForceRenderSurface(true);
+    filtered_surface1->test_properties()->force_render_surface = true;
+    filtered_surface2->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(1.f));
     filtered_surface1->SetBackgroundFilters(filters);
@@ -1644,7 +1644,7 @@ class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter
                              gfx::Size());
 
     // Filters make the layer own a surface.
-    filtered_surface->SetForceRenderSurface(true);
+    filtered_surface->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
@@ -1711,7 +1711,7 @@ class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded
         gfx::Size(50, 50), true);
 
     // Filters make the layer own a surface.
-    filtered_surface->SetForceRenderSurface(true);
+    filtered_surface->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
@@ -1790,7 +1790,7 @@ class OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded
         gfx::Size(10, 10), true);
 
     // Filters make the layer own a surface.
-    filtered_surface->SetForceRenderSurface(true);
+    filtered_surface->test_properties()->force_render_surface = true;
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(3.f));
     filtered_surface->SetBackgroundFilters(filters);
@@ -1865,7 +1865,7 @@ class OcclusionTrackerTestBlendModeDoesNotOcclude
         gfx::Size(20, 22), true);
 
     // Blend mode makes the layer own a surface.
-    blend_mode_layer->SetForceRenderSurface(true);
+    blend_mode_layer->test_properties()->force_render_surface = true;
     blend_mode_layer->SetBlendMode(SkXfermode::kMultiply_Mode);
 
     this->CalcDrawEtc(parent);

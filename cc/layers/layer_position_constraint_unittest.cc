@@ -435,7 +435,7 @@ TEST_F(LayerPositionConstraintTest,
   // for when checking the scroll delta.
   child_->SetIsContainerForFixedPositionLayers(true);
   grand_child_->SetPosition(gfx::PointF(8.f, 6.f));
-  grand_child_->SetForceRenderSurface(true);
+  grand_child_->SetForceRenderSurfaceForTesting(true);
   great_grand_child_->SetPositionConstraint(fixed_to_top_left_);
 
   gfx::Transform rotation_about_z;
@@ -559,9 +559,9 @@ TEST_F(LayerPositionConstraintTest,
   // Actually set up the scenario here.
   child_->SetIsContainerForFixedPositionLayers(true);
   grand_child_->SetPosition(gfx::PointF(8.f, 6.f));
-  grand_child_->SetForceRenderSurface(true);
+  grand_child_->SetForceRenderSurfaceForTesting(true);
   great_grand_child_->SetPosition(gfx::PointF(40.f, 60.f));
-  great_grand_child_->SetForceRenderSurface(true);
+  great_grand_child_->SetForceRenderSurfaceForTesting(true);
   fixed_position_child->SetPositionConstraint(fixed_to_top_left_);
 
   // The additional rotation, which is non-commutative with translations, helps
@@ -715,9 +715,9 @@ TEST_F(
   // Actually set up the scenario here.
   child_transform_layer_->SetIsContainerForFixedPositionLayers(true);
   grand_child_->SetPosition(gfx::PointF(8.f, 6.f));
-  grand_child_->SetForceRenderSurface(true);
+  grand_child_->SetForceRenderSurfaceForTesting(true);
   great_grand_child_->SetPosition(gfx::PointF(40.f, 60.f));
-  great_grand_child_->SetForceRenderSurface(true);
+  great_grand_child_->SetForceRenderSurfaceForTesting(true);
   fixed_position_child->SetPositionConstraint(fixed_to_top_left_);
 
   // The additional rotations, which are non-commutative with translations, help
@@ -828,7 +828,7 @@ TEST_F(LayerPositionConstraintTest,
   // that render target is completely irrelevant; it should not affect the
   // scroll compensation.
   child_->SetIsContainerForFixedPositionLayers(true);
-  child_->SetForceRenderSurface(true);
+  child_->SetForceRenderSurfaceForTesting(true);
   grand_child_->SetPositionConstraint(fixed_to_top_left_);
 
   CommitAndUpdateImplPointers();

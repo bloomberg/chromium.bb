@@ -445,7 +445,7 @@ class ImageScaledRenderSurface : public LayerTreeHostFiltersPixelTest {
     gfx::Transform render_surface_transform;
     render_surface_transform.Scale(1.5f, 1.5f);
     render_surface_layer->SetTransform(render_surface_transform);
-    render_surface_layer->SetForceRenderSurface(true);
+    render_surface_layer->SetForceRenderSurfaceForTesting(true);
 
     background->AddChild(render_surface_layer);
 

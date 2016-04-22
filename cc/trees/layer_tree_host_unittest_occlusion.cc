@@ -87,7 +87,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnSurface
     child_->SetBounds(gfx::Size(1, 1));
     child_->SetPosition(gfx::PointF(10.f, 5.5f));
     child_->SetIsDrawable(true);
-    child_->SetForceRenderSurface(true);
+    child_->SetForceRenderSurfaceForTesting(true);
     root->AddChild(child_);
 
     scoped_refptr<Layer> child2 = Layer::Create();
@@ -283,7 +283,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesInsideReplica
     child_->SetBounds(gfx::Size(1, 1));
     child_->SetPosition(gfx::PointF(10.f, 5.5f));
     child_->SetIsDrawable(true);
-    child_->SetForceRenderSurface(true);
+    child_->SetForceRenderSurfaceForTesting(true);
     root->AddChild(child_);
 
     scoped_refptr<Layer> replica = Layer::Create();

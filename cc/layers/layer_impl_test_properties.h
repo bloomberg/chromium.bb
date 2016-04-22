@@ -10,7 +10,13 @@
 namespace cc {
 
 struct LayerImplTestProperties {
+  LayerImplTestProperties()
+      : transform_origin(gfx::Point3F()),
+        double_sided(true),
+        force_render_surface(false) {}
   gfx::Point3F transform_origin;
+  bool double_sided;
+  bool force_render_surface;
 };
 
 }  // namespace cc

@@ -98,7 +98,6 @@ class WebLayerImpl : public blink::WebLayer {
   void setFilters(const cc::FilterOperations& filters) override;
   void setBackgroundFilters(const cc::FilterOperations& filters) override;
   bool hasActiveAnimationForTesting() override;
-  void setForceRenderSurface(bool force) override;
   void setScrollPositionDouble(blink::WebDoublePoint position) override;
   blink::WebDoublePoint scrollPositionDouble() const override;
   void setScrollClipLayer(blink::WebLayer* clip_layer) override;

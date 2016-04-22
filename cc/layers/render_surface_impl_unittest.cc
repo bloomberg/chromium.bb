@@ -24,7 +24,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
   LayerImpl* owning_layer_impl = impl.AddChildToRoot<LayerImpl>();
   owning_layer_impl->SetBounds(layer_size);
   owning_layer_impl->SetDrawsContent(true);
-  owning_layer_impl->SetForceRenderSurface(true);
+  owning_layer_impl->test_properties()->force_render_surface = true;
 
   impl.CalcDrawProps(viewport_size);
 

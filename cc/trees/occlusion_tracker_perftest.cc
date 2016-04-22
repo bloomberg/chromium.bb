@@ -47,7 +47,7 @@ class OcclusionTrackerPerfTest : public testing::Test {
     host_impl_->InitializeRenderer(output_surface_.get());
 
     std::unique_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);
-    root_layer->SetForceRenderSurface(true);
+    root_layer->test_properties()->force_render_surface = true;
     active_tree()->SetRootLayer(std::move(root_layer));
   }
 

@@ -190,10 +190,6 @@ public:
     // deleting the scroll client.
     virtual void setScrollClient(WebLayerScrollClient*) = 0;
 
-    // Forces this layer to use a render surface. There is no benefit in doing
-    // so, but this is to facilitate benchmarks and tests.
-    virtual void setForceRenderSurface(bool) = 0;
-
     // Sets the cc-side layer client.
     virtual void setLayerClient(cc::LayerClient*) = 0;
 

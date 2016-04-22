@@ -1338,7 +1338,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
                                  transform_origin, position, bounds, true,
                                  false, false);
     child1->SetDrawsContent(true);
-    child1->SetForceRenderSurface(true);
+    child1->test_properties()->force_render_surface = true;
 
     position = gfx::PointF(50.f, 10.f);
     bounds = gfx::Size(50, 50);
@@ -1346,7 +1346,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
                                  transform_origin, position, bounds, true,
                                  false, false);
     child2->SetDrawsContent(true);
-    child2->SetForceRenderSurface(true);
+    child2->test_properties()->force_render_surface = true;
 
     // Remember that grand_child is positioned with respect to its parent (i.e.
     // child1).  In screen space, the intended position is (10, 50), with size
@@ -1357,7 +1357,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
                                  transform_origin, position, bounds, true,
                                  false, false);
     grand_child1->SetDrawsContent(true);
-    grand_child1->SetForceRenderSurface(true);
+    grand_child1->test_properties()->force_render_surface = true;
 
     child1->AddChild(std::move(grand_child1));
     root->AddChild(std::move(child1));

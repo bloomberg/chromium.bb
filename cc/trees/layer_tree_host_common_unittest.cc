@@ -1592,7 +1592,7 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
                                gfx::PointF(), gfx::Size(10, 10), true, false);
 
   child->SetDrawsContent(true);
-  render_surface1->SetForceRenderSurface(true);
+  render_surface1->test_properties()->force_render_surface = true;
 
   {
     ExecuteCalculateDrawPropertiesWithPropertyTrees(parent);
@@ -1603,7 +1603,7 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   }
 
   {
-    render_surface1->SetForceRenderSurface(false);
+    render_surface1->test_properties()->force_render_surface = false;
     render_surface1->layer_tree_impl()->property_trees()->needs_rebuild = true;
     ExecuteCalculateDrawPropertiesWithPropertyTrees(parent);
     EXPECT_TRUE(parent->has_render_surface());
@@ -2311,9 +2311,9 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   // Case 1: Nothing is clipped. In this case, each layer's clip rect is its
   // bounds in target space. The only thing that changes when surfaces are
   // disabled is that target space is always screen space.
-  root->SetForceRenderSurface(true);
-  child1->SetForceRenderSurface(true);
-  grand_child->SetForceRenderSurface(true);
+  root->test_properties()->force_render_surface = true;
+  child1->test_properties()->force_render_surface = true;
+  grand_child->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(root->has_render_surface());
   EXPECT_FALSE(parent->has_render_surface());
@@ -2349,9 +2349,9 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   // render surface are clipped by the root's bounds.
   root->SetMasksToBounds(true);
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
-  root->SetForceRenderSurface(true);
-  child1->SetForceRenderSurface(true);
-  grand_child->SetForceRenderSurface(true);
+  root->test_properties()->force_render_surface = true;
+  child1->test_properties()->force_render_surface = true;
+  grand_child->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(root->has_render_surface());
   EXPECT_FALSE(parent->has_render_surface());
@@ -2402,9 +2402,9 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   parent->SetMasksToBounds(true);
   child1->SetMasksToBounds(true);
   host_impl()->active_tree()->property_trees()->needs_rebuild = true;
-  root->SetForceRenderSurface(true);
-  child1->SetForceRenderSurface(true);
-  grand_child->SetForceRenderSurface(true);
+  root->test_properties()->force_render_surface = true;
+  child1->test_properties()->force_render_surface = true;
+  grand_child->test_properties()->force_render_surface = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(root->has_render_surface());
   EXPECT_FALSE(parent->has_render_surface());
@@ -4395,14 +4395,18 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
       AddReplicaLayer<LayerImpl>(back_facing_surface);
 
   // Nothing is double-sided
-  front_facing_child->SetDoubleSided(false);
-  back_facing_child->SetDoubleSided(false);
-  front_facing_surface->SetDoubleSided(false);
-  back_facing_surface->SetDoubleSided(false);
-  front_facing_child_of_front_facing_surface->SetDoubleSided(false);
-  back_facing_child_of_front_facing_surface->SetDoubleSided(false);
-  front_facing_child_of_back_facing_surface->SetDoubleSided(false);
-  back_facing_child_of_back_facing_surface->SetDoubleSided(false);
+  front_facing_child->test_properties()->double_sided = false;
+  back_facing_child->test_properties()->double_sided = false;
+  front_facing_surface->test_properties()->double_sided = false;
+  back_facing_surface->test_properties()->double_sided = false;
+  front_facing_child_of_front_facing_surface->test_properties()->double_sided =
+      false;
+  back_facing_child_of_front_facing_surface->test_properties()->double_sided =
+      false;
+  front_facing_child_of_back_facing_surface->test_properties()->double_sided =
+      false;
+  back_facing_child_of_back_facing_surface->test_properties()->double_sided =
+      false;
 
   // Everything draws content.
   front_facing_child->SetDrawsContent(true);
@@ -4519,7 +4523,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   backface_matrix.Translate(-50.0, -50.0);
 
   // Make our render surface.
-  animating_surface->SetForceRenderSurface(true);
+  animating_surface->SetForceRenderSurfaceForTesting(true);
 
   // Animate the transform on the render surface.
   AddAnimatedTransformToLayerWithPlayer(animating_surface->id(), timeline(),
@@ -6461,9 +6465,9 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
   root->Set3dSortingContextId(1);
   back_facing->Set3dSortingContextId(1);
   back_facing->SetShouldFlattenTransform(false);
-  render_surface1->SetDoubleSided(false);
+  render_surface1->test_properties()->double_sided = false;
   render_surface2->Set3dSortingContextId(2);
-  render_surface2->SetDoubleSided(false);
+  render_surface2->test_properties()->double_sided = false;
 
   ExecuteCalculateDrawProperties(root);
 
@@ -6507,7 +6511,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   LayerImpl* grand_child = AddChild<LayerImpl>(child);
   grand_child->SetDrawsContent(true);
 
-  child->SetDoubleSided(false);
+  child->test_properties()->double_sided = false;
   grand_child->SetUseParentBackfaceVisibility(true);
 
   gfx::Transform identity_transform;
@@ -6571,7 +6575,7 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   EXPECT_TRUE(grand_child->use_local_transform_for_backface_visibility());
 
   grand_child->SetUseParentBackfaceVisibility(false);
-  grand_child->SetDoubleSided(false);
+  grand_child->test_properties()->double_sided = false;
   grand_child->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
@@ -6999,7 +7003,7 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   child->SetDrawsContent(true);
 
   root->SetIsContainerForFixedPositionLayers(true);
-  render_surface->SetForceRenderSurface(true);
+  render_surface->test_properties()->force_render_surface = true;
 
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
@@ -7898,7 +7902,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
   root->AddChild(std::move(child1));
   root->AddChild(std::move(child2));
-  root->SetForceRenderSurface(true);
+  root->test_properties()->force_render_surface = true;
   root->SetDrawsContent(true);
   host_impl.active_tree()->SetRootLayer(std::move(root));
 
@@ -8219,7 +8223,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
                                gfx::PointF(), gfx::Size(20, 20), true, false);
 
   root->SetMasksToBounds(true);
-  root->SetForceRenderSurface(true);
+  root->SetForceRenderSurfaceForTesting(true);
   animated->SetOpacity(0.f);
 
   AddOpacityTransitionToLayerWithPlayer(animated->id(), timeline(), 10.0, 0.f,
@@ -8247,7 +8251,7 @@ TEST_F(LayerTreeHostCommonTest,
   surface->AddChild(descendant_of_animation);
 
   clip->SetMasksToBounds(true);
-  surface->SetForceRenderSurface(true);
+  surface->SetForceRenderSurfaceForTesting(true);
 
   host()->SetRootLayer(root);
 
@@ -8917,7 +8921,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   // A double sided render surface with backface visible should not be skipped
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   child_ptr->SetHasRenderSurface(true);
-  child_ptr->SetDoubleSided(true);
+  child_ptr->test_properties()->double_sided = true;
   child_ptr->SetTransform(rotate_back_and_translate);
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
@@ -9109,13 +9113,13 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   child->SetBounds(gfx::Size(10, 10));
 
   gfx::Transform rotate;
-  child->SetDoubleSided(false);
+  child->test_properties()->double_sided = false;
   rotate.RotateAboutXAxis(180.f);
   child->SetTransform(rotate);
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
-  child->SetDoubleSided(true);
+  child->test_properties()->double_sided = true;
   child->SetTransform(identity);
 
   child->SetOpacity(0.f);
@@ -9243,11 +9247,11 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(30, 30), true, false);
 
-  root->SetForceRenderSurface(true);
-  significant_transform->SetForceRenderSurface(false);
-  layer_clips_subtree->SetForceRenderSurface(true);
-  render_surface->SetForceRenderSurface(true);
-  test_layer->SetForceRenderSurface(false);
+  root->test_properties()->force_render_surface = true;
+  significant_transform->test_properties()->force_render_surface = false;
+  layer_clips_subtree->test_properties()->force_render_surface = true;
+  render_surface->test_properties()->force_render_surface = true;
+  test_layer->test_properties()->force_render_surface = false;
   ExecuteCalculateDrawProperties(root);
 
   TransformTree transform_tree =

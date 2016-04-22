@@ -62,7 +62,7 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
                                        flatten_transform, is_3d_sorted);
   layer->test_properties()->transform_origin = transform_origin;
   if (create_render_surface) {
-    layer->SetForceRenderSurface(true);
+    layer->test_properties()->force_render_surface = true;
   }
 }
 

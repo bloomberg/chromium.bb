@@ -215,10 +215,6 @@ bool WebLayerImpl::hasActiveAnimationForTesting() {
   return layer_->HasActiveAnimationForTesting();
 }
 
-void WebLayerImpl::setForceRenderSurface(bool force_render_surface) {
-  layer_->SetForceRenderSurface(force_render_surface);
-}
-
 void WebLayerImpl::setScrollPositionDouble(blink::WebDoublePoint position) {
   layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
 }

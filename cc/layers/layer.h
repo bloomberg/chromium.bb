@@ -288,8 +288,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     did_scroll_callback_ = callback;
   }
 
-  void SetForceRenderSurface(bool force_render_surface);
-  bool force_render_surface() const { return force_render_surface_; }
+  void SetForceRenderSurfaceForTesting(bool force_render_surface);
+  bool force_render_surface_for_testing() const {
+    return force_render_surface_for_testing_;
+  }
 
   gfx::ScrollOffset CurrentScrollOffset() const { return scroll_offset_; }
 
@@ -639,7 +641,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool use_parent_backface_visibility_ : 1;
   bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
-  bool force_render_surface_ : 1;
+  bool force_render_surface_for_testing_ : 1;
   bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;
   bool subtree_property_changed_ : 1;

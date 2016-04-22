@@ -77,7 +77,7 @@ Layer::Layer()
       use_parent_backface_visibility_(false),
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
-      force_render_surface_(false),
+      force_render_surface_for_testing_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
       subtree_property_changed_(false),
@@ -902,11 +902,11 @@ void Layer::SetTouchEventHandlerRegion(const Region& region) {
   SetNeedsCommit();
 }
 
-void Layer::SetForceRenderSurface(bool force) {
+void Layer::SetForceRenderSurfaceForTesting(bool force) {
   DCHECK(IsPropertyChangeAllowed());
-  if (force_render_surface_ == force)
+  if (force_render_surface_for_testing_ == force)
     return;
-  force_render_surface_ = force;
+  force_render_surface_for_testing_ = force;
   SetNeedsCommit();
 }
 
@@ -1137,7 +1137,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetClipTreeIndex(clip_tree_index());
   layer->SetScrollTreeIndex(scroll_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
-  layer->SetDoubleSided(double_sided_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetHasRenderSurface(has_render_surface_);
@@ -1145,7 +1144,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_)
     layer->NoteLayerPropertyChanged();
-  layer->SetForceRenderSurface(force_render_surface_);
   if (!layer->FilterIsAnimatingOnImplOnly() && !FilterIsAnimating())
     layer->SetFilters(filters_);
   DCHECK(!(FilterIsAnimating() && layer->FilterIsAnimatingOnImplOnly()));

@@ -225,9 +225,9 @@ TEST_F(LayerIteratorTest, ComplexTreeMultiSurface) {
   TestLayerImpl* root221_ptr = root221.get();
   TestLayerImpl* root231_ptr = root231.get();
 
-  root22->SetForceRenderSurface(true);
-  root23->SetForceRenderSurface(true);
-  root2->SetForceRenderSurface(true);
+  root22->test_properties()->force_render_surface = true;
+  root23->test_properties()->force_render_surface = true;
+  root2->test_properties()->force_render_surface = true;
   root22->AddChild(std::move(root221));
   root23->AddChild(std::move(root231));
   root2->SetDrawsContent(false);

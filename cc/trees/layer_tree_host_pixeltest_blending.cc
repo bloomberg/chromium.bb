@@ -216,7 +216,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
           CreateSolidColorLayer(child_rect, color);
       lane->SetBlendMode(blend_mode);
       lane->SetOpacity(opacity);
-      lane->SetForceRenderSurface(true);
+      lane->SetForceRenderSurfaceForTesting(true);
       if (flags & kUseMasks)
         SetupMaskLayer(lane);
       if (flags & kUseColorMatrix) {

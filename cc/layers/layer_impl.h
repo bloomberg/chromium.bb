@@ -160,7 +160,6 @@ class CC_EXPORT LayerImpl {
 
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
-  bool force_render_surface() const { return force_render_surface_; }
   void SetNumDescendantsThatDrawContent(int num_descendants);
   void SetClipParent(LayerImpl* ancestor);
 
@@ -455,9 +454,6 @@ class CC_EXPORT LayerImpl {
     return touch_event_handler_region_;
   }
 
-  void SetDoubleSided(bool double_sided);
-  bool double_sided() const { return double_sided_; }
-
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
@@ -652,8 +648,6 @@ class CC_EXPORT LayerImpl {
 
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
-  // Whether the "back" of this layer should draw.
-  bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;
   bool should_flatten_transform_from_property_tree_ : 1;
 
@@ -740,8 +734,6 @@ class CC_EXPORT LayerImpl {
       owned_debug_info_;
   base::trace_event::ConvertableToTraceFormat* debug_info_;
   std::unique_ptr<RenderSurfaceImpl> render_surface_;
-
-  bool force_render_surface_;
 
   bool scrolls_drawn_descendant_;
   // If true, the layer or one of its descendants has a touch handler.

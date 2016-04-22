@@ -345,7 +345,7 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
     // parent_layer_ owns a render surface.
     parent_layer_ = FakePictureLayer::Create(&client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
-    parent_layer_->SetForceRenderSurface(true);
+    parent_layer_->SetForceRenderSurfaceForTesting(true);
     grand_parent_layer_->AddChild(parent_layer_);
 
     copy_layer_ = FakePictureLayer::Create(&client_);
@@ -446,7 +446,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     // parent_layer_ owns a render surface.
     parent_layer_ = FakePictureLayer::Create(&client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
-    parent_layer_->SetForceRenderSurface(true);
+    parent_layer_->SetForceRenderSurfaceForTesting(true);
     grand_parent_layer_->AddChild(parent_layer_);
 
     copy_layer_ = FakePictureLayer::Create(&client_);

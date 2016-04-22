@@ -355,11 +355,6 @@ class COMPOSITOR_EXPORT Layer
 
   float device_scale_factor() const { return device_scale_factor_; }
 
-  // Forces a render surface to be used on this layer. This has no positive
-  // impact, and is only used for benchmarking/testing purpose.
-  void SetForceRenderSurface(bool force);
-  bool force_render_surface() const { return force_render_surface_; }
-
   // LayerClient
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
       cc::Layer* layer) override;
@@ -436,8 +431,6 @@ class COMPOSITOR_EXPORT Layer
 
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
-
-  bool force_render_surface_;
 
   bool fills_bounds_opaquely_;
   bool fills_bounds_completely_;

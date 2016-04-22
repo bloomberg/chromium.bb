@@ -248,7 +248,7 @@ class PictureLayerImplTest : public testing::Test {
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
     }
-    pending_root->SetForceRenderSurface(true);
+    pending_root->test_properties()->force_render_surface = true;
     // The bounds() just mirror the raster source size.
     pending_layer->SetBounds(raster_source->GetSize());
     pending_layer->SetRasterSourceOnPending(raster_source, invalidation);
@@ -1306,7 +1306,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
   pending_layer_->SetMaskLayer(std::move(mask_ptr));
-  pending_layer_->SetForceRenderSurface(true);
+  pending_layer_->test_properties()->force_render_surface = true;
 
   RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
@@ -1435,7 +1435,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
   pending_layer_->SetMaskLayer(std::move(mask_ptr));
-  pending_layer_->SetForceRenderSurface(true);
+  pending_layer_->test_properties()->force_render_surface = true;
 
   RebuildPropertyTreesOnPendingTree();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));

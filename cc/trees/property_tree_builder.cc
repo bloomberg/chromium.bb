@@ -471,6 +471,22 @@ bool IsAnimatingOpacity(LayerImpl* layer) {
   return layer->HasPotentiallyRunningOpacityAnimation();
 }
 
+static inline bool DoubleSided(Layer* layer) {
+  return layer->double_sided();
+}
+
+static inline bool DoubleSided(LayerImpl* layer) {
+  return layer->test_properties()->double_sided;
+}
+
+static inline bool ForceRenderSurface(Layer* layer) {
+  return layer->force_render_surface_for_testing();
+}
+
+static inline bool ForceRenderSurface(LayerImpl* layer) {
+  return layer->test_properties()->force_render_surface;
+}
+
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
   return layer->Is3dSorted() && layer->parent() &&
@@ -576,7 +592,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   }
 
   // If we force it.
-  if (layer->force_render_surface())
+  if (ForceRenderSurface(layer))
     return true;
 
   // If we'll make a copy of the layer's contents.
@@ -620,7 +636,7 @@ bool AddEffectNodeIfNeeded(
   node.data.has_copy_request = layer->HasCopyRequest();
   node.data.has_background_filters = !layer->background_filters().IsEmpty();
   node.data.has_animated_opacity = has_animated_opacity;
-  node.data.double_sided = layer->double_sided();
+  node.data.double_sided = DoubleSided(layer);
 
   if (!is_root) {
     // The effect node's transform id is used only when we create a render
@@ -758,7 +774,7 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
     layer->SetUseLocalTransformForBackfaceVisibility(use_local_transform);
 
     // A double-sided layer's backface can been shown when its visibile.
-    if (layer->double_sided())
+    if (DoubleSided(layer))
       layer->SetShouldCheckBackfaceVisibility(false);
     // The backface of a layer that uses local transform for backface visibility
     // is not visible when it does not create a transform node as its local
