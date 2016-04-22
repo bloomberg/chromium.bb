@@ -280,7 +280,6 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
       }
 #endif
       break;
-    case content::PUSH_DELIVERY_STATUS_INVALID_MESSAGE:
     case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
       break;
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:

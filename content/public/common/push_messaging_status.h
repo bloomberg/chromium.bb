@@ -136,9 +136,6 @@ enum PushDeliveryStatus {
   // The message was successfully delivered.
   PUSH_DELIVERY_STATUS_SUCCESS = 0,
 
-  // The message could not be delivered because it was invalid.
-  PUSH_DELIVERY_STATUS_INVALID_MESSAGE = 1,
-
   // The message could not be delivered because the app id was unknown.
   PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID = 2,
 
