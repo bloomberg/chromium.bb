@@ -15,7 +15,7 @@
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
-#import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 

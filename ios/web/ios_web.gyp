@@ -237,8 +237,6 @@
         'web_state/ui/crw_web_view_content_view.mm',
         'web_state/ui/crw_wk_script_message_router.h',
         'web_state/ui/crw_wk_script_message_router.mm',
-        'web_state/ui/crw_wk_web_view_web_controller.h',
-        'web_state/ui/crw_wk_web_view_web_controller.mm',
         'web_state/ui/web_view_js_utils.h',
         'web_state/ui/web_view_js_utils.mm',
         'web_state/ui/wk_back_forward_list_item_holder.h',

@@ -88,9 +88,9 @@
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_provider.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
-#import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_controller_observer_bridge.h"
@@ -1072,16 +1072,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
 
-+ (instancetype)allocWithZone:(struct _NSZone*)zone {
-  if (self == [CRWWebController class]) {
-    // This is an abstract class which should not be instantiated directly.
-    // Callers should create concrete subclasses instead.
-    NOTREACHED();
-    return nil;
-  }
-  return [super allocWithZone:zone];
-}
-
 - (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
   if (self) {
@@ -1240,7 +1230,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (NSString*)activityIndicatorGroupID {
   return [NSString
-      stringWithFormat:@"WKWebViewWebController.NetworkActivityIndicatorKey.%@",
+      stringWithFormat:@"WebController.NetworkActivityIndicatorKey.%@",
                        self.webStateImpl->GetRequestGroupID()];
 }
 
@@ -3953,7 +3943,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       runAuthDialogForProtectionSpace:space
                    proposedCredential:challenge.proposedCredential
                     completionHandler:^(NSString* user, NSString* password) {
-                      [CRWWKWebViewWebController
+                      [CRWWebController
                           processHTTPAuthForUser:user
                                         password:password
                                completionHandler:completionHandler];

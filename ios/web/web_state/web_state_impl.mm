@@ -25,7 +25,6 @@
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
-#import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
 #import "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #import "ios/web/webui/web_ui_ios_impl.h"
@@ -58,8 +57,7 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
       interstitial_(nullptr),
       weak_factory_(this) {
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
-  web_controller_.reset(
-      [[CRWWKWebViewWebController alloc] initWithWebState:this]);
+  web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
 }
 
 WebStateImpl::~WebStateImpl() {
