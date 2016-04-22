@@ -31,6 +31,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 
 #include "bindings/core/v8/ScriptCallStack.h"
+#include "core/InstrumentingAgents.h"
 #include "core/events/EventTarget.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/frame/FrameHost.h"
@@ -40,7 +41,7 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
-#include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/InspectorSession.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
@@ -50,10 +51,10 @@ namespace blink {
 
 namespace {
 
-PersistentHeapHashSet<WeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
+PersistentHeapHashSet<WeakMember<InstrumentingSessions>>& instrumentingSessionsSet()
 {
-    DEFINE_STATIC_LOCAL(PersistentHeapHashSet<WeakMember<InstrumentingAgents>>, instrumentingAgentsSet, ());
-    return instrumentingAgentsSet;
+    DEFINE_STATIC_LOCAL(PersistentHeapHashSet<WeakMember<InstrumentingSessions>>, instrumentingSessionsSet, ());
+    return instrumentingSessionsSet;
 }
 
 }
@@ -65,42 +66,61 @@ AsyncTask::AsyncTask(ExecutionContext* context, void* task) : AsyncTask(context,
 }
 
 AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
-    : m_instrumentingAgents(enabled ? instrumentingAgentsFor(context) : nullptr)
+    : m_instrumentingSessions(enabled ? instrumentingSessionsFor(context) : nullptr)
     , m_task(task)
 {
-    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDebuggerAgent())
-        m_instrumentingAgents->inspectorDebuggerAgent()->asyncTaskStarted(m_task);
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorDebuggerAgent())
+            session->instrumentingAgents()->inspectorDebuggerAgent()->asyncTaskStarted(m_task);
+    }
 }
 
 AsyncTask::~AsyncTask()
 {
-    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDebuggerAgent())
-        m_instrumentingAgents->inspectorDebuggerAgent()->asyncTaskFinished(m_task);
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorDebuggerAgent())
+            session->instrumentingAgents()->inspectorDebuggerAgent()->asyncTaskFinished(m_task);
+    }
 }
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const String& name, bool sync)
-    : m_instrumentingAgents(instrumentingAgentsFor(context))
+    : m_instrumentingSessions(instrumentingSessionsFor(context))
     , m_sync(sync)
 {
-    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDOMDebuggerAgent())
-        m_instrumentingAgents->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(name, nullptr, m_sync);
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorDOMDebuggerAgent())
+            session->instrumentingAgents()->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(name, nullptr, m_sync);
+    }
 }
 
 NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, EventTarget* eventTarget, Event* event)
-    : m_instrumentingAgents(instrumentingAgentsFor(context))
+    : m_instrumentingSessions(instrumentingSessionsFor(context))
     , m_sync(false)
 {
-    if (m_instrumentingAgents && m_instrumentingAgents->inspectorDOMDebuggerAgent()) {
-        Node* node = eventTarget->toNode();
-        String targetName = node ? node->nodeName() : eventTarget->interfaceName();
-        m_instrumentingAgents->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(event->type(), &targetName, m_sync);
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    Node* node = eventTarget->toNode();
+    String targetName = node ? node->nodeName() : eventTarget->interfaceName();
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorDOMDebuggerAgent())
+            session->instrumentingAgents()->inspectorDOMDebuggerAgent()->allowNativeBreakpoint(event->type(), &targetName, m_sync);
     }
 }
 
 NativeBreakpoint::~NativeBreakpoint()
 {
-    if (!m_sync && m_instrumentingAgents && m_instrumentingAgents->inspectorDOMDebuggerAgent())
-        m_instrumentingAgents->inspectorDOMDebuggerAgent()->cancelNativeBreakpoint();
+    if (m_sync || !m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorDOMDebuggerAgent())
+            session->instrumentingAgents()->inspectorDOMDebuggerAgent()->cancelNativeBreakpoint();
+    }
 }
 
 int FrontendCounter::s_frontendCounter = 0;
@@ -110,24 +130,24 @@ const char kInspectorEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Ne
 }
 
 InspectorInstrumentationCookie::InspectorInstrumentationCookie()
-    : m_instrumentingAgents(nullptr)
+    : m_instrumentingSessions(nullptr)
 {
 }
 
-InspectorInstrumentationCookie::InspectorInstrumentationCookie(InstrumentingAgents* agents)
-    : m_instrumentingAgents(agents)
+InspectorInstrumentationCookie::InspectorInstrumentationCookie(InstrumentingSessions* sessions)
+    : m_instrumentingSessions(sessions)
 {
 }
 
 InspectorInstrumentationCookie::InspectorInstrumentationCookie(const InspectorInstrumentationCookie& other)
-    : m_instrumentingAgents(other.m_instrumentingAgents)
+    : m_instrumentingSessions(other.m_instrumentingSessions)
 {
 }
 
 InspectorInstrumentationCookie& InspectorInstrumentationCookie::operator=(const InspectorInstrumentationCookie& other)
 {
     if (this != &other)
-        m_instrumentingAgents = other.m_instrumentingAgents;
+        m_instrumentingSessions = other.m_instrumentingSessions;
     return *this;
 }
 
@@ -139,8 +159,11 @@ namespace InspectorInstrumentation {
 
 bool isDebuggerPaused(LocalFrame* frame)
 {
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame)) {
-        if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
+    InstrumentingSessions* instrumentingSessions = instrumentingSessionsFor(frame);
+    if (!instrumentingSessions || instrumentingSessions->isEmpty())
+        return false;
+    for (InspectorSession* session : *instrumentingSessions) {
+        if (InspectorDebuggerAgent* debuggerAgent = session->instrumentingAgents()->inspectorDebuggerAgent())
             return debuggerAgent->isPaused();
     }
     return false;
@@ -164,55 +187,66 @@ void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigne
 void removedResourceFromMemoryCache(Resource* cachedResource)
 {
     ASSERT(isMainThread());
-    for (InstrumentingAgents* instrumentingAgents: instrumentingAgentsSet()) {
-        if (InspectorResourceAgent* inspectorResourceAgent = instrumentingAgents->inspectorResourceAgent())
-            inspectorResourceAgent->removedResourceFromMemoryCache(cachedResource);
+    for (InstrumentingSessions* instrumentingSessions: instrumentingSessionsSet()) {
+        if (instrumentingSessions->isEmpty())
+            continue;
+        for (InspectorSession* session : *instrumentingSessions) {
+            if (InspectorResourceAgent* inspectorResourceAgent = session->instrumentingAgents()->inspectorResourceAgent())
+                inspectorResourceAgent->removedResourceFromMemoryCache(cachedResource);
+        }
     }
 }
 
 bool collectingHTMLParseErrors(Document* document)
 {
     ASSERT(isMainThread());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
-        return instrumentingAgentsSet().contains(instrumentingAgents);
+    if (InstrumentingSessions* instrumentingSessions = instrumentingSessionsFor(document))
+        return instrumentingSessionsSet().contains(instrumentingSessions);
     return false;
 }
 
 bool consoleAgentEnabled(ExecutionContext* executionContext)
 {
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
-    InspectorConsoleAgent* consoleAgent = instrumentingAgents ? instrumentingAgents->inspectorConsoleAgent() : 0;
-    return consoleAgent && consoleAgent->enabled();
+    InstrumentingSessions* instrumentingSessions = instrumentingSessionsFor(executionContext);
+    if (!instrumentingSessions || instrumentingSessions->isEmpty())
+        return false;
+    for (InspectorSession* session : *instrumentingSessions) {
+        if (InspectorConsoleAgent* consoleAgent = session->instrumentingAgents()->inspectorConsoleAgent()) {
+            if (consoleAgent->enabled())
+                return true;
+        }
+    }
+    return false;
 }
 
-void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
+void registerInstrumentingSessions(InstrumentingSessions* instrumentingSessions)
 {
     ASSERT(isMainThread());
-    instrumentingAgentsSet().add(instrumentingAgents);
+    instrumentingSessionsSet().add(instrumentingSessions);
 }
 
-void unregisterInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
+void unregisterInstrumentingSessions(InstrumentingSessions* instrumentingSessions)
 {
     ASSERT(isMainThread());
-    ASSERT(instrumentingAgentsSet().contains(instrumentingAgents));
-    instrumentingAgentsSet().remove(instrumentingAgents);
+    ASSERT(instrumentingSessionsSet().contains(instrumentingSessions));
+    instrumentingSessionsSet().remove(instrumentingSessions);
 }
 
-InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)
+InstrumentingSessions* instrumentingSessionsFor(WorkerGlobalScope* workerGlobalScope)
 {
     if (!workerGlobalScope)
         return nullptr;
     if (WorkerInspectorController* controller = workerGlobalScope->workerInspectorController())
-        return controller->instrumentingAgents();
+        return controller->instrumentingSessions();
     return nullptr;
 }
 
-InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* context)
+InstrumentingSessions* instrumentingSessionsForNonDocumentContext(ExecutionContext* context)
 {
     if (context->isWorkerGlobalScope())
-        return instrumentingAgentsFor(toWorkerGlobalScope(context));
+        return instrumentingSessionsFor(toWorkerGlobalScope(context));
     if (context->isWorkletGlobalScope())
-        return instrumentingAgentsFor(toMainThreadWorkletGlobalScope(context)->frame());
+        return instrumentingSessionsFor(toMainThreadWorkletGlobalScope(context)->frame());
     return nullptr;
 }
 

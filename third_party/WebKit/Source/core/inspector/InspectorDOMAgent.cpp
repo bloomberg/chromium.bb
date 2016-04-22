@@ -68,7 +68,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"

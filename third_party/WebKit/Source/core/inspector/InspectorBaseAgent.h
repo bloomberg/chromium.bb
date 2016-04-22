@@ -32,7 +32,7 @@
 #define InspectorBaseAgent_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/InstrumentingAgents.h"
+#include "core/InstrumentingAgents.h"
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/Dispatcher.h"

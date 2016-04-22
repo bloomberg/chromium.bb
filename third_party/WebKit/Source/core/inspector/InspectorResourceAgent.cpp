@@ -51,7 +51,6 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

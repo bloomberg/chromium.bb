@@ -94,6 +94,7 @@ public:
     void scriptImported(unsigned long identifier, const String& sourceString);
     void didReceiveScriptResponse(unsigned long identifier);
     bool shouldForceCORSPreflight();
+    bool shouldBlockRequest(const ResourceRequest&);
 
     void documentThreadableLoaderStartedLoadingForClient(unsigned long identifier, ThreadableLoaderClient*);
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<EncodedFormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
@@ -150,7 +151,6 @@ public:
     // Called from other agents.
     void setHostId(const String&);
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
-    bool shouldBlockRequest(const ResourceRequest&);
 
 private:
     explicit InspectorResourceAgent(InspectedFrames*);

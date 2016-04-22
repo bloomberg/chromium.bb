@@ -4,22 +4,21 @@
 
 #include "core/inspector/InspectorSession.h"
 
+#include "core/InstrumentingAgents.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/inspector_protocol/Backend.h"
-#include "platform/inspector_protocol/Dispatcher.h"
-#include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/Parser.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 
-InspectorSession::InspectorSession(Client* client, int sessionId, InstrumentingAgents* instrumentingAgents, bool autoFlush)
+InspectorSession::InspectorSession(Client* client, int sessionId, bool autoFlush)
     : m_client(client)
     , m_sessionId(sessionId)
     , m_autoFlush(autoFlush)
     , m_attached(false)
-    , m_instrumentingAgents(instrumentingAgents)
+    , m_instrumentingAgents(new InstrumentingAgents())
     , m_inspectorFrontend(adoptPtr(new protocol::Frontend(this)))
     , m_inspectorBackendDispatcher(protocol::Dispatcher::create(this))
 {
@@ -67,7 +66,6 @@ void InspectorSession::detach()
         m_agents[i - 1]->dispose();
     m_inspectorFrontend.clear();
     m_agents.clear();
-    m_instrumentingAgents->reset();
     InspectorInstrumentation::frontendDeleted();
 }
 

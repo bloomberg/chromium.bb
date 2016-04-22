@@ -1859,7 +1859,7 @@
             'inspector/InspectorWorkerAgent.h',
             'inspector/InstanceCounters.cpp',
             'inspector/InstanceCounters.h',
-            'inspector/InstrumentingAgents.h',
+            'inspector/InstrumentingSessions.h',
             'inspector/LayoutEditor.cpp',
             'inspector/LayoutEditor.h',
             'inspector/MainThreadDebugger.cpp',

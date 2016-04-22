@@ -396,7 +396,7 @@ source_set("core_generated") {
     "$blink_core_output_dir/InspectorInstrumentationImpl.cpp",
     "$blink_core_output_dir/InspectorInstrumentationInl.h",
     "$blink_core_output_dir/InspectorOverridesInl.h",
-    "$blink_core_output_dir/InstrumentingAgentsInl.h",
+    "$blink_core_output_dir/InstrumentingAgents.h",
 
     # Additional .cpp files for SVG.
     "$blink_core_output_dir/SVGElementFactory.cpp",

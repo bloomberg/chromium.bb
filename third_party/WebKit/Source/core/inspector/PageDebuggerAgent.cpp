@@ -38,7 +38,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 

@@ -34,6 +34,7 @@
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "core/inspector/InstrumentingSessions.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -61,7 +62,7 @@ public:
     ~WorkerInspectorController();
     DECLARE_TRACE();
 
-    InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
+    InstrumentingSessions* instrumentingSessions() const { return m_instrumentingSessions.get(); }
 
     void connectFrontend();
     void disconnectFrontend();
@@ -79,7 +80,7 @@ private:
 
     WorkerThreadDebugger* m_debugger;
     Member<WorkerGlobalScope> m_workerGlobalScope;
-    Member<InstrumentingAgents> m_instrumentingAgents;
+    Member<InstrumentingSessions> m_instrumentingSessions;
     OwnPtr<V8InspectorSession> m_v8Session;
     Member<InspectorSession> m_session;
 };

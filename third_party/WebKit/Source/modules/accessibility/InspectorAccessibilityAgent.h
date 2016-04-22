@@ -11,15 +11,13 @@
 
 namespace blink {
 
+class InspectorDOMAgent;
 class Page;
 
 class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Frontend::Accessibility>, public protocol::Backend::Accessibility {
     WTF_MAKE_NONCOPYABLE(InspectorAccessibilityAgent);
 public:
-    static InspectorAccessibilityAgent* create(Page* page)
-    {
-        return new InspectorAccessibilityAgent(page);
-    }
+    InspectorAccessibilityAgent(Page*, InspectorDOMAgent*);
 
     // Base agent methods.
     DECLARE_VIRTUAL_TRACE();
@@ -28,9 +26,8 @@ public:
     void getAXNode(ErrorString*, int nodeId, Maybe<protocol::Accessibility::AXNode>* accessibilityNode) override;
 
 private:
-    explicit InspectorAccessibilityAgent(Page*);
-
     Member<Page> m_page;
+    Member<InspectorDOMAgent> m_domAgent;
 };
 
 } // namespace blink

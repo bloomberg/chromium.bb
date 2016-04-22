@@ -71,18 +71,21 @@ $methods
 template_impl = string.Template("""
 ${return_type} ${name}(${params})
 {
-    if (${condition}) {${impl_lines}
-    }${default_return}
+    InstrumentingSessions* sessions = ${sessions_getter};
+    if (!sessions || sessions->isEmpty())
+        ${default_return}
+    for (InspectorSession* session : *sessions) {${impl_lines}
+    }${maybe_default_return}
 }""")
 
 template_agent_call = string.Template("""
-        if (${agent_class}* agent = ${agent_fetch})
+        if (${agent_class}* agent = session->instrumentingAgents()->${agent_getter}())
             ${maybe_return}agent->${name}(${params_agent});""")
 
 template_instrumenting_agents_h = string.Template("""// Code generated from InspectorInstrumentation.idl
 
-#ifndef InstrumentingAgentsInl_h
-#define InstrumentingAgentsInl_h
+#ifndef InstrumentingAgents_h
+#define InstrumentingAgents_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -97,25 +100,19 @@ ${forward_list}
 class CORE_EXPORT InstrumentingAgents : public GarbageCollectedFinalized<InstrumentingAgents> {
     WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
 public:
-    static InstrumentingAgents* create()
-    {
-        return new InstrumentingAgents();
-    }
+    InstrumentingAgents();
     ~InstrumentingAgents() { }
     DECLARE_TRACE();
-    void reset();
 
 ${accessor_list}
 
 private:
-    InstrumentingAgents();
-
 ${member_list}
 };
 
 }
 
-#endif // !defined(InstrumentingAgentsInl_h)
+#endif // !defined(InstrumentingAgents_h)
 """)
 
 template_instrumenting_agent_accessor = string.Template("""
@@ -131,11 +128,6 @@ InstrumentingAgents::InstrumentingAgents()
 DEFINE_TRACE(InstrumentingAgents)
 {
     $trace_list
-}
-
-void InstrumentingAgents::reset()
-{
-    $reset_list
 }""")
 
 
@@ -252,19 +244,21 @@ class Method:
 
     def generate_cpp(self, cpp_lines):
         if self.accepts_cookie:
-            condition = "%s.isValid()" % self.params[0].name
+            sessions_getter = "%s.instrumentingSessions()" % self.params[0].name
         else:
-            condition = "InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(%s)" % self.params[0].name
+            sessions_getter = "instrumentingSessionsFor(%s)" % self.params[0].name
 
-        default_return = ""
+        default_return = "return;"
+        maybe_default_return = ""
         if self.returns_value:
-            default_return = "\n    return %s;" % self.default_return_value
+            default_return = "return %s;" % self.default_return_value
+            maybe_default_return = "\n    " + default_return
+        if self.returns_cookie:
+            default_return = "return InspectorInstrumentationCookie(sessions);"
+            maybe_default_return = "\n    " + default_return
 
         body_lines = map(self.generate_ref_ptr, self.params)
         body_lines += map(self.generate_agent_call, self.agents)
-
-        if self.returns_cookie:
-            body_lines.append("\n        return InspectorInstrumentationCookie(instrumentingAgents);")
 
         cpp_lines.append(template_impl.substitute(
             None,
@@ -272,29 +266,22 @@ class Method:
             return_type=self.return_type,
             params=", ".join(map(Parameter.to_str_class_and_name, self.params)),
             default_return=default_return,
+            maybe_default_return=maybe_default_return,
             impl_lines="".join(body_lines),
-            condition=condition))
+            sessions_getter=sessions_getter))
 
     def generate_agent_call(self, agent):
         agent_class, agent_getter = agent_getter_signature(agent)
-
-        if not self.accepts_cookie:
-            agent_fetch = "instrumentingAgents->%s()" % agent_getter
-        else:
-            agent_fetch = "%s.instrumentingAgents()->%s()" % (self.params[0].name, agent_getter)
-
-        template = template_agent_call
-
         if not self.returns_value or self.returns_cookie:
             maybe_return = ""
         else:
             maybe_return = "return "
 
-        return template.substitute(
+        return template_agent_call.substitute(
             None,
             name=self.name,
             agent_class=agent_class,
-            agent_fetch=agent_fetch,
+            agent_getter=agent_getter,
             maybe_return=maybe_return,
             params_agent=", ".join(map(Parameter.to_str_value, self.params_impl)))
 
@@ -393,7 +380,6 @@ def generate_instrumenting_agents(used_agents):
     member_list = []
     init_list = []
     trace_list = []
-    reset_list = []
 
     for agent in agents:
         class_name, getter_name = agent_getter_signature(agent)
@@ -408,14 +394,12 @@ def generate_instrumenting_agents(used_agents):
         member_list.append("    Member<%s> %s;" % (class_name, member_name))
         init_list.append("%s(nullptr)" % member_name)
         trace_list.append("visitor->trace(%s);" % member_name)
-        reset_list.append("%s = nullptr;" % member_name)
 
     forward_list.sort()
     accessor_list.sort()
     member_list.sort()
     init_list.sort()
     trace_list.sort()
-    reset_list.sort()
 
     header_lines = template_instrumenting_agents_h.substitute(
         None,
@@ -426,8 +410,7 @@ def generate_instrumenting_agents(used_agents):
     cpp_lines = template_instrumenting_agents_cpp.substitute(
         None,
         init_list="\n    , ".join(init_list),
-        trace_list="\n    ".join(trace_list),
-        reset_list="\n    ".join(reset_list))
+        trace_list="\n    ".join(trace_list))
 
     return header_lines, cpp_lines
 
@@ -449,13 +432,14 @@ def generate(input_path, output_dir):
 
     for agent in used_agents:
         cpp_includes.append(include_inspector_header(agent_class_name(agent)))
-    cpp_includes.append(include_header("InstrumentingAgentsInl"))
+    cpp_includes.append(include_header("InstrumentingAgents"))
     cpp_includes.append(include_header("core/CoreExport"))
+    cpp_includes.append(include_header("core/inspector/InspectorSession"))
     cpp_includes.sort()
 
     instrumenting_agents_header, instrumenting_agents_cpp = generate_instrumenting_agents(used_agents)
 
-    fout = open(output_dir + "/" + "InstrumentingAgentsInl.h", "w")
+    fout = open(output_dir + "/" + "InstrumentingAgents.h", "w")
     fout.write(instrumenting_agents_header)
     fout.close()
 

@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/Forward.h"
@@ -20,11 +22,6 @@ class InspectorAgent;
 class InstrumentingAgents;
 class LocalFrame;
 
-namespace protocol {
-class Dispatcher;
-class Frontend;
-}
-
 class CORE_EXPORT InspectorSession
     : public GarbageCollectedFinalized<InspectorSession>
     , WTF_NON_EXPORTED_BASE(public protocol::FrontendChannel) {
@@ -36,8 +33,9 @@ public:
         virtual ~Client() {}
     };
 
-    InspectorSession(Client*, int sessionId, InstrumentingAgents*, bool autoFlush);
+    InspectorSession(Client*, int sessionId, bool autoFlush);
     int sessionId() { return m_sessionId; }
+    InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
     void append(InspectorAgent*);
     void attach(const String* savedState);

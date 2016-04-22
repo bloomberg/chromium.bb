@@ -97,7 +97,6 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InstanceCounters.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"

@@ -32,7 +32,6 @@
 
 #include "core/dom/Document.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"

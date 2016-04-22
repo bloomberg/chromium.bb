@@ -100,7 +100,7 @@
       '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorOverridesInl.h',
-      '<(blink_core_output_dir)/InstrumentingAgentsInl.h',
+      '<(blink_core_output_dir)/InstrumentingAgents.h',
       '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
 
       # Additional .cpp files for SVG.

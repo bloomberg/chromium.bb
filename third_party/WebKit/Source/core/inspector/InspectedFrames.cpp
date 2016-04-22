@@ -26,7 +26,7 @@ InspectedFrames::Iterator InspectedFrames::end()
 
 bool InspectedFrames::contains(LocalFrame* frame) const
 {
-    return frame->instrumentingAgents() == m_root->instrumentingAgents();
+    return frame->instrumentingSessions() == m_root->instrumentingSessions();
 }
 
 LocalFrame* InspectedFrames::frameWithSecurityOrigin(const String& originRawString)
@@ -54,7 +54,7 @@ InspectedFrames::Iterator& InspectedFrames::Iterator::operator++()
         if (!frame->isLocalFrame())
             continue;
         LocalFrame* local = toLocalFrame(frame);
-        if (local->instrumentingAgents() == m_root->instrumentingAgents()) {
+        if (local->instrumentingSessions() == m_root->instrumentingSessions()) {
             m_current = local;
             break;
         }

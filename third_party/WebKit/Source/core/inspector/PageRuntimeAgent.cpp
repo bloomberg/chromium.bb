@@ -36,7 +36,6 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

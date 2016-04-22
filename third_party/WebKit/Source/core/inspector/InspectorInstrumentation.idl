@@ -355,4 +355,7 @@ interface InspectorOverrides {
 
     [Resource]
     bool shouldForceCORSPreflight(Document*);
+
+    [Resource]
+    bool shouldBlockRequest(LocalFrame*, const ResourceRequest&);
 }

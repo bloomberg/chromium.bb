@@ -358,9 +358,10 @@ PassOwnPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
 
 } // namespace
 
-InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page)
+InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page, InspectorDOMAgent* domAgent)
     : InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Frontend::Accessibility>("Accessibility")
     , m_page(page)
+    , m_domAgent(domAgent)
 {
 }
 
@@ -372,12 +373,11 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
         return;
     }
 
-    InspectorDOMAgent* domAgent = toLocalFrame(mainFrame)->instrumentingAgents()->inspectorDOMAgent();
-    if (!domAgent) {
+    if (!m_domAgent->enabled()) {
         *errorString = "DOM agent must be enabled";
         return;
     }
-    Node* node = domAgent->assertNode(errorString, nodeId);
+    Node* node = m_domAgent->assertNode(errorString, nodeId);
     if (!node)
         return;
 
@@ -403,6 +403,7 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
 DEFINE_TRACE(InspectorAccessibilityAgent)
 {
     visitor->trace(m_page);
+    visitor->trace(m_domAgent);
     InspectorBaseAgent::trace(visitor);
 }
 

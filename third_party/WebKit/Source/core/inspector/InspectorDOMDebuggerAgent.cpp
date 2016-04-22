@@ -38,7 +38,6 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8DebuggerAgent.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"

@@ -30,7 +30,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerAgent.h"

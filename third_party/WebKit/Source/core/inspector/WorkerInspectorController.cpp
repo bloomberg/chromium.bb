@@ -35,7 +35,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorTaskRunner.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerConsoleAgent.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerRuntimeAgent.h"
@@ -61,7 +60,7 @@ WorkerInspectorController* WorkerInspectorController::create(WorkerGlobalScope* 
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, WorkerThreadDebugger* debugger)
     : m_debugger(debugger)
     , m_workerGlobalScope(workerGlobalScope)
-    , m_instrumentingAgents(InstrumentingAgents::create())
+    , m_instrumentingSessions(new InstrumentingSessions())
 {
 }
 
@@ -75,7 +74,7 @@ void WorkerInspectorController::connectFrontend()
         return;
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
-    m_session = new InspectorSession(this, 0, m_instrumentingAgents.get(), true /* autoFlush */);
+    m_session = new InspectorSession(this, 0, true /* autoFlush */);
     m_v8Session = m_debugger->debugger()->connect(m_debugger->contextGroupId());
 
     m_session->append(WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope, this));
@@ -87,6 +86,7 @@ void WorkerInspectorController::connectFrontend()
     m_session->append(workerConsoleAgent);
     m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgent));
 
+    m_instrumentingSessions->add(m_session);
     m_session->attach(nullptr);
 }
 
@@ -95,6 +95,7 @@ void WorkerInspectorController::disconnectFrontend()
     if (!m_session)
         return;
     m_session->detach();
+    m_instrumentingSessions->remove(m_session);
     m_v8Session.clear();
     m_session.clear();
 }
@@ -124,7 +125,7 @@ void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, c
 DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_workerGlobalScope);
-    visitor->trace(m_instrumentingAgents);
+    visitor->trace(m_instrumentingSessions);
     visitor->trace(m_session);
 }
 

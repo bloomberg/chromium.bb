@@ -56,7 +56,6 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/MIMETypeRegistry.h"

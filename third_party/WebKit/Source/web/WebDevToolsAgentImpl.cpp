@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/InstrumentingAgents.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -55,7 +56,6 @@
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/LayoutEditor.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/PageConsoleAgent.h"
@@ -303,7 +303,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 #if DCHECK_IS_ON()
     , m_hasBeenDisposed(false)
 #endif
-    , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
+    , m_instrumentingSessions(m_webLocalFrameImpl->frame()->instrumentingSessions())
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
@@ -354,7 +354,7 @@ void WebDevToolsAgentImpl::webFrameWidgetImplClosed(WebFrameWidgetImpl* webFrame
 DEFINE_TRACE(WebDevToolsAgentImpl)
 {
     visitor->trace(m_webLocalFrameImpl);
-    visitor->trace(m_instrumentingAgents);
+    visitor->trace(m_instrumentingSessions);
     visitor->trace(m_resourceContentLoader);
     visitor->trace(m_overlay);
     visitor->trace(m_inspectedFrames);
@@ -377,7 +377,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
 
 void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId)
 {
-    m_session = new InspectorSession(this, sessionId, m_instrumentingAgents.get(), false /* autoFlush */);
+    m_session = new InspectorSession(this, sessionId, false /* autoFlush */);
 
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
@@ -450,7 +450,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
         Page* page = m_webLocalFrameImpl->viewImpl()->page();
         m_session->append(InspectorDatabaseAgent::create(page));
         m_session->append(DeviceOrientationInspectorAgent::create(page));
-        m_session->append(InspectorAccessibilityAgent::create(page));
+        m_session->append(new InspectorAccessibilityAgent(page, m_domAgent));
         m_session->append(InspectorDOMStorageAgent::create(page));
         m_session->append(InspectorCacheStorageAgent::create());
     }
@@ -459,7 +459,8 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent);
 
     Platform::current()->currentThread()->addTaskObserver(this);
-    InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
+    InspectorInstrumentation::registerInstrumentingSessions(m_instrumentingSessions.get());
+    m_instrumentingSessions->add(m_session);
 }
 
 void WebDevToolsAgentImpl::destroySession()
@@ -474,11 +475,12 @@ void WebDevToolsAgentImpl::destroySession()
     m_domAgent.clear();
 
     m_session->detach();
+    m_instrumentingSessions->remove(m_session);
     m_v8Session.clear();
     m_session.clear();
 
     Platform::current()->currentThread()->removeTaskObserver(this);
-    InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
+    InspectorInstrumentation::unregisterInstrumentingSessions(m_instrumentingSessions.get());
 }
 
 void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
@@ -652,16 +654,20 @@ void WebDevToolsAgentImpl::willProcessTask()
 {
     if (!attached())
         return;
-    if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
-        profilerAgent->willProcessTask();
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (InspectorProfilerAgent* profilerAgent = session->instrumentingAgents()->inspectorProfilerAgent())
+            profilerAgent->willProcessTask();
+    }
 }
 
 void WebDevToolsAgentImpl::didProcessTask()
 {
     if (!attached())
         return;
-    if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
-        profilerAgent->didProcessTask();
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (InspectorProfilerAgent* profilerAgent = session->instrumentingAgents()->inspectorProfilerAgent())
+            profilerAgent->didProcessTask();
+    }
     flushPendingProtocolNotifications();
 }
 

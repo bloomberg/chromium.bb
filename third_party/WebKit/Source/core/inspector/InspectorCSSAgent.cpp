@@ -64,7 +64,6 @@
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
