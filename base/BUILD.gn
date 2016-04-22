@@ -1268,7 +1268,14 @@ component("base") {
       "trace_event/malloc_dump_provider.cc",
       "trace_event/malloc_dump_provider.h",
     ]
-    libs = [ "bsm" ]
+    libs = [
+      "ApplicationServices.framework",
+      "AppKit.framework",
+      "bsm",
+      "CoreFoundation.framework",
+      "IOKit.framework",
+      "Security.framework",
+    ]
   }
 
   # Mac or iOS.
