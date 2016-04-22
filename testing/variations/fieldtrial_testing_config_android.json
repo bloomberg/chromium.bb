@@ -241,6 +241,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ReaderModeUI": [
+        {
+            "group_name": "AdaBoost"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "ReaderModeUIFeedback": [
         {
             "group_name": "Show"
