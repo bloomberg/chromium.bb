@@ -34,6 +34,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     virtual void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerReadyForInspection(
         ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {}
 
    protected:
@@ -85,8 +87,11 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   // debug-on-start is enabled in chrome://serviceworker-internals.
   bool WorkerCreated(int worker_process_id,
                      int worker_route_id,
-                     const ServiceWorkerIdentifier& service_worker_id);
+                     const ServiceWorkerIdentifier& service_worker_id,
+                     bool is_installed_version);
   void WorkerReadyForInspection(int worker_process_id, int worker_route_id);
+  void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
+  void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
   void WorkerStopIgnored(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);
   void RemoveInspectedWorkerData(WorkerId id);

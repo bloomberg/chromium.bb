@@ -41,6 +41,9 @@ using Response = DevToolsProtocolClient::Response;
 
 namespace {
 
+using ScopeAgentsMap =
+    std::map<GURL, std::unique_ptr<ServiceWorkerDevToolsAgentHost::List>>;
+
 void ResultNoOp(bool success) {
 }
 void StatusNoOp(ServiceWorkerStatusCode status) {
@@ -137,34 +140,75 @@ scoped_refptr<ServiceWorkerRegistration> CreateRegistrationDictionaryValue(
   return registration;
 }
 
-scoped_refptr<ServiceWorkerDevToolsAgentHost> GetMatchingServiceWorker(
+void GetMatchingHostsByScopeMap(
     const ServiceWorkerDevToolsAgentHost::List& agent_hosts,
-    const GURL& url) {
-  scoped_refptr<ServiceWorkerDevToolsAgentHost> best_host;
-  bool best_host_scope_matched = false;
-  int best_host_scope_length = 0;
-
-  for (auto host : agent_hosts) {
-    if (host->GetURL().host_piece() != url.host_piece())
+    const std::set<GURL>& urls,
+    ScopeAgentsMap* scope_agents_map) {
+  std::set<base::StringPiece> host_name_set;
+  for (const GURL& url : urls)
+    host_name_set.insert(url.host_piece());
+  for (const auto& host : agent_hosts) {
+    if (host_name_set.find(host->scope().host_piece()) == host_name_set.end())
       continue;
-    const bool scope_matched =
-        ServiceWorkerUtils::ScopeMatches(host->scope(), url);
-    const int scope_length = host->scope().spec().length();
-    bool replace = false;
-    if (!best_host)
-      replace = true;
-    else if (best_host_scope_matched)
-      replace = scope_matched && scope_length >= best_host_scope_length;
-    else
-      replace = scope_matched || scope_length >= best_host_scope_length;
-
-    if (replace) {
-      best_host = host;
-      best_host_scope_matched = scope_matched;
-      best_host_scope_length = scope_length;
+    const auto& it = scope_agents_map->find(host->scope());
+    if (it == scope_agents_map->end()) {
+      std::unique_ptr<ServiceWorkerDevToolsAgentHost::List> new_list(
+          new ServiceWorkerDevToolsAgentHost::List());
+      new_list->push_back(host);
+      (*scope_agents_map)[host->scope()] = std::move(new_list);
+    } else {
+      it->second->push_back(host);
     }
   }
-  return best_host;
+}
+
+GURL GetBestMatchingScope(const ScopeAgentsMap& scope_agents_map,
+                          const GURL& url) {
+  GURL best_scope;
+  bool best_scope_matched = false;
+  int best_scope_length = 0;
+
+  for (const auto& it : scope_agents_map) {
+    if (it.first.host_piece() != url.host_piece())
+      continue;
+    const bool scope_matched = ServiceWorkerUtils::ScopeMatches(it.first, url);
+    const int scope_length = it.first.spec().length();
+    bool replace = false;
+    if (!best_scope.is_empty())
+      replace = true;
+    else if (best_scope_matched)
+      replace = scope_matched && scope_length >= best_scope_length;
+    else
+      replace = scope_matched || scope_length >= best_scope_length;
+
+    if (replace) {
+      best_scope = it.first;
+      best_scope_matched = scope_matched;
+      best_scope_length = scope_length;
+    }
+  }
+  return best_scope;
+}
+
+void AddEligibleHosts(const ServiceWorkerDevToolsAgentHost::List& list,
+                      ServiceWorkerDevToolsAgentHost::Map* result) {
+  base::Time last_installed_time;
+  base::Time last_doomed_time;
+  for (const auto& host : list) {
+    if (host->version_installed_time() > last_installed_time)
+      last_installed_time = host->version_installed_time();
+    if (host->version_doomed_time() > last_doomed_time)
+      last_doomed_time = host->version_doomed_time();
+  }
+  for (const auto& host : list) {
+    // We don't attech old redundant Service Workers when there is newer
+    // installed Service Worker.
+    if (host->version_doomed_time().is_null() ||
+        (last_installed_time < last_doomed_time &&
+         last_doomed_time == host->version_doomed_time())) {
+      (*result)[host->GetId()] = host;
+    }
+  }
 }
 
 ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
@@ -173,14 +217,22 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
   ServiceWorkerDevToolsAgentHost::Map result;
   if (!browser_context)
     return result;
+
   ServiceWorkerDevToolsAgentHost::List agent_hosts;
   ServiceWorkerDevToolsManager::GetInstance()
       ->AddAllAgentHostsForBrowserContext(browser_context, &agent_hosts);
-  for (const GURL& url : urls) {
-    scoped_refptr<ServiceWorkerDevToolsAgentHost> host =
-        GetMatchingServiceWorker(agent_hosts, url);
-    if (host)
-      result[host->GetId()] = host;
+
+  ScopeAgentsMap scope_agents_map;
+  GetMatchingHostsByScopeMap(agent_hosts, urls, &scope_agents_map);
+
+  std::set<GURL> matching_scopes;
+  for (const GURL& url : urls)
+    matching_scopes.insert(GetBestMatchingScope(scope_agents_map, url));
+
+  for (const auto& it : scope_agents_map) {
+    if (matching_scopes.find(it.first) == matching_scopes.end())
+      continue;
+    AddEligibleHosts(*it.second.get(), &result);
   }
   return result;
 }
@@ -556,6 +608,15 @@ void ServiceWorkerHandler::WorkerReadyForInspection(
     // be opend in ServiceWorkerDevToolsManager::WorkerReadyForInspection.
     return;
   }
+  UpdateHosts();
+}
+
+void ServiceWorkerHandler::WorkerVersionInstalled(
+    ServiceWorkerDevToolsAgentHost* host) {
+  UpdateHosts();
+}
+void ServiceWorkerHandler::WorkerVersionDoomed(
+    ServiceWorkerDevToolsAgentHost* host) {
   UpdateHosts();
 }
 

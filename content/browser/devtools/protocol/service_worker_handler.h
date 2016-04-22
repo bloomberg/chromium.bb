@@ -68,6 +68,8 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   // WorkerDevToolsManager::Observer implementation.
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerReadyForInspection(ServiceWorkerDevToolsAgentHost* host) override;
+  void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) override;
+  void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
  private:

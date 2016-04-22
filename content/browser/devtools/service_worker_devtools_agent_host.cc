@@ -54,10 +54,13 @@ void SetDevToolsAttachedOnIO(
 
 ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     WorkerId worker_id,
-    const ServiceWorkerIdentifier& service_worker)
+    const ServiceWorkerIdentifier& service_worker,
+    bool is_installed_version)
     : WorkerDevToolsAgentHost(worker_id),
       service_worker_(new ServiceWorkerIdentifier(service_worker)),
-      network_handler_(new devtools::network::NetworkHandler()) {
+      network_handler_(new devtools::network::NetworkHandler()),
+      version_installed_time_(is_installed_version ? base::Time::Now()
+                                                   : base::Time()) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler()->dispatcher();
   dispatcher->SetNetworkHandler(network_handler_.get());
 }
@@ -103,6 +106,14 @@ void ServiceWorkerDevToolsAgentHost::OnAttachedStateChanged(bool attached) {
                   service_worker_->context_weak(),
                   service_worker_->version_id(),
                   attached));
+}
+
+void ServiceWorkerDevToolsAgentHost::WorkerVersionInstalled() {
+  version_installed_time_ = base::Time::Now();
+}
+
+void ServiceWorkerDevToolsAgentHost::WorkerVersionDoomed() {
+  version_doomed_time_ = base::Time::Now();
 }
 
 int64_t ServiceWorkerDevToolsAgentHost::service_worker_version_id() const {

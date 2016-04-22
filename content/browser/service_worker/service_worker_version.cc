@@ -348,6 +348,11 @@ void ServiceWorkerVersion::SetStatus(Status status) {
     callback.Run();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnVersionStateChanged(this));
+
+  if (status == INSTALLED)
+    embedded_worker_->OnWorkerVersionInstalled();
+  else if (status == REDUNDANT)
+    embedded_worker_->OnWorkerVersionDoomed();
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(

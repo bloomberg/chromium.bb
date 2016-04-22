@@ -170,6 +170,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnScriptReadStarted();
   void OnScriptReadFinished();
 
+  // Called when the worker is installed.
+  void OnWorkerVersionInstalled();
+
+  // Called when the worker is doomed.
+  void OnWorkerVersionDoomed();
+
   // Called when the net::URLRequestJob to load the service worker script
   // created. Not called for import scripts.
   void OnURLJobCreatedForMainScript();

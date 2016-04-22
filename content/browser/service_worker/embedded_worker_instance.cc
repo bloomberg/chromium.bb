@@ -56,6 +56,19 @@ void NotifyWorkerStopIgnoredOnUI(int worker_process_id, int worker_route_id) {
       worker_process_id, worker_route_id);
 }
 
+void NotifyWorkerVersionInstalledOnUI(int worker_process_id,
+                                      int worker_route_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ServiceWorkerDevToolsManager::GetInstance()->WorkerVersionInstalled(
+      worker_process_id, worker_route_id);
+}
+
+void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ServiceWorkerDevToolsManager::GetInstance()->WorkerVersionDoomed(
+      worker_process_id, worker_route_id);
+}
+
 void RegisterToWorkerDevToolsManagerOnUI(
     int process_id,
     const ServiceWorkerContextCore* service_worker_context,
@@ -63,6 +76,7 @@ void RegisterToWorkerDevToolsManagerOnUI(
     int64_t service_worker_version_id,
     const GURL& url,
     const GURL& scope,
+    bool is_installed,
     const base::Callback<void(int worker_devtools_agent_route_id,
                               bool wait_for_debugger)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -76,7 +90,8 @@ void RegisterToWorkerDevToolsManagerOnUI(
             process_id, worker_devtools_agent_route_id,
             ServiceWorkerDevToolsManager::ServiceWorkerIdentifier(
                 service_worker_context, service_worker_context_weak,
-                service_worker_version_id, url, scope));
+                service_worker_version_id, url, scope),
+            is_installed);
   }
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -130,6 +145,20 @@ class EmbeddedWorkerInstance::DevToolsProxy : public base::NonThreadSafe {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(NotifyWorkerStopIgnoredOnUI,
+                                       process_id_, agent_route_id_));
+  }
+
+  void NotifyWorkerVersionInstalled() {
+    DCHECK(CalledOnValidThread());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(NotifyWorkerVersionInstalledOnUI,
+                                       process_id_, agent_route_id_));
+  }
+
+  void NotifyWorkerVersionDoomed() {
+    DCHECK(CalledOnValidThread());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(NotifyWorkerVersionDoomedOnUI,
                                        process_id_, agent_route_id_));
   }
 
@@ -316,7 +345,7 @@ class EmbeddedWorkerInstance::StartTask {
         BrowserThread::UI, FROM_HERE,
         base::Bind(RegisterToWorkerDevToolsManagerOnUI, process_id,
                    instance_->context_.get(), instance_->context_,
-                   service_worker_version_id, script_url, scope,
+                   service_worker_version_id, script_url, scope, is_installed_,
                    base::Bind(&StartTask::OnRegisteredToDevToolsManager,
                               weak_factory_.GetWeakPtr(), base::Passed(&params),
                               is_new_process)));
@@ -576,6 +605,16 @@ void EmbeddedWorkerInstance::OnURLJobCreatedForMainScript() {
       ServiceWorkerMetrics::RecordTimeToURLJob(
           duration, inflight_start_task_->start_situation());
   }
+}
+
+void EmbeddedWorkerInstance::OnWorkerVersionInstalled() {
+  if (devtools_proxy_)
+    devtools_proxy_->NotifyWorkerVersionInstalled();
+}
+
+void EmbeddedWorkerInstance::OnWorkerVersionDoomed() {
+  if (devtools_proxy_)
+    devtools_proxy_->NotifyWorkerVersionDoomed();
 }
 
 void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
