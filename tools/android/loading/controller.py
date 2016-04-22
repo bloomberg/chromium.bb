@@ -10,7 +10,6 @@ desktop-specific versions.
 """
 
 import contextlib
-import datetime
 import logging
 import os
 import shutil
@@ -175,8 +174,6 @@ class ChromeControllerBase(object):
     if self._emulated_network:
       emulation.SetUpNetworkEmulation(connection, **self._emulated_network)
       self._metadata.update(self._emulated_network)
-    self._metadata.update(date=datetime.datetime.utcnow().isoformat(),
-                          seconds_since_epoch=time.time())
 
   def _GetChromeArguments(self):
     """Get command-line arguments for the chrome execution."""

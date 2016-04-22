@@ -4,7 +4,9 @@
 
 """Represents the trace of a page load."""
 
+import datetime
 import json
+import time
 
 import devtools_monitor
 import page_track
@@ -94,8 +96,13 @@ class LoadingTrace(object):
     trace = tracing.TracingTrack(
         connection,
         additional_categories=additional_categories)
+    start_date_str = datetime.datetime.utcnow().isoformat()
+    seconds_since_epoch=time.time()
     connection.MonitorUrl(url, timeout_seconds=timeout_seconds)
-    return cls(url, chrome_metadata, page, request, trace)
+    trace = cls(url, chrome_metadata, page, request, trace)
+    trace.metadata.update(date=start_date_str,
+                          seconds_since_epoch=seconds_since_epoch)
+    return trace
 
   @property
   def tracing_track(self):
