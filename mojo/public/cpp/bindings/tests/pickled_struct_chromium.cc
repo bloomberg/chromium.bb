@@ -17,6 +17,11 @@ PickledStructChromium::PickledStructChromium(int foo, int bar)
 
 PickledStructChromium::~PickledStructChromium() {}
 
+bool operator==(const PickledStructChromium& a,
+                const PickledStructChromium& b) {
+  return a.foo() == b.foo() && a.bar() == b.bar() && a.baz() == b.baz();
+}
+
 }  // namespace test
 }  // namespace mojo
 

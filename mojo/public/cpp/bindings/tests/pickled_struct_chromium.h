@@ -50,6 +50,9 @@ class PickledStructChromium {
   DISALLOW_COPY_AND_ASSIGN(PickledStructChromium);
 };
 
+bool operator==(const PickledStructChromium& a,
+                const PickledStructChromium& b);
+
 }  // namespace test
 }  // namespace mojo
 

@@ -295,6 +295,8 @@ TEST_F(PickleTest, PickleContainer) {
   pickle_container->pickle.set_foo(42);
   pickle_container->pickle.set_bar(43);
   pickle_container->pickle.set_baz(44);
+  EXPECT_TRUE(pickle_container.Equals(pickle_container));
+  EXPECT_FALSE(pickle_container.Equals(PickleContainer::New()));
   {
     base::RunLoop run_loop;
     proxy->PassPickleContainer(std::move(pickle_container),

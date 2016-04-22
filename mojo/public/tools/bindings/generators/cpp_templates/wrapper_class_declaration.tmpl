@@ -39,7 +39,19 @@ class {{struct.name}} {
 {%  if struct|is_cloneable_kind %}
   {{struct.name}}Ptr Clone() const;
 {%- endif %}
-  bool Equals(const {{struct.name}}& other) const;
+  // Equals() is a template so it is only instantiated if it is used. Thus, the
+  // bindings generator does not need to know whether typemapped native types
+  // support operator==.
+  template <typename T,
+            typename std::enable_if<std::is_same<
+                T, {{struct.name}}>::value>::type* = nullptr>
+  bool Equals(const T& other) const {
+  {%-  for field in struct.fields %}
+    if (!mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(this->{{field.name}}, other.{{field.name}}))
+      return false;
+  {%-  endfor %}
+    return true;
+  }
 
 {#--- Struct members #}
 {%  for field in struct.fields %}

@@ -144,15 +144,6 @@ def IsNativeOnlyKind(kind):
 def GetNativeTypeName(typemapped_kind):
   return _current_typemap[GetFullMojomNameForKind(typemapped_kind)]["typename"]
 
-def DoesKindSupportEquality(kind):
-  if IsTypemappedKind(kind):
-    return False
-  if mojom.IsArrayKind(kind):
-    return DoesKindSupportEquality(kind.kind)
-  if mojom.IsMapKind(kind):
-    return DoesKindSupportEquality(kind.value_kind)
-  return True
-
 def GetCppType(kind):
   if mojom.IsArrayKind(kind):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
@@ -521,7 +512,6 @@ class Generator(generator.Generator):
     "passes_associated_kinds": mojom.PassesAssociatedKinds,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "stylize_method": generator.StudlyCapsToCamel,
-    "supports_equality": DoesKindSupportEquality,
     "under_to_camel": generator.UnderToCamel,
   }
 
