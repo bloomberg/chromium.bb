@@ -89,7 +89,11 @@ public:
         return m_webMediaPlayer.get();
     }
 
-    virtual bool hasVideo() const { return false; }
+    // Returns true if the loaded media has a video track.
+    // Note that even an audio element can have video track in cases such as
+    // <audio src="video.webm">, in which case this function will return true.
+    bool hasVideo() const;
+    // Returns true if loaded media has an audio track.
     bool hasAudio() const;
 
     bool supportsSave() const;

@@ -106,7 +106,6 @@ private:
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    bool hasVideo() const override { return webMediaPlayer() && webMediaPlayer()->hasVideo(); }
     bool isURLAttribute(const Attribute&) const override;
     const AtomicString imageSourceURL() const override;
 

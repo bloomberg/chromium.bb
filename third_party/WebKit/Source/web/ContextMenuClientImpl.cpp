@@ -224,7 +224,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         // controls for audio then the player disappears, and there is no way to
         // return it back. Don't set this bit for fullscreen video, since
         // toggling is ignored in that case.
-        if (mediaElement->hasVideo() && !mediaElement->isFullscreen())
+        if (mediaElement->isHTMLVideoElement() && mediaElement->hasVideo() && !mediaElement->isFullscreen())
             data.mediaFlags |= WebContextMenuData::MediaCanToggleControls;
         if (mediaElement->shouldShowControls())
             data.mediaFlags |= WebContextMenuData::MediaControls;

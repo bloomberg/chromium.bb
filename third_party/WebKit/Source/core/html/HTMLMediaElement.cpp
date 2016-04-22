@@ -1757,6 +1757,11 @@ HTMLMediaElement::ReadyState HTMLMediaElement::getReadyState() const
     return m_readyState;
 }
 
+bool HTMLMediaElement::hasVideo() const
+{
+    return webMediaPlayer() && webMediaPlayer()->hasVideo();
+}
+
 bool HTMLMediaElement::hasAudio() const
 {
     return webMediaPlayer() && webMediaPlayer()->hasAudio();
@@ -3630,7 +3635,7 @@ void HTMLMediaElement::createPlaceholderTracksIfNecessary()
         addAudioTrack("audio", WebMediaPlayerClient::AudioTrackKindMain, "Audio Track", "", true);
 
     // Create a placeholder video track if the player says it has video but it didn't explicitly announce the tracks.
-    if (webMediaPlayer() && webMediaPlayer()->hasVideo() && !videoTracks().length())
+    if (hasVideo() && !videoTracks().length())
         addVideoTrack("video", WebMediaPlayerClient::VideoTrackKindMain, "Video Track", "", true);
 }
 

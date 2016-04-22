@@ -52,6 +52,9 @@ static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement)
     if (mediaElement.isFullscreen())
         return true;
 
+    if (!mediaElement.isHTMLVideoElement())
+        return false;
+
     if (!mediaElement.hasVideo())
         return false;
 
@@ -315,7 +318,7 @@ void MediaControls::makeTransparent()
 bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const
 {
     // Never hide for a media element without visual representation.
-    if (!mediaElement().hasVideo() || mediaElement().isPlayingRemotely())
+    if (!mediaElement().isHTMLVideoElement() || !mediaElement().hasVideo() || mediaElement().isPlayingRemotely())
         return false;
     // Don't hide if the mouse is over the controls.
     const bool ignoreControlsHover = behaviorFlags & IgnoreControlsHover;
