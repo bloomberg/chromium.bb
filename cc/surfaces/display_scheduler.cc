@@ -55,7 +55,7 @@ void DisplayScheduler::ForceImmediateSwapIfPossible() {
   bool in_begin = inside_begin_frame_deadline_interval_;
   AttemptDrawAndSwap();
   if (in_begin)
-    begin_frame_source_->DidFinishFrame(0);
+    begin_frame_source_->DidFinishFrame(this, 0);
 }
 
 void DisplayScheduler::DisplayResized() {
@@ -289,7 +289,7 @@ void DisplayScheduler::OnBeginFrameDeadline() {
   TRACE_EVENT0("cc", "DisplayScheduler::OnBeginFrameDeadline");
 
   AttemptDrawAndSwap();
-  begin_frame_source_->DidFinishFrame(0);
+  begin_frame_source_->DidFinishFrame(this, 0);
 }
 
 void DisplayScheduler::DidSwapBuffers() {

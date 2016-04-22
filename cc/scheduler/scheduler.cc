@@ -375,7 +375,7 @@ void Scheduler::BeginRetroFrame() {
         "BeginFrameArgs", begin_retro_frame_args_.front().AsValue());
     begin_retro_frame_args_.pop_front();
     if (begin_frame_source_)
-      begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+      begin_frame_source_->DidFinishFrame(this, begin_retro_frame_args_.size());
   }
 
   if (begin_retro_frame_args_.empty()) {
@@ -469,7 +469,7 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
                          TRACE_EVENT_SCOPE_THREAD);
     if (begin_frame_source_)
-      begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+      begin_frame_source_->DidFinishFrame(this, begin_retro_frame_args_.size());
     return;
   }
 
@@ -498,7 +498,7 @@ void Scheduler::FinishImplFrame() {
 
   client_->DidFinishImplFrame();
   if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+    begin_frame_source_->DidFinishFrame(this, begin_retro_frame_args_.size());
   begin_impl_frame_tracker_.Finish();
 }
 

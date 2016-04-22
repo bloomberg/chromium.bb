@@ -119,7 +119,8 @@ class CC_EXPORT BeginFrameSource {
   // processing (rather than toggling SetNeedsBeginFrames every frame). It is
   // used by systems like the BackToBackFrameSource to make sure only one frame
   // is pending at a time.
-  virtual void DidFinishFrame(size_t remaining_frames) = 0;
+  virtual void DidFinishFrame(BeginFrameObserver* obs,
+                              size_t remaining_frames) = 0;
 
   // Add/Remove an observer from the source. When no observers are added the BFS
   // should shut down its timers, disable vsync, etc.
@@ -143,7 +144,8 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
   ~BeginFrameSourceBase() override;
 
   // BeginFrameSource
-  void DidFinishFrame(size_t remaining_frames) override {}
+  void DidFinishFrame(BeginFrameObserver* obs,
+                      size_t remaining_frames) override {}
   void AddObserver(BeginFrameObserver* obs) override;
   void RemoveObserver(BeginFrameObserver* obs) override;
 
@@ -183,11 +185,10 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
   ~BackToBackBeginFrameSource() override;
 
   // BeginFrameSource
-  void DidFinishFrame(size_t remaining_frames) override;
-
-  // BeginFrameSourceBase
   void AddObserver(BeginFrameObserver* obs) override;
-  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
+  void RemoveObserver(BeginFrameObserver* obs) override;
+  void DidFinishFrame(BeginFrameObserver* obs,
+                      size_t remaining_frames) override;
 
   // Tracing
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
@@ -197,9 +198,10 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
 
   base::SingleThreadTaskRunner* task_runner_;
   base::CancelableClosure begin_frame_task_;
+  std::set<BeginFrameObserver*> pending_begin_frame_observers_;
 
-  void PostBeginFrame();
-  void BeginFrame();
+  void PostPendingBeginFramesTask();
+  void SendPendingBeginFrames();
 
  private:
   base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;

@@ -258,7 +258,7 @@ TEST_F(BackToBackBeginFrameSourceTest, AddObserverSendsBeginFrame) {
 
   EXPECT_BEGIN_FRAME_USED(*obs_, 1100, 1100 + kDeadline, kInterval);
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
   task_runner_->RunPendingTasks();
 }
 
@@ -270,7 +270,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
   task_runner_->RunPendingTasks();
 
   source_->RemoveObserver(obs_.get());
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
 
   EXPECT_FALSE(task_runner_->HasPendingTasks());
 }
@@ -283,7 +283,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
   task_runner_->RunPendingTasks();
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
   source_->RemoveObserver(obs_.get());
 
   EXPECT_TRUE(task_runner_->HasPendingTasks());
@@ -305,7 +305,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
   source_->AddObserver(obs_.get());
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10));
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10));
   EXPECT_BEGIN_FRAME_USED(*obs_, 1130, 1130 + kDeadline, kInterval);
@@ -321,7 +321,7 @@ TEST_F(BackToBackBeginFrameSourceTest,
   task_runner_->RunPendingTasks();
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(10));
   source_->RemoveObserver(obs_.get());
@@ -340,7 +340,7 @@ TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameNoObserver) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
   source_->AddObserver(obs_.get());
   source_->RemoveObserver(obs_.get());
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
   EXPECT_FALSE(task_runner_->RunPendingTasks());
 }
 
@@ -352,15 +352,15 @@ TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameRemainingFrames) {
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
 
-  source_->DidFinishFrame(3);
+  source_->DidFinishFrame(obs_.get(), 3);
   EXPECT_FALSE(task_runner_->HasPendingTasks());
-  source_->DidFinishFrame(2);
+  source_->DidFinishFrame(obs_.get(), 2);
   EXPECT_FALSE(task_runner_->HasPendingTasks());
-  source_->DidFinishFrame(1);
+  source_->DidFinishFrame(obs_.get(), 1);
   EXPECT_FALSE(task_runner_->HasPendingTasks());
 
   EXPECT_BEGIN_FRAME_USED(*obs_, 1100, 1100 + kDeadline, kInterval);
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
   EXPECT_EQ(base::TimeDelta(), task_runner_->DelayToNextTaskTime());
   task_runner_->RunPendingTasks();
 }
@@ -372,16 +372,16 @@ TEST_F(BackToBackBeginFrameSourceTest, DidFinishFrameMultipleCallsIdempotent) {
   task_runner_->RunPendingTasks();
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-  source_->DidFinishFrame(0);
-  source_->DidFinishFrame(0);
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
+  source_->DidFinishFrame(obs_.get(), 0);
+  source_->DidFinishFrame(obs_.get(), 0);
   EXPECT_BEGIN_FRAME_USED(*obs_, 1100, 1100 + kDeadline, kInterval);
   task_runner_->RunPendingTasks();
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-  source_->DidFinishFrame(0);
-  source_->DidFinishFrame(0);
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
+  source_->DidFinishFrame(obs_.get(), 0);
+  source_->DidFinishFrame(obs_.get(), 0);
   EXPECT_BEGIN_FRAME_USED(*obs_, 1200, 1200 + kDeadline, kInterval);
   task_runner_->RunPendingTasks();
 }
@@ -393,12 +393,71 @@ TEST_F(BackToBackBeginFrameSourceTest, DelayInPostedTaskProducesCorrectFrame) {
   task_runner_->RunPendingTasks();
 
   now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
-  source_->DidFinishFrame(0);
+  source_->DidFinishFrame(obs_.get(), 0);
   now_src_->Advance(base::TimeDelta::FromMicroseconds(50));
   EXPECT_BEGIN_FRAME_USED(*obs_, 1150, 1150 + kDeadline, kInterval);
 
   EXPECT_TRUE(task_runner_->HasPendingTasks());
   task_runner_->RunPendingTasks();
+}
+
+TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversSynchronized) {
+  StrictMock<MockBeginFrameObserver> obs1, obs2;
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs1, false);
+  source_->AddObserver(&obs1);
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs2, false);
+  source_->AddObserver(&obs2);
+
+  EXPECT_BEGIN_FRAME_USED(obs1, 1000, 1000 + kDeadline, kInterval);
+  EXPECT_BEGIN_FRAME_USED(obs2, 1000, 1000 + kDeadline, kInterval);
+  task_runner_->RunPendingTasks();
+
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
+  source_->DidFinishFrame(&obs1, 0);
+  source_->DidFinishFrame(&obs2, 0);
+  EXPECT_BEGIN_FRAME_USED(obs1, 1100, 1100 + kDeadline, kInterval);
+  EXPECT_BEGIN_FRAME_USED(obs2, 1100, 1100 + kDeadline, kInterval);
+  task_runner_->RunPendingTasks();
+
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
+  source_->DidFinishFrame(&obs1, 0);
+  source_->DidFinishFrame(&obs2, 0);
+  EXPECT_TRUE(task_runner_->HasPendingTasks());
+  source_->RemoveObserver(&obs1);
+  source_->RemoveObserver(&obs2);
+  task_runner_->RunPendingTasks();
+}
+
+TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversInterleaved) {
+  StrictMock<MockBeginFrameObserver> obs1, obs2;
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs1, false);
+  source_->AddObserver(&obs1);
+  EXPECT_BEGIN_FRAME_USED(obs1, 1000, 1000 + kDeadline, kInterval);
+  task_runner_->RunPendingTasks();
+
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs2, false);
+  source_->AddObserver(&obs2);
+  EXPECT_BEGIN_FRAME_USED(obs2, 1100, 1100 + kDeadline, kInterval);
+  task_runner_->RunPendingTasks();
+
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
+  source_->DidFinishFrame(&obs1, 0);
+  EXPECT_BEGIN_FRAME_USED(obs1, 1200, 1200 + kDeadline, kInterval);
+  task_runner_->RunPendingTasks();
+
+  source_->DidFinishFrame(&obs1, 0);
+  source_->RemoveObserver(&obs1);
+
+  now_src_->Advance(base::TimeDelta::FromMicroseconds(100));
+  source_->DidFinishFrame(&obs2, 0);
+  EXPECT_BEGIN_FRAME_USED(obs2, 1300, 1300 + kDeadline, kInterval);
+  task_runner_->RunPendingTasks();
+
+  source_->DidFinishFrame(&obs2, 0);
+  source_->RemoveObserver(&obs2);
 }
 
 // SyntheticBeginFrameSource testing ------------------------------------------

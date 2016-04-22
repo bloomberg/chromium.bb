@@ -3040,12 +3040,9 @@ TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottledBeforeDeadline) {
   client_->Reset();
 
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
-  client_->Reset();
-
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
   // Unthrottled frame source will immediately begin a new frame.
-  task_runner().RunPendingTasks();  // Run BeginFrame.
-  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 2);
   scheduler_->SetNeedsRedraw();
   client_->Reset();
 

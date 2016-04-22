@@ -44,7 +44,7 @@ class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
   }
 
   // SurfaceFactoryClient implementation.
-  void ReturnResources(const ReturnedResourceArray& resources) override{};
+  void ReturnResources(const ReturnedResourceArray& resources) override {}
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
     DCHECK(!source_ || !begin_frame_source);
     source_ = begin_frame_source;
@@ -58,10 +58,11 @@ class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
 
 class EmptyBeginFrameSource : public BeginFrameSource {
  public:
-  void DidFinishFrame(size_t remaining_frames) override{};
-  void AddObserver(BeginFrameObserver* obs) override{};
-  void RemoveObserver(BeginFrameObserver* obs) override{};
-  void AsValueInto(base::trace_event::TracedValue* dict) const override{};
+  void DidFinishFrame(BeginFrameObserver* obs,
+                      size_t remaining_frames) override {}
+  void AddObserver(BeginFrameObserver* obs) override {}
+  void RemoveObserver(BeginFrameObserver* obs) override {}
+  void AsValueInto(base::trace_event::TracedValue* dict) const override {}
 };
 
 class SurfaceManagerTest : public testing::Test {

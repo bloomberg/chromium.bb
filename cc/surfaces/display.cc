@@ -32,7 +32,8 @@ namespace {
 
 class EmptyBeginFrameSource : public cc::BeginFrameSource {
  public:
-  void DidFinishFrame(size_t remaining_frames) override{};
+  void DidFinishFrame(cc::BeginFrameObserver* obs,
+                      size_t remaining_frames) override{};
   void AddObserver(cc::BeginFrameObserver* obs) override{};
   void RemoveObserver(cc::BeginFrameObserver* obs) override{};
   void AsValueInto(base::trace_event::TracedValue* dict) const override{};

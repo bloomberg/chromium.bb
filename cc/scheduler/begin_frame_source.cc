@@ -90,8 +90,8 @@ void BeginFrameSourceBase::CallOnBeginFrame(const BeginFrameArgs& args) {
   DEBUG_FRAMES("BeginFrameSourceBase::CallOnBeginFrame", "num observers",
                observers_.size(), "args", args.AsValue());
   std::set<BeginFrameObserver*> observers(observers_);
-  for (auto& it : observers)
-    it->OnBeginFrame(args);
+  for (BeginFrameObserver* obs : observers)
+    obs->OnBeginFrame(args);
 }
 
 void BeginFrameSourceBase::SetBeginFrameSourcePaused(bool paused) {
@@ -99,8 +99,8 @@ void BeginFrameSourceBase::SetBeginFrameSourcePaused(bool paused) {
     return;
   paused_ = paused;
   std::set<BeginFrameObserver*> observers(observers_);
-  for (auto& it : observers)
-    it->OnBeginFrameSourcePausedChanged(paused_);
+  for (BeginFrameObserver* obs : observers)
+    obs->OnBeginFrameSourcePausedChanged(paused_);
 }
 
 // Tracing support
@@ -117,9 +117,9 @@ void BeginFrameSourceBase::AsValueInto(
     base::AutoReset<bool> prevent_loops(
         const_cast<bool*>(&inside_as_value_into_), true);
     dict->BeginArray("observers");
-    for (const auto& it : observers_) {
+    for (const BeginFrameObserver* obs : observers_) {
       dict->BeginDictionary();
-      it->AsValueInto(dict);
+      obs->AsValueInto(dict);
       dict->EndDictionary();
     }
     dict->EndArray();
@@ -142,42 +142,52 @@ base::TimeTicks BackToBackBeginFrameSource::Now() {
 
 // BeginFrameSourceBase support
 void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
-  DCHECK(observers_.empty())
-      << "BackToBackBeginFrameSource only supports a single observer";
   BeginFrameSourceBase::AddObserver(obs);
+  pending_begin_frame_observers_.insert(obs);
+  PostPendingBeginFramesTask();
 }
 
-void BackToBackBeginFrameSource::OnNeedsBeginFramesChanged(
-    bool needs_begin_frames) {
-  if (needs_begin_frames) {
-    PostBeginFrame();
-  } else {
+void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
+  BeginFrameSourceBase::RemoveObserver(obs);
+  pending_begin_frame_observers_.erase(obs);
+  if (pending_begin_frame_observers_.empty())
     begin_frame_task_.Cancel();
+}
+
+void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
+                                                size_t remaining_frames) {
+  BeginFrameSourceBase::DidFinishFrame(obs, remaining_frames);
+  if (remaining_frames == 0 && observers_.find(obs) != observers_.end()) {
+    pending_begin_frame_observers_.insert(obs);
+    PostPendingBeginFramesTask();
   }
 }
 
-void BackToBackBeginFrameSource::PostBeginFrame() {
+void BackToBackBeginFrameSource::PostPendingBeginFramesTask() {
   DCHECK(needs_begin_frames());
-  begin_frame_task_.Reset(base::Bind(&BackToBackBeginFrameSource::BeginFrame,
-                                     weak_factory_.GetWeakPtr()));
-  task_runner_->PostTask(FROM_HERE, begin_frame_task_.callback());
+  DCHECK(!pending_begin_frame_observers_.empty());
+  if (begin_frame_task_.IsCancelled()) {
+    begin_frame_task_.Reset(
+        base::Bind(&BackToBackBeginFrameSource::SendPendingBeginFrames,
+                   weak_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE, begin_frame_task_.callback());
+  }
 }
 
-void BackToBackBeginFrameSource::BeginFrame() {
+void BackToBackBeginFrameSource::SendPendingBeginFrames() {
   DCHECK(needs_begin_frames());
   DCHECK(!begin_frame_task_.IsCancelled());
   begin_frame_task_.Cancel();
+
   base::TimeTicks now = Now();
   BeginFrameArgs args = BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, now, now + BeginFrameArgs::DefaultInterval(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
-  CallOnBeginFrame(args);
-}
 
-void BackToBackBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
-  BeginFrameSourceBase::DidFinishFrame(remaining_frames);
-  if (needs_begin_frames() && remaining_frames == 0)
-    PostBeginFrame();
+  std::set<BeginFrameObserver*> pending_observers;
+  pending_observers.swap(pending_begin_frame_observers_);
+  for (BeginFrameObserver* obs : pending_observers)
+    obs->OnBeginFrame(args);
 }
 
 // Tracing support
