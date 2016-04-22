@@ -158,7 +158,7 @@ public:
 
     bool isInitialized() const
     {
-        return m_arena.get();
+        return m_arena;
     }
 
     void initIfNeeded()

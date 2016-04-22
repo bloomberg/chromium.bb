@@ -70,7 +70,11 @@ public:
     ALWAYS_INLINE T* operator->() const { return m_ptr; }
 
     bool operator!() const { return !m_ptr; }
-    explicit operator bool() const { return m_ptr; }
+
+    // This conversion operator allows implicit conversion to bool but not to
+    // other integer types.
+    typedef T* (RefPtr::*UnspecifiedBoolType);
+    operator UnspecifiedBoolType() const { return m_ptr ? &RefPtr::m_ptr : 0; }
 
     RefPtr& operator=(RefPtr o) { swap(o); return *this; }
     RefPtr& operator=(std::nullptr_t) { clear(); return *this; }
@@ -131,16 +135,6 @@ template <typename T, typename U> inline bool operator==(T* a, const RefPtr<U>& 
     return a == b.get();
 }
 
-template <typename T> inline bool operator==(const RefPtr<T>& a, std::nullptr_t)
-{
-    return !a.get();
-}
-
-template <typename T> inline bool operator==(std::nullptr_t, const RefPtr<T>& b)
-{
-    return !b.get();
-}
-
 template <typename T, typename U> inline bool operator!=(const RefPtr<T>& a, const RefPtr<U>& b)
 {
     return a.get() != b.get();
@@ -154,16 +148,6 @@ template <typename T, typename U> inline bool operator!=(const RefPtr<T>& a, U* 
 template <typename T, typename U> inline bool operator!=(T* a, const RefPtr<U>& b)
 {
     return a != b.get();
-}
-
-template <typename T> inline bool operator!=(const RefPtr<T>& a, std::nullptr_t)
-{
-    return a.get();
-}
-
-template <typename T> inline bool operator!=(std::nullptr_t, const RefPtr<T>& b)
-{
-    return b.get();
 }
 
 template <typename T, typename U> inline RefPtr<T> static_pointer_cast(const RefPtr<U>& p)

@@ -56,7 +56,7 @@ public:
     {
     }
 
-    bool isValid() const { return m_content.get(); }
+    bool isValid() const { return m_content; }
 
     SharedBuffer* content() const { return m_content.get(); }
     const AtomicString& mimeType() const { return m_mimeType; }

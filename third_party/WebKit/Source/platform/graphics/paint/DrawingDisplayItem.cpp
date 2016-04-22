@@ -30,7 +30,7 @@ void DrawingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, W
 
 bool DrawingDisplayItem::drawsContent() const
 {
-    return m_picture.get();
+    return m_picture;
 }
 
 #ifndef NDEBUG

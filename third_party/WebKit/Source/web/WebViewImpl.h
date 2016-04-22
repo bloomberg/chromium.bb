@@ -434,7 +434,7 @@ public:
     WebViewScheduler* scheduler() const override;
     void setVisibilityState(WebPageVisibilityState, bool) override;
 
-    bool hasOpenedPopup() const { return m_pagePopup.get(); }
+    bool hasOpenedPopup() const { return m_pagePopup; }
 
     // Returns true if the event leads to scrolling.
     static bool mapKeyCodeForScroll(

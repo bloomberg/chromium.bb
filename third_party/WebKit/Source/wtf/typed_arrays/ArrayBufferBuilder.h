@@ -60,7 +60,7 @@ public:
 
     bool isValid() const
     {
-        return m_buffer.get();
+        return m_buffer;
     }
 
     // Appending empty data is not allowed.
