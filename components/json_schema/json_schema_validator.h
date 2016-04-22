@@ -6,11 +6,11 @@
 #define COMPONENTS_JSON_SCHEMA_JSON_SCHEMA_VALIDATOR_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -116,16 +116,14 @@ class JSONSchemaValidator {
   // correctness of regular expressions used in "pattern" and
   // "patternProperties" and in Validate() invalid regular expression don't
   // accept any strings.
-  static scoped_ptr<base::DictionaryValue> IsValidSchema(
+  static std::unique_ptr<base::DictionaryValue> IsValidSchema(
       const std::string& schema,
       std::string* error);
 
   // Same as above but with |options|, which is a bitwise-OR combination of the
   // Options above.
-  static scoped_ptr<base::DictionaryValue> IsValidSchema(
-      const std::string& schema,
-      int options,
-      std::string* error);
+  static std::unique_ptr<base::DictionaryValue>
+  IsValidSchema(const std::string& schema, int options, std::string* error);
 
   // Creates a validator for the specified schema.
   //

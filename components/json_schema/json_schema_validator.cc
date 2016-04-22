@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -390,31 +391,31 @@ std::string JSONSchemaValidator::FormatErrorMessage(const std::string& format,
 }
 
 // static
-scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
+std::unique_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
     const std::string& schema,
     std::string* error) {
   return JSONSchemaValidator::IsValidSchema(schema, 0, error);
 }
 
 // static
-scoped_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
+std::unique_ptr<base::DictionaryValue> JSONSchemaValidator::IsValidSchema(
     const std::string& schema,
     int validator_options,
     std::string* error) {
   base::JSONParserOptions json_options = base::JSON_PARSE_RFC;
-  scoped_ptr<base::Value> json =
+  std::unique_ptr<base::Value> json =
       base::JSONReader::ReadAndReturnError(schema, json_options, NULL, error);
   if (!json)
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   base::DictionaryValue* dict = NULL;
   if (!json->GetAsDictionary(&dict)) {
     *error = "Schema must be a JSON object";
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   }
   if (!::IsValidSchema(dict, validator_options, error))
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
   ignore_result(json.release());
-  return make_scoped_ptr(dict);
+  return base::WrapUnique(dict);
 }
 
 JSONSchemaValidator::JSONSchemaValidator(base::DictionaryValue* schema)

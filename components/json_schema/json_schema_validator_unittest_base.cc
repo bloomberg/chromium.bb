@@ -7,12 +7,12 @@
 #include <cfloat>
 #include <cmath>
 #include <limits>
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -45,7 +45,7 @@ base::Value* LoadValue(const std::string& filename) {
 }
 
 base::Value* LoadValue(const std::string& filename, base::Value::Type type) {
-  scoped_ptr<base::Value> result(LoadValue(filename));
+  std::unique_ptr<base::Value> result(LoadValue(filename));
   if (!result.get())
     return NULL;
   if (!result->IsType(type)) {
@@ -88,9 +88,9 @@ void JSONSchemaValidatorTestBase::RunTests() {
 }
 
 void JSONSchemaValidatorTestBase::TestComplex() {
-  scoped_ptr<base::DictionaryValue> schema(
+  std::unique_ptr<base::DictionaryValue> schema(
       LoadDictionary("complex_schema.json"));
-  scoped_ptr<base::ListValue> instance(LoadList("complex_instance.json"));
+  std::unique_ptr<base::ListValue> instance(LoadList("complex_instance.json"));
 
   ASSERT_TRUE(schema.get());
   ASSERT_TRUE(instance.get());
@@ -117,75 +117,72 @@ void JSONSchemaValidatorTestBase::TestComplex() {
 }
 
 void JSONSchemaValidatorTestBase::TestStringPattern() {
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kString);
   schema->SetString(schema::kPattern, "foo+");
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::StringValue("foo")).get(),
+              std::unique_ptr<base::Value>(new base::StringValue("foo")).get(),
               schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::StringValue("foooooo")).get(),
-              schema.get(), NULL);
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(new base::StringValue("bar")).get(),
-                 schema.get(),
-                 NULL,
-                 std::string(),
-                 JSONSchemaValidator::FormatErrorMessage(
-                     JSONSchemaValidator::kStringPattern, "foo+"));
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::StringValue("foooooo")).get(),
+      schema.get(), NULL);
+  ExpectNotValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::StringValue("bar")).get(),
+      schema.get(), NULL, std::string(),
+      JSONSchemaValidator::FormatErrorMessage(
+          JSONSchemaValidator::kStringPattern, "foo+"));
 }
 
 void JSONSchemaValidatorTestBase::TestEnum() {
-  scoped_ptr<base::DictionaryValue> schema(LoadDictionary("enum_schema.json"));
+  std::unique_ptr<base::DictionaryValue> schema(
+      LoadDictionary("enum_schema.json"));
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::StringValue("foo")).get(),
+              std::unique_ptr<base::Value>(new base::StringValue("foo")).get(),
               schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(false)).get(),
-              schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(false)).get(),
+      schema.get(), NULL);
 
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(new base::StringValue("42")).get(),
-                 schema.get(),
-                 NULL,
-                 std::string(),
-                 JSONSchemaValidator::kInvalidEnum);
+  ExpectNotValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::StringValue("42")).get(),
+      schema.get(), NULL, std::string(), JSONSchemaValidator::kInvalidEnum);
   ExpectNotValid(TEST_SOURCE, base::Value::CreateNullValue().get(),
                  schema.get(), NULL, std::string(),
                  JSONSchemaValidator::kInvalidEnum);
 }
 
 void JSONSchemaValidatorTestBase::TestChoices() {
-  scoped_ptr<base::DictionaryValue> schema(
+  std::unique_ptr<base::DictionaryValue> schema(
       LoadDictionary("choices_schema.json"));
 
   ExpectValid(TEST_SOURCE, base::Value::CreateNullValue().get(), schema.get(),
               NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
-              schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL);
 
-  scoped_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
   instance->SetString("foo", "bar");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(new base::StringValue("foo")).get(),
-                 schema.get(),
-                 NULL,
-                 std::string(),
-                 JSONSchemaValidator::kInvalidChoice);
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(new base::ListValue()).get(),
-                 schema.get(),
-                 NULL,
-                 std::string(),
-                 JSONSchemaValidator::kInvalidChoice);
+  ExpectNotValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::StringValue("foo")).get(),
+      schema.get(), NULL, std::string(), JSONSchemaValidator::kInvalidChoice);
+  ExpectNotValid(
+      TEST_SOURCE, std::unique_ptr<base::Value>(new base::ListValue()).get(),
+      schema.get(), NULL, std::string(), JSONSchemaValidator::kInvalidChoice);
 
   instance->SetInteger("foo", 42);
   ExpectNotValid(TEST_SOURCE,
@@ -201,12 +198,12 @@ void JSONSchemaValidatorTestBase::TestExtends() {
 }
 
 void JSONSchemaValidatorTestBase::TestObject() {
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kObject);
   schema->SetString("properties.foo.type", schema::kString);
   schema->SetString("properties.bar.type", schema::kInteger);
 
-  scoped_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
   instance->SetString("foo", "foo");
   instance->SetInteger("bar", 42);
 
@@ -322,16 +319,17 @@ void JSONSchemaValidatorTestBase::TestObject() {
 }
 
 void JSONSchemaValidatorTestBase::TestTypeReference() {
-  scoped_ptr<base::ListValue> types(LoadList("reference_types.json"));
+  std::unique_ptr<base::ListValue> types(LoadList("reference_types.json"));
   ASSERT_TRUE(types.get());
 
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kObject);
   schema->SetString("properties.foo.type", schema::kString);
   schema->SetString("properties.bar.$ref", "Max10Int");
   schema->SetString("properties.baz.$ref", "MinLengthString");
 
-  scoped_ptr<base::DictionaryValue> schema_inline(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema_inline(
+      new base::DictionaryValue());
   schema_inline->SetString(schema::kType, schema::kObject);
   schema_inline->SetString("properties.foo.type", schema::kString);
   schema_inline->SetString("properties.bar.id", "NegativeInt");
@@ -339,12 +337,12 @@ void JSONSchemaValidatorTestBase::TestTypeReference() {
   schema_inline->SetInteger("properties.bar.maximum", 0);
   schema_inline->SetString("properties.baz.$ref", "NegativeInt");
 
-  scoped_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
   instance->SetString("foo", "foo");
   instance->SetInteger("bar", 4);
   instance->SetString("baz", "ab");
 
-  scoped_ptr<base::DictionaryValue> instance_inline(
+  std::unique_ptr<base::DictionaryValue> instance_inline(
       new base::DictionaryValue());
   instance_inline->SetString("foo", "foo");
   instance_inline->SetInteger("bar", -4);
@@ -382,11 +380,11 @@ void JSONSchemaValidatorTestBase::TestTypeReference() {
 }
 
 void JSONSchemaValidatorTestBase::TestArrayTuple() {
-  scoped_ptr<base::DictionaryValue> schema(
+  std::unique_ptr<base::DictionaryValue> schema(
       LoadDictionary("array_tuple_schema.json"));
   ASSERT_TRUE(schema.get());
 
-  scoped_ptr<base::ListValue> instance(new base::ListValue());
+  std::unique_ptr<base::ListValue> instance(new base::ListValue());
   instance->Append(new base::StringValue("42"));
   instance->Append(new base::FundamentalValue(42));
 
@@ -452,13 +450,13 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
 }
 
 void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kArray);
   schema->SetString("items.type", schema::kString);
   schema->SetInteger(schema::kMinItems, 2);
   schema->SetInteger(schema::kMaxItems, 3);
 
-  scoped_ptr<base::ListValue> instance(new base::ListValue());
+  std::unique_ptr<base::ListValue> instance(new base::ListValue());
   instance->Append(new base::StringValue("x"));
   instance->Append(new base::StringValue("x"));
 
@@ -495,70 +493,66 @@ void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
 }
 
 void JSONSchemaValidatorTestBase::TestString() {
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kString);
   schema->SetInteger(schema::kMinLength, 1);
   schema->SetInteger(schema::kMaxLength, 10);
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::StringValue("x")).get(),
+              std::unique_ptr<base::Value>(new base::StringValue("x")).get(),
               schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(
-                  new base::StringValue("xxxxxxxxxx")).get(),
-              schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::StringValue("xxxxxxxxxx")).get(),
+      schema.get(), NULL);
 
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::StringValue(std::string())).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::StringValue(std::string())).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kStringMinLength, "1"));
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::StringValue("xxxxxxxxxxx")).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::StringValue("xxxxxxxxxxx")).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kStringMaxLength, "10"));
 }
 
 void JSONSchemaValidatorTestBase::TestNumber() {
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kNumber);
   schema->SetInteger(schema::kMinimum, 1);
   schema->SetInteger(schema::kMaximum, 100);
   schema->SetInteger("maxDecimal", 2);
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(1)).get(),
+              std::unique_ptr<base::Value>(new base::FundamentalValue(1)).get(),
               schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(50)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(100)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(88.88)).get(),
-              schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(50)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(100)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(88.88)).get(),
+      schema.get(), NULL);
 
-  ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<base::Value>(new base::FundamentalValue(0.5)).get(),
-                 schema.get(),
-                 NULL,
-                 std::string(),
-                 JSONSchemaValidator::FormatErrorMessage(
-                     JSONSchemaValidator::kNumberMinimum, "1"));
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::FundamentalValue(100.1)).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::FundamentalValue(0.5)).get(),
+      schema.get(), NULL, std::string(),
+      JSONSchemaValidator::FormatErrorMessage(
+          JSONSchemaValidator::kNumberMinimum, "1"));
+  ExpectNotValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(100.1)).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kNumberMaximum, "100"));
 }
@@ -566,118 +560,141 @@ void JSONSchemaValidatorTestBase::TestNumber() {
 void JSONSchemaValidatorTestBase::TestTypeClassifier() {
   EXPECT_EQ(std::string(schema::kBoolean),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(
-                    new base::FundamentalValue(true)).get()));
+                std::unique_ptr<base::Value>(new base::FundamentalValue(true))
+                    .get()));
   EXPECT_EQ(std::string(schema::kBoolean),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(
-                    new base::FundamentalValue(false)).get()));
+                std::unique_ptr<base::Value>(new base::FundamentalValue(false))
+                    .get()));
 
   // It doesn't matter whether the C++ type is 'integer' or 'real'. If the
   // number is integral and within the representable range of integers in
   // double, it's classified as 'integer'.
+  EXPECT_EQ(
+      std::string(schema::kInteger),
+      JSONSchemaValidator::GetJSONSchemaType(
+          std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get()));
+  EXPECT_EQ(
+      std::string(schema::kInteger),
+      JSONSchemaValidator::GetJSONSchemaType(
+          std::unique_ptr<base::Value>(new base::FundamentalValue(0)).get()));
+  EXPECT_EQ(
+      std::string(schema::kInteger),
+      JSONSchemaValidator::GetJSONSchemaType(
+          std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get()));
   EXPECT_EQ(std::string(schema::kInteger),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(new base::FundamentalValue(42)).get()));
+                std::unique_ptr<base::Value>(
+                    new base::FundamentalValue(pow(2.0, DBL_MANT_DIG)))
+                    .get()));
   EXPECT_EQ(std::string(schema::kInteger),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(new base::FundamentalValue(0)).get()));
-  EXPECT_EQ(std::string(schema::kInteger),
-            JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(new base::FundamentalValue(42)).get()));
-  EXPECT_EQ(std::string(schema::kInteger),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
-                new base::FundamentalValue(pow(2.0, DBL_MANT_DIG))).get()));
-  EXPECT_EQ(std::string(schema::kInteger),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
-                new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG))).get()));
+                std::unique_ptr<base::Value>(
+                    new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG)))
+                    .get()));
 
   // "number" is only used for non-integral numbers, or numbers beyond what
   // double can accurately represent.
   EXPECT_EQ(std::string(schema::kNumber),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(
-                    new base::FundamentalValue(88.8)).get()));
+                std::unique_ptr<base::Value>(new base::FundamentalValue(88.8))
+                    .get()));
   EXPECT_EQ(std::string(schema::kNumber),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
-                new base::FundamentalValue(pow(2.0, DBL_MANT_DIG) * 2)).get()));
-  EXPECT_EQ(std::string(schema::kNumber),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
-                new base::FundamentalValue(
-                    pow(-2.0, DBL_MANT_DIG) * 2)).get()));
-
-  EXPECT_EQ(std::string(schema::kString),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(new base::StringValue("foo")).get()));
+                std::unique_ptr<base::Value>(
+                    new base::FundamentalValue(pow(2.0, DBL_MANT_DIG) * 2))
+                    .get()));
+  EXPECT_EQ(std::string(schema::kNumber),
+            JSONSchemaValidator::GetJSONSchemaType(
+                std::unique_ptr<base::Value>(
+                    new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG) * 2))
+                    .get()));
+
+  EXPECT_EQ(
+      std::string(schema::kString),
+      JSONSchemaValidator::GetJSONSchemaType(
+          std::unique_ptr<base::Value>(new base::StringValue("foo")).get()));
   EXPECT_EQ(std::string(schema::kArray),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(new base::ListValue()).get()));
-  EXPECT_EQ(std::string(schema::kObject),
-            JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<base::Value>(new base::DictionaryValue()).get()));
+                std::unique_ptr<base::Value>(new base::ListValue()).get()));
+  EXPECT_EQ(
+      std::string(schema::kObject),
+      JSONSchemaValidator::GetJSONSchemaType(
+          std::unique_ptr<base::Value>(new base::DictionaryValue()).get()));
   EXPECT_EQ(std::string(schema::kNull),
             JSONSchemaValidator::GetJSONSchemaType(
                 base::Value::CreateNullValue().get()));
 }
 
 void JSONSchemaValidatorTestBase::TestTypes() {
-  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
 
   // valid
   schema->SetString(schema::kType, schema::kObject);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::DictionaryValue()).get(),
+              std::unique_ptr<base::Value>(new base::DictionaryValue()).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kArray);
-  ExpectValid(TEST_SOURCE, scoped_ptr<base::Value>(new base::ListValue()).get(),
+  ExpectValid(TEST_SOURCE,
+              std::unique_ptr<base::Value>(new base::ListValue()).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kString);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::StringValue("foobar")).get(),
-              schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::StringValue("foobar")).get(),
+      schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kNumber);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(88.8)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(88.8)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(0)).get(),
+              std::unique_ptr<base::Value>(new base::FundamentalValue(0)).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kInteger);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+              std::unique_ptr<base::Value>(new base::FundamentalValue(0)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+              std::unique_ptr<base::Value>(
+                  new base::FundamentalValue(pow(2.0, DBL_MANT_DIG)))
+                  .get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(0)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(
-                  new base::FundamentalValue(pow(2.0, DBL_MANT_DIG))).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(
-                  new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG))).get(),
+              std::unique_ptr<base::Value>(
+                  new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG)))
+                  .get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kBoolean);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(false)).get(),
-              schema.get(), NULL);
-  ExpectValid(TEST_SOURCE,
-              scoped_ptr<base::Value>(new base::FundamentalValue(true)).get(),
-              schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(false)).get(),
+      schema.get(), NULL);
+  ExpectValid(
+      TEST_SOURCE,
+      std::unique_ptr<base::Value>(new base::FundamentalValue(true)).get(),
+      schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kNull);
   ExpectValid(TEST_SOURCE, base::Value::CreateNullValue().get(), schema.get(),
@@ -686,13 +703,10 @@ void JSONSchemaValidatorTestBase::TestTypes() {
   // not valid
   schema->SetString(schema::kType, schema::kObject);
   ExpectNotValid(
-      TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::ListValue()).get(),
-      schema.get(),
-      NULL,
-      std::string(),
-      JSONSchemaValidator::FormatErrorMessage(
-          JSONSchemaValidator::kInvalidType, schema::kObject, schema::kArray));
+      TEST_SOURCE, std::unique_ptr<base::Value>(new base::ListValue()).get(),
+      schema.get(), NULL, std::string(),
+      JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
+                                              schema::kObject, schema::kArray));
 
   schema->SetString(schema::kType, schema::kObject);
   ExpectNotValid(
@@ -704,20 +718,16 @@ void JSONSchemaValidatorTestBase::TestTypes() {
   schema->SetString(schema::kType, schema::kArray);
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kInvalidType, schema::kArray, schema::kInteger));
 
   schema->SetString(schema::kType, schema::kString);
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::FundamentalValue(42)).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
                                               schema::kString,
                                               schema::kInteger));
@@ -725,29 +735,23 @@ void JSONSchemaValidatorTestBase::TestTypes() {
   schema->SetString(schema::kType, schema::kNumber);
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::StringValue("42")).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::StringValue("42")).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kInvalidType, schema::kNumber, schema::kString));
 
   schema->SetString(schema::kType, schema::kInteger);
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::FundamentalValue(88.8)).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::FundamentalValue(88.8)).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::kInvalidTypeIntegerNumber);
 
   schema->SetString(schema::kType, schema::kBoolean);
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::FundamentalValue(1)).get(),
-      schema.get(),
-      NULL,
-      std::string(),
+      std::unique_ptr<base::Value>(new base::FundamentalValue(1)).get(),
+      schema.get(), NULL, std::string(),
       JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
                                               schema::kBoolean,
                                               schema::kInteger));
@@ -755,10 +759,8 @@ void JSONSchemaValidatorTestBase::TestTypes() {
   schema->SetString(schema::kType, schema::kNull);
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<base::Value>(new base::FundamentalValue(false)).get(),
-      schema.get(),
-      NULL,
-      std::string(),
-      JSONSchemaValidator::FormatErrorMessage(
-          JSONSchemaValidator::kInvalidType, schema::kNull, schema::kBoolean));
+      std::unique_ptr<base::Value>(new base::FundamentalValue(false)).get(),
+      schema.get(), NULL, std::string(),
+      JSONSchemaValidator::FormatErrorMessage(JSONSchemaValidator::kInvalidType,
+                                              schema::kNull, schema::kBoolean));
 }
