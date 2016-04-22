@@ -9,6 +9,8 @@ var remoting = remoting || {};
 
 'use strict';
 
+var ESCAPE_KEY_CODE = 27;
+
 /**
  * This class provides common functionality to Me2MeActivity and It2MeActivity,
  * e.g. constructing the relevant UX, and delegate the custom handling of the
@@ -45,6 +47,9 @@ remoting.DesktopRemotingActivity = function(
 
   /** @private */
   this.logger_ = logger;
+
+  /** @private {base.DomEventHook} */
+  this.keydownHook_ = null;
 };
 
 /**
@@ -104,12 +109,26 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
   var remapping = connectionInfo.host().options.getRemapKeys();
   this.connectedView_.setRemapKeys(remapping);
   this.parentActivity_.onConnected(connectionInfo);
+
+  // ESC key feature tracking
+  var pluginElement = connectionInfo.plugin().element();
+  var onKeyDown = function(event) {
+    if (event && event.keyCode == ESCAPE_KEY_CODE
+      && remoting.fullscreen.isActive()) {
+      this.logger_.incrementFeatureUsage('fullscreen_esc_count');
+    }
+  };
+  this.keydownHook_ = new base.DomEventHook(
+    pluginElement, 'keydown', onKeyDown.bind(this), false);
 };
 
 remoting.DesktopRemotingActivity.prototype.onDisconnected = function(reason) {
   if (this.handleError_(reason)) {
     return;
   }
+
+  base.dispose(this.keydownHook_);
+
   this.parentActivity_.onDisconnected(reason);
 };
 

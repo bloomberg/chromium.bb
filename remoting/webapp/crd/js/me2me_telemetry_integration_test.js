@@ -110,6 +110,10 @@ QUnit.test('Connection succeeded', function() {
     mode: remoting.ChromotingEvent.Mode.ME2ME,
   });
 
+  testDriver.expectEvents([{
+    feature_tracker: {}
+  }]);
+
   /**
    * @param {remoting.MockClientPlugin} plugin
    * @param {remoting.ClientSession.State} state
@@ -195,6 +199,9 @@ QUnit.test('Reconnect', function() {
     role: remoting.ChromotingEvent.Role.CLIENT,
     mode: remoting.ChromotingEvent.Mode.ME2ME,
   });
+  testDriver.expectEvents([{
+    feature_tracker: {}
+  }]);
   expectSucceeded(testDriver, {
     session_entry_point: EntryPoint.RECONNECT_BUTTON,
     role: remoting.ChromotingEvent.Role.CLIENT,
@@ -205,6 +212,9 @@ QUnit.test('Reconnect', function() {
       entry_point: EntryPoint.CONNECT_BUTTON
     }
   });
+  testDriver.expectEvents([{
+    feature_tracker: {}
+  }]);
 
   var count = 0;
   /**
@@ -285,6 +295,9 @@ QUnit.test('HOST_OFFLINE - JID refresh succeeded', function() {
       entry_point: EntryPoint.CONNECT_BUTTON
     }
   });
+  testDriver.expectEvents([{
+    feature_tracker: {}
+  }]);
 
   var count = 0;
   function onPluginCreated(/** remoting.MockClientPlugin */ plugin) {
@@ -379,6 +392,10 @@ QUnit.test('Connection dropped - Auto Reconnect', function() {
     mode: remoting.ChromotingEvent.Mode.ME2ME,
   });
 
+  testDriver.expectEvents([{
+    feature_tracker: {}
+  }]);
+
   expectSucceeded(testDriver, {
     session_entry_point: EntryPoint.AUTO_RECONNECT_ON_CONNECTION_DROPPED,
     role: remoting.ChromotingEvent.Role.CLIENT,
@@ -389,6 +406,10 @@ QUnit.test('Connection dropped - Auto Reconnect', function() {
       entry_point: EntryPoint.CONNECT_BUTTON
     }
   });
+
+  testDriver.expectEvents([{
+    feature_tracker: {}
+  }]);
 
   var count = 0;
 
@@ -449,6 +470,10 @@ function createAuthMethodTest(testDriver, authMethod, connected) {
           ChromotingEvent.SessionState.CONNECTED,
           ChromotingEvent.SessionState.CLOSED
         ]);
+
+    testDriver.expectEvents([{
+      feature_tracker: {}
+    }]);
   } else {
     testDriver.expectEvents([{
         session_entry_point: ChromotingEvent.SessionEntryPoint.CONNECT_BUTTON,

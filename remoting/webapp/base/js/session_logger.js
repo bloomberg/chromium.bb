@@ -67,7 +67,38 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   /** @private {remoting.ChromotingEvent.SessionSummary} */
   this.previousSessionSummary_ = null;
 
+  /** @private {remoting.ChromotingEvent.FeatureTracker} */
+  this.featureTracker_ = null;
+
   this.setSessionId_();
+};
+
+/**
+ * Increments a numerical field in feature tracker. Creates feature tracker
+ * if it doesn't exist.
+ *
+ * @param {string} field
+ * @return {void} Nothing.
+ */
+remoting.SessionLogger.prototype.incrementFeatureUsage = function(field) {
+  this.ensureFeatureTracker_();
+  this.featureTracker_[field]++;
+};
+
+/**
+ * Logs and clears the feature tracker. Creates default feature tracker if
+ * it doesn't exist.
+ *
+ * @return {void} Nothing.
+ */
+remoting.SessionLogger.prototype.flushFeatureTracker = function() {
+  this.ensureFeatureTracker_();
+  var entry = new remoting.ChromotingEvent(
+    remoting.ChromotingEvent.Type.FEATURE_TRACKING);
+  entry.feature_tracker = this.featureTracker_;
+  this.fillEvent_(entry);
+  this.log_(entry);
+  this.featureTracker_ = null;
 };
 
 /**
@@ -207,6 +238,11 @@ remoting.SessionLogger.prototype.logSessionStateChange =
   // Don't accumulate connection statistics across state changes.
   this.logAccumulatedStatistics_();
   this.statsAccumulator_.empty();
+
+    if (state == remoting.ChromotingEvent.SessionState.CLOSED ||
+      state == remoting.ChromotingEvent.SessionState.CONNECTION_DROPPED) {
+    this.flushFeatureTracker();
+  }
 };
 
 /**
@@ -402,6 +438,18 @@ remoting.SessionLogger.prototype.maybeExpireSessionId_ = function() {
     // Log the new session ID.
     entry = this.makeSessionIdNew_();
     this.log_(entry);
+  }
+};
+
+/**
+ * Creates feature tracker if it doesn't exist.
+ *
+ * @private
+ * @return {void} Nothing.
+ */
+remoting.SessionLogger.prototype.ensureFeatureTracker_ = function() {
+  if (!this.featureTracker_) {
+    this.featureTracker_ = new remoting.ChromotingEvent.FeatureTracker();
   }
 };
 

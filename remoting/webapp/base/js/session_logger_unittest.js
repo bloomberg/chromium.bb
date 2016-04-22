@@ -364,4 +364,36 @@ QUnit.test('logStatistics() should not log if all stats are zeros ',
 
 });
 
+QUnit.test('incrementFeatureUsage() and flushFeatureTracker()',
+    function(assert) {
+  var Event = remoting.ChromotingEvent;
+
+  logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
+
+  logger.incrementFeatureUsage('fullscreen_esc_count');
+
+  sinon.assert.notCalled(logWriterSpy);
+
+  logger.flushFeatureTracker();
+  verifyEvent(assert, 0, {
+    type: Event.Type.FEATURE_TRACKING,
+    feature_tracker: {fullscreen_esc_count: 1}
+  });
+});
+
+QUnit.test('flushFeatureTracker() with default tracker',
+    function(assert) {
+  var Event = remoting.ChromotingEvent;
+
+  logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
+
+  sinon.assert.notCalled(logWriterSpy);
+
+  logger.flushFeatureTracker();
+  verifyEvent(assert, 0, {
+    type: Event.Type.FEATURE_TRACKING,
+    feature_tracker: {fullscreen_esc_count: 0}
+  });
+});
+
 })();
