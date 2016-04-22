@@ -1827,11 +1827,16 @@ template("process_resources") {
 
     if (defined(invoker.resource_dirs)) {
       _all_resource_dirs += invoker.resource_dirs
-      sources_build_rel =
-          exec_script("//build/android/gyp/find.py",
-                      rebase_path(invoker.resource_dirs, root_build_dir),
-                      "list lines")
-      sources += rebase_path(sources_build_rel, ".", root_build_dir)
+
+      # Speed up "gn gen" by short-circuiting the empty directory.
+      if (invoker.resource_dirs != [ "//build/android/ant/empty/res" ] &&
+          invoker.resource_dirs != []) {
+        _sources_build_rel =
+            exec_script("//build/android/gyp/find.py",
+                        rebase_path(invoker.resource_dirs, root_build_dir),
+                        "list lines")
+        sources += rebase_path(_sources_build_rel, ".", root_build_dir)
+      }
     }
 
     if (defined(invoker.generated_resource_dirs)) {
