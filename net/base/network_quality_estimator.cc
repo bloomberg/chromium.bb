@@ -233,13 +233,14 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     bool allow_smaller_responses_for_tests)
     : allow_localhost_requests_(allow_local_host_requests_for_tests),
       allow_small_responses_(allow_smaller_responses_for_tests),
+      weight_multiplier_per_second_(
+          GetWeightMultiplierPerSecond(variation_params)),
       last_connection_change_(base::TimeTicks::Now()),
       current_network_id_(
           NetworkID(NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
                     std::string())),
-      downstream_throughput_kbps_observations_(
-          GetWeightMultiplierPerSecond(variation_params)),
-      rtt_observations_(GetWeightMultiplierPerSecond(variation_params)),
+      downstream_throughput_kbps_observations_(weight_multiplier_per_second_),
+      rtt_observations_(weight_multiplier_per_second_),
       external_estimate_provider_(std::move(external_estimates_provider)),
       weak_ptr_factory_(this) {
   static_assert(kMinRequestDurationMicroseconds > 0,
@@ -428,22 +429,22 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
 
   // Duration between when the resource was requested and when response
   // headers were received.
-    base::TimeDelta observed_rtt = headers_received_time - request_start_time;
-    DCHECK_GE(observed_rtt, base::TimeDelta());
-    if (observed_rtt < peak_network_quality_.rtt()) {
-      peak_network_quality_ = NetworkQuality(
-          observed_rtt, peak_network_quality_.downstream_throughput_kbps());
-    }
+  base::TimeDelta observed_rtt = headers_received_time - request_start_time;
+  DCHECK_GE(observed_rtt, base::TimeDelta());
+  if (observed_rtt < peak_network_quality_.rtt()) {
+    peak_network_quality_ = NetworkQuality(
+        observed_rtt, peak_network_quality_.downstream_throughput_kbps());
+  }
 
-    RttObservation rtt_observation(observed_rtt, now, URL_REQUEST);
-    rtt_observations_.AddObservation(rtt_observation);
-    NotifyObserversOfRTT(rtt_observation);
+  RttObservation rtt_observation(observed_rtt, now, URL_REQUEST);
+  rtt_observations_.AddObservation(rtt_observation);
+  NotifyObserversOfRTT(rtt_observation);
 
-    // Compare the RTT observation with the estimated value and record it.
-    if (estimated_median_network_quality_.rtt() != InvalidRTT()) {
-      RecordRTTUMA(estimated_median_network_quality_.rtt().InMilliseconds(),
-                   observed_rtt.InMilliseconds());
-    }
+  // Compare the RTT observation with the estimated value and record it.
+  if (estimated_median_network_quality_.rtt() != InvalidRTT()) {
+    RecordRTTUMA(estimated_median_network_quality_.rtt().InMilliseconds(),
+                 observed_rtt.InMilliseconds());
+  }
 }
 
 void NetworkQualityEstimator::NotifyRequestCompleted(

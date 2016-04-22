@@ -608,6 +608,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // network quality. Set to true only for tests.
   const bool allow_small_responses_;
 
+  // The factor by which the weight of an observation reduces every second.
+  const double weight_multiplier_per_second_;
+
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;
 
