@@ -24,6 +24,7 @@
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabContentManager_jni.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -47,11 +48,9 @@ namespace android {
 class TabContentManager::TabReadbackRequest {
  public:
   TabReadbackRequest(jobject content_view_core,
-                     gfx::Rect src_rect,
                      float thumbnail_scale,
                      const TabReadbackCallback& end_callback)
-      : src_rect_(src_rect),
-        thumbnail_scale_(thumbnail_scale),
+      : thumbnail_scale_(thumbnail_scale),
         end_callback_(end_callback),
         drop_after_readback_(false),
         weak_factory_(this) {
@@ -82,24 +81,16 @@ class TabContentManager::TabReadbackRequest {
     }
 
     DCHECK(view->GetWebContents());
-    view->GetWebContents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->LockBackingStore();
+    content::RenderWidgetHost* rwh = view->GetWebContents()
+                                         ->GetRenderViewHost()
+                                         ->GetWidget();
+    rwh->LockBackingStore();
 
     SkColorType color_type = kN32_SkColorType;
-
-    const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
-    float device_scale_factor = display.device_scale_factor();
-    DCHECK_GT(device_scale_factor, 0);
+    gfx::Rect src_rect = rwh->GetView()->GetViewBounds();
     gfx::Size dst_size(
-        gfx::ScaleToCeiledSize(src_rect_.size(),
-                               thumbnail_scale_ / device_scale_factor));
-    gfx::Rect src_rect = gfx::ConvertRectToDIP(device_scale_factor, src_rect_);
-    view->GetWebContents()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->CopyFromBackingStore(src_rect, dst_size, result_callback, color_type);
+        gfx::ScaleToCeiledSize(src_rect.size(), thumbnail_scale_));
+    rwh->CopyFromBackingStore(src_rect, dst_size, result_callback, color_type);
   }
 
   void OnFinishGetTabThumbnailBitmap(const SkBitmap& bitmap,
@@ -132,7 +123,6 @@ class TabContentManager::TabReadbackRequest {
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_content_view_core_;
-  gfx::Rect src_rect_;
   const float thumbnail_scale_;
   TabReadbackCallback end_callback_;
   bool drop_after_readback_;
@@ -285,14 +275,12 @@ void TabContentManager::CacheTab(JNIEnv* env,
       return;
     }
 
-    gfx::Rect src_rect = gfx::Rect(GetLiveLayer(tab_id)->bounds());
     TabReadbackCallback readback_done_callback =
         base::Bind(&TabContentManager::PutThumbnailIntoCache,
                    weak_factory_.GetWeakPtr(), tab_id);
     std::unique_ptr<TabReadbackRequest> readback_request =
         base::WrapUnique(new TabReadbackRequest(
-            content_view_core, src_rect, thumbnail_scale,
-            readback_done_callback));
+            content_view_core, thumbnail_scale, readback_done_callback));
     pending_tab_readbacks_.set(tab_id, std::move(readback_request));
     pending_tab_readbacks_.get(tab_id)->Run();
   }
