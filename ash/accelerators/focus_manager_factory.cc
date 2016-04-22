@@ -28,14 +28,4 @@ bool AshFocusManagerFactory::Delegate::ProcessAccelerator(
   return false;
 }
 
-ui::AcceleratorTarget*
-AshFocusManagerFactory::Delegate::GetCurrentTargetForAccelerator(
-    const ui::Accelerator& accelerator) const {
-  AcceleratorController* controller =
-      Shell::GetInstance()->accelerator_controller();
-  if (controller && controller->IsRegistered(accelerator))
-    return controller;
-  return NULL;
-}
-
 }  // namespace ash

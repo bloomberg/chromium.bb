@@ -54,6 +54,9 @@ class UI_BASE_EXPORT AcceleratorManager {
   // Unregister all keyboard accelerator for the specified target.
   void UnregisterAll(AcceleratorTarget* target);
 
+  // Returns whether |accelerator| is already registered.
+  bool IsRegistered(const Accelerator& accelerator) const;
+
   // Activate the target associated with the specified accelerator.
   // First, AcceleratorPressed handler of the most recently registered target
   // is called, and if that handler processes the event (i.e. returns true),
@@ -61,11 +64,6 @@ class UI_BASE_EXPORT AcceleratorManager {
   // target, and so on.
   // Returns true if an accelerator was activated.
   bool Process(const Accelerator& accelerator);
-
-  // Returns the AcceleratorTarget that should be activated for the specified
-  // keyboard accelerator, or NULL if no view is registered for that keyboard
-  // accelerator.
-  AcceleratorTarget* GetCurrentTarget(const Accelerator& accelerator) const;
 
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const Accelerator& accelerator) const;

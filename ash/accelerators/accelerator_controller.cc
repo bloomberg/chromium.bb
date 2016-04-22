@@ -781,14 +781,12 @@ void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
 }
 
 bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
-  if (ime_control_delegate_)
-    return accelerator_manager_->Process(accelerator);
   return accelerator_manager_->Process(accelerator);
 }
 
 bool AcceleratorController::IsRegistered(
     const ui::Accelerator& accelerator) const {
-  return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
+  return accelerator_manager_->IsRegistered(accelerator);
 }
 
 bool AcceleratorController::IsPreferred(

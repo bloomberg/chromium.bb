@@ -489,15 +489,6 @@ bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   return false;
 }
 
-ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
-    const ui::Accelerator& accelerator) const {
-  ui::AcceleratorTarget* target =
-      accelerator_manager_->GetCurrentTarget(accelerator);
-  if (!target && delegate_.get())
-    target = delegate_->GetCurrentTargetForAccelerator(accelerator);
-  return target;
-}
-
 bool FocusManager::HasPriorityHandler(
     const ui::Accelerator& accelerator) const {
   return accelerator_manager_->HasPriorityHandler(accelerator);

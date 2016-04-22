@@ -19,6 +19,7 @@ AcceleratorManager::~AcceleratorManager() {
 void AcceleratorManager::Register(const Accelerator& accelerator,
                                   HandlerPriority priority,
                                   AcceleratorTarget* target) {
+  DCHECK(target);
   AcceleratorTargetList& targets = accelerators_[accelerator].second;
   DCHECK(std::find(targets.begin(), targets.end(), target) == targets.end())
       << "Registering the same target multiple times";
@@ -75,6 +76,11 @@ void AcceleratorManager::UnregisterAll(AcceleratorTarget* target) {
   }
 }
 
+bool AcceleratorManager::IsRegistered(const Accelerator& accelerator) const {
+  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
+  return map_iter != accelerators_.end() && !map_iter->second.second.empty();
+}
+
 bool AcceleratorManager::Process(const Accelerator& accelerator) {
   bool result = false;
   AcceleratorMap::iterator map_iter = accelerators_.find(accelerator);
@@ -92,14 +98,6 @@ bool AcceleratorManager::Process(const Accelerator& accelerator) {
     }
   }
   return result;
-}
-
-AcceleratorTarget* AcceleratorManager::GetCurrentTarget(
-    const Accelerator& accelerator) const {
-  AcceleratorMap::const_iterator map_iter = accelerators_.find(accelerator);
-  if (map_iter == accelerators_.end() || map_iter->second.second.empty())
-    return NULL;
-  return map_iter->second.second.front();
 }
 
 bool AcceleratorManager::HasPriorityHandler(
