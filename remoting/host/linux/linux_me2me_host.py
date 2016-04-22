@@ -55,13 +55,12 @@ DEFAULT_SIZE_NO_RANDR = "1600x1200"
 SCRIPT_PATH = os.path.abspath(sys.argv[0])
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 
-IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'linux_me2me_host.py')
-
-if IS_INSTALLED:
-  HOST_BINARY_NAME = "chrome-remote-desktop-host"
+if (os.path.basename(sys.argv[0]) == 'linux_me2me_host.py'):
+  # Needed for swarming/isolate tests.
+  HOST_BINARY_PATH = os.path.join(SCRIPT_DIR,
+                                  "../../../out/Release/remoting_me2me_host")
 else:
-  # Swarming/isolate tests still use the built executable filename.
-  HOST_BINARY_NAME = "remoting_me2me_host"
+  HOST_BINARY_PATH = os.path.join(SCRIPT_DIR, "chrome-remote-desktop-host")
 
 CHROME_REMOTING_GROUP_NAME = "chrome-remote-desktop"
 
@@ -501,8 +500,7 @@ class Desktop:
 
   def launch_host(self, host_config):
     # Start remoting host
-    host_path = os.path.join(SCRIPT_DIR, HOST_BINARY_NAME)
-    args = [host_path, "--host-config=-"]
+    args = [HOST_BINARY_PATH, "--host-config=-"]
     if self.pulseaudio_pipe:
       args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
     if self.server_supports_exact_resize:
