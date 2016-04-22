@@ -766,7 +766,10 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateUrlExpansionAnimation() {
-        if (mIsInTabSwitcherMode || isTabSwitcherAnimationRunning()) return;
+        if (mIsInTabSwitcherMode || isTabSwitcherAnimationRunning()) {
+            mToolbarButtonsContainer.setVisibility(VISIBLE);
+            return;
+        }
 
         mLocationBarBackgroundOffset.setEmpty();
 
