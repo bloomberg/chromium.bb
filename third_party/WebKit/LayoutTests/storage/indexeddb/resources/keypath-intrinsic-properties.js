@@ -26,14 +26,11 @@ function testKeyPaths()
     store = evalAndLog("store = transaction.objectStore('store')");
 
     for (var i = 0; i < 5; i += 1) {
-        var datum = {
-            id: 'id#' + i,
-            string: Array(i * 2 + 1).join('x'),
-            array: Array(i * 3 + 1).join('x').split(/(?:)/),
-            blob: new Blob([Array(i * 4 + 1).join('x')], {type: "type " + i})
-        };
-        debug("store.put(" + stringifyDOMObject(datum) + ")");
-        store.put(datum);
+        evalAndLog('store.put({' +
+                   '"id":' + JSON.stringify('id#' + i) + ',' +
+                   '"string":' + JSON.stringify('x'.repeat(i * 2)) + ',' +
+                   '"array":' + JSON.stringify('x'.repeat(i*3).split('')) + ',' +
+                   '"blob":new Blob(' + JSON.stringify(['x'.repeat(i * 4)]) + ',{type:"type ' + i + '"})})');
     }
 
     checkStringLengths();
@@ -49,7 +46,7 @@ function testKeyPaths()
             } else {
                 checkArrayLengths();
             }
-        }
+        };
     }
 
     function checkArrayLengths() {
@@ -63,7 +60,7 @@ function testKeyPaths()
             } else {
               checkBlobSizes();
             }
-        }
+        };
     }
 
     function checkBlobSizes() {
@@ -77,7 +74,7 @@ function testKeyPaths()
             } else {
               checkBlobTypes();
             }
-        }
+        };
     }
 
     function checkBlobTypes() {
@@ -89,7 +86,7 @@ function testKeyPaths()
                 shouldBe("cursor.key", "cursor.value.blob.type");
                 cursor.continue();
             }
-        }
+        };
     }
 
     transaction.oncomplete = finishJSTest;

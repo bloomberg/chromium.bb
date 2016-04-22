@@ -262,7 +262,7 @@ unsigned long long File::size() const
 
 Blob* File::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
 {
-    if (hasBeenClosed()) {
+    if (isClosed()) {
         exceptionState.throwDOMException(InvalidStateError, "File has been closed.");
         return nullptr;
     }
@@ -311,7 +311,7 @@ void File::captureSnapshot(long long& snapshotSize, double& snapshotModification
 
 void File::close(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    if (hasBeenClosed()) {
+    if (isClosed()) {
         exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");
         return;
     }

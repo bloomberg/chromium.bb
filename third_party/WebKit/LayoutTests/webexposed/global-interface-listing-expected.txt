@@ -311,6 +311,7 @@ interface BiquadFilterNode : AudioNode
     setter type
 interface Blob
     attribute @@toStringTag
+    getter isClosed
     getter size
     getter type
     method close

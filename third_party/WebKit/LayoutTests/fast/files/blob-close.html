@@ -8,13 +8,17 @@ var blobContents = ['hello'];
 var blob = new Blob(blobContents);
 shouldBeTrue("blob instanceof window.Blob");
 shouldBe("blob.size", "5");
+shouldBe("blob.isClosed", "false");
 shouldBe("blob.close(); blob.size", "0");
+shouldBe("blob.isClosed", "true");
 
 blob = new Blob(blobContents, {type: "text/plain"});
 shouldBeEqualToString("blob.type", "text/plain");
 var sliced1 = blob.slice(2);
 shouldBe("sliced1.size", "3");
+shouldBe("blob.isClosed", "false");
 shouldBe("blob.close(); blob.size", "0");
+shouldBe("blob.isClosed", "true");
 shouldBeEqualToString("blob.type", "text/plain");
 shouldBe("sliced1.size", "3");
 var sliced2 = sliced1.slice(2);

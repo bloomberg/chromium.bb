@@ -10,14 +10,14 @@ FAIL Blob interface: existence and properties of interface prototype object asse
 PASS Blob interface: existence and properties of interface prototype object's "constructor" property 
 PASS Blob interface: attribute size 
 PASS Blob interface: attribute type 
-FAIL Blob interface: attribute isClosed assert_true: The prototype object must have a property "isClosed" expected true got false
+PASS Blob interface: attribute isClosed 
 PASS Blob interface: operation slice(long long,long long,DOMString) 
 PASS Blob interface: operation close() 
 PASS Blob must be primary interface of new Blob(["TEST"]) 
 PASS Stringification of new Blob(["TEST"]) 
 PASS Blob interface: new Blob(["TEST"]) must inherit property "size" with the proper type (0) 
 PASS Blob interface: new Blob(["TEST"]) must inherit property "type" with the proper type (1) 
-FAIL Blob interface: new Blob(["TEST"]) must inherit property "isClosed" with the proper type (2) assert_inherits: property "isClosed" not found in prototype chain
+PASS Blob interface: new Blob(["TEST"]) must inherit property "isClosed" with the proper type (2) 
 PASS Blob interface: new Blob(["TEST"]) must inherit property "slice" with the proper type (3) 
 PASS Blob interface: calling slice(long long,long long,DOMString) on new Blob(["TEST"]) with too few arguments must throw TypeError 
 PASS Blob interface: new Blob(["TEST"]) must inherit property "close" with the proper type (4) 
@@ -34,7 +34,7 @@ PASS File interface: new File(["myFileBits"], "myFileName") must inherit propert
 PASS File interface: new File(["myFileBits"], "myFileName") must inherit property "lastModified" with the proper type (1) 
 PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "size" with the proper type (0) 
 PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "type" with the proper type (1) 
-FAIL Blob interface: new File(["myFileBits"], "myFileName") must inherit property "isClosed" with the proper type (2) assert_inherits: property "isClosed" not found in prototype chain
+PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "isClosed" with the proper type (2) 
 PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "slice" with the proper type (3) 
 PASS Blob interface: calling slice(long long,long long,DOMString) on new File(["myFileBits"], "myFileName") with too few arguments must throw TypeError 
 PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "close" with the proper type (4) 

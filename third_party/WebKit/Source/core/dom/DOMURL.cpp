@@ -88,7 +88,7 @@ String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob, E
     DCHECK(blob);
     if (!executionContext)
         return String();
-    if (blob->hasBeenClosed()) {
+    if (blob->isClosed()) {
         exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
         return String();
     }

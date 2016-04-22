@@ -942,7 +942,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Local<v8:
     Blob* blob = V8Blob::toImpl(value.As<v8::Object>());
     if (!blob)
         return 0;
-    if (blob->hasBeenClosed())
+    if (blob->isClosed())
         return handleError(DataCloneError, "A Blob object has been closed, and could therefore not be cloned.", next);
     int blobIndex = -1;
     m_blobDataHandles.set(blob->uuid(), blob->blobDataHandle());
@@ -969,7 +969,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Local<v8:
     File* file = V8File::toImpl(value.As<v8::Object>());
     if (!file)
         return 0;
-    if (file->hasBeenClosed())
+    if (file->isClosed())
         return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
     int blobIndex = -1;
     m_blobDataHandles.set(file->uuid(), file->blobDataHandle());
@@ -992,7 +992,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(v8::Local
     for (unsigned i = 0; i < length; ++i) {
         int blobIndex = -1;
         const File* file = fileList->item(i);
-        if (file->hasBeenClosed())
+        if (file->isClosed())
             return handleError(DataCloneError, "A File object has been closed, and could therefore not be cloned.", next);
         m_blobDataHandles.set(file->uuid(), file->blobDataHandle());
         if (appendFileInfo(file, &blobIndex)) {

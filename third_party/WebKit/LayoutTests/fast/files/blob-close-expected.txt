@@ -5,10 +5,14 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS blob instanceof window.Blob is true
 PASS blob.size is 5
+PASS blob.isClosed is false
 PASS blob.close(); blob.size is 0
+PASS blob.isClosed is true
 PASS blob.type is "text/plain"
 PASS sliced1.size is 3
+PASS blob.isClosed is false
 PASS blob.close(); blob.size is 0
+PASS blob.isClosed is true
 PASS blob.type is "text/plain"
 PASS sliced1.size is 3
 PASS sliced2.size is 1

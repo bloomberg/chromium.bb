@@ -15,11 +15,11 @@ store.createIndex('blob type', 'blob.type')
 testKeyPaths():
 transaction = db.transaction('store', 'readwrite')
 store = transaction.objectStore('store')
-store.put({"id":"id#0","string":"","array":[],"blob":{"size":0,"type":"type 0"}})
-store.put({"id":"id#1","string":"xx","array":["x","x","x"],"blob":{"size":4,"type":"type 1"}})
-store.put({"id":"id#2","string":"xxxx","array":["x","x","x","x","x","x"],"blob":{"size":8,"type":"type 2"}})
-store.put({"id":"id#3","string":"xxxxxx","array":["x","x","x","x","x","x","x","x","x"],"blob":{"size":12,"type":"type 3"}})
-store.put({"id":"id#4","string":"xxxxxxxx","array":["x","x","x","x","x","x","x","x","x","x","x","x"],"blob":{"size":16,"type":"type 4"}})
+store.put({"id":"id#0","string":"","array":[],"blob":new Blob([""],{type:"type 0"})})
+store.put({"id":"id#1","string":"xx","array":["x","x","x"],"blob":new Blob(["xxxx"],{type:"type 1"})})
+store.put({"id":"id#2","string":"xxxx","array":["x","x","x","x","x","x"],"blob":new Blob(["xxxxxxxx"],{type:"type 2"})})
+store.put({"id":"id#3","string":"xxxxxx","array":["x","x","x","x","x","x","x","x","x"],"blob":new Blob(["xxxxxxxxxxxx"],{type:"type 3"})})
+store.put({"id":"id#4","string":"xxxxxxxx","array":["x","x","x","x","x","x","x","x","x","x","x","x"],"blob":new Blob(["xxxxxxxxxxxxxxxx"],{type:"type 4"})})
 request = store.index('string length').openCursor()
 PASS cursor.key is cursor.value.string.length
 PASS cursor.key is cursor.value.string.length

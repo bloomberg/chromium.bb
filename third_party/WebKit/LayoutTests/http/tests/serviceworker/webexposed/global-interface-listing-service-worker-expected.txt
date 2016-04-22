@@ -1,4 +1,5 @@
 interface Blob
+    getter isClosed
     getter size
     getter type
     method close

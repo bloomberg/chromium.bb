@@ -77,7 +77,7 @@ URLRegistry& BlobURLRegistry::registry()
 
 Blob::Blob(PassRefPtr<BlobDataHandle> dataHandle)
     : m_blobDataHandle(dataHandle)
-    , m_hasBeenClosed(false)
+    , m_isClosed(false)
 {
 }
 
@@ -168,7 +168,7 @@ void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
 
 Blob* Blob::slice(long long start, long long end, const String& contentType, ExceptionState& exceptionState) const
 {
-    if (hasBeenClosed()) {
+    if (isClosed()) {
         exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");
         return nullptr;
     }
@@ -185,7 +185,7 @@ Blob* Blob::slice(long long start, long long end, const String& contentType, Exc
 
 void Blob::close(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    if (hasBeenClosed()) {
+    if (isClosed()) {
         exceptionState.throwDOMException(InvalidStateError, "Blob has been closed.");
         return;
     }
@@ -202,7 +202,7 @@ void Blob::close(ExecutionContext* executionContext, ExceptionState& exceptionSt
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(type());
     m_blobDataHandle = BlobDataHandle::create(blobData.release(), 0);
-    m_hasBeenClosed = true;
+    m_isClosed = true;
 }
 
 void Blob::appendTo(BlobData& blobData) const

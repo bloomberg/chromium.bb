@@ -94,7 +94,7 @@ public:
     virtual bool isFile() const { return false; }
     // Only true for File instances that are backed by platform files.
     virtual bool hasBackingFile() const { return false; }
-    bool hasBeenClosed() const { return m_hasBeenClosed; }
+    bool isClosed() const { return m_isClosed; }
 
     // Used by the JavaScript Blob and File constructors.
     virtual void appendTo(BlobData&) const;
@@ -117,7 +117,7 @@ private:
     Blob();
 
     RefPtr<BlobDataHandle> m_blobDataHandle;
-    bool m_hasBeenClosed;
+    bool m_isClosed;
 };
 
 } // namespace blink

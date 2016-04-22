@@ -39,8 +39,7 @@ typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
 ] interface Blob {
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;
-    // TODO(jsbell): Implement:
-    // readonly attribute boolean isClosed;
+    [RuntimeEnabled=FileAPIBlobClose] readonly attribute boolean isClosed;
 
     // TODO(jsbell): start and end arguments should be [Clamp]
     // TODO(philipj): contentType should not be nullable.
