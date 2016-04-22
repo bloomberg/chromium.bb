@@ -45,6 +45,7 @@ class ContentClient;
 class ContentGpuClient;
 class ContentRendererClient;
 class ContentUtilityClient;
+struct CdmInfo;
 struct PepperPluginInfo;
 
 // Setter and getter for the client.  The client should be set early, before any
@@ -85,6 +86,11 @@ class CONTENT_EXPORT ContentClient {
   // Gives the embedder a chance to register its own pepper plugins.
   virtual void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) {}
+
+  // Gives the embedder a chance to register the content decryption
+  // modules it supports.
+  virtual void AddContentDecryptionModules(
+      std::vector<content::CdmInfo>* cdms) {}
 
   // Gives the embedder a chance to register its own standard, referrer and
   // saveable url schemes early on in the startup sequence.

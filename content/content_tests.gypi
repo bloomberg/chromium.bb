@@ -516,6 +516,7 @@
       'browser/media/capture/cursor_renderer_aura_unittest.cc',
       'browser/media/capture/web_contents_audio_input_stream_unittest.cc',
       'browser/media/capture/web_contents_video_capture_device_unittest.cc',
+      'browser/media/cdm_service_impl_unittest.cc',
       'browser/media/media_internals_unittest.cc',
       'browser/media/midi_host_unittest.cc',
       'browser/media/session/media_session_controller_unittest.cc',

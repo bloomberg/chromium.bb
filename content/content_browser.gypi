@@ -1078,6 +1078,8 @@
       'browser/media/capture/window_activity_tracker_aura.h',
       'browser/media/capture/window_activity_tracker_mac.h',
       'browser/media/capture/window_activity_tracker_mac.mm',
+      'browser/media/cdm_service_impl.cc',
+      'browser/media/cdm_service_impl.h',
       'browser/media/media_internals.cc',
       'browser/media/media_internals.h',
       'browser/media/media_internals_handler.cc',

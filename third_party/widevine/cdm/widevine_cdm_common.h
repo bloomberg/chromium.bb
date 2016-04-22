@@ -13,6 +13,9 @@ const int kWidevineCdmVersionNumComponents = 4;
 // "alpha" is a temporary name until a convention is defined.
 const char kWidevineKeySystem[] = "com.widevine.alpha";
 
+// This type is used to register the Widevine CDM.
+const char kWidevineCdmType[] = "Widevine";
+
 // This name is used by UMA. Do not change it!
 const char kWidevineKeySystemNameForUMA[] = "Widevine";
 
