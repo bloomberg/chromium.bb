@@ -64,9 +64,9 @@ class CurrentThreadMock : public blink::WebThread {
 
  private:
   scoped_refptr<scheduler::SchedulerTqmDelegate> task_runner_delegate_;
-  scoped_ptr<scheduler::RendererSchedulerImpl> scheduler_;
-  scoped_ptr<blink::WebScheduler> web_scheduler_;
-  scoped_ptr<blink::WebTaskRunner> web_task_runner_;
+  std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<blink::WebScheduler> web_scheduler_;
+  std::unique_ptr<blink::WebTaskRunner> web_task_runner_;
 };
 
 class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
@@ -93,7 +93,7 @@ class BlinkMediaTestSuite : public base::TestSuite {
   void Initialize() override;
 
  private:
-  scoped_ptr<TestBlinkPlatformSupport> blink_platform_support_;
+  std::unique_ptr<TestBlinkPlatformSupport> blink_platform_support_;
 };
 
 BlinkMediaTestSuite::BlinkMediaTestSuite(int argc, char** argv)
@@ -127,7 +127,7 @@ void BlinkMediaTestSuite::Initialize() {
   // Dummy task runner is initialized here because the blink::initialize creates
   // IsolateHolder which needs the current task runner handle. There should be
   // no task posted to this task runner.
-  scoped_ptr<base::MessageLoop> message_loop;
+  std::unique_ptr<base::MessageLoop> message_loop;
   if (!base::MessageLoop::current())
     message_loop.reset(new base::MessageLoop());
   blink::initialize(blink_platform_support_.get());

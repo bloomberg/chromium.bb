@@ -52,7 +52,7 @@ void CdmSessionAdapter::CreateCdm(
     const std::string& key_system,
     const GURL& security_origin,
     const CdmConfig& cdm_config,
-    scoped_ptr<blink::WebContentDecryptionModuleResult> result) {
+    std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "CdmSessionAdapter::CreateCdm",
                            ++trace_id_);
 
@@ -79,7 +79,7 @@ void CdmSessionAdapter::CreateCdm(
 
 void CdmSessionAdapter::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
-    scoped_ptr<SimpleCdmPromise> promise) {
+    std::unique_ptr<SimpleCdmPromise> promise) {
   cdm_->SetServerCertificate(certificate, std::move(promise));
 }
 
@@ -107,30 +107,34 @@ void CdmSessionAdapter::InitializeNewSession(
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     MediaKeys::SessionType session_type,
-    scoped_ptr<NewSessionCdmPromise> promise) {
+    std::unique_ptr<NewSessionCdmPromise> promise) {
   cdm_->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
                                         std::move(promise));
 }
 
-void CdmSessionAdapter::LoadSession(MediaKeys::SessionType session_type,
-                                    const std::string& session_id,
-                                    scoped_ptr<NewSessionCdmPromise> promise) {
+void CdmSessionAdapter::LoadSession(
+    MediaKeys::SessionType session_type,
+    const std::string& session_id,
+    std::unique_ptr<NewSessionCdmPromise> promise) {
   cdm_->LoadSession(session_type, session_id, std::move(promise));
 }
 
-void CdmSessionAdapter::UpdateSession(const std::string& session_id,
-                                      const std::vector<uint8_t>& response,
-                                      scoped_ptr<SimpleCdmPromise> promise) {
+void CdmSessionAdapter::UpdateSession(
+    const std::string& session_id,
+    const std::vector<uint8_t>& response,
+    std::unique_ptr<SimpleCdmPromise> promise) {
   cdm_->UpdateSession(session_id, response, std::move(promise));
 }
 
-void CdmSessionAdapter::CloseSession(const std::string& session_id,
-                                     scoped_ptr<SimpleCdmPromise> promise) {
+void CdmSessionAdapter::CloseSession(
+    const std::string& session_id,
+    std::unique_ptr<SimpleCdmPromise> promise) {
   cdm_->CloseSession(session_id, std::move(promise));
 }
 
-void CdmSessionAdapter::RemoveSession(const std::string& session_id,
-                                      scoped_ptr<SimpleCdmPromise> promise) {
+void CdmSessionAdapter::RemoveSession(
+    const std::string& session_id,
+    std::unique_ptr<SimpleCdmPromise> promise) {
   cdm_->RemoveSession(session_id, std::move(promise));
 }
 

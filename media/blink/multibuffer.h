@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/base/data_buffer.h"
@@ -251,11 +251,11 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
 
   // Caller takes ownership of 'provider', cache will
   // not call it anymore.
-  scoped_ptr<DataProvider> RemoveProvider(DataProvider* provider);
+  std::unique_ptr<DataProvider> RemoveProvider(DataProvider* provider);
 
   // Add a writer to this cache. Cache takes ownership, and may
   // destroy |provider| later. (Not during this call.)
-  void AddProvider(scoped_ptr<DataProvider> provider);
+  void AddProvider(std::unique_ptr<DataProvider> provider);
 
   // Transfer all data from |other| to this.
   void MergeFrom(MultiBuffer* other);
@@ -272,7 +272,7 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
  protected:
   // Create a new writer at |pos| and return it.
   // Users needs to implemement this method.
-  virtual scoped_ptr<DataProvider> CreateWriter(const BlockId& pos) = 0;
+  virtual std::unique_ptr<DataProvider> CreateWriter(const BlockId& pos) = 0;
 
   virtual bool RangeSupported() const = 0;
 
@@ -324,7 +324,7 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
 
   // Keeps track of writers by their position.
   // The writers are owned by this class.
-  std::map<BlockId, scoped_ptr<DataProvider>> writer_index_;
+  std::map<BlockId, std::unique_ptr<DataProvider>> writer_index_;
 
   // Gloabally shared LRU, decides which block to free next.
   scoped_refptr<GlobalLRU> lru_;

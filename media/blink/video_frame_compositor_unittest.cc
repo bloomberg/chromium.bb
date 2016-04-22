@@ -41,7 +41,7 @@ class VideoFrameCompositorTest : public testing::Test,
         opaque_(false) {
     compositor_->SetVideoFrameProviderClient(this);
     compositor_->set_tick_clock_for_testing(
-        scoped_ptr<base::TickClock>(tick_clock_));
+        std::unique_ptr<base::TickClock>(tick_clock_));
     // Disable background rendering by default.
     compositor_->set_background_rendering_for_testing(false);
   }
@@ -114,7 +114,7 @@ class VideoFrameCompositorTest : public testing::Test,
 
   base::MessageLoop message_loop;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |compositor_|
-  scoped_ptr<VideoFrameCompositor> compositor_;
+  std::unique_ptr<VideoFrameCompositor> compositor_;
 
   int did_receive_frame_count_;
   int natural_size_changed_count_;

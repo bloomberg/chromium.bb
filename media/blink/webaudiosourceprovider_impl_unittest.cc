@@ -91,7 +91,7 @@ class WebAudioSourceProviderImplTest
   // CopyAudioCB. Added forwarder method due to GMock troubles with scoped_ptr.
   MOCK_METHOD3(DoCopyAudioCB,
                void(AudioBus*, uint32_t delay_milliseconds, int sample_rate));
-  void OnAudioBus(scoped_ptr<AudioBus> bus,
+  void OnAudioBus(std::unique_ptr<AudioBus> bus,
                   uint32_t delay_milliseconds,
                   int sample_rate) {
     DoCopyAudioCB(bus.get(), delay_milliseconds, sample_rate);
@@ -174,8 +174,8 @@ TEST_F(WebAudioSourceProviderImplTest, SinkStateRestored) {
 
 // Test the AudioRendererSink state machine and its effects on provideInput().
 TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
-  scoped_ptr<AudioBus> bus1 = AudioBus::Create(params_);
-  scoped_ptr<AudioBus> bus2 = AudioBus::Create(params_);
+  std::unique_ptr<AudioBus> bus1 = AudioBus::Create(params_);
+  std::unique_ptr<AudioBus> bus2 = AudioBus::Create(params_);
 
   // Point the WebVector into memory owned by |bus1|.
   blink::WebVector<float*> audio_data(static_cast<size_t>(bus1->channels()));
@@ -262,7 +262,7 @@ TEST_F(WebAudioSourceProviderImplTest, CopyAudioCB) {
   wasp_impl_->SetCopyAudioCallback(base::Bind(
       &WebAudioSourceProviderImplTest::OnAudioBus, base::Unretained(this)));
 
-  const scoped_ptr<AudioBus> bus1 = AudioBus::Create(params_);
+  const std::unique_ptr<AudioBus> bus1 = AudioBus::Create(params_);
   EXPECT_CALL(*this, DoCopyAudioCB(_, 0, params_.sample_rate())).Times(1);
   Render(bus1.get());
 

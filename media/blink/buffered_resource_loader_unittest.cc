@@ -95,7 +95,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     // |test_loader_| will be used when Start() is called.
     url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_->test_loader_ = scoped_ptr<blink::WebURLLoader>(url_loader_);
+    loader_->test_loader_ = std::unique_ptr<blink::WebURLLoader>(url_loader_);
   }
 
   void SetLoaderBuffer(int forward_capacity, int backward_capacity) {
@@ -225,7 +225,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   void WriteData(int size) {
     EXPECT_CALL(*this, ProgressCallback(_));
 
-    scoped_ptr<char[]> data(new char[size]);
+    std::unique_ptr<char[]> data(new char[size]);
     loader_->didReceiveData(url_loader_, data.get(), size, size);
   }
 
@@ -304,7 +304,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   int64_t first_position_;
   int64_t last_position_;
 
-  scoped_ptr<BufferedResourceLoader> loader_;
+  std::unique_ptr<BufferedResourceLoader> loader_;
   NiceMock<MockWebURLLoader>* url_loader_;
 
   MockWebFrameClient client_;

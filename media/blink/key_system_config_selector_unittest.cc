@@ -218,8 +218,8 @@ class KeySystemConfigSelectorTest : public testing::Test {
 
   void OnNotSupported(const blink::WebString&) { not_supported_count_++; }
 
-  scoped_ptr<FakeKeySystems> key_systems_;
-  scoped_ptr<FakeMediaPermission> media_permission_;
+  std::unique_ptr<FakeKeySystems> key_systems_;
+  std::unique_ptr<FakeMediaPermission> media_permission_;
 
   // Held values for the call to SelectConfig().
   blink::WebString key_system_ = blink::WebString::fromUTF8(kSupported);

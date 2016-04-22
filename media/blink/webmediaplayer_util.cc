@@ -205,7 +205,7 @@ class SetSinkIdCallback {
  private:
   // Mutable is required so that Pass() can be called in the copy
   // constructor.
-  mutable scoped_ptr<blink::WebSetSinkIdCallbacks> web_callback_;
+  mutable std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback_;
 };
 
 void RunSetSinkIdCallback(const SetSinkIdCallback& callback,

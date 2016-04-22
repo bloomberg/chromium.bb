@@ -65,7 +65,7 @@ class MultibufferDataSource::ReadOperation {
 
   // Runs |callback_| with the given |result|, deleting the operation
   // afterwards.
-  static void Run(scoped_ptr<ReadOperation> read_op, int result);
+  static void Run(std::unique_ptr<ReadOperation> read_op, int result);
 
   int64_t position() { return position_; }
   int size() { return size_; }
@@ -95,7 +95,7 @@ MultibufferDataSource::ReadOperation::~ReadOperation() {
 
 // static
 void MultibufferDataSource::ReadOperation::Run(
-    scoped_ptr<ReadOperation> read_op,
+    std::unique_ptr<ReadOperation> read_op,
     int result) {
   base::ResetAndReturn(&read_op->callback_).Run(result);
 }

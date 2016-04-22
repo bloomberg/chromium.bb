@@ -11,7 +11,7 @@
 
 namespace media {
 
-ActiveLoader::ActiveLoader(scoped_ptr<blink::WebURLLoader> loader)
+ActiveLoader::ActiveLoader(std::unique_ptr<blink::WebURLLoader> loader)
     : loader_(std::move(loader)), deferred_(false) {}
 
 ActiveLoader::~ActiveLoader() {

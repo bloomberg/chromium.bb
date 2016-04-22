@@ -22,12 +22,12 @@ ResourceMultiBuffer::ResourceMultiBuffer(UrlData* url_data, int block_shift)
 
 ResourceMultiBuffer::~ResourceMultiBuffer() {}
 
-scoped_ptr<MultiBuffer::DataProvider> ResourceMultiBuffer::CreateWriter(
+std::unique_ptr<MultiBuffer::DataProvider> ResourceMultiBuffer::CreateWriter(
     const MultiBufferBlockId& pos) {
   ResourceMultiBufferDataProvider* ret =
       new ResourceMultiBufferDataProvider(url_data_, pos);
   ret->Start();
-  return scoped_ptr<MultiBuffer::DataProvider>(ret);
+  return std::unique_ptr<MultiBuffer::DataProvider>(ret);
 }
 
 bool ResourceMultiBuffer::RangeSupported() const {

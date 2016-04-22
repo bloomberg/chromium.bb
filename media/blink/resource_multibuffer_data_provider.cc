@@ -86,7 +86,7 @@ void ResourceMultiBufferDataProvider::Start() {
       WebString::fromUTF8("identity;q=1, *;q=0"));
 
   // Check for our test WebURLLoader.
-  scoped_ptr<WebURLLoader> loader;
+  std::unique_ptr<WebURLLoader> loader;
   if (test_loader_) {
     loader = std::move(test_loader_);
   } else {
@@ -300,7 +300,7 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
     destination_url_data->Use();
 
     // Take ownership of ourselves. (From the multibuffer)
-    scoped_ptr<DataProvider> self(
+    std::unique_ptr<DataProvider> self(
         url_data_->multibuffer()->RemoveProvider(this));
     url_data_ = destination_url_data.get();
     // Give the ownership to our new owner.
@@ -387,7 +387,7 @@ void ResourceMultiBufferDataProvider::didFinishLoading(
           base::TimeDelta::FromMilliseconds(kLoaderPartialRetryDelayMs));
       return;
     } else {
-      scoped_ptr<ActiveLoader> active_loader = std::move(active_loader_);
+      std::unique_ptr<ActiveLoader> active_loader = std::move(active_loader_);
       url_data_->Fail();
       return;
     }

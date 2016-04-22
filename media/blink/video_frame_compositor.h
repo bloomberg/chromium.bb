@@ -106,7 +106,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // PaintFrameUsingOldRenderingPath() is not also called while stopped.)
   base::TimeDelta GetCurrentFrameTimestamp() const;
 
-  void set_tick_clock_for_testing(scoped_ptr<base::TickClock> tick_clock) {
+  void set_tick_clock_for_testing(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
   }
 
@@ -143,7 +143,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
                   bool background_rendering);
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // These callbacks are executed on the compositor thread.
   const base::Callback<void(gfx::Size)> natural_size_changed_cb_;

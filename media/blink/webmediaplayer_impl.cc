@@ -142,7 +142,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-    scoped_ptr<RendererFactory> renderer_factory,
+    std::unique_ptr<RendererFactory> renderer_factory,
     linked_ptr<UrlIndex> url_index,
     const WebMediaPlayerParams& params)
     : frame_(frame),
@@ -819,7 +819,7 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
 }
 
 void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
-    scoped_ptr<MediaTracks> tracks) {
+    std::unique_ptr<MediaTracks> tracks) {
   // For MSE/chunk_demuxer case the media track updates are handled by
   // WebSourceBufferImpl.
   DCHECK(demuxer_.get());
@@ -1045,10 +1045,10 @@ void WebMediaPlayerImpl::OnAddTextTrack(
   const blink::WebString web_id =
       blink::WebString::fromUTF8(config.id());
 
-  scoped_ptr<WebInbandTextTrackImpl> web_inband_text_track(
+  std::unique_ptr<WebInbandTextTrackImpl> web_inband_text_track(
       new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id));
 
-  scoped_ptr<media::TextTrack> text_track(new TextTrackImpl(
+  std::unique_ptr<media::TextTrack> text_track(new TextTrackImpl(
       main_task_runner_, client_, std::move(web_inband_text_track)));
 
   done_cb.Run(std::move(text_track));
@@ -1219,7 +1219,7 @@ void WebMediaPlayerImpl::OnSurfaceRequested(
   }
 }
 
-scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
+std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   RequestSurfaceCB request_surface_cb;
 #if defined(OS_ANDROID)
   request_surface_cb =

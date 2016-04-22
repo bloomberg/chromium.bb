@@ -5,13 +5,13 @@
 #ifndef MEDIA_BLINK_KEY_SYSTEM_CONFIG_SELECTOR_H_
 #define MEDIA_BLINK_KEY_SYSTEM_CONFIG_SELECTOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/eme_constants.h"
 #include "media/blink/media_blink_export.h"
@@ -60,9 +60,9 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
     CONFIGURATION_SUPPORTED,
   };
 
-  void SelectConfigInternal(scoped_ptr<SelectionRequest> request);
+  void SelectConfigInternal(std::unique_ptr<SelectionRequest> request);
 
-  void OnPermissionResult(scoped_ptr<SelectionRequest> request,
+  void OnPermissionResult(std::unique_ptr<SelectionRequest> request,
                           bool is_permission_granted);
 
   ConfigurationSupport GetSupportedConfiguration(

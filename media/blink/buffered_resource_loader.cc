@@ -181,7 +181,7 @@ void BufferedResourceLoader::Start(
       WebString::fromUTF8("identity;q=1, *;q=0"));
 
   // Check for our test WebURLLoader.
-  scoped_ptr<WebURLLoader> loader;
+  std::unique_ptr<WebURLLoader> loader;
   if (test_loader_) {
     loader = std::move(test_loader_);
   } else {
@@ -555,7 +555,7 @@ void BufferedResourceLoader::didFail(
   // We don't need to continue loading after failure.
   //
   // Keep it alive until we exit this method so that |error| remains valid.
-  scoped_ptr<ActiveLoader> active_loader = std::move(active_loader_);
+  std::unique_ptr<ActiveLoader> active_loader = std::move(active_loader_);
   loader_failed_ = true;
   loading_cb_.Run(kLoadingFailed);
 

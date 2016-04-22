@@ -19,7 +19,7 @@ namespace media {
 TextTrackImpl::TextTrackImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     blink::WebMediaPlayerClient* client,
-    scoped_ptr<WebInbandTextTrackImpl> text_track)
+    std::unique_ptr<WebInbandTextTrackImpl> text_track)
     : task_runner_(task_runner),
       client_(client),
       text_track_(std::move(text_track)) {
@@ -64,7 +64,7 @@ void TextTrackImpl::OnAddCue(WebInbandTextTrackImpl* text_track,
 
 void TextTrackImpl::OnRemoveTrack(
     blink::WebMediaPlayerClient* client,
-    scoped_ptr<WebInbandTextTrackImpl> text_track) {
+    std::unique_ptr<WebInbandTextTrackImpl> text_track) {
   if (text_track->client())
     client->removeTextTrack(text_track.get());
 }

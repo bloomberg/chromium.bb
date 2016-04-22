@@ -5,11 +5,11 @@
 #ifndef MEDIA_BLINK_WEBENCRYPTEDMEDIACLIENT_IMPL_H_
 #define MEDIA_BLINK_WEBENCRYPTEDMEDIACLIENT_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/blink/key_system_config_selector.h"
 #include "media/blink/media_blink_export.h"
@@ -45,10 +45,11 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
 
   // Create the CDM for |key_system| and |security_origin|. The caller owns
   // the created cdm (passed back using |result|).
-  void CreateCdm(const blink::WebString& key_system,
-                 const blink::WebSecurityOrigin& security_origin,
-                 const CdmConfig& cdm_config,
-                 scoped_ptr<blink::WebContentDecryptionModuleResult> result);
+  void CreateCdm(
+      const blink::WebString& key_system,
+      const blink::WebSecurityOrigin& security_origin,
+      const CdmConfig& cdm_config,
+      std::unique_ptr<blink::WebContentDecryptionModuleResult> result);
 
  private:
   // Report usage of key system to UMA. There are 2 different counts logged:
@@ -73,7 +74,7 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   Reporter* GetReporter(const blink::WebString& key_system);
 
   // Reporter singletons.
-  base::ScopedPtrHashMap<std::string, scoped_ptr<Reporter>> reporters_;
+  base::ScopedPtrHashMap<std::string, std::unique_ptr<Reporter>> reporters_;
 
   base::Callback<bool(void)> are_secure_codecs_supported_cb_;
   CdmFactory* cdm_factory_;

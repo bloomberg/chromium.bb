@@ -92,14 +92,14 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
     first_position_ = first_position;
 
-    scoped_ptr<ResourceMultiBufferDataProvider> loader(
+    std::unique_ptr<ResourceMultiBufferDataProvider> loader(
         new ResourceMultiBufferDataProvider(url_data_.get(), first_position_));
     loader_ = loader.get();
     url_data_->multibuffer()->AddProvider(std::move(loader));
 
     // |test_loader_| will be used when Start() is called.
     url_loader_ = new NiceMock<MockWebURLLoader>();
-    loader_->test_loader_ = scoped_ptr<blink::WebURLLoader>(url_loader_);
+    loader_->test_loader_ = std::unique_ptr<blink::WebURLLoader>(url_loader_);
   }
 
   void Start() {
@@ -198,7 +198,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   }
 
   void WriteData(int size) {
-    scoped_ptr<char[]> data(new char[size]);
+    std::unique_ptr<char[]> data(new char[size]);
     loader_->didReceiveData(url_loader_, data.get(), size, size);
   }
 
@@ -218,7 +218,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   GURL gurl_;
   int64_t first_position_;
 
-  scoped_ptr<UrlIndex> url_index_;
+  std::unique_ptr<UrlIndex> url_index_;
   scoped_refptr<UrlData> url_data_;
   scoped_refptr<UrlData> redirected_to_;
   // The loader is owned by the UrlData above.

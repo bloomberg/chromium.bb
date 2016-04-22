@@ -43,8 +43,9 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
     : NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
       NON_EXPORTED_BASE(public SwitchableAudioRendererSink) {
  public:
-  using CopyAudioCB = base::Callback<
-      void(scoped_ptr<AudioBus>, uint32_t delay_milliseconds, int sample_rate)>;
+  using CopyAudioCB = base::Callback<void(std::unique_ptr<AudioBus>,
+                                          uint32_t delay_milliseconds,
+                                          int sample_rate)>;
 
   explicit WebAudioSourceProviderImpl(
       const scoped_refptr<SwitchableAudioRendererSink>& sink);
@@ -95,11 +96,11 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
   const scoped_refptr<SwitchableAudioRendererSink> sink_;
-  scoped_ptr<AudioBus> bus_wrapper_;
+  std::unique_ptr<AudioBus> bus_wrapper_;
 
   // An inner class acting as a T filter where actual data can be tapped.
   class TeeFilter;
-  scoped_ptr<TeeFilter> tee_filter_;
+  std::unique_ptr<TeeFilter> tee_filter_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_factory_;

@@ -29,7 +29,7 @@ void WebContentDecryptionModuleImpl::Create(
     const base::string16& key_system,
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
-    scoped_ptr<blink::WebContentDecryptionModuleResult> result) {
+    std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
   DCHECK(!security_origin.isNull());
   DCHECK(!key_system.empty());
 
@@ -97,7 +97,7 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
   adapter_->SetServerCertificate(
       std::vector<uint8_t>(server_certificate,
                            server_certificate + server_certificate_length),
-      scoped_ptr<SimpleCdmPromise>(
+      std::unique_ptr<SimpleCdmPromise>(
           new CdmResultPromise<>(result, std::string())));
 }
 

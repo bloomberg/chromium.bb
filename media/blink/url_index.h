@@ -37,7 +37,7 @@ class MEDIA_BLINK_EXPORT ResourceMultiBuffer
   ~ResourceMultiBuffer() override;
 
   // MultiBuffer implementation.
-  scoped_ptr<MultiBuffer::DataProvider> CreateWriter(
+  std::unique_ptr<MultiBuffer::DataProvider> CreateWriter(
       const BlockId& pos) override;
   bool RangeSupported() const override;
   void OnEmpty() override;

@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/blink/webmediaplayer_impl.h"
+
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -17,7 +21,6 @@
 #include "media/base/test_helpers.h"
 #include "media/blink/mock_webframeclient.h"
 #include "media/blink/webmediaplayer_delegate.h"
-#include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -96,7 +99,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_.reset(new WebMediaPlayerImpl(
         web_local_frame_, &client_, nullptr,
         base::WeakPtr<WebMediaPlayerDelegate>(),
-        make_scoped_ptr(new DefaultRendererFactory(
+        base::WrapUnique(new DefaultRendererFactory(
             media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB(),
             audio_hardware_config_)),
         url_index_,
@@ -186,7 +189,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   DummyWebMediaPlayerClient client_;
 
   // The WebMediaPlayerImpl instance under test.
-  scoped_ptr<WebMediaPlayerImpl> wmpi_;
+  std::unique_ptr<WebMediaPlayerImpl> wmpi_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);

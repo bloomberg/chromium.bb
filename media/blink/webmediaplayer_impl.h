@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -90,7 +90,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
-      scoped_ptr<RendererFactory> renderer_factory,
+      std::unique_ptr<RendererFactory> renderer_factory,
       linked_ptr<UrlIndex> url_index,
       const WebMediaPlayerParams& params);
   ~WebMediaPlayerImpl() override;
@@ -253,7 +253,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnSurfaceRequested(const SurfaceCreatedCB& surface_created_cb);
 
   // Creates a Renderer via the |renderer_factory_|.
-  scoped_ptr<Renderer> CreateRenderer();
+  std::unique_ptr<Renderer> CreateRenderer();
 
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();
@@ -286,7 +286,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called when the FFmpegDemuxer encounters new media tracks. This is only
   // invoked when using FFmpegDemuxer, since MSE/ChunkDemuxer handle media
   // tracks separately in WebSourceBufferImpl.
-  void OnFFmpegMediaTracksUpdated(scoped_ptr<MediaTracks> tracks);
+  void OnFFmpegMediaTracksUpdated(std::unique_ptr<MediaTracks> tracks);
 
   // Called when a decoder detects that the key needed to decrypt the stream
   // is not available.
@@ -447,8 +447,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //
   // |demuxer_| will contain the appropriate demuxer based on which resource
   // load strategy we're using.
-  scoped_ptr<BufferedDataSourceInterface> data_source_;
-  scoped_ptr<Demuxer> demuxer_;
+  std::unique_ptr<BufferedDataSourceInterface> data_source_;
+  std::unique_ptr<Demuxer> demuxer_;
   ChunkDemuxer* chunk_demuxer_;
 
   BufferedDataSourceHostImpl buffered_data_source_host_;
@@ -461,9 +461,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // The compositor layer for displaying the video content when using composited
   // playback.
-  scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
+  std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
-  scoped_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
+  std::unique_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
 
   // Whether a CDM has been successfully attached.
   bool is_cdm_attached_;
@@ -479,7 +479,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   double volume_;
   double volume_multiplier_;
 
-  scoped_ptr<RendererFactory> renderer_factory_;
+  std::unique_ptr<RendererFactory> renderer_factory_;
 
   // For requesting surfaces on behalf of the Android H/W decoder in fullscreen.
   // This will be null everywhere but Android.

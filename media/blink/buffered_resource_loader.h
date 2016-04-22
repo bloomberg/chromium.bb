@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/seekable_buffer.h"
 #include "media/blink/active_loader.h"
 #include "media/blink/media_blink_export.h"
@@ -268,7 +268,7 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   SeekableBuffer buffer_;
 
   // Keeps track of an active WebURLLoader and associated state.
-  scoped_ptr<ActiveLoader> active_loader_;
+  std::unique_ptr<ActiveLoader> active_loader_;
 
   // Tracks if |active_loader_| failed. If so, then all calls to Read() will
   // fail.
@@ -319,7 +319,7 @@ class MEDIA_BLINK_EXPORT BufferedResourceLoader
   int last_offset_;
 
   // Injected WebURLLoader instance for testing purposes.
-  scoped_ptr<blink::WebURLLoader> test_loader_;
+  std::unique_ptr<blink::WebURLLoader> test_loader_;
 
   // Bitrate of the media. Set to 0 if unknown.
   int bitrate_;

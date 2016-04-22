@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/data_source.h"
@@ -266,7 +266,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   blink::WebFrame* frame_;
 
   // A resource loader for the media resource.
-  scoped_ptr<BufferedResourceLoader> loader_;
+  std::unique_ptr<BufferedResourceLoader> loader_;
 
   // Callback method from the pipeline for initialization.
   InitializeCB init_cb_;
@@ -274,7 +274,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSource
   // Read parameters received from the Read() method call. Must be accessed
   // under |lock_|.
   class ReadOperation;
-  scoped_ptr<ReadOperation> read_op_;
+  std::unique_ptr<ReadOperation> read_op_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from

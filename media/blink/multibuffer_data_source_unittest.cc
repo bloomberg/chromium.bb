@@ -61,7 +61,7 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
     ON_CALL(*url_loader, cancel()).WillByDefault(Assign(&loading_, false));
     loading_ = true;
     active_loader_.reset(
-        new ActiveLoader(scoped_ptr<WebURLLoader>(url_loader)));
+        new ActiveLoader(std::unique_ptr<WebURLLoader>(url_loader)));
     if (!on_start_.is_null()) {
       on_start_.Run();
     }
@@ -82,12 +82,12 @@ class TestResourceMultiBuffer : public ResourceMultiBuffer {
   explicit TestResourceMultiBuffer(UrlData* url_data, int shift)
       : ResourceMultiBuffer(url_data, shift) {}
 
-  scoped_ptr<MultiBuffer::DataProvider> CreateWriter(
+  std::unique_ptr<MultiBuffer::DataProvider> CreateWriter(
       const BlockId& pos) override {
     TestMultiBufferDataProvider* ret =
         new TestMultiBufferDataProvider(url_data_, pos);
     ret->Start();
-    return scoped_ptr<MultiBuffer::DataProvider>(ret);
+    return std::unique_ptr<MultiBuffer::DataProvider>(ret);
   }
 
   // TODO: Make these global
@@ -138,7 +138,7 @@ class TestUrlData : public UrlData {
   ~TestUrlData() override {}
   const int block_shift_;
 
-  scoped_ptr<TestResourceMultiBuffer> test_multibuffer_;
+  std::unique_ptr<TestResourceMultiBuffer> test_multibuffer_;
 };
 
 class TestUrlIndex : public UrlIndex {
@@ -307,7 +307,7 @@ class MultibufferDataSourceTest : public testing::Test {
     EXPECT_TRUE(url_loader());
     if (!url_loader())
       return;
-    scoped_ptr<char[]> data(new char[size]);
+    std::unique_ptr<char[]> data(new char[size]);
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
     data_provider()->didReceiveData(url_loader(), data.get(), size, size);
@@ -459,9 +459,9 @@ class MultibufferDataSourceTest : public testing::Test {
   base::MessageLoop message_loop_;
   linked_ptr<TestUrlIndex> url_index_;
 
-  scoped_ptr<MockMultibufferDataSource> data_source_;
+  std::unique_ptr<MockMultibufferDataSource> data_source_;
 
-  scoped_ptr<TestResponseGenerator> response_generator_;
+  std::unique_ptr<TestResponseGenerator> response_generator_;
 
   StrictMock<MockBufferedDataSourceHost> host_;
 

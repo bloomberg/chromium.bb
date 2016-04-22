@@ -299,20 +299,20 @@ void MultiBuffer::ReleaseBlocks(const std::vector<MultiBufferBlockId>& blocks) {
 
 void MultiBuffer::OnEmpty() {}
 
-void MultiBuffer::AddProvider(scoped_ptr<DataProvider> provider) {
+void MultiBuffer::AddProvider(std::unique_ptr<DataProvider> provider) {
   // If there is already a provider in the same location, we delete it.
   DCHECK(!provider->Available());
   BlockId pos = provider->Tell();
   writer_index_[pos] = std::move(provider);
 }
 
-scoped_ptr<MultiBuffer::DataProvider> MultiBuffer::RemoveProvider(
+std::unique_ptr<MultiBuffer::DataProvider> MultiBuffer::RemoveProvider(
     DataProvider* provider) {
   BlockId pos = provider->Tell();
   auto iter = writer_index_.find(pos);
   DCHECK(iter != writer_index_.end());
   DCHECK_EQ(iter->second.get(), provider);
-  scoped_ptr<DataProvider> ret = std::move(iter->second);
+  std::unique_ptr<DataProvider> ret = std::move(iter->second);
   writer_index_.erase(iter);
   return ret;
 }
@@ -363,7 +363,7 @@ void MultiBuffer::Prune(size_t max_to_free) {
 }
 
 void MultiBuffer::OnDataProviderEvent(DataProvider* provider_tmp) {
-  scoped_ptr<DataProvider> provider(RemoveProvider(provider_tmp));
+  std::unique_ptr<DataProvider> provider(RemoveProvider(provider_tmp));
   BlockId start_pos = provider->Tell();
   BlockId pos = start_pos;
   bool eof = false;

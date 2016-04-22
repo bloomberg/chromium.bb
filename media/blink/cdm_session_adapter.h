@@ -37,16 +37,17 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // Creates the CDM for |key_system| using |cdm_factory| and returns the result
   // via |result|.
-  void CreateCdm(CdmFactory* cdm_factory,
-                 const std::string& key_system,
-                 const GURL& security_origin,
-                 const CdmConfig& cdm_config,
-                 scoped_ptr<blink::WebContentDecryptionModuleResult> result);
+  void CreateCdm(
+      CdmFactory* cdm_factory,
+      const std::string& key_system,
+      const GURL& security_origin,
+      const CdmConfig& cdm_config,
+      std::unique_ptr<blink::WebContentDecryptionModuleResult> result);
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
-                            scoped_ptr<SimpleCdmPromise> promise);
+                            std::unique_ptr<SimpleCdmPromise> promise);
 
   // Creates a new session and adds it to the internal map. The caller owns the
   // created session. RemoveSession() must be called when destroying it, if
@@ -68,26 +69,26 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void InitializeNewSession(EmeInitDataType init_data_type,
                             const std::vector<uint8_t>& init_data,
                             MediaKeys::SessionType session_type,
-                            scoped_ptr<NewSessionCdmPromise> promise);
+                            std::unique_ptr<NewSessionCdmPromise> promise);
 
   // Loads the session specified by |session_id|.
   void LoadSession(MediaKeys::SessionType session_type,
                    const std::string& session_id,
-                   scoped_ptr<NewSessionCdmPromise> promise);
+                   std::unique_ptr<NewSessionCdmPromise> promise);
 
   // Updates the session specified by |session_id| with |response|.
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<SimpleCdmPromise> promise);
+                     std::unique_ptr<SimpleCdmPromise> promise);
 
   // Closes the session specified by |session_id|.
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<SimpleCdmPromise> promise);
+                    std::unique_ptr<SimpleCdmPromise> promise);
 
   // Removes stored session data associated with the session specified by
   // |session_id|.
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<SimpleCdmPromise> promise);
+                     std::unique_ptr<SimpleCdmPromise> promise);
 
   // Returns the CdmContext associated with |media_keys_|.
   // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
@@ -149,7 +150,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // OnCdmCreated() call.
   uint32_t trace_id_;
 
-  scoped_ptr<blink::WebContentDecryptionModuleResult> cdm_created_result_;
+  std::unique_ptr<blink::WebContentDecryptionModuleResult> cdm_created_result_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;

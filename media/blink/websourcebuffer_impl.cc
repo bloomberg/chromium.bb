@@ -173,7 +173,8 @@ blink::WebMediaPlayer::TrackType mediaTrackTypeToBlink(MediaTrack::Type type) {
   return blink::WebMediaPlayer::AudioTrack;
 }
 
-void WebSourceBufferImpl::InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
+void WebSourceBufferImpl::InitSegmentReceived(
+    std::unique_ptr<MediaTracks> tracks) {
   DCHECK(tracks.get());
   DVLOG(1) << __FUNCTION__ << " tracks=" << tracks->tracks().size();
 

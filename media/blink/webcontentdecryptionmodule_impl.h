@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
@@ -39,7 +40,7 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
       const base::string16& key_system,
       const blink::WebSecurityOrigin& security_origin,
       const CdmConfig& cdm_config,
-      scoped_ptr<blink::WebContentDecryptionModuleResult> result);
+      std::unique_ptr<blink::WebContentDecryptionModuleResult> result);
 
   ~WebContentDecryptionModuleImpl() override;
 

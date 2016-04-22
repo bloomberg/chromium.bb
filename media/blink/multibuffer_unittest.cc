@@ -189,12 +189,12 @@ class TestMultiBuffer : public MultiBuffer {
   void SetRangeSupported(bool supported) { range_supported_ = supported; }
 
  protected:
-  scoped_ptr<DataProvider> CreateWriter(
+  std::unique_ptr<DataProvider> CreateWriter(
       const MultiBufferBlockId& pos) override {
     DCHECK(create_ok_);
     writers_created_++;
     CHECK_LT(writers.size(), max_writers_);
-    return scoped_ptr<DataProvider>(new FakeMultiBufferDataProvider(
+    return std::unique_ptr<DataProvider>(new FakeMultiBufferDataProvider(
         pos, file_size_, max_blocks_after_defer_, must_read_whole_file_, this,
         rnd_));
   }

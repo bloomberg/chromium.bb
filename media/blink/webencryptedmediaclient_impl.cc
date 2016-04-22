@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -125,7 +126,7 @@ void WebEncryptedMediaClientImpl::CreateCdm(
     const blink::WebString& key_system,
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
-    scoped_ptr<blink::WebContentDecryptionModuleResult> result) {
+    std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
   WebContentDecryptionModuleImpl::Create(
       cdm_factory_, key_system, security_origin, cdm_config, std::move(result));
 }
@@ -161,7 +162,7 @@ WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
   Reporter* reporter = reporters_.get(uma_name);
   if (!reporter) {
     reporter = new Reporter(uma_name);
-    reporters_.add(uma_name, make_scoped_ptr(reporter));
+    reporters_.add(uma_name, base::WrapUnique(reporter));
   }
   return reporter;
 }

@@ -4,11 +4,11 @@
 
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
@@ -21,7 +21,7 @@ static void CreateCdm(
     const blink::WebString& key_system,
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
-    scoped_ptr<blink::WebContentDecryptionModuleResult> result) {
+    std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
   // If |client| is gone (due to the frame getting destroyed), it is
   // impossible to create the CDM, so fail.
   if (!client) {
@@ -72,7 +72,7 @@ void WebContentDecryptionModuleAccessImpl::createContentDecryptionModule(
   // As this object's lifetime is controlled by MediaKeySystemAccess on the
   // blink side, copy all values needed by CreateCdm() in case the blink object
   // gets garbage-collected.
-  scoped_ptr<blink::WebContentDecryptionModuleResult> result_copy(
+  std::unique_ptr<blink::WebContentDecryptionModuleResult> result_copy(
       new blink::WebContentDecryptionModuleResult(result));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&CreateCdm, client_, key_system_, security_origin_,

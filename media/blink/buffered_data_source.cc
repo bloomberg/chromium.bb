@@ -47,7 +47,7 @@ class BufferedDataSource::ReadOperation {
 
   // Runs |callback_| with the given |result|, deleting the operation
   // afterwards.
-  static void Run(scoped_ptr<ReadOperation> read_op, int result);
+  static void Run(std::unique_ptr<ReadOperation> read_op, int result);
 
   // State for the number of times this read operation has been retried.
   int retries() { return retries_; }
@@ -87,7 +87,8 @@ BufferedDataSource::ReadOperation::~ReadOperation() {
 
 // static
 void BufferedDataSource::ReadOperation::Run(
-    scoped_ptr<ReadOperation> read_op, int result) {
+    std::unique_ptr<ReadOperation> read_op,
+    int result) {
   base::ResetAndReturn(&read_op->callback_).Run(result);
 }
 

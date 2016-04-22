@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/WebSourceBuffer.h"
 
@@ -44,7 +44,7 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
  private:
   // Demuxer callback handler to process an initialization segment received
   // during an append() call.
-  void InitSegmentReceived(scoped_ptr<MediaTracks> tracks);
+  void InitSegmentReceived(std::unique_ptr<MediaTracks> tracks);
 
   std::string id_;
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.

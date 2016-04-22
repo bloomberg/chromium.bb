@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
 
@@ -220,7 +221,7 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStopped);
 
-  tee_filter_ = make_scoped_ptr(
+  tee_filter_ = base::WrapUnique(
       new TeeFilter(renderer, params.channels(), params.sample_rate()));
 
   sink_->Initialize(params, tee_filter_.get());
@@ -261,7 +262,7 @@ int WebAudioSourceProviderImpl::TeeFilter::Render(AudioBus* audio_bus,
       renderer_->Render(audio_bus, delay_milliseconds, frames_skipped);
 
   if (!copy_audio_bus_callback_.is_null()) {
-    scoped_ptr<AudioBus> bus_copy =
+    std::unique_ptr<AudioBus> bus_copy =
         AudioBus::Create(audio_bus->channels(), audio_bus->frames());
     audio_bus->CopyTo(bus_copy.get());
     copy_audio_bus_callback_.Run(std::move(bus_copy), delay_milliseconds,

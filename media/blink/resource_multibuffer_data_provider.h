@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/blink/active_loader.h"
 #include "media/blink/media_blink_export.h"
@@ -115,10 +115,10 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   const GURL origin_;
 
   // Keeps track of an active WebURLLoader and associated state.
-  scoped_ptr<ActiveLoader> active_loader_;
+  std::unique_ptr<ActiveLoader> active_loader_;
 
   // Injected WebURLLoader instance for testing purposes.
-  scoped_ptr<blink::WebURLLoader> test_loader_;
+  std::unique_ptr<blink::WebURLLoader> test_loader_;
 
   // When we encounter a redirect, this is the source of the redirect.
   GURL redirects_to_;
