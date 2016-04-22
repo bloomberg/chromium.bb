@@ -181,7 +181,7 @@ void ColorPicker::UpdateCursor() {
   SkPaint paint;
 
   // Paint original spot with cross.
-  if (kHotspotRadius) {
+  if (kHotspotRadius > 0) {
     paint.setStrokeWidth(1);
     paint.setAntiAlias(false);
     paint.setColor(SK_ColorDKGRAY);
