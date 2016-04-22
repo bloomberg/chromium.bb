@@ -104,10 +104,6 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
-crbug.com/577655 fast/canvas/canvas-zero-length-lineCap.html [ NeedsManualRebaseline ]
-crbug.com/577655 virtual/display_list_2d_canvas/fast/canvas/canvas-zero-length-lineCap.html [ NeedsManualRebaseline ]
-crbug.com/577655 virtual/gpu/fast/canvas/canvas-zero-length-lineCap.html [ NeedsManualRebaseline ]
-
 # Expected to fail until OffscreenCanvas can render on the gpu
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
