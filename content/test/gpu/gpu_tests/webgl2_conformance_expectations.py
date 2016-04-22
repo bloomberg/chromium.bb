@@ -60,7 +60,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadertexturefunction*.html', bug=483282)
     self.Skip('deqp/functional/gles3/sync.html', bug=483282)
-    self.Skip('deqp/functional/gles3/texturefiltering*.html', bug=483282)
     self.Skip('deqp/functional/gles3/textureformat.html', bug=483282)
     self.Skip('deqp/functional/gles3/textureshadow.html', bug=483282)
     self.Skip('deqp/functional/gles3/texturespecification*.html', bug=483282)
@@ -313,12 +312,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
-    # Win / AMD flakiness seen on the FYI waterfall.
+    # Win / AMD
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
     # it's infeasible to suppress individual failures one by one.
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
+        ['win', ('amd', 0x6779)], bug=606021)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -327,6 +328,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
 
     # Mac only.
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
+        ['mac'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_*',
+        ['mac'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_combinations_*',
+        ['mac'], bug=606074)
+
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
     self.Fail('deqp/data/gles3/shaders/scoping.html',
@@ -378,6 +386,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/' +
+        '2d_array_combinations_01.html',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_06.html',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_07.html',
+        ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_08.html',
+        ['mac', 'intel'], bug=606074)
 
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',
@@ -403,6 +422,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderswitch.html',
         ['linux', 'nvidia'], bug=605646)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
+        ['linux', 'nvidia'], bug=606021)
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'nvidia', 'debug'], bug=483282)
 
