@@ -40,6 +40,9 @@ bool IsValidCreditCardExpirationDate(const base::string16& year,
 bool IsValidCreditCardExpirationDate(int year,
                                      int month,
                                      const base::Time& now) {
+  if (month < 1 || month > 12)
+    return false;
+
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
 

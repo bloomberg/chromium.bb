@@ -58,20 +58,26 @@ const char kCurrentDate[]="1 May 2013";
 const ExpirationDate kValidCreditCardExpirationDate[] = {
   { "2013", "5" },  // Valid month in current year.
   { "2014", "1" },  // Any month in next year.
+  { "2014", "12" },  // Edge condition.
   { "2014", " 1" },  // Whitespace in month.
   { " 2014", "1" },  // Whitespace in year.
 };
 const IntExpirationDate kValidCreditCardIntExpirationDate[] = {
   { 2013, 5 },  // Valid month in current year.
   { 2014, 1 },  // Any month in next year.
+  { 2014, 12 },  // Edge condition.
 };
 const ExpirationDate kInvalidCreditCardExpirationDate[] = {
   { "2013", "04" },  // Previous month in current year.
   { "2012", "12" },  // Any month in previous year.
+  { "2015", "13" },  // Not a real month.
+  { "2015", "00" },  // Zero is legal in the CC class but is not a valid date.
 };
 const IntExpirationDate kInvalidCreditCardIntExpirationDate[] = {
   { 2013, 4 },  // Previous month in current year.
   { 2012, 12 },  // Any month in previous year.
+  { 2015, 13 },  // Not a real month.
+  { 2015, 0 },  // Zero is legal in the CC class but is not a valid date.
 };
 const char* const kValidCreditCardSecurityCode[] = {
   "323",  // 3-digit CSC.
