@@ -281,10 +281,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
 }
 
 // Test developerPrivate.packDirectory.
-// http://crbug.com/527228 flaky
+// http://crbug.com/527228 flaky.
+// This test was flaky likely due to previously calling ResetThreadBundle,
+// however it is still flaky after removing ResetThreadBundle call.
 TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivatePackFunction) {
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
-
   base::FilePath root_path = data_dir().AppendASCII("good_unpacked");
   base::FilePath crx_path = data_dir().AppendASCII("good_unpacked.crx");
   base::FilePath pem_path = data_dir().AppendASCII("good_unpacked.pem");
@@ -326,9 +326,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivatePackFunction) {
 }
 
 // Test developerPrivate.choosePath.
-// http://crbug.com/527228 flaky
-TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivateChoosePath) {
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   content::TestWebContentsFactory web_contents_factory;
   content::WebContents* web_contents =
       web_contents_factory.CreateWebContents(profile());
@@ -372,9 +370,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivateChoosePath) {
 }
 
 // Test developerPrivate.loadUnpacked.
-// http://crbug.com/527228 flaky
-TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivateLoadUnpacked) {
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
   content::TestWebContentsFactory web_contents_factory;
   content::WebContents* web_contents =
       web_contents_factory.CreateWebContents(profile());
@@ -418,10 +414,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivateLoadUnpacked) {
 }
 
 // Test developerPrivate.requestFileSource.
-// http://crbug.com/527228 flaky
-TEST_F(DeveloperPrivateApiUnitTest,
-       DISABLED_DeveloperPrivateRequestFileSource) {
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   // Testing of this function seems light, but that's because it basically just
   // forwards to reading a file to a string, and highlighting it - both of which
   // are already tested separately.
@@ -452,10 +445,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
 }
 
 // Test developerPrivate.getExtensionsInfo.
-// http://crbug.com/527228 flaky
-TEST_F(DeveloperPrivateApiUnitTest,
-       DISABLED_DeveloperPrivateGetExtensionsInfo) {
-  ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   LoadSimpleExtension();
 
   // The test here isn't so much about the generated value (that's tested in
