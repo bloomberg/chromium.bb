@@ -14,9 +14,9 @@
 namespace test_runner {
 
 class AccessibilityController;
-class EventSender;
 class TestRunner;
 class WebTestDelegate;
+class WebTestProxyBase;
 
 // WebFrameTestClient implements WebFrameClient interface, providing behavior
 // expected by tests.  WebFrameTestClient ends up used by WebFrameTestProxy
@@ -29,7 +29,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   WebFrameTestClient(TestRunner* test_runner,
                      WebTestDelegate* delegate,
                      AccessibilityController* accessibility_controller,
-                     EventSender* event_sender);
+                     WebTestProxyBase* web_test_proxy_base);
 
   ~WebFrameTestClient() override;
 
@@ -108,13 +108,14 @@ class WebFrameTestClient : public blink::WebFrameClient {
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
+  void didClearWindowObject(blink::WebLocalFrame* frame) override;
 
  private:
   // Borrowed pointers to other parts of Layout Tests state.
   TestRunner* test_runner_;
   WebTestDelegate* delegate_;
   AccessibilityController* accessibility_controller_;
-  EventSender* event_sender_;
+  WebTestProxyBase* web_test_proxy_base_;
 
   // Map from request identifier into resource url description.  The map is used
   // to track resource requests spanning willSendRequest, didReceiveResponse,

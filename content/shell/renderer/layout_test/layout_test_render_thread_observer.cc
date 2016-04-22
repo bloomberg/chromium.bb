@@ -8,7 +8,6 @@
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_runner.h"
-#include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/test/layouttest_support.h"
@@ -53,7 +52,6 @@ LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver()
 
   test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();
-  test_interfaces_->SetSendWheelGestures(UseGestureBasedWheelScrolling());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFontAntialiasing)) {
     blink::setFontAntialiasingEnabledForTest(true);

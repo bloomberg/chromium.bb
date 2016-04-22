@@ -41,6 +41,7 @@ struct WebWindowFeatures;
 
 namespace test_runner {
 
+class EventSender;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestInterfaces;
@@ -79,7 +80,14 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
     delegate_ = delegate;
   }
 
-  void SetInterfaces(WebTestInterfaces* interfaces);
+  TestInterfaces* test_interfaces() { return test_interfaces_; }
+  void SetInterfaces(WebTestInterfaces* web_test_interfaces);
+
+  EventSender* event_sender() { return event_sender_.get(); }
+  void SetSendWheelGestures(bool send_gestures);
+
+  void Reset();
+  void BindTo(blink::WebLocalFrame* frame);
 
   void GetScreenOrientationForTesting(blink::WebScreenInfo&);
 
@@ -95,6 +103,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   blink::WebView* web_view_;
   blink::WebWidget* web_widget_;
   scoped_ptr<WebViewTestClient> view_test_client_;
+  scoped_ptr<EventSender> event_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };

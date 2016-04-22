@@ -28,15 +28,12 @@
 namespace test_runner {
 
 WebViewTestClient::WebViewTestClient(TestRunner* test_runner,
-                                     EventSender* event_sender,
                                      WebTestProxyBase* web_test_proxy_base)
     : test_runner_(test_runner),
-      event_sender_(event_sender),
       web_test_proxy_base_(web_test_proxy_base),
       animation_scheduled_(false),
       weak_factory_(this) {
   DCHECK(test_runner);
-  DCHECK(event_sender);
   DCHECK(web_test_proxy_base);
 }
 
@@ -82,7 +79,7 @@ void WebViewTestClient::startDragging(blink::WebLocalFrame* frame,
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
-  event_sender_->DoDragDrop(data, mask);
+  web_test_proxy_base_->event_sender()->DoDragDrop(data, mask);
 }
 
 // The output from these methods in layout test mode should match that

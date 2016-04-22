@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "components/test_runner/app_banner_client.h"
-#include "components/test_runner/event_sender.h"
 #include "components/test_runner/mock_web_audio_device.h"
 #include "components/test_runner/mock_web_media_stream_center.h"
 #include "components/test_runner/mock_web_midi_accessor.h"
@@ -36,10 +35,6 @@ void WebTestInterfaces::SetDelegate(WebTestDelegate* delegate) {
   interfaces_->SetDelegate(delegate);
 }
 
-void WebTestInterfaces::BindTo(WebFrame* frame) {
-  interfaces_->BindTo(frame);
-}
-
 void WebTestInterfaces::ResetAll() {
   interfaces_->ResetAll();
 }
@@ -51,10 +46,6 @@ void WebTestInterfaces::SetTestIsRunning(bool running) {
 void WebTestInterfaces::ConfigureForTestWithURL(const WebURL& test_url,
                                                 bool generate_pixels) {
   interfaces_->ConfigureForTestWithURL(test_url, generate_pixels);
-}
-
-void WebTestInterfaces::SetSendWheelGestures(bool send_gestures) {
-  interfaces_->GetEventSender()->set_send_wheel_gestures(send_gestures);
 }
 
 WebTestRunner* WebTestInterfaces::TestRunner() {
@@ -96,18 +87,16 @@ WebTestInterfaces::CreateAppBannerClient() {
   return std::move(client);
 }
 
-scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient() {
+scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
+    WebTestProxyBase* web_test_proxy_base) {
   return make_scoped_ptr(new WebFrameTestClient(
-        interfaces_->GetTestRunner(),
-        interfaces_->GetDelegate(),
-        interfaces_->GetAccessibilityController(),
-        interfaces_->GetEventSender()));
+      interfaces_->GetTestRunner(), interfaces_->GetDelegate(),
+      interfaces_->GetAccessibilityController(), web_test_proxy_base));
 }
 
 scoped_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
     WebTestProxyBase* web_test_proxy_base) {
   return make_scoped_ptr(new WebViewTestClient(interfaces_->GetTestRunner(),
-                                               interfaces_->GetEventSender(),
                                                web_test_proxy_base));
 }
 

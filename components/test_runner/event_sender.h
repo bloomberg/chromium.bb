@@ -24,7 +24,7 @@
 #include "third_party/WebKit/public/web/WebTouchPoint.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebView;
 struct WebContextMenuData;
 }
@@ -37,6 +37,7 @@ namespace test_runner {
 
 class TestInterfaces;
 class WebTestDelegate;
+class WebTestProxyBase;
 
 // Key event location code introduced in DOM Level 3.
 // See also: http://www.w3.org/TR/DOM-Level-3-Events/#events-keyboardevents
@@ -47,19 +48,24 @@ enum KeyLocationCode {
   DOMKeyLocationNumpad        = 0x03
 };
 
-class EventSender : public base::SupportsWeakPtr<EventSender> {
+class EventSender {
  public:
-  explicit EventSender(TestInterfaces*);
+  explicit EventSender(WebTestProxyBase*);
   virtual ~EventSender();
 
   void Reset();
-  void Install(blink::WebFrame*);
-  void SetDelegate(WebTestDelegate*);
-  void SetWebView(blink::WebView*);
+  void Install(blink::WebLocalFrame*);
 
   void SetContextMenuData(const blink::WebContextMenuData&);
 
   void DoDragDrop(const blink::WebDragData&, blink::WebDragOperationsMask);
+
+  void set_send_wheel_gestures(bool send_wheel_gestures) {
+    send_wheel_gestures_ = send_wheel_gestures;
+  }
+
+ private:
+  friend class EventSenderBindings;
 
   void MouseDown(int button_number, int modifiers);
   void MouseUp(int button_number, int modifiers);
@@ -76,13 +82,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void KeyDown(const std::string& code_str,
                int modifiers,
                KeyLocationCode location);
-
-  void set_send_wheel_gestures(bool send_wheel_gestures) {
-    send_wheel_gestures_ = send_wheel_gestures;
-  }
-
- private:
-  friend class EventSenderBindings;
 
   struct SavedEvent {
     enum SavedEventType {
@@ -249,9 +248,11 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   int wm_sys_dead_char_;
 #endif
 
-  TestInterfaces* interfaces_;
-  WebTestDelegate* delegate_;
-  blink::WebView* view_;
+  WebTestProxyBase* web_test_proxy_base_;
+  TestInterfaces* interfaces();
+  WebTestDelegate* delegate();
+  const blink::WebView* view() const;
+  blink::WebView* view();
 
   bool send_wheel_gestures_;
   bool force_layout_on_events_;

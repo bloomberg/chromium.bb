@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "components/test_runner/event_sender.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
@@ -19,7 +20,8 @@ WebTestProxyBase::WebTestProxyBase()
     : test_interfaces_(nullptr),
       delegate_(nullptr),
       web_view_(nullptr),
-      web_widget_(nullptr) {}
+      web_widget_(nullptr),
+      event_sender_(new EventSender(this)) {}
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->WindowClosed(this);
@@ -28,6 +30,18 @@ WebTestProxyBase::~WebTestProxyBase() {
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
   test_interfaces_ = interfaces->GetTestInterfaces();
   test_interfaces_->WindowOpened(this);
+}
+
+void WebTestProxyBase::SetSendWheelGestures(bool send_gestures) {
+  event_sender_->set_send_wheel_gestures(send_gestures);
+}
+
+void WebTestProxyBase::Reset() {
+  event_sender_->Reset();
+}
+
+void WebTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
+  event_sender_->Install(frame);
 }
 
 void WebTestProxyBase::GetScreenOrientationForTesting(

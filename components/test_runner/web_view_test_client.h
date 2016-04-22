@@ -29,7 +29,6 @@ class WebViewTestClient : public blink::WebViewClient {
   // Caller has to ensure that all arguments (i.e. |test_runner| and |delegate|)
   // live longer than |this|.
   WebViewTestClient(TestRunner* test_runner,
-                    EventSender* event_sender,
                     WebTestProxyBase* web_test_proxy_base);
 
   virtual ~WebViewTestClient();
@@ -73,7 +72,6 @@ class WebViewTestClient : public blink::WebViewClient {
 
   // Borrowed pointers to other parts of Layout Tests state.
   TestRunner* test_runner_;
-  EventSender* event_sender_;
   WebTestProxyBase* web_test_proxy_base_;
 
   bool animation_scheduled_;

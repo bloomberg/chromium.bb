@@ -15,9 +15,11 @@
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/mock_web_user_media_client.h"
 #include "components/test_runner/test_common.h"
+#include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_plugin.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"
+#include "components/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -199,15 +201,15 @@ WebFrameTestClient::WebFrameTestClient(
     TestRunner* test_runner,
     WebTestDelegate* delegate,
     AccessibilityController* accessibility_controller,
-    EventSender* event_sender)
+    WebTestProxyBase* web_test_proxy_base)
     : test_runner_(test_runner),
       delegate_(delegate),
       accessibility_controller_(accessibility_controller),
-      event_sender_(event_sender) {
+      web_test_proxy_base_(web_test_proxy_base) {
   DCHECK(test_runner);
   DCHECK(delegate_);
   DCHECK(accessibility_controller_);
-  DCHECK(event_sender_);
+  DCHECK(web_test_proxy_base_);
 }
 
 WebFrameTestClient::~WebFrameTestClient() {}
@@ -401,7 +403,7 @@ blink::WebPlugin* WebFrameTestClient::createPlugin(
 
 void WebFrameTestClient::showContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
-  event_sender_->SetContextMenuData(context_menu_data);
+  web_test_proxy_base_->event_sender()->SetContextMenuData(context_menu_data);
 }
 
 blink::WebUserMediaClient* WebFrameTestClient::userMediaClient() {
@@ -766,6 +768,11 @@ void WebFrameTestClient::checkIfAudioSinkExistsAndIsAuthorized(
     callback->onError(blink::WebSetSinkIdError::NotAuthorized);
   else
     callback->onError(blink::WebSetSinkIdError::NotFound);
+}
+
+void WebFrameTestClient::didClearWindowObject(blink::WebLocalFrame* frame) {
+  web_test_proxy_base_->test_interfaces()->BindTo(frame);
+  web_test_proxy_base_->BindTo(frame);
 }
 
 }  // namespace test_runner

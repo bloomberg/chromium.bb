@@ -24,7 +24,6 @@ namespace test_runner {
 
 class AccessibilityController;
 class AppBannerClient;
-class EventSender;
 class GamepadController;
 class TestRunner;
 class TextInputController;
@@ -50,7 +49,6 @@ class TestInterfaces {
   void WindowClosed(WebTestProxyBase* proxy);
 
   AccessibilityController* GetAccessibilityController();
-  EventSender* GetEventSender();
   TestRunner* GetTestRunner();
   WebTestDelegate* GetDelegate();
   const std::vector<WebTestProxyBase*>& GetWindowList();
@@ -59,7 +57,6 @@ class TestInterfaces {
 
  private:
   scoped_ptr<AccessibilityController> accessibility_controller_;
-  scoped_ptr<EventSender> event_sender_;
   base::WeakPtr<GamepadController> gamepad_controller_;
   scoped_ptr<TextInputController> text_input_controller_;
   scoped_ptr<TestRunner> test_runner_;

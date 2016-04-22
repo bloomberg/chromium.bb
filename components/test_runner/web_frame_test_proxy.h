@@ -286,6 +286,11 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
         sink_id, security_origin, web_callbacks);
   }
 
+  void didClearWindowObject(blink::WebLocalFrame* frame) override {
+    test_client()->didClearWindowObject(frame);
+    Base::didClearWindowObject(frame);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };

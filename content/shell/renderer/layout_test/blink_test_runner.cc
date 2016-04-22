@@ -710,8 +710,6 @@ bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
-  LayoutTestRenderThreadObserver::GetInstance()->test_interfaces()->BindTo(
-      frame);
 }
 
 bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {

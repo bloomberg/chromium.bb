@@ -13,8 +13,10 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
 #include "components/web_cache/renderer/web_cache_render_thread_observer.h"
+#include "content/common/input/input_event_utils.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_switches.h"
@@ -68,9 +70,11 @@ void WebTestProxyCreated(RenderView* render_view,
 
 void WebFrameTestProxyCreated(RenderFrame* render_frame,
                               test_runner::WebFrameTestProxyBase* proxy) {
+  test_runner::WebTestProxyBase* web_test_proxy_base =
+      GetWebTestProxyBase(render_frame->GetRenderView());
   proxy->set_test_client(LayoutTestRenderThreadObserver::GetInstance()
                              ->test_interfaces()
-                             ->CreateWebFrameTestClient());
+                             ->CreateWebFrameTestClient(web_test_proxy_base));
 }
 
 }  // namespace
@@ -100,6 +104,7 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   test_runner::WebTestProxyBase* proxy = GetWebTestProxyBase(render_view);
   proxy->set_web_widget(render_view->GetWebView());
   proxy->set_web_view(render_view->GetWebView());
+  proxy->SetSendWheelGestures(UseGestureBasedWheelScrolling());
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);

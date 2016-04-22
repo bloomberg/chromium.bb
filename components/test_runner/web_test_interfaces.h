@@ -44,12 +44,10 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   void SetWebView(blink::WebView* web_view, WebTestProxyBase* proxy);
   void SetDelegate(WebTestDelegate* delegate);
-  void BindTo(blink::WebFrame* frame);
   void ResetAll();
   void SetTestIsRunning(bool running);
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool generate_pixels);
-  void SetSendWheelGestures(bool send_gestures);
 
   WebTestRunner* TestRunner();
   blink::WebThemeEngine* ThemeEngine();
@@ -71,8 +69,9 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // Creates a WebFrameClient implementation providing test behavior (i.e.
   // forwarding javascript console output to the test harness).  The caller
   // should guarantee that the returned object won't be used beyond the lifetime
-  // of WebTestInterfaces.
-  scoped_ptr<WebFrameTestClient> CreateWebFrameTestClient();
+  // of WebTestInterfaces and/or the lifetime of |web_test_proxy_base|.
+  scoped_ptr<WebFrameTestClient> CreateWebFrameTestClient(
+      WebTestProxyBase* web_test_proxy_base);
 
   // Creates a WebViewClient implementation providing test behavior (i.e.
   // providing a mocked speech recognizer).  The caller should guarantee that
