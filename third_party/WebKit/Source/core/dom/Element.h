@@ -868,6 +868,8 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
         setFlag(IsInShadowTreeFlag);
     if (childNeedsDistributionRecalc() && !insertionPoint->childNeedsDistributionRecalc())
         insertionPoint->markAncestorsWithChildNeedsDistributionRecalc();
+    if (document().shadowCascadeOrder() == ShadowCascadeOrder::ShadowCascadeV1)
+        updateAssignmentForInsertedInto(insertionPoint);
     return InsertionDone;
 }
 

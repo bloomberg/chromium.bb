@@ -22,6 +22,7 @@ public:
 
     HTMLSlotElement* assignedSlotFor(const Node&) const;
     void resolveAssignment(ShadowRoot&);
+    void resolveDistribution(ShadowRoot&);
 
     DECLARE_TRACE();
 
@@ -29,6 +30,7 @@ private:
     SlotAssignment() { }
 
     void assign(Node&, HTMLSlotElement&);
+    void distribute(Node&, HTMLSlotElement&);
     HeapHashMap<Member<Node>, Member<HTMLSlotElement>> m_assignment;
 };
 

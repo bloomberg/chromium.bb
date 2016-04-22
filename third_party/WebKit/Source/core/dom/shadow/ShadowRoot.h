@@ -123,6 +123,7 @@ public:
     void didRemoveSlot();
     const HeapVector<Member<HTMLSlotElement>>& descendantSlots();
 
+    void assignV1();
     void distributeV1();
 
     HTMLSlotElement* assignedSlotFor(const Node& node) const

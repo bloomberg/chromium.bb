@@ -367,11 +367,18 @@ const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
     return m_shadowRootRareData->descendantSlots();
 }
 
-void ShadowRoot::distributeV1()
+void ShadowRoot::assignV1()
 {
     if (!m_slotAssignment)
         m_slotAssignment = SlotAssignment::create();
     m_slotAssignment->resolveAssignment(*this);
+}
+
+void ShadowRoot::distributeV1()
+{
+    if (!m_slotAssignment)
+        m_slotAssignment = SlotAssignment::create();
+    m_slotAssignment->resolveDistribution(*this);
 }
 
 DEFINE_TRACE(ShadowRoot)

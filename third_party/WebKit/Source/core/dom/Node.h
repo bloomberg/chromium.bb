@@ -659,6 +659,8 @@ public:
 
     bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
 
+    void updateAssignmentForInsertedInto(ContainerNode*);
+
     DECLARE_VIRTUAL_TRACE();
 
     DECLARE_VIRTUAL_TRACE_WRAPPERS();

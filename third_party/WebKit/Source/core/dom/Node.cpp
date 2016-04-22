@@ -2165,9 +2165,6 @@ StaticNodeList* Node::getDestinationInsertionPoints()
 
 HTMLSlotElement* Node::assignedSlot() const
 {
-#if DCHECK_IS_ON()
-    DCHECK(!needsDistributionRecalc());
-#endif
     Element* parent = parentElement();
     ShadowRoot* root = parent ? parent->youngestShadowRoot() : nullptr;
     if (root && root->isV1())
@@ -2248,6 +2245,15 @@ void Node::setCustomElementState(CustomElementState newState)
 
     if (oldState == NotCustomElement || newState == Upgraded)
         toElement(this)->pseudoStateChanged(CSSSelector::PseudoUnresolved);
+}
+
+void Node::updateAssignmentForInsertedInto(ContainerNode* insertionPoint)
+{
+    if (isShadowHost(insertionPoint)) {
+        ShadowRoot* root = insertionPoint->youngestShadowRoot();
+        if (root && root->isV1())
+            root->assignV1();
+    }
 }
 
 DEFINE_TRACE(Node)

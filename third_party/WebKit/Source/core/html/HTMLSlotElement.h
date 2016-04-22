@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLSlotElement);
 
-    const HeapVector<Member<Node>>& assignedNodes() const { ASSERT(!needsDistributionRecalc()); return m_assignedNodes; }
+    const HeapVector<Member<Node>>& assignedNodes() const { return m_assignedNodes; }
     const HeapVector<Member<Node>>& getDistributedNodes();
     const HeapVector<Member<Node>> assignedNodesForBinding(const AssignedNodesOptions&);
 
@@ -54,14 +54,19 @@ public:
     Node* distributedNodePreviousTo(const Node&) const;
 
     void appendAssignedNode(Node&);
+    void willUpdateAssignment();
     void appendDistributedNode(Node&);
     void appendDistributedNodesFrom(const HTMLSlotElement& other);
     void willUpdateDistribution();
+    void appendFallbackNode(Node&);
+    void willUpdateFallback();
 
-    bool hasSlotChangeEventListener();
-
+    void didUpdateAssignment();
+    void updateFallbackNodes();
     void updateDistributedNodesWithFallback();
     void didUpdateDistribution();
+
+    void fireSlotChangeEvent();
 
     void attach(const AttachContext& = AttachContext()) final;
     void detach(const AttachContext& = AttachContext()) final;
@@ -75,6 +80,13 @@ public:
 
 private:
     HTMLSlotElement(Document&);
+
+    enum AssignmentState {
+        AssignmentOnGoing,
+        AssignmentDone,
+        AssignmentChanged,
+        AssignmentUnchanged
+    };
 
     enum DistributionState {
         DistributionOnGoing,
@@ -90,14 +102,21 @@ private:
     void willRecalcStyle(StyleRecalcChange) final;
 
     void dispatchSlotChangeEvent();
+    bool assignmentChanged();
     bool distributionChanged();
+    bool fallbackChanged();
 
     HeapVector<Member<Node>> m_assignedNodes;
     HeapVector<Member<Node>> m_distributedNodes;
+    HeapVector<Member<Node>> m_fallbackNodes;
     HeapHashMap<Member<const Node>, size_t> m_distributedIndices;
+    HeapVector<Member<Node>> m_oldAssignedNodes;
     // TODO(hayato): Remove m_oldDistibutedNodes and make SlotAssignment check the diffirence between old and new distributed nodes for each slot to save the memories.
     HeapVector<Member<Node>> m_oldDistributedNodes;
+    HeapVector<Member<Node>> m_oldFallbackNodes;
     DistributionState m_distributionState;
+    AssignmentState m_assignmentState;
+    bool m_slotchangeEventAdded;
 };
 
 } // namespace blink

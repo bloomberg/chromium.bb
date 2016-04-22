@@ -32,8 +32,10 @@
 
 #include "bindings/core/v8/Microtask.h"
 #include "core/HTMLNames.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/events/Event.h"
@@ -46,6 +48,8 @@ using namespace HTMLNames;
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document)
     , m_distributionState(DistributionDone)
+    , m_assignmentState(AssignmentDone)
+    , m_slotchangeEventAdded(false)
 {
     setHasCustomStyleCallbacks();
 }
@@ -86,7 +90,7 @@ const HeapVector<Member<Node>>& HTMLSlotElement::getDistributedNodes()
 
 void HTMLSlotElement::appendAssignedNode(Node& node)
 {
-    ASSERT(m_distributionState == DistributionOnGoing);
+    ASSERT(m_assignmentState == AssignmentOnGoing);
     m_assignedNodes.append(&node);
 }
 
@@ -98,6 +102,12 @@ void HTMLSlotElement::appendDistributedNode(Node& node)
     m_distributedIndices.set(&node, size);
 }
 
+void HTMLSlotElement::appendFallbackNode(Node& node)
+{
+    ASSERT(m_assignmentState == AssignmentOnGoing);
+    m_fallbackNodes.append(&node);
+}
+
 void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
 {
     ASSERT(m_distributionState == DistributionOnGoing);
@@ -107,19 +117,27 @@ void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
         m_distributedIndices.set(node.get(), index++);
 }
 
+void HTMLSlotElement::willUpdateAssignment()
+{
+    ASSERT(m_assignmentState != AssignmentOnGoing);
+    m_assignmentState = AssignmentOnGoing;
+    m_oldAssignedNodes.swap(m_assignedNodes);
+    m_assignedNodes.clear();
+}
+
 void HTMLSlotElement::willUpdateDistribution()
 {
     ASSERT(m_distributionState != DistributionOnGoing);
     m_distributionState = DistributionOnGoing;
-    m_assignedNodes.clear();
     m_oldDistributedNodes.swap(m_distributedNodes);
     m_distributedNodes.clear();
     m_distributedIndices.clear();
 }
 
-bool HTMLSlotElement::hasSlotChangeEventListener()
+void HTMLSlotElement::willUpdateFallback()
 {
-    return eventTargetData() && eventTargetData()->eventListenerMap.find(EventTypeNames::slotchange);
+    m_oldFallbackNodes.swap(m_fallbackNodes);
+    m_fallbackNodes.clear();
 }
 
 void HTMLSlotElement::dispatchSlotChangeEvent()
@@ -127,6 +145,7 @@ void HTMLSlotElement::dispatchSlotChangeEvent()
     Event* event = Event::create(EventTypeNames::slotchange);
     event->setTarget(this);
     dispatchScopedEvent(event);
+    m_slotchangeEventAdded = false;
 }
 
 Node* HTMLSlotElement::distributedNodeNextTo(const Node& node) const
@@ -177,8 +196,11 @@ void HTMLSlotElement::detach(const AttachContext& context)
 void HTMLSlotElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == nameAttr) {
-        if (ShadowRoot* root = containingShadowRoot())
+        if (ShadowRoot* root = containingShadowRoot()) {
             root->owner()->willAffectSelector();
+            if (root->isV1() && oldValue != newValue)
+                root->assignV1();
+        }
     }
     HTMLElement::attributeChanged(name, oldValue, newValue, reason);
 }
@@ -187,15 +209,19 @@ void HTMLSlotElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
     if (ShadowRoot* root = containingShadowRoot()) {
-        if (ElementShadow* rootOwner = root->owner())
+        if (ElementShadow* rootOwner = root->owner()) {
             rootOwner->setNeedsDistributionRecalc();
+        }
+        if (m_assignedNodes.isEmpty() && root->isV1())
+            root->assignV1();
     }
 }
 
 Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    if (ShadowRoot* root = containingShadowRoot()) {
+    ShadowRoot* root = containingShadowRoot();
+    if (root) {
         if (ElementShadow* rootOwner = root->owner())
             rootOwner->setNeedsDistributionRecalc();
         if (root == insertionPoint->treeScope().rootNode())
@@ -205,6 +231,9 @@ Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(ContainerNode* 
     // We could have been distributed into in a detached subtree, make sure to
     // clear the distribution when inserted again to avoid cycles.
     clearDistribution();
+
+    if (root && root->isV1())
+        root->assignV1();
 
     return InsertionDone;
 }
@@ -222,9 +251,14 @@ void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint)
     // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
     clearDistribution();
 
-    if (root == insertionPoint->treeScope().rootNode())
+    ContainerNode& rootNode = insertionPoint->treeScope().rootNode();
+    if (root == &rootNode)
         root->didRemoveSlot();
+    else if (rootNode.isShadowRoot() && toShadowRoot(rootNode).isV1())
+        toShadowRoot(rootNode).assignV1();
 
+    if (root && root->isV1())
+        root->assignV1();
     HTMLElement::removedFrom(insertionPoint);
 }
 
@@ -237,9 +271,9 @@ void HTMLSlotElement::willRecalcStyle(StyleRecalcChange change)
         node->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropagateInheritChangeToDistributedNodes));
 }
 
-void HTMLSlotElement::updateDistributedNodesWithFallback()
+void HTMLSlotElement::updateFallbackNodes()
 {
-    if (!m_distributedNodes.isEmpty())
+    if (!m_fallbackNodes.isEmpty())
         return;
     for (auto& child : NodeTraversal::childrenOf(*this)) {
         if (!child.isSlotAssignable())
@@ -247,11 +281,28 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
         // Insertion points are not supported as slots fallback
         if (isActiveInsertionPoint(child))
             continue;
-        if (isHTMLSlotElement(child))
-            appendDistributedNodesFrom(toHTMLSlotElement(child));
-        else
-            appendDistributedNode(child);
+        appendFallbackNode(child);
     }
+}
+
+void HTMLSlotElement::updateDistributedNodesWithFallback()
+{
+    if (!m_distributedNodes.isEmpty())
+        return;
+    for (auto node : m_fallbackNodes) {
+        if (isHTMLSlotElement(node))
+            appendDistributedNodesFrom(*toHTMLSlotElement(node));
+        else
+            appendDistributedNode(*node);
+    }
+}
+
+bool HTMLSlotElement::assignmentChanged()
+{
+    ASSERT(m_assignmentState != AssignmentOnGoing);
+    if (m_assignmentState == AssignmentDone)
+        m_assignmentState = m_oldAssignedNodes == m_assignedNodes ? AssignmentUnchanged : AssignmentChanged;
+    return m_assignmentState == AssignmentChanged;
 }
 
 bool HTMLSlotElement::distributionChanged()
@@ -260,6 +311,19 @@ bool HTMLSlotElement::distributionChanged()
     if (m_distributionState == DistributionDone)
         m_distributionState = m_oldDistributedNodes == m_distributedNodes ? DistributionUnchanged : DistributionChanged;
     return m_distributionState == DistributionChanged;
+}
+
+bool HTMLSlotElement::fallbackChanged()
+{
+    return m_oldFallbackNodes == m_fallbackNodes;
+}
+
+void HTMLSlotElement::didUpdateAssignment()
+{
+    ASSERT(m_assignmentState == AssignmentOnGoing);
+    m_assignmentState = AssignmentDone;
+    if ((assignmentChanged() || fallbackChanged()) && !m_slotchangeEventAdded)
+        fireSlotChangeEvent();
 }
 
 void HTMLSlotElement::didUpdateDistribution()
@@ -272,9 +336,21 @@ void HTMLSlotElement::didUpdateDistribution()
         if (!shadow->needsDistributionRecalc() && distributionChanged())
             shadow->setNeedsDistributionRecalc();
     }
-    if (hasSlotChangeEventListener() && distributionChanged()) {
-        // TODO(hayato): Do not enqueue a slotchange event for the same slot twice in the microtask queue
-        Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, this));
+}
+
+void HTMLSlotElement::fireSlotChangeEvent()
+{
+    ASSERT(!m_slotchangeEventAdded);
+    Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, this));
+    m_slotchangeEventAdded = true;
+
+    Element* shadowHost = isShadowHost(parentElement()) ? parentElement() : nullptr;
+    // If this slot is assigned to another slot, fire slot change event of that slot too.
+    if (shadowHost && shadowHost->shadowRootIfV1()) {
+        if (HTMLSlotElement* assigned = assignedSlot()) {
+            if (!assigned->m_slotchangeEventAdded)
+                assigned->fireSlotChangeEvent();
+        }
     }
 }
 
@@ -293,8 +369,11 @@ DEFINE_TRACE(HTMLSlotElement)
 {
     visitor->trace(m_assignedNodes);
     visitor->trace(m_distributedNodes);
+    visitor->trace(m_fallbackNodes);
     visitor->trace(m_distributedIndices);
+    visitor->trace(m_oldAssignedNodes);
     visitor->trace(m_oldDistributedNodes);
+    visitor->trace(m_oldFallbackNodes);
     HTMLElement::trace(visitor);
 }
 

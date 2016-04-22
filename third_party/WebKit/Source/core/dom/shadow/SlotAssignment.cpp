@@ -35,7 +35,8 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
     const HeapVector<Member<HTMLSlotElement>>& slots = shadowRoot.descendantSlots();
 
     for (Member<HTMLSlotElement> slot : slots) {
-        slot->willUpdateDistribution();
+        slot->willUpdateAssignment();
+        slot->willUpdateFallback();
         name2slot.add(slot->name(), slot.get());
     }
 
@@ -57,6 +58,27 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
             detachNotAssignedNode(child);
     }
 
+    for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot)
+        (*slot)->updateFallbackNodes();
+
+    // For each slot, check if assigned nodes have changed
+    // If so, call fireSlotchange function
+    for (const auto& slot : slots)
+        slot->didUpdateAssignment();
+}
+
+void SlotAssignment::resolveDistribution(ShadowRoot& shadowRoot)
+{
+    const HeapVector<Member<HTMLSlotElement>>& slots = shadowRoot.descendantSlots();
+    for (Member<HTMLSlotElement> slot : slots) {
+        slot->willUpdateDistribution();
+    }
+
+    for (auto slot : slots) {
+        for (auto node : slot->assignedNodes())
+            distribute(*node, *slot);
+    }
+
     // Update each slot's distribution in reverse tree order so that a child slot is visited before its parent slot.
     for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot)
         (*slot)->updateDistributedNodesWithFallback();
@@ -69,10 +91,16 @@ void SlotAssignment::assign(Node& hostChild, HTMLSlotElement& slot)
     DCHECK(hostChild.isSlotAssignable());
     m_assignment.add(&hostChild, &slot);
     slot.appendAssignedNode(hostChild);
+}
+
+void SlotAssignment::distribute(Node& hostChild, HTMLSlotElement& slot)
+{
+    DCHECK(hostChild.isSlotAssignable());
     if (isHTMLSlotElement(hostChild))
         slot.appendDistributedNodesFrom(toHTMLSlotElement(hostChild));
     else
         slot.appendDistributedNode(hostChild);
+
     if (slot.isChildOfV1ShadowHost())
         slot.parentElementShadow()->setNeedsDistributionRecalc();
 }

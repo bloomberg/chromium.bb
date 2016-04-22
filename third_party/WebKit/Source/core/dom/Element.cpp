@@ -103,6 +103,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -1140,8 +1141,11 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
             parentElementShadow->setNeedsDistributionRecalc();
     }
-    if (name == HTMLNames::slotAttr && isChildOfV1ShadowHost())
+    if (name == HTMLNames::slotAttr && isChildOfV1ShadowHost()) {
         parentElementShadow()->setNeedsDistributionRecalc();
+        if (oldValue != newValue)
+            parentElement()->shadowRootIfV1()->assignV1();
+    }
 
     parseAttribute(name, oldValue, newValue);
 
@@ -1499,6 +1503,12 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     if (document().frame())
         document().frame()->eventHandler().elementRemoved(this);
+
+    if (HTMLSlotElement* slot = assignedSlot()) {
+        ShadowRoot* root = slot->containingShadowRoot();
+        if (root && root->isV1())
+            root->assignV1();
+    }
 }
 
 void Element::attach(const AttachContext& context)
@@ -2074,8 +2084,14 @@ void Element::childrenChanged(const ChildrenChange& change)
     if (!change.byParser && change.isChildElementChange())
         checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingBeforeChange, change.siblingAfterChange);
 
-    if (ElementShadow* shadow = this->shadow())
+    if (ElementShadow* shadow = this->shadow()) {
         shadow->setNeedsDistributionRecalc();
+        if (document().shadowCascadeOrder() == ShadowCascadeOrder::ShadowCascadeV1) {
+            ShadowRoot* root = isShadowHost(*this) && shadowRoot()->isV1() ? shadowRootIfV1() : isHTMLSlotElement(*this) ? containingShadowRoot() : nullptr;
+            if (root && root->isV1())
+                root->assignV1();
+        }
+    }
 }
 
 void Element::finishParsingChildren()
