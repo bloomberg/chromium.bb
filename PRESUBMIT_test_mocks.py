@@ -20,6 +20,7 @@ class MockInputApi(object):
     self.json = json
     self.re = re
     self.os_path = os.path
+    self.platform = sys.platform
     self.python_executable = sys.executable
     self.subprocess = subprocess
     self.files = []

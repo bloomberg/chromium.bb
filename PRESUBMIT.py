@@ -1601,6 +1601,10 @@ class PydepsChecker(object):
 
 def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   """Checks if a .pydeps file needs to be regenerated."""
+  # This check is mainly for Android, and involves paths not only in the
+  # PRESUBMIT.py, but also in the .pydeps files. Just skip it for Windows.
+  if input_api.platform == 'win32':
+    return []
   # TODO(agrieve): Update when there's a better way to detect this: crbug/570091
   is_android = input_api.os_path.exists('third_party/android_tools')
   pydeps_files = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
