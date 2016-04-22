@@ -108,11 +108,10 @@ class ASH_EXPORT WindowResizer {
   DISALLOW_COPY_AND_ASSIGN(WindowResizer);
 };
 
-// Creates a WindowResizer for |window|. This can return a scoped_ptr
-// initialized with NULL if |window| should not be resized nor dragged.
-// TODO(sky): move this to its own file. This is aura specific.
+// Creates a WindowResizer for |window|. Returns a unique_ptr with null if
+// |window| should not be resized nor dragged.
 ASH_EXPORT std::unique_ptr<WindowResizer> CreateWindowResizer(
-    aura::Window* window,
+    wm::WmWindow* window,
     const gfx::Point& point_in_parent,
     int window_component,
     aura::client::WindowMoveSource source);

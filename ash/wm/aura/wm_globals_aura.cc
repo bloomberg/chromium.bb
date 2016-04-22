@@ -98,6 +98,10 @@ std::vector<WmWindow*> WmGlobalsAura::GetAllRootWindows() {
   return wm_windows;
 }
 
+UserMetricsRecorder* WmGlobalsAura::GetUserMetricsRecorder() {
+  return Shell::GetInstance()->metrics();
+}
+
 void WmGlobalsAura::AddActivationObserver(WmActivationObserver* observer) {
   if (!added_activation_observer_) {
     added_activation_observer_ = true;

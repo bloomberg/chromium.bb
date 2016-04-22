@@ -10,12 +10,12 @@
 #include <memory>
 #include <vector>
 
+#include "ash/wm/common/wm_window_tracker.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/aura/window_tracker.h"
 
 namespace ash {
 class DockedWindowLayoutManager;
@@ -25,6 +25,7 @@ class WindowSize;
 
 namespace wm {
 class WindowState;
+class WmGlobals;
 }
 
 // WindowResizer implementation for workspaces. This enforces that windows are
@@ -55,7 +56,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   static WorkspaceWindowResizer* Create(
       wm::WindowState* window_state,
-      const std::vector<aura::Window*>& attached_windows);
+      const std::vector<wm::WmWindow*>& attached_windows);
 
   // WindowResizer:
   void Drag(const gfx::Point& location_in_parent, int event_flags) override;
@@ -69,7 +70,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   enum SnapType { SNAP_LEFT, SNAP_RIGHT, SNAP_NONE };
 
   WorkspaceWindowResizer(wm::WindowState* window_state,
-                         const std::vector<aura::Window*>& attached_windows);
+                         const std::vector<wm::WmWindow*>& attached_windows);
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindows(gfx::Rect* bounds);
@@ -161,7 +162,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   wm::WindowState* window_state() { return window_state_; }
 
-  const std::vector<aura::Window*> attached_windows_;
+  const std::vector<wm::WmWindow*> attached_windows_;
+
+  wm::WmGlobals* globals_;
 
   // Returns the currently used instance for test.
   static WorkspaceWindowResizer* GetInstanceForTest();
@@ -204,10 +207,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   gfx::Point last_mouse_location_;
 
   // Window the drag has magnetically attached to.
-  aura::Window* magnetism_window_;
+  wm::WmWindow* magnetism_window_;
 
   // Used to verify |magnetism_window_| is still valid.
-  aura::WindowTracker window_tracker_;
+  wm::WmWindowTracker window_tracker_;
 
   // If |magnetism_window_| is non-NULL this indicates how the two windows
   // should attach.

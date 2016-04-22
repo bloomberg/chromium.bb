@@ -16,6 +16,9 @@ class Rect;
 }
 
 namespace ash {
+
+class UserMetricsRecorder;
+
 namespace wm {
 
 class WmActivationObserver;
@@ -54,6 +57,8 @@ class ASH_EXPORT WmGlobals {
   virtual void UnlockCursor() = 0;
 
   virtual std::vector<WmWindow*> GetAllRootWindows() = 0;
+
+  virtual UserMetricsRecorder* GetUserMetricsRecorder() = 0;
 
   virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
   virtual void RemoveActivationObserver(WmActivationObserver* observer) = 0;

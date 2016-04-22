@@ -34,6 +34,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   void LockCursor() override;
   void UnlockCursor() override;
   std::vector<WmWindow*> GetAllRootWindows() override;
+  UserMetricsRecorder* GetUserMetricsRecorder() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;
 

@@ -17,6 +17,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -66,11 +67,10 @@ class PanelWindowResizerTest : public test::AshTestBase {
   }
 
   void DragStart(aura::Window* window) {
-    resizer_.reset(CreateWindowResizer(
-        window,
-        window->bounds().origin(),
-        HTCAPTION,
-        aura::client::WINDOW_MOVE_SOURCE_MOUSE).release());
+    resizer_.reset(CreateWindowResizer(wm::WmWindowAura::Get(window),
+                                       window->bounds().origin(), HTCAPTION,
+                                       aura::client::WINDOW_MOVE_SOURCE_MOUSE)
+                       .release());
     ASSERT_TRUE(resizer_.get());
   }
 

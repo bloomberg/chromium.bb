@@ -7,6 +7,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
@@ -446,7 +447,8 @@ void MultiWindowResizeController::StartResize(
   wm::WindowState* window_state = wm::GetWindowState(windows_.window1);
   window_state->CreateDragDetails(location_in_parent, component,
                                   aura::client::WINDOW_MOVE_SOURCE_MOUSE);
-  window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
+  window_resizer_.reset(WorkspaceWindowResizer::Create(
+      window_state, wm::WmWindowAura::FromAuraWindows(windows)));
 
   // Do not hide the resize widget while a drag is active.
   mouse_watcher_.reset();

@@ -12,6 +12,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state.h"
@@ -144,11 +145,11 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
       aura::Window* window,
       const gfx::Point& point_in_parent,
       int window_component) {
-    WindowResizer* resizer = CreateWindowResizer(
-        window,
-        point_in_parent,
-        window_component,
-        aura::client::WINDOW_MOVE_SOURCE_MOUSE).release();
+    WindowResizer* resizer =
+        CreateWindowResizer(wm::WmWindowAura::Get(window), point_in_parent,
+                            window_component,
+                            aura::client::WINDOW_MOVE_SOURCE_MOUSE)
+            .release();
     workspace_resizer_ = WorkspaceWindowResizer::GetInstanceForTest();
     return resizer;
   }
@@ -160,7 +161,8 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
       const std::vector<aura::Window*>& attached_windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->CreateDragDetails(point_in_parent, window_component, source);
-    return WorkspaceWindowResizer::Create(window_state, attached_windows);
+    return WorkspaceWindowResizer::Create(
+        window_state, wm::WmWindowAura::FromAuraWindows(attached_windows));
   }
 
   PhantomWindowController* snap_phantom_window_controller() const {

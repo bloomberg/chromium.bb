@@ -25,6 +25,9 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   // be null, in which case null is returned.
   static WmWindow* Get(aura::Window* window);
 
+  static std::vector<WmWindow*> FromAuraWindows(
+      const std::vector<aura::Window*>& aura_windows);
+
   static aura::Window* GetAuraWindow(WmWindow* wm_window) {
     return const_cast<aura::Window*>(
         GetAuraWindow(const_cast<const WmWindow*>(wm_window)));

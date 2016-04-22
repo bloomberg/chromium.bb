@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/shell.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_resizer.h"
@@ -451,8 +452,10 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
     aura::client::WindowMoveSource source) {
   if (window_resizer_.get())
     return false;
-  WindowResizer* resizer = CreateWindowResizer(window, point_in_parent,
-      window_component, source).release();
+  WindowResizer* resizer =
+      CreateWindowResizer(wm::WmWindowAura::Get(window), point_in_parent,
+                          window_component, source)
+          .release();
   if (!resizer)
     return false;
 

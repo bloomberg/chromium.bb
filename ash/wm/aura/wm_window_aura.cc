@@ -89,6 +89,15 @@ WmWindow* WmWindowAura::Get(aura::Window* window) {
 }
 
 // static
+std::vector<WmWindow*> WmWindowAura::FromAuraWindows(
+    const std::vector<aura::Window*>& aura_windows) {
+  std::vector<WmWindow*> result(aura_windows.size());
+  for (size_t i = 0; i < aura_windows.size(); ++i)
+    result[i] = Get(aura_windows[i]);
+  return result;
+}
+
+// static
 const aura::Window* WmWindowAura::GetAuraWindow(const WmWindow* wm_window) {
   return static_cast<const WmWindowAura*>(wm_window)->aura_window();
 }
@@ -217,12 +226,7 @@ const WmWindow* WmWindowAura::GetTransientParent() const {
 }
 
 std::vector<WmWindow*> WmWindowAura::GetTransientChildren() {
-  const std::vector<aura::Window*> aura_windows(
-      ::wm::GetTransientChildren(window_));
-  std::vector<WmWindow*> wm_windows(aura_windows.size());
-  for (size_t i = 0; i < aura_windows.size(); ++i)
-    wm_windows[i] = Get(aura_windows[i]);
-  return wm_windows;
+  return FromAuraWindows(::wm::GetTransientChildren(window_));
 }
 
 void WmWindowAura::SetLayoutManager(
@@ -462,11 +466,7 @@ void WmWindowAura::Unminimize() {
 }
 
 std::vector<WmWindow*> WmWindowAura::GetChildren() {
-  const std::vector<aura::Window*>& aura_children = window_->children();
-  std::vector<WmWindow*> result(aura_children.size());
-  for (size_t i = 0; i < aura_children.size(); ++i)
-    result[i] = Get(aura_children[i]);
-  return result;
+  return FromAuraWindows(window_->children());
 }
 
 WmWindow* WmWindowAura::GetChildByShellWindowId(int id) {

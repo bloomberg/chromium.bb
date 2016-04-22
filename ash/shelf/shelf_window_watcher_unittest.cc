@@ -12,6 +12,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
@@ -226,8 +227,8 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
 
   // Simulate dragging of |window| and check its item is not changed.
   std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
-                          aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+      CreateWindowResizer(wm::WmWindowAura::Get(window.get()), gfx::Point(),
+                          HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(gfx::Point(50, 50), 0);
   resizer->CompleteDrag();
@@ -265,8 +266,8 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
   // Simulate re-parenting to |new_parent| during the dragging.
   {
     std::unique_ptr<WindowResizer> resizer(
-        CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
-                            aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+        CreateWindowResizer(wm::WmWindowAura::Get(window.get()), gfx::Point(),
+                            HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(gfx::Point(50, 50), 0);
     resizer->CompleteDrag();

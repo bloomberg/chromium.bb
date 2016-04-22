@@ -560,6 +560,7 @@
       'wm/common/wm_window.h',
       'wm/common/wm_window_observer.h',
       'wm/common/wm_window_property.h',
+      'wm/common/wm_window_tracker.h',
       'wm/common/workspace/workspace_layout_manager_delegate.h',
       'wm/common/workspace/workspace_types.h',
       'wm/cursor_manager_chromeos.cc',
