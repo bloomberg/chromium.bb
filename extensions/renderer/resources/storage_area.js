@@ -12,18 +12,25 @@ function extendSchema(schema) {
   return extendedSchema;
 }
 
+// TODO(devlin): Combine parts of this and other custom types (ChromeSetting,
+// ContentSetting, etc).
 function StorageArea(namespace, schema) {
   // Binds an API function for a namespace to its browser-side call, e.g.
   // storage.sync.get('foo') -> (binds to) ->
   // storage.get('sync', 'foo').
-  //
-  // TODO(kalman): Put as a method on CustombindingObject and re-use (or
-  // even generate) for other APIs that need to do this. Same for other
-  // callers of registerCustomType().
   var self = this;
   function bindApiFunction(functionName) {
+    var rawFunSchema =
+        $Array.filter(schema.functions,
+                      function(f) { return f.name === functionName; })[0];
+    // normalizeArgumentsAndValidate expects a function schema of the form
+    // { name: <name>, definition: <definition> }.
+    var funSchema = {
+      __proto__: null,
+      name: rawFunSchema.name,
+      definition: rawFunSchema
+    };
     self[functionName] = function() {
-      var funSchema = this.functionSchemas[functionName];
       var args = $Array.slice(arguments);
       args = normalizeArgumentsAndValidate(args, funSchema);
       return sendRequest(

@@ -13,9 +13,14 @@ function extendSchema(schema) {
 }
 
 // TODO(devlin): Maybe find a way to combine this and ContentSetting.
-function ChromeSetting(prefKey, valueSchema) {
+function ChromeSetting(prefKey, valueSchema, schema) {
+  var getFunctionParameters = function(name) {
+    var f = $Array.filter(
+                schema.functions, function(f) { return f.name === name; })[0];
+    return f.parameters;
+  };
   this.get = function(details, callback) {
-    var getSchema = this.functionSchemas.get.definition.parameters;
+    var getSchema = getFunctionParameters('get');
     validate([details, callback], getSchema);
     return sendRequest('types.ChromeSetting.get',
                        [prefKey, details, callback],
@@ -25,7 +30,7 @@ function ChromeSetting(prefKey, valueSchema) {
     // The set schema included in the Schema object is generic, since it varies
     // per-setting. However, this is only ever for a single setting, so we can
     // enforce the types more thoroughly.
-    var rawSetSchema = this.functionSchemas.set.definition.parameters;
+    var rawSetSchema = getFunctionParameters('set');
     var rawSettingParam = rawSetSchema[0];
     var props = $Object.assign({}, rawSettingParam.properties);
     props.value = valueSchema;
@@ -42,7 +47,7 @@ function ChromeSetting(prefKey, valueSchema) {
                        extendSchema(modSetSchema));
   };
   this.clear = function(details, callback) {
-    var clearSchema = this.functionSchemas.clear.definition.parameters;
+    var clearSchema = getFunctionParameters('clear');
     validate([details, callback], clearSchema);
     return sendRequest('types.ChromeSetting.clear',
                        [prefKey, details, callback],

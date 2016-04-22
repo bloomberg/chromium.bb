@@ -117,22 +117,6 @@ APIFunctions.prototype.setCustomCallback =
   return this.setHook_(apiName, 'customCallback', customizedFunction);
 };
 
-function CustomBindingsObject() {
-}
-
-CustomBindingsObject.prototype.setSchema = function(schema) {
-  // The functions in the schema are in list form, so we move them into a
-  // dictionary for easier access.
-  var self = this;
-  self.functionSchemas = {};
-  $Array.forEach(schema.functions, function(f) {
-    self.functionSchemas[f.name] = {
-      name: f.name,
-      definition: f
-    }
-  });
-};
-
 // Get the platform from navigator.appVersion.
 function getPlatform() {
   var platforms = [
@@ -188,8 +172,6 @@ function createCustomType(type) {
                 type.id + '.');
   var customType = jsModule[jsModuleName];
   logging.CHECK(customType, jsModuleName + ' must export itself.');
-  customType.prototype = new CustomBindingsObject();
-  customType.prototype.setSchema(type);
   return customType;
 }
 
@@ -528,6 +510,8 @@ Binding.prototype = {
             logging.CHECK(type, 'Schema for $ref type ' + ref + ' not found');
             var constructor = createCustomType(type);
             var args = value;
+            logging.DCHECK($Array.isArray(args));
+            $Array.push(args, type);
             // For an object propertyDef, |value| is an array of constructor
             // arguments, but we want to pass the arguments directly (i.e.
             // not as an array), so we have to fake calling |new| on the

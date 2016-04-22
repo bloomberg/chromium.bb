@@ -12,17 +12,21 @@ function extendSchema(schema) {
   return extendedSchema;
 }
 
-function ChromeDirectSetting(prefKey, valueSchema) {
+function ChromeDirectSetting(prefKey, valueSchema, schema) {
+  var getFunctionParameters = function(name) {
+    var f = $Array.filter(
+                schema.functions, function(f) { return f.name === name; })[0];
+    return f.parameters;
+  };
   this.get = function(details, callback) {
-    var getSchema = this.functionSchemas.get.definition.parameters;
+    var getSchema = getFunctionParameters('get');
     validate([details, callback], getSchema);
     return sendRequest('types.private.ChromeDirectSetting.get',
                        [prefKey, details, callback],
                        extendSchema(getSchema));
   };
   this.set = function(details, callback) {
-    var setSchema = $Array.slice(
-        this.functionSchemas.set.definition.parameters);
+    var setSchema = $Array.slice(getFunctionParameters('set'));
     setSchema[0].properties.value = valueSchema;
     validate([details, callback], setSchema);
     return sendRequest('types.private.ChromeDirectSetting.set',
@@ -30,7 +34,7 @@ function ChromeDirectSetting(prefKey, valueSchema) {
                        extendSchema(setSchema));
   };
   this.clear = function(details, callback) {
-    var clearSchema = this.functionSchemas.clear.definition.parameters;
+    var clearSchema = getFunctionParameters('clear');
     validate([details, callback], clearSchema);
     return sendRequest('types.private.ChromeDirectSetting.clear',
                        [prefKey, details, callback],
