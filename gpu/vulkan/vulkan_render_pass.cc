@@ -99,6 +99,10 @@ bool VulkanRenderPass::AttachmentData::ValidateData(
 
 VulkanRenderPass::SubpassData::SubpassData() {}
 
+VulkanRenderPass::SubpassData::SubpassData(const SubpassData& data) = default;
+
+VulkanRenderPass::SubpassData::SubpassData(SubpassData&& data) = default;
+
 VulkanRenderPass::SubpassData::~SubpassData() {}
 
 bool VulkanRenderPass::SubpassData::ValidateData(
@@ -125,6 +129,12 @@ bool VulkanRenderPass::SubpassData::ValidateData(
 }
 
 VulkanRenderPass::RenderPassData::RenderPassData() {}
+
+VulkanRenderPass::RenderPassData::RenderPassData(const RenderPassData& data) =
+    default;
+
+VulkanRenderPass::RenderPassData::RenderPassData(RenderPassData&& data) =
+    default;
 
 VulkanRenderPass::RenderPassData::~RenderPassData() {}
 

@@ -63,6 +63,8 @@ class VULKAN_EXPORT VulkanRenderPass {
 
   struct SubpassData {
     SubpassData();
+    SubpassData(const SubpassData& data);
+    SubpassData(SubpassData&& data);
     ~SubpassData();
 
     std::vector<SubpassAttachment> subpass_attachments;
@@ -72,6 +74,8 @@ class VULKAN_EXPORT VulkanRenderPass {
 
   struct RenderPassData {
     RenderPassData();
+    RenderPassData(const RenderPassData& data);
+    RenderPassData(RenderPassData&& data);
     ~RenderPassData();
 
     std::vector<AttachmentData> attachments;
