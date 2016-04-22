@@ -5,6 +5,7 @@
 #include "core/paint/PaintPropertyTreeBuilder.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -64,7 +65,29 @@ struct PaintPropertyTreeBuilderContext {
 
 void PaintPropertyTreeBuilder::buildPropertyTrees(FrameView& rootFrame)
 {
-    walk(rootFrame, PaintPropertyTreeBuilderContext());
+    PaintPropertyTreeBuilderContext rootContext;
+
+    // We don't retain permanent reference of these nodes except by child nodes.
+    // Keeps local reference until the walk finishes.
+    RefPtr<TransformPaintPropertyNode> transformRoot;
+    RefPtr<ClipPaintPropertyNode> clipRoot;
+    RefPtr<EffectPaintPropertyNode> effectRoot;
+
+    // Only create extra root clip and transform nodes when RLS is enabled, because the main frame
+    // unconditionally create frame translation / clip nodes otherwise.
+    if (rootFrame.frame().settings() && rootFrame.frame().settings()->rootLayerScrolls()) {
+        transformRoot = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
+        rootContext.currentTransform = rootContext.transformForAbsolutePosition = rootContext.transformForFixedPosition = transformRoot.get();
+
+        clipRoot = ClipPaintPropertyNode::create(transformRoot, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
+        rootContext.currentClip = rootContext.clipForAbsolutePosition = rootContext.clipForFixedPosition = clipRoot.get();
+    }
+
+    // The root frame never creates effect node so we unconditionally create a root node here.
+    effectRoot = EffectPaintPropertyNode::create(1.0, nullptr);
+    rootContext.currentEffect = effectRoot.get();
+
+    walk(rootFrame, rootContext);
 }
 
 void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTreeBuilderContext& context)

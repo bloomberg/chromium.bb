@@ -222,7 +222,7 @@ TEST_F(PaintPropertyTreeBuilderTest, NestedOpacityEffect)
     ObjectPaintProperties* childWithOpacityProperties = childWithOpacity.objectPaintProperties();
     EXPECT_EQ(0.5f, childWithOpacityProperties->effect()->opacity());
     // childWithOpacity is the root effect node.
-    EXPECT_EQ(nullptr, childWithOpacityProperties->effect()->parent());
+    EXPECT_NE(nullptr, childWithOpacityProperties->effect()->parent());
 
     LayoutObject& grandChildWithoutOpacity = *document().getElementById("grandChildWithoutOpacity")->layoutObject();
     EXPECT_EQ(nullptr, grandChildWithoutOpacity.objectPaintProperties());
@@ -245,7 +245,7 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes)
     LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
     ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity.objectPaintProperties();
     EXPECT_EQ(0.6f, nodeWithOpacityProperties->effect()->opacity());
-    EXPECT_EQ(nullptr, nodeWithOpacityProperties->effect()->parent());
+    EXPECT_NE(nullptr, nodeWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
 
     LayoutObject& childWithTransform = *document().getElementById("childWithTransform")->layoutObject();
@@ -272,7 +272,7 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext)
     LayoutObject& nodeWithOpacity = *document().getElementById("nodeWithOpacity")->layoutObject();
     ObjectPaintProperties* nodeWithOpacityProperties = nodeWithOpacity.objectPaintProperties();
     EXPECT_EQ(0.6f, nodeWithOpacityProperties->effect()->opacity());
-    EXPECT_EQ(nullptr, nodeWithOpacityProperties->effect()->parent());
+    EXPECT_NE(nullptr, nodeWithOpacityProperties->effect()->parent());
     EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
 
     LayoutObject& childWithStackingContext = *document().getElementById("childWithStackingContext")->layoutObject();
@@ -303,7 +303,7 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesInSVG)
     LayoutObject& groupWithOpacity = *document().getElementById("groupWithOpacity")->layoutObject();
     ObjectPaintProperties* groupWithOpacityProperties = groupWithOpacity.objectPaintProperties();
     EXPECT_EQ(0.6f, groupWithOpacityProperties->effect()->opacity());
-    EXPECT_EQ(nullptr, groupWithOpacityProperties->effect()->parent());
+    EXPECT_NE(nullptr, groupWithOpacityProperties->effect()->parent());
 
     LayoutObject& rectWithoutOpacity = *document().getElementById("rectWithoutOpacity")->layoutObject();
     ObjectPaintProperties* rectWithoutOpacityProperties = rectWithoutOpacity.objectPaintProperties();
@@ -339,7 +339,7 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary)
     LayoutObject& divWithOpacity = *document().getElementById("divWithOpacity")->layoutObject();
     ObjectPaintProperties* divWithOpacityProperties = divWithOpacity.objectPaintProperties();
     EXPECT_EQ(0.2f, divWithOpacityProperties->effect()->opacity());
-    EXPECT_EQ(nullptr, divWithOpacityProperties->effect()->parent());
+    EXPECT_NE(nullptr, divWithOpacityProperties->effect()->parent());
 
     LayoutObject& svgRootWithOpacity = *document().getElementById("svgRootWithOpacity")->layoutObject();
     ObjectPaintProperties* svgRootWithOpacityProperties = svgRootWithOpacity.objectPaintProperties();
@@ -366,7 +366,7 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary)
     LayoutObject& svgRootWithOpacity = *document().getElementById("svgRootWithOpacity")->layoutObject();
     ObjectPaintProperties* svgRootWithOpacityProperties = svgRootWithOpacity.objectPaintProperties();
     EXPECT_EQ(0.3f, svgRootWithOpacityProperties->effect()->opacity());
-    EXPECT_EQ(nullptr, svgRootWithOpacityProperties->effect()->parent());
+    EXPECT_NE(nullptr, svgRootWithOpacityProperties->effect()->parent());
 
     LayoutObject& foreignObjectWithOpacity = *document().getElementById("foreignObjectWithOpacity")->layoutObject();
     ObjectPaintProperties* foreignObjectWithOpacityProperties = foreignObjectWithOpacity.objectPaintProperties();
@@ -682,7 +682,7 @@ TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
 
     EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->clip);
     EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->transform);
-    EXPECT_EQ(nullptr, childProperties->localBorderBoxProperties()->effect);
+    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->effect);
 }
 
 TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
