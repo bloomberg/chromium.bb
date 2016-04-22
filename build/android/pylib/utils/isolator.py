@@ -54,12 +54,6 @@ def DefaultConfigVariables():
   }
 
 
-def IsIsolateEmpty(isolate_path):
-  """Returns whether there are no files in the .isolate."""
-  with open(isolate_path) as f:
-    return "'files': []" in f.read()
-
-
 class Isolator(object):
   """Manages calls to isolate.py for the android test runner scripts."""
 
