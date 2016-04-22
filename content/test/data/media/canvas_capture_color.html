@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Canvas Capture Color Test.</title>
+</head>
+<body>
+  <div>Canvas capture Color Test.</div>
+  <canvas id='canvas' width=10 height=10></canvas>
+  <video id='local-view' autoplay></video>
+  <canvas id='local-view-canvas' width=10 height=10></canvas>
+<script type="text/javascript" src="mediarecorder_test_utils.js"></script>
+<script>
+
+'use strict';
+
+const RED = [255, 0, 0, 1];
+const GREEN = [0, 255, 0, 1];
+const BLUE = [0, 0, 255, 1];
+const RED_WITH_ALPHA = [255, 0, 0, 0.2];
+const GREEN_WITH_ALPHA = [0, 255, 0, 0.5];
+const BLUE_WITH_ALPHA = [0, 0, 255, 0.9];
+const MAX_ALPHA = 255;
+
+// The RGBA to YUV conversion is not perfectly reversible, so it is expected
+// that there will be some color info lost when converting RGBA to YUV and then
+// later YUV to RGBA.
+const TOLERANCE = 5;
+
+// This function draws a colored rectangle on the canvas.
+function draw(canvasId, colorRgba) {
+  return new Promise(function(resolve, reject) {
+    var context = canvasId.getContext('2d');
+    context.clearRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
+    context.fillStyle = 'rgba(' + colorRgba.join() + ')';
+    context.fillRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
+    resolve();
+  });
+}
+
+// This function gets all the pixels from the snapshot canvas.
+// The snapshot canvas represents a snapshot of the video frame.
+function getPixels(videoId, canvasId) {
+  var context = canvasId.getContext('2d');
+  context.clearRect(0, 0, canvasId.clientWidth, canvasId.clientHeight);
+  context.drawImage(videoId, 0, 0);
+  return context.getImageData(0, 0 , canvasId.clientWidth,
+      canvasId.clientHeight).data;
+}
+
+// This generator yields one pixel [R, G, B, A] from the supplied data.
+function* getPixelGenerator(pixelData) {
+  for (var i = 0; i < pixelData.length; i += 4) {
+    yield pixelData.slice(i, i + 4);
+  }
+}
+
+// This function checks the color correctness of the whole video frame.
+function isVideoColor(videoId, canvasId, colorRgba) {
+  var pixelIterator = getPixelGenerator(getPixels(videoId, canvasId));
+  for (var pixelRgba of pixelIterator) {
+    if (!isPixelColor(pixelRgba, colorRgba))
+      return false;
+  }
+  return true;
+}
+
+// This function checks the rgba color of a single pixel in the video.
+function isPixelColor(pixel, color) {
+  var expectedColor = color.slice(0);
+  // The css rgba() function takes an alpha channel (a) such as 0 <= a <= 1,
+  // but context.getImageData() returns array of rgba data with alpha
+  // channel (a') such as  0 <= a' <= 255.
+  expectedColor[expectedColor.length - 1] *= MAX_ALPHA;
+  for (var i = 0; i < color.length; i++) {
+    if (Math.abs(pixel[i] - expectedColor[i]) > TOLERANCE) {
+      console.log('Expected ' + expectedColor + ', got ' + pixel);
+      return false;
+    }
+  }
+  return true;
+}
+
+// This function runs the canvas capture rgba color checks.
+function testCanvasCaptureColors() {
+  doCanvasCaptureAndCheckRgba(RED)
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba(GREEN);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba(BLUE);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba(RED_WITH_ALPHA);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba(GREEN_WITH_ALPHA);
+      })
+      .then(function() {
+        return doCanvasCaptureAndCheckRgba(BLUE_WITH_ALPHA);
+      })
+      .catch(function(err) {
+        window.domAutomationController.send(err);
+      })
+      .then(function() {
+        window.domAutomationController.send('OK');
+      });
+}
+
+// This function fills a canvas with one rgba color and canvas-captures it
+// to a video element. We then snapshot the video element to
+// another canvas and checks the color is what we expect.
+function doCanvasCaptureAndCheckRgba(colorRgba) {
+  return new Promise(function(resolve, reject) {
+    var canvas = document.getElementById('canvas');
+    var video = document.getElementById('local-view');
+    var snapshotCanvas = document.getElementById('local-view-canvas');
+    var stream = canvas.captureStream();
+    video.src = URL.createObjectURL(stream);
+    video.load();
+    draw(canvas, colorRgba)
+        .then(function() {
+          return waitFor('Verify the canvas color is as expected',
+              function() {
+                return isVideoColor(video, snapshotCanvas, colorRgba);
+              });
+        })
+        .catch(function(err) {
+          reject(err);
+        })
+        .then(function() {
+          resolve();
+        });
+  });
+}
+
+</script>
+</body>
+</html>
