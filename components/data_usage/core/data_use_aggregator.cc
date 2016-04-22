@@ -20,8 +20,9 @@
 
 namespace data_usage {
 
-DataUseAggregator::DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
-                                     scoped_ptr<DataUseAmortizer> amortizer)
+DataUseAggregator::DataUseAggregator(
+    std::unique_ptr<DataUseAnnotator> annotator,
+    std::unique_ptr<DataUseAmortizer> amortizer)
     : annotator_(std::move(annotator)),
       amortizer_(std::move(amortizer)),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
@@ -54,7 +55,7 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
   net::LoadTimingInfo load_timing_info;
   request->GetLoadTimingInfo(&load_timing_info);
 
-  scoped_ptr<DataUse> data_use(
+  std::unique_ptr<DataUse> data_use(
       new DataUse(request->url(), load_timing_info.request_start,
                   request->first_party_for_cookies(), -1 /* tab_id */,
                   connection_type_, mcc_mnc_, tx_bytes, rx_bytes));
@@ -103,7 +104,8 @@ void DataUseAggregator::SetMccMncForTests(const std::string& mcc_mnc) {
   mcc_mnc_ = mcc_mnc;
 }
 
-void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
+void DataUseAggregator::PassDataUseToAmortizer(
+    std::unique_ptr<DataUse> data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_use);
 
@@ -124,7 +126,7 @@ void DataUseAggregator::PassDataUseToAmortizer(scoped_ptr<DataUse> data_use) {
 }
 
 void DataUseAggregator::OnAmortizationComplete(
-    scoped_ptr<DataUse> amortized_data_use) {
+    std::unique_ptr<DataUse> amortized_data_use) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(Observer, observer_list_, OnDataUse(*amortized_data_use));
 }

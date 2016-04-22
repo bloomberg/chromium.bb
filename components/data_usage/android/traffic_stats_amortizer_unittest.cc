@@ -6,13 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
@@ -69,47 +70,49 @@ base::HistogramBase::Sample GetDelaySample(const base::TimeDelta& delay) {
   return static_cast<base::HistogramBase::Sample>(delay.InMilliseconds());
 }
 
-// Synthesizes a fake scoped_ptr<DataUse> with the given |url|, |tab_id|,
+// Synthesizes a fake std::unique_ptr<DataUse> with the given |url|, |tab_id|,
 // |tx_bytes| and |rx_bytes|, using arbitrary values for all other fields.
-scoped_ptr<DataUse> CreateDataUseWithURLAndTab(const GURL& url,
-                                               int32_t tab_id,
-                                               int64_t tx_bytes,
-                                               int64_t rx_bytes) {
-  return scoped_ptr<DataUse>(
+std::unique_ptr<DataUse> CreateDataUseWithURLAndTab(const GURL& url,
+                                                    int32_t tab_id,
+                                                    int64_t tx_bytes,
+                                                    int64_t rx_bytes) {
+  return std::unique_ptr<DataUse>(
       new DataUse(url, base::TimeTicks() /* request_start */,
                   GURL("http://examplefirstparty.com"), tab_id,
                   net::NetworkChangeNotifier::CONNECTION_2G, "example_mcc_mnc",
                   tx_bytes, rx_bytes));
 }
 
-// Synthesizes a fake scoped_ptr<DataUse> with the given |url|, |tx_bytes| and
+// Synthesizes a fake std::unique_ptr<DataUse> with the given |url|, |tx_bytes|
+// and
 // |rx_bytes|, using arbitrary values for all other fields.
-scoped_ptr<DataUse> CreateDataUseWithURL(const GURL& url,
-                                         int64_t tx_bytes,
-                                         int64_t rx_bytes) {
+std::unique_ptr<DataUse> CreateDataUseWithURL(const GURL& url,
+                                              int64_t tx_bytes,
+                                              int64_t rx_bytes) {
   return CreateDataUseWithURLAndTab(url, 10, tx_bytes, rx_bytes);
 }
 
-// Synthesizes a fake scoped_ptr<DataUse> with the given |tab_id|, |tx_bytes|
+// Synthesizes a fake std::unique_ptr<DataUse> with the given |tab_id|,
+// |tx_bytes|
 // and |rx_bytes|, using arbitrary values for all other fields.
-scoped_ptr<DataUse> CreateDataUseWithTab(int32_t tab_id,
-                                         int64_t tx_bytes,
-                                         int64_t rx_bytes) {
+std::unique_ptr<DataUse> CreateDataUseWithTab(int32_t tab_id,
+                                              int64_t tx_bytes,
+                                              int64_t rx_bytes) {
   return CreateDataUseWithURLAndTab(GURL("http://example.com"), tab_id,
                                     tx_bytes, rx_bytes);
 }
 
-// Synthesizes a fake scoped_ptr<DataUse> with the given |tx_bytes| and
+// Synthesizes a fake std::unique_ptr<DataUse> with the given |tx_bytes| and
 // |rx_bytes|, using arbitrary values for all other fields.
-scoped_ptr<DataUse> CreateDataUse(int64_t tx_bytes, int64_t rx_bytes) {
+std::unique_ptr<DataUse> CreateDataUse(int64_t tx_bytes, int64_t rx_bytes) {
   return CreateDataUseWithURL(GURL("http://example.com"), tx_bytes, rx_bytes);
 }
 
 // Appends |data_use| to |data_use_sequence|. |data_use_sequence| must not be
 // NULL.
 void AppendDataUseToSequence(
-    std::vector<scoped_ptr<DataUse>>* data_use_sequence,
-    scoped_ptr<DataUse> data_use) {
+    std::vector<std::unique_ptr<DataUse>>* data_use_sequence,
+    std::unique_ptr<DataUse> data_use) {
   data_use_sequence->push_back(std::move(data_use));
 }
 
@@ -141,8 +144,9 @@ class MockTimerWithTickClock : public base::MockTimer {
 // byte counts returned from TrafficStats.
 class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
  public:
-  TestTrafficStatsAmortizer(scoped_ptr<base::TickClock> tick_clock,
-                            scoped_ptr<base::Timer> traffic_stats_query_timer)
+  TestTrafficStatsAmortizer(
+      std::unique_ptr<base::TickClock> tick_clock,
+      std::unique_ptr<base::Timer> traffic_stats_query_timer)
       : TrafficStatsAmortizer(std::move(tick_clock),
                               std::move(traffic_stats_query_timer),
                               kTrafficStatsQueryDelay,
@@ -185,8 +189,8 @@ class TrafficStatsAmortizerTest : public testing::Test {
   TrafficStatsAmortizerTest()
       : test_tick_clock_(new base::SimpleTestTickClock()),
         mock_timer_(new MockTimerWithTickClock(false, false, test_tick_clock_)),
-        amortizer_(scoped_ptr<base::TickClock>(test_tick_clock_),
-                   scoped_ptr<base::Timer>(mock_timer_)),
+        amortizer_(std::unique_ptr<base::TickClock>(test_tick_clock_),
+                   std::unique_ptr<base::Timer>(mock_timer_)),
         data_use_callback_call_count_(0) {}
 
   ~TrafficStatsAmortizerTest() override {
@@ -228,7 +232,8 @@ class TrafficStatsAmortizerTest : public testing::Test {
   }
 
   // Expects that |expected| and |actual| are equivalent.
-  void ExpectDataUse(scoped_ptr<DataUse> expected, scoped_ptr<DataUse> actual) {
+  void ExpectDataUse(std::unique_ptr<DataUse> expected,
+                     std::unique_ptr<DataUse> actual) {
     ++data_use_callback_call_count_;
 
     // Have separate checks for the |tx_bytes| and |rx_bytes|, since those are
@@ -248,7 +253,7 @@ class TrafficStatsAmortizerTest : public testing::Test {
 
   // Creates an ExpectDataUse callback, as a convenience.
   DataUseAmortizer::AmortizationCompleteCallback ExpectDataUseCallback(
-      scoped_ptr<DataUse> expected) {
+      std::unique_ptr<DataUse> expected) {
     return base::Bind(&TrafficStatsAmortizerTest::ExpectDataUse,
                       base::Unretained(this), base::Passed(&expected));
   }
@@ -731,11 +736,11 @@ TEST_F(TrafficStatsAmortizerTest, AmortizeCombinedDataUse) {
   const GURL foo_url("http://foo.com");
   const GURL bar_url("http://bar.com");
 
-  std::vector<scoped_ptr<DataUse>> baz_sequence;
+  std::vector<std::unique_ptr<DataUse>> baz_sequence;
   const DataUseAmortizer::AmortizationCompleteCallback baz_callback =
       base::Bind(&AppendDataUseToSequence, &baz_sequence);
 
-  std::vector<scoped_ptr<DataUse>> qux_sequence;
+  std::vector<std::unique_ptr<DataUse>> qux_sequence;
   const DataUseAmortizer::AmortizationCompleteCallback qux_callback =
       base::Bind(&AppendDataUseToSequence, &qux_sequence);
 

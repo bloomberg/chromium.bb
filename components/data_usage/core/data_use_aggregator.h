@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -40,8 +40,8 @@ class DataUseAggregator
   // Constructs a new DataUseAggregator with the given |annotator| and
   // |amortizer|. A NULL |annotator| will be treated as a no-op annotator, and a
   // NULL |amortizer| will be treated as a no-op amortizer.
-  DataUseAggregator(scoped_ptr<DataUseAnnotator> annotator,
-                    scoped_ptr<DataUseAmortizer> amortizer);
+  DataUseAggregator(std::unique_ptr<DataUseAnnotator> annotator,
+                    std::unique_ptr<DataUseAmortizer> amortizer);
 
   ~DataUseAggregator() override;
 
@@ -74,14 +74,14 @@ class DataUseAggregator
  private:
   // Passes |data_use| to |amortizer_| if it exists, or calls
   // OnAmortizationComplete directly if |amortizer_| doesn't exist.
-  void PassDataUseToAmortizer(scoped_ptr<DataUse> data_use);
+  void PassDataUseToAmortizer(std::unique_ptr<DataUse> data_use);
 
   // Notifies observers with the data use from |amortized_data_use|.
-  void OnAmortizationComplete(scoped_ptr<DataUse> amortized_data_use);
+  void OnAmortizationComplete(std::unique_ptr<DataUse> amortized_data_use);
 
   base::ThreadChecker thread_checker_;
-  scoped_ptr<DataUseAnnotator> annotator_;
-  scoped_ptr<DataUseAmortizer> amortizer_;
+  std::unique_ptr<DataUseAnnotator> annotator_;
+  std::unique_ptr<DataUseAmortizer> amortizer_;
   base::ObserverList<Observer> observer_list_;
 
   // Current connection type as notified by NetworkChangeNotifier.

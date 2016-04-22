@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_DATA_USAGE_CORE_DATA_USE_ANNOTATOR_H_
 #define COMPONENTS_DATA_USAGE_CORE_DATA_USE_ANNOTATOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class URLRequest;
@@ -20,7 +21,8 @@ struct DataUse;
 // information.
 class DataUseAnnotator {
  public:
-  typedef base::Callback<void(scoped_ptr<DataUse>)> DataUseConsumerCallback;
+  typedef base::Callback<void(std::unique_ptr<DataUse>)>
+      DataUseConsumerCallback;
 
   virtual ~DataUseAnnotator() {}
 
@@ -29,7 +31,7 @@ class DataUseAnnotator {
   // in as a non-const pointer so that the DataUseAnnotator can add UserData on
   // to the |request| if desired.
   virtual void Annotate(net::URLRequest* request,
-                        scoped_ptr<DataUse> data_use,
+                        std::unique_ptr<DataUse> data_use,
                         const DataUseConsumerCallback& callback) = 0;
 };
 

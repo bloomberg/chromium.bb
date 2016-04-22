@@ -26,7 +26,7 @@ namespace android {
 namespace {
 
 // Convenience typedef.
-typedef std::vector<std::pair<scoped_ptr<DataUse>,
+typedef std::vector<std::pair<std::unique_ptr<DataUse>,
                               DataUseAmortizer::AmortizationCompleteCallback>>
     DataUseBuffer;
 
@@ -176,8 +176,8 @@ void RecordConcurrentTabsHistogram(const DataUseBuffer& data_use_buffer) {
 
 TrafficStatsAmortizer::TrafficStatsAmortizer()
     : TrafficStatsAmortizer(
-          scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
-          scoped_ptr<base::Timer>(new base::Timer(false, false)),
+          std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
+          std::unique_ptr<base::Timer>(new base::Timer(false, false)),
           GetTrafficStatsQueryDelay(),
           GetMaxAmortizationDelay(),
           GetMaxDataUseBufferSize()) {}
@@ -185,7 +185,7 @@ TrafficStatsAmortizer::TrafficStatsAmortizer()
 TrafficStatsAmortizer::~TrafficStatsAmortizer() {}
 
 void TrafficStatsAmortizer::AmortizeDataUse(
-    scoped_ptr<DataUse> data_use,
+    std::unique_ptr<DataUse> data_use,
     const AmortizationCompleteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -200,7 +200,7 @@ void TrafficStatsAmortizer::AmortizeDataUse(
     buffered_data_use_.back().first->rx_bytes += data_use->rx_bytes;
   } else {
     buffered_data_use_.push_back(
-        std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>(
+        std::pair<std::unique_ptr<DataUse>, AmortizationCompleteCallback>(
             std::move(data_use), callback));
   }
 
@@ -219,8 +219,8 @@ base::WeakPtr<TrafficStatsAmortizer> TrafficStatsAmortizer::GetWeakPtr() {
 }
 
 TrafficStatsAmortizer::TrafficStatsAmortizer(
-    scoped_ptr<base::TickClock> tick_clock,
-    scoped_ptr<base::Timer> traffic_stats_query_timer,
+    std::unique_ptr<base::TickClock> tick_clock,
+    std::unique_ptr<base::Timer> traffic_stats_query_timer,
     const base::TimeDelta& traffic_stats_query_delay,
     const base::TimeDelta& max_amortization_delay,
     size_t max_data_use_buffer_size)

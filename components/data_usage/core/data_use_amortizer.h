@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace data_usage {
 
@@ -18,7 +19,7 @@ struct DataUse;
 // across DataUse objects.
 class DataUseAmortizer {
  public:
-  typedef base::Callback<void(scoped_ptr<DataUse>)>
+  typedef base::Callback<void(std::unique_ptr<DataUse>)>
       AmortizationCompleteCallback;
 
   virtual ~DataUseAmortizer() {}
@@ -28,7 +29,7 @@ class DataUseAmortizer {
   // together |data_use| objects with the same |callback| if the |data_use|
   // objects are identical in all ways but their byte counts.
   virtual void AmortizeDataUse(
-      scoped_ptr<DataUse> data_use,
+      std::unique_ptr<DataUse> data_use,
       const AmortizationCompleteCallback& callback) = 0;
 
   // Notifies the DataUseAmortizer that some extra bytes have been transferred

@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -49,7 +49,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // |data_use| objects are identical in all ways but their byte counts, such
   // that |callback| will only be called once with the single combined DataUse
   // object.
-  void AmortizeDataUse(scoped_ptr<DataUse> data_use,
+  void AmortizeDataUse(std::unique_ptr<DataUse> data_use,
                        const AmortizationCompleteCallback& callback) override;
 
   // Notifies the amortizer that some extra bytes have been transferred that
@@ -65,8 +65,8 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // over the timing of the TrafficStatsAmortizer and the byte counts returned
   // from TrafficStats. |traffic_stats_query_timer| must not be a repeating
   // timer.
-  TrafficStatsAmortizer(scoped_ptr<base::TickClock> tick_clock,
-                        scoped_ptr<base::Timer> traffic_stats_query_timer,
+  TrafficStatsAmortizer(std::unique_ptr<base::TickClock> tick_clock,
+                        std::unique_ptr<base::Timer> traffic_stats_query_timer,
                         const base::TimeDelta& traffic_stats_query_delay,
                         const base::TimeDelta& max_amortization_delay,
                         size_t max_data_use_buffer_size);
@@ -95,7 +95,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   base::ThreadChecker thread_checker_;
 
   // TickClock for determining the current time tick.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // One-shot timer used to wait a short time after receiving DataUse before
   // querying TrafficStats, to give TrafficStats time to update and give the
@@ -103,7 +103,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // in rapid succession. This must not be a repeating timer.
   // |traffic_stats_query_timer_| is owned as a scoped_ptr so that fake timers
   // can be passed in for tests.
-  scoped_ptr<base::Timer> traffic_stats_query_timer_;
+  std::unique_ptr<base::Timer> traffic_stats_query_timer_;
 
   // The delay between data usage being reported to the amortizer before
   // querying TrafficStats. Used with |traffic_stats_query_timer_|.
@@ -129,7 +129,7 @@ class TrafficStatsAmortizer : public DataUseAmortizer {
   // Buffer of pre-amortization data use that has accumulated since the last
   // time amortization was performed, paired with the callbacks for each DataUse
   // object.
-  std::vector<std::pair<scoped_ptr<DataUse>, AmortizationCompleteCallback>>
+  std::vector<std::pair<std::unique_ptr<DataUse>, AmortizationCompleteCallback>>
       buffered_data_use_;
 
   // Indicates if TrafficStats byte counts were available during the last time
