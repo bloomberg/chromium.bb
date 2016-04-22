@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf8">
   <title>$i18n{title}</title>
@@ -97,13 +97,6 @@
   <script src="history.js"></script>
 
   <link rel="import" href="chrome://history/elements.html" async id="bundle">
-
-  <!--
-    Prepare strings and perform i18n substitutions.
-    TODO(tsergeant): Remove once we are fully converted to
-    ReplaceTemplateExpressions. It is currently only used for the <html> tag.
-  -->
-  <link rel="import" href="chrome://resources/html/i18n_template.html" async>
 </body>
 
 </html>
