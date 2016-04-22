@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -77,7 +78,7 @@ class WiFiDisplayMediaPipeline {
       scoped_refptr<WiFiDisplayVideoEncoder> video_encoder);
   void OnMediaServiceRegistered(const InitCompletionCallback& callback);
 
-  void OnEncodedVideoFrame(const WiFiDisplayEncodedFrame& frame);
+  void OnEncodedVideoFrame(std::unique_ptr<WiFiDisplayEncodedFrame> frame);
 
   bool OnPacketizedMediaDatagramPacket(
      WiFiDisplayMediaDatagramPacket media_datagram_packet);

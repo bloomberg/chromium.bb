@@ -194,11 +194,11 @@ void WiFiDisplayMediaPipeline::OnMediaServiceRegistered(
 }
 
 void WiFiDisplayMediaPipeline::OnEncodedVideoFrame(
-    const WiFiDisplayEncodedFrame& frame) {
+    std::unique_ptr<WiFiDisplayEncodedFrame> frame) {
   DCHECK(packetizer_);
-  if (!packetizer_->EncodeElementaryStreamUnit(
-      0u, frame.bytes(), frame.data.size(), frame.key_frame, frame.pts,
-          frame.dts, true)) {
+  if (!packetizer_->EncodeElementaryStreamUnit(0u, frame->bytes(),
+                                               frame->size(), frame->key_frame,
+                                               frame->pts, frame->dts, true)) {
     DVLOG(1) << "Couldn't write video mpegts packet";
   }
 }
