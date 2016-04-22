@@ -12,13 +12,6 @@ source_set("common") {
           ".",
           "//remoting")
 
-  if (is_android) {
-    sources -= [
-      "it2me_native_messaging_host.cc",
-      "it2me_native_messaging_host.h",
-    ]
-  }
-
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//remoting:version",

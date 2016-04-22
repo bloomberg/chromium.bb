@@ -374,12 +374,6 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::Create(
       policy::POLICY_SCOPE_MACHINE));
 #elif defined(OS_ANDROID)
   NOTIMPLEMENTED();
-  policy::PolicyServiceImpl::Providers providers;
-  std::unique_ptr<policy::PolicyService> owned_policy_service(
-      new policy::PolicyServiceImpl(providers));
-  return base::WrapUnique(new PolicyWatcher(
-      owned_policy_service.get(), std::move(owned_policy_service), nullptr,
-      CreateSchemaRegistry()));
 #else
 #error OS that is not yet supported by PolicyWatcher code.
 #endif

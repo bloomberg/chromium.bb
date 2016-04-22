@@ -320,9 +320,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     if (is_chromeos) {
       sources -= [ "linux/x_server_clipboard_unittest.cc" ]
     }
-    if (is_android) {
-      sources -= [ "it2me/it2me_native_messaging_host_unittest.cc" ]
-    }
 
     configs += [ "//remoting:version" ]
 
