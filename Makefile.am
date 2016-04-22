@@ -73,6 +73,7 @@ weston_SOURCES =					\
 	src/compositor.c				\
 	src/compositor.h				\
 	src/compositor-headless.h		\
+	src/compositor-rdp.h				\
 	src/input.c					\
 	src/data-device.c				\
 	src/screenshooter.c				\
@@ -210,6 +211,7 @@ westoninclude_HEADERS =				\
 	src/version.h				\
 	src/compositor.h			\
 	src/compositor-headless.h		\
+	src/compositor-rdp.h			\
 	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
@@ -393,6 +395,7 @@ rdp_backend_la_CFLAGS =				\
 	$(AM_CFLAGS)
 rdp_backend_la_SOURCES = 			\
 	src/compositor-rdp.c			\
+	src/compositor-rdp.h			\
 	shared/helpers.h
 endif
 

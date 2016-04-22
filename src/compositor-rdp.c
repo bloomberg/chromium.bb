@@ -67,23 +67,13 @@
 
 #include "shared/helpers.h"
 #include "compositor.h"
+#include "compositor-rdp.h"
 #include "pixman-renderer.h"
 
 #define MAX_FREERDP_FDS 32
 #define DEFAULT_AXIS_STEP_DISTANCE 10
 #define RDP_MODE_FREQ 60 * 1000
 
-struct rdp_backend_config {
-	int width;
-	int height;
-	char *bind_address;
-	int port;
-	char *rdp_key;
-	char *server_cert;
-	char *server_key;
-	int env_socket;
-	int no_clients_resize;
-};
 
 struct rdp_output;
 
@@ -136,20 +126,6 @@ struct rdp_peer_context {
 	struct rdp_peers_item item;
 };
 typedef struct rdp_peer_context RdpPeerContext;
-
-static void
-rdp_backend_config_init(struct rdp_backend_config *config)
-{
-	config->width = 640;
-	config->height = 480;
-	config->bind_address = NULL;
-	config->port = 3389;
-	config->rdp_key = NULL;
-	config->server_cert = NULL;
-	config->server_key = NULL;
-	config->env_socket = 0;
-	config->no_clients_resize = 0;
-}
 
 static void
 rdp_peer_refresh_rfx(pixman_region32_t *damage, pixman_image_t *image, freerdp_peer *peer)
@@ -1195,8 +1171,7 @@ rdp_incoming_peer(freerdp_listener *instance, freerdp_peer *client)
 
 static struct rdp_backend *
 rdp_backend_create(struct weston_compositor *compositor,
-		   struct rdp_backend_config *config,
-		   int *argc, char *argv[], struct weston_config *wconfig)
+		   struct weston_rdp_backend_config *config)
 {
 	struct rdp_backend *b;
 	char *fd_str;
@@ -1274,39 +1249,49 @@ err_free_strings:
 	return NULL;
 }
 
+static void
+config_init_to_defaults(struct weston_rdp_backend_config *config)
+{
+	config->width = 640;
+	config->height = 480;
+	config->bind_address = NULL;
+	config->port = 3389;
+	config->rdp_key = NULL;
+	config->server_cert = NULL;
+	config->server_key = NULL;
+	config->env_socket = 0;
+	config->no_clients_resize = 0;
+}
+
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	     struct weston_config *wconfig,
 	     struct weston_backend_config *config_base)
 {
 	struct rdp_backend *b;
-	struct rdp_backend_config config;
-	rdp_backend_config_init(&config);
+	struct weston_rdp_backend_config config = {{ 0, }};
 	int major, minor, revision;
 
 	freerdp_get_version(&major, &minor, &revision);
 	weston_log("using FreeRDP version %d.%d.%d\n", major, minor, revision);
 
-	const struct weston_option rdp_options[] = {
-		{ WESTON_OPTION_BOOLEAN, "env-socket", 0, &config.env_socket },
-		{ WESTON_OPTION_INTEGER, "width", 0, &config.width },
-		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
-		{ WESTON_OPTION_STRING,  "address", 0, &config.bind_address },
-		{ WESTON_OPTION_INTEGER, "port", 0, &config.port },
-		{ WESTON_OPTION_BOOLEAN, "no-clients-resize", 0, &config.no_clients_resize },
-		{ WESTON_OPTION_STRING,  "rdp4-key", 0, &config.rdp_key },
-		{ WESTON_OPTION_STRING,  "rdp-tls-cert", 0, &config.server_cert },
-		{ WESTON_OPTION_STRING,  "rdp-tls-key", 0, &config.server_key }
-	};
+	if (config_base == NULL ||
+	    config_base->struct_version != WESTON_RDP_BACKEND_CONFIG_VERSION ||
+	    config_base->struct_size > sizeof(struct weston_rdp_backend_config)) {
+		weston_log("RDP backend config structure is invalid\n");
+		return -1;
+	}
 
-	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
+	config_init_to_defaults(&config);
+	memcpy(&config, config_base, config_base->struct_size);
+
 	if (!config.rdp_key && (!config.server_cert || !config.server_key)) {
 		weston_log("the RDP compositor requires keys and an optional certificate for RDP or TLS security ("
 				"--rdp4-key or --rdp-tls-cert/--rdp-tls-key)\n");
 		return -1;
 	}
 
-	b = rdp_backend_create(compositor, &config, argc, argv, wconfig);
+	b = rdp_backend_create(compositor, &config);
 	if (b == NULL)
 		return -1;
 	return 0;

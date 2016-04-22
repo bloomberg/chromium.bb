@@ -48,6 +48,7 @@
 #include "version.h"
 
 #include "compositor-headless.h"
+#include "compositor-rdp.h"
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
@@ -717,12 +718,63 @@ load_headless_backend(struct weston_compositor *c, char const * backend,
 	return ret;
 }
 
+static void
+weston_rdp_backend_config_init(struct weston_rdp_backend_config *config)
+{
+	config->base.struct_version = WESTON_RDP_BACKEND_CONFIG_VERSION;
+	config->base.struct_size = sizeof(struct weston_rdp_backend_config);
+
+	config->width = 640;
+	config->height = 480;
+	config->bind_address = NULL;
+	config->port = 3389;
+	config->rdp_key = NULL;
+	config->server_cert = NULL;
+	config->server_key = NULL;
+	config->env_socket = 0;
+	config->no_clients_resize = 0;
+}
+
+static int
+load_rdp_backend(struct weston_compositor *c, char const * backend,
+		int *argc, char *argv[], struct weston_config *wc)
+{
+	struct weston_rdp_backend_config config  = {{ 0, }};
+	int ret = 0;
+
+	weston_rdp_backend_config_init(&config);
+
+	const struct weston_option rdp_options[] = {
+		{ WESTON_OPTION_BOOLEAN, "env-socket", 0, &config.env_socket },
+		{ WESTON_OPTION_INTEGER, "width", 0, &config.width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
+		{ WESTON_OPTION_STRING,  "address", 0, &config.bind_address },
+		{ WESTON_OPTION_INTEGER, "port", 0, &config.port },
+		{ WESTON_OPTION_BOOLEAN, "no-clients-resize", 0, &config.no_clients_resize },
+		{ WESTON_OPTION_STRING,  "rdp4-key", 0, &config.rdp_key },
+		{ WESTON_OPTION_STRING,  "rdp-tls-cert", 0, &config.server_cert },
+		{ WESTON_OPTION_STRING,  "rdp-tls-key", 0, &config.server_key }
+	};
+
+	parse_options(rdp_options, ARRAY_LENGTH(rdp_options), argc, argv);
+
+	ret = load_backend_new(c, backend, &config.base);
+
+	free(config.bind_address);
+	free(config.rdp_key);
+	free(config.server_cert);
+	free(config.server_key);
+	return ret;
+}
+
 static int
 load_backend(struct weston_compositor *compositor, const char *backend,
 	     int *argc, char **argv, struct weston_config *config)
 {
 	if (strstr(backend, "headless-backend.so"))
 		return load_headless_backend(compositor, backend, argc, argv, config);
+	else if (strstr(backend, "rdp-backend.so"))
+		return load_rdp_backend(compositor, backend, argc, argv, config);
 #if 0
 	else if (strstr(backend, "drm-backend.so"))
 		return load_drm_backend(compositor, backend, argc, argv, config);
@@ -734,8 +786,6 @@ load_backend(struct weston_compositor *compositor, const char *backend,
 		return load_fbdev_backend(compositor, backend, argc, argv, config);
 	else if (strstr(backend, "rpi-backend.so"))
 		return load_rpi_backend(compositor, backend, argc, argv, config);
-	else if (strstr(backend, "rdp-backend.so"))
-		return load_rdp_backend(compositor, backend, argc, argv, config);
 #endif
 
 	return load_backend_old(compositor, backend, argc, argv, config);
