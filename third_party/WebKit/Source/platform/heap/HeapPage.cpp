@@ -126,8 +126,8 @@ void BaseArena::cleanupPages()
     ASSERT(!m_firstUnsweptPage);
     // Add the BaseArena's pages to the orphanedPagePool.
     for (BasePage* page = m_firstPage; page; page = page->next()) {
-        ThreadHeap::heapStats().decreaseAllocatedSpace(page->size());
-        ThreadHeap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
+        getThreadState()->heap().heapStats().decreaseAllocatedSpace(page->size());
+        getThreadState()->heap().getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     }
     m_firstPage = nullptr;
 }
@@ -398,7 +398,7 @@ void NormalPageArena::takeFreelistSnapshot(const String& dumpName)
 void NormalPageArena::allocatePage()
 {
     getThreadState()->shouldFlushHeapDoesNotContainCache();
-    PageMemory* pageMemory = ThreadHeap::getFreePagePool()->takeFreePage(arenaIndex());
+    PageMemory* pageMemory = getThreadState()->heap().getFreePagePool()->takeFreePage(arenaIndex());
 
     if (!pageMemory) {
         // Allocate a memory region for blinkPagesPerRegion pages that
@@ -406,7 +406,7 @@ void NormalPageArena::allocatePage()
         //
         //    [ guard os page | ... payload ... | guard os page ]
         //    ^---{ aligned to blink page size }
-        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages(ThreadHeap::getRegionTree());
+        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages(getThreadState()->heap().getRegionTree());
 
         // Setup the PageMemory object for each of the pages in the region.
         for (size_t i = 0; i < blinkPagesPerRegion; ++i) {
@@ -421,7 +421,7 @@ void NormalPageArena::allocatePage()
                 RELEASE_ASSERT(result);
                 pageMemory = memory;
             } else {
-                ThreadHeap::getFreePagePool()->addFreePage(arenaIndex(), memory);
+                getThreadState()->heap().getFreePagePool()->addFreePage(arenaIndex(), memory);
             }
         }
     }
@@ -429,7 +429,7 @@ void NormalPageArena::allocatePage()
     NormalPage* page = new (pageMemory->writableStart()) NormalPage(pageMemory, this);
     page->link(&m_firstPage);
 
-    ThreadHeap::heapStats().increaseAllocatedSpace(page->size());
+    getThreadState()->heap().heapStats().increaseAllocatedSpace(page->size());
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // Allow the following addToFreeList() to add the newly allocated memory
     // to the free list.
@@ -444,7 +444,7 @@ void NormalPageArena::allocatePage()
 
 void NormalPageArena::freePage(NormalPage* page)
 {
-    ThreadHeap::heapStats().decreaseAllocatedSpace(page->size());
+    getThreadState()->heap().heapStats().decreaseAllocatedSpace(page->size());
 
     if (page->terminating()) {
         // The thread is shutting down and this page is being removed as a part
@@ -455,11 +455,11 @@ void NormalPageArena::freePage(NormalPage* page)
         // ensures that tracing the dangling pointer in the next global GC just
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
-        ThreadHeap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
+        getThreadState()->heap().getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     } else {
         PageMemory* memory = page->storage();
         page->~NormalPage();
-        ThreadHeap::getFreePagePool()->addFreePage(arenaIndex(), memory);
+        getThreadState()->heap().getFreePagePool()->addFreePage(arenaIndex(), memory);
     }
 }
 
@@ -796,7 +796,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
 #endif
 
     getThreadState()->shouldFlushHeapDoesNotContainCache();
-    PageMemory* pageMemory = PageMemory::allocate(largeObjectSize, ThreadHeap::getRegionTree());
+    PageMemory* pageMemory = PageMemory::allocate(largeObjectSize, getThreadState()->heap().getRegionTree());
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + LargeObjectPage::pageHeaderSize();
 #if ENABLE(ASSERT)
@@ -817,7 +817,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
 
     largeObject->link(&m_firstPage);
 
-    ThreadHeap::heapStats().increaseAllocatedSpace(largeObject->size());
+    getThreadState()->heap().heapStats().increaseAllocatedSpace(largeObject->size());
     getThreadState()->increaseAllocatedObjectSize(largeObject->size());
     return result;
 }
@@ -826,7 +826,7 @@ void LargeObjectArena::freeLargeObjectPage(LargeObjectPage* object)
 {
     ASAN_UNPOISON_MEMORY_REGION(object->payload(), object->payloadSize());
     object->heapObjectHeader()->finalize(object->payload(), object->payloadSize());
-    ThreadHeap::heapStats().decreaseAllocatedSpace(object->size());
+    getThreadState()->heap().heapStats().decreaseAllocatedSpace(object->size());
 
     // Unpoison the object header and allocationGranularity bytes after the
     // object before freeing.
@@ -843,7 +843,7 @@ void LargeObjectArena::freeLargeObjectPage(LargeObjectPage* object)
         // ensures that tracing the dangling pointer in the next global GC just
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
-        ThreadHeap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), object);
+        getThreadState()->heap().getOrphanedPagePool()->addOrphanedPage(arenaIndex(), object);
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
         PageMemory* memory = object->storage();

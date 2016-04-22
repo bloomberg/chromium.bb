@@ -47,7 +47,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 
 void WebThreadSupportingGC::initialize()
 {
-    ThreadState::attach();
+    ThreadState::attachCurrentThread();
     m_gcTaskRunner = adoptPtr(new GCTaskRunner(m_thread));
 }
 
@@ -64,7 +64,7 @@ void WebThreadSupportingGC::shutdown()
     if (m_owningThread)
         m_owningThread->scheduler()->shutdown();
 
-    ThreadState::detach();
+    ThreadState::detachCurrentThread();
 }
 
 } // namespace blink

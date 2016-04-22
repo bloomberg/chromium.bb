@@ -123,12 +123,12 @@ struct WrapperTypeInfo {
 
     void wrapperCreated() const
     {
-        ThreadHeap::heapStats().increaseWrapperCount(1);
+        ThreadState::current()->heap().heapStats().increaseWrapperCount(1);
     }
 
     void wrapperDestroyed() const
     {
-        ThreadHeapStats& heapStats = ThreadHeap::heapStats();
+        ThreadHeapStats& heapStats = ThreadState::current()->heap().heapStats();
         heapStats.decreaseWrapperCount(1);
         heapStats.increaseCollectedWrapperCount(1);
     }
