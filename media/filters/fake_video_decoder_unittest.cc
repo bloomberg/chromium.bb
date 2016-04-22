@@ -220,7 +220,7 @@ class FakeVideoDecoderTest
   base::MessageLoop message_loop_;
   VideoDecoderConfig current_config_;
 
-  scoped_ptr<FakeVideoDecoder> decoder_;
+  std::unique_ptr<FakeVideoDecoder> decoder_;
 
   int num_input_buffers_;
   int num_decoded_frames_;

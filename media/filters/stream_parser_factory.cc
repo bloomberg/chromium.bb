@@ -457,13 +457,13 @@ bool StreamParserFactory::IsTypeSupported(
   return CheckTypeAndCodecs(type, codecs, new MediaLog(), NULL, NULL, NULL);
 }
 
-scoped_ptr<StreamParser> StreamParserFactory::Create(
+std::unique_ptr<StreamParser> StreamParserFactory::Create(
     const std::string& type,
     const std::vector<std::string>& codecs,
     const scoped_refptr<MediaLog>& media_log,
     bool* has_audio,
     bool* has_video) {
-  scoped_ptr<StreamParser> stream_parser;
+  std::unique_ptr<StreamParser> stream_parser;
   ParserFactoryFunction factory_function;
   std::vector<CodecInfo::HistogramTag> audio_codecs;
   std::vector<CodecInfo::HistogramTag> video_codecs;

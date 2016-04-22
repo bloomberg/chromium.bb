@@ -351,13 +351,13 @@ class VideoFrameStreamTest
 
   base::MessageLoop message_loop_;
 
-  scoped_ptr<VideoFrameStream> video_frame_stream_;
-  scoped_ptr<FakeDemuxerStream> demuxer_stream_;
-  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
+  std::unique_ptr<VideoFrameStream> video_frame_stream_;
+  std::unique_ptr<FakeDemuxerStream> demuxer_stream_;
+  std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
   // Use NiceMock since we don't care about most of calls on the decryptor,
   // e.g. RegisterNewKeyCB().
-  scoped_ptr<NiceMock<MockDecryptor>> decryptor_;
+  std::unique_ptr<NiceMock<MockDecryptor>> decryptor_;
 
   // Three decoders are needed to test that decoder fallback can occur more than
   // once on a config change. They are owned by |video_frame_stream_|.

@@ -5,13 +5,14 @@
 #include "media/filters/ffmpeg_demuxer.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -196,16 +197,16 @@ static void SetTimeProperty(MediaLogEvent* event,
     event->params.SetDouble(key, value.InSecondsF());
 }
 
-scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
+std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     FFmpegDemuxer* demuxer,
     AVStream* stream,
     const scoped_refptr<MediaLog>& media_log) {
   if (!demuxer || !stream)
     return nullptr;
 
-  scoped_ptr<FFmpegDemuxerStream> demuxer_stream;
-  scoped_ptr<AudioDecoderConfig> audio_config;
-  scoped_ptr<VideoDecoderConfig> video_config;
+  std::unique_ptr<FFmpegDemuxerStream> demuxer_stream;
+  std::unique_ptr<AudioDecoderConfig> audio_config;
+  std::unique_ptr<VideoDecoderConfig> video_config;
 
   if (stream->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
     audio_config.reset(new AudioDecoderConfig());
@@ -243,7 +244,7 @@ scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
                                << video_config->AsHumanReadableString();
   }
 
-  return make_scoped_ptr(new FFmpegDemuxerStream(
+  return base::WrapUnique(new FFmpegDemuxerStream(
       demuxer, stream, std::move(audio_config), std::move(video_config)));
 }
 
@@ -253,8 +254,8 @@ scoped_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
 FFmpegDemuxerStream::FFmpegDemuxerStream(
     FFmpegDemuxer* demuxer,
     AVStream* stream,
-    scoped_ptr<AudioDecoderConfig> audio_config,
-    scoped_ptr<VideoDecoderConfig> video_config)
+    std::unique_ptr<AudioDecoderConfig> audio_config,
+    std::unique_ptr<VideoDecoderConfig> video_config)
     : demuxer_(demuxer),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       stream_(stream),
@@ -388,7 +389,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     uint8_t* side_data = av_packet_get_side_data(
         packet.get(), AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL, &side_data_size);
 
-    scoped_ptr<DecryptConfig> decrypt_config;
+    std::unique_ptr<DecryptConfig> decrypt_config;
     int data_offset = 0;
     if ((type() == DemuxerStream::AUDIO && audio_config_->is_encrypted()) ||
         (type() == DemuxerStream::VIDEO && video_config_->is_encrypted())) {
@@ -1111,7 +1112,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
   }
 
-  scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
+  std::unique_ptr<MediaTracks> media_tracks(new MediaTracks());
   AVStream* audio_stream = NULL;
   AudioDecoderConfig audio_config;
   AVStream* video_stream = NULL;
@@ -1187,7 +1188,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     // Attempt to create a FFmpegDemuxerStream from the AVStream. This will
     // return nullptr if the AVStream is invalid. Validity checks will verify
     // things like: codec, channel layout, sample/pixel format, etc...
-    scoped_ptr<FFmpegDemuxerStream> demuxer_stream =
+    std::unique_ptr<FFmpegDemuxerStream> demuxer_stream =
         FFmpegDemuxerStream::Create(this, stream, media_log_);
     if (demuxer_stream.get()) {
       streams_[i] = demuxer_stream.release();
@@ -1369,7 +1370,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 
   // Use a single MediaLogEvent to batch all parameter updates at once; this
   // prevents throttling of events due to the large number of updates here.
-  scoped_ptr<MediaLogEvent> metadata_event =
+  std::unique_ptr<MediaLogEvent> metadata_event =
       media_log_->CreateEvent(MediaLogEvent::PROPERTY_CHANGE);
 
   // Audio logging.

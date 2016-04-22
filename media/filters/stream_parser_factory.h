@@ -5,10 +5,10 @@
 #ifndef MEDIA_FILTERS_STREAM_PARSER_FACTORY_H_
 #define MEDIA_FILTERS_STREAM_PARSER_FACTORY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 
@@ -32,7 +32,7 @@ class MEDIA_EXPORT StreamParserFactory {
   //   |has_video| is true if a video codec was specified.
   // Returns NULL otherwise. The values of |has_audio| and |has_video| are
   //   undefined.
-  static scoped_ptr<StreamParser> Create(
+  static std::unique_ptr<StreamParser> Create(
       const std::string& type,
       const std::vector<std::string>& codecs,
       const scoped_refptr<MediaLog>& media_log,

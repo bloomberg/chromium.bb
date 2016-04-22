@@ -23,9 +23,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_queue.h"
@@ -182,29 +183,29 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // number of requested samples. Furthermore, due to overlap-and-add,
   // the last half-window of the output is incomplete, which is stored in this
   // buffer.
-  scoped_ptr<AudioBus> wsola_output_;
+  std::unique_ptr<AudioBus> wsola_output_;
 
   // Overlap-and-add window.
-  scoped_ptr<float[]> ola_window_;
+  std::unique_ptr<float[]> ola_window_;
 
   // Transition window, used to update |optimal_block_| by a weighted sum of
   // |optimal_block_| and |target_block_|.
-  scoped_ptr<float[]> transition_window_;
+  std::unique_ptr<float[]> transition_window_;
 
   // Auxiliary variables to avoid allocation in every iteration.
 
   // Stores the optimal block in every iteration. This is the most
   // similar block to |target_block_| within |search_block_| and it is
   // overlap-and-added to |wsola_output_|.
-  scoped_ptr<AudioBus> optimal_block_;
+  std::unique_ptr<AudioBus> optimal_block_;
 
   // A block of data that search is performed over to find the |optimal_block_|.
-  scoped_ptr<AudioBus> search_block_;
+  std::unique_ptr<AudioBus> search_block_;
 
   // Stores the target block, denoted as |target| above. |search_block_| is
   // searched for a block (|optimal_block_|) that is most similar to
   // |target_block_|.
-  scoped_ptr<AudioBus> target_block_;
+  std::unique_ptr<AudioBus> target_block_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithm);
 };

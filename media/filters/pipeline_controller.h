@@ -38,7 +38,7 @@ class MEDIA_EXPORT PipelineController {
     RESUMING,
   };
 
-  using RendererFactoryCB = base::Callback<scoped_ptr<Renderer>(void)>;
+  using RendererFactoryCB = base::Callback<std::unique_ptr<Renderer>(void)>;
   using SeekedCB = base::Callback<void(bool time_updated)>;
   using SuspendedCB = base::Callback<void()>;
 

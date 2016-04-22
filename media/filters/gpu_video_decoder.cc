@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -40,7 +41,7 @@ enum { kMaxInFlightDecodes = 4 };
 // be on the beefy side.
 static const size_t kSharedMemorySegmentBytes = 100 << 10;
 
-GpuVideoDecoder::SHMBuffer::SHMBuffer(scoped_ptr<base::SharedMemory> m,
+GpuVideoDecoder::SHMBuffer::SHMBuffer(std::unique_ptr<base::SharedMemory> m,
                                       size_t s)
     : shm(std::move(m)), size(s) {}
 
@@ -346,7 +347,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   size_t size = buffer->data_size();
-  scoped_ptr<SHMBuffer> shm_buffer = GetSHM(size);
+  std::unique_ptr<SHMBuffer> shm_buffer = GetSHM(size);
   if (!shm_buffer) {
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -633,25 +634,25 @@ void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
     vda_->ReusePictureBuffer(picture_buffer_id);
 }
 
-scoped_ptr<GpuVideoDecoder::SHMBuffer> GpuVideoDecoder::GetSHM(
+std::unique_ptr<GpuVideoDecoder::SHMBuffer> GpuVideoDecoder::GetSHM(
     size_t min_size) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   if (available_shm_segments_.empty() ||
       available_shm_segments_.back()->size < min_size) {
     size_t size_to_allocate = std::max(min_size, kSharedMemorySegmentBytes);
-    scoped_ptr<base::SharedMemory> shm =
+    std::unique_ptr<base::SharedMemory> shm =
         factories_->CreateSharedMemory(size_to_allocate);
     // CreateSharedMemory() can return NULL during Shutdown.
     if (!shm)
       return NULL;
-    return make_scoped_ptr(new SHMBuffer(std::move(shm), size_to_allocate));
+    return base::WrapUnique(new SHMBuffer(std::move(shm), size_to_allocate));
   }
-  scoped_ptr<SHMBuffer> ret(available_shm_segments_.back());
+  std::unique_ptr<SHMBuffer> ret(available_shm_segments_.back());
   available_shm_segments_.pop_back();
   return ret;
 }
 
-void GpuVideoDecoder::PutSHM(scoped_ptr<SHMBuffer> shm_buffer) {
+void GpuVideoDecoder::PutSHM(std::unique_ptr<SHMBuffer> shm_buffer) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   available_shm_segments_.push_back(shm_buffer.release());
 }
@@ -668,7 +669,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
     return;
   }
 
-  PutSHM(make_scoped_ptr(it->second.shm_buffer));
+  PutSHM(base::WrapUnique(it->second.shm_buffer));
   it->second.done_cb.Run(state_ == kError ? DecodeStatus::DECODE_ERROR
                                           : DecodeStatus::OK);
   bitstream_buffers_in_decoder_.erase(it);

@@ -208,7 +208,7 @@ class FFmpegDemuxerTest : public testing::Test {
                void(EmeInitDataType init_data_type,
                     const std::vector<uint8_t>& init_data));
 
-  void OnMediaTracksUpdated(scoped_ptr<MediaTracks> tracks) {
+  void OnMediaTracksUpdated(std::unique_ptr<MediaTracks> tracks) {
     CHECK(tracks.get());
     media_tracks_ = std::move(tracks);
   }
@@ -225,10 +225,10 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   // Fixture members.
-  scoped_ptr<FileDataSource> data_source_;
-  scoped_ptr<FFmpegDemuxer> demuxer_;
+  std::unique_ptr<FileDataSource> data_source_;
+  std::unique_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
-  scoped_ptr<MediaTracks> media_tracks_;
+  std::unique_ptr<MediaTracks> media_tracks_;
   base::MessageLoop message_loop_;
 
   AVFormatContext* format_context() {

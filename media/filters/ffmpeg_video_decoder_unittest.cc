@@ -197,12 +197,12 @@ class FFmpegVideoDecoderTest : public testing::Test {
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FFmpegVideoDecoder> decoder_;
+  std::unique_ptr<FFmpegVideoDecoder> decoder_;
 
   VideoDecoder::DecodeCB decode_cb_;
 
   // Various buffers for testing.
-  scoped_ptr<uint8_t[]> frame_buffer_;
+  std::unique_ptr<uint8_t[]> frame_buffer_;
   scoped_refptr<DecoderBuffer> end_of_stream_buffer_;
   scoped_refptr<DecoderBuffer> i_frame_buffer_;
   scoped_refptr<DecoderBuffer> corrupt_i_frame_buffer_;

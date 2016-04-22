@@ -41,7 +41,7 @@ class Vp9ParserTest : public ::testing::Test {
   }
 
   IvfParser ivf_parser_;
-  scoped_ptr<base::MemoryMappedFile> stream_;
+  std::unique_ptr<base::MemoryMappedFile> stream_;
 
   Vp9Parser vp9_parser_;
 };

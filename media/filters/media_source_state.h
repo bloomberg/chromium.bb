@@ -31,8 +31,8 @@ class MEDIA_EXPORT MediaSourceState {
   typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
       NewTextTrackCB;
 
-  MediaSourceState(scoped_ptr<StreamParser> stream_parser,
-                   scoped_ptr<FrameProcessor> frame_processor,
+  MediaSourceState(std::unique_ptr<StreamParser> stream_parser,
+                   std::unique_ptr<FrameProcessor> frame_processor,
                    const CreateDemuxerStreamCB& create_demuxer_stream_cb,
                    const scoped_refptr<MediaLog>& media_log);
 
@@ -132,7 +132,7 @@ class MEDIA_EXPORT MediaSourceState {
   // processing decoder configurations.
   bool OnNewConfigs(bool allow_audio,
                     bool allow_video,
-                    scoped_ptr<MediaTracks> tracks,
+                    std::unique_ptr<MediaTracks> tracks,
                     const StreamParser::TextTrackConfigMap& text_configs);
 
   // Called by the |stream_parser_| at the beginning of a new media segment.
@@ -188,9 +188,9 @@ class MEDIA_EXPORT MediaSourceState {
   bool media_segment_contained_video_frame_;
 
   // The object used to parse appended data.
-  scoped_ptr<StreamParser> stream_parser_;
+  std::unique_ptr<StreamParser> stream_parser_;
 
-  scoped_ptr<MediaTracks> media_tracks_;
+  std::unique_ptr<MediaTracks> media_tracks_;
 
   ChunkDemuxerStream* audio_;  // Not owned by |this|.
   ChunkDemuxerStream* video_;  // Not owned by |this|.
@@ -198,7 +198,7 @@ class MEDIA_EXPORT MediaSourceState {
   typedef std::map<StreamParser::TrackId, ChunkDemuxerStream*> TextStreamMap;
   TextStreamMap text_stream_map_;  // |this| owns the map's stream pointers.
 
-  scoped_ptr<FrameProcessor> frame_processor_;
+  std::unique_ptr<FrameProcessor> frame_processor_;
   scoped_refptr<MediaLog> media_log_;
   StreamParser::InitCB init_cb_;
 

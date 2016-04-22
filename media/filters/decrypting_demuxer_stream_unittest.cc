@@ -39,10 +39,10 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedStreamBuffer(
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kFakeBufferSize));
   std::string iv = is_clear ? std::string() :
       std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv));
-  buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(new DecryptConfig(
-      std::string(reinterpret_cast<const char*>(kFakeKeyId),
-                  arraysize(kFakeKeyId)),
-      iv, std::vector<SubsampleEntry>())));
+  buffer->set_decrypt_config(std::unique_ptr<DecryptConfig>(
+      new DecryptConfig(std::string(reinterpret_cast<const char*>(kFakeKeyId),
+                                    arraysize(kFakeKeyId)),
+                        iv, std::vector<SubsampleEntry>())));
   return buffer;
 }
 
@@ -254,13 +254,13 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   base::MessageLoop message_loop_;
-  scoped_ptr<DecryptingDemuxerStream> demuxer_stream_;
-  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
-  scoped_ptr<StrictMock<MockDecryptor>> decryptor_;
+  std::unique_ptr<DecryptingDemuxerStream> demuxer_stream_;
+  std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
+  std::unique_ptr<StrictMock<MockDecryptor>> decryptor_;
   // Whether the |demuxer_stream_| is successfully initialized.
   bool is_initialized_;
-  scoped_ptr<StrictMock<MockDemuxerStream> > input_audio_stream_;
-  scoped_ptr<StrictMock<MockDemuxerStream> > input_video_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> input_audio_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> input_video_stream_;
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
   Decryptor::NewKeyCB key_added_cb_;

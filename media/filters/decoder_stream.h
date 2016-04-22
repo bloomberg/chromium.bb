@@ -151,8 +151,8 @@ class MEDIA_EXPORT DecoderStream {
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream
   // is created to help decrypt the encrypted stream.
   void OnDecoderSelected(
-      scoped_ptr<Decoder> selected_decoder,
-      scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
+      std::unique_ptr<Decoder> selected_decoder,
+      std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   // Satisfy pending |read_cb_| with |status| and |output|.
   void SatisfyRead(Status status,
@@ -207,16 +207,16 @@ class MEDIA_EXPORT DecoderStream {
 
   DemuxerStream* stream_;
 
-  scoped_ptr<DecoderSelector<StreamType> > decoder_selector_;
+  std::unique_ptr<DecoderSelector<StreamType>> decoder_selector_;
 
-  scoped_ptr<Decoder> decoder_;
+  std::unique_ptr<Decoder> decoder_;
   // When falling back from H/W decoding to S/W decoding, destructing the
   // GpuVideoDecoder too early results in black frames being displayed.
   // |previous_decoder_| is used to keep it alive.  It is destroyed once we've
   // decoded at least media::limits::kMaxVideoFrames frames after fallback.
   int decoded_frames_since_fallback_;
-  scoped_ptr<Decoder> previous_decoder_;
-  scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+  std::unique_ptr<Decoder> previous_decoder_;
+  std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
   SpliceObserverCB splice_observer_cb_;
   ConfigChangeObserverCB config_change_observer_cb_;

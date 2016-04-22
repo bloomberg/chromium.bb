@@ -8,23 +8,24 @@
 // correct rate.  We always pass in a very large destination buffer with the
 // expectation that FillBuffer() will fill as much as it can but no more.
 
+#include "media/filters/audio_renderer_algorithm.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>  // For std::min().
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/channel_layout.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
-#include "media/filters/audio_renderer_algorithm.h"
 #include "media/filters/wsola_internals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -172,7 +173,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     int initial_frames_enqueued = frames_enqueued_;
     int initial_frames_buffered = algorithm_.frames_buffered();
 
-    scoped_ptr<AudioBus> bus =
+    std::unique_ptr<AudioBus> bus =
         AudioBus::Create(channels_, buffer_size_in_frames);
     if (playback_rate == 0.0) {
       int frames_written = algorithm_.FillBuffer(
@@ -247,7 +248,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     const int kHalfPulseWidthSamples = kPulseWidthSamples / 2;
 
     // For the ease of implementation get 1 frame every call to FillBuffer().
-    scoped_ptr<AudioBus> output = AudioBus::Create(channels_, 1);
+    std::unique_ptr<AudioBus> output = AudioBus::Create(channels_, 1);
 
     // Input buffer to inject pulses.
     scoped_refptr<AudioBuffer> input =
@@ -268,8 +269,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
 
     // A buffer for the output until a complete pulse is created. Then
     // reference pulse is compared with this buffer.
-    scoped_ptr<AudioBus> pulse_buffer = AudioBus::Create(
-        channels_, kPulseWidthSamples);
+    std::unique_ptr<AudioBus> pulse_buffer =
+        AudioBus::Create(channels_, kPulseWidthSamples);
 
     const float kTolerance = 0.000001f;
     // Equivalent of 4 seconds.
@@ -438,10 +439,10 @@ TEST_F(AudioRendererAlgorithmTest, DotProduct) {
   const int kFrames = 20;
   const int kHalfPulseWidth = 2;
 
-  scoped_ptr<AudioBus> a = AudioBus::Create(kChannels, kFrames);
-  scoped_ptr<AudioBus> b = AudioBus::Create(kChannels, kFrames);
+  std::unique_ptr<AudioBus> a = AudioBus::Create(kChannels, kFrames);
+  std::unique_ptr<AudioBus> b = AudioBus::Create(kChannels, kFrames);
 
-  scoped_ptr<float[]> dot_prod(new float[kChannels]);
+  std::unique_ptr<float[]> dot_prod(new float[kChannels]);
 
   FillWithSquarePulseTrain(kHalfPulseWidth, 0, 0, a.get());
   FillWithSquarePulseTrain(kHalfPulseWidth, 1, 1, a.get());
@@ -471,8 +472,8 @@ TEST_F(AudioRendererAlgorithmTest, MovingBlockEnergy) {
   const int kFrames = 20;
   const int kFramesPerBlock = 3;
   const int kNumBlocks = kFrames - (kFramesPerBlock - 1);
-  scoped_ptr<AudioBus> a = AudioBus::Create(kChannels, kFrames);
-  scoped_ptr<float[]> energies(new float[kChannels * kNumBlocks]);
+  std::unique_ptr<AudioBus> a = AudioBus::Create(kChannels, kFrames);
+  std::unique_ptr<float[]> energies(new float[kChannels * kNumBlocks]);
   float* ch_left = a->channel(0);
   float* ch_right = a->channel(1);
 
@@ -513,8 +514,8 @@ TEST_F(AudioRendererAlgorithmTest, FullAndDecimatedSearch) {
   ASSERT_EQ(sizeof(ch_0), sizeof(ch_1));
   ASSERT_EQ(static_cast<size_t>(kFramesInSearchRegion),
             sizeof(ch_0) / sizeof(*ch_0));
-  scoped_ptr<AudioBus> search_region = AudioBus::Create(kChannels,
-                                                        kFramesInSearchRegion);
+  std::unique_ptr<AudioBus> search_region =
+      AudioBus::Create(kChannels, kFramesInSearchRegion);
   float* ch = search_region->channel(0);
   memcpy(ch, ch_0, sizeof(float) * kFramesInSearchRegion);
   ch = search_region->channel(1);
@@ -527,14 +528,14 @@ TEST_F(AudioRendererAlgorithmTest, FullAndDecimatedSearch) {
   ASSERT_EQ(static_cast<size_t>(kFramePerBlock),
             sizeof(target_0) / sizeof(*target_0));
 
-  scoped_ptr<AudioBus> target = AudioBus::Create(kChannels,
-                                                 kFramePerBlock);
+  std::unique_ptr<AudioBus> target =
+      AudioBus::Create(kChannels, kFramePerBlock);
   ch = target->channel(0);
   memcpy(ch, target_0, sizeof(float) * kFramePerBlock);
   ch = target->channel(1);
   memcpy(ch, target_1, sizeof(float) * kFramePerBlock);
 
-  scoped_ptr<float[]> energy_target(new float[kChannels]);
+  std::unique_ptr<float[]> energy_target(new float[kChannels]);
 
   internal::MultiChannelDotProduct(target.get(), 0, target.get(), 0,
                                    kFramePerBlock, energy_target.get());
@@ -543,8 +544,8 @@ TEST_F(AudioRendererAlgorithmTest, FullAndDecimatedSearch) {
   ASSERT_EQ(2.01f, energy_target[1]);
 
   const int kNumCandidBlocks = kFramesInSearchRegion - (kFramePerBlock - 1);
-  scoped_ptr<float[]> energy_candid_blocks(new float[kNumCandidBlocks *
-                                                     kChannels]);
+  std::unique_ptr<float[]> energy_candid_blocks(
+      new float[kNumCandidBlocks * kChannels]);
 
   internal::MultiChannelMovingBlockEnergies(
       search_region.get(), kFramePerBlock, energy_candid_blocks.get());
@@ -642,7 +643,7 @@ TEST_F(AudioRendererAlgorithmTest, WsolaSpeedup) {
 TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
   Initialize();
 
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
 
   // Verify that the first half of |bus| remains zero and the last half is
   // filled appropriately at normal, above normal, below normal, and muted

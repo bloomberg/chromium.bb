@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/base/audio_timestamp_helper.h"
 #include "media/filters/audio_clock.h"
+
+#include <memory>
+
+#include "base/macros.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -64,7 +66,7 @@ class AudioClockTest : public testing::Test {
   }
 
   int sample_rate_;
-  scoped_ptr<AudioClock> clock_;
+  std::unique_ptr<AudioClock> clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioClockTest);

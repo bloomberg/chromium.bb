@@ -86,8 +86,8 @@ Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
 }
 
 MediaSourceState::MediaSourceState(
-    scoped_ptr<StreamParser> stream_parser,
-    scoped_ptr<FrameProcessor> frame_processor,
+    std::unique_ptr<StreamParser> stream_parser,
+    std::unique_ptr<FrameProcessor> frame_processor,
     const CreateDemuxerStreamCB& create_demuxer_stream_cb,
     const scoped_refptr<MediaLog>& media_log)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
@@ -476,7 +476,7 @@ bool MediaSourceState::IsSeekWaitingForData() const {
 bool MediaSourceState::OnNewConfigs(
     bool allow_audio,
     bool allow_video,
-    scoped_ptr<MediaTracks> tracks,
+    std::unique_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_configs) {
   DCHECK_GE(state_, PENDING_PARSER_CONFIG);
   DCHECK(tracks.get());

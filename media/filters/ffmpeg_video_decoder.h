@@ -6,10 +6,10 @@
 #define MEDIA_FILTERS_FFMPEG_VIDEO_DECODER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -83,8 +83,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   OutputCB output_cb_;
 
   // FFmpeg structures owned by this object.
-  scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   VideoDecoderConfig config_;
 

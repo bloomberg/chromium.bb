@@ -136,7 +136,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   Liveness liveness_;
 
-  scoped_ptr<SourceBufferStream> stream_;
+  std::unique_ptr<SourceBufferStream> stream_;
 
   mutable base::Lock lock_;
   State state_;
@@ -378,8 +378,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // http://crbug.com/308226
   PipelineStatusCB seek_cb_;
 
-  scoped_ptr<ChunkDemuxerStream> audio_;
-  scoped_ptr<ChunkDemuxerStream> video_;
+  std::unique_ptr<ChunkDemuxerStream> audio_;
+  std::unique_ptr<ChunkDemuxerStream> video_;
 
   // Counter to ensure that we do not transition too early to INITIALIZED.
   // Incremented in AddId(), decremented in OnSourceInitDone().

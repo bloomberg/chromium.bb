@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/pipeline_controller.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline.h"
-#include "media/filters/pipeline_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,7 +109,9 @@ class PipelineControllerTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<Renderer> CreateRenderer() { return scoped_ptr<Renderer>(); }
+  std::unique_ptr<Renderer> CreateRenderer() {
+    return std::unique_ptr<Renderer>();
+  }
 
   void OnSeeked(bool time_updated) {
     was_seeked_ = true;

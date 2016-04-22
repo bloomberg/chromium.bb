@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -48,7 +49,7 @@ class MEDIA_EXPORT Vp9RawBitsReader {
   int ReadSignedLiteral(int bits);
 
  private:
-  scoped_ptr<BitReader> reader_;
+  std::unique_ptr<BitReader> reader_;
 
   // Indicates if none of the reads since the last Initialize() call has gone
   // beyond the end of available data.

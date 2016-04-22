@@ -513,8 +513,9 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   bool has_audio = false;
   bool has_video = false;
-  scoped_ptr<media::StreamParser> stream_parser(StreamParserFactory::Create(
-      type, codecs, media_log_, &has_audio, &has_video));
+  std::unique_ptr<media::StreamParser> stream_parser(
+      StreamParserFactory::Create(type, codecs, media_log_, &has_audio,
+                                  &has_video));
 
   if (!stream_parser)
     return ChunkDemuxer::kNotSupported;
@@ -529,12 +530,12 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   if (has_video)
     source_id_video_ = id;
 
-  scoped_ptr<FrameProcessor> frame_processor(
+  std::unique_ptr<FrameProcessor> frame_processor(
       new FrameProcessor(base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
                                     base::Unretained(this)),
                          media_log_));
 
-  scoped_ptr<MediaSourceState> source_state(new MediaSourceState(
+  std::unique_ptr<MediaSourceState> source_state(new MediaSourceState(
       std::move(stream_parser), std::move(frame_processor),
       base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this)),
       media_log_));

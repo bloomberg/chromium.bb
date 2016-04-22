@@ -162,7 +162,7 @@ bool FFmpegGlue::OpenContext() {
 
   // Attempt to recognize the container by looking at the first few bytes of the
   // stream. The stream position is left unchanged.
-  scoped_ptr<std::vector<uint8_t>> buffer(new std::vector<uint8_t>(8192));
+  std::unique_ptr<std::vector<uint8_t>> buffer(new std::vector<uint8_t>(8192));
 
   int64_t pos = AVIOSeekOperation(avio_context_.get()->opaque, 0, SEEK_CUR);
   AVIOSeekOperation(avio_context_.get()->opaque, 0, SEEK_SET);

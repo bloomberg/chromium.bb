@@ -145,7 +145,7 @@ void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
 
   if (success) {
     base::ResetAndReturn(&select_decoder_cb_)
-        .Run(std::move(decoder_), scoped_ptr<DecryptingDemuxerStream>());
+        .Run(std::move(decoder_), std::unique_ptr<DecryptingDemuxerStream>());
     return;
   }
 
@@ -231,8 +231,8 @@ void DecoderSelector<StreamType>::ReturnNullDecoder() {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&select_decoder_cb_)
-      .Run(scoped_ptr<Decoder>(),
-           scoped_ptr<DecryptingDemuxerStream>());
+      .Run(std::unique_ptr<Decoder>(),
+           std::unique_ptr<DecryptingDemuxerStream>());
 }
 
 // These forward declarations tell the compiler that we will use

@@ -422,7 +422,7 @@ class SourceBufferStreamTest : public testing::Test {
 
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
-  scoped_ptr<SourceBufferStream> stream_;
+  std::unique_ptr<SourceBufferStream> stream_;
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;

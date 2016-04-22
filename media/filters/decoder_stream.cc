@@ -238,8 +238,8 @@ void DecoderStream<StreamType>::SelectDecoder(CdmContext* cdm_context) {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderSelected(
-    scoped_ptr<Decoder> selected_decoder,
-    scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
+    std::unique_ptr<Decoder> selected_decoder,
+    std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
   FUNCTION_DVLOG(2) << ": "
                     << (selected_decoder ? selected_decoder->GetDisplayName()
                                          : "No decoder selected.");

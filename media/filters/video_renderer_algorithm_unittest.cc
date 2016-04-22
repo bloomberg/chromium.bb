@@ -330,7 +330,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
 
  protected:
   VideoFramePool frame_pool_;
-  scoped_ptr<base::SimpleTestTickClock> tick_clock_;
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock_;
   WallClockTimeSource time_source_;
   VideoRendererAlgorithm algorithm_;
 

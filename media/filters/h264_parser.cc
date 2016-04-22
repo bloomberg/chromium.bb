@@ -5,10 +5,10 @@
 #include "media/filters/h264_parser.h"
 
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "media/base/decrypt_config.h"
 
@@ -783,7 +783,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
 
   *sps_id = -1;
 
-  scoped_ptr<H264SPS> sps(new H264SPS());
+  std::unique_ptr<H264SPS> sps(new H264SPS());
 
   READ_BITS_OR_RETURN(8, &sps->profile_idc);
   READ_BOOL_OR_RETURN(&sps->constraint_set0_flag);
@@ -902,7 +902,7 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
 
   *pps_id = -1;
 
-  scoped_ptr<H264PPS> pps(new H264PPS());
+  std::unique_ptr<H264PPS> pps(new H264PPS());
 
   READ_UE_OR_RETURN(&pps->pic_parameter_set_id);
   READ_UE_OR_RETURN(&pps->seq_parameter_set_id);

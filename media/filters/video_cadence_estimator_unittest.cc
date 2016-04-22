@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/video_cadence_estimator.h"
+
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "media/filters/video_cadence_estimator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -228,7 +230,7 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
-  scoped_ptr<VideoCadenceEstimator> estimator(new VideoCadenceEstimator(
+  std::unique_ptr<VideoCadenceEstimator> estimator(new VideoCadenceEstimator(
       base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs)));
   estimator->set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
@@ -252,7 +254,7 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
-  scoped_ptr<VideoCadenceEstimator> estimator(new VideoCadenceEstimator(
+  std::unique_ptr<VideoCadenceEstimator> estimator(new VideoCadenceEstimator(
       base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs)));
 
   const base::TimeDelta render_interval = Interval(30);

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/h265_parser.h"
+
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-
 #include "media/base/decrypt_config.h"
-#include "media/filters/h265_parser.h"
 
 namespace media {
 

@@ -250,7 +250,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   };
 
   // Default cluster to append first for simple tests.
-  scoped_ptr<Cluster> kDefaultFirstCluster() {
+  std::unique_ptr<Cluster> kDefaultFirstCluster() {
     return GenerateCluster(0, 4);
   }
 
@@ -259,7 +259,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   // have timestamps consistent with the end times of the blocks
   // in kDefaultFirstCluster() so that these two clusters represent
   // a continuous region.
-  scoped_ptr<Cluster> kDefaultSecondCluster() {
+  std::unique_ptr<Cluster> kDefaultSecondCluster() {
     return GenerateCluster(46, 66, 5);
   }
 
@@ -285,10 +285,10 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   void CreateInitSegment(int stream_flags,
-                                 bool is_audio_encrypted,
-                                 bool is_video_encrypted,
-                                 scoped_ptr<uint8_t[]>* buffer,
-                                 int* size) {
+                         bool is_audio_encrypted,
+                         bool is_video_encrypted,
+                         std::unique_ptr<uint8_t[]>* buffer,
+                         int* size) {
     bool has_audio = (stream_flags & HAS_AUDIO) != 0;
     bool has_video = (stream_flags & HAS_VIDEO) != 0;
     bool has_text = (stream_flags & HAS_TEXT) != 0;
@@ -477,11 +477,11 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   void AppendCluster(const std::string& source_id,
-                     scoped_ptr<Cluster> cluster) {
+                     std::unique_ptr<Cluster> cluster) {
     AppendData(source_id, cluster->data(), cluster->size());
   }
 
-  void AppendCluster(scoped_ptr<Cluster> cluster) {
+  void AppendCluster(std::unique_ptr<Cluster> cluster) {
     AppendCluster(kSourceId, std::move(cluster));
   }
 
@@ -598,8 +598,8 @@ class ChunkDemuxerTest : public ::testing::Test {
     }
   }
 
-  scoped_ptr<Cluster> GenerateCluster(const std::vector<BlockInfo>& blocks,
-                                      bool unknown_size) {
+  std::unique_ptr<Cluster> GenerateCluster(const std::vector<BlockInfo>& blocks,
+                                           bool unknown_size) {
     DCHECK_GT(blocks.size(), 0u);
     ClusterBuilder cb;
 
@@ -629,7 +629,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     return unknown_size ? cb.FinishWithUnknownSize() : cb.Finish();
   }
 
-  scoped_ptr<Cluster> GenerateCluster(
+  std::unique_ptr<Cluster> GenerateCluster(
       std::priority_queue<BlockInfo> block_queue,
       bool unknown_size) {
     std::vector<BlockInfo> blocks(block_queue.size());
@@ -698,7 +698,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     AppendMuxedCluster(msi);
   }
 
-  scoped_ptr<Cluster> GenerateMuxedCluster(
+  std::unique_ptr<Cluster> GenerateMuxedCluster(
       const std::vector<MuxedStreamInfo> msi) {
     std::priority_queue<BlockInfo> block_queue;
     for (size_t i = 0; i < msi.size(); ++i) {
@@ -762,7 +762,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                                           int stream_flags,
                                           bool is_audio_encrypted,
                                           bool is_video_encrypted) {
-    scoped_ptr<uint8_t[]> info_tracks;
+    std::unique_ptr<uint8_t[]> info_tracks;
     int info_tracks_size = 0;
     CreateInitSegment(stream_flags,
                       is_audio_encrypted, is_video_encrypted,
@@ -773,7 +773,8 @@ class ChunkDemuxerTest : public ::testing::Test {
   void AppendGarbage() {
     // Fill up an array with gibberish.
     int garbage_cluster_size = 10;
-    scoped_ptr<uint8_t[]> garbage_cluster(new uint8_t[garbage_cluster_size]);
+    std::unique_ptr<uint8_t[]> garbage_cluster(
+        new uint8_t[garbage_cluster_size]);
     for (int i = 0; i < garbage_cluster_size; ++i)
       garbage_cluster[i] = i;
     AppendData(garbage_cluster.get(), garbage_cluster_size);
@@ -996,7 +997,7 @@ class ChunkDemuxerTest : public ::testing::Test {
     cb->AddSimpleBlock(track_num, timecode, 0, data, sizeof(data));
   }
 
-  scoped_ptr<Cluster> GenerateCluster(int timecode, int block_count) {
+  std::unique_ptr<Cluster> GenerateCluster(int timecode, int block_count) {
     return GenerateCluster(timecode, timecode, block_count);
   }
 
@@ -1012,16 +1013,16 @@ class ChunkDemuxerTest : public ::testing::Test {
     cb->AddBlockGroup(track_num, timecode, duration, flags, data, size);
   }
 
-  scoped_ptr<Cluster> GenerateCluster(int first_audio_timecode,
-                                      int first_video_timecode,
-                                      int block_count) {
+  std::unique_ptr<Cluster> GenerateCluster(int first_audio_timecode,
+                                           int first_video_timecode,
+                                           int block_count) {
     return GenerateCluster(first_audio_timecode, first_video_timecode,
                            block_count, false);
   }
-  scoped_ptr<Cluster> GenerateCluster(int first_audio_timecode,
-                                      int first_video_timecode,
-                                      int block_count,
-                                      bool unknown_size) {
+  std::unique_ptr<Cluster> GenerateCluster(int first_audio_timecode,
+                                           int first_video_timecode,
+                                           int block_count,
+                                           bool unknown_size) {
     CHECK_GT(block_count, 0);
 
     std::priority_queue<BlockInfo> block_queue;
@@ -1072,10 +1073,10 @@ class ChunkDemuxerTest : public ::testing::Test {
     return GenerateCluster(block_queue, unknown_size);
   }
 
-  scoped_ptr<Cluster> GenerateSingleStreamCluster(int timecode,
-                                                  int end_timecode,
-                                                  int track_number,
-                                                  int block_duration) {
+  std::unique_ptr<Cluster> GenerateSingleStreamCluster(int timecode,
+                                                       int end_timecode,
+                                                       int track_number,
+                                                       int block_duration) {
     CHECK_GT(end_timecode, timecode);
 
     std::vector<uint8_t> data(kBlockSize);
@@ -1166,7 +1167,7 @@ class ChunkDemuxerTest : public ::testing::Test {
         timecode, block_count, DemuxerStream::VIDEO, kVideoBlockDuration);
   }
 
-  scoped_ptr<Cluster> GenerateEmptyCluster(int timecode) {
+  std::unique_ptr<Cluster> GenerateEmptyCluster(int timecode) {
     ClusterBuilder cb;
     cb.SetClusterTimecode(timecode);
     return cb.Finish();
@@ -1358,7 +1359,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                void(EmeInitDataType init_data_type,
                     const std::vector<uint8_t>& init_data));
 
-  MOCK_METHOD1(InitSegmentReceivedMock, void(scoped_ptr<MediaTracks>&));
+  MOCK_METHOD1(InitSegmentReceivedMock, void(std::unique_ptr<MediaTracks>&));
 
   void Seek(base::TimeDelta seek_time) {
     demuxer_->StartWaitingForSeek(seek_time);
@@ -1385,7 +1386,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 
-  scoped_ptr<ChunkDemuxer> demuxer_;
+  std::unique_ptr<ChunkDemuxer> demuxer_;
   Demuxer::MediaTracksUpdatedCB init_segment_received_cb_;
 
   base::TimeDelta append_window_start_for_next_append_;
@@ -1396,7 +1397,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   std::map<std::string, base::TimeDelta> timestamp_offset_map_;
 
  public:
-  void InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
+  void InitSegmentReceived(std::unique_ptr<MediaTracks> tracks) {
     DCHECK(tracks.get());
     DCHECK_GT(tracks->tracks().size(), 0u);
 
@@ -1563,7 +1564,7 @@ TEST_F(ChunkDemuxerTest, SingleTextTrackIdChange) {
                      MuxedStreamInfo(kTextTrackNum, "10K"));
   CheckExpectedRanges("{ [0,46) }");
 
-  scoped_ptr<uint8_t[]> info_tracks;
+  std::unique_ptr<uint8_t[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(
       HAS_TEXT | HAS_AUDIO | HAS_VIDEO | USE_ALTERNATE_TEXT_TRACK_ID, false,
@@ -1760,7 +1761,7 @@ TEST_F(ChunkDemuxerTest, SeekWhileParsingCluster) {
 
   InSequence s;
 
-  scoped_ptr<Cluster> cluster_a(GenerateCluster(0, 6));
+  std::unique_ptr<Cluster> cluster_a(GenerateCluster(0, 6));
 
   // Split the cluster into two appends at an arbitrary point near the end.
   int first_append_size = cluster_a->size() - 11;
@@ -1786,7 +1787,7 @@ TEST_F(ChunkDemuxerTest, SeekWhileParsingCluster) {
 
 // Test the case where AppendData() is called before Init().
 TEST_F(ChunkDemuxerTest, AppendDataBeforeInit) {
-  scoped_ptr<uint8_t[]> info_tracks;
+  std::unique_ptr<uint8_t[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(HAS_AUDIO | HAS_VIDEO,
                     false, false, &info_tracks, &info_tracks_size);
@@ -1827,7 +1828,7 @@ TEST_F(ChunkDemuxerTest, OutOfOrderClusters) {
   AppendCluster(GenerateCluster(5, 4));
 
   // Verify that AppendData() can still accept more data.
-  scoped_ptr<Cluster> cluster_c(GenerateCluster(45, 2));
+  std::unique_ptr<Cluster> cluster_c(GenerateCluster(45, 2));
   EXPECT_MEDIA_LOG(GeneratedSplice(6000, 45000));
   demuxer_->AppendData(kSourceId, cluster_c->data(), cluster_c->size(),
                        append_window_start_for_next_append_,
@@ -1855,7 +1856,7 @@ TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
   AppendCluster(cb.Finish());
 
   // Verify that AppendData() ignores data after the error.
-  scoped_ptr<Cluster> cluster_b(GenerateCluster(20, 2));
+  std::unique_ptr<Cluster> cluster_b(GenerateCluster(20, 2));
   demuxer_->AppendData(kSourceId, cluster_b->data(), cluster_b->size(),
                        append_window_start_for_next_append_,
                        append_window_end_for_next_append_,
@@ -1882,7 +1883,7 @@ TEST_F(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
   AppendCluster(cb.Finish());
 
   // Verify that AppendData() ignores data after the error.
-  scoped_ptr<Cluster> cluster_b(GenerateCluster(6, 2));
+  std::unique_ptr<Cluster> cluster_b(GenerateCluster(6, 2));
   demuxer_->AppendData(kSourceId, cluster_b->data(), cluster_b->size(),
                        append_window_start_for_next_append_,
                        append_window_end_for_next_append_,
@@ -2182,16 +2183,16 @@ TEST_F(ChunkDemuxerTest, AppendingInPieces) {
 
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
-  scoped_ptr<uint8_t[]> info_tracks;
+  std::unique_ptr<uint8_t[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(HAS_AUDIO | HAS_VIDEO,
                     false, false, &info_tracks, &info_tracks_size);
 
-  scoped_ptr<Cluster> cluster_a(kDefaultFirstCluster());
-  scoped_ptr<Cluster> cluster_b(kDefaultSecondCluster());
+  std::unique_ptr<Cluster> cluster_a(kDefaultFirstCluster());
+  std::unique_ptr<Cluster> cluster_b(kDefaultSecondCluster());
 
   size_t buffer_size = info_tracks_size + cluster_a->size() + cluster_b->size();
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
   uint8_t* dst = buffer.get();
   memcpy(dst, info_tracks.get(), info_tracks_size);
   dst += info_tracks_size;
@@ -2318,7 +2319,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_AltRefFrames) {
 TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
-  scoped_ptr<Cluster> cluster(GenerateCluster(0, 6));
+  std::unique_ptr<Cluster> cluster(GenerateCluster(0, 6));
 
   bool audio_read_done = false;
   bool video_read_done = false;
@@ -3430,7 +3431,7 @@ TEST_F(ChunkDemuxerTest, TimestampOffsetSeparateStreams) {
 TEST_F(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
-  scoped_ptr<Cluster> cluster = GenerateCluster(0, 2);
+  std::unique_ptr<Cluster> cluster = GenerateCluster(0, 2);
   // Append only part of the cluster data.
   AppendData(cluster->data(), cluster->size() - 13);
 
@@ -4374,7 +4375,7 @@ TEST_F(ChunkDemuxerTest, CuesBetweenClustersWithUnknownSize) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Add two clusters separated by Cues in a single Append() call.
-  scoped_ptr<Cluster> cluster = GenerateCluster(0, 0, 4, true);
+  std::unique_ptr<Cluster> cluster = GenerateCluster(0, 0, 4, true);
   std::vector<uint8_t> data(cluster->data(), cluster->data() + cluster->size());
   data.insert(data.end(), kCuesHeader, kCuesHeader + sizeof(kCuesHeader));
   cluster = GenerateCluster(46, 66, 5, true);
@@ -4639,7 +4640,7 @@ TEST_F(ChunkDemuxerTest,
   msi[0] =
       MuxedStreamInfo(kAudioTrackNum, "0K 10K 20K 30K 40K 50K 60K 70K 80D10K");
   msi[1] = MuxedStreamInfo(kVideoTrackNum, "31 41 51 61 71K 81", 10);
-  scoped_ptr<Cluster> cluster = GenerateMuxedCluster(msi);
+  std::unique_ptr<Cluster> cluster = GenerateMuxedCluster(msi);
 
   // Append the first part of the cluster, up to the beginning of the first
   // video simpleblock. The result should be just 4 audio blocks and no video

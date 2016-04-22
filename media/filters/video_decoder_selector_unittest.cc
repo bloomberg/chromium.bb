@@ -66,9 +66,8 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD2(OnDecoderSelected,
                void(VideoDecoder*, DecryptingDemuxerStream*));
 
-  void MockOnDecoderSelected(
-      scoped_ptr<VideoDecoder> decoder,
-      scoped_ptr<DecryptingDemuxerStream> stream) {
+  void MockOnDecoderSelected(std::unique_ptr<VideoDecoder> decoder,
+                             std::unique_ptr<DecryptingDemuxerStream> stream) {
     OnDecoderSelected(decoder.get(), stream.get());
     selected_decoder_ = std::move(decoder);
   }
@@ -138,20 +137,20 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   // Declare |decoder_selector_| after |demuxer_stream_| and |decryptor_| since
   // |demuxer_stream_| and |decryptor_| should outlive |decoder_selector_|.
-  scoped_ptr<StrictMock<MockDemuxerStream>> demuxer_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> demuxer_stream_;
 
-  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
+  std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
-  scoped_ptr<NiceMock<MockDecryptor>> decryptor_;
+  std::unique_ptr<NiceMock<MockDecryptor>> decryptor_;
 
-  scoped_ptr<VideoDecoderSelector> decoder_selector_;
+  std::unique_ptr<VideoDecoderSelector> decoder_selector_;
 
   StrictMock<MockVideoDecoder>* decoder_1_;
   StrictMock<MockVideoDecoder>* decoder_2_;
   ScopedVector<VideoDecoder> all_decoders_;
-  scoped_ptr<VideoDecoder> selected_decoder_;
+  std::unique_ptr<VideoDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;
 

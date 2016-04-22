@@ -25,13 +25,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"
@@ -56,7 +56,7 @@ class FFmpegBitstreamConverter;
 class FFmpegDemuxer;
 class FFmpegGlue;
 
-typedef scoped_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
+typedef std::unique_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
 class FFmpegDemuxerStream : public DemuxerStream {
  public:
@@ -65,7 +65,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   //
   // FFmpegDemuxerStream keeps a copy of |demuxer| and initializes itself using
   // information inside |stream|. Both parameters must outlive |this|.
-  static scoped_ptr<FFmpegDemuxerStream> Create(
+  static std::unique_ptr<FFmpegDemuxerStream> Create(
       FFmpegDemuxer* demuxer,
       AVStream* stream,
       const scoped_refptr<MediaLog>& media_log);
@@ -141,8 +141,8 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // configs should be null for text streams.
   FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
                       AVStream* stream,
-                      scoped_ptr<AudioDecoderConfig> audio_config,
-                      scoped_ptr<VideoDecoderConfig> video_config);
+                      std::unique_ptr<AudioDecoderConfig> audio_config,
+                      std::unique_ptr<VideoDecoderConfig> video_config);
 
   // Runs |read_cb_| if present with the front of |buffer_queue_|, calling
   // NotifyCapacityAvailable() if capacity is still available.
@@ -161,8 +161,8 @@ class FFmpegDemuxerStream : public DemuxerStream {
   FFmpegDemuxer* demuxer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   AVStream* stream_;
-  scoped_ptr<AudioDecoderConfig> audio_config_;
-  scoped_ptr<VideoDecoderConfig> video_config_;
+  std::unique_ptr<AudioDecoderConfig> audio_config_;
+  std::unique_ptr<VideoDecoderConfig> video_config_;
   Type type_;
   Liveness liveness_;
   base::TimeDelta duration_;
@@ -176,7 +176,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   ReadCB read_cb_;
 
 #if defined(USE_PROPRIETARY_CODECS)
-  scoped_ptr<FFmpegBitstreamConverter> bitstream_converter_;
+  std::unique_ptr<FFmpegBitstreamConverter> bitstream_converter_;
 #endif
 
   std::string encryption_key_id_;
@@ -327,8 +327,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   bool duration_known_;
 
   // FFmpegURLProtocol implementation and corresponding glue bits.
-  scoped_ptr<BlockingUrlProtocol> url_protocol_;
-  scoped_ptr<FFmpegGlue> glue_;
+  std::unique_ptr<BlockingUrlProtocol> url_protocol_;
+  std::unique_ptr<FFmpegGlue> glue_;
 
   const EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
 

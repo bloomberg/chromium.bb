@@ -92,9 +92,9 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // A shared memory segment and its allocated size.
   struct SHMBuffer {
-    SHMBuffer(scoped_ptr<base::SharedMemory> m, size_t s);
+    SHMBuffer(std::unique_ptr<base::SharedMemory> m, size_t s);
     ~SHMBuffer();
-    scoped_ptr<base::SharedMemory> shm;
+    std::unique_ptr<base::SharedMemory> shm;
     size_t size;
   };
 
@@ -134,10 +134,10 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Request a shared-memory segment of at least |min_size| bytes.  Will
   // allocate as necessary.
-  scoped_ptr<SHMBuffer> GetSHM(size_t min_size);
+  std::unique_ptr<SHMBuffer> GetSHM(size_t min_size);
 
   // Return a shared-memory segment to the available pool.
-  void PutSHM(scoped_ptr<SHMBuffer> shm_buffer);
+  void PutSHM(std::unique_ptr<SHMBuffer> shm_buffer);
 
   // Destroy all PictureBuffers in |buffers|, and delete their textures.
   void DestroyPictureBuffers(PictureBufferMap* buffers);
@@ -159,7 +159,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Populated during Initialize() (on success) and unchanged until an error
   // occurs.
-  scoped_ptr<VideoDecodeAccelerator> vda_;
+  std::unique_ptr<VideoDecodeAccelerator> vda_;
 
   InitCB init_cb_;
   OutputCB output_cb_;

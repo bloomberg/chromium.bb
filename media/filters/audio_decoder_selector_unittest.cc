@@ -68,8 +68,8 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD2(OnDecoderSelected,
                void(AudioDecoder*, DecryptingDemuxerStream*));
 
-  void MockOnDecoderSelected(scoped_ptr<AudioDecoder> decoder,
-                             scoped_ptr<DecryptingDemuxerStream> stream) {
+  void MockOnDecoderSelected(std::unique_ptr<AudioDecoder> decoder,
+                             std::unique_ptr<DecryptingDemuxerStream> stream) {
     OnDecoderSelected(decoder.get(), stream.get());
     selected_decoder_ = std::move(decoder);
   }
@@ -142,20 +142,20 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   // Declare |decoder_selector_| after |demuxer_stream_| and |decryptor_| since
   // |demuxer_stream_| and |decryptor_| should outlive |decoder_selector_|.
-  scoped_ptr<StrictMock<MockDemuxerStream>> demuxer_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> demuxer_stream_;
 
-  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
+  std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
-  scoped_ptr<NiceMock<MockDecryptor>> decryptor_;
+  std::unique_ptr<NiceMock<MockDecryptor>> decryptor_;
 
-  scoped_ptr<AudioDecoderSelector> decoder_selector_;
+  std::unique_ptr<AudioDecoderSelector> decoder_selector_;
 
   StrictMock<MockAudioDecoder>* decoder_1_;
   StrictMock<MockAudioDecoder>* decoder_2_;
   ScopedVector<AudioDecoder> all_decoders_;
-  scoped_ptr<AudioDecoder> selected_decoder_;
+  std::unique_ptr<AudioDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;
 

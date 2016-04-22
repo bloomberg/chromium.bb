@@ -6,10 +6,10 @@
 #define MEDIA_FILTERS_ANDROID_MEDIA_CODEC_AUDIO_DECODER_H_
 
 #include <deque>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -240,9 +240,9 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
   // Callback that delivers output frames.
   OutputCB output_cb_;
 
-  scoped_ptr<MediaCodecBridge> media_codec_;
+  std::unique_ptr<MediaCodecBridge> media_codec_;
 
-  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> timestamp_helper_;
 
   // Repeating timer that kicks MediaCodec operation.
   base::RepeatingTimer io_timer_;

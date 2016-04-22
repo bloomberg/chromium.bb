@@ -58,7 +58,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   AudioDecoderConfig config_;
   OutputCB output_cb_;
   OpusMSDecoder* opus_decoder_;
-  scoped_ptr<AudioDiscardHelper> discard_helper_;
+  std::unique_ptr<AudioDiscardHelper> discard_helper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OpusAudioDecoder);
 };

@@ -5,10 +5,11 @@
 #ifndef MEDIA_FILTERS_DECODER_SELECTOR_H_
 #define MEDIA_FILTERS_DECODER_SELECTOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -47,9 +48,8 @@ class MEDIA_EXPORT DecoderSelector {
   // Note: The caller owns selected Decoder and DecryptingDemuxerStream.
   // The caller should call DecryptingDemuxerStream::Reset() before
   // calling Decoder::Reset() to release any pending decryption or read.
-  typedef base::Callback<
-      void(scoped_ptr<Decoder>,
-           scoped_ptr<DecryptingDemuxerStream>)>
+  typedef base::Callback<void(std::unique_ptr<Decoder>,
+                              std::unique_ptr<DecryptingDemuxerStream>)>
       SelectDecoderCB;
 
   // |decoders| contains the Decoders to use when initializing.
@@ -98,8 +98,8 @@ class MEDIA_EXPORT DecoderSelector {
   typename Decoder::OutputCB output_cb_;
   base::Closure waiting_for_decryption_key_cb_;
 
-  scoped_ptr<Decoder> decoder_;
-  scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;
+  std::unique_ptr<Decoder> decoder_;
+  std::unique_ptr<DecryptingDemuxerStream> decrypted_stream_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderSelector> weak_ptr_factory_;

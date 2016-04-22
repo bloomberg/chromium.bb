@@ -254,12 +254,12 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   base::MessageLoop message_loop_;
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
-  scoped_ptr<FrameProcessor> frame_processor_;
+  std::unique_ptr<FrameProcessor> frame_processor_;
   base::TimeDelta append_window_start_;
   base::TimeDelta append_window_end_;
   base::TimeDelta timestamp_offset_;
-  scoped_ptr<ChunkDemuxerStream> audio_;
-  scoped_ptr<ChunkDemuxerStream> video_;
+  std::unique_ptr<ChunkDemuxerStream> audio_;
+  std::unique_ptr<ChunkDemuxerStream> video_;
   const TrackId audio_id_;
   const TrackId video_id_;
   const base::TimeDelta frame_duration_;  // Currently the same for all streams.

@@ -22,7 +22,7 @@ FFmpegH264ToAnnexBBitstreamConverter::FFmpegH264ToAnnexBBitstreamConverter(
 FFmpegH264ToAnnexBBitstreamConverter::~FFmpegH264ToAnnexBBitstreamConverter() {}
 
 bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
-  scoped_ptr<mp4::AVCDecoderConfigurationRecord> avc_config;
+  std::unique_ptr<mp4::AVCDecoderConfigurationRecord> avc_config;
 
   if (packet == NULL || !packet->data)
     return false;

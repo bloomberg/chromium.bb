@@ -5,8 +5,9 @@
 #ifndef MEDIA_FILTERS_FFMPEG_H265_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 #define MEDIA_FILTERS_FFMPEG_H265_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/filters/ffmpeg_bitstream_converter.h"
 #include "media/formats/mp4/hevc.h"
@@ -34,7 +35,7 @@ class MEDIA_EXPORT FFmpegH265ToAnnexBBitstreamConverter
   bool ConvertPacket(AVPacket* packet) override;
 
  private:
-  scoped_ptr<mp4::HEVCDecoderConfigurationRecord> hevc_config_;
+  std::unique_ptr<mp4::HEVCDecoderConfigurationRecord> hevc_config_;
 
   // Variable to hold a pointer to memory where we can access the global
   // data from the FFmpeg file format's global headers.

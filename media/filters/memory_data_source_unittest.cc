@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/memory_data_source.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
-#include "media/filters/memory_data_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,7 +56,7 @@ class MemoryDataSourceTest : public ::testing::Test {
 
  private:
   std::vector<uint8_t> data_;
-  scoped_ptr<MemoryDataSource> memory_data_source_;
+  std::unique_ptr<MemoryDataSource> memory_data_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDataSourceTest);
 };

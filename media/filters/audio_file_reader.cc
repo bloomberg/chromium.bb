@@ -134,7 +134,7 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
   size_t bytes_per_sample = av_get_bytes_per_sample(codec_context_->sample_fmt);
 
   // Holds decoded audio.
-  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame(av_frame_alloc());
+  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame(av_frame_alloc());
 
   // Read until we hit EOF or we've read the requested number of frames.
   AVPacket packet;

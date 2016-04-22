@@ -5,10 +5,11 @@
 #ifndef MEDIA_FILTERS_DECRYPTING_AUDIO_DECODER_H_
 #define MEDIA_FILTERS_DECRYPTING_AUDIO_DECODER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
@@ -114,7 +115,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // decryption key.
   bool key_added_while_decode_pending_;
 
-  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> timestamp_helper_;
 
   base::WeakPtr<DecryptingAudioDecoder> weak_this_;
   base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;

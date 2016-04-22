@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/audio_file_reader.h"
+
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_hash.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-#include "media/filters/audio_file_reader.h"
 #include "media/filters/in_memory_url_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +34,7 @@ class AudioFileReaderTest : public testing::Test {
 
   // Reads and the entire file provided to Initialize().
   void ReadAndVerify(const char* expected_audio_hash, int expected_frames) {
-    scoped_ptr<AudioBus> decoded_audio_data =
+    std::unique_ptr<AudioBus> decoded_audio_data =
         AudioBus::Create(reader_->channels(), reader_->GetNumberOfFrames());
     int actual_frames = reader_->Read(decoded_audio_data.get());
     ASSERT_LE(actual_frames, decoded_audio_data->frames());
@@ -107,7 +109,7 @@ class AudioFileReaderTest : public testing::Test {
   void RunTestFailingDecode(const char* fn) {
     Initialize(fn);
     EXPECT_TRUE(reader_->Open());
-    scoped_ptr<AudioBus> decoded_audio_data =
+    std::unique_ptr<AudioBus> decoded_audio_data =
         AudioBus::Create(reader_->channels(), reader_->GetNumberOfFrames());
     EXPECT_EQ(reader_->Read(decoded_audio_data.get()), 0);
   }
@@ -118,8 +120,8 @@ class AudioFileReaderTest : public testing::Test {
 
  protected:
   scoped_refptr<DecoderBuffer> data_;
-  scoped_ptr<InMemoryUrlProtocol> protocol_;
-  scoped_ptr<AudioFileReader> reader_;
+  std::unique_ptr<InMemoryUrlProtocol> protocol_;
+  std::unique_ptr<AudioFileReader> reader_;
   bool packet_verification_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFileReaderTest);

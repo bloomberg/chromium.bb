@@ -6,10 +6,10 @@
 #define MEDIA_FILTERS_FFMPEG_AUDIO_DECODER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
@@ -99,15 +99,15 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   DecoderState state_;
 
   // FFmpeg structures owned by this object.
-  scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   AudioDecoderConfig config_;
 
   // AVSampleFormat initially requested; not Chrome's SampleFormat.
   int av_sample_format_;
 
-  scoped_ptr<AudioDiscardHelper> discard_helper_;
+  std::unique_ptr<AudioDiscardHelper> discard_helper_;
 
   scoped_refptr<MediaLog> media_log_;
 
