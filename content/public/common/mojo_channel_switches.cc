@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/common/common_type_converters.h"
 
@@ -31,16 +32,15 @@ const char kMojoChannelExperimentName[] = "MojoChannel";
 namespace content {
 
 bool ShouldUseMojoChannel() {
+  const std::string group =
+      base::FieldTrialList::FindFullName(kMojoChannelExperimentName);
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMojoChannel))
     return true;
 
-  const std::string group =
-      base::FieldTrialList::FindFullName(kMojoChannelExperimentName);
-  if (group == "Enabled")
-    return true;
-
-  return false;
+  return base::StartsWith(
+      group, "Enabled", base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace content
