@@ -139,8 +139,6 @@ void LayoutSVGRoot::layout()
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
 
-    bool needsLayout = selfNeedsLayout();
-
     LayoutSize oldSize = size();
     updateLogicalWidth();
     updateLogicalHeight();
@@ -150,15 +148,12 @@ void LayoutSVGRoot::layout()
 
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
-    m_isLayoutSizeChanged = needsLayout || (svg->hasRelativeLengths() && oldSize != size());
+    m_isLayoutSizeChanged = selfNeedsLayout() || (svg->hasRelativeLengths() && oldSize != size());
     // When hasRelativeLengths() is false, no descendants have relative lengths
     // (hence no one is interested in viewport size changes).
     bool layoutSizeChanged = m_isLayoutSizeChanged && svg->hasRelativeLengths();
 
-    // If any of this root's children need to be laid out, and a filter is
-    // applied to it, we need to issue paint invalidations for all descendants.
-    bool forceLayoutOfChildren = needsLayout
-        || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
+    bool forceLayoutOfChildren = selfNeedsLayout();
 
     const bool scalingFactorChanged = false;
     SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, scalingFactorChanged, layoutSizeChanged);

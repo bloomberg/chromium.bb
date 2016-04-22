@@ -66,11 +66,7 @@ void LayoutSVGContainer::layout()
     bool layoutSizeChanged = element()->hasRelativeLengths()
         && SVGLayoutSupport::layoutSizeOfNearestViewportChanged(this);
 
-    // If any of this container's children need to be laid out, and a filter is
-    // applied to the container, we need to issue paint invalidations for all
-    // the descendants.
-    bool forceLayoutOfChildren = selfNeedsLayout()
-        || (normalChildNeedsLayout() && SVGLayoutSupport::hasFilterResource(*this));
+    bool forceLayoutOfChildren = selfNeedsLayout();
     SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, m_didScreenScaleFactorChange, layoutSizeChanged);
 
     // Invalidate all resources of this client if our layout changed.
