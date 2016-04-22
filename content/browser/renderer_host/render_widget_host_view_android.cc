@@ -165,17 +165,23 @@ void GLHelperHolder::Initialize() {
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
 
-  static const size_t kBytesPerPixel = 4;
-  gfx::DeviceDisplayInfo display_info;
-  size_t full_screen_texture_size_in_bytes = display_info.GetDisplayHeight() *
-                                             display_info.GetDisplayWidth() *
-                                             kBytesPerPixel;
+  constexpr size_t kBytesPerPixel = 4;
+  size_t full_screen_texture_size_in_bytes =
+      gfx::DeviceDisplayInfo().GetDisplayHeight() *
+      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
+
   gpu::SharedMemoryLimits limits;
-  limits.command_buffer_size = 64 * 1024;
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
-  limits.max_transfer_buffer_size = std::min(
-      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
+  // The GLHelper context doesn't do a lot of stuff, so we don't expect it to
+  // need a lot of space for commands.
+  limits.command_buffer_size = 1024;
+  // The transfer buffer is used for shaders among other things, so give some
+  // reasonable but small limit.
+  limits.start_transfer_buffer_size = 4 * 1024;
+  limits.min_transfer_buffer_size = 4 * 1024;
+  limits.max_transfer_buffer_size = full_screen_texture_size_in_bytes;
+  // This context is used for doing async readbacks, so allow at least a full
+  // screen readback to be mapped.
+  limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
 
   bool share_resources = false;
   bool automatic_flushes = false;

@@ -527,6 +527,11 @@ void CompositorImpl::CreateOutputSurface() {
   constexpr bool share_resources = false;
   constexpr bool automatic_flushes = false;
 
+  constexpr size_t kBytesPerPixel = 4;
+  const size_t full_screen_texture_size_in_bytes =
+      gfx::DeviceDisplayInfo().GetDisplayHeight() *
+      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
+
   gpu::SharedMemoryLimits limits;
   // This limit is meant to hold the contents of the display compositor
   // drawing the scene. See discussion here:
@@ -536,16 +541,9 @@ void CompositorImpl::CreateOutputSurface() {
   // any excess space.
   limits.start_transfer_buffer_size = 64 * 1024;
   limits.min_transfer_buffer_size = 64 * 1024;
-  constexpr size_t kBytesPerPixel = 4;
-  const size_t full_screen_texture_size_in_bytes =
-      gfx::DeviceDisplayInfo().GetDisplayHeight() *
-      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
-  limits.max_transfer_buffer_size = std::min(
-      3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
-  // TODO(danakj): This limit should be on the GLHelper context instead in
-  // RWHVAndroid since that is where we do the async readback and map gpu
-  // memory to do so.
-  limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
+  limits.max_transfer_buffer_size = full_screen_texture_size_in_bytes;
+  // Texture uploads may use mapped memory so give a reasonable limit for them.
+  limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       new ContextProviderCommandBuffer(
