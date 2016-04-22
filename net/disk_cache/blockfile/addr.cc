@@ -26,7 +26,7 @@ bool Addr::SetFileNumber(int file_number) {
   return true;
 }
 
-bool Addr::SanityCheckV2() const {
+bool Addr::SanityCheck() const {
   if (!is_initialized())
     return !value_;
 
@@ -39,22 +39,8 @@ bool Addr::SanityCheckV2() const {
   return !reserved_bits();
 }
 
-bool Addr::SanityCheckV3() const {
-  if (!is_initialized())
-    return !value_;
-
-  // For actual entries, SanityCheckForEntryV3 should be used.
-  if (file_type() > BLOCK_FILES)
-    return false;
-
-  if (is_separate_file())
-    return true;
-
-  return !reserved_bits();
-}
-
-bool Addr::SanityCheckForEntryV2() const {
-  if (!SanityCheckV2() || !is_initialized())
+bool Addr::SanityCheckForEntry() const {
+  if (!SanityCheck() || !is_initialized())
     return false;
 
   if (is_separate_file() || file_type() != BLOCK_256)
@@ -63,24 +49,8 @@ bool Addr::SanityCheckForEntryV2() const {
   return true;
 }
 
-bool Addr::SanityCheckForEntryV3() const {
-  if (!is_initialized())
-    return false;
-
-  if (reserved_bits())
-    return false;
-
-  if (file_type() != BLOCK_ENTRIES && file_type() != BLOCK_EVICTED)
-    return false;
-
-  if (num_blocks() != 1)
-    return false;
-
-  return true;
-}
-
 bool Addr::SanityCheckForRankings() const {
-  if (!SanityCheckV2() || !is_initialized())
+  if (!SanityCheck() || !is_initialized())
     return false;
 
   if (is_separate_file() || file_type() != RANKINGS || num_blocks() != 1)

@@ -592,7 +592,7 @@ bool EntryImpl::SanityCheck() {
     return false;
 
   Addr next_addr(stored->next);
-  if (next_addr.is_initialized() && !next_addr.SanityCheckForEntryV2()) {
+  if (next_addr.is_initialized() && !next_addr.SanityCheckForEntry()) {
     STRESS_NOTREACHED();
     return false;
   }
@@ -606,7 +606,7 @@ bool EntryImpl::SanityCheck() {
       (stored->key_len > kMaxInternalKeyLength && !key_addr.is_initialized()))
     return false;
 
-  if (!key_addr.SanityCheckV2())
+  if (!key_addr.SanityCheck())
     return false;
 
   if (key_addr.is_initialized() &&
@@ -639,7 +639,7 @@ bool EntryImpl::DataSanityCheck() {
       return false;
     if (!data_size && data_addr.is_initialized())
       return false;
-    if (!data_addr.SanityCheckV2())
+    if (!data_addr.SanityCheck())
       return false;
     if (!data_size)
       continue;
@@ -664,7 +664,7 @@ void EntryImpl::FixForDelete() {
     if (data_addr.is_initialized()) {
       if ((data_size <= kMaxBlockSize && data_addr.is_separate_file()) ||
           (data_size > kMaxBlockSize && data_addr.is_block_file()) ||
-          !data_addr.SanityCheckV2()) {
+          !data_addr.SanityCheck()) {
         STRESS_NOTREACHED();
         // The address is weird so don't attempt to delete it.
         stored->data_addr[i] = 0;

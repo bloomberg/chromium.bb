@@ -31,7 +31,6 @@ const int kMaxBlockSize = 4096 * 4;
 const int16_t kMaxBlockFile = 255;
 const int kMaxNumBlocks = 4;
 const int16_t kFirstAdditionalBlockFile = 4;
-const size_t kFirstAdditionalBlockFileV3 = 7;
 
 // Defines a storage address for a cache record
 //
@@ -161,10 +160,8 @@ class NET_EXPORT_PRIVATE Addr {
   }
 
   // Returns true if this address looks like a valid one.
-  bool SanityCheckV2() const;
-  bool SanityCheckV3() const;
-  bool SanityCheckForEntryV2() const;
-  bool SanityCheckForEntryV3() const;
+  bool SanityCheck() const;
+  bool SanityCheckForEntry() const;
   bool SanityCheckForRankings() const;
 
  private:

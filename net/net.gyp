@@ -208,10 +208,6 @@
           ],
         }],
         [ 'OS == "android"', {
-          'sources!': [
-            # See bug http://crbug.com/344533.
-            'disk_cache/blockfile/index_table_v3_unittest.cc',
-          ],
           'dependencies': [
             'net_javatests',
           ],
@@ -409,9 +405,6 @@
               # OS is not "linux" or "freebsd" or "openbsd".
               'socket/unix_domain_client_socket_posix_unittest.cc',
               'socket/unix_domain_server_socket_posix_unittest.cc',
-
-              # See bug http://crbug.com/344533.
-              'disk_cache/blockfile/index_table_v3_unittest.cc',
             ],
         }],
         ['OS == "android"', {

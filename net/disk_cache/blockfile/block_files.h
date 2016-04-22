@@ -81,7 +81,6 @@ class NET_EXPORT_PRIVATE BlockHeader {
   int Size() const;
 
   // Returns a pointer to the underlying BlockFileHeader.
-  // TODO(rvargas): This may be removed with the support for V2.
   BlockFileHeader* Header();
 
  private:

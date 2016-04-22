@@ -1550,9 +1550,6 @@ test("net_unittests") {
       # OS is not "linux" or "freebsd" or "openbsd".
       "socket/unix_domain_client_socket_posix_unittest.cc",
       "socket/unix_domain_server_socket_posix_unittest.cc",
-
-      # See bug http://crbug.com/344533.
-      "disk_cache/blockfile/index_table_v3_unittest.cc",
     ]
   }
 
@@ -1609,10 +1606,6 @@ test("net_unittests") {
       "//v8:v8_external_startup_data_assets",
     ]
     android_manifest = "//net/android/unittest_support/AndroidManifest.xml"
-    sources -= [
-      # See bug http://crbug.com/344533.
-      "disk_cache/blockfile/index_table_v3_unittest.cc",
-    ]
     set_sources_assignment_filter([])
     sources += [ "base/address_tracker_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
