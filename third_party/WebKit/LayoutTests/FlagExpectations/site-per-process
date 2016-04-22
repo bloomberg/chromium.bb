@@ -23,9 +23,6 @@ http/tests/history/cross-origin-redirect-on-back.html [ Timeout Crash ]
 http/tests/security/cross-frame-access-document-direct.html [ Crash Timeout ]
 http/tests/security/referrer-policy-origin-when-crossorigin-is-crossorigin.html [ Crash Timeout ]
 
-# https://crbug.com/582289 - dumpResourceLoadCallbacks test flag is not replicated into OOPIFs.
-http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
-
 # https://crbug.com/582201 - missing console message about blocked XSS.
 http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-getAttribute-value.html [ Failure ]
 http/tests/security/javascriptURL/javascriptURL-execution-context-frame-src-htmldom.html [ Failure ]
