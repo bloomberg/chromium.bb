@@ -530,7 +530,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
   EXPECT_THAT(result, HasSubstr("Page 2 content"));
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
+// Flaky on Ubuntu-12.04 bots: https://crbug.com/606037
+#if defined(OS_LINUX)
+#define MAYBE_PrefChange DISABLED_PrefChange
+#else
+#define MAYBE_PrefChange PrefChange
+#endif
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       MAYBE_PrefChange) {
   PrefTest(false);
 }
 
