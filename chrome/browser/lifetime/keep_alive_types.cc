@@ -5,7 +5,6 @@
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "base/logging.h"
 
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
   switch (origin) {
     case KeepAliveOrigin::APP_CONTROLLER:
@@ -58,5 +57,3 @@ std::ostream& operator<<(std::ostream& out,
   NOTREACHED();
   return out << static_cast<int>(restart);
 }
-
-#endif
