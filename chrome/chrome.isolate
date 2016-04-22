@@ -25,13 +25,6 @@
         ]
       }
     }],
-    ['OS=="linux" or OS=="mac" or OS=="win"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/resources.pak',
-        ],
-      },
-    }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
         'command': [
@@ -43,6 +36,7 @@
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/resources/extension/',
+          '<(PRODUCT_DIR)/resources.pak',
         ],
       },
     }],

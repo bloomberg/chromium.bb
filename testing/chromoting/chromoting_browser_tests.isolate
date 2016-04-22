@@ -55,7 +55,6 @@
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/remoting/remoting.webapp.v2/',
           '<(PRODUCT_DIR)/remoting/browser_test_resources/',
-          '<(PRODUCT_DIR)/resources.pak',
           '../../remoting/tools/internal/test_accounts.json',
         ],
       },
@@ -65,6 +64,7 @@
         'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/resources.pak',
         ],
       },
     }],
@@ -79,6 +79,7 @@
     ['OS=="mac"', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
         ],
       },

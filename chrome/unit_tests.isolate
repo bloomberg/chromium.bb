@@ -47,7 +47,6 @@
           '../third_party/hunspell_dictionaries/',
           '../third_party/zlib/google/test/data/',
           '../tools/metrics/histograms/histograms.xml',
-          '<(PRODUCT_DIR)/resources.pak',
           'test/data/',
           'third_party/mock4js/',
         ],
@@ -58,6 +57,7 @@
         'files': [
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
+          '<(PRODUCT_DIR)/resources.pak',
         ],
       },
     }],
