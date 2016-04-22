@@ -182,9 +182,4 @@ ImageData::ImageData(const IntSize& size, DOMUint8ClampedArray* byteArray)
     ASSERT_WITH_SECURITY_IMPLICATION(static_cast<unsigned>(size.width() * size.height() * 4) <= m_data->length());
 }
 
-void ImageData::dispose()
-{
-    m_data.clear();
-}
-
 } // namespace blink

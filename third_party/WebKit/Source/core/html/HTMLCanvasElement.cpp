@@ -595,7 +595,6 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     String encodingMimeType = toEncodingMimeType(mimeType, EncodeReasonToDataURL);
 
     ImageData* imageData = toImageData(sourceBuffer, SnapshotReasonToDataURL);
-    ScopedDisposal<ImageData> disposer(imageData);
 
     return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
 }
@@ -640,8 +639,7 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback, const String& mimeType, c
     String encodingMimeType = toEncodingMimeType(mimeType, EncodeReasonToBlobCallback);
 
     ImageData* imageData = toImageData(BackBuffer, SnapshotReasonToBlob);
-    // imageData unref its data, which we still keep alive for the async toBlob thread
-    ScopedDisposal<ImageData> disposer(imageData);
+
     CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(imageData->data(), encodingMimeType, imageData->size(), callback);
 
     if (encodingMimeType == DefaultMimeType)
