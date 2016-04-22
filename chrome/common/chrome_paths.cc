@@ -359,12 +359,10 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX)
-      if (base::mac::AmIBundled()) {
-        cur = base::mac::FrameworkBundlePath();
-        cur = cur.Append(FILE_PATH_LITERAL("Resources"))
-                 .Append(FILE_PATH_LITERAL("resources.pak"));
-        break;
-      }
+      cur = base::mac::FrameworkBundlePath();
+      cur = cur.Append(FILE_PATH_LITERAL("Resources"))
+               .Append(FILE_PATH_LITERAL("resources.pak"));
+      break;
 #elif defined(OS_ANDROID)
       if (!PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
         return false;

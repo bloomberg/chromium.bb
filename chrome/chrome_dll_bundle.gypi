@@ -166,13 +166,6 @@
     },
     {
       # Copy of resources used by tests.
-      'destination': '<(PRODUCT_DIR)',
-      'files': [
-          '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak'
-      ],
-    },
-    {
-      # Copy of resources used by tests.
       'destination': '<(PRODUCT_DIR)/pseudo_locales',
       'files': [
           '<(SHARED_INTERMEDIATE_DIR)/<(pseudo_locales).pak'
