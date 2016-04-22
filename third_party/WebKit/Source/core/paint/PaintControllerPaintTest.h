@@ -41,23 +41,6 @@ protected:
         GraphicsLayer::setDrawDebugRedFillForTesting(true);
     }
 
-    // Expose some document lifecycle steps for checking new display items before commiting.
-    void updateLifecyclePhasesBeforePaint()
-    {
-        // This doesn't do all steps that FrameView does, but is enough for current tests.
-        FrameView* frameView = document().view();
-        frameView->updateLifecyclePhasesInternal(FrameView::OnlyUpToCompositingCleanPlusScrolling);
-        frameView->invalidateTreeIfNeededRecursive();
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-            document().view()->updatePaintProperties();
-    }
-
-    void updateLifecyclePhasesToPaintClean()
-    {
-        updateLifecyclePhasesBeforePaint();
-        document().view()->synchronizedPaint();
-    }
-
     bool paintWithoutCommit(const IntRect* interestRect = nullptr)
     {
         // Only root graphics layer is supported.

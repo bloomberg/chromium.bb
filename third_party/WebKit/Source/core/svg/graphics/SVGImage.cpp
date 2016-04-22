@@ -363,8 +363,7 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
         transform.scale(scale.width(), scale.height());
         TransformRecorder transformRecorder(imagePicture.context(), *this, transform);
 
-        // TODO(crbug.com/603230): Synchronized painting is unnecessary in this lifecycle update.
-        view->updateAllLifecyclePhases();
+        view->updateAllLifecyclePhasesExceptPaint();
         view->paint(imagePicture.context(), CullRect(enclosingIntRect(srcRect)));
         ASSERT(!view->needsLayout());
     }

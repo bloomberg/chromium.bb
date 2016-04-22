@@ -237,6 +237,9 @@ public:
     // (e.g., based on visibility) and will not end up being PaintInvalidationClean.
     void updateAllLifecyclePhases();
 
+    // Everything except paint (the last phase).
+    void updateAllLifecyclePhasesExceptPaint();
+
     // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames will be in a lifecycle
     // state >= CompositingClean, and scrolling has been updated (unless throttling is allowed).
     void updateLifecycleToCompositingCleanPlusScrolling();
@@ -638,6 +641,7 @@ private:
     enum LifeCycleUpdateOption {
         OnlyUpToLayoutClean,
         OnlyUpToCompositingCleanPlusScrolling,
+        AllPhasesExceptPaint,
         AllPhases,
     };
 

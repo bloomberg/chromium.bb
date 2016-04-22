@@ -2383,6 +2383,11 @@ void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
 }
 
+void FrameView::updateAllLifecyclePhasesExceptPaint()
+{
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhasesExceptPaint);
+}
+
 void FrameView::updateLifecycleToLayoutClean()
 {
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToLayoutClean);
@@ -2433,7 +2438,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 
             ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-            if (phases == AllPhases) {
+            if (phases == AllPhases || phases == AllPhasesExceptPaint) {
                 invalidateTreeIfNeededRecursive();
 
                 if (view.compositor()->inCompositingMode())
@@ -2443,10 +2448,12 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
             }
         }
 
-        if (phases == AllPhases) {
+        if (phases == AllPhases || phases == AllPhasesExceptPaint) {
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 updatePaintProperties();
+        }
 
+        if (phases == AllPhases) {
             if (!m_frame->document()->printing())
                 synchronizedPaint();
 

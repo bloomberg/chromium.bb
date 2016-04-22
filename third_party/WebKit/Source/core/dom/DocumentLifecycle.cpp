@@ -219,7 +219,15 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
             return true;
         break;
     case UpdatePaintPropertiesClean:
-        if (nextState == InPaint && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            break;
+        if (nextState == InPaint)
+            return true;
+        if (nextState == InStyleRecalc)
+            return true;
+        if (nextState == InPreLayout)
+            return true;
+        if (nextState == InCompositingUpdate)
             return true;
         break;
     case InPaint:

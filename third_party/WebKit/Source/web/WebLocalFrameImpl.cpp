@@ -301,8 +301,7 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
-        // TODO(crbug.com/603230): Synchronized painting is unnecessary in this lifecycle update.
-        frame()->view()->updateAllLifecyclePhases();
+        frame()->view()->updateAllLifecyclePhasesExceptPaint();
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
@@ -321,8 +320,7 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return;
 
-        // TODO(crbug.com/603230): Synchronized painting is unnecessary in this lifecycle update.
-        frame()->view()->updateAllLifecyclePhases();
+        frame()->view()->updateAllLifecyclePhasesExceptPaint();
         if (!frame()->document() || !frame()->document()->layoutView())
             return;
 

@@ -27,7 +27,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     LayoutObject& cell2 = *document().getElementById("cell2")->layoutObject();
 
     rootPaintController().invalidateAll();
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     IntRect interestRect(0, 0, 200, 200);
     paint(&interestRect);
 
@@ -35,7 +35,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
         TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
 
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     interestRect = IntRect(0, 300, 200, 1000);
     paint(&interestRect);
 

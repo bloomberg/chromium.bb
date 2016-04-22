@@ -55,7 +55,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     bool needsCommit = paintWithoutCommit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
@@ -112,7 +112,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     PaintLayer& container3Layer = *toLayoutBoxModelObject(container3).layer();
     LayoutObject& content3 = *document().getElementById("content3")->layoutObject();
 
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     IntRect interestRect(0, 0, 400, 300);
     paint(&interestRect);
 
@@ -137,7 +137,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
         TestDisplayItem(container3Layer, DisplayItem::EndSubsequence),
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     IntRect newInterestRect(0, 100, 300, 1000);
     bool needsCommit = paintWithoutCommit(&newInterestRect);
 
@@ -188,7 +188,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
         "<div id='container2' style='position: relative; z-index: 1; width: 200px; height: 200px; background-color: blue'>"
         "  <div id='content2' style='position: absolute; width: 100px; height: 100px; background-color: green'></div>"
         "</div>");
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     IntRect interestRect(0, 0, 50, 300); // PaintResult of all subsequences will be MayBeClippedByPaintDirtyRect.
     paint(&interestRect);
 
@@ -214,7 +214,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
         TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     bool needsCommit = paintWithoutCommit(&interestRect);
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
@@ -279,7 +279,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
 
     // needsPaintPhaseDescendantOutlines should be set when any descendant on the same layer has outline.
     toHTMLElement(outlineDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithOutline);
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
     paint();
@@ -314,7 +314,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
 
     // needsPaintPhaseFloat should be set when any descendant on the same layer has float.
     toHTMLElement(floatDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithFloat);
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     paint();
@@ -385,7 +385,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
 
     // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant on the same layer has Background.
     toHTMLElement(backgroundDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithBackground);
-    updateLifecyclePhasesBeforePaint();
+    document().view()->updateAllLifecyclePhasesExceptPaint();
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     paint();
