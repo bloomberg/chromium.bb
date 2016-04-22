@@ -76,7 +76,6 @@ source_set("lib") {
     "//cc",
     "//cc/surfaces",
     "//components/mus/gles2",
-    "//components/mus/gpu",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//components/mus/ws:lib",
