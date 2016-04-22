@@ -13,10 +13,10 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -157,11 +157,14 @@ public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeAct
 
     /**
      * Test for http://crbug.com/528909
+     *
+     * Bug: http://crbug.com/532652
+     * @SmallTest
+     * @Feature({"Printing"})
      */
-    @SmallTest
-    @Feature({"Printing"})
     @CommandLineFlags.Add(
             {ContentSwitches.DISABLE_POPUP_BLOCKING, ChromeSwitches.DISABLE_DOCUMENT_MODE})
+    @DisabledTest
     public void testPrintClosedWindow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
