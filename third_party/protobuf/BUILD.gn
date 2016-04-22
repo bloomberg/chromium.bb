@@ -284,7 +284,7 @@ source_set("protobuf_full") {
     "src/google/protobuf/util/internal/protostream_objectsource.h",
     "src/google/protobuf/util/internal/protostream_objectwriter.cc",
     "src/google/protobuf/util/internal/protostream_objectwriter.h",
-    "src/google/protobuf/util/internal/structured_object_writer.h",
+    "src/google/protobuf/util/internal/structured_objectwriter.h",
     "src/google/protobuf/util/internal/type_info.cc",
     "src/google/protobuf/util/internal/type_info.h",
     "src/google/protobuf/util/internal/type_info_test_helper.cc",

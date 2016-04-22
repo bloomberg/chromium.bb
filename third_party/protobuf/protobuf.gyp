@@ -147,7 +147,7 @@
             'src/google/protobuf/generated_enum_util.h',
             'src/google/protobuf/generated_message_reflection.cc',
             'src/google/protobuf/generated_message_reflection.h',
-            
+
             # gzip_stream.cc pulls in zlib, but it's not actually used by
             # protoc, just by test code, so instead of compiling zlib for the
             # host, let's just exclude this.
@@ -223,7 +223,7 @@
             'src/google/protobuf/util/internal/protostream_objectsource.h',
             'src/google/protobuf/util/internal/protostream_objectwriter.cc',
             'src/google/protobuf/util/internal/protostream_objectwriter.h',
-            'src/google/protobuf/util/internal/structured_object_writer.h',
+            'src/google/protobuf/util/internal/structured_objectwriter.h',
             'src/google/protobuf/util/internal/type_info.cc',
             'src/google/protobuf/util/internal/type_info.h',
             'src/google/protobuf/util/internal/type_info_test_helper.cc',
