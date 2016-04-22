@@ -158,12 +158,6 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // will be updated. Requires that the model is loaded.
   void MarkPageAccessed(int64_t offline_id);
 
-  // Marks that the offline page related to the passed |offline_id| was going
-  // to be deleted. The deletion will occur in a short while. The undo can be
-  // done before this. Requires that the model is loaded.
-  void MarkPageForDeletion(int64_t offline_id,
-                           const DeletePageCallback& callback);
-
   // Deletes an offline page related to the passed |offline_id|.
   void DeletePageByOfflineId(int64_t offline_id,
                              const DeletePageCallback& callback);
@@ -171,11 +165,6 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // Deletes offline pages related to the passed |offline_ids|.
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback);
-
-  // Marks pages for deletion. Actual delete is asynchronous.
-  // Works even if the model isn't loaded.
-  void MarkPagesForDeletion(const std::vector<int64_t>& offline_ids,
-                            const DeletePageCallback& callback);
 
   // Wipes out all the data by deleting all saved files and clearing the store.
   void ClearAll(const base::Closure& callback);
@@ -241,10 +230,6 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                                int64_t free_space_bytes,
                                bool reporting_after_delete);
 
-  // Undo a deletion of a page.  Pages that are marked for deletion can
-  // be restored prior to when they are actually deleted.
-  void UndoPageDeletion(int64_t offline_id);
-
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 
@@ -300,15 +285,6 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   void OnMarkPageAccesseDone(const OfflinePageItem& offline_page_item,
                              bool success);
-
-  // Steps for marking an offline page for deletion that can be undone.
-  void OnMarkPageForDeletionDone(const OfflinePageItem& offline_page_item,
-                                 const DeletePageCallback& callback,
-                                 bool success);
-  void FinalizePageDeletion();
-
-  // Steps for undoing an offline page deletion.
-  void OnUndoOfflinePageDone(const OfflinePageItem& offline_page, bool success);
 
   // Callbacks for checking if offline pages are missing archive files.
   void OnFindPagesMissingArchiveFile(

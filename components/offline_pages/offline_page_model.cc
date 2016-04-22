@@ -43,11 +43,6 @@ enum ClearAllStatus {
 // delete it to free up space.
 const base::TimeDelta kPageCleanUpThreshold = base::TimeDelta::FromDays(30);
 
-// The delay for the final deletion to kick in after the page is marked for
-// deletion. The value set here is a bit longer that the duration of the
-// snackbar that offers undo.
-const base::TimeDelta kFinalDeletionDelay = base::TimeDelta::FromSeconds(6);
-
 // The maximum histogram size for the metrics that measure time between views of
 // a given page.
 const base::TimeDelta kMaxOpenedPageHistogramBucket =
@@ -111,11 +106,6 @@ bool OfflinePageModel::CanSavePage(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS();
 }
 
-// static
-base::TimeDelta OfflinePageModel::GetFinalDeletionDelayForTesting() {
-  return kFinalDeletionDelay;
-}
-
 OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
     const base::FilePath& archives_dir,
@@ -174,10 +164,6 @@ void OfflinePageModel::MarkPageAccessed(int64_t offline_id) {
   if (iter == offline_pages_.end())
     return;
 
-  // MarkPageAccessed should not be called for a page that is being marked for
-  // deletion.
-  DCHECK(!iter->second.IsMarkedForDeletion());
-
   // Make a copy of the cached item and update it. The cached item should only
   // be updated upon the successful store operation.
   OfflinePageItem offline_page_item = iter->second;
@@ -205,25 +191,6 @@ void OfflinePageModel::MarkPageAccessed(int64_t offline_id) {
       offline_page_item,
       base::Bind(&OfflinePageModel::OnMarkPageAccesseDone,
                  weak_ptr_factory_.GetWeakPtr(), offline_page_item));
-}
-
-void OfflinePageModel::MarkPageForDeletion(int64_t offline_id,
-                                           const DeletePageCallback& callback) {
-  DCHECK(is_loaded_);
-  auto iter = offline_pages_.find(offline_id);
-  if (iter == offline_pages_.end()) {
-    InformDeletePageDone(callback, DeletePageResult::NOT_FOUND);
-    return;
-  }
-
-  // Make a copy of the cached item and update it. The cached item should only
-  // be updated upon the successful store operation.
-  OfflinePageItem offline_page_item = iter->second;
-  offline_page_item.MarkForDeletion();
-  store_->AddOrUpdateOfflinePage(
-      offline_page_item,
-      base::Bind(&OfflinePageModel::OnMarkPageForDeletionDone,
-                 weak_ptr_factory_.GetWeakPtr(), offline_page_item, callback));
 }
 
 void OfflinePageModel::DeletePagesByOfflineId(
@@ -297,10 +264,8 @@ void OfflinePageModel::DoDeletePagesByURLPredicate(
 
   std::vector<int64_t> offline_ids;
   for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsMarkedForDeletion() &&
-        predicate.Run(id_page_pair.second.url)) {
+    if (predicate.Run(id_page_pair.second.url))
       offline_ids.push_back(id_page_pair.first);
-    }
   }
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
@@ -323,10 +288,8 @@ bool OfflinePageModel::MaybeHasPages(const std::string& name_space) const {
     return false;
 
   for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsMarkedForDeletion() &&
-        id_page_pair.second.client_id.name_space == name_space) {
+    if (id_page_pair.second.client_id.name_space == name_space)
       return true;
-    }
   }
 
   return false;
@@ -348,11 +311,8 @@ void OfflinePageModel::GetAllPagesAfterLoadDone(
   DCHECK(is_loaded_);
 
   std::vector<OfflinePageItem> offline_pages;
-  for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.IsMarkedForDeletion())
-      continue;
+  for (const auto& id_page_pair : offline_pages_)
     offline_pages.push_back(id_page_pair.second);
-  }
 
   callback.Run(offline_pages);
 }
@@ -362,14 +322,13 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
   std::vector<OfflinePageItem> offline_pages;
   base::Time now = base::Time::Now();
   for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsMarkedForDeletion() &&
-        now - id_page_pair.second.last_access_time > kPageCleanUpThreshold) {
+    if (now - id_page_pair.second.last_access_time > kPageCleanUpThreshold)
       offline_pages.push_back(id_page_pair.second);
-    }
   }
   return offline_pages;
 }
 
+// TODO(fgorski): Remove include_deleted, as it no longer makes sense.
 const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     bool include_deleted) const {
@@ -379,11 +338,8 @@ const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
   // We want only all pages, including those marked for deletion.
   // TODO(bburns): actually use an index rather than linear scan.
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id == client_id) {
-      if (include_deleted || !id_page_pair.second.IsMarkedForDeletion()) {
-        results.push_back(id_page_pair.second.offline_id);
-      }
-    }
+    if (id_page_pair.second.client_id == client_id)
+      results.push_back(id_page_pair.second.offline_id);
   }
   return results;
 }
@@ -391,30 +347,23 @@ const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
 const OfflinePageItem* OfflinePageModel::GetPageByOfflineId(
     int64_t offline_id) const {
   const auto iter = offline_pages_.find(offline_id);
-  return iter != offline_pages_.end() && !iter->second.IsMarkedForDeletion()
-             ? &(iter->second)
-             : nullptr;
+  return iter != offline_pages_.end() ? &(iter->second) : nullptr;
 }
 
 const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
     const GURL& offline_url) const {
-  for (auto iter = offline_pages_.begin();
-       iter != offline_pages_.end();
-       ++iter) {
-    if (iter->second.GetOfflineURL() == offline_url &&
-        !iter->second.IsMarkedForDeletion()) {
-      return &(iter->second);
-    }
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.GetOfflineURL() == offline_url)
+      return &(id_page_pair.second);
   }
   return nullptr;
 }
 
 const OfflinePageItem* OfflinePageModel::GetPageByOnlineURL(
     const GURL& online_url) const {
-  for (auto iter = offline_pages_.begin(); iter != offline_pages_.end();
-       ++iter) {
-    if (iter->second.url == online_url && !iter->second.IsMarkedForDeletion())
-      return &(iter->second);
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.url == online_url)
+      return &(id_page_pair.second);
   }
   return nullptr;
 }
@@ -444,8 +393,6 @@ void OfflinePageModel::RecordStorageHistograms(int64_t total_space_bytes,
   // Total space taken by offline pages.
   int64_t total_page_size = 0;
   for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsMarkedForDeletion())
-      continue;
     total_page_size += id_page_pair.second.file_size;
   }
 
@@ -541,70 +488,6 @@ void OfflinePageModel::OnMarkPageAccesseDone(
   // should not have any impact to the UI.
 }
 
-void OfflinePageModel::OnMarkPageForDeletionDone(
-    const OfflinePageItem& offline_page_item,
-    const DeletePageCallback& callback,
-    bool success) {
-  // Update the item in the cache only upon success.
-  if (success)
-    offline_pages_[offline_page_item.offline_id] = offline_page_item;
-
-  InformDeletePageDone(callback, success ? DeletePageResult::SUCCESS
-                                         : DeletePageResult::STORE_FAILURE);
-
-  if (!success)
-    return;
-
-  // Schedule to do the final deletion.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&OfflinePageModel::FinalizePageDeletion,
-                 weak_ptr_factory_.GetWeakPtr()),
-      kFinalDeletionDelay);
-
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OfflinePageDeleted(offline_page_item.offline_id,
-                                       offline_page_item.client_id));
-}
-
-void OfflinePageModel::OnUndoOfflinePageDone(
-    const OfflinePageItem& offline_page, bool success) {
-  if (!success)
-    return;
-  offline_pages_[offline_page.offline_id] = offline_page;
-
-  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
-}
-
-void OfflinePageModel::FinalizePageDeletion() {
-  std::vector<int64_t> offline_ids_pending_deletion;
-  for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsMarkedForDeletion())
-      continue;
-    offline_ids_pending_deletion.push_back(id_page_pair.second.offline_id);
-  }
-  DeletePagesByOfflineId(offline_ids_pending_deletion, DeletePageCallback());
-}
-
-void OfflinePageModel::UndoPageDeletion(int64_t offline_id) {
-  auto iter = offline_pages_.find(offline_id);
-  if (iter == offline_pages_.end())
-    return;
-
-  // Make a copy of the cached item and update it. The cached item should only
-  // be updated upon the successful store operation.
-  OfflinePageItem offline_page_item = iter->second;
-  if (!offline_page_item.IsMarkedForDeletion())
-    return;
-
-  // Clear the flag to bring it back.
-  offline_page_item.ClearMarkForDeletion();
-  store_->AddOrUpdateOfflinePage(
-      offline_page_item,
-      base::Bind(&OfflinePageModel::OnUndoOfflinePageDone,
-                 weak_ptr_factory_.GetWeakPtr(), offline_page_item));
-}
-
 void OfflinePageModel::OnEnsureArchivesDirCreatedDone() {
   store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -625,10 +508,6 @@ void OfflinePageModel::OnLoadDone(
   for (const auto& delayed_task : delayed_tasks_)
     delayed_task.Run();
   delayed_tasks_.clear();
-
-  // If there are pages that are marked for deletion, but not yet deleted and
-  // OfflinePageModel gets reloaded. Delete the pages now.
-  FinalizePageDeletion();
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
 
@@ -703,13 +582,9 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
         "OfflinePages.DeletePage.PageSize", iter->second.file_size / 1024);
     UMA_HISTOGRAM_COUNTS(
         "OfflinePages.DeletePage.AccessCount", iter->second.access_count);
-    // If the page is not marked for deletion at this point, the model has not
-    // yet informed the observer that the offline page is deleted.
-    if (!iter->second.IsMarkedForDeletion()) {
-      FOR_EACH_OBSERVER(
-          Observer, observers_,
-          OfflinePageDeleted(iter->second.offline_id, iter->second.client_id));
-    }
+    FOR_EACH_OBSERVER(
+        Observer, observers_,
+        OfflinePageDeleted(iter->second.offline_id, iter->second.client_id));
     offline_pages_.erase(iter);
   }
   if (offline_ids.size() > 1) {
@@ -818,22 +693,6 @@ void OfflinePageModel::CacheLoadedData(
 
 int64_t OfflinePageModel::GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
-}
-
-void OfflinePageModel::MarkPagesForDeletion(
-    const std::vector<int64_t>& offline_ids,
-    const DeletePageCallback& callback) {
-  if (!is_loaded_) {
-    for (size_t i = 0; i < offline_ids.size(); i++) {
-      delayed_tasks_.push_back(
-          base::Bind(&OfflinePageModel::MarkPageForDeletion,
-                     weak_ptr_factory_.GetWeakPtr(), offline_ids[i], callback));
-    }
-    return;
-  }
-  for (const auto& id : offline_ids) {
-    MarkPageForDeletion(id, callback);
-  }
 }
 
 void OfflinePageModel::RunWhenLoaded(const base::Closure& task) {

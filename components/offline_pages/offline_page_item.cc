@@ -69,16 +69,4 @@ GURL OfflinePageItem::GetOfflineURL() const {
   return net::FilePathToFileURL(file_path);
 }
 
-bool OfflinePageItem::IsMarkedForDeletion() const {
-  return (static_cast<int>(flags) & MARKED_FOR_DELETION) != 0;
-}
-
-void OfflinePageItem::MarkForDeletion() {
-  flags = static_cast<Flags>(static_cast<int>(flags) | MARKED_FOR_DELETION);
-}
-
-void OfflinePageItem::ClearMarkForDeletion() {
-  flags = static_cast<Flags>(static_cast<int>(flags) & ~MARKED_FOR_DELETION);
-}
-
 }  // namespace offline_pages

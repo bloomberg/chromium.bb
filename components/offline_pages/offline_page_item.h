@@ -55,14 +55,6 @@ struct OfflinePageItem {
   // Gets a URL of the file under |file_path|.
   GURL GetOfflineURL() const;
 
-  // Returns true if the page has been marked for deletion. This allows an undo
-  // in a short time period. After that, the marked page will be deleted.
-  bool IsMarkedForDeletion() const;
-
-  // Sets/clears the mark for deletion.
-  void MarkForDeletion();
-  void ClearMarkForDeletion();
-
   // The URL of the page.
   GURL url;
   // The primary key/ID for this page in offline pages internal database.
