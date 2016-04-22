@@ -1010,6 +1010,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           ":remoting_me2me_host",
           ":remoting_native_messaging_host",
           ":remoting_native_messaging_manifests",
+          ":remoting_start_host",
           "it2me:remote_assistance_host",
           "//third_party/icu:icudata",
         ]
@@ -1039,6 +1040,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
                   "$root_out_dir/remoting_desktop.exe",
                   "$root_out_dir/remoting_host.exe",
                   "$root_out_dir/remoting_native_messaging_host.exe",
+                  "$root_out_dir/remoting_start_host.exe",
                   "$root_gen_dir/remoting/CREDITS.txt",
                   "$root_out_dir/remoting/com.google.chrome.remote_assistance.json",
                   "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
@@ -1082,6 +1084,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
                  "files/remoting_desktop.exe",
                  "files/remoting_host.exe",
                  "files/remoting_native_messaging_host.exe",
+                 "files/remoting_start_host.exe",
                  "files/CREDITS.txt",
                  "files/com.google.chrome.remote_assistance.json",
                  "files/com.google.chrome.remote_desktop.json",

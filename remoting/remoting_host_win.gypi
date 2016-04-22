@@ -584,6 +584,7 @@
             'remoting_me2me_host',
             'remoting_me2me_native_messaging_host',
             'remoting_native_messaging_manifests',
+            'remoting_start_host',
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remote_assistance_host.exe',
@@ -592,6 +593,7 @@
             '<(PRODUCT_DIR)/remoting_desktop.exe',
             '<(PRODUCT_DIR)/remoting_host.exe',
             '<(PRODUCT_DIR)/remoting_native_messaging_host.exe',
+            '<(PRODUCT_DIR)/remoting_start_host.exe',
           ],
           'compiled_inputs_dst': [
             'files/remote_assistance_host.exe',
@@ -600,6 +602,7 @@
             'files/remoting_desktop.exe',
             'files/remoting_host.exe',
             'files/remoting_native_messaging_host.exe',
+            'files/remoting_start_host.exe',
           ],
           'conditions': [
             ['buildtype == "Official"', {

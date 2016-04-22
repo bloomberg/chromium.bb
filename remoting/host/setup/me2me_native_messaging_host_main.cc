@@ -36,6 +36,7 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "remoting/host/pairing_registry_delegate_win.h"
+#include "remoting/host/win/elevation_helpers.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX)
@@ -51,28 +52,6 @@ const char kParentWindowSwitchName[] = "parent-window";
 }  // namespace
 
 namespace remoting {
-
-#if defined(OS_WIN)
-bool IsProcessElevated() {
-  // Conceptually, all processes running on a pre-VISTA version of Windows can
-  // be considered "elevated".
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return true;
-
-  HANDLE process_token;
-  OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &process_token);
-
-  base::win::ScopedHandle scoped_process_token(process_token);
-
-  // Unlike TOKEN_ELEVATION_TYPE which returns TokenElevationTypeDefault when
-  // UAC is turned off, TOKEN_ELEVATION will tell you the process is elevated.
-  DWORD size;
-  TOKEN_ELEVATION elevation;
-  GetTokenInformation(process_token, TokenElevation,
-                      &elevation, sizeof(elevation), &size);
-  return elevation.TokenIsElevated != 0;
-}
-#endif  // defined(OS_WIN)
 
 int StartMe2MeNativeMessagingHost() {
 #if defined(OS_MACOSX)

@@ -22,10 +22,14 @@
 #include "remoting/host/setup/oauth_helper.h"
 #include "remoting/host/setup/pin_validator.h"
 
-#if !defined(OS_WIN)
+#if defined(OS_POSIX)
 #include <termios.h>
 #include <unistd.h>
-#endif  // !defined(OS_WIN)
+#endif  // defined(OS_POSIX)
+
+#if defined(OS_WIN)
+#include "remoting/host/win/elevation_helpers.h"
+#endif  // defined(OS_WIN)
 
 using remoting::HostStarter;
 
@@ -102,13 +106,22 @@ void OnDone(HostStarter::Result result) {
   g_message_loop->QuitNow();
 }
 
+std::string GetAuthorizationCodeUri() {
+  return remoting::GetOauthStartUrl(remoting::GetDefaultOauthRedirectUrl());
+}
+
 int main(int argc, char** argv) {
   // google_apis::GetOAuth2ClientID/Secret need a static CommandLine.
   base::CommandLine::Init(argc, argv);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
+  // This object instance is required by Chrome code (for example,
+  // FilePath, LazyInstance, MessageLoop).
+  base::AtExitManager exit_manager;
+
   logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
   std::string host_name = command_line->GetSwitchValueASCII("name");
@@ -116,28 +129,37 @@ int main(int argc, char** argv) {
   std::string auth_code = command_line->GetSwitchValueASCII("code");
   std::string redirect_url = command_line->GetSwitchValueASCII("redirect-url");
 
+#if defined(OS_POSIX)
   // Check if current user is root. If it is root, then throw an error message.
   // This is because start_host should be run in user mode.
-#if !defined(OS_WIN)
   if (geteuid() == 0) {
-    fprintf(stderr,
-            "Refusing to run %s as root.",
-            argv[0]);
+    fprintf(stderr, "Refusing to run %s as root.", argv[0]);
     return 1;
   }
-#endif  // !defined(OS_WIN)
+#endif  // defined(OS_POSIX)
+
+#if defined(OS_WIN)
+  // The tool must be run elevated on Windows so the host has access to the
+  // directories used to store the configuration JSON files.
+  if (!remoting::IsProcessElevated()) {
+    fprintf(stderr, "Error: %s must be run as an elevated process.", argv[0]);
+    return 1;
+  }
+#endif  // defined(OS_WIN)
 
   if (host_name.empty()) {
     fprintf(stderr,
             "Usage: %s --name=<hostname> [--code=<auth-code>] [--pin=<PIN>] "
             "[--redirect-url=<redirectURL>]\n",
             argv[0]);
+    fprintf(stderr, "\nAuthorization URL for Production services:\n");
+    fprintf(stderr, "%s\n", GetAuthorizationCodeUri().c_str());
     return 1;
   }
 
   if (host_pin.empty()) {
     while (true) {
-      fprintf(stdout, "Enter a six-digit PIN: ");
+      fprintf(stdout, "Enter a PIN of at least six digits: ");
       fflush(stdout);
       host_pin = ReadString(true);
       if (!remoting::IsPinValid(host_pin)) {
@@ -170,10 +192,6 @@ int main(int argc, char** argv) {
     auth_code = ReadString(true);
   }
 
-  // This object instance is required by Chrome code (for example,
-  // FilePath, LazyInstance, MessageLoop).
-  base::AtExitManager exit_manager;
-
   // Provide message loops and threads for the URLRequestContextGetter.
   base::MessageLoop message_loop;
   g_message_loop = &message_loop;
@@ -196,8 +214,9 @@ int main(int argc, char** argv) {
   if (redirect_url.empty()) {
     redirect_url = remoting::GetDefaultOauthRedirectUrl();
   }
-  host_starter->StartHost(host_name, host_pin, true, auth_code, redirect_url,
-                          base::Bind(&OnDone));
+  host_starter->StartHost(host_name, host_pin,
+                          /*consent_to_data_collection=*/true, auth_code,
+                          redirect_url, base::Bind(&OnDone));
 
   // Run the message loop until the StartHost completion callback.
   base::RunLoop run_loop;

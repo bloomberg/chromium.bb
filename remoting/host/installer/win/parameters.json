@@ -16,6 +16,7 @@
     "remoting_desktop.exe",
     "remoting_host.exe",
     "remoting_native_messaging_host.exe",
+    "remoting_start_host.exe",
     "remote_assistance_host.exe",
     "remote_security_key.exe"
   ],
