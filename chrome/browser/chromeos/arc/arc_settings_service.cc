@@ -169,6 +169,8 @@ void ArcSettingsServiceImpl::OnBluetoothAdapterInitialized(
   DCHECK(adapter);
   bluetooth_adapter_ = adapter;
   bluetooth_adapter_->AddObserver(this);
+
+  AdapterPoweredChanged(adapter.get(), adapter->IsPowered());
 }
 
 void ArcSettingsServiceImpl::SyncAllPrefs() const {
