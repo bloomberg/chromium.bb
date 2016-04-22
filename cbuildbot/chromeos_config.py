@@ -369,6 +369,7 @@ _arm_internal_release_boards = frozenset([
     'storm',
     'veyron_brain',
     'veyron_danger',
+    'veyron_fievel',
     'veyron_gus',
     'veyron_jaq',
     'veyron_jerry',
@@ -633,6 +634,7 @@ _waterfall_config_map = {
         'strago-c-release-group',
         'strago-d-release-group',
         'veyron-c-release-group',
+        'veyron-d-release-group',
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
@@ -2854,7 +2856,9 @@ def GetConfig():
       'veyron-d', 'veyron_shark', (
           'veyron_romy',
           'veyron_minnie-cheets',
+          'veyron_fievel',
       ),
+      important=False,
   )
 
   # jecht-based boards

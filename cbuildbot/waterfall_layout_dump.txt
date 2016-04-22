@@ -203,6 +203,7 @@ tricky-paladin
   veyron_mickey-release
   veyron_tiger-release
 [veyron-d-release-group]
+  veyron_fievel-release
   veyron_minnie-cheets-release
   veyron_romy-release
   veyron_shark-release
