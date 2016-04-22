@@ -22,4 +22,4 @@ layer at (0,0) size 800x600
                       LayoutText {#text} at (1,1) size 471x36
                         text run at (1,1) width 176: "This is the second column. "
                         text run at (176,1) width 296: "It has a lot more content than the first column."
-                        text run at (1,19) width 141: "That shouldn't matter."
+                        text run at (1,19) width 140: "That shouldn't matter."

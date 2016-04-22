@@ -17,10 +17,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (329,18) size 5x18
           text run at (329,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x19
-        LayoutText {#text} at (0,1) size 677x18
-          text run at (0,1) width 519: "In all of the popup buttons below, the letter A should be on the left and the letter "
-          text run at (518,1) width 11 RTL: "\x{5D0}"
-          text run at (528,1) width 149: " should be on the right."
+        LayoutText {#text} at (0,1) size 676x18
+          text run at (0,1) width 518: "In all of the popup buttons below, the letter A should be on the left and the letter "
+          text run at (517,1) width 11 RTL: "\x{5D0}"
+          text run at (527,1) width 149: " should be on the right."
       LayoutBlockFlow {DIV} at (0,87) size 784x38
         LayoutBlockFlow {DIV} at (0,0) size 784x19
           LayoutMenuList {SELECT} at (0,1) size 70x18 [bgcolor=#F8F8F8]

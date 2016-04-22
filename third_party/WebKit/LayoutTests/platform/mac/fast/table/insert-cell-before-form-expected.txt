@@ -15,8 +15,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (709,0) size 5x18
           text run at (709,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 275x18
-          text run at (0,0) width 275: "There should be a line of green text below."
+        LayoutText {#text} at (0,0) size 274x18
+          text run at (0,0) width 274: "There should be a line of green text below."
       LayoutTable {TABLE} at (0,68) size 150x30 [color=#FF0000]
         LayoutTableSection {TBODY} at (0,0) size 150x30
           LayoutTableRow {TR} at (0,2) size 150x26

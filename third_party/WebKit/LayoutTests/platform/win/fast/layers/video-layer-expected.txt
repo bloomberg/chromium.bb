@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 310x17
             text run at (0,0) width 310: "https://bugs.webkit.org/show_bug.cgi?id=25066"
         LayoutBR {BR} at (309,14) size 1x0
-        LayoutText {#text} at (0,18) size 376x17
-          text run at (0,18) width 376: "controls should not be misplaced when video gets a Layer."
+        LayoutText {#text} at (0,18) size 375x17
+          text run at (0,18) width 375: "controls should not be misplaced when video gets a Layer."
       LayoutBlockFlow (anonymous) at (0,52) size 784x252
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

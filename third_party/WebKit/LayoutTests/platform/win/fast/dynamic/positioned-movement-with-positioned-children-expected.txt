@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 99x53
           text run at (0,0) width 98: "You should not"
           text run at (0,18) width 99: "see this. Resize"
-          text run at (0,36) width 80: "the window."
+          text run at (0,36) width 79: "the window."
 hidden layer at (8,8) size 0x0
   LayoutBlockFlow (positioned) {DIV} at (8,8) size 0x0
 hidden layer at (8,8) size 100x122

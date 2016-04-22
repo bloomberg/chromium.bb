@@ -10,8 +10,8 @@ layer at (0,0) size 800x312
         LayoutText {#text} at (84,0) size 669x18
           text run at (84,0) width 669: " - [CSS Masking][CSS Shapes] Large corner radii use with inset() clip-path are not properly constrained"
       LayoutBlockFlow {P} at (0,34) size 784x36
-        LayoutText {#text} at (0,0) size 770x36
-          text run at (0,0) width 770: "The radii for this inset should be constrained in the same way that border-radii are constrained. If this happens correctly,"
+        LayoutText {#text} at (0,0) size 769x36
+          text run at (0,0) width 769: "The radii for this inset should be constrained in the same way that border-radii are constrained. If this happens correctly,"
           text run at (0,18) width 188: "you should see a blue ellipse."
       LayoutBlockFlow {P} at (0,86) size 784x36
         LayoutText {#text} at (0,0) size 769x36

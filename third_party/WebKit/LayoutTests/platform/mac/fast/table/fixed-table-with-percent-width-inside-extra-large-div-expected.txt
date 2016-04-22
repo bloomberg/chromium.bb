@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutInline {SPAN} at (0,0) size 627x18
-        LayoutText {#text} at (0,0) size 627x18
-          text run at (0,0) width 627: "Success! The width of the fixed table is 1994px, which is based on the width of its containing div."
+      LayoutInline {SPAN} at (0,0) size 626x18
+        LayoutText {#text} at (0,0) size 626x18
+          text run at (0,0) width 626: "Success! The width of the fixed table is 1994px, which is based on the width of its containing div."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (-9000,8) size 2000x30 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600

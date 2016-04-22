@@ -16,9 +16,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (693,0) size 5x18
           text run at (693,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 651x18
+        LayoutText {#text} at (0,0) size 650x18
           text run at (0,0) width 479: "Each black box below should have a scroll bar allowing the blue square to "
-          text run at (478,0) width 173: "be scrolled fully into view."
+          text run at (478,0) width 172: "be scrolled fully into view."
 layer at (18,76) size 102x102 clip at (19,77) size 100x85 scrollWidth 125
   LayoutBlockFlow {DIV} at (10,68) size 102x102 [border: (1px solid #000000)]
 layer at (18,188) size 102x102 clip at (19,189) size 85x100 scrollHeight 125

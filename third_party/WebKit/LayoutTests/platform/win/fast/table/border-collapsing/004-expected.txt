@@ -74,7 +74,7 @@ layer at (0,0) size 785x1506 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (7,6) width 230: "The border of the table itself should"
                 text run at (7,24) width 192: "be medium solid blue, except "
                 text run at (198,24) width 41: "where"
-                text run at (7,42) width 207: "header cells override the border."
+                text run at (7,42) width 206: "header cells override the border."
             LayoutTableCell {TD} at (245,106) size 232x66 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 215x53
                 text run at (6,6) width 215: "The borders that I haven't already"
@@ -92,7 +92,7 @@ layer at (0,0) size 785x1506 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (129,42) width 45: "middle"
               LayoutText {#text} at (173,42) size 204x35
                 text run at (173,42) width 37: " of its"
-                text run at (6,60) width 46: "border."
+                text run at (6,60) width 45: "border."
       LayoutTable {TABLE} at (16,500.44) size 737x236 [border: (3px solid #0000FF)]
         LayoutTableSection {TBODY} at (3,3) size 731x230
           LayoutTableRow {TR} at (0,16) size 731x34
@@ -140,8 +140,8 @@ layer at (0,0) size 785x1506 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {EM} at (0,0) size 68x17
                 LayoutText {#text} at (6,42) size 68x17
                   text run at (6,42) width 68: "outer edge"
-              LayoutText {#text} at (73,42) size 88x17
-                text run at (73,42) width 88: " of its border."
+              LayoutText {#text} at (73,42) size 87x17
+                text run at (73,42) width 87: " of its border."
       LayoutTable {TABLE} at (16,752.44) size 737x276 [border: (3px solid #0000FF)]
         LayoutTableSection {TBODY} at (3,3) size 731x270
           LayoutTableRow {TR} at (0,8) size 731x34
@@ -193,7 +193,7 @@ layer at (0,0) size 785x1506 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (129,42) width 69: "outer edge"
               LayoutText {#text} at (197,42) size 229x35
                 text run at (197,42) width 38: " of its"
-                text run at (6,60) width 46: "border."
+                text run at (6,60) width 45: "border."
             LayoutTableCell {TD} at (456,160) size 275x102 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 258x89
                 text run at (6,6) width 246: "The table should not be wider than the"
@@ -250,8 +250,8 @@ layer at (0,0) size 785x1506 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {EM} at (0,0) size 68x17
                 LayoutText {#text} at (6,60) size 68x17
                   text run at (6,60) width 68: "outer edge"
-              LayoutText {#text} at (73,60) size 88x17
-                text run at (73,60) width 88: " of its border."
+              LayoutText {#text} at (73,60) size 87x17
+                text run at (73,60) width 87: " of its border."
             LayoutTableCell {TD} at (429,118) size 294x102 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 258x89
                 text run at (6,6) width 246: "The table should not be wider than the"
@@ -322,5 +322,5 @@ layer at (0,0) size 785x1506 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {EM} at (0,0) size 69x17
                 LayoutText {#text} at (63,41) size 69x17
                   text run at (63,41) width 69: "outer edge"
-              LayoutText {#text} at (131,41) size 87x17
-                text run at (131,41) width 87: " of its border."
+              LayoutText {#text} at (131,41) size 86x17
+                text run at (131,41) width 86: " of its border."

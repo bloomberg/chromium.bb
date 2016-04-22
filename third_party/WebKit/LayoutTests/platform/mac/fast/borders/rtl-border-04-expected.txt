@@ -23,10 +23,10 @@ layer at (0,0) size 800x396
             text run at (624,7) width 148: "labore et dolore magna"
             text run at (45,39) width 442: "aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco "
           LayoutInline {SPAN} at (0,0) size 773x84 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            LayoutText {#text} at (486,39) size 767x82
+            LayoutText {#text} at (486,39) size 766x82
               text run at (486,39) width 241: "laboris nisi ut aliquip ex ea commodo"
-              text run at (5,71) width 332: "consequat. Duis aute irure dolor in reprehenderit in "
-              text run at (336,71) width 436: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur"
+              text run at (6,71) width 332: "consequat. Duis aute irure dolor in reprehenderit in "
+              text run at (337,71) width 435: "voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur"
               text run at (19,103) width 150: "sint occaecat cupidatat "
               text run at (168,103) width 604: "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor"
           LayoutText {#text} at (26,135) size 746x50

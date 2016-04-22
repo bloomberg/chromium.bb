@@ -15,7 +15,7 @@ layer at (0,0) size 800x136 layerType: foreground only
         LayoutText {#text} at (309,0) size 676x36
           text run at (309,0) width 62: ". Test for "
           text run at (370,0) width 306: "reflection painting on overflow:hidden element."
-          text run at (0,18) width 221: "You should not see any red below."
+          text run at (0,18) width 220: "You should not see any red below."
 layer at (50,100) size 400x200
   LayoutBlockFlow (positioned) {DIV} at (50,100) size 400x200
 layer at (50,100) size 400x200

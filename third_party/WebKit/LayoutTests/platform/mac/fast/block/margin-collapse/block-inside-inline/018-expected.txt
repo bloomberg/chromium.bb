@@ -4,11 +4,11 @@ layer at (0,0) size 800x232
   LayoutBlockFlow {HTML} at (0,0) size 800x232
     LayoutBlockFlow {BODY} at (8,16) size 784x208
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 633x18
-          text run at (0,0) width 633: "The following box should contain exactly three bands, one yellow, one orange, and one lime, with "
-        LayoutInline {STRONG} at (0,0) size 750x36
-          LayoutText {#text} at (632,0) size 750x36
-            text run at (632,0) width 118: "absolutely no red"
+        LayoutText {#text} at (0,0) size 632x18
+          text run at (0,0) width 632: "The following box should contain exactly three bands, one yellow, one orange, and one lime, with "
+        LayoutInline {STRONG} at (0,0) size 749x36
+          LayoutText {#text} at (631,0) size 749x36
+            text run at (631,0) width 118: "absolutely no red"
             text run at (0,18) width 44: "visible"
         LayoutText {#text} at (43,18) size 5x18
           text run at (43,18) width 5: "."

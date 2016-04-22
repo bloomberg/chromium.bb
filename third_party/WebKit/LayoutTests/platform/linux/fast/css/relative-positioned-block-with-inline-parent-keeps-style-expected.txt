@@ -4,8 +4,8 @@ layer at (0,0) size 800x100
   LayoutBlockFlow {HTML} at (0,0) size 800x100
     LayoutBlockFlow {BODY} at (8,16) size 784x76
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 537x19
-          text run at (0,0) width 537: "Test passes if the blue box sits atop the orange box and both are in the center of the view."
+        LayoutText {#text} at (0,0) size 536x19
+          text run at (0,0) width 536: "Test passes if the blue box sits atop the orange box and both are in the center of the view."
       LayoutBlockFlow {DIV} at (0,36) size 192x40 [bgcolor=#FF0000]
         LayoutBlockFlow (anonymous) at (0,0) size 192x20
         LayoutBlockFlow (anonymous) at (0,40) size 192x0

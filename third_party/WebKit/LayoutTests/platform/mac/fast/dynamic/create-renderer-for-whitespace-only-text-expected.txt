@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (97,18) size 5x18
           text run at (97,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 760x18
+        LayoutText {#text} at (0,0) size 759x18
           text run at (0,0) width 475: "This tests that whitespace-only text nodes get renderers when they should "
-          text run at (474,0) width 286: "even if initially they did not need a renderer."
+          text run at (474,0) width 285: "even if initially they did not need a renderer."
       LayoutBlockFlow {P} at (0,86) size 784x18
         LayoutText {#text} at (0,0) size 358x18
           text run at (0,0) width 358: "The left column should be identical to the right column."

@@ -17,12 +17,12 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 380x18
             text run at (0,0) width 380: "All of this text should be green. The bullet should be black."
       LayoutBlockFlow {DIV} at (0,68) size 784x55 [color=#FF0000]
-        LayoutInline {SPAN} at (0,0) size 438x18 [color=#008000]
+        LayoutInline {SPAN} at (0,0) size 437x18 [color=#008000]
           LayoutInline {<pseudo:first-letter>} at (0,0) size 35x55
             LayoutTextFragment (anonymous) at (0,0) size 35x55
               text run at (0,0) width 35: "A"
-          LayoutTextFragment {#text} at (34,29) size 404x18
-            text run at (34,29) width 404: "ll of this text should be green, including the big \"A\" first-letter."
+          LayoutTextFragment {#text} at (34,29) size 403x18
+            text run at (34,29) width 403: "ll of this text should be green, including the big \"A\" first-letter."
       LayoutBlockFlow {P} at (0,139) size 784x0
       LayoutBlockFlow {DIV} at (0,139) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 165.75x18 [color=#FF0000]

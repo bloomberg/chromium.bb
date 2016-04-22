@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,20) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,42) size 784x20
-        LayoutText {#text} at (0,0) size 755x19
+        LayoutText {#text} at (0,0) size 754x19
           text run at (0,0) width 542: "Select the text in the text field using horizontal mouse movements, then drag up and down. "
-          text run at (542,0) width 213: "The text should not move vertically."
+          text run at (542,0) width 212: "The text should not move vertically."
 layer at (10,31) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
     LayoutText {#text} at (0,0) size 75x16

@@ -4,10 +4,10 @@ layer at (0,0) size 800x446
   LayoutBlockFlow {HTML} at (0,0) size 800x446
     LayoutBlockFlow {BODY} at (8,16) size 784x18
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 521x17
-          text run at (0,0) width 508: "The following two blocks should be identical, including overflow. (Force bidi: "
-          text run at (507,0) width 8 RTL: "\x{5D0}"
-          text run at (514,0) width 7: ")"
+        LayoutText {#text} at (0,0) size 519x17
+          text run at (0,0) width 506: "The following two blocks should be identical, including overflow. (Force bidi: "
+          text run at (505,0) width 9 RTL: "\x{5D0}"
+          text run at (513,0) width 6: ")"
       LayoutBlockFlow {DIV} at (0,34) size 784x0
         LayoutBlockFlow (floating) {P} at (16,16) size 179.67x166 [bgcolor=#FFFFCC] [border: (3px solid #000000)]
           LayoutInline {SPAN} at (0,0) size 151x37 [color=#000080] [border: (3px solid #000080) none (3px solid #000080)]

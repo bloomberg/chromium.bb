@@ -44,8 +44,8 @@ layer at (0,0) size 785x1352 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 539x36
           text run at (0,0) width 539: "This should be grey: hsl(120, 0%, 50%)"
       LayoutBlockFlow {H1} at (0,681.25) size 769x37 [color=#7F7F7F]
-        LayoutText {#text} at (0,0) size 640x36
-          text run at (0,0) width 640: "This should be grey, too: hsl(120, -100%, 50%)"
+        LayoutText {#text} at (0,0) size 638x36
+          text run at (0,0) width 638: "This should be grey, too: hsl(120, -100%, 50%)"
       LayoutBlockFlow (anonymous) at (0,739.69) size 769x36
         LayoutText {#text} at (0,0) size 764x35
           text run at (0,0) width 764: "Check Hue values that are larger than 360, should be normalized back to a value between 0 and 360. As Hue values are"

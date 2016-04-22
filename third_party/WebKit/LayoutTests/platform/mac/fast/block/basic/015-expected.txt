@@ -12,8 +12,8 @@ layer at (0,0) size 800x424
         LayoutInline {CODE} at (0,0) size 24x15
           LayoutText {#text} at (35,5) size 24x15
             text run at (35,5) width 24: "div"
-        LayoutText {#text} at (58,3) size 418x18
-          text run at (58,3) width 418: " should have a medium solid purple border, as should all the rest."
+        LayoutText {#text} at (58,3) size 417x18
+          text run at (58,3) width 417: " should have a medium solid purple border, as should all the rest."
       LayoutBlockFlow {DIV} at (0,82.44) size 319.59x60 [border: (3px solid #800080)]
         LayoutText {#text} at (3,3) size 33x18
           text run at (3,3) width 33: "This "

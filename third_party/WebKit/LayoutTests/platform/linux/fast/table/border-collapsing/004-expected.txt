@@ -98,24 +98,24 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutTableCell {TH} at (16,16) size 162x36 [border: (3px solid #800080)] [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (40,8) size 82x19
                 text run at (40,8) width 82: "Header One"
-            LayoutTableCell {TH} at (194,16) size 191x36 [border: (3px solid #800080)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (55,8) size 81x19
-                text run at (55,8) width 81: "Header Two"
-            LayoutTableCell {TH} at (401,16) size 314x36 [border: (3px solid #800080)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (110,8) size 94x19
-                text run at (110,8) width 94: "Header Three"
+            LayoutTableCell {TH} at (194,16) size 192x36 [border: (3px solid #800080)] [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (55,8) size 82x19
+                text run at (55,8) width 82: "Header Two"
+            LayoutTableCell {TH} at (402,16) size 313x36 [border: (3px solid #800080)] [r=0 c=2 rs=1 cs=1]
+              LayoutText {#text} at (109,8) size 95x19
+                text run at (109,8) width 95: "Header Three"
           LayoutTableRow {TR} at (0,68) size 731x72
             LayoutTableCell {TD} at (16,68) size 162x72 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 110x59
                 text run at (6,6) width 110: "This table uses the"
                 text run at (6,26) width 110: "separated borders"
                 text run at (6,46) width 41: "model."
-            LayoutTableCell {TD} at (194,68) size 191x72 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (194,68) size 192x72 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 164x59
                 text run at (6,6) width 149: "This means that elements"
                 text run at (6,26) width 164: "within the cell have border-"
                 text run at (6,46) width 95: "spacing of 1em."
-            LayoutTableCell {TD} at (401,78) size 314x52 [border: (1px solid #008000)] [r=1 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (402,78) size 313x52 [border: (1px solid #008000)] [r=1 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 268x39
                 text run at (6,6) width 198: "The borders on the header cells, "
                 text run at (204,6) width 70: "on all sides,"
@@ -126,11 +126,11 @@ layer at (0,0) size 785x1516 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (6,6) width 139: "The border of the table"
                 text run at (6,26) width 140: "itself should be medium"
                 text run at (6,46) width 61: "solid blue."
-            LayoutTableCell {TD} at (194,166) size 191x52 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (194,166) size 192x52 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 156x39
                 text run at (6,6) width 155: "The borders of other cells"
                 text run at (6,26) width 156: "should be thin solid green."
-            LayoutTableCell {TD} at (401,156) size 314x72 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (402,156) size 313x72 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 281x39
                 text run at (6,6) width 281: "This table should have a 1em margin around all"
                 text run at (6,26) width 43: "edges. "

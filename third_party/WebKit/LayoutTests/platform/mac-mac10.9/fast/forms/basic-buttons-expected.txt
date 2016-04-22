@@ -10,9 +10,9 @@ layer at (0,0) size 800x295
         LayoutText {#text} at (0,18) size 521x18
           text run at (0,18) width 521: "Creates two different types of buttons, one with an image (a red dot) and another "
         LayoutBR {BR} at (520,18) size 1x18
-        LayoutText {#text} at (0,36) size 662x18
-          text run at (0,36) width 662: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly. "
-        LayoutBR {BR} at (661,36) size 1x18
+        LayoutText {#text} at (0,36) size 660x18
+          text run at (0,36) width 660: "with text (\"foo\") and then uses six different paddings to make sure each of the buttons render properly. "
+        LayoutBR {BR} at (660,36) size 0x18
         LayoutBR {BR} at (0,54) size 0x18
       LayoutTable {TABLE} at (0,72) size 697x207
         LayoutTableSection {TBODY} at (0,0) size 697x207

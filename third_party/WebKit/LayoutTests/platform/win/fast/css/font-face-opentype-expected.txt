@@ -16,9 +16,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (162,18) size 5x17
           text run at (162,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x36
-        LayoutText {#text} at (0,0) size 716x35
-          text run at (0,0) width 716: "Check if glyphs in Ahem.otf can be rendered correctly. If the test passes, you should see dozens of black square"
-          text run at (0,18) width 113: "characters below:"
+        LayoutText {#text} at (0,0) size 784x35
+          text run at (0,0) width 784: "Check if glyphs in Ahem.otf can be rendered correctly. If the test passes, you should see dozens of black square characters"
+          text run at (0,18) width 44: "below:"
       LayoutBlockFlow (anonymous) at (0,104) size 784x32
         LayoutInline {SPAN} at (0,0) size 736x16
           LayoutText {#text} at (0,0) size 736x16

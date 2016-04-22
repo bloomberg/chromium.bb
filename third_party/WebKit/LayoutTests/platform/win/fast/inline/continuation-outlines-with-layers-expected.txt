@@ -58,7 +58,7 @@ layer at (8,316) size 0x0
 layer at (8,316) size 784x22
   LayoutBlockFlow (anonymous) (relative positioned) at (0,0) size 784x22
     LayoutBlockFlow {H3} at (0,0) size 784x22
-      LayoutText {#text} at (0,0) size 213x21
-        text run at (0,0) width 213: "No content before or after."
+      LayoutText {#text} at (0,0) size 211x21
+        text run at (0,0) width 211: "No content before or after."
 layer at (8,357) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0

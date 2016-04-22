@@ -7,9 +7,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 248x22
           text run at (0,0) width 248: "Small Percentage Heights Bug"
       LayoutBlockFlow {P} at (0,41.72) size 784x40
-        LayoutText {#text} at (0,0) size 765x39
-          text run at (0,0) width 378: "In the example below, all eight cells should be the same height. "
-          text run at (378,0) width 387: "It appears that any percentage heights cause cells to fill the entire"
+        LayoutText {#text} at (0,0) size 764x39
+          text run at (0,0) width 377: "In the example below, all eight cells should be the same height. "
+          text run at (376,0) width 388: "It appears that any percentage heights cause cells to fill the entire"
           text run at (0,20) width 76: "table height. "
           text run at (76,20) width 510: "Note how cell 8 is correct but 2-7 are not, despite the cells all specifying height:30%."
       LayoutTable {TABLE} at (0,97.72) size 784x104 [border: (1px outset #808080)]

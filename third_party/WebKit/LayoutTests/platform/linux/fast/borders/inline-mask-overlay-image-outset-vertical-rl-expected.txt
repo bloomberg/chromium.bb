@@ -9,5 +9,5 @@ layer at (8,8) size 119x371 transparent
     LayoutText {#text} at (22,75) size 27x296
       text run at (22,75) width 296: "This content should be masked"
     LayoutBR {BR} at (43,371) size 0x0
-    LayoutText {#text} at (94,0) size 27x159
-      text run at (94,0) width 159: "with a soft glow."
+    LayoutText {#text} at (94,0) size 27x158
+      text run at (94,0) width 158: "with a soft glow."

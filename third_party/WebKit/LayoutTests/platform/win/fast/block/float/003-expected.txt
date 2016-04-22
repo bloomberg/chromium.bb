@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {OL} at (0,0) size 784x0
       LayoutBlockFlow {P} at (0,0) size 784x108
         LayoutText {#text} at (0,0) size 664x107
-          text run at (0,0) width 645: "Vatican approves policy on sex abuse in clergy. The Vatican gave its approval Monday to the revised"
-          text run at (0,18) width 642: "U.S. bishops' policy to combat sex abuse in the clergy, declaring the need to restore the image of the"
+          text run at (0,0) width 644: "Vatican approves policy on sex abuse in clergy. The Vatican gave its approval Monday to the revised"
+          text run at (0,18) width 641: "U.S. bishops' policy to combat sex abuse in the clergy, declaring the need to restore the image of the"
           text run at (0,36) width 623: "priesthood in a scandal that has rocked the Roman Catholic Church. The policy allows bishops to"
           text run at (0,54) width 664: "conduct a confidential, preliminary inquiry when a molestation claim is made to determine whether it is"
           text run at (0,72) width 650: "plausible. If it is, the accused priest is to be put on leave and then must go before a clerical tribunal to"

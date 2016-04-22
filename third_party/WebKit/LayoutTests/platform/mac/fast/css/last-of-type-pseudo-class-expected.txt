@@ -225,5 +225,5 @@ layer at (0,0) size 785x2912 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (380,85) width 1: " "
               text run at (6,100) width 469: "ib.parentElement.appendChild(document.createElement(\"div\"));"
           LayoutBlockFlow {P} at (16,190) size 583.19x18
-            LayoutText {#text} at (0,0) size 535x17
-              text run at (0,0) width 535: "The original div element should not be a match for the :last-of-type selector."
+            LayoutText {#text} at (0,0) size 534x17
+              text run at (0,0) width 534: "The original div element should not be a match for the :last-of-type selector."

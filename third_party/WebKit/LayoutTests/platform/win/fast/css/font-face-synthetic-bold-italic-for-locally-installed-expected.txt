@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 752x35
-          text run at (0,0) width 752: "The following two lines should look differently. The first line is synthetic bold of normal face, the second line is bold"
+        LayoutText {#text} at (0,0) size 751x35
+          text run at (0,0) width 751: "The following two lines should look differently. The first line is synthetic bold of normal face, the second line is bold"
           text run at (0,18) width 31: "face."
       LayoutBlockFlow {DIV} at (0,52) size 784x23
         LayoutInline {SPAN} at (0,0) size 366x22
@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 387x22
             text run at (0,0) width 387: "The quick brown fox jumps over the lazy dog"
       LayoutBlockFlow {P} at (0,114) size 784x36
-        LayoutText {#text} at (0,0) size 759x35
-          text run at (0,0) width 759: "The following two lines should look differently. The first line is synthetic italic of normal face, the second line is italic"
+        LayoutText {#text} at (0,0) size 758x35
+          text run at (0,0) width 758: "The following two lines should look differently. The first line is synthetic italic of normal face, the second line is italic"
           text run at (0,18) width 31: "face."
       LayoutBlockFlow {DIV} at (0,166) size 784x23
         LayoutInline {SPAN} at (0,0) size 366x22

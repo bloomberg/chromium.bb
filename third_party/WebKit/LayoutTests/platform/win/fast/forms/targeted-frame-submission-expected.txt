@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 778x35
           text run at (0,0) width 294: "This tests Targetted frame submission works. "
           text run at (293,0) width 485: "If the test is successful, the text \"SUCCESS\" should be shown in the iframe"
-          text run at (0,18) width 44: "below."
+          text run at (0,18) width 43: "below."
       LayoutBlockFlow (anonymous) at (0,74) size 784x154
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,82) size 304x154

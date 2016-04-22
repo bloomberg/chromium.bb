@@ -9,8 +9,8 @@ layer at (0,0) size 800x196
         LayoutInline {A} at (0,0) size 33x19 [color=#0000EE]
           LayoutText {#text} at (102,0) size 33x19
             text run at (102,0) width 33: "4874"
-        LayoutText {#text} at (134,0) size 396x19
-          text run at (134,0) width 396: " - Table with absolute bottom positioning is positioned incorrectly."
+        LayoutText {#text} at (134,0) size 395x19
+          text run at (134,0) width 395: " - Table with absolute bottom positioning is positioned incorrectly."
       LayoutBlockFlow {H1} at (0,41.44) size 784x37
         LayoutText {#text} at (0,0) size 169x36
           text run at (0,0) width 169: "Look Down!"
@@ -22,8 +22,8 @@ layer at (0,0) size 800x196
           text run at (148,20) width 427: "be visible without scrolling (the window should not be scrollable at all). "
           text run at (575,20) width 205: "The three boxes should be aligned"
           text run at (0,40) width 220: "at the bottom with the bottom of the "
-          text run at (220,40) width 414: "window. The text \"Tall table\" should be vertically centered in its box, "
-          text run at (633,40) width 133: "which should be 50px"
+          text run at (220,40) width 413: "window. The text \"Tall table\" should be vertically centered in its box, "
+          text run at (632,40) width 133: "which should be 50px"
           text run at (0,60) width 322: "tall. The other two boxes should both be shorter than "
           text run at (322,60) width 193: "50px, and have the same height."
 layer at (120,550) size 120x50

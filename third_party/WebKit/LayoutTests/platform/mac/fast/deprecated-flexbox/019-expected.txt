@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 781x36
-          text run at (0,0) width 528: "You should see a 350x350 pixel (7 by 7) black/white checkerboard pattern below. "
-          text run at (527,0) width 254: "This test is checking to see if box-pack:"
+        LayoutText {#text} at (0,0) size 780x36
+          text run at (0,0) width 527: "You should see a 350x350 pixel (7 by 7) black/white checkerboard pattern below. "
+          text run at (526,0) width 254: "This test is checking to see if box-pack:"
           text run at (0,18) width 127: "justify is supported."
       LayoutDeprecatedFlexibleBox {DIV} at (0,52) size 358x358 [border: (4px solid #800000)]
         LayoutDeprecatedFlexibleBox {DIV} at (4,4) size 350x50

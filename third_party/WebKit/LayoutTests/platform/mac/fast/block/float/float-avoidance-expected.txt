@@ -105,7 +105,7 @@ layer at (0,0) size 785x2342 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,650) size 769x36
         LayoutText {#text} at (0,0) size 768x36
           text run at (0,0) width 768: "The floating table with an auto width should be even with the select and shrinks to use the available line width. THIS IS"
-          text run at (0,18) width 160: "CURRENTLY BUGGY."
+          text run at (0,18) width 158: "CURRENTLY BUGGY."
       LayoutBlockFlow {P} at (0,702) size 220x122 [border: (10px solid #FF0000)]
         LayoutText {#text} at (10,10) size 60x18
           text run at (10,10) width 60: "Line One"
@@ -194,7 +194,7 @@ layer at (0,0) size 785x2342 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow (anonymous) at (0,1438) size 769x36
         LayoutText {#text} at (0,0) size 741x36
           text run at (0,0) width 741: "The floating overflow section with an auto width should be even with the select and shrinks to use the available line"
-          text run at (0,18) width 262: "width. THIS IS CURRENTLY BUGGY."
+          text run at (0,18) width 260: "width. THIS IS CURRENTLY BUGGY."
       LayoutBlockFlow {DIV} at (0,1474) size 220x110 [border: (10px solid #FF0000)]
         LayoutText {#text} at (10,10) size 60x18
           text run at (10,10) width 60: "Line One"

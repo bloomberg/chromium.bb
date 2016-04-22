@@ -16,8 +16,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (699,0) size 5x17
           text run at (699,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 317x17
-          text run at (0,0) width 317: "The window should not have a vertical scroll bar."
+        LayoutText {#text} at (0,0) size 316x17
+          text run at (0,0) width 316: "The window should not have a vertical scroll bar."
 layer at (8,100) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (8,100) size 100x100
     LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]

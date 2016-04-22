@@ -8,8 +8,8 @@ layer at (0,0) size 800x168
           text run at (0,0) width 755: "Testing the values of 'pointer-events' on HTML content"
       LayoutBlockFlow {P} at (0,58.44) size 784x72
         LayoutText {#text} at (0,0) size 784x71
-          text run at (0,0) width 590: "This test is expected to be run from within DumpRenderTree. If running manually, click on "
-          text run at (589,0) width 151: "the elements in the first"
+          text run at (0,0) width 589: "This test is expected to be run from within DumpRenderTree. If running manually, click on "
+          text run at (588,0) width 151: "the elements in the first"
           text run at (0,18) width 389: "column, making sure the actual result (3rd column) matches "
           text run at (388,18) width 391: "the expected result (2nd column). Repeat for click target (4th"
           text run at (0,36) width 249: "column), expected result (5th column) "

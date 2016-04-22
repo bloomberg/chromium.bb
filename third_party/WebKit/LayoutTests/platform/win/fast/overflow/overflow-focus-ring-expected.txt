@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 516x17
-          text run at (0,0) width 516: "The focus ring of the following div should not extend beyond the size of the div."
+        LayoutText {#text} at (0,0) size 515x17
+          text run at (0,0) width 515: "The focus ring of the following div should not extend beyond the size of the div."
 layer at (8,26) size 500x400 scrollWidth 501 scrollHeight 648
   LayoutBlockFlow {DIV} at (0,18) size 500x400
     LayoutText {#text} at (0,0) size 500x647

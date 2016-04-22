@@ -8,12 +8,12 @@ layer at (0,0) size 800x280
           text run at (0,0) width 762: "This is a test to check if the loading of a stylesheet is properly cancelled (count of pending style sheets is decremented)"
           text run at (0,18) width 602: "when its link tag is changed through the DOM after the link tag is appended to the document. "
           text run at (601,18) width 168: "When the div with style is"
-          text run at (0,36) width 716: "moved, it appears on the screen if the style was loaded properly, and doesn't appear when there are out-standing"
-          text run at (0,54) width 261: "stylesheets according to the DocLoader. "
-          text run at (260,54) width 28: "See "
+          text run at (0,36) width 715: "moved, it appears on the screen if the style was loaded properly, and doesn't appear when there are out-standing"
+          text run at (0,54) width 260: "stylesheets according to the DocLoader. "
+          text run at (259,54) width 28: "See "
         LayoutInline {A} at (0,0) size 33x18 [color=#0000EE]
-          LayoutText {#text} at (287,54) size 33x18
-            text run at (287,54) width 33: "6999"
+          LayoutText {#text} at (286,54) size 33x18
+            text run at (286,54) width 33: "6999"
       LayoutBlockFlow {P} at (0,88) size 784x18
         LayoutInline {SPAN} at (0,0) size 33x18 [color=#FF0000]
           LayoutText {#text} at (0,0) size 33x18

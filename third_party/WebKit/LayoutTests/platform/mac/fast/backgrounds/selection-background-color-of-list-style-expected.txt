@@ -5,8 +5,8 @@ layer at (0,0) size 800x146
     LayoutBlockFlow {BODY} at (8,8) size 784x122
       LayoutBlockFlow {DIV} at (0,0) size 784x122
         LayoutBlockFlow (anonymous) at (0,0) size 784x18
-          LayoutText {#text} at (0,0) size 483x18
-            text run at (0,0) width 483: "Test passes if backgrounds of list style in ul and ol are each red and yellow."
+          LayoutText {#text} at (0,0) size 482x18
+            text run at (0,0) width 482: "Test passes if backgrounds of list style in ul and ol are each red and yellow."
         LayoutBlockFlow {UL} at (0,34) size 784x36
           LayoutListItem {LI} at (40,0) size 744x18
             LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet

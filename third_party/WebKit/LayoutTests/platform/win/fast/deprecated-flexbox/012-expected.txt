@@ -5,8 +5,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x54
         LayoutText {#text} at (0,0) size 783x53
-          text run at (0,0) width 322: "You should see a 300x100 green rectangle below. "
-          text run at (321,0) width 424: "If you see any red, the test has failed. This test makes a positioned"
+          text run at (0,0) width 321: "You should see a 300x100 green rectangle below. "
+          text run at (320,0) width 424: "If you see any red, the test has failed. This test makes a positioned"
           text run at (0,18) width 209: "vertical box with three children. "
           text run at (208,18) width 494: "The first and third children are absolutely positioned at the edges of the box. "
           text run at (701,18) width 82: "Box-align of"

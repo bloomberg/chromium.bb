@@ -9,9 +9,9 @@ layer at (0,0) size 800x600
         LayoutInline {A} at (0,0) size 67x19 [color=#0000EE]
           LayoutText {#text} at (49,0) size 67x19
             text run at (49,0) width 67: "bug 11590"
-        LayoutText {#text} at (115,0) size 548x19
-          text run at (115,0) width 548: ": REGRESSION (r17726-r17742): Wikipedia page intermittently loads but doesn't render."
+        LayoutText {#text} at (115,0) size 547x19
+          text run at (115,0) width 547: ": REGRESSION (r17726-r17742): Wikipedia page intermittently loads but doesn't render."
       LayoutBlockFlow {P} at (0,36) size 784x20
-        LayoutText {#text} at (0,0) size 774x19
-          text run at (0,0) width 774: "All four sides of the square below should be present for this test to really pass, and WebKit shouldn't crash for it to pass partially."
+        LayoutText {#text} at (0,0) size 773x19
+          text run at (0,0) width 773: "All four sides of the square below should be present for this test to really pass, and WebKit shouldn't crash for it to pass partially."
       LayoutBlockFlow {DIV} at (0,72) size 106x106 [border: (3px solid #000000)]

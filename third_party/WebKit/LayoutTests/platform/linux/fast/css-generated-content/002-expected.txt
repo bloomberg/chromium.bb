@@ -13,6 +13,6 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (51,0) size 553x19
           text run at (51,0) width 206: "The \"S\" to the left should be gold. "
           text run at (257,0) width 347: "This is testing :before used in conjunction with :first-letter. "
-        LayoutInline {<pseudo:after>} at (0,0) size 61x19
-          LayoutTextFragment (anonymous) at (604,0) size 61x19
-            text run at (604,0) width 61: "[The End]"
+        LayoutInline {<pseudo:after>} at (0,0) size 62x19
+          LayoutTextFragment (anonymous) at (603,0) size 62x19
+            text run at (603,0) width 62: "[The End]"

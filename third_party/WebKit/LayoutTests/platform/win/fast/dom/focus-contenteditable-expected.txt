@@ -4,11 +4,11 @@ layer at (0,0) size 785x894 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x894
     LayoutBlockFlow {BODY} at (8,8) size 769x878
       LayoutBlockFlow (anonymous) at (0,0) size 769x36
-        LayoutText {#text} at (0,0) size 511x17
-          text run at (0,0) width 511: "This test will try to call focus() on a contenteditable div, and then a normal div. "
+        LayoutText {#text} at (0,0) size 509x17
+          text run at (0,0) width 509: "This test will try to call focus() on a contenteditable div, and then a normal div. "
         LayoutBR {BR} at (0,0) size 0x0
-        LayoutText {#text} at (0,18) size 380x17
-          text run at (0,18) width 380: "The window should scroll to reveal the contenteditable div."
+        LayoutText {#text} at (0,18) size 379x17
+          text run at (0,18) width 379: "The window should scroll to reveal the contenteditable div."
       LayoutBlockFlow {DIV} at (0,36) size 500x800
       LayoutBlockFlow {DIV} at (0,836) size 769x24 [border: (3px solid #000000)]
         LayoutText {#text} at (3,3) size 125x17

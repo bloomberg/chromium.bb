@@ -12,8 +12,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (360,0) size 307x18
           text run at (360,0) width 307: "css-formatted first letter won't hide dynamically"
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutText {#text} at (0,0) size 428x18
-          text run at (0,0) width 428: "The next line of text should become invisible, including first letter."
+        LayoutText {#text} at (0,0) size 427x18
+          text run at (0,0) width 427: "The next line of text should become invisible, including first letter."
       LayoutBlockFlow {DIV} at (0,68) size 784x18
         LayoutInline {<pseudo:first-letter>} at (0,0) size 11x18 [color=#0000FF]
           LayoutTextFragment (anonymous) at (0,0) size 11x18

@@ -35,5 +35,5 @@ layer at (8,94) size 788x14
                 text run at (0,0) width 505: "error on line 1 at column 15: Extra content at the end of the document"
                 text run at (504,0) width 1: " "
             LayoutBlockFlow {h3} at (18,94.16) size 685x22
-              LayoutText {#text} at (0,0) size 420x22
-                text run at (0,0) width 420: "Below is a rendering of the page up to the first error."
+              LayoutText {#text} at (0,0) size 418x22
+                text run at (0,0) width 418: "Below is a rendering of the page up to the first error."

@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutInline {A} at (0,0) size 60x18 [color=#0000EE]
           LayoutText {#text} at (0,0) size 60x18
             text run at (0,0) width 60: "bug 7118"
-        LayoutText {#text} at (59,0) size 364x18
-          text run at (59,0) width 364: ": Wrong property values do not get invalidated correctly."
+        LayoutText {#text} at (59,0) size 363x18
+          text run at (59,0) width 363: ": Wrong property values do not get invalidated correctly."
       LayoutBlockFlow (anonymous) at (0,34) size 784x0
         LayoutInline {DIV} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0

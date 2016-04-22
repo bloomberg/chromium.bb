@@ -11,21 +11,21 @@ layer at (0,0) size 800x600
             text run at (297,0) width 25: "blue"
         LayoutText {#text} at (322,0) size 121x19
           text run at (322,0) width 121: " border, to the right "
-        LayoutInline {SPAN} at (0,0) size 41x19 [color=#FFA500]
-          LayoutText {#text} at (443,0) size 41x19
-            text run at (443,0) width 41: "orange"
-        LayoutText {#text} at (484,0) size 49x19
-          text run at (484,0) width 49: " border."
+        LayoutInline {SPAN} at (0,0) size 42x19 [color=#FFA500]
+          LayoutText {#text} at (442,0) size 42x19
+            text run at (442,0) width 42: "orange"
+        LayoutText {#text} at (483,0) size 49x19
+          text run at (483,0) width 49: " border."
       LayoutBlockFlow {DIV} at (0,36) size 600x20
         LayoutText {#text} at (0,0) size 178x19
           text run at (0,0) width 178: "ILorem ipsum dolor sit amet, "
-        LayoutText {#text} at (406,0) size 165x19
-          text run at (406,0) width 165: "irure dolor in reprehenderit."
+        LayoutText {#text} at (405,0) size 166x19
+          text run at (405,0) width 166: "irure dolor in reprehenderit."
 layer at (8,44) size 208x21
   LayoutInline (relative positioned) {SPAN} at (0,0) size 208x21 [bgcolor=#008000] [border: (1px solid #808080) (20px solid #FFA500) (1px solid #808080) (20px solid #0000FF)]
     LayoutText {#text} at (218,0) size 91x19
       text run at (218,0) width 91: "con a pariatur. "
-    LayoutText {#text} at (309,0) size 57x19
-      text run at (309,0) width 57: "duis aute "
-layer at (216,44) size 168x19
-  LayoutBlockFlow (positioned) {DIV} at (20,1) size 168x19
+    LayoutText {#text} at (308,0) size 58x19
+      text run at (308,0) width 58: "duis aute "
+layer at (216,44) size 167x19
+  LayoutBlockFlow (positioned) {DIV} at (20,1) size 167.11x19

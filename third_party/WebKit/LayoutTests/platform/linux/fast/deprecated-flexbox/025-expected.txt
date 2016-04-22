@@ -3,6 +3,6 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutDeprecatedFlexibleBox {HTML} at (0,0) size 800x600
     LayoutDeprecatedFlexibleBox {BODY} at (0,0) size 800x600 [color=#FFFFFF] [bgcolor=#008000]
-      LayoutBlockFlow (anonymous) at (0,0) size 423.41x600
-        LayoutText {#text} at (0,0) size 424x19
-          text run at (0,0) width 424: "You should see white text on a green background that fills the window."
+      LayoutBlockFlow (anonymous) at (0,0) size 422.36x600
+        LayoutText {#text} at (0,0) size 423x19
+          text run at (0,0) width 423: "You should see white text on a green background that fills the window."

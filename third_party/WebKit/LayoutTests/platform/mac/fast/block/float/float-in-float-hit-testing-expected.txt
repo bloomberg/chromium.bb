@@ -9,9 +9,9 @@ layer at (0,0) size 800x600
         LayoutInline {A} at (0,0) size 784x36 [color=#0000EE]
           LayoutText {#text} at (254,0) size 784x36
             text run at (254,0) width 530: "Radar 4279765: REGRESSION: \"More...\" links on flickr groups pages have hover"
-            text run at (0,18) width 119: "issues (flickr.com)"
-        LayoutText {#text} at (118,18) size 399x18
-          text run at (118,18) width 399: ". Click on the word TEST below and it should turn into PASS."
+            text run at (0,18) width 118: "issues (flickr.com)"
+        LayoutText {#text} at (117,18) size 399x18
+          text run at (117,18) width 399: ". Click on the word TEST below and it should turn into PASS."
       LayoutBlockFlow {DIV} at (0,100) size 784x200
         LayoutBlockFlow (floating) {DIV} at (0,0) size 237.17x200
           LayoutImage {IMG} at (0,0) size 100x100

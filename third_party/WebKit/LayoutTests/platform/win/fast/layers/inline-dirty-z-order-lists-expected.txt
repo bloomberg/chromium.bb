@@ -12,9 +12,9 @@ layer at (0,0) size 800x600
               text run at (53,0) width 312: "https://bugs.webkit.org/show_bug.cgi?id=23848"
           LayoutText {#text} at (364,0) size 776x35
             text run at (364,0) width 412: " REGRESSION: Crash when mouse cursor moves over a link on"
-            text run at (0,18) width 122: "www.opportuno.de"
-        LayoutText {#text} at (121,18) size 5x17
-          text run at (121,18) width 5: "."
+            text run at (0,18) width 121: "www.opportuno.de"
+        LayoutText {#text} at (120,18) size 5x17
+          text run at (120,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 756x17
           text run at (0,0) width 462: "This tests that changing the z-index of an inline correctly invalidates its "

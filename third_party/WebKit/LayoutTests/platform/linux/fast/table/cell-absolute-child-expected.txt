@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (92,20) size 4x19
           text run at (92,20) width 4: "."
       LayoutBlockFlow {P} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 512x19
-          text run at (0,0) width 512: "You should see two identical green squares, 100x100 pixels each, next to each other."
+        LayoutText {#text} at (0,0) size 511x19
+          text run at (0,0) width 511: "You should see two identical green squares, 100x100 pixels each, next to each other."
       LayoutTable {TABLE} at (0,92) size 106x156
         LayoutTableSection {TBODY} at (0,0) size 106x156
           LayoutTableRow {TR} at (0,2) size 106x50

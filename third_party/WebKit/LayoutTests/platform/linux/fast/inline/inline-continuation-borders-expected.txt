@@ -24,8 +24,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,144) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,162) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (0,0) size 141x19
-              text run at (0,0) width 141: "LTR, empty inline after."
+            LayoutText {#text} at (0,0) size 140x19
+              text run at (0,0) width 140: "LTR, empty inline after."
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 43x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
               LayoutText {#text} at (22,0) size 21x19
@@ -56,8 +56,8 @@ layer at (0,0) size 785x1294 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBlockFlow {HR} at (0,468) size 769x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {DIV} at (0,486) size 769x128
           LayoutBlockFlow {P} at (0,0) size 769x20
-            LayoutText {#text} at (0,0) size 210x19
-              text run at (0,0) width 210: "LTR, empty inline before and after."
+            LayoutText {#text} at (0,0) size 209x19
+              text run at (0,0) width 209: "LTR, empty inline before and after."
           LayoutBlockFlow (anonymous) at (0,36) size 769x20
             LayoutInline {SPAN} at (0,0) size 22x23 [bgcolor=#008000] [border: (2px solid #FF0000)]
           LayoutBlockFlow (anonymous) at (0,72) size 769x20

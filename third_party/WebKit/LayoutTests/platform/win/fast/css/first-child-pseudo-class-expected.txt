@@ -189,5 +189,5 @@ layer at (0,0) size 785x2316 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (398,121) width 1: " "
               text run at (6,137) width 521: "ib.parentElement.insertBefore(document.createElement(\"div\"), ib);"
           LayoutBlockFlow {P} at (16,228) size 583.19x18
-            LayoutText {#text} at (0,0) size 520x17
-              text run at (0,0) width 520: "The original div element should not be a match for the :first-child selector."
+            LayoutText {#text} at (0,0) size 519x17
+              text run at (0,0) width 519: "The original div element should not be a match for the :first-child selector."

@@ -31,5 +31,5 @@ layer at (0,0) size 800x600
               text run at (81,0) width 673: "The forest is primarily second and third growth. The area was saved from development because of its status as a"
               text run at (81,20) width 630: "federal military reserve; it occupied a strategic location for defending the former provincial capital of New"
               text run at (0,40) width 767: "Westminster in the case of an American naval invasion. Nevertheless, the federal government allowed logging operations there in"
-              text run at (0,60) width 736: "the mid-nineteenth century. Large swathes of the park were also deforested by natural causes on two occasions in the 20th"
-              text run at (0,80) width 48: "century."
+              text run at (0,60) width 735: "the mid-nineteenth century. Large swathes of the park were also deforested by natural causes on two occasions in the 20th"
+              text run at (0,80) width 47: "century."

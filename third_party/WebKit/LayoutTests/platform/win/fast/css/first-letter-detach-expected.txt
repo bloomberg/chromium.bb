@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 10x17 [color=#0000FF]
           LayoutText {#text} at (235,0) size 10x17
             text run at (235,0) width 10: "P"
-        LayoutText {#text} at (244,0) size 212x17
-          text run at (244,0) width 212: "ASS\x{201D}, with nothing before the P."
+        LayoutText {#text} at (244,0) size 211x17
+          text run at (244,0) width 211: "ASS\x{201D}, with nothing before the P."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,104) size 784x18
         LayoutInline {<pseudo:first-letter>} at (0,0) size 9x17 [color=#0000FF]

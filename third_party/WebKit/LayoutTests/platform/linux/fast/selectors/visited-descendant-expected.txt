@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 719x19
-          text run at (0,0) width 719: "Test that visited style matches to the topmost link in a decendant selector. The link should be green, with red underlining."
+        LayoutText {#text} at (0,0) size 718x19
+          text run at (0,0) width 718: "Test that visited style matches to the topmost link in a decendant selector. The link should be green, with red underlining."
       LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutInline {A} at (0,0) size 27x19 [color=#FF0000]
           LayoutInline {SPAN} at (0,0) size 27x19 [color=#008000]
@@ -13,8 +13,8 @@ layer at (0,0) size 800x600
               text run at (0,0) width 27: "Link"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,72) size 784x20
-        LayoutText {#text} at (0,0) size 685x19
-          text run at (0,0) width 685: "Test that visited style matches to the topmost link in a child selector. The link should be green, with red underlining."
+        LayoutText {#text} at (0,0) size 684x19
+          text run at (0,0) width 684: "Test that visited style matches to the topmost link in a child selector. The link should be green, with red underlining."
       LayoutBlockFlow {P} at (0,108) size 784x20
         LayoutInline {A} at (0,0) size 27x19 [color=#FF0000]
           LayoutInline {SPAN} at (0,0) size 27x19 [color=#008000]

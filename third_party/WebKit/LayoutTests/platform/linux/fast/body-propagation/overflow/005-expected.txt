@@ -7,7 +7,7 @@ layer at (0,0) size 785x340
         LayoutText {#text} at (0,0) size 159x119
           text run at (0,0) width 159: "There should be scrollbars"
           text run at (0,20) width 156: "for the viewport -- not for"
-          text run at (0,40) width 136: "this box. (Additionally,"
+          text run at (0,40) width 135: "this box. (Additionally,"
           text run at (0,60) width 130: "there should be a box"
           text run at (0,80) width 128: "above that does have"
           text run at (0,100) width 67: "scrollbars.)"

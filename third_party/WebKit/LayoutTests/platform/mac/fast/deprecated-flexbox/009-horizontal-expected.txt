@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 783x36
-          text run at (0,0) width 576: "You should see a 100x100 olive-bordered green square below with a horizontal scrollbar. "
-          text run at (575,0) width 208: "The scrollable area should all be"
+        LayoutText {#text} at (0,0) size 782x36
+          text run at (0,0) width 575: "You should see a 100x100 olive-bordered green square below with a horizontal scrollbar. "
+          text run at (574,0) width 208: "The scrollable area should all be"
           text run at (0,18) width 264: "green and should be about 1000px wide. "
           text run at (263,18) width 334: "If you do not see a scrollbar, then the test has failed."
 layer at (8,60) size 104x104 clip at (10,62) size 100x85 scrollWidth 1000

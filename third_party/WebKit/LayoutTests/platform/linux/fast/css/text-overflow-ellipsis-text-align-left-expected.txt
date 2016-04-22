@@ -4,8 +4,8 @@ layer at (0,0) size 785x912 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x912.47
     LayoutBlockFlow {BODY} at (8,8) size 769x884.47
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 502x19
-          text run at (0,0) width 502: "This test checks that text with text-overflow:ellipsis follows 'text-align: left' correctly."
+        LayoutText {#text} at (0,0) size 501x19
+          text run at (0,0) width 501: "This test checks that text with text-overflow:ellipsis follows 'text-align: left' correctly."
       LayoutBlockFlow {P} at (0,36) size 769x20
         LayoutText {#text} at (0,0) size 456x19
           text run at (0,0) width 456: "The text in all boxes should be left aligned, sticking to the left side of the box"

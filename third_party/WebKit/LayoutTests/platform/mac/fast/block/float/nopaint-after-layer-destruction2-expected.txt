@@ -27,9 +27,9 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (81,0) size 159x22
               text run at (81,0) width 159: "Stanley Park Forest"
           LayoutBlockFlow {P} at (0,40.72) size 784x90
-            LayoutText {#text} at (81,0) size 771x90
+            LayoutText {#text} at (81,0) size 770x90
               text run at (81,0) width 689: "The forest is primarily second and third growth. The area was saved from development because of its status"
               text run at (81,18) width 677: "as a federal military reserve; it occupied a strategic location for defending the former provincial capital of"
               text run at (81,36) width 688: "New Westminster in the case of an American naval invasion. Nevertheless, the federal government allowed"
-              text run at (0,54) width 771: "logging operations there in the mid-nineteenth century. Large swathes of the park were also deforested by natural causes"
-              text run at (0,72) width 239: "on two occasions in the 20th century."
+              text run at (0,54) width 770: "logging operations there in the mid-nineteenth century. Large swathes of the park were also deforested by natural causes"
+              text run at (0,72) width 238: "on two occasions in the 20th century."

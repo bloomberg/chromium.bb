@@ -45,21 +45,21 @@ layer at (0,0) size 800x913 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTable {TABLE} at (16,16) size 240x552 [border: (1px solid #0000FF)]
           LayoutTableSection {TBODY} at (1,1) size 237x549
             LayoutTableRow {TR} at (0,0) size 33x549
-              LayoutTableCell {TH} at (0,0) size 33x184 [border: (2px solid #800080)] [r=0 c=0 rs=1 cs=1]
-                LayoutText {#text} at (6,51) size 19x83
-                  text run at (6,51) width 82: "Header One"
-              LayoutTableCell {TH} at (0,184) size 33x173 [border: (2px solid #800080)] [r=0 c=1 rs=1 cs=1]
-                LayoutText {#text} at (6,46) size 19x82
+              LayoutTableCell {TH} at (0,0) size 33x185 [border: (2px solid #800080)] [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (6,52) size 19x82
+                  text run at (6,52) width 82: "Header One"
+              LayoutTableCell {TH} at (0,185) size 33x172 [border: (2px solid #800080)] [r=0 c=1 rs=1 cs=1]
+                LayoutText {#text} at (6,46) size 19x81
                   text run at (6,46) width 81: "Header Two"
               LayoutTableCell {TH} at (0,357) size 33x192 [border: (2px solid #800080)] [r=0 c=2 rs=1 cs=1]
                 LayoutText {#text} at (6,49) size 19x95
                   text run at (6,49) width 94: "Header Three"
             LayoutTableRow {TR} at (0,33) size 112x549
-              LayoutTableCell {TD} at (33,30) size 112x124 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (33,30) size 112x125 [border: (2px solid #008000)] [r=1 c=0 rs=1 cs=1]
                 LayoutText {#text} at (36,-23) size 39x171
                   text run at (36,-23) width 171: "This table uses the collapsed"
                   text run at (56,-23) width 92: "borders model."
-              LayoutTableCell {TD} at (33,204) size 112x133 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (33,205) size 112x132 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]
                 LayoutText {#text} at (26,-14) size 59x149
                   text run at (26,-14) width 149: "This means that elements"
                   text run at (46,-14) width 132: "within the cell have no"
@@ -73,14 +73,14 @@ layer at (0,0) size 800x913 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (66,6) width 141: "should be medium solid"
                   text run at (86,6) width 42: "purple."
             LayoutTableRow {TR} at (0,145) size 92x549
-              LayoutTableCell {TD} at (145,0) size 92x184 [border: (2px solid #008000)] [r=2 c=0 rs=1 cs=1]
+              LayoutTableCell {TD} at (145,0) size 92x185 [border: (2px solid #008000)] [r=2 c=0 rs=1 cs=1]
                 LayoutText {#text} at (5,7) size 79x170
                   text run at (5,7) width 170: "The border of the table itself"
                   text run at (25,7) width 141: "should be medium solid"
                   text run at (45,7) width 77: "blue, except "
                   text run at (45,84) width 82: "where header"
                   text run at (65,7) width 151: "cells override the border."
-              LayoutTableCell {TD} at (145,184) size 92x173 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
+              LayoutTableCell {TD} at (145,185) size 92x172 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
                 LayoutText {#text} at (5,6) size 79x158
                   text run at (5,6) width 155: "The borders that I haven't"
                   text run at (25,6) width 154: "already mentioned (all the"

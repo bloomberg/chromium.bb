@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 138: "Click the middle one."
         LayoutListItem {LI} at (40,36) size 744x18
           LayoutListMarker (anonymous) at (-16,0) size 16x18: "3"
-          LayoutText {#text} at (0,0) size 272x18
-            text run at (0,0) width 272: "(The ouline will not be updated correctly.)"
+          LayoutText {#text} at (0,0) size 271x18
+            text run at (0,0) width 271: "(The ouline will not be updated correctly.)"
         LayoutListItem {LI} at (40,54) size 744x18
           LayoutListMarker (anonymous) at (-16,0) size 16x18: "4"
           LayoutText {#text} at (0,0) size 142x18
@@ -44,8 +44,8 @@ layer at (0,0) size 800x600
             text run at (0,0) width 457: "1. 3. will not crash Safari. (But the outline should vanish. Shouldn't it?)"
         LayoutListItem {LI} at (40,126) size 744x18
           LayoutListMarker (anonymous) at (-16,0) size 16x18: "8"
-          LayoutText {#text} at (0,0) size 206x18
-            text run at (0,0) width 206: "2. 3. will not crash Safari either."
+          LayoutText {#text} at (0,0) size 205x18
+            text run at (0,0) width 205: "2. 3. will not crash Safari either."
         LayoutBlockFlow (anonymous) at (40,144) size 744x19
           LayoutButton {INPUT} at (0,1) size 126.80x18 [bgcolor=#C0C0C0]
             LayoutBlockFlow (anonymous) at (8,2) size 110.80x13

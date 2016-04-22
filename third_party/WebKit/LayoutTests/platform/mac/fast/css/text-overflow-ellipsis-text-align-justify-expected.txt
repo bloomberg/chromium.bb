@@ -4,8 +4,8 @@ layer at (0,0) size 785x894 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x894.47
     LayoutBlockFlow {BODY} at (8,8) size 769x866.47
       LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 568x18
-          text run at (0,0) width 568: "This test checks that text with text-overflow:ellipsis follows 'text-align: justify' correctly."
+        LayoutText {#text} at (0,0) size 567x18
+          text run at (0,0) width 567: "This test checks that text with text-overflow:ellipsis follows 'text-align: justify' correctly."
       LayoutBlockFlow {P} at (0,34) size 769x36
         LayoutText {#text} at (0,0) size 753x36
           text run at (0,0) width 753: "LTR text should be aligned with the left hand side of their box. RTL text should be aligned with the right hand side of"

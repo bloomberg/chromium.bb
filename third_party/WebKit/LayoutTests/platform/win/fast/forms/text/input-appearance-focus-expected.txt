@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow (anonymous) at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 772x17
-          text run at (0,0) width 772: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."
+        LayoutText {#text} at (0,0) size 771x17
+          text run at (0,0) width 771: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."
       LayoutBlockFlow {P} at (0,34) size 784x22
         LayoutTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (173,2) size 4x17

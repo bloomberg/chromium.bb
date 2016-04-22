@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (103,18) size 5x18
           text run at (103,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 333x18
-          text run at (0,0) width 333: "The thumb should be in the middle of the scroll bar."
+        LayoutText {#text} at (0,0) size 332x18
+          text run at (0,0) width 332: "The thumb should be in the middle of the scroll bar."
 layer at (8,94) size 200x200 clip at (8,94) size 185x200 scrollY 200.00 scrollHeight 600
   LayoutBlockFlow {DIV} at (0,86) size 200x200
     LayoutBlockFlow {DIV} at (0,0) size 185x600

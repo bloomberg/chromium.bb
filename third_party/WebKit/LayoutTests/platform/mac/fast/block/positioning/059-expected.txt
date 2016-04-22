@@ -11,10 +11,10 @@ layer at (8,8) size 784x54
         LayoutText {#text} at (129,0) size 113x18
           text run at (129,0) width 113: "vertically stacked"
       LayoutText {#text} at (241,0) size 781x54
-        text run at (241,0) width 160: " green rectangles below. "
-        text run at (400,0) width 184: "Each one is 100 pixels wide "
-        text run at (584,0) width 118: "and 50 pixels tall. "
-        text run at (701,0) width 63: "If the two"
+        text run at (241,0) width 159: " green rectangles below. "
+        text run at (399,0) width 184: "Each one is 100 pixels wide "
+        text run at (582,0) width 119: "and 50 pixels tall. "
+        text run at (700,0) width 63: "If the two"
         text run at (0,18) width 396: "green rectangles are on the same line, then the test has failed. "
         text run at (395,18) width 269: "This is a test of section 10.3.7 in CSS2.1. "
         text run at (663,18) width 118: "In particular it is a"

@@ -100,21 +100,21 @@ layer at (0,0) size 800x536
           text run at (239,212) width 9: "b"
         LayoutBR {BR} at (247,212) size 1x17
         LayoutBR {BR} at (1,238) size 0x17
-        LayoutText {#text} at (1,261) size 492x17
-          text run at (1,261) width 492: "Height larger than font-size, button should grow, text baseline should center:"
-        LayoutMenuList {SELECT} at (492.14,255) size 41x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutText {#text} at (1,261) size 491x17
+          text run at (1,261) width 491: "Height larger than font-size, button should grow, text baseline should center:"
+        LayoutMenuList {SELECT} at (491.09,255) size 41x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,6) size 39x18
             LayoutText (anonymous) at (4,1) size 17x16
               text run at (4,1) width 17: "foo"
-        LayoutText {#text} at (533,261) size 8x17
-          text run at (533,261) width 8: "a"
-        LayoutMenuList {SELECT} at (540.23,255) size 41x30 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutText {#text} at (532,261) size 8x17
+          text run at (532,261) width 8: "a"
+        LayoutMenuList {SELECT} at (539.19,255) size 41x30 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,6) size 39x18
             LayoutText (anonymous) at (4,1) size 4x16
               text run at (4,1) width 4: " "
-        LayoutText {#text} at (581,261) size 9x17
-          text run at (581,261) width 9: "b"
-        LayoutBR {BR} at (589,261) size 1x17
+        LayoutText {#text} at (580,261) size 9x17
+          text run at (580,261) width 9: "b"
+        LayoutBR {BR} at (588,261) size 1x17
         LayoutBR {BR} at (1,284) size 0x17
         LayoutText {#text} at (1,302) size 498x17
           text run at (1,302) width 498: "Height smaller than font-size, whole select shrinks but baseline is unchanged:"

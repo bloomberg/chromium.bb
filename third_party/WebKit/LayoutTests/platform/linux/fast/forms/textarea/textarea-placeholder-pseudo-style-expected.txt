@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 315x19
         text run at (0,0) width 315: "This tests that you can set the placeholder text color."
-      LayoutBR {BR} at (315,15) size 0x0
+      LayoutBR {BR} at (314,15) size 1x0
       LayoutText {#text} at (179,41) size 4x19
         text run at (179,41) width 4: " "
       LayoutText {#text} at (362,41) size 4x19

@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 307x18
-        text run at (0,0) width 307: "With the label empty, the enclosing text is used."
-      LayoutBR {BR} at (306,14) size 1x0
+      LayoutText {#text} at (0,0) size 306x18
+        text run at (0,0) width 306: "With the label empty, the enclosing text is used."
+      LayoutBR {BR} at (305,14) size 1x0
       LayoutMenuList {SELECT} at (0,18) size 299x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 299x18
           LayoutText (anonymous) at (8,2) size 268x13

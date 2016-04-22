@@ -6,7 +6,7 @@ layer at (0,0) size 800x602 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow (anonymous) at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 755x35
           text run at (0,0) width 755: "Make sure that overflow:auto/hidden/scroll blocks interleave their background and foreground with other overlapping"
-          text run at (0,18) width 169: "blocks in the normal flow."
+          text run at (0,18) width 168: "blocks in the normal flow."
       LayoutBlockFlow {DIV} at (0,286) size 300x300 [bgcolor=#FFFF00]
         LayoutText {#text} at (0,1) size 175x108
           text run at (0,1) width 170: "This text"

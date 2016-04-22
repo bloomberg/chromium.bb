@@ -19,7 +19,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1274
         LayoutText {#text} at (10,25) size 245x56
           text run at (10,25) width 245: "Robert points us to the first third-party"
           text run at (10,39) width 221: "tool for the DomAPI: The Animation"
-          text run at (10,53) width 206: "Array Generator, a visual tool for"
+          text run at (10,53) width 204: "Array Generator, a visual tool for"
           text run at (10,67) width 63: "creating..."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
@@ -44,9 +44,9 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1274
           text run at (10,11) width 162: "cellspacing and the DOM"
       LayoutText {#text} at (172,11) size 4x14
         text run at (172,11) width 4: " "
-      LayoutInline {description} at (0,0) size 240x56
-        LayoutText {#text} at (176,11) size 240x56
-          text run at (176,11) width 74: "By the way,"
+      LayoutInline {description} at (0,0) size 239x56
+        LayoutText {#text} at (176,11) size 239x56
+          text run at (176,11) width 73: "By the way,"
           text run at (10,25) width 225: "if you're using the DOM to generate"
           text run at (10,39) width 209: "TABLE elements, you have to use"
           text run at (10,53) width 163: "setAttribute() to set the..."
@@ -92,7 +92,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1274
         LayoutText {#text} at (48,25) size 237x56
           text run at (48,25) width 199: "DynAPI 2.9 is the latest release"
           text run at (10,39) width 229: "of the popular cross-browser DHTML"
-          text run at (10,53) width 191: "library, and is available at Dan"
+          text run at (10,53) width 190: "library, and is available at Dan"
           text run at (10,67) width 162: "Steinman's original site...."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
@@ -106,7 +106,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1274
         LayoutText {#text} at (166,11) size 223x42
           text run at (166,11) width 41: "Milov's"
           text run at (10,25) width 223: "!lineDraw bookmarklet is in fact the"
-          text run at (10,39) width 178: "Coolest Bookmarklet Ever...."
+          text run at (10,39) width 177: "Coolest Bookmarklet Ever...."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,719) size 265x92 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]

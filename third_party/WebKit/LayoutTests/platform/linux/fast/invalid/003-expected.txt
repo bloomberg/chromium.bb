@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
         LayoutInline {I} at (0,0) size 68x19
           LayoutText {#text} at (0,0) size 68x19
             text run at (0,0) width 68: "Italic only."
-        LayoutText {#text} at (68,0) size 33x19
-          text run at (68,0) width 33: " Plain"
+        LayoutText {#text} at (67,0) size 34x19
+          text run at (67,0) width 34: " Plain"
       LayoutBlockFlow {P} at (0,108) size 784x20
         LayoutText {#text} at (0,0) size 122x19
           text run at (0,0) width 122: "I should not be red. "

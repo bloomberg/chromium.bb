@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 374x17
-        text run at (0,0) width 374: "You should see four green squares in a vertical line below."
+      LayoutText {#text} at (0,0) size 373x17
+        text run at (0,0) width 373: "You should see four green squares in a vertical line below."
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,160) size 100x100 transparent
   LayoutBlockFlow (positioned) {DIV} at (8,160) size 100x100 [bgcolor=#008000]

@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (244,18) size 5x17
           text run at (244,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 309x17
-          text run at (0,0) width 309: "There should be three squres and a circle below."
+        LayoutText {#text} at (0,0) size 308x17
+          text run at (0,0) width 308: "There should be three squres and a circle below."
       LayoutBlockFlow {DIV} at (0,86) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
       LayoutBlockFlow {DIV} at (0,152) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]
       LayoutBlockFlow {DIV} at (0,218) size 56x56 [bgcolor=#C0C0C0] [border: (3px solid #000000)]

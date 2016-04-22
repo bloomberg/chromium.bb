@@ -8,9 +8,9 @@ layer at (0,0) size 785x887 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 747: "Problem: Safari improperly handles generated content"
           text run at (0,37) width 717: "in certain cases when used with multiple class names"
       LayoutBlockFlow {P} at (0,95.44) size 769x36
-        LayoutInline {EM} at (0,0) size 768x36
-          LayoutText {#text} at (0,0) size 768x36
-            text run at (0,0) width 768: "When referencing an element by two class names simultaneously, Safari won't generate content (using :before or :after)"
+        LayoutInline {EM} at (0,0) size 767x36
+          LayoutText {#text} at (0,0) size 767x36
+            text run at (0,0) width 767: "When referencing an element by two class names simultaneously, Safari won't generate content (using :before or :after)"
             text run at (0,18) width 122: "within the element."
       LayoutBlockFlow {P} at (0,147.44) size 769x36
         LayoutText {#text} at (0,0) size 124x18
@@ -46,8 +46,8 @@ layer at (0,0) size 785x887 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 445x15
             text run at (0,0) width 445: "div.box.one p:after{ content:'generated content here!'; }"
       LayoutBlockFlow {P} at (0,230.44) size 769x18
-        LayoutText {#text} at (0,0) size 742x18
-          text run at (0,0) width 742: "But that doesn't work in Safari. However, if you drop one of the class names, as shown below, it works as expected:"
+        LayoutText {#text} at (0,0) size 741x18
+          text run at (0,0) width 741: "But that doesn't work in Safari. However, if you drop one of the class names, as shown below, it works as expected:"
       LayoutBlockFlow {PRE} at (20,264.44) size 749x15 [color=#008000]
         LayoutInline {CODE} at (0,0) size 414x15
           LayoutText {#text} at (0,0) size 414x15

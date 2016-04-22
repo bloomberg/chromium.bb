@@ -4,8 +4,8 @@ layer at (0,0) size 785x1301 backgroundClip at (0,0) size 785x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 785x1301.39
     LayoutBlockFlow {BODY} at (8,16) size 769x1277.39
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 155x19
-          text run at (0,0) width 155: "div, span, nested div/span"
+        LayoutText {#text} at (0,0) size 154x19
+          text run at (0,0) width 154: "div, span, nested div/span"
       LayoutBlockFlow {P} at (0,36) size 769x20
         LayoutText {#text} at (0,0) size 58x19
           text run at (0,0) width 58: "Single div"
@@ -217,8 +217,8 @@ layer at (0,0) size 785x1301 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (45,0) size 24x19
                 text run at (45,0) width 24: "opq"
       LayoutBlockFlow {P} at (0,1159.39) size 769x20
-        LayoutText {#text} at (0,0) size 484x19
-          text run at (0,0) width 484: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
+        LayoutText {#text} at (0,0) size 481x19
+          text run at (0,0) width 481: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
       LayoutBlockFlow {DIV} at (0,1195.39) size 769x82 [border: (1px solid #000000)]
         LayoutTable (anonymous) at (1,1) size 24x80
           LayoutTableSection (anonymous) at (0,20) size 24x40

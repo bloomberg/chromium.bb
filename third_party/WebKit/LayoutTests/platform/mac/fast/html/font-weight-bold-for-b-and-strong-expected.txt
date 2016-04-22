@@ -22,8 +22,8 @@ layer at (0,0) size 800x204
             LayoutText {#text} at (0,0) size 161x18
               text run at (0,0) width 161: "Should be equally bold."
       LayoutBlockFlow {P} at (0,136) size 784x36
-        LayoutText {#text} at (0,0) size 742x36
+        LayoutText {#text} at (0,0) size 741x36
           text run at (0,0) width 490: "The HTML5 spec says that b and strong should render as font-weight: bold, "
-          text run at (489,0) width 253: "not font-weight: bolder. The text above"
+          text run at (489,0) width 252: "not font-weight: bolder. The text above"
           text run at (0,18) width 205: "should all render with the same "
           text run at (204,18) width 61: "boldness."

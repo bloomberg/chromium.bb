@@ -19,8 +19,8 @@ layer at (0,0) size 785x663 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,23) size 660x22
           text run at (0,23) width 660: "The lime stripes are floats with various width (topmost is 0, bottommost is 150px)"
         LayoutBR {BR} at (659,23) size 1x22
-        LayoutText {#text} at (0,46) size 401x22
-          text run at (0,46) width 401: "The wrapping container has a solid silver border."
+        LayoutText {#text} at (0,46) size 400x22
+          text run at (0,46) width 400: "The wrapping container has a solid silver border."
       LayoutBlockFlow {DIV} at (16,183.16) size 650x30 [border: (5px solid #C0C0C0)]
         LayoutBlockFlow (floating) {DIV} at (5,5) size 0x16 [bgcolor=#00FF00]
           LayoutText {#text} at (0,0) size 35x19
@@ -60,8 +60,8 @@ layer at (0,0) size 785x663 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,23) size 660x22
           text run at (0,23) width 660: "The lime stripes are floats with various width (topmost is 0, bottommost is 150px)"
         LayoutBR {BR} at (659,23) size 1x22
-        LayoutText {#text} at (0,46) size 401x22
-          text run at (0,46) width 401: "The wrapping container has a solid silver border."
+        LayoutText {#text} at (0,46) size 400x22
+          text run at (0,46) width 400: "The wrapping container has a solid silver border."
 layer at (129,210) size 440x20
   LayoutBlockFlow {DIV} at (105,5) size 440x20 [bgcolor=#FFA500]
     LayoutText {#text} at (0,0) size 161x19

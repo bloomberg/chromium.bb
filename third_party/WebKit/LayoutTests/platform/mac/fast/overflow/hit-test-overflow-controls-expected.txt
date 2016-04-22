@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (123,18) size 5x18
           text run at (123,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 762x18
-          text run at (0,0) width 586: "To test interactively, verify that you can resize each of the boxes below. The automatic test "
-          text run at (585,0) width 177: "resizes them to 125 by 125."
+        LayoutText {#text} at (0,0) size 760x18
+          text run at (0,0) width 584: "To test interactively, verify that you can resize each of the boxes below. The automatic test "
+          text run at (583,0) width 177: "resizes them to 125 by 125."
       LayoutBlockFlow (floating) {DIV} at (0,86) size 125x125 [bgcolor=#FF0000]
       LayoutBlockFlow (floating) {DIV} at (135,86) size 125x125 [bgcolor=#FF0000]
       LayoutBlockFlow (floating) {DIV} at (270,86) size 125x125 [bgcolor=#FF0000]

@@ -4,8 +4,8 @@ layer at (0,0) size 785x912 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x912.47
     LayoutBlockFlow {BODY} at (8,8) size 769x884.47
       LayoutBlockFlow {P} at (0,0) size 769x20
-        LayoutText {#text} at (0,0) size 521x19
-          text run at (0,0) width 521: "This test checks that text with text-overflow:ellipsis follows 'text-align: center' correctly."
+        LayoutText {#text} at (0,0) size 520x19
+          text run at (0,0) width 520: "This test checks that text with text-overflow:ellipsis follows 'text-align: center' correctly."
       LayoutBlockFlow {P} at (0,36) size 769x20
         LayoutText {#text} at (0,0) size 366x19
           text run at (0,0) width 366: "The text in all boxes should have the text centered in the box."

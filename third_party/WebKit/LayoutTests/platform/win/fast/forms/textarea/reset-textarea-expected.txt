@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 369x17
           text run at (0,0) width 369: "This test verifies that textarea controls are properly reset. "
         LayoutBR {BR} at (368,14) size 1x0
-        LayoutText {#text} at (0,18) size 475x17
-          text run at (0,18) width 475: "You should see two element IDs below, and the word \"SUCCESS\" twice: "
-        LayoutBR {BR} at (474,32) size 1x0
+        LayoutText {#text} at (0,18) size 474x17
+          text run at (0,18) width 474: "You should see two element IDs below, and the word \"SUCCESS\" twice: "
+        LayoutBR {BR} at (473,32) size 1x0
         LayoutText {#text} at (0,36) size 174x17
           text run at (0,36) width 174: "noDefaultText: SUCCESS "
         LayoutBR {BR} at (173,50) size 1x0

@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           text run at (0,0) width 765: "Results that match WinIE are two columns on the right that say \"after\" every time, except for the last row which should"
           text run at (0,18) width 196: "have nothing in either column."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 726x18
-          text run at (0,0) width 726: "Results that match Gecko are like WinIE, but with \"before\" for the attribute in the first two rows and the last row."
+        LayoutText {#text} at (0,0) size 725x18
+          text run at (0,0) width 725: "Results that match Gecko are like WinIE, but with \"before\" for the attribute in the first two rows and the last row."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {FORM} at (0,96) size 784x338
         LayoutTable {TABLE} at (0,0) size 766x338

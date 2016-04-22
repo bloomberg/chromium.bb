@@ -57,23 +57,23 @@ layer at (0,0) size 800x600
                   text run at (0,36) width 56: "nowrap. "
                   text run at (55,36) width 7: "I"
                   text run at (0,54) width 88: "really should."
-      LayoutTable {TABLE} at (0,426) size 375x24
-        LayoutTableSection {TBODY} at (0,0) size 375x24
-          LayoutTableRow {TR} at (0,2) size 375x20
-            LayoutTableCell {TD} at (2,2) size 371x20 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 369x17
+      LayoutTable {TABLE} at (0,426) size 374x24
+        LayoutTableSection {TBODY} at (0,0) size 374x24
+          LayoutTableRow {TR} at (0,2) size 374x20
+            LayoutTableCell {TD} at (2,2) size 370x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 368x17
                 text run at (1,1) width 147: "I should have nowrap. "
                 text run at (147,1) width 101: "I really should. "
-                text run at (247,1) width 123: "Definitely. Should."
-      LayoutTable {TABLE} at (0,450) size 375x24
-        LayoutTableSection {TBODY} at (0,0) size 375x24
-          LayoutTableRow {TR} at (0,2) size 375x20
-            LayoutTableCell {TD} at (2,2) size 371x20 [r=0 c=0 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (1,1) size 369x18
-                LayoutText {#text} at (0,0) size 369x17
+                text run at (247,1) width 122: "Definitely. Should."
+      LayoutTable {TABLE} at (0,450) size 374x24
+        LayoutTableSection {TBODY} at (0,0) size 374x24
+          LayoutTableRow {TR} at (0,2) size 374x20
+            LayoutTableCell {TD} at (2,2) size 370x20 [r=0 c=0 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (1,1) size 368x18
+                LayoutText {#text} at (0,0) size 368x17
                   text run at (0,0) width 147: "I should have nowrap. "
                   text run at (146,0) width 101: "I really should. "
-                  text run at (246,0) width 123: "Definitely. Should."
+                  text run at (246,0) width 122: "Definitely. Should."
 layer at (61,14) size 726x16
   LayoutBlockFlow {DIV} at (2,3) size 726x16
 layer at (14,238) size 179x32 clip at (15,239) size 177x30

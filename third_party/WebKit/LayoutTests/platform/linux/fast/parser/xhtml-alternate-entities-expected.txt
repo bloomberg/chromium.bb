@@ -11,8 +11,8 @@ layer at (0,0) size 800x192
           text run at (0,0) width 385: "error on line 4 at column 13: Entity 'fnof' not defined"
           text run at (385,0) width 0: " "
       LayoutBlockFlow {h3} at (18,96.16) size 732x23
-        LayoutText {#text} at (0,0) size 430x22
-          text run at (0,0) width 430: "Below is a rendering of the page up to the first error."
+        LayoutText {#text} at (0,0) size 428x22
+          text run at (0,0) width 428: "Below is a rendering of the page up to the first error."
     LayoutBlockFlow (anonymous) at (0,171.88) size 800x20
       LayoutInline {h1} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

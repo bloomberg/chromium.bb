@@ -4,9 +4,9 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
-        LayoutText {#text} at (0,0) size 778x36
-          text run at (0,0) width 319: "You should see identical rows of numbers below. "
-          text run at (318,0) width 460: "Every row should look exactly the same. If any objects are out of order,"
+        LayoutText {#text} at (0,0) size 777x36
+          text run at (0,0) width 318: "You should see identical rows of numbers below. "
+          text run at (317,0) width 460: "Every row should look exactly the same. If any objects are out of order,"
           text run at (0,18) width 148: "then the test has failed."
       LayoutDeprecatedFlexibleBox {DIV} at (0,52) size 784x190
         LayoutDeprecatedFlexibleBox {DIV} at (0,0) size 784x38

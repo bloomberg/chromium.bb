@@ -8,22 +8,22 @@ layer at (0,0) size 785x776 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 0x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (0,2) size 781x20 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 210x19
-                text run at (0,0) width 210: "First cell empty, second auto width"
+              LayoutText {#text} at (0,0) size 209x19
+                text run at (0,0) width 209: "First cell empty, second auto width"
       LayoutTable {TABLE} at (0,29) size 785x29 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x25
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 391x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 229x19
-                text run at (0,0) width 229: "First cell empty, second percent width"
+              LayoutText {#text} at (0,0) size 228x19
+                text run at (0,0) width 228: "First cell empty, second percent width"
       LayoutTable {TABLE} at (0,58) size 785x29 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x25
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 381x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (381,2) size 400x20 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 213x19
-                text run at (0,0) width 213: "First cell empty, second fixed width"
+              LayoutText {#text} at (0,0) size 212x19
+                text run at (0,0) width 212: "First cell empty, second fixed width"
       LayoutTable {TABLE} at (0,87) size 785x29 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x25
           LayoutTableRow {TR} at (0,0) size 781x25
@@ -59,15 +59,15 @@ layer at (0,0) size 785x776 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,11) size 391x2 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,1) size 390x22 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 225x19
-                text run at (1,1) width 225: "First cell empty, table has cellpadding"
+              LayoutText {#text} at (1,1) size 224x19
+                text run at (1,1) width 224: "First cell empty, table has cellpadding"
       LayoutTable {TABLE} at (0,232) size 785x31 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x27
           LayoutTableRow {TR} at (0,1) size 781x25
             LayoutTableCell {TD} at (1,13) size 389x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,3) size 389x20 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 222x19
-                text run at (0,0) width 222: "First cell empty, table has cellspacing"
+              LayoutText {#text} at (0,0) size 221x19
+                text run at (0,0) width 221: "First cell empty, table has cellspacing"
       LayoutTable {TABLE} at (0,263) size 785x29 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x25
           LayoutTableRow {TR} at (0,0) size 781x25
@@ -87,34 +87,34 @@ layer at (0,0) size 785x776 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 391x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 150x19
-                text run at (0,0) width 150: "First row, first cell empty"
+              LayoutText {#text} at (0,0) size 149x19
+                text run at (0,0) width 149: "First row, first cell empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,27) size 391x20 [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 22x19
                 text run at (0,0) width 22: "text"
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 192x19
-                text run at (0,0) width 192: "Second row, first cell not empty"
+              LayoutText {#text} at (0,0) size 191x19
+                text run at (0,0) width 191: "Second row, first cell not empty"
       LayoutTable {TABLE} at (0,375) size 785x54 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x50
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 391x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 150x19
-                text run at (0,0) width 150: "First row, first cell empty"
+              LayoutText {#text} at (0,0) size 149x19
+                text run at (0,0) width 149: "First row, first cell empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,37) size 391x0 [r=1 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 169x19
-                text run at (0,0) width 169: "Second row, first cell empty"
+              LayoutText {#text} at (0,0) size 168x19
+                text run at (0,0) width 168: "Second row, first cell empty"
       LayoutTable {TABLE} at (0,429) size 785x29 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x25
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 391x0 [r=0 c=0 rs=1 cs=2]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 170x19
-                text run at (0,0) width 170: "First cell empty, has colspan"
+              LayoutText {#text} at (0,0) size 169x19
+                text run at (0,0) width 169: "First cell empty, has colspan"
       LayoutTable {TABLE} at (0,458) size 785x54 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x50
           LayoutTableRow {TR} at (0,0) size 781x25
@@ -123,13 +123,13 @@ layer at (0,0) size 785x776 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (0,0) size 22x19
                 text run at (0,0) width 22: "text"
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 294x19
-                text run at (0,0) width 294: "First row, first cell empty, second cell non-empty"
+              LayoutText {#text} at (0,0) size 292x19
+                text run at (0,0) width 292: "First row, first cell empty, second cell non-empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,37) size 391x0 [r=1 c=0 rs=1 cs=2]
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 265x19
-                text run at (0,0) width 265: "Second row, first cell empty with colspan=2"
+              LayoutText {#text} at (0,0) size 264x19
+                text run at (0,0) width 264: "Second row, first cell empty with colspan=2"
       LayoutTable {TABLE} at (0,512) size 785x54 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x50
           LayoutTableRow {TR} at (0,0) size 781x25
@@ -138,52 +138,52 @@ layer at (0,0) size 785x776 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (0,0) width 22: "text"
             LayoutTableCell {TD} at (391,12) size 0x0 [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 294x19
-                text run at (0,0) width 294: "First row, first cell non-empty, second cell empty"
+              LayoutText {#text} at (0,0) size 292x19
+                text run at (0,0) width 292: "First row, first cell non-empty, second cell empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,37) size 391x0 [r=1 c=0 rs=1 cs=2]
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 265x19
-                text run at (0,0) width 265: "Second row, first cell empty with colspan=2"
+              LayoutText {#text} at (0,0) size 264x19
+                text run at (0,0) width 264: "Second row, first cell empty with colspan=2"
       LayoutTable {TABLE} at (0,566) size 785x54 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x50
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 195x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (195,12) size 196x0 [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 223x19
-                text run at (0,0) width 223: "First row, first and second cell empty"
+              LayoutText {#text} at (0,0) size 222x19
+                text run at (0,0) width 222: "First row, first and second cell empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,37) size 391x0 [r=1 c=0 rs=1 cs=2]
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 264x19
-                text run at (0,0) width 264: "Second row, first cell empty, has colspan=2"
+              LayoutText {#text} at (0,0) size 262x19
+                text run at (0,0) width 262: "Second row, first cell empty, has colspan=2"
       LayoutTable {TABLE} at (0,620) size 785x54 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x50
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 195x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (195,12) size 196x0 [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 223x19
-                text run at (0,0) width 223: "First row, first and second cell empty"
+              LayoutText {#text} at (0,0) size 222x19
+                text run at (0,0) width 222: "First row, first and second cell empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,37) size 391x0 [r=1 c=0 rs=1 cs=2]
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 376x19
-                text run at (0,0) width 376: "Second row, first cell empty, has colspan=2 and percent width"
+              LayoutText {#text} at (0,0) size 374x19
+                text run at (0,0) width 374: "Second row, first cell empty, has colspan=2 and percent width"
       LayoutTable {TABLE} at (0,674) size 785x54 [border: (2px solid #000000)]
         LayoutTableSection {TBODY} at (2,2) size 781x50
           LayoutTableRow {TR} at (0,0) size 781x25
             LayoutTableCell {TD} at (0,12) size 391x0 [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {TD} at (391,12) size 0x0 [r=0 c=1 rs=1 cs=1]
             LayoutTableCell {TD} at (391,2) size 390x20 [bgcolor=#FF0000] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 223x19
-                text run at (0,0) width 223: "First row, first and second cell empty"
+              LayoutText {#text} at (0,0) size 222x19
+                text run at (0,0) width 222: "First row, first and second cell empty"
           LayoutTableRow {TR} at (0,25) size 781x25
             LayoutTableCell {TD} at (0,37) size 391x0 [r=1 c=0 rs=1 cs=2]
             LayoutTableCell {TD} at (391,27) size 390x20 [bgcolor=#FF0000] [r=1 c=2 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 360x19
-                text run at (0,0) width 360: "Second row, first cell empty, has colspan=2 and fixed width"
+              LayoutText {#text} at (0,0) size 358x19
+                text run at (0,0) width 358: "Second row, first cell empty, has colspan=2 and fixed width"
       LayoutBlockFlow (anonymous) at (0,728) size 785x20
         LayoutText {#text} at (0,0) size 94x19
           text run at (0,0) width 94: "One empty cell:"

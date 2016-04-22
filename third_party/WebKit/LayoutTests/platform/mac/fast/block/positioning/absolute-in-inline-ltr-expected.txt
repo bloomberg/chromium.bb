@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
           text run at (0,54) width 321: "aute irure dolor in reprehenderit in voluptate velit."
 layer at (8,42) size 576x56
   LayoutInline (relative positioned) {SPAN} at (0,0) size 576x56 [bgcolor=#008000] [border: (1px solid #808080) (20px solid #FFA500) (1px solid #808080) (20px solid #0000FF)]
-    LayoutText {#text} at (231,0) size 569x36
-      text run at (231,0) width 338: "con a pariatur. Excepteur sint occaecat cupidatat non"
+    LayoutText {#text} at (231,0) size 568x36
+      text run at (231,0) width 337: "con a pariatur. Excepteur sint occaecat cupidatat non"
       text run at (0,18) width 376: "proident, sunt in culp qui officia deserunt mollit animequs "
     LayoutText {#text} at (375,18) size 576x36
       text run at (375,18) width 201: "ILOREM ipsum dol sDuis aute"

@@ -6,19 +6,19 @@ layer at (0,0) size 785x658 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {P} at (0,0) size 769x36
         LayoutText {#text} at (0,0) size 54x18
           text run at (0,0) width 54: "Test for "
-        LayoutInline {I} at (0,0) size 756x36
+        LayoutInline {I} at (0,0) size 755x36
           LayoutInline {A} at (0,0) size 305x18 [color=#0000EE]
             LayoutText {#text} at (53,0) size 305x18
               text run at (53,0) width 305: "http://bugs.webkit.org/show_bug.cgi?id=14875"
-          LayoutText {#text} at (357,0) size 756x36
+          LayoutText {#text} at (357,0) size 755x36
             text run at (357,0) width 5: " "
-            text run at (361,0) width 395: "Textarea with nowrap - left/right nav, Up/down nav both hide"
+            text run at (361,0) width 394: "Textarea with nowrap - left/right nav, Up/down nav both hide"
             text run at (0,18) width 24: "text"
         LayoutText {#text} at (23,18) size 5x18
           text run at (23,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 769x18
-        LayoutText {#text} at (0,0) size 467x18
-          text run at (0,0) width 467: "The letter A should be fully visible in each one of the eight boxes below."
+        LayoutText {#text} at (0,0) size 466x18
+          text run at (0,0) width 466: "The letter A should be fully visible in each one of the eight boxes below."
 layer at (28,98) size 150x50 clip at (28,98) size 150x35 scrollX 50.00 scrollWidth 200
   LayoutBlockFlow {DIV} at (20,90) size 150x50
     LayoutBlockFlow {DIV} at (0,0) size 200x18

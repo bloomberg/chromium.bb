@@ -13,9 +13,9 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (611,0) size 756x36
             text run at (611,0) width 5: " "
             text run at (615,0) width 141: "Image thumbnails are"
-            text run at (0,18) width 197: "misplaced on forum.2ostrov.ru"
-        LayoutText {#text} at (196,18) size 5x18
-          text run at (196,18) width 5: "."
+            text run at (0,18) width 196: "misplaced on forum.2ostrov.ru"
+        LayoutText {#text} at (195,18) size 5x18
+          text run at (195,18) width 5: "."
       LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,70) size 784x18
         LayoutText {#text} at (0,0) size 235x18

@@ -4,8 +4,8 @@ layer at (0,0) size 800x92
   LayoutBlockFlow {HTML} at (0,0) size 800x92
     LayoutBlockFlow {BODY} at (8,16) size 784x68
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 222x17
-          text run at (0,0) width 222: "The background should be yellow."
+        LayoutText {#text} at (0,0) size 221x17
+          text run at (0,0) width 221: "The background should be yellow."
       LayoutBlockFlow (anonymous) at (0,34) size 784x34
         LayoutMenuList {SELECT} at (0,0) size 168x34 [bgcolor=#FAFFBD] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (6,7) size 156x20

@@ -14,8 +14,8 @@ layer at (0,0) size 800x600
             text run at (0,18) width 195: "not take scrolling into account"
         LayoutText {#text} at (194,18) size 785x36
           text run at (194,18) width 85: " by scrolling "
-          text run at (278,18) width 421: "the above text all the way to the right, clicking the last letter, and "
-          text run at (698,18) width 87: "verifying that"
+          text run at (278,18) width 420: "the above text all the way to the right, clicking the last letter, and "
+          text run at (697,18) width 88: "verifying that"
           text run at (0,36) width 323: "the correct caret position is reported to the editing "
           text run at (323,36) width 58: "delegate."
 layer at (0,0) size 210x33 clip at (0,0) size 210x18 scrollX 39.00 scrollWidth 249

@@ -10,12 +10,12 @@ layer at (0,0) size 800x600
             text run at (493,0) width 189: "It can wrap to multiple lines. "
             text run at (681,0) width 115: "The center should"
             text run at (0,18) width 279: "be filled with an olive-bordered green box. "
-            text run at (278,18) width 510: "It should start beneath the header, end above the footer, and fill the width of the"
-            text run at (0,36) width 112: "browser window."
+            text run at (278,18) width 509: "It should start beneath the header, end above the footer, and fill the width of the"
+            text run at (0,36) width 111: "browser window."
         LayoutBlockFlow {DIV} at (0,582) size 800x18
-          LayoutText {#text} at (0,0) size 679x17
-            text run at (0,0) width 415: "This footer should remain at the bottom of the browser window. "
-            text run at (414,0) width 265: "It can wrap to multiple lines if necessary."
+          LayoutText {#text} at (0,0) size 676x17
+            text run at (0,0) width 414: "This footer should remain at the bottom of the browser window. "
+            text run at (413,0) width 263: "It can wrap to multiple lines if necessary."
 layer at (0,54) size 812x528 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutIFrame {IFRAME} at (0,54) size 812x528 [bgcolor=#008000] [border: (10px solid #808000)]
     layer at (0,0) size 792x508

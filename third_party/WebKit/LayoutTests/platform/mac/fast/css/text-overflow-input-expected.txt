@@ -4,8 +4,8 @@ layer at (0,0) size 800x266
   LayoutBlockFlow {HTML} at (0,0) size 800x266
     LayoutBlockFlow {BODY} at (8,16) size 784x234
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 315x18
-          text run at (0,0) width 315: "This test is a basic check for using text-overflow."
+        LayoutText {#text} at (0,0) size 314x18
+          text run at (0,0) width 314: "This test is a basic check for using text-overflow."
       LayoutBlockFlow {P} at (0,34) size 784x56
         LayoutText {#text} at (0,0) size 489x18
           text run at (0,0) width 489: "Apply \"text-overflow:clip\" to inputs. The following input should be clipped:"
@@ -140,26 +140,26 @@ layer at (555,71) size 125x13 scrollWidth 306
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 305x13
       text run at (0,0) width 305: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
-layer at (11,90) size 125x13 scrollX 159.00 scrollWidth 284
+layer at (11,90) size 125x13 scrollX 158.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (-159,0) size 285x13
-      text run at (-159,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-158,0) size 284x13
+      text run at (-158,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,90) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,90) size 108x13 scrollX 176.00 scrollWidth 284
+layer at (152,90) size 108x13 scrollX 175.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (-176,0) size 285x13
-      text run at (-176,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-175,0) size 284x13
+      text run at (-175,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (152,90) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-layer at (283,90) size 125x13 scrollX 159.00 scrollWidth 284
+layer at (283,90) size 125x13 scrollX 158.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (-159,0) size 285x13
-      text run at (-159,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,90) size 108x13 scrollX 176.00 scrollWidth 284
+    LayoutText {#text} at (-158,0) size 284x13
+      text run at (-158,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (424,90) size 108x13 scrollX 175.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (-176,0) size 285x13
-      text run at (-176,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-175,0) size 284x13
+      text run at (-175,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,90) size 125x13 scrollX 179.00 scrollWidth 305
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-179,0) size 305x13
@@ -188,26 +188,26 @@ layer at (555,143) size 125x13 scrollWidth 306
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 305x13
       text run at (0,0) width 305: "\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}\x{2022}"
-layer at (11,162) size 125x13 scrollX 159.00 scrollWidth 284
+layer at (11,162) size 125x13 scrollX 158.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (3,3) size 125x13 [color=#A9A9A9]
-    LayoutText {#text} at (-159,0) size 285x13
-      text run at (-159,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-158,0) size 284x13
+      text run at (-158,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,162) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,162) size 108x13 scrollX 176.00 scrollWidth 284
+layer at (152,162) size 108x13 scrollX 175.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (-176,0) size 285x13
-      text run at (-176,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-175,0) size 284x13
+      text run at (-175,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (152,162) size 108x13
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-layer at (283,162) size 125x13 scrollX 159.00 scrollWidth 284
+layer at (283,162) size 125x13 scrollX 158.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (-159,0) size 285x13
-      text run at (-159,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,162) size 108x13 scrollX 176.00 scrollWidth 284
+    LayoutText {#text} at (-158,0) size 284x13
+      text run at (-158,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (424,162) size 108x13 scrollX 175.00 scrollWidth 284
   LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (-176,0) size 285x13
-      text run at (-176,0) width 284: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+    LayoutText {#text} at (-175,0) size 284x13
+      text run at (-175,0) width 283: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,162) size 125x13 scrollX 179.00 scrollWidth 305
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-179,0) size 305x13

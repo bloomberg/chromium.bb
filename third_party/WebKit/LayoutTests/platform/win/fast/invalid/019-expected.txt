@@ -8,13 +8,13 @@ layer at (0,0) size 800x600
           LayoutInline {NOBR} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,0) size 784x65
         LayoutBlockFlow (anonymous) at (0,0) size 784x36
-          LayoutInline {B} at (0,0) size 772x35
+          LayoutInline {B} at (0,0) size 770x35
             LayoutInline {NOBR} at (0,0) size 223x17
               LayoutText {#text} at (0,0) size 223x17
                 text run at (0,0) width 223: "This text is in a div inside a nobr"
-            LayoutText {#text} at (222,0) size 772x35
-              text run at (222,0) width 550: "More text that should not be in the nobr, i.e., the nobr should have closed the div"
-              text run at (0,18) width 127: "inside it implicitly."
+            LayoutText {#text} at (222,0) size 770x35
+              text run at (222,0) width 548: "More text that should not be in the nobr, i.e., the nobr should have closed the div"
+              text run at (0,18) width 126: "inside it implicitly."
         LayoutBlockFlow {PRE} at (0,49) size 784x16
           LayoutText {#text} at (0,0) size 272x16
             text run at (0,0) width 272: "A pre tag outside everything else."

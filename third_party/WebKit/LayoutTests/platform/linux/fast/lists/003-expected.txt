@@ -16,11 +16,11 @@ layer at (0,0) size 800x380
           LayoutInline {CODE} at (0,0) size 88x16
             LayoutText {#text} at (164,23) size 88x16
               text run at (164,23) width 88: "float: left"
-          LayoutText {#text} at (252,20) size 30x19
-            text run at (252,20) width 30: " div. "
-          LayoutInline {A} at (0,0) size 412x39 [color=#0000EE]
-            LayoutText {#text} at (282,20) size 412x39
-              text run at (282,20) width 130: "Screenshot of correct"
+          LayoutText {#text} at (252,20) size 29x19
+            text run at (252,20) width 29: " div. "
+          LayoutInline {A} at (0,0) size 411x39 [color=#0000EE]
+            LayoutText {#text} at (280,20) size 411x39
+              text run at (280,20) width 131: "Screenshot of correct"
               text run at (0,40) width 52: "behavior"
           LayoutText {#text} at (52,40) size 8x19
             text run at (52,40) width 8: "; "

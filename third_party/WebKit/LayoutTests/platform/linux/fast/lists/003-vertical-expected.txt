@@ -16,18 +16,18 @@ layer at (0,0) size 440x600
           LayoutInline {CODE} at (0,0) size 16x88
             LayoutText {#text} at (20,254) size 16x88
               text run at (20,254) width 88: "float: left"
-          LayoutText {#text} at (40,0) size 19x26
-            text run at (40,0) width 26: "div. "
-          LayoutInline {A} at (0,0) size 19x186 [color=#0000EE]
-            LayoutText {#text} at (40,26) size 19x186
-              text run at (40,26) width 186: "Screenshot of correct behavior"
-          LayoutText {#text} at (40,212) size 19x8
-            text run at (40,212) width 8: "; "
-          LayoutInline {A} at (0,0) size 19x119 [color=#0000EE]
-            LayoutText {#text} at (40,220) size 19x119
-              text run at (40,220) width 119: "screenshot of Safari"
-          LayoutText {#text} at (40,339) size 19x4
-            text run at (40,339) width 4: "."
+          LayoutText {#text} at (40,0) size 19x25
+            text run at (40,0) width 25: "div. "
+          LayoutInline {A} at (0,0) size 19x187 [color=#0000EE]
+            LayoutText {#text} at (40,24) size 19x187
+              text run at (40,24) width 186: "Screenshot of correct behavior"
+          LayoutText {#text} at (40,210) size 19x9
+            text run at (40,210) width 8: "; "
+          LayoutInline {A} at (0,0) size 19x120 [color=#0000EE]
+            LayoutText {#text} at (40,218) size 19x120
+              text run at (40,218) width 119: "screenshot of Safari"
+          LayoutText {#text} at (40,337) size 19x5
+            text run at (40,337) width 4: "."
         LayoutBlockFlow {P} at (92,0) size 40x350.39
           LayoutText {#text} at (0,0) size 39x348
             text run at (0,0) width 348: "This bug only occurs on pages with a standards-compliant"

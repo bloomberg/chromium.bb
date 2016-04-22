@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow {P} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 746x18
-          text run at (0,0) width 746: "The following is a test for DOM manipulation within <ruby>: Removing a ruby base object, leaving the base empty."
+        LayoutText {#text} at (0,0) size 745x18
+          text run at (0,0) width 745: "The following is a test for DOM manipulation within <ruby>: Removing a ruby base object, leaving the base empty."
       LayoutBlockFlow {P} at (0,34) size 784x18
         LayoutText {#text} at (0,0) size 448x18
           text run at (0,0) width 448: "Both lines should look identical (the first line is the one manipulated)."

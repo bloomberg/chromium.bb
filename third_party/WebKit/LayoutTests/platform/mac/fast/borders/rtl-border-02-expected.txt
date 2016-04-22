@@ -4,9 +4,9 @@ layer at (0,0) size 785x680 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 785x680.16
     LayoutBlockFlow {BODY} at (8,16) size 769x656.16
       LayoutBlockFlow {P} at (0,0) size 769x36
-        LayoutText {#text} at (0,0) size 762x36
-          text run at (0,0) width 762: "There should be a SPAN in the middle of all four paragraphs that has padding, a green border, and a margin on the left,"
-          text run at (0,18) width 369: "and padding, an orange border, and a margin on the right."
+        LayoutText {#text} at (0,0) size 761x36
+          text run at (0,0) width 761: "There should be a SPAN in the middle of all four paragraphs that has padding, a green border, and a margin on the left,"
+          text run at (0,18) width 368: "and padding, an orange border, and a margin on the right."
       LayoutBlockFlow {H1} at (0,52) size 769x18
         LayoutText {#text} at (0,0) size 91x18
           text run at (0,0) width 91: "Left-to-Right"
@@ -27,8 +27,8 @@ layer at (0,0) size 785x680 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 741x116 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (440,39) size 741x114
               text run at (440,39) width 242 RTL override: "laboris nisi ut aliquip ex ea commodo"
-              text run at (0,71) width 367 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-              text run at (366,71) width 332 RTL override: "consequat. Duis aute irure dolor in reprehenderit in "
+              text run at (0,71) width 366 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+              text run at (365,71) width 332 RTL override: "consequat. Duis aute irure dolor in reprehenderit in "
               text run at (0,103) width 524 RTL override: "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem"
               text run at (523,103) width 218 RTL override: "Excepteur sint occaecat cupidatat "
               text run at (45,135) width 81 RTL override: "ipsum dolor "
@@ -54,7 +54,7 @@ layer at (0,0) size 785x680 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {SPAN} at (0,0) size 741x116 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (75,39) size 741x114
               text run at (75,39) width 242 RTL override: "laboris nisi ut aliquip ex ea commodo"
-              text run at (59,71) width 367 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+              text run at (60,71) width 366 RTL override: "voluptate velit esse cillum dolore eu fugiat nulla pariatur."
               text run at (426,71) width 331 RTL override: "consequat. Duis aute irure dolor in reprehenderit in "
               text run at (16,103) width 524 RTL override: "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem"
               text run at (539,103) width 218 RTL override: "Excepteur sint occaecat cupidatat "

@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (269,18) size 5x18
           text run at (269,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 625x18
-          text run at (0,0) width 625: "If the browser does not crash as you click to the right of each of the lines below, it passes the test."
+        LayoutText {#text} at (0,0) size 624x18
+          text run at (0,0) width 624: "If the browser does not crash as you click to the right of each of the lines below, it passes the test."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,96) size 784x72
         LayoutTable (anonymous) at (0,0) size 182x72

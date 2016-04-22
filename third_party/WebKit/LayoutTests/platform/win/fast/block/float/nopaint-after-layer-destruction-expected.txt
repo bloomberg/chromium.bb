@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (277,18) size 5x17
           text run at (277,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 282x17
-          text run at (0,0) width 282: "There should be a solid green square below."
+        LayoutText {#text} at (0,0) size 281x17
+          text run at (0,0) width 281: "There should be a solid green square below."
       LayoutBlockFlow {HR} at (0,86) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (floating) {DIV} at (0,96) size 100x100 [bgcolor=#008000]

@@ -8,8 +8,8 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 106x102
             LayoutTableCell {TD} at (2,2) size 102x102 [bgcolor=#CCCCCC] [r=0 c=0 rs=1 cs=1]
       LayoutBlockFlow (anonymous) at (0,106) size 784x126
-        LayoutText {#text} at (0,0) size 780x36
-          text run at (0,0) width 780: "Here it is: a gray, one-cell, no-width-specified table, with a 100x100 scrolling (overflow:auto) div inside. In this div, there"
+        LayoutText {#text} at (0,0) size 778x36
+          text run at (0,0) width 778: "Here it is: a gray, one-cell, no-width-specified table, with a 100x100 scrolling (overflow:auto) div inside. In this div, there"
           text run at (0,18) width 377: "are floating (float: left) span tags with content inside (text)."
         LayoutBR {BR} at (376,32) size 1x0
         LayoutBR {BR} at (0,36) size 0x18
@@ -19,8 +19,8 @@ layer at (0,0) size 800x600
         LayoutInline {I} at (0,0) size 138x18
           LayoutText {#text} at (198,72) size 138x18
             text run at (198,72) width 138: "content inside the div"
-        LayoutText {#text} at (335,72) size 779x36
-          text run at (335,72) width 444: ", not the height of the div. This behavior does not occur if the content"
+        LayoutText {#text} at (335,72) size 778x36
+          text run at (335,72) width 443: ", not the height of the div. This behavior does not occur if the content"
           text run at (0,90) width 87: "is not floated."
         LayoutBR {BR} at (86,104) size 1x0
         LayoutBR {BR} at (0,108) size 0x18

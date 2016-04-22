@@ -4,10 +4,10 @@ layer at (0,0) size 800x291
   LayoutBlockFlow {HTML} at (0,0) size 800x291
     LayoutBlockFlow {BODY} at (8,16) size 784x243
       LayoutBlockFlow {P} at (0,0) size 784x19
-        LayoutText {#text} at (0,1) size 522x18
-          text run at (0,1) width 507: "The following two blocks should be identical, including overflow. (Force bidi: "
-          text run at (506,1) width 11 RTL: "\x{5D0}"
-          text run at (516,1) width 6: ")"
+        LayoutText {#text} at (0,1) size 521x18
+          text run at (0,1) width 506: "The following two blocks should be identical, including overflow. (Force bidi: "
+          text run at (505,1) width 11 RTL: "\x{5D0}"
+          text run at (515,1) width 6: ")"
       LayoutBlockFlow {DIV} at (32,51) size 720x80 [color=#FFFF00] [bgcolor=#000000]
         LayoutTable (anonymous) at (24,24) size 261x32
           LayoutTableSection (anonymous) at (0,0) size 261x32

@@ -44,14 +44,14 @@ layer at (0,0) size 800x600
                   text run at (1,21) width 57: "be purple"
       LayoutBlockFlow {DIV} at (0,194) size 784x128
         LayoutBlockFlow {P} at (0,0) size 784x20 [color=#000080]
-          LayoutText {#text} at (0,0) size 365x19
-            text run at (0,0) width 365: "This should be navy, as this is the first paragraph in this page."
+          LayoutText {#text} at (0,0) size 364x19
+            text run at (0,0) width 364: "This should be navy, as this is the first paragraph in this page."
         LayoutBlockFlow {P} at (0,36) size 784x20 [color=#FF0000]
           LayoutText {#text} at (0,0) size 378x19
             text run at (0,0) width 378: "This should be red, as this is the second paragraph in this page."
         LayoutBlockFlow {P} at (0,72) size 784x20 [color=#000080]
-          LayoutText {#text} at (0,0) size 370x19
-            text run at (0,0) width 370: "This should be navy, as this is the third paragraph in this page."
+          LayoutText {#text} at (0,0) size 369x19
+            text run at (0,0) width 369: "This should be navy, as this is the third paragraph in this page."
         LayoutBlockFlow {P} at (0,108) size 784x20 [color=#FF0000]
           LayoutText {#text} at (0,0) size 370x19
             text run at (0,0) width 370: "This should be red, as this is the fourth paragraph in this page."

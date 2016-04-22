@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 749x36
           text run at (0,0) width 585: "Select the text in the text field using horizontal mouse movements, then drag up and down. "
           text run at (584,0) width 165: "The text should not move"
-          text run at (0,18) width 65: "vertically."
+          text run at (0,18) width 64: "vertically."
 layer at (11,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 66x13

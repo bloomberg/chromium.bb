@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
           text run at (718,0) width 65: "The struts"
           text run at (0,18) width 260: "are bordered in green and are inflexible. "
           text run at (259,18) width 523: "The springs are bordered in purple and should grow and shrink as you resize your"
-          text run at (0,36) width 116: "browser window. "
-          text run at (115,36) width 644: "The black box should get taller when you make your window wider and get shorter when you shrink"
-          text run at (0,54) width 145: "your browser window."
+          text run at (0,36) width 115: "browser window. "
+          text run at (114,36) width 643: "The black box should get taller when you make your window wider and get shorter when you shrink"
+          text run at (0,54) width 144: "your browser window."
       LayoutDeprecatedFlexibleBox {DIV} at (0,88) size 784x70 [border: (2px solid #000000)]
         LayoutDeprecatedFlexibleBox {DIV} at (6,6) size 40.45x58 [border: (2px solid #008000)]
           LayoutBlockFlow (anonymous) at (2,2) size 36.45x54
