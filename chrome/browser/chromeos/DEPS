@@ -9,6 +9,7 @@ include_rules = [
   "+cros",
   "+dbus",
   "+device/bluetooth",
+  "+mash/public/interfaces",
   "+media/audio/sounds",  # For system sounds
   "+media/base/media_switches.h",  # For media command line switches.
   "+media/mojo/interfaces",  # For platform verification mojom interface.

@@ -86,6 +86,7 @@ source_set("chromeos") {
     "//dbus",
     "//device/bluetooth",
     "//device/hid",
+    "//mash/public/interfaces",
     "//media",
     "//media/mojo/interfaces",
     "//mojo/common",

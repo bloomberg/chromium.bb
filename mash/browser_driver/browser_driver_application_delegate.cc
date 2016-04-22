@@ -9,8 +9,12 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "components/mus/public/cpp/event_matcher.h"
+#include "mash/public/interfaces/launchable.mojom.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+
+using mash::mojom::LaunchablePtr;
+using mash::mojom::LaunchMode;
 
 namespace mash {
 namespace browser_driver {
@@ -75,18 +79,24 @@ bool BrowserDriverApplicationDelegate::ShellConnectionLost() {
 
 void BrowserDriverApplicationDelegate::OnAccelerator(
     uint32_t id, mus::mojom::EventPtr event) {
+  uint32_t option = mojom::kWindow;
   switch (static_cast<Accelerator>(id)) {
     case Accelerator::NewWindow:
+      option = mojom::kWindow;
+      break;
     case Accelerator::NewTab:
+      option = mojom::kDocument;
+      break;
     case Accelerator::NewIncognitoWindow:
-      connector_->Connect("exe:chrome");
-      // TODO(beng): have Chrome export a service that allows it to be driven by
-      //             this driver, e.g. to open new tabs, incognito windows, etc.
+      option = mojom::kIncognitoWindow;
       break;
     default:
       NOTREACHED();
       break;
   }
+  LaunchablePtr launchable;
+  connector_->ConnectToInterface("exe:chrome", &launchable);
+  launchable->Launch(option, LaunchMode::MAKE_NEW);
 }
 
 void BrowserDriverApplicationDelegate::AddAccelerators() {
@@ -113,4 +123,4 @@ void BrowserDriverApplicationDelegate::AddAccelerators() {
 }
 
 }  // namespace browser_driver
-}  // namespace main
+}  // namespace mash
