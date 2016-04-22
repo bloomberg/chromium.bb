@@ -105,19 +105,19 @@ void BundleData::GetOutputsAsSourceFiles(
   if (!asset_catalog_sources_.empty())
     outputs_as_source->push_back(GetCompiledAssetCatalogPath());
 
-  if (!root_dir_.empty())
+  if (!root_dir_.is_null())
     outputs_as_source->push_back(GetBundleRootDirOutput(settings));
 }
 
 SourceFile BundleData::GetCompiledAssetCatalogPath() const {
   DCHECK(!asset_catalog_sources_.empty());
-  std::string assets_car_path = resources_dir_ + "/Assets.car";
+  std::string assets_car_path = resources_dir_.value() + "/Assets.car";
   return SourceFile(SourceFile::SWAP_IN, &assets_car_path);
 }
 
 SourceFile BundleData::GetBundleRootDirOutput(const Settings* settings) const {
   const SourceDir& build_dir = settings->build_settings()->build_dir();
-  std::string bundle_root_relative = RebasePath(root_dir(), build_dir);
+  std::string bundle_root_relative = RebasePath(root_dir().value(), build_dir);
 
   size_t first_component = bundle_root_relative.find('/');
   if (first_component != std::string::npos) {
@@ -127,5 +127,5 @@ SourceFile BundleData::GetBundleRootDirOutput(const Settings* settings) const {
     outermost_bundle_dir.AppendToString(&return_value);
     return SourceFile(SourceFile::SWAP_IN, &return_value);
   }
-  return SourceFile(root_dir());
+  return SourceFile(root_dir().value());
 }

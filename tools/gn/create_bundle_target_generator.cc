@@ -25,7 +25,7 @@ void CreateBundleTargetGenerator::DoRun() {
   target_->set_output_type(Target::CREATE_BUNDLE);
 
   BundleData& bundle_data = target_->bundle_data();
-  if (!GetBundleDir(std::string(),
+  if (!GetBundleDir(SourceDir(),
                     variables::kBundleRootDir,
                     &bundle_data.root_dir()))
     return;
@@ -44,26 +44,26 @@ void CreateBundleTargetGenerator::DoRun() {
 }
 
 bool CreateBundleTargetGenerator::GetBundleDir(
-    const std::string& bundle_root_dir,
+    const SourceDir& bundle_root_dir,
     const base::StringPiece& name,
-    std::string* bundle_dir) {
+    SourceDir* bundle_dir) {
   const Value* value = scope_->GetValue(name, true);
   if (!value)
     return true;
   if (!value->VerifyTypeIs(Value::STRING, err_))
     return false;
-  const std::string& str = value->string_value();
+  std::string str = value->string_value();
   if (!EnsureStringIsInOutputDir(GetBuildSettings()->build_dir(), str,
                                  value->origin(), err_))
     return false;
-  if (str != bundle_root_dir &&
-      !IsStringInOutputDir(SourceDir(bundle_root_dir), str)) {
+  if (str != bundle_root_dir.value() &&
+      !IsStringInOutputDir(bundle_root_dir, str)) {
     *err_ = Err(value->origin(), "Path is not in bundle root dir.",
         "The given file should be in the bundle root directory or below.\n"
         "Normally you would do \"$bundle_root_dir/foo\". I interpreted this\n"
         "as \"" + str + "\".");
     return false;
   }
-  bundle_dir->assign(value->string_value());
+  bundle_dir->SwapValue(&str);
   return true;
 }

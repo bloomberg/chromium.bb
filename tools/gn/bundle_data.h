@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "tools/gn/bundle_file_rule.h"
+#include "tools/gn/source_dir.h"
 #include "tools/gn/unique_vector.h"
 
 class OutputFile;
@@ -85,17 +86,17 @@ class BundleData {
   BundleFileRules& file_rules() { return file_rules_; }
   const BundleFileRules& file_rules() const { return file_rules_; }
 
-  std::string& root_dir() { return root_dir_; }
-  const std::string& root_dir() const { return root_dir_; }
+  SourceDir& root_dir() { return root_dir_; }
+  const SourceDir& root_dir() const { return root_dir_; }
 
-  std::string& resources_dir() { return resources_dir_; }
-  const std::string& resources_dir() const { return resources_dir_; }
+  SourceDir& resources_dir() { return resources_dir_; }
+  const SourceDir& resources_dir() const { return resources_dir_; }
 
-  std::string& executable_dir() { return executable_dir_; }
-  const std::string& executable_dir() const { return executable_dir_; }
+  SourceDir& executable_dir() { return executable_dir_; }
+  const SourceDir& executable_dir() const { return executable_dir_; }
 
-  std::string& plugins_dir() { return plugins_dir_; }
-  const std::string& plugins_dir() const { return plugins_dir_; }
+  SourceDir& plugins_dir() { return plugins_dir_; }
+  const SourceDir& plugins_dir() const { return plugins_dir_; }
 
   // Recursive collection of all bundle_data that the target depends on.
   const UniqueTargets& bundle_deps() const { return bundle_deps_; }
@@ -107,10 +108,10 @@ class BundleData {
 
   // All those values are subdirectories relative to root_build_dir, and apart
   // from root_dir, they are either equal to root_dir_ or subdirectories of it.
-  std::string root_dir_;
-  std::string resources_dir_;
-  std::string executable_dir_;
-  std::string plugins_dir_;
+  SourceDir root_dir_;
+  SourceDir resources_dir_;
+  SourceDir executable_dir_;
+  SourceDir plugins_dir_;
 };
 
 #endif  // TOOLS_GN_BUNDLE_DATA_H_

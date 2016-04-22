@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "tools/gn/target_generator.h"
 
+class SourceDir;
+
 // Populates a Target with the values from a create_bundle rule.
 class CreateBundleTargetGenerator : public TargetGenerator {
  public:
@@ -21,9 +23,9 @@ class CreateBundleTargetGenerator : public TargetGenerator {
   void DoRun() override;
 
  private:
-  bool GetBundleDir(const std::string& bundle_root_dir,
+  bool GetBundleDir(const SourceDir& bundle_root_dir,
                     const base::StringPiece& name,
-                    std::string* bundle_dir);
+                    SourceDir* bundle_dir);
 
   DISALLOW_COPY_AND_ASSIGN(CreateBundleTargetGenerator);
 };

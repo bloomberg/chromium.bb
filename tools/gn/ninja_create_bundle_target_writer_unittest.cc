@@ -14,10 +14,11 @@
 namespace {
 
 void SetupBundleDataDir(BundleData* bundle_data, const std::string& root_dir) {
-  bundle_data->root_dir().assign(root_dir + "/bar.bundle");
-  bundle_data->resources_dir().assign(bundle_data->root_dir() + "/Resources");
-  bundle_data->executable_dir().assign(bundle_data->root_dir() + "/Executable");
-  bundle_data->plugins_dir().assign(bundle_data->root_dir() + "/PlugIns");
+  std::string bundle_root_dir = root_dir + "/bar.bundle";
+  bundle_data->root_dir() = SourceDir(bundle_root_dir);
+  bundle_data->resources_dir() = SourceDir(bundle_root_dir + "/Resources");
+  bundle_data->executable_dir() = SourceDir(bundle_root_dir + "/Executable");
+  bundle_data->plugins_dir() = SourceDir(bundle_root_dir + "/PlugIns");
 }
 
 }  // namespace
@@ -115,10 +116,11 @@ TEST(NinjaCreateBundleTargetWriter, BundleRootDirOutput) {
   target.set_output_type(Target::CREATE_BUNDLE);
 
   const std::string bundle_root_dir("//out/Debug/bar.bundle/Contents");
-  target.bundle_data().root_dir().assign(bundle_root_dir);
-  target.bundle_data().resources_dir().assign(bundle_root_dir + "/Resources");
-  target.bundle_data().executable_dir().assign(bundle_root_dir + "/MacOS");
-  target.bundle_data().plugins_dir().assign(bundle_root_dir + "/Plug Ins");
+  target.bundle_data().root_dir() = SourceDir(bundle_root_dir);
+  target.bundle_data().resources_dir() =
+      SourceDir(bundle_root_dir + "/Resources");
+  target.bundle_data().executable_dir() = SourceDir(bundle_root_dir + "/MacOS");
+  target.bundle_data().plugins_dir() = SourceDir(bundle_root_dir + "/Plug Ins");
 
   std::vector<SourceFile> sources;
   sources.push_back(SourceFile("//foo/input1.txt"));

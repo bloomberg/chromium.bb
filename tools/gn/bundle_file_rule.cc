@@ -29,16 +29,16 @@ SourceFile BundleFileRule::ApplyPatternToSource(
         output_path.append(subrange.literal);
         break;
       case SUBSTITUTION_BUNDLE_ROOT_DIR:
-        output_path.append(bundle_data.root_dir());
+        output_path.append(bundle_data.root_dir().value());
         break;
       case SUBSTITUTION_BUNDLE_RESOURCES_DIR:
-        output_path.append(bundle_data.resources_dir());
+        output_path.append(bundle_data.resources_dir().value());
         break;
       case SUBSTITUTION_BUNDLE_EXECUTABLE_DIR:
-        output_path.append(bundle_data.executable_dir());
+        output_path.append(bundle_data.executable_dir().value());
         break;
       case SUBSTITUTION_BUNDLE_PLUGINS_DIR:
-        output_path.append(bundle_data.plugins_dir());
+        output_path.append(bundle_data.plugins_dir().value());
         break;
       default:
         output_path.append(SubstitutionWriter::GetSourceSubstitution(
