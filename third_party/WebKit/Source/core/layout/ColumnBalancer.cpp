@@ -14,7 +14,6 @@ ColumnBalancer::ColumnBalancer(const LayoutMultiColumnSet& columnSet, LayoutUnit
     : m_columnSet(columnSet)
     , m_logicalTopInFlowThread(logicalTopInFlowThread)
     , m_logicalBottomInFlowThread(logicalBottomInFlowThread)
-    , m_previousBreakAfterValue(BreakAuto)
 {
 }
 
@@ -41,6 +40,10 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
     const LayoutFlowThread* flowThread = columnSet().flowThread();
     bool isHorizontalWritingMode = flowThread->isHorizontalWritingMode();
 
+    // The break-after value from the previous in-flow block-level object to be joined with the
+    // break-before value of the next in-flow block-level sibling.
+    EBreak previousBreakAfterValue = BreakAuto;
+
     // Look for breaks between and inside block-level children. Even if this is a block flow with
     // inline children, there may be interesting floats to examine here.
     for (const LayoutObject* child = box.slowFirstChild(); child; child = child->nextSibling()) {
@@ -66,13 +69,13 @@ void ColumnBalancer::traverseSubtree(const LayoutBox& box)
         LayoutUnit offsetForThisChild = childBox.isTableRow() ? LayoutUnit() : childBox.logicalTop();
         m_flowThreadOffset += offsetForThisChild;
 
-        examineBoxAfterEntering(childBox);
+        examineBoxAfterEntering(childBox, previousBreakAfterValue);
         // Unless the child is unsplittable, or if the child establishes an inner multicol
         // container, we descend into its subtree for further examination.
         if (childBox.getPaginationBreakability() != LayoutBox::ForbidBreaks
             && (!childBox.isLayoutBlockFlow() || !toLayoutBlockFlow(childBox).multiColumnFlowThread()))
             traverseSubtree(childBox);
-        m_previousBreakAfterValue = childBox.breakAfter();
+        previousBreakAfterValue = childBox.breakAfter();
         examineBoxBeforeLeaving(childBox);
 
         m_flowThreadOffset -= offsetForThisChild;
@@ -99,10 +102,10 @@ LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const
     return m_contentRuns[index].columnLogicalHeight(startOffset);
 }
 
-void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box)
+void InitialColumnHeightFinder::examineBoxAfterEntering(const LayoutBox& box, EBreak previousBreakAfterValue)
 {
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
-        if (box.needsForcedBreakBefore(previousBreakAfterValue())) {
+        if (box.needsForcedBreakBefore(previousBreakAfterValue)) {
             addContentRun(flowThreadOffset());
         } else {
             ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());
@@ -240,13 +243,13 @@ MinimumSpaceShortageFinder::MinimumSpaceShortageFinder(const LayoutMultiColumnSe
     traverse();
 }
 
-void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box)
+void MinimumSpaceShortageFinder::examineBoxAfterEntering(const LayoutBox& box, EBreak previousBreakAfterValue)
 {
     LayoutBox::PaginationBreakability breakability = box.getPaginationBreakability();
 
     // Look for breaks before the child box.
     if (isLogicalTopWithinBounds(flowThreadOffset() - box.paginationStrut())) {
-        if (box.needsForcedBreakBefore(previousBreakAfterValue())) {
+        if (box.needsForcedBreakBefore(previousBreakAfterValue)) {
             m_forcedBreaksCount++;
         } else {
             ASSERT(isFirstAfterBreak(flowThreadOffset()) || !box.paginationStrut());

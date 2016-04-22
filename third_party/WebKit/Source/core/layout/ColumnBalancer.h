@@ -34,8 +34,6 @@ protected:
     // Flow thread offset for the layout object that we're currently examining.
     LayoutUnit flowThreadOffset() const { return m_flowThreadOffset; }
 
-    EBreak previousBreakAfterValue() const { return m_previousBreakAfterValue; }
-
     // Return true if the specified offset is at the top of a column, as long as it's not the first
     // column in the flow thread portion.
     bool isFirstAfterBreak(LayoutUnit flowThreadOffset) const
@@ -65,7 +63,7 @@ protected:
     // children. flowThreadOffset() will return the offset from |box| to the flow thread. Two hooks
     // are provided here. The first one is called right after entering and before traversing the
     // subtree of the box, and the second one right after having traversed the subtree.
-    virtual void examineBoxAfterEntering(const LayoutBox&) = 0;
+    virtual void examineBoxAfterEntering(const LayoutBox&, EBreak previousBreakAfterValue) = 0;
     virtual void examineBoxBeforeLeaving(const LayoutBox&) = 0;
 
     // Examine and collect column balancing data from a line that has been found to intersect with
@@ -85,10 +83,6 @@ private:
     const LayoutUnit m_logicalBottomInFlowThread;
 
     LayoutUnit m_flowThreadOffset;
-
-    // The break-after value from the previous in-flow block-level object to be joined with the
-    // break-before value of the next in-flow block-level object.
-    EBreak m_previousBreakAfterValue;
 };
 
 // After an initial layout pass, we know the height of the contents of a flow thread. Based on
@@ -112,7 +106,7 @@ public:
     LayoutUnit tallestUnbreakableLogicalHeight() const { return m_tallestUnbreakableLogicalHeight; }
 
 private:
-    void examineBoxAfterEntering(const LayoutBox&);
+    void examineBoxAfterEntering(const LayoutBox&, EBreak previousBreakAfterValue);
     void examineBoxBeforeLeaving(const LayoutBox&);
     void examineLine(const RootInlineBox&);
 
@@ -197,7 +191,7 @@ public:
     unsigned forcedBreaksCount() const { return m_forcedBreaksCount; }
 
 private:
-    void examineBoxAfterEntering(const LayoutBox&);
+    void examineBoxAfterEntering(const LayoutBox&, EBreak previousBreakAfterValue);
     void examineBoxBeforeLeaving(const LayoutBox&);
     void examineLine(const RootInlineBox&);
 
