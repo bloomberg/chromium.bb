@@ -74,7 +74,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
   size_t glyph_count;
 
   Font font;
-  skia::RefPtr<SkTypeface> skia_face;
+  sk_sp<SkTypeface> skia_face;
   FontRenderParams render_params;
   int font_size;
   int baseline_offset;

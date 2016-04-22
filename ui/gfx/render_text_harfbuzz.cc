@@ -563,6 +563,14 @@ struct CaseInsensitiveCompare {
   }
 };
 
+sk_sp<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
+  int skia_style = SkTypeface::kNormal;
+  skia_style |= (style & Font::BOLD) ? SkTypeface::kBold : 0;
+  skia_style |= (style & Font::ITALIC) ? SkTypeface::kItalic : 0;
+  return sk_sp<SkTypeface>(SkTypeface::CreateFromName(
+      font.GetFontName().c_str(), static_cast<SkTypeface::Style>(skia_style)));
+}
+
 }  // namespace
 
 namespace internal {
@@ -1457,8 +1465,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
                                           const gfx::Font& font,
                                           const FontRenderParams& params,
                                           internal::TextRunHarfBuzz* run) {
-  skia::RefPtr<SkTypeface> skia_face =
-      internal::CreateSkiaTypeface(font, run->font_style);
+  sk_sp<SkTypeface> skia_face(CreateSkiaTypeface(font, run->font_style));
   if (skia_face == NULL)
     return false;
   run->skia_face = skia_face;
