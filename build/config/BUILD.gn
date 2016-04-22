@@ -431,8 +431,7 @@ config("shared_library_config") {
 # Recommend precompiled headers for targets with more than 50 .cc files.
 config("precompiled_headers") {
   if (!is_official_build && !use_goma && !disable_precompiled_headers) {
-    # TODO(thakis): Reenable on clang after https://crbug.com/605570 is fixed.
-    if (is_win && !is_clang) {
+    if (is_win) {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
       # source code in quotes for an #include directive.

@@ -9,8 +9,7 @@
 
 {
   'conditions': [
-    # TODO(thakis): Reenable on clang after https://crbug.com/605570 is fixed.
-    ['OS=="win" and chromium_win_pch==1 and clang==0', {
+    ['OS=="win" and chromium_win_pch==1', {
         'target_defaults': {
           'msvs_precompiled_header': 'build/precompile.h',
           'msvs_precompiled_source': '<(DEPTH)/build/precompile.cc',
