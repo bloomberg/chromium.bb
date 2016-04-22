@@ -474,10 +474,6 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   }
 
   BeginImplFrame(adjusted_args);
-
-  // The deadline will be scheduled in ProcessScheduledActions.
-  state_machine_.OnBeginImplFrameDeadlinePending();
-  ProcessScheduledActions();
 }
 
 void Scheduler::BeginImplFrameSynchronous(const BeginFrameArgs& args) {

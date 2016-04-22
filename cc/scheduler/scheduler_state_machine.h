@@ -59,11 +59,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Note: BeginImplFrameState does not cycle through these states in a fixed
   // order on all platforms. It's up to the scheduler to set these correctly.
-  // TODO(sunnyps): Rename the states to IDLE, ANIMATE, WAITING_FOR_DEADLINE and
-  // DRAW.
   enum BeginImplFrameState {
     BEGIN_IMPL_FRAME_STATE_IDLE,
-    BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING,
     BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME,
     BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE,
   };
@@ -153,7 +150,6 @@ class CC_EXPORT SchedulerStateMachine {
   // The scheduler will not draw more than once in a given BeginImplFrame
   // callback nor send more than one BeginMainFrame message.
   void OnBeginImplFrame();
-  void OnBeginImplFrameDeadlinePending();
   // Indicates that the scheduler has entered the draw phase. The scheduler
   // will not draw more than once in a single draw phase.
   // TODO(sunnyps): Rename OnBeginImplFrameDeadline to OnDraw or similar.

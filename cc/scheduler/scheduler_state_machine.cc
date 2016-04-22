@@ -85,8 +85,6 @@ const char* SchedulerStateMachine::BeginImplFrameStateToString(
   switch (state) {
     case BEGIN_IMPL_FRAME_STATE_IDLE:
       return "BEGIN_IMPL_FRAME_STATE_IDLE";
-    case BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING:
-      return "BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING";
     case BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME:
       return "BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME";
     case BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE:
@@ -535,7 +533,7 @@ bool SchedulerStateMachine::ShouldInvalidateOutputSurface() const {
     return false;
 
   // Invalidations are only performed inside a BeginFrame.
-  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING)
+  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
   // TODO(sunnyps): needs_prepare_tiles_ is needed here because PrepareTiles is
@@ -849,7 +847,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
 }
 
 void SchedulerStateMachine::OnBeginImplFrame() {
-  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;
+  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
   current_frame_number_++;
 
   last_commit_had_no_updates_ = false;
@@ -864,10 +862,6 @@ void SchedulerStateMachine::OnBeginImplFrame() {
   // "Drain" the PrepareTiles funnel.
   if (prepare_tiles_funnel_ > 0)
     prepare_tiles_funnel_--;
-}
-
-void SchedulerStateMachine::OnBeginImplFrameDeadlinePending() {
-  begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
 }
 
 void SchedulerStateMachine::OnBeginImplFrameDeadline() {
