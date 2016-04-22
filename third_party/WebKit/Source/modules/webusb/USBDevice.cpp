@@ -17,7 +17,7 @@
 #include "modules/webusb/USBIsochronousInTransferResult.h"
 #include "modules/webusb/USBIsochronousOutTransferResult.h"
 #include "modules/webusb/USBOutTransferResult.h"
-#include "platform/MojoHelper.h"
+#include "platform/mojo/MojoHelper.h"
 #include "wtf/Assertions.h"
 
 namespace usb = device::usb::wtf;

@@ -4,7 +4,7 @@
 
 #include "modules/battery/BatteryDispatcher.h"
 
-#include "platform/MojoHelper.h"
+#include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 #include "public/platform/ServiceRegistry.h"
 #include "wtf/Assertions.h"

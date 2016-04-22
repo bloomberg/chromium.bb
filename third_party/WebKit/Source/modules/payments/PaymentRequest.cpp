@@ -21,7 +21,7 @@
 #include "modules/payments/ShippingOption.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
-#include "platform/MojoHelper.h"
+#include "platform/mojo/MojoHelper.h"
 #include "public/platform/ServiceRegistry.h"
 #include <utility>
 

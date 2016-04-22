@@ -15,8 +15,8 @@
 #include "modules/webusb/USBDevice.h"
 #include "modules/webusb/USBDeviceFilter.h"
 #include "modules/webusb/USBDeviceRequestOptions.h"
-#include "platform/MojoHelper.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/mojo/MojoHelper.h"
 #include "public/platform/ServiceRegistry.h"
 #include "wtf/Functional.h"
 
