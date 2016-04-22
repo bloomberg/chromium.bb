@@ -1260,10 +1260,6 @@ public:
     //   If TraverseDocumentBoundaries is specified, the input quad is in the space of the local root frame.
     //   Otherwise, the input quad is in the space of the containing frame.
     virtual void mapAncestorToLocal(const LayoutBoxModelObject*, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const;
-    void mapAbsoluteToLocalPoint(MapCoordinatesFlags flags, TransformState& transformState) const
-    {
-        return mapAncestorToLocal(nullptr, transformState, flags);
-    }
 
     // Pushes state onto LayoutGeometryMap about how to map coordinates from this layoutObject to its container, or ancestorToStopAt (whichever is encountered first).
     // Returns the layoutObject which was mapped to (container or ancestorToStopAt).
