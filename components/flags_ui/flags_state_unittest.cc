@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/prefs/pref_value_store.h"
+
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/prefs/pref_notifier.h"
-#include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -248,8 +249,8 @@ class PrefValueStoreTest : public testing::Test {
   }
 
   MockPrefNotifier pref_notifier_;
-  scoped_ptr<MockPrefModelAssociator> sync_associator_;
-  scoped_ptr<PrefValueStore> pref_value_store_;
+  std::unique_ptr<MockPrefModelAssociator> sync_associator_;
+  std::unique_ptr<PrefValueStore> pref_value_store_;
 
   scoped_refptr<TestingPrefStore> managed_pref_store_;
   scoped_refptr<TestingPrefStore> supervised_user_pref_store_;

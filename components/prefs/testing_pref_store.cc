@@ -4,9 +4,10 @@
 
 #include "components/prefs/testing_pref_store.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 TestingPrefStore::TestingPrefStore()
@@ -45,7 +46,7 @@ bool TestingPrefStore::IsInitializationComplete() const {
 }
 
 void TestingPrefStore::SetValue(const std::string& key,
-                                scoped_ptr<base::Value> value,
+                                std::unique_ptr<base::Value> value,
                                 uint32_t flags) {
   if (prefs_.SetValue(key, std::move(value))) {
     committed_ = false;
@@ -54,7 +55,7 @@ void TestingPrefStore::SetValue(const std::string& key,
 }
 
 void TestingPrefStore::SetValueSilently(const std::string& key,
-                                        scoped_ptr<base::Value> value,
+                                        std::unique_ptr<base::Value> value,
                                         uint32_t flags) {
   if (prefs_.SetValue(key, std::move(value)))
     committed_ = false;
@@ -117,17 +118,17 @@ void TestingPrefStore::ReportValueChanged(const std::string& key,
 
 void TestingPrefStore::SetString(const std::string& key,
                                  const std::string& value) {
-  SetValue(key, make_scoped_ptr(new base::StringValue(value)),
+  SetValue(key, base::WrapUnique(new base::StringValue(value)),
            DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetInteger(const std::string& key, int value) {
-  SetValue(key, make_scoped_ptr(new base::FundamentalValue(value)),
+  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)),
            DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, make_scoped_ptr(new base::FundamentalValue(value)),
+  SetValue(key, base::WrapUnique(new base::FundamentalValue(value)),
            DEFAULT_PREF_WRITE_FLAGS);
 }
 

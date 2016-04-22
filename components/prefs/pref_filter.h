@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PREFS_PREF_FILTER_H_
 #define COMPONENTS_PREFS_PREF_FILTER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/base_prefs_export.h"
 
 namespace base {
@@ -24,8 +24,9 @@ class COMPONENTS_PREFS_EXPORT PrefFilter {
   // pre-modified) and are now ready to be handed back to this callback's
   // builder. |schedule_write| indicates whether a write should be immediately
   // scheduled (typically because the |prefs| were pre-modified).
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue> prefs,
-                              bool schedule_write)> PostFilterOnLoadCallback;
+  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue> prefs,
+                              bool schedule_write)>
+      PostFilterOnLoadCallback;
 
   virtual ~PrefFilter() {}
 
@@ -38,7 +39,7 @@ class COMPONENTS_PREFS_EXPORT PrefFilter {
   // to external users (see SegregatedPrefStore::ReadPrefs() for an example).
   virtual void FilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
-      scoped_ptr<base::DictionaryValue> pref_store_contents) = 0;
+      std::unique_ptr<base::DictionaryValue> pref_store_contents) = 0;
 
   // Receives notification when a pref store value is changed, before Observers
   // are notified.

@@ -4,9 +4,10 @@
 
 #include "components/prefs/overlay_user_pref_store.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 OverlayUserPrefStore::OverlayUserPrefStore(
@@ -60,12 +61,12 @@ bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
     return false;
 
   *result = underlay_value->DeepCopy();
-  overlay_.SetValue(key, make_scoped_ptr(*result));
+  overlay_.SetValue(key, base::WrapUnique(*result));
   return true;
 }
 
 void OverlayUserPrefStore::SetValue(const std::string& key,
-                                    scoped_ptr<base::Value> value,
+                                    std::unique_ptr<base::Value> value,
                                     uint32_t flags) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->SetValue(GetUnderlayKey(key), std::move(value), flags);
@@ -77,7 +78,7 @@ void OverlayUserPrefStore::SetValue(const std::string& key,
 }
 
 void OverlayUserPrefStore::SetValueSilently(const std::string& key,
-                                            scoped_ptr<base::Value> value,
+                                            std::unique_ptr<base::Value> value,
                                             uint32_t flags) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->SetValueSilently(GetUnderlayKey(key), std::move(value), flags);
@@ -113,7 +114,7 @@ PersistentPrefStore::PrefReadError OverlayUserPrefStore::ReadPrefs() {
 
 void OverlayUserPrefStore::ReadPrefsAsync(
     ReadErrorDelegate* error_delegate_raw) {
-  scoped_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
+  std::unique_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
   // We do not read intentionally.
   OnInitializationCompleted(true);
 }

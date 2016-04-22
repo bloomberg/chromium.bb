@@ -33,7 +33,7 @@ struct JsonPrefStore::ReadResult {
   ReadResult();
   ~ReadResult();
 
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   PrefReadError error;
   bool no_dir;
 
@@ -109,7 +109,7 @@ void RecordJsonDataSizeHistogram(const base::FilePath& path, size_t size) {
   histogram->Add(static_cast<int>(size) / 1024);
 }
 
-scoped_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
+std::unique_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
     const base::FilePath& path,
     const base::FilePath& alternate_path) {
   if (!base::PathExists(path) && !alternate_path.empty() &&
@@ -119,7 +119,7 @@ scoped_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
 
   int error_code;
   std::string error_msg;
-  scoped_ptr<JsonPrefStore::ReadResult> read_result(
+  std::unique_ptr<JsonPrefStore::ReadResult> read_result(
       new JsonPrefStore::ReadResult);
   JSONFileValueDeserializer deserializer(path);
   read_result->value = deserializer.Deserialize(&error_code, &error_msg);
@@ -149,7 +149,7 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
 JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-    scoped_ptr<PrefFilter> pref_filter)
+    std::unique_ptr<PrefFilter> pref_filter)
     : JsonPrefStore(pref_filename,
                     base::FilePath(),
                     sequenced_task_runner,
@@ -159,7 +159,7 @@ JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
     const base::FilePath& pref_alternate_filename,
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-    scoped_ptr<PrefFilter> pref_filter)
+    std::unique_ptr<PrefFilter> pref_filter)
     : path_(pref_filename),
       alternate_path_(pref_alternate_filename),
       sequenced_task_runner_(sequenced_task_runner),
@@ -220,7 +220,7 @@ bool JsonPrefStore::GetMutableValue(const std::string& key,
 }
 
 void JsonPrefStore::SetValue(const std::string& key,
-                             scoped_ptr<base::Value> value,
+                             std::unique_ptr<base::Value> value,
                              uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
@@ -234,7 +234,7 @@ void JsonPrefStore::SetValue(const std::string& key,
 }
 
 void JsonPrefStore::SetValueSilently(const std::string& key,
-                                     scoped_ptr<base::Value> value,
+                                     std::unique_ptr<base::Value> value,
                                      uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
@@ -334,12 +334,13 @@ void JsonPrefStore::ClearMutableValues() {
   NOTIMPLEMENTED();
 }
 
-void JsonPrefStore::OnFileRead(scoped_ptr<ReadResult> read_result) {
+void JsonPrefStore::OnFileRead(std::unique_ptr<ReadResult> read_result) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(read_result);
 
-  scoped_ptr<base::DictionaryValue> unfiltered_prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> unfiltered_prefs(
+      new base::DictionaryValue);
 
   read_error_ = read_result->error;
 
@@ -411,9 +412,10 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   return serializer.Serialize(*prefs_);
 }
 
-void JsonPrefStore::FinalizeFileRead(bool initialization_successful,
-                                     scoped_ptr<base::DictionaryValue> prefs,
-                                     bool schedule_write) {
+void JsonPrefStore::FinalizeFileRead(
+    bool initialization_successful,
+    std::unique_ptr<base::DictionaryValue> prefs,
+    bool schedule_write) {
   DCHECK(CalledOnValidThread());
 
   filtering_in_progress_ = false;
@@ -460,23 +462,22 @@ const int32_t
 JsonPrefStore::WriteCountHistogram::WriteCountHistogram(
     const base::TimeDelta& commit_interval,
     const base::FilePath& path)
-    : WriteCountHistogram(commit_interval,
-                          path,
-                          scoped_ptr<base::Clock>(new base::DefaultClock)) {
-}
+    : WriteCountHistogram(
+          commit_interval,
+          path,
+          std::unique_ptr<base::Clock>(new base::DefaultClock)) {}
 
 JsonPrefStore::WriteCountHistogram::WriteCountHistogram(
     const base::TimeDelta& commit_interval,
     const base::FilePath& path,
-    scoped_ptr<base::Clock> clock)
+    std::unique_ptr<base::Clock> clock)
     : commit_interval_(commit_interval),
       path_(path),
       clock_(clock.release()),
       report_interval_(
           base::TimeDelta::FromMinutes(kHistogramWriteReportIntervalMins)),
       last_report_time_(clock_->Now()),
-      writes_since_last_report_(0) {
-}
+      writes_since_last_report_(0) {}
 
 JsonPrefStore::WriteCountHistogram::~WriteCountHistogram() {
   ReportOutstandingWrites();

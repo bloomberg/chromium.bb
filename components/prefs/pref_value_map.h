@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_PREFS_PREF_VALUE_MAP_H_
 #define COMPONENTS_PREFS_PREF_VALUE_MAP_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/base_prefs_export.h"
 
 namespace base {
@@ -20,7 +20,7 @@ class Value;
 // A generic string to value map used by the PrefStore implementations.
 class COMPONENTS_PREFS_EXPORT PrefValueMap {
  public:
-  using Map = base::ScopedPtrHashMap<std::string, scoped_ptr<base::Value>>;
+  using Map = base::ScopedPtrHashMap<std::string, std::unique_ptr<base::Value>>;
   using iterator = Map::iterator;
   using const_iterator = Map::const_iterator;
 
@@ -35,7 +35,7 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
 
   // Sets a new |value| for |key|. |value| must be non-null. Returns true if the
   // value changed.
-  bool SetValue(const std::string& key, scoped_ptr<base::Value> value);
+  bool SetValue(const std::string& key, std::unique_ptr<base::Value> value);
 
   // Removes the value for |key| from the map. Returns true if a value was
   // removed.

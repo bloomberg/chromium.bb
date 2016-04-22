@@ -48,7 +48,7 @@ class PrefChangeRegistrarTest : public testing::Test {
   MockPrefService* service() const { return service_.get(); }
 
  private:
-  scoped_ptr<MockPrefService> service_;
+  std::unique_ptr<MockPrefService> service_;
 };
 
 void PrefChangeRegistrarTest::SetUp() {
@@ -144,18 +144,18 @@ class ObserveSetOfPreferencesTest : public testing::Test {
 
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
 TEST_F(ObserveSetOfPreferencesTest, IsObserved) {
-  scoped_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar());
+  std::unique_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar());
   EXPECT_TRUE(pref_set->IsObserved(kHomePage));
   EXPECT_TRUE(pref_set->IsObserved(kHomePageIsNewTabPage));
   EXPECT_FALSE(pref_set->IsObserved(kApplicationLocale));
 }
 
 TEST_F(ObserveSetOfPreferencesTest, IsManaged) {
-  scoped_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar());
+  std::unique_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar());
   EXPECT_FALSE(pref_set->IsManaged());
   pref_service_->SetManagedPref(kHomePage,
                                 new StringValue("http://crbug.com"));

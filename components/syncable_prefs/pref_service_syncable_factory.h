@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNCABLE_PREFS_PREF_SERVICE_SYNCABLE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_service_factory.h"
 
 namespace base {

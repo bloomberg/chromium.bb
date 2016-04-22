@@ -107,7 +107,7 @@ void PrefMemberBase::Internal::UpdateValue(
     bool is_managed,
     bool is_user_modifiable,
     const base::Closure& callback) const {
-  scoped_ptr<base::Value> value(v);
+  std::unique_ptr<base::Value> value(v);
   base::ScopedClosureRunner closure_runner(callback);
   if (IsOnCorrectThread()) {
     bool rv = UpdateValueInternal(*value);

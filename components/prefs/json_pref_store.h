@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -16,7 +17,6 @@
 #include "base/files/important_file_writer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -59,7 +59,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   JsonPrefStore(
       const base::FilePath& pref_filename,
       const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-      scoped_ptr<PrefFilter> pref_filter);
+      std::unique_ptr<PrefFilter> pref_filter);
 
   // |sequenced_task_runner| must be a shutdown-blocking task runner, ideally
   // created by the GetTaskRunnerForFile() method above.
@@ -72,7 +72,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
       const base::FilePath& pref_filename,
       const base::FilePath& pref_alternate_filename,
       const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-      scoped_ptr<PrefFilter> pref_filter);
+      std::unique_ptr<PrefFilter> pref_filter);
 
   // PrefStore overrides:
   bool GetValue(const std::string& key,
@@ -85,10 +85,10 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // PersistentPrefStore overrides:
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void SetValue(const std::string& key,
-                scoped_ptr<base::Value> value,
+                std::unique_ptr<base::Value> value,
                 uint32_t flags) override;
   void SetValueSilently(const std::string& key,
-                        scoped_ptr<base::Value> value,
+                        std::unique_ptr<base::Value> value,
                         uint32_t flags) override;
   void RemoveValue(const std::string& key, uint32_t flags) override;
   bool ReadOnly() const override;
@@ -126,7 +126,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
     // the time.
     WriteCountHistogram(const base::TimeDelta& commit_interval,
                         const base::FilePath& path,
-                        scoped_ptr<base::Clock> clock);
+                        std::unique_ptr<base::Clock> clock);
     ~WriteCountHistogram();
 
     // Record that a write has occured.
@@ -146,7 +146,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
     const base::FilePath path_;
 
     // Clock which is used to retrieve the current time.
-    scoped_ptr<base::Clock> clock_;
+    std::unique_ptr<base::Clock> clock_;
 
     // The interval at which to report write counts.
     const base::TimeDelta report_interval_;
@@ -180,7 +180,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // FinalizeFileRead() to that |pref_filter_| which is then responsible for
   // invoking it when done. If there is no |pref_filter_|, FinalizeFileRead()
   // is invoked directly.
-  void OnFileRead(scoped_ptr<ReadResult> read_result);
+  void OnFileRead(std::unique_ptr<ReadResult> read_result);
 
   // ImportantFileWriter::DataSerializer overrides:
   bool SerializeData(std::string* output) override;
@@ -193,7 +193,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // (typically because the |pref_filter_| has already altered the |prefs|) --
   // this will be ignored if this store is read-only.
   void FinalizeFileRead(bool initialization_successful,
-                        scoped_ptr<base::DictionaryValue> prefs,
+                        std::unique_ptr<base::DictionaryValue> prefs,
                         bool schedule_write);
 
   // Schedule a write with the file writer as long as |flags| doesn't contain
@@ -204,17 +204,17 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   const base::FilePath alternate_path_;
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
-  scoped_ptr<base::DictionaryValue> prefs_;
+  std::unique_ptr<base::DictionaryValue> prefs_;
 
   bool read_only_;
 
   // Helper for safely writing pref data.
   base::ImportantFileWriter writer_;
 
-  scoped_ptr<PrefFilter> pref_filter_;
+  std::unique_ptr<PrefFilter> pref_filter_;
   base::ObserverList<PrefStore::Observer, true> observers_;
 
-  scoped_ptr<ReadErrorDelegate> error_delegate_;
+  std::unique_ptr<ReadErrorDelegate> error_delegate_;
 
   bool initialized_;
   bool filtering_in_progress_;

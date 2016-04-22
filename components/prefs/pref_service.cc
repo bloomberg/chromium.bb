@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -192,19 +193,20 @@ bool PrefService::HasPrefPath(const std::string& path) const {
   return pref && !pref->IsDefaultValue();
 }
 
-scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValues() const {
+std::unique_ptr<base::DictionaryValue> PrefService::GetPreferenceValues()
+    const {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   for (const auto& it : *pref_registry_) {
     out->Set(it.first, GetPreferenceValue(it.first)->CreateDeepCopy());
   }
   return out;
 }
 
-scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValuesOmitDefaults()
-    const {
+std::unique_ptr<base::DictionaryValue>
+PrefService::GetPreferenceValuesOmitDefaults() const {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   for (const auto& it : *pref_registry_) {
     const Preference* pref = FindPreference(it.first);
     if (pref->IsDefaultValue())
@@ -214,10 +216,10 @@ scoped_ptr<base::DictionaryValue> PrefService::GetPreferenceValuesOmitDefaults()
   return out;
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 PrefService::GetPreferenceValuesWithoutPathExpansion() const {
   DCHECK(CalledOnValidThread());
-  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   for (const auto& it : *pref_registry_) {
     const base::Value* value = GetPreferenceValue(it.first);
     DCHECK(value);
@@ -476,7 +478,7 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
     } else {
       NOTREACHED();
     }
-    user_pref_store_->SetValueSilently(path, make_scoped_ptr(value),
+    user_pref_store_->SetValueSilently(path, base::WrapUnique(value),
                                        GetWriteFlags(pref));
   }
   return value;
@@ -489,7 +491,7 @@ void PrefService::ReportUserPrefChanged(const std::string& key) {
 
 void PrefService::SetUserPrefValue(const std::string& path,
                                    base::Value* new_value) {
-  scoped_ptr<base::Value> owned_value(new_value);
+  std::unique_ptr<base::Value> owned_value(new_value);
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);

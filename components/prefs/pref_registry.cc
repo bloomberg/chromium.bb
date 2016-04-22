@@ -5,6 +5,7 @@
 #include "components/prefs/pref_registry.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "components/prefs/default_pref_store.h"
@@ -46,7 +47,7 @@ void PrefRegistry::SetDefaultPrefValue(const std::string& pref_name,
   DCHECK(value->IsType(current_value->GetType()))
       << "Wrong type for new default: " << pref_name;
 
-  defaults_->ReplaceDefaultValue(pref_name, make_scoped_ptr(value));
+  defaults_->ReplaceDefaultValue(pref_name, base::WrapUnique(value));
 }
 
 void PrefRegistry::RegisterPreference(const std::string& path,
@@ -61,7 +62,7 @@ void PrefRegistry::RegisterPreference(const std::string& path,
   DCHECK(!ContainsKey(registration_flags_, path)) <<
       "Trying to register a previously registered pref: " << path;
 
-  defaults_->SetDefaultValue(path, make_scoped_ptr(default_value));
+  defaults_->SetDefaultValue(path, base::WrapUnique(default_value));
   if (flags != NO_REGISTRATION_FLAGS)
     registration_flags_[path] = flags;
 }

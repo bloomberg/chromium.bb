@@ -42,10 +42,10 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   // Methods of PersistentPrefStore.
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void SetValue(const std::string& key,
-                scoped_ptr<base::Value> value,
+                std::unique_ptr<base::Value> value,
                 uint32_t flags) override;
   void SetValueSilently(const std::string& key,
-                        scoped_ptr<base::Value> value,
+                        std::unique_ptr<base::Value> value,
                         uint32_t flags) override;
   void RemoveValue(const std::string& key, uint32_t flags) override;
   bool ReadOnly() const override;

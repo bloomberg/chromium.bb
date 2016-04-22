@@ -67,7 +67,7 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
 
   // Creates a PrefService object initialized with the parameters from
   // this factory.
-  scoped_ptr<PrefService> Create(PrefRegistry* registry);
+  std::unique_ptr<PrefService> Create(PrefRegistry* registry);
 
  protected:
   scoped_refptr<PrefStore> managed_prefs_;

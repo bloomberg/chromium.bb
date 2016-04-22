@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_PREFS_TESTING_PREF_SERVICE_H_
 #define COMPONENTS_PREFS_TESTING_PREF_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_store.h"
@@ -183,7 +185,7 @@ void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
     SetPref(TestingPrefStore* pref_store,
             const std::string& path,
             base::Value* value) {
-  pref_store->SetValue(path, make_scoped_ptr(value),
+  pref_store->SetValue(path, base::WrapUnique(value),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
