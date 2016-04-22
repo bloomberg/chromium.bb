@@ -720,6 +720,8 @@
       ],
       'msvs_disabled_warnings': [
           4005, 4018, 4065, 4090, 4099, 4291, 4345, 4267,
+          # http://crbug.com/512956
+          4197,
       ],
       'sources': [
         'src/src/mesa/drivers/common/driverfuncs.c',

@@ -711,8 +711,10 @@ loadable_module("osmesa") {
   }
 
   if (is_win) {
-    ldflags = [ "/DEF:" + rebase_path("src/src/mesa/drivers/osmesa/osmesa.def",
-                                      root_build_dir) ]
+    sources += [ "src/src/mesa/drivers/osmesa/osmesa.def" ]
+
+    # http://crbug.com/512956
+    ldflags = [ "/ignore:4197" ]
 
     # TODO(brucedawson) : remove when crbug.com/482671 is resolved by
     # Microsoft.
