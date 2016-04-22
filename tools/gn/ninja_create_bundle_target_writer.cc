@@ -116,4 +116,15 @@ void NinjaCreateBundleTargetWriter::Run() {
   for (const auto& pair : target_->data_deps())
     order_only_deps.push_back(pair.ptr->dependency_output_file());
   WriteStampForTarget(output_files, order_only_deps);
+
+  // Write a phony target for the outer bundle directory. This allows other
+  // targets to treat the entire bundle as a single unit, even though it is
+  // a directory, so that it can be depended upon as a discrete build edge.
+  out_ << "build ";
+  path_output_.WriteFile(
+      out_,
+      OutputFile(settings_->build_settings(),
+                 target_->bundle_data().GetBundleRootDirOutput(settings_)));
+  out_ << ": phony " << target_->dependency_output_file().value();
+  out_ << std::endl;
 }

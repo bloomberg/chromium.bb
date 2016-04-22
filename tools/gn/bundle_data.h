@@ -64,6 +64,18 @@ class BundleData {
   // asset_catalog_sources() is not empty.
   SourceFile GetCompiledAssetCatalogPath() const;
 
+  // Returns the path to the top-level directory of the bundle. This is
+  // based on root_dir(), but since that can be Bundle.app/Contents/ or
+  // any other subpath, this is just the most top-level directory (e.g.,
+  // just Bundle.app/).
+  //
+  // Note that this is a SourceFile instead of a SourceDir. This is because
+  // the output of a create_bundle rule is a single logical unit, even though
+  // it is really a directory containing many outputs. This allows other
+  // targets to treat the bundle as a single unit, rather than a collection
+  // of its contents.
+  SourceFile GetBundleRootDirOutput(const Settings* settings) const;
+
   // Returns the list of inputs for the compilation of the asset catalog.
   SourceFiles& asset_catalog_sources() { return asset_catalog_sources_; }
   const SourceFiles& asset_catalog_sources() const {

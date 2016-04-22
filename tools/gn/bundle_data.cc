@@ -5,6 +5,7 @@
 #include "tools/gn/bundle_data.h"
 
 #include "base/logging.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/output_file.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
@@ -103,10 +104,28 @@ void BundleData::GetOutputsAsSourceFiles(
 
   if (!asset_catalog_sources_.empty())
     outputs_as_source->push_back(GetCompiledAssetCatalogPath());
+
+  if (!root_dir_.empty())
+    outputs_as_source->push_back(GetBundleRootDirOutput(settings));
 }
 
 SourceFile BundleData::GetCompiledAssetCatalogPath() const {
   DCHECK(!asset_catalog_sources_.empty());
   std::string assets_car_path = resources_dir_ + "/Assets.car";
   return SourceFile(SourceFile::SWAP_IN, &assets_car_path);
+}
+
+SourceFile BundleData::GetBundleRootDirOutput(const Settings* settings) const {
+  const SourceDir& build_dir = settings->build_settings()->build_dir();
+  std::string bundle_root_relative = RebasePath(root_dir(), build_dir);
+
+  size_t first_component = bundle_root_relative.find('/');
+  if (first_component != std::string::npos) {
+    base::StringPiece outermost_bundle_dir =
+        base::StringPiece(bundle_root_relative).substr(0, first_component);
+    std::string return_value(build_dir.value());
+    outermost_bundle_dir.AppendToString(&return_value);
+    return SourceFile(SourceFile::SWAP_IN, &return_value);
+  }
+  return SourceFile(root_dir());
 }
