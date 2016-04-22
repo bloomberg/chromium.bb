@@ -81,7 +81,6 @@ public class NewTabPageView extends FrameLayout
     private NewTabPageLayout mContentView;
     private LogoView mSearchProviderLogoView;
     private View mSearchBoxView;
-    private TextView mSearchBoxTextView;
     private ImageView mVoiceSearchButton;
     private MostVisitedLayout mMostVisitedLayout;
     private View mMostVisitedPlaceholder;
@@ -295,21 +294,22 @@ public class NewTabPageView extends FrameLayout
         mSearchBoxView = mContentView.findViewById(R.id.search_box);
         mNoSearchLogoSpacer = mContentView.findViewById(R.id.no_search_logo_spacer);
 
-        mSearchBoxTextView = (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
+        final TextView searchBoxTextView = (TextView) mSearchBoxView
+                .findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_url);
 
         if (!DeviceFormFactor.isTablet(getContext()) || manager.isFakeOmniboxTextEnabledTablet()) {
-            mSearchBoxTextView.setHint(hintText);
+            searchBoxTextView.setHint(hintText);
         } else {
-            mSearchBoxTextView.setContentDescription(hintText);
+            searchBoxTextView.setContentDescription(hintText);
         }
-        mSearchBoxTextView.setOnClickListener(new View.OnClickListener() {
+        searchBoxTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mManager.focusSearchBox(false, null);
             }
         });
-        mSearchBoxTextView.addTextChangedListener(new TextWatcher() {
+        searchBoxTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -322,7 +322,7 @@ public class NewTabPageView extends FrameLayout
             public void afterTextChanged(Editable s) {
                 if (s.length() == 0) return;
                 mManager.focusSearchBox(false, s.toString());
-                mSearchBoxTextView.setText("");
+                searchBoxTextView.setText("");
             }
         });
 
@@ -664,8 +664,12 @@ public class NewTabPageView extends FrameLayout
      * @see #setUrlFocusChangeAnimationPercent
      */
     private void setUrlFocusChangeAnimationPercentInternal(float percent) {
-        mContentView.setTranslationY(percent * (-mMostVisitedLayout.getTop()
-                + getVerticalScroll() + mContentView.getPaddingTop()));
+        // Only apply the scrolling offset when not using the cards UI, as there we will either snap
+        // to the top of the page (with scrolling offset 0), or snap to below the fold, where Most
+        // Likely items are not visible anymore, so they will stay out of sight.
+        int scrollOffset = mUseCardsUi ? 0 : mScrollView.getScrollY();
+        mContentView.setTranslationY(percent
+                * (-mMostVisitedLayout.getTop() + scrollOffset + mContentView.getPaddingTop()));
         updateVisualsForToolbarTransition(percent);
     }
 
