@@ -414,7 +414,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     InspectorDebuggerAgent* debuggerAgent = PageDebuggerAgent::create(m_v8Session->debuggerAgent(), m_inspectedFrames.get());
     m_session->append(debuggerAgent);
 
-    PageConsoleAgent* pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, m_v8Session->debuggerAgent(), m_domAgent, m_inspectedFrames.get());
+    PageConsoleAgent* pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, m_domAgent, m_inspectedFrames.get());
     m_session->append(pageConsoleAgent);
 
     InspectorWorkerAgent* workerAgent = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgent);

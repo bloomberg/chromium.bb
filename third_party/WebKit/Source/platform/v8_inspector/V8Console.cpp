@@ -6,6 +6,7 @@
 
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
@@ -172,12 +173,19 @@ public:
 
     V8ProfilerAgentImpl* profilerAgent()
     {
-        InspectedContext* inspectedContext = ensureInspectedContext();
-        if (!inspectedContext)
-            return nullptr;
-        V8InspectorSessionImpl* session = inspectedContext->debugger()->sessionForContextGroup(inspectedContext->contextGroupId());
-        if (session && session->profilerAgentImpl()->enabled())
-            return session->profilerAgentImpl();
+        if (V8InspectorSessionImpl* session = currentSession()) {
+            if (session && session->profilerAgentImpl()->enabled())
+                return session->profilerAgentImpl();
+        }
+        return nullptr;
+    }
+
+    V8DebuggerAgentImpl* debuggerAgent()
+    {
+        if (V8InspectorSessionImpl* session = currentSession()) {
+            if (session && session->debuggerAgentImpl()->enabled())
+                return session->debuggerAgentImpl();
+        }
         return nullptr;
     }
 private:
@@ -203,6 +211,14 @@ private:
         if (!console->SetPrivate(m_context, key, v8::True(m_isolate)).FromMaybe(false))
             return defaultValue;
         return false;
+    }
+
+    V8InspectorSessionImpl* currentSession()
+    {
+        InspectedContext* inspectedContext = ensureInspectedContext();
+        if (!inspectedContext)
+            return nullptr;
+        return inspectedContext->debugger()->sessionForContextGroup(inspectedContext->contextGroupId());
     }
 };
 
@@ -328,6 +344,8 @@ void V8Console::assertCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (helper.firstArgToBoolean(false))
         return;
     helper.addMessage(AssertMessageType, ErrorMessageLevel, true, 1);
+    if (V8DebuggerAgentImpl* debuggerAgent = helper.debuggerAgent())
+        debuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::Assert, nullptr);
 }
 
 void V8Console::markTimelineCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

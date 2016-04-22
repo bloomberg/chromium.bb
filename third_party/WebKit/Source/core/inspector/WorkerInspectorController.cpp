@@ -82,7 +82,7 @@ void WorkerInspectorController::connectFrontend()
     m_session->append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), nullptr));
     m_session->append(InspectorHeapProfilerAgent::create(m_workerGlobalScope->thread()->isolate(), m_v8Session->heapProfilerAgent()));
 
-    WorkerConsoleAgent* workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_v8Session->debuggerAgent(), m_workerGlobalScope);
+    WorkerConsoleAgent* workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope);
     m_session->append(workerConsoleAgent);
     m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgent));
 

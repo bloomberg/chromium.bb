@@ -31,8 +31,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/ScriptArguments.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
-#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,10 +40,9 @@ namespace ConsoleAgentState {
 static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
-InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
+InspectorConsoleAgent::InspectorConsoleAgent(V8RuntimeAgent* runtimeAgent)
     : InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>("Console")
     , m_runtimeAgent(runtimeAgent)
-    , m_debuggerAgent(debuggerAgent)
     , m_enabled(false)
 {
 }
@@ -99,11 +96,6 @@ void InspectorConsoleAgent::restore()
 void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
     sendConsoleMessageToFrontend(consoleMessage, true);
-    if (consoleMessage->type() != AssertMessageType)
-        return;
-    if (!m_debuggerAgent)
-        return;
-    m_debuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::Assert, nullptr);
 }
 
 void InspectorConsoleAgent::clearAllMessages()
