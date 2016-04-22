@@ -133,6 +133,10 @@ using web::NavigationManager;
   return _webState->GetNavigationManager();
 }
 
+- (web::WebState*)webState {
+  return _webState.get();
+}
+
 - (void)setUpNetworkStack {
   // Disable the default cache.
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];

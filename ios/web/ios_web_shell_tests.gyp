@@ -22,9 +22,20 @@
           'dependencies': [
             '../third_party/earl_grey/earl_grey.gyp:EarlGrey',
             'ios_web_shell.gyp:ios_web_shell',
+            'ios_web.gyp:ios_web_test_support',
           ],
           'sources': [
+            'public/test/http_server_util.h',
+            'public/test/http_server_util.mm',
+            'shell/test/navigation_test_util.h',
+            'shell/test/navigation_test_util.mm',
+            'shell/test/shell_matchers.h',
+            'shell/test/shell_matchers.mm',
             'shell/test/web_shell_navigation_egtest.mm',
+            'shell/test/web_shell_test_util.h',
+            'shell/test/web_shell_test_util.mm',
+            'shell/test/web_view_matchers.h',
+            'shell/test/web_view_matchers.mm',
           ],
           'xcode_settings': {
             'WRAPPER_EXTENSION': 'xctest',
