@@ -31,7 +31,8 @@ LayoutSize StyleImage::imageSizeForSVGImage(SVGImage* svgImage, float multiplier
 {
     FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
     unzoomedDefaultObjectSize.scale(1 / multiplier);
-    return applyZoom(LayoutSize(svgImage->concreteObjectSize(svgImage->concreteObjectSize(unzoomedDefaultObjectSize))), multiplier);
+    LayoutSize imageSize(roundedIntSize(svgImage->concreteObjectSize(unzoomedDefaultObjectSize)));
+    return applyZoom(imageSize, multiplier);
 }
 
 } // namespace blink
