@@ -193,8 +193,9 @@ void ProcessorEntityTracker::InitializeCommitRequestData(
 void ProcessorEntityTracker::ReceiveCommitResponse(
     const std::string& id,
     int64_t sequence_number,
-    int64_t response_version,
-    const std::string& encryption_key_name) {
+    int64_t response_version) {
+  DCHECK(sequence_number > metadata_.acked_sequence_number());
+
   // The server can assign us a new ID in a commit response.
   metadata_.set_server_id(id);
   metadata_.set_acked_sequence_number(sequence_number);

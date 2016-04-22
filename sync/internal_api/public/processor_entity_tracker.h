@@ -97,8 +97,7 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // reached the server.
   void ReceiveCommitResponse(const std::string& id,
                              int64_t sequence_number,
-                             int64_t response_version,
-                             const std::string& encryption_key_name);
+                             int64_t response_version);
 
   // Clears any in-memory sync state associated with outstanding commits.
   void ClearTransientSyncState();
@@ -128,12 +127,6 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // The constructor swaps the data from the passed metadata.
   ProcessorEntityTracker(const std::string& client_tag,
                          sync_pb::EntityMetadata* metadata);
-
-  // Whether knowledge of this entity has never gone past the processor. This
-  // means that no commits have been queued and it did not originate at the
-  // server. This is used to determine whether it is safe to delete the tracker
-  // and metadata for this entity.
-  bool IsLocalOnly() const;
 
   // Update hash string for EntitySpecifics in the metadata.
   void UpdateSpecificsHash(const sync_pb::EntitySpecifics& specifics);

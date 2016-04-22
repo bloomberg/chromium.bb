@@ -317,8 +317,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     }
 
     entity->ReceiveCommitResponse(data.id, data.sequence_number,
-                                  data.response_version,
-                                  data_type_state_.encryption_key_name());
+                                  data.response_version);
 
     if (entity->CanClearMetadata()) {
       change_list->ClearMetadata(entity->client_tag());

@@ -139,13 +139,18 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
       NewLocalItem("asdf", specifics));
 
   EXPECT_EQ(1, entity->metadata().sequence_number());
+  EXPECT_EQ(0, entity->metadata().acked_sequence_number());
+  EXPECT_EQ(kUncommittedVersion, entity->metadata().server_version());
   EXPECT_TRUE(entity->HasCommitData());
   EXPECT_TRUE(HasSpecificsHash(entity));
   EXPECT_TRUE(entity->IsUnsynced());
   EXPECT_FALSE(entity->UpdateIsReflection(1));
 
-  entity->ReceiveCommitResponse("id", 1, 1, "");
+  entity->ReceiveCommitResponse("id", 1, 1);
 
+  EXPECT_EQ(1, entity->metadata().sequence_number());
+  EXPECT_EQ(1, entity->metadata().acked_sequence_number());
+  EXPECT_EQ(1, entity->metadata().server_version());
   EXPECT_FALSE(entity->HasCommitData());
   EXPECT_TRUE(HasSpecificsHash(entity));
   EXPECT_FALSE(entity->IsUnsynced());
