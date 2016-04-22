@@ -4,6 +4,7 @@
 
 #include "components/user_prefs/tracked/tracked_preferences_migration.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -12,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_service.h"
@@ -57,7 +57,7 @@ class SimpleInterceptablePrefFilter : public InterceptablePrefFilter {
   // InterceptablePrefFilter implementation.
   void FinalizeFilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
-      scoped_ptr<base::DictionaryValue> pref_store_contents,
+      std::unique_ptr<base::DictionaryValue> pref_store_contents,
       bool prefs_altered) override {
     post_filter_on_load_callback.Run(std::move(pref_store_contents),
                                      prefs_altered);
@@ -108,31 +108,25 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     protected_store_successful_write_callback_.Reset();
 
     SetupTrackedPreferencesMigration(
-        unprotected_pref_names,
-        protected_pref_names,
+        unprotected_pref_names, protected_pref_names,
         base::Bind(&TrackedPreferencesMigrationTest::RemovePathFromStore,
-                   base::Unretained(this),
-                   MOCK_UNPROTECTED_PREF_STORE),
+                   base::Unretained(this), MOCK_UNPROTECTED_PREF_STORE),
         base::Bind(&TrackedPreferencesMigrationTest::RemovePathFromStore,
-                   base::Unretained(this),
-                   MOCK_PROTECTED_PREF_STORE),
+                   base::Unretained(this), MOCK_PROTECTED_PREF_STORE),
         base::Bind(
             &TrackedPreferencesMigrationTest::RegisterSuccessfulWriteClosure,
-            base::Unretained(this),
-            MOCK_UNPROTECTED_PREF_STORE),
+            base::Unretained(this), MOCK_UNPROTECTED_PREF_STORE),
         base::Bind(
             &TrackedPreferencesMigrationTest::RegisterSuccessfulWriteClosure,
-            base::Unretained(this),
-            MOCK_PROTECTED_PREF_STORE),
-        scoped_ptr<PrefHashStore>(
+            base::Unretained(this), MOCK_PROTECTED_PREF_STORE),
+        std::unique_ptr<PrefHashStore>(
             new PrefHashStoreImpl(kSeed, kDeviceId, false)),
-        scoped_ptr<PrefHashStore>(
+        std::unique_ptr<PrefHashStore>(
             new PrefHashStoreImpl(kSeed, kDeviceId, true)),
-        scoped_ptr<HashStoreContents>(
+        std::unique_ptr<HashStoreContents>(
             new PrefServiceHashStoreContents(kHashStoreId, &local_state_)),
 
-        &mock_unprotected_pref_filter_,
-        &mock_protected_pref_filter_);
+        &mock_unprotected_pref_filter_, &mock_protected_pref_filter_);
 
     // Verify initial expectations are met.
     EXPECT_TRUE(HasPrefs(MOCK_UNPROTECTED_PREF_STORE));
@@ -169,7 +163,7 @@ class TrackedPreferencesMigrationTest : public testing::Test {
                             const std::string& key,
                             const std::string value) {
     base::DictionaryValue* store = NULL;
-    scoped_ptr<PrefHashStore> pref_hash_store;
+    std::unique_ptr<PrefHashStore> pref_hash_store;
     switch (store_id) {
       case MOCK_UNPROTECTED_PREF_STORE:
         store = unprotected_prefs_.get();
@@ -183,22 +177,22 @@ class TrackedPreferencesMigrationTest : public testing::Test {
     DCHECK(store);
 
     base::StringValue string_value(value);
-    pref_hash_store->BeginTransaction(
-        scoped_ptr<HashStoreContents>(
-            new DictionaryHashStoreContents(store)))->StoreHash(
-                key, &string_value);
+    pref_hash_store
+        ->BeginTransaction(std::unique_ptr<HashStoreContents>(
+            new DictionaryHashStoreContents(store)))
+        ->StoreHash(key, &string_value);
   }
 
   // Stores a hash for |key| and |value| in the legacy hash store in
   // local_state.
   void PresetLegacyValueHash(const std::string& key,
                              const std::string value) {
-    scoped_ptr<PrefHashStore> pref_hash_store(
+    std::unique_ptr<PrefHashStore> pref_hash_store(
         new PrefHashStoreImpl(kSeed, kDeviceId, true));
 
     base::StringValue string_value(value);
     PrefHashStoreImpl(kSeed, kDeviceId, true)
-        .BeginTransaction(scoped_ptr<HashStoreContents>(
+        .BeginTransaction(std::unique_ptr<HashStoreContents>(
             new PrefServiceHashStoreContents(kHashStoreId, &local_state_)))
         ->StoreHash(key, &string_value);
   }
@@ -351,7 +345,7 @@ class TrackedPreferencesMigrationTest : public testing::Test {
   // Helper given as an InterceptablePrefFilter::FinalizeFilterOnLoadCallback
   // to the migrator to be invoked when it's done.
   void GetPrefsBack(MockPrefStoreID store_id,
-                    scoped_ptr<base::DictionaryValue> prefs,
+                    std::unique_ptr<base::DictionaryValue> prefs,
                     bool prefs_altered) {
     switch (store_id) {
       case MOCK_UNPROTECTED_PREF_STORE:
@@ -406,8 +400,8 @@ class TrackedPreferencesMigrationTest : public testing::Test {
   static const char kSeed[];
   static const char kDeviceId[];
 
-  scoped_ptr<base::DictionaryValue> unprotected_prefs_;
-  scoped_ptr<base::DictionaryValue> protected_prefs_;
+  std::unique_ptr<base::DictionaryValue> unprotected_prefs_;
+  std::unique_ptr<base::DictionaryValue> protected_prefs_;
 
   SimpleInterceptablePrefFilter mock_unprotected_pref_filter_;
   SimpleInterceptablePrefFilter mock_protected_pref_filter_;

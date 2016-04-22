@@ -7,9 +7,10 @@
 #include <windows.h>
 #include <sddl.h>  // For ConvertSidToStringSidA.
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 MachineIdStatus GetDeterministicMachineSpecificId(std::string* machine_id) {
   DCHECK(machine_id);
@@ -24,7 +25,7 @@ MachineIdStatus GetDeterministicMachineSpecificId(std::string* machine_id) {
   char sid_buffer[SECURITY_MAX_SID_SIZE];
   SID* sid = reinterpret_cast<SID*>(sid_buffer);
   DWORD domain_size = 128;  // Will expand below if needed.
-  scoped_ptr<wchar_t[]> domain_buffer(new wchar_t[domain_size]);
+  std::unique_ptr<wchar_t[]> domain_buffer(new wchar_t[domain_size]);
   SID_NAME_USE sid_name_use;
 
   // Although the fifth argument to |LookupAccountNameW()|,

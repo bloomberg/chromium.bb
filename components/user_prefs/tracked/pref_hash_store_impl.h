@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_
 #define COMPONENTS_USER_PREFS_TRACKED_PREF_HASH_STORE_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/user_prefs/tracked/pref_hash_calculator.h"
 #include "components/user_prefs/tracked/pref_hash_store.h"
 
@@ -44,21 +44,21 @@ class PrefHashStoreImpl : public PrefHashStore {
   // Provides an external HashStoreContents implementation to be used.
   // BeginTransaction() will ignore |storage| if this is provided.
   void set_legacy_hash_store_contents(
-      scoped_ptr<HashStoreContents> legacy_hash_store_contents);
+      std::unique_ptr<HashStoreContents> legacy_hash_store_contents);
 
   // Clears the contents of this PrefHashStore. |IsInitialized()| will return
   // false after this call.
   void Reset();
 
   // PrefHashStore implementation.
-  scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
-      scoped_ptr<HashStoreContents> storage) override;
+  std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
+      std::unique_ptr<HashStoreContents> storage) override;
 
  private:
   class PrefHashStoreTransactionImpl;
 
   const PrefHashCalculator pref_hash_calculator_;
-  scoped_ptr<HashStoreContents> legacy_hash_store_contents_;
+  std::unique_ptr<HashStoreContents> legacy_hash_store_contents_;
   bool use_super_mac_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);

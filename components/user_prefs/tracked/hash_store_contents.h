@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_HASH_STORE_CONTENTS_H_
 #define COMPONENTS_USER_PREFS_TRACKED_HASH_STORE_CONTENTS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -50,7 +50,7 @@ class HashStoreContents {
   virtual const base::DictionaryValue* GetContents() const = 0;
 
   // Provides mutable access to the contents of this hash store.
-  virtual scoped_ptr<MutableDictionary> GetMutableContents() = 0;
+  virtual std::unique_ptr<MutableDictionary> GetMutableContents() = 0;
 
   // Retrieves the super MAC value previously stored by SetSuperMac. May be
   // empty if no super MAC has been stored.

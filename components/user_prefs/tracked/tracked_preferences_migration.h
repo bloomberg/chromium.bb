@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_TRACKED_PREFERENCES_MIGRATION_H_
 #define COMPONENTS_USER_PREFS_TRACKED_TRACKED_PREFERENCES_MIGRATION_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/user_prefs/tracked/pref_hash_store.h"
 
 class HashStoreContents;
@@ -39,9 +39,9 @@ void SetupTrackedPreferencesMigration(
         register_on_successful_unprotected_store_write_callback,
     const base::Callback<void(const base::Closure&)>&
         register_on_successful_protected_store_write_callback,
-    scoped_ptr<PrefHashStore> unprotected_pref_hash_store,
-    scoped_ptr<PrefHashStore> protected_pref_hash_store,
-    scoped_ptr<HashStoreContents> legacy_pref_hash_store,
+    std::unique_ptr<PrefHashStore> unprotected_pref_hash_store,
+    std::unique_ptr<PrefHashStore> protected_pref_hash_store,
+    std::unique_ptr<HashStoreContents> legacy_pref_hash_store,
     InterceptablePrefFilter* unprotected_pref_filter,
     InterceptablePrefFilter* protected_pref_filter);
 

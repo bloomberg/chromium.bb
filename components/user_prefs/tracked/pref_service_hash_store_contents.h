@@ -58,7 +58,7 @@ class PrefServiceHashStoreContents : public HashStoreContents {
   void Reset() override;
   bool IsInitialized() const override;
   const base::DictionaryValue* GetContents() const override;
-  scoped_ptr<MutableDictionary> GetMutableContents() override;
+  std::unique_ptr<MutableDictionary> GetMutableContents() override;
   std::string GetSuperMac() const override;
   void SetSuperMac(const std::string& super_mac) override;
 

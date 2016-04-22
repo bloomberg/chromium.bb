@@ -6,12 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -51,7 +51,7 @@ std::string ValueAsString(const base::Value* value) {
   // Dictionary values may contain empty lists and sub-dictionaries. Make a
   // deep copy with those removed to make the hash more stable.
   const base::DictionaryValue* dict_value;
-  scoped_ptr<base::DictionaryValue> canonical_dict_value;
+  std::unique_ptr<base::DictionaryValue> canonical_dict_value;
   if (value && value->GetAsDictionary(&dict_value)) {
     canonical_dict_value = dict_value->DeepCopyWithoutEmptyChildren();
     value = canonical_dict_value.get();

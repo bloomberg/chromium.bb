@@ -16,8 +16,8 @@
 
 class PrefHashStoreImplTest : public testing::Test {
  protected:
-  scoped_ptr<HashStoreContents> CreateHashStoreContents() {
-    return scoped_ptr<HashStoreContents>(
+  std::unique_ptr<HashStoreContents> CreateHashStoreContents() {
+    return std::unique_ptr<HashStoreContents>(
         new DictionaryHashStoreContents(&pref_store_contents_));
   }
 
@@ -32,7 +32,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   {
     // 32 NULL bytes is the seed that was used to generate the legacy hash.
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
 
     // Only NULL should be trusted in the absence of a hash.
@@ -69,7 +69,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     // |pref_hash_store2| should trust its initial hashes dictionary and thus
     // trust new unknown values.
     PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction(CreateHashStoreContents()));
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_1));
@@ -86,7 +86,7 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     // |pref_hash_store3| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust non-NULL unknown values.
     PrefHashStoreImpl pref_hash_store3(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store3.BeginTransaction(CreateHashStoreContents()));
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_1));
@@ -104,7 +104,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
   // Initial state: no super MAC.
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_FALSE(transaction->IsSuperMACValid());
 
@@ -123,13 +123,13 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
   // Make a copy of the stored hash for future use.
   const base::Value* hash = NULL;
   ASSERT_TRUE(CreateHashStoreContents()->GetContents()->Get("path1", &hash));
-  scoped_ptr<base::Value> path_1_string_1_hash_copy(hash->DeepCopy());
+  std::unique_ptr<base::Value> path_1_string_1_hash_copy(hash->DeepCopy());
   hash = NULL;
 
   // Verify that the super MAC was stamped.
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_TRUE(transaction->IsSuperMACValid());
     ASSERT_TRUE(transaction->HasHash("path1"));
@@ -148,7 +148,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
   // Verify that validity was preserved and that the clear took effect.
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_TRUE(transaction->IsSuperMACValid());
     ASSERT_FALSE(transaction->HasHash("path1"));
@@ -159,7 +159,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
 
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_FALSE(transaction->IsSuperMACValid());
     ASSERT_FALSE(transaction->HasHash("path1"));
@@ -177,7 +177,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
   // Verify that invalidity was preserved and that the import took effect.
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_FALSE(transaction->IsSuperMACValid());
     ASSERT_TRUE(transaction->HasHash("path1"));
@@ -195,7 +195,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
 
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_FALSE(transaction->IsSuperMACValid());
 
@@ -206,7 +206,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
   // Verify that the store is now valid.
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_TRUE(transaction->IsSuperMACValid());
 
@@ -220,7 +220,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
 
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_TRUE(transaction->IsSuperMACValid());
 
@@ -235,7 +235,7 @@ TEST_F(PrefHashStoreImplTest, ImportExportOperations) {
   // Verify that validity was preserved and the "over-import" took effect.
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
     ASSERT_TRUE(transaction->IsSuperMACValid());
     EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
@@ -252,7 +252,7 @@ TEST_F(PrefHashStoreImplTest, SuperMACDisabled) {
   {
     // Pass |use_super_mac| => false.
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", false);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
 
     transaction->StoreHash("path1", &string_2);
@@ -264,7 +264,7 @@ TEST_F(PrefHashStoreImplTest, SuperMACDisabled) {
 
   {
     PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", false);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction(CreateHashStoreContents()));
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", &string_1));
@@ -288,7 +288,7 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
 
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
 
     // No hashes stored yet and hashes dictionary is empty (and thus not
@@ -358,7 +358,7 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     // |pref_hash_store2| should trust its initial hashes dictionary and thus
     // trust new unknown values.
     PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction(CreateHashStoreContents()));
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("new_path", &dict, &invalid_keys));
@@ -372,7 +372,7 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     // |pref_hash_store3| should no longer trust its initial hashes dictionary
     // and thus shouldn't trust unknown values.
     PrefHashStoreImpl pref_hash_store3(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store3.BeginTransaction(CreateHashStoreContents()));
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("new_path", &dict, &invalid_keys));
@@ -387,7 +387,7 @@ TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
 
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
 
     // Store hashes for a random dict to be overwritten below.
@@ -423,7 +423,7 @@ TEST_F(PrefHashStoreImplTest, EmptyAndNULLSplitDict) {
     // test ensuring that the internal action of clearing some hashes does
     // update the stored hash of hashes).
     PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction(CreateHashStoreContents()));
 
     base::DictionaryValue tested_dict;
@@ -453,7 +453,7 @@ TEST_F(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
 
   {
     PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction(CreateHashStoreContents()));
 
     transaction->StoreHash("path1", &string);
@@ -464,7 +464,7 @@ TEST_F(PrefHashStoreImplTest, TrustedUnknownSplitValueFromExistingAtomic) {
   {
     // Load a new |pref_hash_store2| in which the hashes dictionary is trusted.
     PrefHashStoreImpl pref_hash_store2(std::string(32, 0), "device_id", true);
-    scoped_ptr<PrefHashStoreTransaction> transaction(
+    std::unique_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store2.BeginTransaction(CreateHashStoreContents()));
     std::vector<std::string> invalid_keys;
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,

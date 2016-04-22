@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/user_prefs/tracked/interceptable_pref_filter.h"
 #include "components/user_prefs/tracked/tracked_preference.h"
 
@@ -74,7 +74,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // the state of the super MAC will be reported via UMA during
   // FinalizeFilterOnLoad.
   PrefHashFilter(
-      scoped_ptr<PrefHashStore> pref_hash_store,
+      std::unique_ptr<PrefHashStore> pref_hash_store,
       const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
       const base::Closure& on_reset_on_load,
       TrackedPreferenceValidationDelegate* delegate,
@@ -107,7 +107,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // InterceptablePrefFilter implementation.
   void FinalizeFilterOnLoad(
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
-      scoped_ptr<base::DictionaryValue> pref_store_contents,
+      std::unique_ptr<base::DictionaryValue> pref_store_contents,
       bool prefs_altered) override;
 
   // Callback to be invoked only once (and subsequently reset) on the next
@@ -117,13 +117,14 @@ class PrefHashFilter : public InterceptablePrefFilter {
 
   // A map of paths to TrackedPreferences; this map owns this individual
   // TrackedPreference objects.
-  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<TrackedPreference>>
+  typedef base::ScopedPtrHashMap<std::string,
+                                 std::unique_ptr<TrackedPreference>>
       TrackedPreferencesMap;
   // A map from changed paths to their corresponding TrackedPreferences (which
   // aren't owned by this map).
   typedef std::map<std::string, const TrackedPreference*> ChangedPathsMap;
 
-  scoped_ptr<PrefHashStore> pref_hash_store_;
+  std::unique_ptr<PrefHashStore> pref_hash_store_;
 
   // Invoked if a reset occurs in a call to FilterOnLoad.
   const base::Closure on_reset_on_load_;

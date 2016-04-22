@@ -15,7 +15,7 @@ InterceptablePrefFilter::~InterceptablePrefFilter() {
 
 void InterceptablePrefFilter::FilterOnLoad(
     const PostFilterOnLoadCallback& post_filter_on_load_callback,
-    scoped_ptr<base::DictionaryValue> pref_store_contents) {
+    std::unique_ptr<base::DictionaryValue> pref_store_contents) {
   if (filter_on_load_interceptor_.is_null()) {
     FinalizeFilterOnLoad(post_filter_on_load_callback,
                          std::move(pref_store_contents), false);

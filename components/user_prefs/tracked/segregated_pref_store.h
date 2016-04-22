@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/prefs/persistent_pref_store.h"
 
@@ -55,7 +55,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
 
   // WriteablePrefStore implementation
   void SetValue(const std::string& key,
-                scoped_ptr<base::Value> value,
+                std::unique_ptr<base::Value> value,
                 uint32_t flags) override;
   void RemoveValue(const std::string& key, uint32_t flags) override;
 
@@ -63,7 +63,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
   void SetValueSilently(const std::string& key,
-                        scoped_ptr<base::Value> value,
+                        std::unique_ptr<base::Value> value,
                         uint32_t flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
@@ -104,7 +104,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   scoped_refptr<PersistentPrefStore> selected_pref_store_;
   std::set<std::string> selected_preference_names_;
 
-  scoped_ptr<PersistentPrefStore::ReadErrorDelegate> read_error_delegate_;
+  std::unique_ptr<PersistentPrefStore::ReadErrorDelegate> read_error_delegate_;
   base::ObserverList<PrefStore::Observer, true> observers_;
   AggregatingObserver aggregating_observer_;
 

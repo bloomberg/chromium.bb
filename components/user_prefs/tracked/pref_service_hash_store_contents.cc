@@ -121,9 +121,9 @@ const base::DictionaryValue* PrefServiceHashStoreContents::GetContents() const {
   return hashes_dict;
 }
 
-scoped_ptr<HashStoreContents::MutableDictionary>
+std::unique_ptr<HashStoreContents::MutableDictionary>
 PrefServiceHashStoreContents::GetMutableContents() {
-  return scoped_ptr<HashStoreContents::MutableDictionary>(
+  return std::unique_ptr<HashStoreContents::MutableDictionary>(
       new PrefServiceMutableDictionary(hash_store_id_, pref_service_));
 }
 

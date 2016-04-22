@@ -20,7 +20,7 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   // Constructs a PrefHashStoreTransactionImpl which can use the private
   // members of its |outer| PrefHashStoreImpl.
   PrefHashStoreTransactionImpl(PrefHashStoreImpl* outer,
-                               scoped_ptr<HashStoreContents> storage);
+                               std::unique_ptr<HashStoreContents> storage);
   ~PrefHashStoreTransactionImpl() override;
 
   // PrefHashStoreTransaction implementation.
@@ -56,7 +56,7 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   }
 
   PrefHashStoreImpl* outer_;
-  scoped_ptr<HashStoreContents> contents_;
+  std::unique_ptr<HashStoreContents> contents_;
 
   bool super_mac_valid_;
   bool super_mac_dirty_;
@@ -74,19 +74,19 @@ PrefHashStoreImpl::~PrefHashStoreImpl() {
 }
 
 void PrefHashStoreImpl::set_legacy_hash_store_contents(
-    scoped_ptr<HashStoreContents> legacy_hash_store_contents) {
+    std::unique_ptr<HashStoreContents> legacy_hash_store_contents) {
   legacy_hash_store_contents_ = std::move(legacy_hash_store_contents);
 }
 
-scoped_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction(
-    scoped_ptr<HashStoreContents> storage) {
-  return scoped_ptr<PrefHashStoreTransaction>(
+std::unique_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction(
+    std::unique_ptr<HashStoreContents> storage) {
+  return std::unique_ptr<PrefHashStoreTransaction>(
       new PrefHashStoreTransactionImpl(this, std::move(storage)));
 }
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
     PrefHashStoreImpl* outer,
-    scoped_ptr<HashStoreContents> storage)
+    std::unique_ptr<HashStoreContents> storage)
     : outer_(outer),
       contents_(std::move(storage)),
       super_mac_valid_(false),
@@ -232,7 +232,7 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckSplitValue(
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
     const std::string& path,
     const base::DictionaryValue* split_value) {
-  scoped_ptr<HashStoreContents::MutableDictionary> mutable_dictionary =
+  std::unique_ptr<HashStoreContents::MutableDictionary> mutable_dictionary =
       contents()->GetMutableContents();
   (*mutable_dictionary)->Remove(path, NULL);
 

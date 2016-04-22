@@ -78,9 +78,9 @@ const base::DictionaryValue* DictionaryHashStoreContents::GetContents() const {
   return mac_dictionary;
 }
 
-scoped_ptr<HashStoreContents::MutableDictionary>
+std::unique_ptr<HashStoreContents::MutableDictionary>
 DictionaryHashStoreContents::GetMutableContents() {
-  return scoped_ptr<MutableDictionary>(
+  return std::unique_ptr<MutableDictionary>(
       new MutablePreferenceMacDictionary(storage_));
 }
 

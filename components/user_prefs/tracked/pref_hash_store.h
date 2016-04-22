@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PREFS_TRACKED_PREF_HASH_STORE_H_
 #define COMPONENTS_PREFS_TRACKED_PREF_HASH_STORE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 class HashStoreContents;
 class PrefHashStoreTransaction;
@@ -21,8 +21,8 @@ class PrefHashStore {
   // of operations on the hash store. |storage| MAY be used as the backing store
   // depending on the implementation. Therefore the HashStoreContents used for
   // related transactions should correspond to the same underlying data store.
-  virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction(
-      scoped_ptr<HashStoreContents> storage) = 0;
+  virtual std::unique_ptr<PrefHashStoreTransaction> BeginTransaction(
+      std::unique_ptr<HashStoreContents> storage) = 0;
 };
 
 #endif  // COMPONENTS_PREFS_TRACKED_PREF_HASH_STORE_H_
