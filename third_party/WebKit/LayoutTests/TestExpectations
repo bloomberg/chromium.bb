@@ -354,6 +354,7 @@ crbug.com/552433 svg/W3C-SVG-1.1/coords-units-02-b.svg [ Pass Failure ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Failure Pass ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/transforms/text-with-pattern-with-svg-transform.svg [ Failure Pass ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/hixie/perf/006.xml [ Failure Pass ]
+crbug.com/605024 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure ]
 
 crbug.com/530044 transforms/2d/transform-borderbox.html [ NeedsManualRebaseline ]
 
@@ -475,7 +476,7 @@ crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl-vertical.html [ Failure
 crbug.com/593525 virtual/spv2/fast/overflow/overflow-rtl.html [ Failure ]
 crbug.com/593525 virtual/spv2/fast/overflow/table-overflow-float.html [ Failure ]
 # [SPv2] Handle transform space reversion in PaintArtifactCompositor
-crbug.com/597156 virtual/spv2/fast/clip/010.html [ Crash Failure ]
+crbug.com/597156 virtual/spv2/fast/clip/010.html [ Crash Failure Timeout ]
 # [SPv2] Implement border radius rasterizing / drawing
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-clip.html [ Failure ]
 crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-combinations.html [ Failure ]
