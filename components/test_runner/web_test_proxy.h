@@ -41,6 +41,7 @@ struct WebWindowFeatures;
 
 namespace test_runner {
 
+class AccessibilityController;
 class EventSender;
 class TestInterfaces;
 class TextInputController;
@@ -87,6 +88,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   EventSender* event_sender() { return event_sender_.get(); }
   void SetSendWheelGestures(bool send_gestures);
 
+  AccessibilityController* accessibility_controller() {
+    return accessibility_controller_.get();
+  }
+
   void Reset();
   void BindTo(blink::WebLocalFrame* frame);
 
@@ -104,6 +109,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   blink::WebView* web_view_;
   blink::WebWidget* web_widget_;
   scoped_ptr<WebViewTestClient> view_test_client_;
+  scoped_ptr<AccessibilityController> accessibility_controller_;
   scoped_ptr<EventSender> event_sender_;
   scoped_ptr<TextInputController> text_input_controller_;
 

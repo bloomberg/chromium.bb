@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "components/test_runner/accessibility_controller.h"
 #include "components/test_runner/event_sender.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/test_interfaces.h"
@@ -22,6 +23,7 @@ WebTestProxyBase::WebTestProxyBase()
       delegate_(nullptr),
       web_view_(nullptr),
       web_widget_(nullptr),
+      accessibility_controller_(new AccessibilityController(this)),
       event_sender_(new EventSender(this)),
       text_input_controller_(new TextInputController(this)) {}
 
@@ -39,11 +41,13 @@ void WebTestProxyBase::SetSendWheelGestures(bool send_gestures) {
 }
 
 void WebTestProxyBase::Reset() {
+  accessibility_controller_->Reset();
   event_sender_->Reset();
   // text_input_controller_ doesn't have any state to reset.
 }
 
 void WebTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
+  accessibility_controller_->Install(frame);
   event_sender_->Install(frame);
   text_input_controller_->Install(frame);
 }

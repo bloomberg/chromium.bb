@@ -5,6 +5,7 @@
 #include "components/test_runner/accessibility_controller.h"
 
 #include "base/macros.h"
+#include "components/test_runner/web_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -12,6 +13,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -23,7 +25,7 @@ class AccessibilityControllerBindings
   static gin::WrapperInfo kWrapperInfo;
 
   static void Install(base::WeakPtr<AccessibilityController> controller,
-                      blink::WebFrame* frame);
+                      blink::WebLocalFrame* frame);
 
  private:
   explicit AccessibilityControllerBindings(
@@ -52,7 +54,7 @@ gin::WrapperInfo AccessibilityControllerBindings::kWrapperInfo = {
 // static
 void AccessibilityControllerBindings::Install(
     base::WeakPtr<AccessibilityController> controller,
-    blink::WebFrame* frame) {
+    blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
@@ -133,10 +135,11 @@ v8::Local<v8::Object> AccessibilityControllerBindings::AccessibleElementById(
                      : v8::Local<v8::Object>();
 }
 
-AccessibilityController::AccessibilityController()
+AccessibilityController::AccessibilityController(
+    WebTestProxyBase* web_test_proxy_base)
     : log_accessibility_events_(false),
-      weak_factory_(this) {
-}
+      web_test_proxy_base_(web_test_proxy_base),
+      weak_factory_(this) {}
 
 AccessibilityController::~AccessibilityController() {}
 
@@ -146,7 +149,7 @@ void AccessibilityController::Reset() {
   log_accessibility_events_ = false;
 }
 
-void AccessibilityController::Install(blink::WebFrame* frame) {
+void AccessibilityController::Install(blink::WebLocalFrame* frame) {
   frame->view()->settings()->setAccessibilityEnabled(true);
   frame->view()->settings()->setInlineTextBoxAccessibilityEnabled(true);
 
@@ -162,7 +165,7 @@ void AccessibilityController::NotificationReceived(
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  blink::WebFrame* frame = web_view_->mainFrame();
+  blink::WebFrame* frame = web_view()->mainFrame();
   if (!frame || frame->isWebRemoteFrame())
     return;
 
@@ -199,14 +202,6 @@ void AccessibilityController::NotificationReceived(
       argv);
 }
 
-void AccessibilityController::SetDelegate(WebTestDelegate* delegate) {
-  delegate_ = delegate;
-}
-
-void AccessibilityController::SetWebView(blink::WebView* web_view) {
-  web_view_ = web_view;
-}
-
 void AccessibilityController::LogAccessibilityEvents() {
   log_accessibility_events_ = true;
 }
@@ -222,25 +217,25 @@ void AccessibilityController::UnsetNotificationListener() {
 }
 
 v8::Local<v8::Object> AccessibilityController::FocusedElement() {
-  blink::WebFrame* frame = web_view_->mainFrame();
+  blink::WebFrame* frame = web_view()->mainFrame();
   if (!frame)
     return v8::Local<v8::Object>();
 
   blink::WebAXObject focused_element =
       frame->document().focusedAccessibilityObject();
   if (focused_element.isNull())
-    focused_element = web_view_->accessibilityObject();
+    focused_element = web_view()->accessibilityObject();
   return elements_.GetOrCreate(focused_element);
 }
 
 v8::Local<v8::Object> AccessibilityController::RootElement() {
-  blink::WebAXObject root_element = web_view_->accessibilityObject();
+  blink::WebAXObject root_element = web_view()->accessibilityObject();
   return elements_.GetOrCreate(root_element);
 }
 
 v8::Local<v8::Object>
 AccessibilityController::AccessibleElementById(const std::string& id) {
-  blink::WebAXObject root_element = web_view_->accessibilityObject();
+  blink::WebAXObject root_element = web_view()->accessibilityObject();
 
   if (!root_element.updateLayoutAndCheckValidity())
     return v8::Local<v8::Object>();
@@ -272,6 +267,10 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
   }
 
   return v8::Local<v8::Object>();
+}
+
+blink::WebView* AccessibilityController::web_view() {
+  return web_test_proxy_base_->web_view();
 }
 
 }  // namespace test_runner

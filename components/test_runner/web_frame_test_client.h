@@ -28,7 +28,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   // forth) live longer than |this|.
   WebFrameTestClient(TestRunner* test_runner,
                      WebTestDelegate* delegate,
-                     AccessibilityController* accessibility_controller,
                      WebTestProxyBase* web_test_proxy_base);
 
   ~WebFrameTestClient() override;
@@ -114,7 +113,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   // Borrowed pointers to other parts of Layout Tests state.
   TestRunner* test_runner_;
   WebTestDelegate* delegate_;
-  AccessibilityController* accessibility_controller_;
   WebTestProxyBase* web_test_proxy_base_;
 
   // Map from request identifier into resource url description.  The map is used

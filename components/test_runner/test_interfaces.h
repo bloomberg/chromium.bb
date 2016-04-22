@@ -22,7 +22,6 @@ class WebView;
 
 namespace test_runner {
 
-class AccessibilityController;
 class AppBannerClient;
 class GamepadController;
 class TestRunner;
@@ -47,7 +46,6 @@ class TestInterfaces {
   void WindowOpened(WebTestProxyBase* proxy);
   void WindowClosed(WebTestProxyBase* proxy);
 
-  AccessibilityController* GetAccessibilityController();
   TestRunner* GetTestRunner();
   WebTestDelegate* GetDelegate();
   const std::vector<WebTestProxyBase*>& GetWindowList();
@@ -55,7 +53,6 @@ class TestInterfaces {
   AppBannerClient* GetAppBannerClient();
 
  private:
-  scoped_ptr<AccessibilityController> accessibility_controller_;
   base::WeakPtr<GamepadController> gamepad_controller_;
   scoped_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;

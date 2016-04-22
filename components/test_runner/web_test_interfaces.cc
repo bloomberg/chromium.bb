@@ -89,9 +89,9 @@ WebTestInterfaces::CreateAppBannerClient() {
 
 scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
     WebTestProxyBase* web_test_proxy_base) {
-  return make_scoped_ptr(new WebFrameTestClient(
-      interfaces_->GetTestRunner(), interfaces_->GetDelegate(),
-      interfaces_->GetAccessibilityController(), web_test_proxy_base));
+  return make_scoped_ptr(new WebFrameTestClient(interfaces_->GetTestRunner(),
+                                                interfaces_->GetDelegate(),
+                                                web_test_proxy_base));
 }
 
 scoped_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(

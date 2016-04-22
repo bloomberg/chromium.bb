@@ -200,15 +200,12 @@ void CheckDone(blink::WebLocalFrame* frame,
 WebFrameTestClient::WebFrameTestClient(
     TestRunner* test_runner,
     WebTestDelegate* delegate,
-    AccessibilityController* accessibility_controller,
     WebTestProxyBase* web_test_proxy_base)
     : test_runner_(test_runner),
       delegate_(delegate),
-      accessibility_controller_(accessibility_controller),
       web_test_proxy_base_(web_test_proxy_base) {
   DCHECK(test_runner);
   DCHECK(delegate_);
-  DCHECK(accessibility_controller_);
   DCHECK(web_test_proxy_base_);
 }
 
@@ -368,8 +365,10 @@ void WebFrameTestClient::postAccessibilityEvent(const blink::WebAXObject& obj,
       break;
   }
 
-  accessibility_controller_->NotificationReceived(obj, event_name);
-  if (accessibility_controller_->ShouldLogAccessibilityEvents()) {
+  AccessibilityController* accessibility_controller =
+      web_test_proxy_base_->accessibility_controller();
+  accessibility_controller->NotificationReceived(obj, event_name);
+  if (accessibility_controller->ShouldLogAccessibilityEvents()) {
     std::string message("AccessibilityNotification - ");
     message += event_name;
 

@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "components/test_runner/accessibility_controller.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/gamepad_controller.h"
 #include "components/test_runner/gc_controller.h"
@@ -28,8 +27,7 @@
 namespace test_runner {
 
 TestInterfaces::TestInterfaces()
-    : accessibility_controller_(new AccessibilityController()),
-      test_runner_(new TestRunner(this)),
+    : test_runner_(new TestRunner(this)),
       delegate_(nullptr),
       app_banner_client_(nullptr) {
   blink::setLayoutTestMode(true);
@@ -40,31 +38,26 @@ TestInterfaces::TestInterfaces()
 }
 
 TestInterfaces::~TestInterfaces() {
-  accessibility_controller_->SetWebView(nullptr);
   // gamepad_controller_ doesn't depend on WebView.
   test_runner_->SetWebView(nullptr);
 
-  accessibility_controller_->SetDelegate(nullptr);
   // gamepad_controller_ ignores SetDelegate(nullptr)
   test_runner_->SetDelegate(nullptr);
 }
 
 void TestInterfaces::SetWebView(blink::WebView* web_view,
                                 WebTestProxyBase* proxy) {
-  accessibility_controller_->SetWebView(web_view);
   // gamepad_controller_ doesn't depend on WebView.
   test_runner_->SetWebView(web_view);
 }
 
 void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
-  accessibility_controller_->SetDelegate(delegate);
   gamepad_controller_ = GamepadController::Create(delegate);
   test_runner_->SetDelegate(delegate);
   delegate_ = delegate;
 }
 
 void TestInterfaces::BindTo(blink::WebFrame* frame) {
-  accessibility_controller_->Install(frame);
   if (gamepad_controller_)
     gamepad_controller_->Install(frame);
   test_runner_->Install(frame);
@@ -72,7 +65,6 @@ void TestInterfaces::BindTo(blink::WebFrame* frame) {
 }
 
 void TestInterfaces::ResetTestHelperControllers() {
-  accessibility_controller_->Reset();
   if (gamepad_controller_)
     gamepad_controller_->Reset();
   blink::WebCache::clear();
@@ -138,10 +130,6 @@ void TestInterfaces::WindowClosed(WebTestProxyBase* proxy) {
     return;
   }
   window_list_.erase(pos);
-}
-
-AccessibilityController* TestInterfaces::GetAccessibilityController() {
-  return accessibility_controller_.get();
 }
 
 TestRunner* TestInterfaces::GetTestRunner() {
