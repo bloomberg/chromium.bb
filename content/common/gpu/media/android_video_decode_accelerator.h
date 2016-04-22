@@ -87,6 +87,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     virtual void ReuseOnePictureBuffer(
         const media::PictureBuffer& picture_buffer) {}
 
+    // Release MediaCodec buffers.
+    virtual void ReleaseCodecBuffers(
+        const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {}
+
     // Notify strategy that we have a new android MediaCodec instance.  This
     // happens when we're starting up or re-configuring mid-stream.  Any
     // previously provided codec should no longer be referenced.
@@ -157,7 +161,13 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     WAITING_FOR_CODEC,
     // Set when we have a codec, but it doesn't yet have a key.
     WAITING_FOR_KEY,
-    WAITING_FOR_EOS,
+  };
+
+  enum DrainType {
+    DRAIN_TYPE_NONE,
+    DRAIN_FOR_FLUSH,
+    DRAIN_FOR_RESET,
+    DRAIN_FOR_DESTROY,
   };
 
   // Configuration info for MediaCodec.
@@ -193,6 +203,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
    private:
     DISALLOW_COPY_AND_ASSIGN(CodecConfig);
   };
+
+  // A part of destruction process that is sometimes postponed after the drain.
+  void ActualDestroy();
 
   // Configures |media_codec_| with the given codec parameters from the client.
   // This configuration will (probably) not be complete before this call
@@ -280,11 +293,27 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // start the timer.  Calling it with false may stop the timer.
   void ManageTimer(bool did_work);
 
+  // Start the MediaCodec drain process by adding end_of_stream() buffer to the
+  // encoded buffers queue. When we receive EOS from the output buffer the drain
+  // process completes and we perform the action depending on the |drain_type|.
+  void StartCodecDrain(DrainType drain_type);
+
+  // Returns true if we are currently draining the codec and doing that as part
+  // of Reset() or Destroy() VP8 workaround. (http://crbug.com/598963). We won't
+  // display any frames and disable normal errors handling.
+  bool IsDrainingForResetOrDestroy() const;
+
+  // A helper method that performs the operation required after the drain
+  // completion (usually when we receive EOS in the output). The operation
+  // itself depends on the |drain_type_|.
+  void OnDrainCompleted();
+
   // Resets MediaCodec and buffers/containers used for storing output. These
   // components need to be reset upon EOS to decode a later stream. Input state
   // (e.g. queued BitstreamBuffers) is not reset, as input following an EOS
-  // is still valid and should be processed.
-  void ResetCodecState();
+  // is still valid and should be processed. Upon competion calls |done_cb| that
+  // can be a null callback.
+  void ResetCodecState(const base::Closure& done_cb);
 
   // Return true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy(
@@ -349,6 +378,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Time at which we last did useful work on io_timer_.
   base::TimeTicks most_recent_work_;
+
+  // Type of a drain request. We need to distinguish between DRAIN_FOR_FLUSH
+  // and other types, see IsDrainingForResetOrDestroy().
+  DrainType drain_type_;
 
   // CDM related stuff.
 

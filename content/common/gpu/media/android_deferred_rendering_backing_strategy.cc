@@ -79,8 +79,10 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
 
   // Make sure that no PictureBuffer textures refer to the SurfaceTexture or to
   // the service_id that we created for it.
-  for (const std::pair<int, media::PictureBuffer>& entry : buffers)
+  for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
+    ReleaseCodecBufferForPicture(entry.second);
     SetImageForPicture(entry.second, nullptr);
+  }
 
   // If we're rendering to a SurfaceTexture we can make a copy of the current
   // front buffer so that the PictureBuffer textures are still valid.
@@ -217,6 +219,9 @@ void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBufferForPicture(
       shared_state_->GetImageForPicture(picture_buffer.id());
   RETURN_IF_NULL(avda_image);
 
+  if (!avda_image)
+    return;
+
   // See if there is a media codec buffer still attached to this image.
   const int32_t codec_buffer = avda_image->GetMediaCodecBufferIndex();
 
@@ -234,6 +239,12 @@ void AndroidDeferredRenderingBackingStrategy::ReuseOnePictureBuffer(
   // when it waits on the sync point before releasing the mailbox.  That sync
   // point is inserted by destroying the resource in VideoLayerImpl::DidDraw.
   ReleaseCodecBufferForPicture(picture_buffer);
+}
+
+void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBuffers(
+    const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
+  for (const std::pair<int, media::PictureBuffer>& entry : buffers)
+    ReleaseCodecBufferForPicture(entry.second);
 }
 
 void AndroidDeferredRenderingBackingStrategy::CodecChanged(
