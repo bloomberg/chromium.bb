@@ -65,6 +65,8 @@ gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
 
 VulkanInProcessContextProvider::VulkanInProcessContextProvider() {}
 
-VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {}
+VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
+  Destroy();
+}
 
 }  // namespace cc

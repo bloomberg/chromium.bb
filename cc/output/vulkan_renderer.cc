@@ -29,7 +29,8 @@ void VulkanRenderer::Finish() {
 }
 
 void VulkanRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
-  NOTIMPLEMENTED();
+  CompositorFrame* compositor_frame = nullptr;
+  output_surface_->SwapBuffers(compositor_frame);
 }
 
 void VulkanRenderer::ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {

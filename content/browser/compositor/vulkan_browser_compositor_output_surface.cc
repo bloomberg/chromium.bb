@@ -17,7 +17,7 @@ VulkanBrowserCompositorOutputSurface::VulkanBrowserCompositorOutputSurface(
     : BrowserCompositorOutputSurface(context, vsync_manager, task_runner) {}
 
 VulkanBrowserCompositorOutputSurface::~VulkanBrowserCompositorOutputSurface() {
-  DCHECK(!surface_);
+  Destroy();
 }
 
 bool VulkanBrowserCompositorOutputSurface::Initialize(
