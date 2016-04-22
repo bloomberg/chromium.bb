@@ -50,7 +50,6 @@ source_set("lib") {
     "//ui/gfx/geometry",
     "//ui/keyboard:mojom",
     "//ui/message_center",
-    "//ui/mojo/init",
     "//ui/platform_window/stub",
     "//ui/resources",
     "//ui/strings",

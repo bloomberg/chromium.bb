@@ -235,7 +235,8 @@ void ScreenMus::OnDisplaysChanged(
           transport_displays[i]
               ->frame_decoration_values.To<WindowManagerFrameValues>();
       WindowManagerFrameValues::SetInstance(frame_values);
-      delegate_->OnWindowManagerFrameValuesChanged();
+      if (delegate_)
+        delegate_->OnWindowManagerFrameValuesChanged();
     }
   }
 }

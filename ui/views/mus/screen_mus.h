@@ -28,6 +28,7 @@ class VIEWS_MUS_EXPORT ScreenMus
     : public gfx::Screen,
       public NON_EXPORTED_BASE(mus::mojom::DisplayManagerObserver) {
  public:
+  // |delegate| can be nullptr.
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
@@ -59,7 +60,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   void OnDisplaysChanged(mojo::Array<mus::mojom::DisplayPtr> display) override;
   void OnDisplayRemoved(int64_t id) override;
 
-  ScreenMusDelegate* delegate_;
+  ScreenMusDelegate* delegate_;  // Can be nullptr.
   mus::mojom::DisplayManagerPtr display_manager_;
   std::vector<gfx::Display> displays_;
   int primary_display_index_;

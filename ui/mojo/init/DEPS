@@ -1,5 +1,0 @@
-include_rules = [
-  "+mojo/converters/geometry",
-  "+ui/events/gesture_detection",
-  "+ui/gfx",
-]

@@ -21,9 +21,9 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "ui/events/event.h"
-#include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
+#include "ui/views/mus/screen_mus.h"
 
 namespace mash {
 namespace wm {
@@ -55,16 +55,14 @@ std::set<RootWindowController*> WindowManagerApplication::GetRootControllers() {
 
 void WindowManagerApplication::OnRootWindowControllerGotRoot(
     RootWindowController* root_controller) {
-  if (ui_init_.get())
-    return;
-
-  ui_init_.reset(new ui::mojo::UIInit(
-      views::GetDisplaysFromWindow(root_controller->root())));
   aura_init_.reset(new views::AuraInit(connector_, "mash_wm_resources.pak"));
 }
 
 void WindowManagerApplication::OnRootWindowControllerDoneInit(
     RootWindowController* root_controller) {
+  screen_.reset(new views::ScreenMus(nullptr));
+  screen_->Init(connector_);
+
   // TODO(msw): figure out if this should be per display, or global.
   user_window_controller_->Initialize(root_controller);
   for (auto& request : user_window_controller_requests_)

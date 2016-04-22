@@ -81,7 +81,6 @@ source_set("lib") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/mojo/init",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",

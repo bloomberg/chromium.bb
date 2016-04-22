@@ -25,14 +25,9 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
-namespace ui {
-namespace mojo {
-class UIInit;
-}
-}
-
 namespace views {
 class AuraInit;
+class ScreenMus;
 }
 
 namespace ui {
@@ -117,7 +112,7 @@ class WindowManagerApplication
 
   mojo::TracingImpl tracing_;
 
-  std::unique_ptr<ui::mojo::UIInit> ui_init_;
+  std::unique_ptr<views::ScreenMus> screen_;
   std::unique_ptr<views::AuraInit> aura_init_;
 
   // The ShelfLayout object is created once OnEmbed() is called. Until that
