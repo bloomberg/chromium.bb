@@ -160,7 +160,7 @@ class HistoryServiceTest : public testing::Test {
   // When non-NULL, this will be deleted on tear down and we will block until
   // the backend thread has completed. This allows tests for the history
   // service to use this feature, but other tests to ignore this.
-  scoped_ptr<history::HistoryService> history_service_;
+  std::unique_ptr<history::HistoryService> history_service_;
 
   // names of the database files
   base::FilePath history_dir_;
@@ -594,7 +594,7 @@ TEST_F(HistoryServiceTest, HistoryDBTask) {
   int invoke_count = 0;
   bool done_invoked = false;
   history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
+      std::unique_ptr<history::HistoryDBTask>(
           new HistoryDBTaskImpl(&invoke_count, &done_invoked)),
       &task_tracker);
   // Run the message loop. When HistoryDBTaskImpl::DoneRunOnMainThread runs,
@@ -614,7 +614,7 @@ TEST_F(HistoryServiceTest, HistoryDBTaskCanceled) {
   int invoke_count = 0;
   bool done_invoked = false;
   history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
+      std::unique_ptr<history::HistoryDBTask>(
           new HistoryDBTaskImpl(&invoke_count, &done_invoked)),
       &task_tracker);
   task_tracker.TryCancelAll();
@@ -650,16 +650,16 @@ TEST_F(HistoryServiceTest, ProcessLocalDeleteDirectiveSyncOnline) {
 
   syncer::FakeSyncChangeProcessor change_processor;
 
-  EXPECT_FALSE(
-      history_service_->MergeDataAndStartSyncing(
-                            syncer::HISTORY_DELETE_DIRECTIVES,
-                            syncer::SyncDataList(),
-                            scoped_ptr<syncer::SyncChangeProcessor>(
-                                new syncer::SyncChangeProcessorWrapperForTest(
-                                    &change_processor)),
-                            scoped_ptr<syncer::SyncErrorFactory>())
-          .error()
-          .IsSet());
+  EXPECT_FALSE(history_service_
+                   ->MergeDataAndStartSyncing(
+                       syncer::HISTORY_DELETE_DIRECTIVES,
+                       syncer::SyncDataList(),
+                       std::unique_ptr<syncer::SyncChangeProcessor>(
+                           new syncer::SyncChangeProcessorWrapperForTest(
+                               &change_processor)),
+                       std::unique_ptr<syncer::SyncErrorFactory>())
+                   .error()
+                   .IsSet());
 
   syncer::SyncError err =
       history_service_->ProcessLocalDeleteDirective(delete_directive);
@@ -741,16 +741,15 @@ TEST_F(HistoryServiceTest, ProcessGlobalIdDeleteDirective) {
       syncer::AttachmentServiceProxyForTest::Create()));
 
   syncer::FakeSyncChangeProcessor change_processor;
-  EXPECT_FALSE(
-      history_service_->MergeDataAndStartSyncing(
-                            syncer::HISTORY_DELETE_DIRECTIVES,
-                            directives,
-                            scoped_ptr<syncer::SyncChangeProcessor>(
-                                new syncer::SyncChangeProcessorWrapperForTest(
-                                    &change_processor)),
-                            scoped_ptr<syncer::SyncErrorFactory>())
-          .error()
-          .IsSet());
+  EXPECT_FALSE(history_service_
+                   ->MergeDataAndStartSyncing(
+                       syncer::HISTORY_DELETE_DIRECTIVES, directives,
+                       std::unique_ptr<syncer::SyncChangeProcessor>(
+                           new syncer::SyncChangeProcessorWrapperForTest(
+                               &change_processor)),
+                       std::unique_ptr<syncer::SyncErrorFactory>())
+                   .error()
+                   .IsSet());
 
   // Inject a task to check status and keep message loop filled before directive
   // processing finishes.
@@ -826,16 +825,15 @@ TEST_F(HistoryServiceTest, ProcessTimeRangeDeleteDirective) {
       syncer::AttachmentServiceProxyForTest::Create()));
 
   syncer::FakeSyncChangeProcessor change_processor;
-  EXPECT_FALSE(
-      history_service_->MergeDataAndStartSyncing(
-                            syncer::HISTORY_DELETE_DIRECTIVES,
-                            directives,
-                            scoped_ptr<syncer::SyncChangeProcessor>(
-                                new syncer::SyncChangeProcessorWrapperForTest(
-                                    &change_processor)),
-                            scoped_ptr<syncer::SyncErrorFactory>())
-          .error()
-          .IsSet());
+  EXPECT_FALSE(history_service_
+                   ->MergeDataAndStartSyncing(
+                       syncer::HISTORY_DELETE_DIRECTIVES, directives,
+                       std::unique_ptr<syncer::SyncChangeProcessor>(
+                           new syncer::SyncChangeProcessorWrapperForTest(
+                               &change_processor)),
+                       std::unique_ptr<syncer::SyncErrorFactory>())
+                   .error()
+                   .IsSet());
 
   // Inject a task to check status and keep message loop filled before
   // directive processing finishes.

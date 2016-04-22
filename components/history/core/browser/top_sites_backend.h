@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_BACKEND_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_BACKEND_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/history/core/browser/history_types.h"
 
 namespace base {
@@ -101,7 +102,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
 
   base::FilePath db_path_;
 
-  scoped_ptr<TopSitesDatabase> db_;
+  std::unique_ptr<TopSitesDatabase> db_;
   scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesBackend);

@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 
+#include <memory>
 #include <queue>
 #include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
@@ -248,8 +248,8 @@ class ExpireHistoryBackend {
   // Readers for various types of visits.
   // TODO(dglazkov): If you are adding another one, please consider reorganizing
   // into a map.
-  scoped_ptr<ExpiringVisitsReader> all_visits_reader_;
-  scoped_ptr<ExpiringVisitsReader> auto_subframe_visits_reader_;
+  std::unique_ptr<ExpiringVisitsReader> all_visits_reader_;
+  std::unique_ptr<ExpiringVisitsReader> auto_subframe_visits_reader_;
 
   // The HistoryBackendClient; may be null.
   HistoryBackendClient* backend_client_;

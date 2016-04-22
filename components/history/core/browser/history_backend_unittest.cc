@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -19,8 +20,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -121,7 +122,8 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
       : test_(test) {}
 
   void NotifyProfileError(sql::InitStatus init_status) override {}
-  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) override;
+  void SetInMemoryBackend(
+      std::unique_ptr<InMemoryHistoryBackend> backend) override;
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url) override;
   void NotifyURLVisited(ui::PageTransition transition,
@@ -241,7 +243,7 @@ class HistoryBackendTestBase : public testing::Test {
 
   history::HistoryClientFakeBookmarks history_client_;
   scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
-  scoped_ptr<InMemoryHistoryBackend> mem_backend_;
+  std::unique_ptr<InMemoryHistoryBackend> mem_backend_;
   bool loaded_;
 
  private:
@@ -268,7 +270,7 @@ class HistoryBackendTestBase : public testing::Test {
     history_client_.ClearAllBookmarks();
   }
 
-  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) {
+  void SetInMemoryBackend(std::unique_ptr<InMemoryHistoryBackend> backend) {
     mem_backend_.swap(backend);
   }
 
@@ -286,7 +288,7 @@ class HistoryBackendTestBase : public testing::Test {
 };
 
 void HistoryBackendTestDelegate::SetInMemoryBackend(
-    scoped_ptr<InMemoryHistoryBackend> backend) {
+    std::unique_ptr<InMemoryHistoryBackend> backend) {
   test_->SetInMemoryBackend(std::move(backend));
 }
 
@@ -3501,9 +3503,9 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // Add a URL.
   GURL url("http://www.google.com");
-  scoped_ptr<HistoryService> service(
-      new HistoryService(make_scoped_ptr(new HistoryClientFakeBookmarks),
-                         scoped_ptr<history::VisitDelegate>()));
+  std::unique_ptr<HistoryService> service(
+      new HistoryService(base::WrapUnique(new HistoryClientFakeBookmarks),
+                         std::unique_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(
       service->Init(TestHistoryDatabaseParamsForPath(scoped_temp_dir.path())));
 

@@ -7,12 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -152,7 +153,7 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
 
   void NotifyProfileError(sql::InitStatus init_status) override {}
   void SetInMemoryBackend(
-      scoped_ptr<InMemoryHistoryBackend> backend) override{};
+      std::unique_ptr<InMemoryHistoryBackend> backend) override{};
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url) override{};
   void NotifyURLVisited(ui::PageTransition transition,
@@ -295,7 +296,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   base::ScopedTempDir test_dir_;
   scoped_refptr<TestHistoryBackend> fake_history_backend_;
   TypedUrlSyncableService* typed_url_sync_service_;
-  scoped_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;
+  std::unique_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;
 };
 
 void TypedUrlSyncableServiceTest::StartSyncing(
@@ -306,10 +307,10 @@ void TypedUrlSyncableServiceTest::StartSyncing(
   syncer::SyncMergeResult result =
       typed_url_sync_service_->MergeDataAndStartSyncing(
           syncer::TYPED_URLS, initial_data,
-          scoped_ptr<syncer::SyncChangeProcessor>(
+          std::unique_ptr<syncer::SyncChangeProcessor>(
               new syncer::SyncChangeProcessorWrapperForTest(
                   fake_change_processor_.get())),
-          scoped_ptr<syncer::SyncErrorFactory>(
+          std::unique_ptr<syncer::SyncErrorFactory>(
               new syncer::SyncErrorFactoryMock()));
   typed_url_sync_service_->history_backend_observer_.RemoveAll();
   EXPECT_FALSE(result.error().IsSet()) << result.error().message();

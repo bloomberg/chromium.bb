@@ -119,7 +119,7 @@ void ContentVisitDelegate::DeleteAllURLs() {
 void ContentVisitDelegate::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   DCHECK(history_service_);
-  scoped_ptr<HistoryDBTask> task(new IterateUrlsDBTask(enumerator));
+  std::unique_ptr<HistoryDBTask> task(new IterateUrlsDBTask(enumerator));
   history_service_->ScheduleDBTask(std::move(task), &task_tracker_);
 }
 

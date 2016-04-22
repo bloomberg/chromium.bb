@@ -32,7 +32,8 @@ class BackendDelegate : public HistoryBackend::Delegate {
   void NotifyProfileError(sql::InitStatus init_status) override {
     history_test_->last_profile_error_ = init_status;
   }
-  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) override {
+  void SetInMemoryBackend(
+      std::unique_ptr<InMemoryHistoryBackend> backend) override {
     // Save the in-memory backend to the history test object, this happens
     // synchronously, so we don't have to do anything fancy.
     history_test_->in_mem_backend_.swap(backend);

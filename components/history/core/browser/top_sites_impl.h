@@ -258,12 +258,12 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   scoped_refptr<TopSitesBackend> backend_;
 
   // The top sites data.
-  scoped_ptr<TopSitesCache> cache_;
+  std::unique_ptr<TopSitesCache> cache_;
 
   // Copy of the top sites data that may be accessed on any thread (assuming
   // you hold |lock_|). The data in |thread_safe_cache_| has blacklisted and
   // pinned urls applied (|cache_| does not).
-  scoped_ptr<TopSitesCache> thread_safe_cache_;
+  std::unique_ptr<TopSitesCache> thread_safe_cache_;
 
   // Lock used to access |thread_safe_cache_|.
   mutable base::Lock lock_;

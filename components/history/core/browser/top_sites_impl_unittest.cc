@@ -142,7 +142,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     pref_service_.reset(new TestingPrefServiceSimple);
     TopSitesImpl::RegisterPrefs(pref_service_->registry());
     history_service_.reset(
-        new HistoryService(nullptr, scoped_ptr<VisitDelegate>()));
+        new HistoryService(nullptr, std::unique_ptr<VisitDelegate>()));
     ASSERT_TRUE(history_service_->Init(
         TestHistoryDatabaseParamsForPath(scoped_temp_dir_.path())));
     ResetTopSites();
@@ -177,7 +177,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // need to wait until you know history has processed a task.
   void WaitForHistory() {
     history_service()->ScheduleDBTask(
-        scoped_ptr<history::HistoryDBTask>(new WaitForHistoryTask()),
+        std::unique_ptr<history::HistoryDBTask>(new WaitForHistoryTask()),
         &history_tracker_);
     base::MessageLoop::current()->Run();
   }
@@ -339,8 +339,8 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   base::ScopedTempDir scoped_temp_dir_;
   base::MessageLoopForUI message_loop_;
 
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<HistoryService> history_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<HistoryService> history_service_;
   scoped_refptr<TopSitesImpl> top_sites_impl_;
 
   // To cancel HistoryService tasks.

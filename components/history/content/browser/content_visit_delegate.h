@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_HISTORY_CONTENT_BROWSER_CONTENT_VISIT_DELEGATE_H_
 #define COMPONENTS_HISTORY_CONTENT_BROWSER_CONTENT_VISIT_DELEGATE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
@@ -44,7 +44,7 @@ class ContentVisitDelegate : public VisitDelegate,
       visitedlink::VisitedLinkDelegate::URLEnumerator>& enumerator) override;
 
   HistoryService* history_service_;  // Weak.
-  scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
+  std::unique_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
   base::CancelableTaskTracker task_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVisitDelegate);

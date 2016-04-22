@@ -99,7 +99,7 @@ class TopSitesDatabase {
 
   sql::Connection* CreateDB(const base::FilePath& db_name);
 
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesDatabase);

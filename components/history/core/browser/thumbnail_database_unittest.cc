@@ -156,13 +156,13 @@ class ThumbnailDatabaseTest : public testing::Test {
 
   // Initialize a thumbnail database instance from the SQL file at
   // |golden_path| in the "History/" subdirectory of test data.
-  scoped_ptr<ThumbnailDatabase> LoadFromGolden(const char* golden_path) {
+  std::unique_ptr<ThumbnailDatabase> LoadFromGolden(const char* golden_path) {
     if (!CreateDatabaseFromSQL(file_name_, golden_path)) {
       ADD_FAILURE() << "Failed loading " << golden_path;
-      return scoped_ptr<ThumbnailDatabase>();
+      return std::unique_ptr<ThumbnailDatabase>();
     }
 
-    scoped_ptr<ThumbnailDatabase> db(new ThumbnailDatabase(NULL));
+    std::unique_ptr<ThumbnailDatabase> db(new ThumbnailDatabase(NULL));
     EXPECT_EQ(sql::INIT_OK, db->Init(file_name_));
     db->BeginTransaction();
 
@@ -602,7 +602,7 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
 
 // Test loading version 3 database.
 TEST_F(ThumbnailDatabaseTest, Version3) {
-  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v3.sql");
+  std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v3.sql");
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 
@@ -612,7 +612,7 @@ TEST_F(ThumbnailDatabaseTest, Version3) {
 
 // Test loading version 4 database.
 TEST_F(ThumbnailDatabaseTest, Version4) {
-  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v4.sql");
+  std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v4.sql");
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 
@@ -622,7 +622,7 @@ TEST_F(ThumbnailDatabaseTest, Version4) {
 
 // Test loading version 5 database.
 TEST_F(ThumbnailDatabaseTest, Version5) {
-  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v5.sql");
+  std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v5.sql");
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 
@@ -632,7 +632,7 @@ TEST_F(ThumbnailDatabaseTest, Version5) {
 
 // Test loading version 6 database.
 TEST_F(ThumbnailDatabaseTest, Version6) {
-  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v6.sql");
+  std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v6.sql");
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 
@@ -668,7 +668,7 @@ TEST_F(ThumbnailDatabaseTest, Version6) {
 
 // Test loading version 7 database.
 TEST_F(ThumbnailDatabaseTest, Version7) {
-  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v7.sql");
+  std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v7.sql");
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 
@@ -704,7 +704,7 @@ TEST_F(ThumbnailDatabaseTest, Version7) {
 
 // Test loading version 8 database.
 TEST_F(ThumbnailDatabaseTest, Version8) {
-  scoped_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v8.sql");
+  std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v8.sql");
   ASSERT_TRUE(db.get() != NULL);
   VerifyTablesAndColumns(&db->db_);
 

@@ -331,7 +331,7 @@ bool TopSitesImpl::HasBlacklistedItems() const {
 void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<base::Value> dummy = base::Value::CreateNullValue();
+  std::unique_ptr<base::Value> dummy = base::Value::CreateNullValue();
   {
     DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();

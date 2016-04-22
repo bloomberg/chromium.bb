@@ -4,9 +4,10 @@
 
 #include "components/history/core/browser/web_history_service.h"
 
+#include <memory>
+
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -44,8 +45,7 @@ class TestingWebHistoryService : public WebHistoryService {
 
   // This is sorta an override but override and static don't mix.
   // This function just calls WebHistoryService::ReadResponse.
-  static scoped_ptr<base::DictionaryValue> ReadResponse(
-      Request* request);
+  static std::unique_ptr<base::DictionaryValue> ReadResponse(Request* request);
 
   const std::string& GetExpectedPostData(WebHistoryService::Request* request);
 
@@ -158,7 +158,7 @@ WebHistoryService::Request* TestingWebHistoryService::CreateRequest(
   return request;
 }
 
-scoped_ptr<base::DictionaryValue> TestingWebHistoryService::ReadResponse(
+std::unique_ptr<base::DictionaryValue> TestingWebHistoryService::ReadResponse(
     Request* request) {
   return WebHistoryService::ReadResponse(request);
 }
@@ -308,15 +308,13 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // Test that properly formatted response with good response code returns true
   // as expected.
   WebHistoryService::CompletionCallback completion_callback;
-  scoped_ptr<WebHistoryService::Request> request(
-      new TestRequest(
-          GURL("http://history.google.com/"),
-          completion_callback,
-          net::HTTP_OK, /* response code */
-          "{\n" /* response body */
-          "  \"history_recording_enabled\": true\n"
-          "}"));
-  scoped_ptr<base::DictionaryValue> response_value;
+  std::unique_ptr<WebHistoryService::Request> request(
+      new TestRequest(GURL("http://history.google.com/"), completion_callback,
+                      net::HTTP_OK, /* response code */
+                      "{\n"         /* response body */
+                      "  \"history_recording_enabled\": true\n"
+                      "}"));
+  std::unique_ptr<base::DictionaryValue> response_value;
   // ReadResponse deletes the request
   response_value = TestingWebHistoryService::ReadResponse(request.get());
   bool enabled_value = false;
@@ -325,15 +323,12 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
 
   // Test that properly formatted response with good response code returns false
   // as expected.
-  scoped_ptr<WebHistoryService::Request> request2(
-      new TestRequest(
-          GURL("http://history.google.com/"),
-          completion_callback,
-          net::HTTP_OK,
-          "{\n"
-          "  \"history_recording_enabled\": false\n"
-          "}"));
-  scoped_ptr<base::DictionaryValue> response_value2;
+  std::unique_ptr<WebHistoryService::Request> request2(new TestRequest(
+      GURL("http://history.google.com/"), completion_callback, net::HTTP_OK,
+      "{\n"
+      "  \"history_recording_enabled\": false\n"
+      "}"));
+  std::unique_ptr<base::DictionaryValue> response_value2;
   // ReadResponse deletes the request
   response_value2 = TestingWebHistoryService::ReadResponse(request2.get());
   enabled_value = true;
@@ -341,15 +336,13 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   EXPECT_FALSE(enabled_value);
 
   // Test that a bad response code returns false.
-  scoped_ptr<WebHistoryService::Request> request3(
-      new TestRequest(
-          GURL("http://history.google.com/"),
-          completion_callback,
-          net::HTTP_UNAUTHORIZED,
-          "{\n"
-          "  \"history_recording_enabled\": true\n"
-          "}"));
-  scoped_ptr<base::DictionaryValue> response_value3;
+  std::unique_ptr<WebHistoryService::Request> request3(
+      new TestRequest(GURL("http://history.google.com/"), completion_callback,
+                      net::HTTP_UNAUTHORIZED,
+                      "{\n"
+                      "  \"history_recording_enabled\": true\n"
+                      "}"));
+  std::unique_ptr<base::DictionaryValue> response_value3;
   // ReadResponse deletes the request
   response_value3 = TestingWebHistoryService::ReadResponse(request3.get());
   EXPECT_FALSE(response_value3);
@@ -358,29 +351,23 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
   // Note: we expect to see a warning when running this test similar to
   //   "Non-JSON response received from history server".
   // This test tests how that situation is handled.
-  scoped_ptr<WebHistoryService::Request> request4(
-      new TestRequest(
-          GURL("http://history.google.com/"),
-          completion_callback,
-          net::HTTP_OK,
-          "{\n"
-          "  \"history_recording_enabled\": not true\n"
-          "}"));
-  scoped_ptr<base::DictionaryValue> response_value4;
+  std::unique_ptr<WebHistoryService::Request> request4(new TestRequest(
+      GURL("http://history.google.com/"), completion_callback, net::HTTP_OK,
+      "{\n"
+      "  \"history_recording_enabled\": not true\n"
+      "}"));
+  std::unique_ptr<base::DictionaryValue> response_value4;
   // ReadResponse deletes the request
   response_value4 = TestingWebHistoryService::ReadResponse(request4.get());
   EXPECT_FALSE(response_value4);
 
   // Test that improperly formatted response returns false.
-  scoped_ptr<WebHistoryService::Request> request5(
-      new TestRequest(
-          GURL("http://history.google.com/"),
-          completion_callback,
-          net::HTTP_OK,
-          "{\n"
-          "  \"history_recording\": true\n"
-          "}"));
-  scoped_ptr<base::DictionaryValue> response_value5;
+  std::unique_ptr<WebHistoryService::Request> request5(new TestRequest(
+      GURL("http://history.google.com/"), completion_callback, net::HTTP_OK,
+      "{\n"
+      "  \"history_recording\": true\n"
+      "}"));
+  std::unique_ptr<base::DictionaryValue> response_value5;
   // ReadResponse deletes the request
   response_value5 = TestingWebHistoryService::ReadResponse(request5.get());
   enabled_value = true;

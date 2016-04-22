@@ -158,11 +158,11 @@ class RequestImpl : public WebHistoryService::Request,
   }
 
   // Helper for creating a new URLFetcher for the API request.
-  scoped_ptr<net::URLFetcher> CreateUrlFetcher(
+  std::unique_ptr<net::URLFetcher> CreateUrlFetcher(
       const std::string& access_token) {
     net::URLFetcher::RequestType request_type = post_data_.empty() ?
         net::URLFetcher::GET : net::URLFetcher::POST;
-    scoped_ptr<net::URLFetcher> fetcher =
+    std::unique_ptr<net::URLFetcher> fetcher =
         net::URLFetcher::Create(url_, request_type, this);
     fetcher->SetRequestContext(request_context_.get());
     fetcher->SetMaxRetriesOn5xx(kMaxRetries);
@@ -191,13 +191,13 @@ class RequestImpl : public WebHistoryService::Request,
   std::string post_data_;
 
   // The OAuth2 access token request.
-  scoped_ptr<OAuth2TokenService::Request> token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> token_request_;
 
   // The current OAuth2 access token.
   std::string access_token_;
 
   // Handles the actual API requests after the OAuth token is acquired.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // Holds the response code received from the server.
   int response_code_;
@@ -312,11 +312,11 @@ WebHistoryService::Request* WebHistoryService::CreateRequest(
 }
 
 // static
-scoped_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
-  WebHistoryService::Request* request) {
-  scoped_ptr<base::DictionaryValue> result;
+std::unique_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
+    WebHistoryService::Request* request) {
+  std::unique_ptr<base::DictionaryValue> result;
   if (request->GetResponseCode() == net::HTTP_OK) {
-    scoped_ptr<base::Value> value =
+    std::unique_ptr<base::Value> value =
         base::JSONReader::Read(request->GetResponseBody());
     if (value.get() && value.get()->IsType(base::Value::TYPE_DICTIONARY))
       result.reset(static_cast<base::DictionaryValue*>(value.release()));
@@ -326,7 +326,7 @@ scoped_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
   return result;
 }
 
-scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
+std::unique_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
     const base::string16& text_query,
     const QueryOptions& options,
     const WebHistoryService::QueryWebHistoryCallback& callback) {
@@ -335,7 +335,7 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
       &WebHistoryService::QueryHistoryCompletionCallback, callback);
 
   GURL url = GetQueryUrl(text_query, options, server_version_info_);
-  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
   request->Start();
   return request;
 }
@@ -344,7 +344,7 @@ void WebHistoryService::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list,
     const ExpireWebHistoryCallback& callback) {
   base::DictionaryValue delete_request;
-  scoped_ptr<base::ListValue> deletions(new base::ListValue);
+  std::unique_ptr<base::ListValue> deletions(new base::ListValue);
   base::Time now = base::Time::Now();
 
   for (const auto& expire : expire_list) {
@@ -381,7 +381,7 @@ void WebHistoryService::ExpireHistory(
                  weak_ptr_factory_.GetWeakPtr(),
                  callback);
 
-  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
   request->SetPostData(post_data);
   request->Start();
   pending_expire_requests_.insert(request.release());
@@ -408,7 +408,7 @@ void WebHistoryService::GetAudioHistoryEnabled(
     callback);
 
   GURL url(kHistoryAudioHistoryUrl);
-  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
   request->Start();
   pending_audio_history_requests_.insert(request.release());
 }
@@ -423,7 +423,7 @@ void WebHistoryService::SetAudioHistoryEnabled(
                  callback);
 
   GURL url(kHistoryAudioHistoryChangeUrl);
-  scoped_ptr<Request> request(CreateRequest(url, completion_callback));
+  std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
 
   base::DictionaryValue enable_audio_history;
   enable_audio_history.SetBoolean("enable_history_recording",
@@ -466,7 +466,7 @@ void WebHistoryService::QueryHistoryCompletionCallback(
     const WebHistoryService::QueryWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
-  scoped_ptr<base::DictionaryValue> response_value;
+  std::unique_ptr<base::DictionaryValue> response_value;
   if (success)
     response_value = ReadResponse(request);
   callback.Run(request, response_value.get());
@@ -477,9 +477,9 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     WebHistoryService::Request* request,
     bool success) {
   pending_expire_requests_.erase(request);
-  scoped_ptr<Request> request_ptr(request);
+  std::unique_ptr<Request> request_ptr(request);
 
-  scoped_ptr<base::DictionaryValue> response_value;
+  std::unique_ptr<base::DictionaryValue> response_value;
   if (success) {
     response_value = ReadResponse(request);
     if (response_value)
@@ -493,9 +493,9 @@ void WebHistoryService::AudioHistoryCompletionCallback(
     WebHistoryService::Request* request,
     bool success) {
   pending_audio_history_requests_.erase(request);
-  scoped_ptr<WebHistoryService::Request> request_ptr(request);
+  std::unique_ptr<WebHistoryService::Request> request_ptr(request);
 
-  scoped_ptr<base::DictionaryValue> response_value;
+  std::unique_ptr<base::DictionaryValue> response_value;
   bool enabled_value = false;
   if (success) {
     response_value = ReadResponse(request_ptr.get());
@@ -514,9 +514,9 @@ void WebHistoryService::QueryWebAndAppActivityCompletionCallback(
     WebHistoryService::Request* request,
     bool success) {
   pending_web_and_app_activity_requests_.erase(request);
-  scoped_ptr<Request> request_ptr(request);
+  std::unique_ptr<Request> request_ptr(request);
 
-  scoped_ptr<base::DictionaryValue> response_value;
+  std::unique_ptr<base::DictionaryValue> response_value;
   bool web_and_app_activity_enabled = false;
 
   if (success) {

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -19,7 +20,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
@@ -73,7 +73,7 @@ static const size_t kMaxFaviconBitmapsPerIconURL = 8;
 class QueuedHistoryDBTask {
  public:
   QueuedHistoryDBTask(
-      scoped_ptr<HistoryDBTask> task,
+      std::unique_ptr<HistoryDBTask> task,
       scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
   ~QueuedHistoryDBTask();
@@ -83,7 +83,7 @@ class QueuedHistoryDBTask {
   void DoneRun();
 
  private:
-  scoped_ptr<HistoryDBTask> task_;
+  std::unique_ptr<HistoryDBTask> task_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_loop_;
   base::CancelableTaskTracker::IsCanceledCallback is_canceled_;
 
@@ -123,7 +123,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // This function is NOT guaranteed to be called. If there is an error,
     // there may be no in-memory database.
     virtual void SetInMemoryBackend(
-        scoped_ptr<InMemoryHistoryBackend> backend) = 0;
+        std::unique_ptr<InMemoryHistoryBackend> backend) = 0;
 
     // Notify HistoryService that the favicons for the given page URLs (e.g.
     // http://www.google.com) and the given icon URL (e.g.
@@ -181,7 +181,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   //
   // This constructor is fast and does no I/O, so can be called at any time.
   HistoryBackend(Delegate* delegate,
-                 scoped_ptr<HistoryBackendClient> backend_client,
+                 std::unique_ptr<HistoryBackendClient> backend_client,
                  scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Must be called after creation but before any objects are created. If this
@@ -360,7 +360,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Generic operations --------------------------------------------------------
 
   void ProcessDBTask(
-      scoped_ptr<HistoryDBTask> task,
+      std::unique_ptr<HistoryDBTask> task,
       scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
 
@@ -814,7 +814,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Delegate. See the class definition above for more information. This will
   // be null before Init is called and after Cleanup, but is guaranteed
   // non-null in between.
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   // Directory where database files will be stored, empty until Init is called.
   base::FilePath history_dir_;
@@ -823,9 +823,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // not be opened, all users must first check for null and return immediately
   // if it is. The thumbnail DB may be null when the history one isn't, but not
   // vice-versa.
-  scoped_ptr<HistoryDatabase> db_;
+  std::unique_ptr<HistoryDatabase> db_;
   bool scheduled_kill_db_;  // Database is being killed due to error.
-  scoped_ptr<ThumbnailDatabase> thumbnail_db_;
+  std::unique_ptr<ThumbnailDatabase> thumbnail_db_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;
@@ -866,21 +866,21 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   std::list<QueuedHistoryDBTask*> queued_history_db_tasks_;
 
   // Used to determine if a URL is bookmarked; may be null.
-  scoped_ptr<HistoryBackendClient> backend_client_;
+  std::unique_ptr<HistoryBackendClient> backend_client_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to allow embedder code to stash random data by key. Those object will
   // be deleted before closing the databases (hence the member variable instead
   // of inheritance from base::SupportsUserData).
-  scoped_ptr<HistoryBackendHelper> supports_user_data_helper_;
+  std::unique_ptr<HistoryBackendHelper> supports_user_data_helper_;
 
   // Used to manage syncing of the typed urls datatype. This will be null before
   // Init is called.
-  scoped_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
+  std::unique_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
 
   // Listens for the system being under memory pressure.
-  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Map from host to index in the TopHosts list. It is updated only by
   // TopHosts(), so it's usually stale.

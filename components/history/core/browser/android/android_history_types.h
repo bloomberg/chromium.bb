@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 
@@ -278,7 +278,7 @@ class AndroidStatement {
   int favicon_index() const { return favicon_index_; }
 
  private:
-  scoped_ptr<sql::Statement> statement_;
+  std::unique_ptr<sql::Statement> statement_;
   int favicon_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStatement);

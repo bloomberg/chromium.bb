@@ -89,7 +89,7 @@ class WebHistoryService : public KeyedService {
   // This method is the equivalent of HistoryService::QueryHistory.
   // The caller takes ownership of the returned Request. If it is destroyed, the
   // request is cancelled.
-  scoped_ptr<Request> QueryHistory(
+  std::unique_ptr<Request> QueryHistory(
       const base::string16& text_query,
       const QueryOptions& options,
       const QueryWebHistoryCallback& callback);
@@ -132,7 +132,7 @@ class WebHistoryService : public KeyedService {
   // Extracts a JSON-encoded HTTP response into a DictionaryValue.
   // If |request|'s HTTP response code indicates failure, or if the response
   // body is not JSON, a null pointer is returned.
-  static scoped_ptr<base::DictionaryValue> ReadResponse(Request* request);
+  static std::unique_ptr<base::DictionaryValue> ReadResponse(Request* request);
 
   // Called by |request| when a web history query has completed. Unpacks the
   // response and calls |callback|, which is the original callback that was

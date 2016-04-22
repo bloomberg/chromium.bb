@@ -142,7 +142,7 @@ class HistoryQueryTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<HistoryService> history_;
+  std::unique_ptr<HistoryService> history_;
 
   // Counter used to generate a unique ID for each page added to the history.
   int nav_entry_id_;

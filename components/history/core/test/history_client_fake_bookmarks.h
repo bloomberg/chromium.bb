@@ -35,7 +35,7 @@ class HistoryClientFakeBookmarks : public HistoryClient {
   void Shutdown() override;
   bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
-  scoped_ptr<HistoryBackendClient> CreateBackendClient() override;
+  std::unique_ptr<HistoryBackendClient> CreateBackendClient() override;
 
  private:
   scoped_refptr<FakeBookmarkDatabase> bookmarks_;

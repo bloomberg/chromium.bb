@@ -71,7 +71,8 @@ void PostWorkerTask(
     WaitableEvent* done,
     syncer::SyncerError* error) {
   if (history_service.get()) {
-    scoped_ptr<history::HistoryDBTask> task(new WorkerTask(work, done, error));
+    std::unique_ptr<history::HistoryDBTask> task(
+        new WorkerTask(work, done, error));
     history_service->ScheduleDBTask(std::move(task), cancelable_tracker);
   } else {
     *error = syncer::CANNOT_DO_WORK;
@@ -96,7 +97,7 @@ HistoryModelWorker::HistoryModelWorker(
 void HistoryModelWorker::RegisterForLoopDestruction() {
   CHECK(history_service_.get());
   history_service_->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(new AddDBThreadObserverTask(
+      std::unique_ptr<history::HistoryDBTask>(new AddDBThreadObserverTask(
           base::Bind(&HistoryModelWorker::RegisterOnDBThread, this))),
       cancelable_tracker_.get());
 }

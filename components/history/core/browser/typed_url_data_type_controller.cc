@@ -45,7 +45,7 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
  protected:
   ~RunTaskOnHistoryThread() override {}
 
-  scoped_ptr<base::Closure> task_;
+  std::unique_ptr<base::Closure> task_;
   scoped_refptr<TypedUrlDataTypeController> dtc_;
 };
 
@@ -111,7 +111,7 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
   DCHECK(ui_thread()->BelongsToCurrentThread());
   history::HistoryService* history = sync_client_->GetHistoryService();
   if (history) {
-    history->ScheduleDBTask(scoped_ptr<history::HistoryDBTask>(
+    history->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
                                 new RunTaskOnHistoryThread(task, this)),
                             &task_tracker_);
     return true;

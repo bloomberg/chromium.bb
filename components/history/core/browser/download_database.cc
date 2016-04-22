@@ -5,12 +5,12 @@
 #include "components/history/core/browser/download_database.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -348,7 +348,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
       "last_modified FROM downloads ORDER BY start_time"));
 
   while (statement_main.Step()) {
-    scoped_ptr<DownloadRow> info(new DownloadRow());
+    std::unique_ptr<DownloadRow> info(new DownloadRow());
     int column = 0;
 
     // SQLITE does not have unsigned integers, so explicitly handle negative

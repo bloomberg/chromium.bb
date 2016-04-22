@@ -4,7 +4,8 @@
 
 #include "components/history/core/test/thumbnail.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/history/core/test/thumbnail-inl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -14,7 +15,7 @@ namespace history {
 
 gfx::Image CreateGoogleThumbnailForTest() {
   // Returned image takes ownership of decoded SkBitmap.
-  scoped_ptr<SkBitmap> thumbnail_bitmap(
+  std::unique_ptr<SkBitmap> thumbnail_bitmap(
       gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
   return gfx::Image::CreateFrom1xBitmap(*thumbnail_bitmap);
 }

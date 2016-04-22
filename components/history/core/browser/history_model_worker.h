@@ -52,7 +52,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
 
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
-  scoped_ptr<base::CancelableTaskTracker> cancelable_tracker_;
+  std::unique_ptr<base::CancelableTaskTracker> cancelable_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryModelWorker);
 };

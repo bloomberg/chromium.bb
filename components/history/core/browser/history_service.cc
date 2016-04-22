@@ -114,7 +114,8 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, init_status));
   }
 
-  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) override {
+  void SetInMemoryBackend(
+      std::unique_ptr<InMemoryHistoryBackend> backend) override {
     // Send the backend to the history service on the main thread.
     service_task_runner_->PostTask(
         FROM_HERE, base::Bind(&HistoryService::SetInMemoryBackend,
@@ -189,8 +190,8 @@ HistoryService::HistoryService()
       weak_ptr_factory_(this) {
 }
 
-HistoryService::HistoryService(scoped_ptr<HistoryClient> history_client,
-                               scoped_ptr<VisitDelegate> visit_delegate)
+HistoryService::HistoryService(std::unique_ptr<HistoryClient> history_client,
+                               std::unique_ptr<VisitDelegate> visit_delegate)
     : thread_(new base::Thread(kHistoryThreadName)),
       history_client_(std::move(history_client)),
       visit_delegate_(std::move(visit_delegate)),
@@ -327,7 +328,7 @@ void HistoryService::RemoveObserver(HistoryServiceObserver* observer) {
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
-    scoped_ptr<HistoryDBTask> task,
+    std::unique_ptr<HistoryDBTask> task,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -728,7 +729,7 @@ void HistoryService::QueryDownloads(const DownloadQueryCallback& callback) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<DownloadRow>* rows = new std::vector<DownloadRow>();
-  scoped_ptr<std::vector<DownloadRow>> scoped_rows(rows);
+  std::unique_ptr<std::vector<DownloadRow>> scoped_rows(rows);
   // Beware! The first Bind() does not simply |scoped_rows.get()| because
   // base::Passed(&scoped_rows) nullifies |scoped_rows|, and compilers do not
   // guarantee that the first Bind's arguments are evaluated before the second
@@ -946,8 +947,8 @@ base::WeakPtr<HistoryService> HistoryService::AsWeakPtr() {
 syncer::SyncMergeResult HistoryService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(type, syncer::HISTORY_DELETE_DIRECTIVES);
   delete_directive_handler_.Start(this, initial_sync_data,
@@ -984,7 +985,7 @@ syncer::SyncError HistoryService::ProcessLocalDeleteDirective(
 }
 
 void HistoryService::SetInMemoryBackend(
-    scoped_ptr<InMemoryHistoryBackend> mem_backend) {
+    std::unique_ptr<InMemoryHistoryBackend> mem_backend) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!in_memory_backend_) << "Setting mem DB twice";
   in_memory_backend_.reset(mem_backend.release());
@@ -1157,8 +1158,8 @@ void HistoryService::NotifyKeywordSearchTermDeleted(URLID url_id) {
                     OnKeywordSearchTermDeleted(this, url_id));
 }
 
-scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                   const GURL&)>::Subscription>
+std::unique_ptr<
+    base::CallbackList<void(const std::set<GURL>&, const GURL&)>::Subscription>
 HistoryService::AddFaviconsChangedCallback(
     const HistoryService::OnFaviconsChangedCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

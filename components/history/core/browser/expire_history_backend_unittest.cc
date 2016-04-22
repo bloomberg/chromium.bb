@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -15,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -96,15 +96,15 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   base::ScopedTempDir tmp_dir_;
 
   HistoryClientFakeBookmarks history_client_;
-  scoped_ptr<HistoryBackendClient> backend_client_;
+  std::unique_ptr<HistoryBackendClient> backend_client_;
 
   base::MessageLoopForUI message_loop_;
 
   ExpireHistoryBackend expirer_;
 
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<HistoryDatabase> main_db_;
-  scoped_ptr<ThumbnailDatabase> thumb_db_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<HistoryDatabase> main_db_;
+  std::unique_ptr<ThumbnailDatabase> thumb_db_;
   scoped_refptr<TopSitesImpl> top_sites_;
 
   // base::Time at the beginning of the test, so everybody agrees what "now" is.

@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -176,9 +177,9 @@ void HistoryClientFakeBookmarks::NotifyProfileError(
     sql::InitStatus init_status) {
 }
 
-scoped_ptr<HistoryBackendClient>
+std::unique_ptr<HistoryBackendClient>
 HistoryClientFakeBookmarks::CreateBackendClient() {
-  return make_scoped_ptr(new HistoryBackendClientFakeBookmarks(bookmarks_));
+  return base::WrapUnique(new HistoryBackendClientFakeBookmarks(bookmarks_));
 }
 
 }  // namespace history

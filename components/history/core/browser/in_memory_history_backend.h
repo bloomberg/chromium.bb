@@ -20,11 +20,11 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_HISTORY_BACKEND_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_IN_MEMORY_HISTORY_BACKEND_H_
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/keyword_id.h"
@@ -93,7 +93,7 @@ class InMemoryHistoryBackend : public HistoryServiceObserver {
   // Handler for HISTORY_URL_VISITED and HISTORY_URLS_MODIFIED.
   void OnURLVisitedOrModified(const URLRow& url_row);
 
-  scoped_ptr<InMemoryDatabase> db_;
+  std::unique_ptr<InMemoryDatabase> db_;
 
   ScopedObserver<HistoryService, HistoryServiceObserver>
       history_service_observer_;
