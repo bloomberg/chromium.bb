@@ -136,7 +136,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     int surface_id = kNoSurfaceID;
 
     // Coded size of the video frame hint, subject to change.
-    gfx::Size initial_expected_coded_size;
+    gfx::Size initial_expected_coded_size = gfx::Size(320, 240);
 
     OutputMode output_mode = OutputMode::ALLOCATE;
   };
