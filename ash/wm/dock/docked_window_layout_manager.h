@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/common/wm_activation_observer.h"
+#include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "ash/wm/common/wm_snap_to_pixel_layout_manager.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/dock/dock_types.h"
@@ -22,24 +22,16 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
-namespace aura {
-class Window;
-}
-
-namespace gfx {
-class Point;
-}
-
-namespace views {
-class Widget;
-}
-
 namespace ash {
 class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
 class Shelf;
 class WorkspaceController;
+
+namespace wm {
+class WmRootWindowController;
+}
 
 // DockedWindowLayoutManager is responsible for organizing windows when they are
 // docked to the side of a screen. It is associated with a specific container
@@ -55,7 +47,7 @@ class WorkspaceController;
 // common functionality.
 class ASH_EXPORT DockedWindowLayoutManager
     : public wm::WmSnapToPixelLayoutManager,
-      public ash::ShellObserver,
+      public wm::WmRootWindowControllerObserver,
       public wm::WmWindowObserver,
       public wm::WmActivationObserver,
       public keyboard::KeyboardControllerObserver,
@@ -147,11 +139,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   void SetChildBounds(wm::WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
-  // ash::ShellObserver:
-  void OnDisplayWorkAreaInsetsChanged() override;
-  void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* root_window) override;
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  // wm::WmRootWindowControllerObserver:
+  void OnWorkAreaChanged() override;
+  void OnFullscreenStateChanged(bool is_fullscreen) override;
+  void OnShelfAlignmentChanged() override;
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
@@ -257,6 +248,9 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Parent window associated with this layout manager.
   wm::WmWindow* dock_container_;
+
+  wm::WmRootWindowController* root_window_controller_;
+
   // Protect against recursive calls to Relayout().
   bool in_layout_;
 

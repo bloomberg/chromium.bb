@@ -361,6 +361,10 @@ void WmWindowAura::SetRestoreShowState(ui::WindowShowState show_state) {
   window_->SetProperty(aura::client::kRestoreShowStateKey, show_state);
 }
 
+void WmWindowAura::SetLockedToRoot(bool value) {
+  window_->SetProperty(kStayInSameRootWindowKey, value);
+}
+
 void WmWindowAura::SetCapture() {
   window_->SetCapture();
 }

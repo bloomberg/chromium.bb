@@ -4,46 +4,33 @@
 
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
-#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/background.h"
-#include "ui/wm/core/window_util.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -151,11 +138,12 @@ class DockedBackgroundWidget : public views::Widget,
         this, parent->GetShellWindowId(), &params);
     Init(params);
     SetVisibilityChangedAnimationsEnabled(false);
-    GetNativeWindow()->SetProperty(kStayInSameRootWindowKey, true);
+    wm::WmWindow* wm_window = wm::WmWindow::Get(this);
+    wm_window->SetLockedToRoot(true);
     opaque_background_.SetColor(SK_ColorBLACK);
     opaque_background_.SetBounds(gfx::Rect(GetWindowBoundsInScreen().size()));
     opaque_background_.SetOpacity(0.0f);
-    GetNativeWindow()->layer()->Add(&opaque_background_);
+    wm_window->GetLayer()->Add(&opaque_background_);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia shelf_background =
@@ -169,7 +157,7 @@ class DockedBackgroundWidget : public views::Widget,
     // the dock, otherwise the z-order is set by the order in which windows were
     // added to the container, and UpdateStacking only manages user windows, not
     // the background widget.
-    parent->StackChildAtBottom(wm::WmWindow::Get(this));
+    parent->StackChildAtBottom(wm_window);
   }
 
   // Transitions to |visible_background_type_| if the widget is visible and to
@@ -420,6 +408,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
     wm::WmWindow* dock_container,
     WorkspaceController* workspace_controller)
     : dock_container_(dock_container),
+      root_window_controller_(dock_container->GetRootWindowController()),
       in_layout_(false),
       dragged_window_(nullptr),
       is_dragged_window_docked_(false),
@@ -437,7 +426,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       background_widget_(nullptr) {
   DCHECK(dock_container);
   dock_container->GetGlobals()->AddActivationObserver(this);
-  Shell::GetInstance()->AddShellObserver(this);
+  root_window_controller_->AddObserver(this);
 }
 
 DockedWindowLayoutManager::~DockedWindowLayoutManager() {
@@ -465,7 +454,7 @@ void DockedWindowLayoutManager::Shutdown() {
     child->GetWindowState()->RemoveObserver(this);
   }
   dock_container_->GetGlobals()->RemoveActivationObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
+  root_window_controller_->RemoveObserver(this);
 }
 
 void DockedWindowLayoutManager::AddObserver(
@@ -780,16 +769,13 @@ void DockedWindowLayoutManager::SetChildBounds(
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager, ash::ShellObserver implementation:
 
-void DockedWindowLayoutManager::OnDisplayWorkAreaInsetsChanged() {
+void DockedWindowLayoutManager::OnWorkAreaChanged() {
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::DISPLAY_INSETS_CHANGED);
   MaybeMinimizeChildrenExcept(dragged_window_);
 }
 
-void DockedWindowLayoutManager::OnFullscreenStateChanged(
-    bool is_fullscreen, aura::Window* root_window) {
-  if (dock_container_->GetRootWindow() != wm::WmWindowAura::Get(root_window))
-    return;
+void DockedWindowLayoutManager::OnFullscreenStateChanged(bool is_fullscreen) {
   // Entering fullscreen mode (including immersive) hides docked windows.
   in_fullscreen_ = workspace_controller_->GetWindowState() ==
                    wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
@@ -815,11 +801,7 @@ void DockedWindowLayoutManager::OnFullscreenStateChanged(
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
-void DockedWindowLayoutManager::OnShelfAlignmentChanged(
-    aura::Window* root_window) {
-  if (dock_container_->GetRootWindow() != wm::WmWindowAura::Get(root_window))
-    return;
-
+void DockedWindowLayoutManager::OnShelfAlignmentChanged() {
   if (!shelf_ || alignment_ == DOCKED_ALIGNMENT_NONE)
     return;
 

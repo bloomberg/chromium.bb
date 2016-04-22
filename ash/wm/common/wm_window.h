@@ -146,6 +146,10 @@ class ASH_EXPORT WmWindow {
 
   virtual void SetRestoreShowState(ui::WindowShowState show_state) = 0;
 
+  // If |value| is true the window can not be moved to another root, regardless
+  // of the bounds set on it.
+  virtual void SetLockedToRoot(bool value) = 0;
+
   virtual void SetCapture() = 0;
   virtual bool HasCapture() = 0;
   virtual void ReleaseCapture() = 0;

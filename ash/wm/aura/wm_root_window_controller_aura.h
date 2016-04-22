@@ -6,8 +6,10 @@
 #define ASH_WM_AURA_WM_ROOT_CONTROLLER_AURA_H_
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 namespace aura {
 class Window;
@@ -19,7 +21,8 @@ class RootWindowController;
 
 namespace wm {
 
-class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
+class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController,
+                                              public ShellObserver {
  public:
   explicit WmRootWindowControllerAura(
       RootWindowController* root_window_controller);
@@ -40,9 +43,18 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
       views::Widget* widget,
       int shell_container_id,
       views::Widget::InitParams* init_params) override;
+  void AddObserver(WmRootWindowControllerObserver* observer) override;
+  void RemoveObserver(WmRootWindowControllerObserver* observer) override;
+
+  // ShellObserver:
+  void OnDisplayWorkAreaInsetsChanged() override;
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
  private:
   RootWindowController* root_window_controller_;
+  base::ObserverList<WmRootWindowControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowControllerAura);
 };

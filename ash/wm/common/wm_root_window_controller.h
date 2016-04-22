@@ -15,6 +15,7 @@ namespace ash {
 namespace wm {
 
 class WmGlobals;
+class WmRootWindowControllerObserver;
 class WmWindow;
 
 // Provides state associated with a root of a window hierarchy.
@@ -39,6 +40,9 @@ class ASH_EXPORT WmRootWindowController {
       views::Widget* widget,
       int shell_container_id,
       views::Widget::InitParams* init_params) = 0;
+
+  virtual void AddObserver(WmRootWindowControllerObserver* observer) = 0;
+  virtual void RemoveObserver(WmRootWindowControllerObserver* observer) = 0;
 };
 
 }  // namespace wm

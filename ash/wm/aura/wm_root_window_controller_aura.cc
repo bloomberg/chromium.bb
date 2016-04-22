@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
@@ -35,9 +36,12 @@ WmRootWindowControllerAura::WmRootWindowControllerAura(
     : root_window_controller_(root_window_controller) {
   root_window_controller_->GetRootWindow()->SetProperty(
       kWmRootWindowControllerKey, this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
-WmRootWindowControllerAura::~WmRootWindowControllerAura() {}
+WmRootWindowControllerAura::~WmRootWindowControllerAura() {
+  Shell::GetInstance()->RemoveShellObserver(this);
+}
 
 // static
 const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
@@ -83,5 +87,40 @@ void WmRootWindowControllerAura::ConfigureWidgetInitParamsForContainer(
   init_params->parent = Shell::GetContainer(
       root_window_controller_->GetRootWindow(), shell_container_id);
 }
+
+void WmRootWindowControllerAura::AddObserver(
+    WmRootWindowControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WmRootWindowControllerAura::RemoveObserver(
+    WmRootWindowControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void WmRootWindowControllerAura::OnDisplayWorkAreaInsetsChanged() {
+  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
+                    OnWorkAreaChanged());
+}
+
+void WmRootWindowControllerAura::OnFullscreenStateChanged(
+    bool is_fullscreen,
+    aura::Window* root_window) {
+  if (root_window != root_window_controller_->GetRootWindow())
+    return;
+
+  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
+                    OnFullscreenStateChanged(is_fullscreen));
+}
+
+void WmRootWindowControllerAura::OnShelfAlignmentChanged(
+    aura::Window* root_window) {
+  if (root_window != root_window_controller_->GetRootWindow())
+    return;
+
+  FOR_EACH_OBSERVER(WmRootWindowControllerObserver, observers_,
+                    OnShelfAlignmentChanged());
+}
+
 }  // namespace wm
 }  // namespace ash

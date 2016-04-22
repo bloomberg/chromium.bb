@@ -89,6 +89,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void SetShowState(ui::WindowShowState show_state) override;
   ui::WindowShowState GetShowState() const override;
   void SetRestoreShowState(ui::WindowShowState show_state) override;
+  void SetLockedToRoot(bool value) override;
   void SetCapture() override;
   bool HasCapture() override;
   void ReleaseCapture() override;

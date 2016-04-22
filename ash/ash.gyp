@@ -550,6 +550,7 @@
       'wm/common/wm_globals.h',
       'wm/common/wm_layout_manager.h',
       'wm/common/wm_root_window_controller.h',
+      'wm/common/wm_root_window_controller_observer.h',
       'wm/common/wm_screen_util.cc',
       'wm/common/wm_screen_util.h',
       'wm/common/wm_snap_to_pixel_layout_manager.cc',
