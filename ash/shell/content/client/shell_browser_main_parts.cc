@@ -29,6 +29,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/screen.h"
@@ -127,7 +128,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ShellContentState::SetInstance(
       new ShellContentStateImpl(browser_context_.get()));
-
+  ui::MaterialDesignController::Initialize();
   ash::ShellInitParams init_params;
   init_params.delegate = delegate_;
   init_params.context_factory = content::GetContextFactory();
