@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/config/win/manifest.gni")
 import("//build/util/version.gni")
 import("//remoting/remoting_enable.gni")
 import("//remoting/remoting_locales.gni")
@@ -11,6 +12,33 @@ import("//remoting/remoting_options.gni")
 import("//remoting/remoting_srcs.gni")
 import("//remoting/remoting_version.gni")
 import("//remoting/tools/build/remoting_localize.gni")
+
+# Reference this manifest to indicate that a process is per-monitor DPI aware.
+dpi_aware_manifest = "//remoting/host/win/dpi_aware.manifest"
+
+# Depending on this target gives a default executable manifest with the addition
+# of the DPI aware tag.
+windows_manifest("dpi_aware_exe_manifest") {
+  sources = [
+    as_invoker_manifest,
+    common_controls_manifest,
+    default_compatibility_manifest,
+    dpi_aware_manifest,
+  ]
+  type = "exe"
+}
+
+# Depending on this target gives a default executable manifest with the addition
+# of the DPI aware tag and a requestedExecutionLevel of requireAdministrator.
+windows_manifest("dpi_aware_elevated_exe_manifest") {
+  sources = [
+    common_controls_manifest,
+    default_compatibility_manifest,
+    dpi_aware_manifest,
+    require_administrator_manifest,
+  ]
+  type = "exe"
+}
 
 # GYP version: remoting/remoting_host:remoting_host_credits
 action("credits") {
@@ -457,6 +485,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       defines = [ "BINARY=BINARY_HOST_ME2ME" ]
 
       deps = [
+        ":dpi_aware_exe_manifest",
         ":remoting_core",
         ":remoting_windows_resources",
       ]
@@ -467,11 +496,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       ]
 
       ldflags = [
-        "/MANIFEST:EMBED",
-        "/MANIFESTINPUT:" +
-            rebase_path("win/dpi_aware.manifest", root_build_dir),
         "/ENTRY:HostEntryPoint",
-
         # "/NODEFAULTLIB",
       ]
     }
@@ -516,6 +541,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         "//base:base_static",
         "//base/allocator",
         "//base/third_party/dynamic_annotations",
+        "//build/win:default_exe_manifest",
         "//ipc",
         "//net",
         "//remoting/base",
@@ -560,9 +586,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       ]
 
       ldflags = [
-        "/MANIFEST:EMBED",
-        "/MANIFESTINPUT:" +
-            rebase_path("win/common-controls.manifest", root_build_dir),
         "/EXPORT:DllGetClassObject=PsDllGetClassObject,PRIVATE",
         "/EXPORT:DllCanUnloadNow=PsDllCanUnloadNow,PRIVATE",
         "/EXPORT:DllRegisterServer=PsDllRegisterServer,PRIVATE",
@@ -596,26 +619,21 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         ":remoting_windows_resources",
       ]
 
+      if (is_official_build) {
+        deps += [ ":dpi_aware_elevated_exe_manifest" ]
+      } else {
+        deps += [ ":dpi_aware_exe_manifest" ]
+      }
+
       sources = [
         "$root_gen_dir/remoting/version.rc",
         "win/entry_point.cc",
       ]
 
       ldflags = [
-        "/MANIFEST:EMBED",
-        "/MANIFESTINPUT:" +
-            rebase_path("win/dpi_aware.manifest", root_build_dir),
         "/ENTRY:HostEntryPoint",
-
         # "/NODEFAULTLIB",
       ]
-
-      if (is_official_build) {
-        ldflags +=
-            [ "/MANIFESTUAC:level='requiresAdministrator' uiAccess='true'" ]
-      } else {
-        ldflags += [ "/MANIFESTUAC" ]
-      }
     }
 
     # GYP version: //remoting/remoting_host_win.gypi:remote_security_key
@@ -807,6 +825,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         defines = [ "BINARY=BINARY_HOST_ME2ME" ]
 
         deps = [
+          ":dpi_aware_exe_manifest",
           ":remoting_core",
           ":remoting_windows_resources",
         ]
@@ -819,11 +838,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         output_name = "remoting_host"
 
         ldflags = [
-          "/MANIFEST:EMBED",
-          "/MANIFESTINPUT:" +
-              rebase_path("win/dpi_aware.manifest", root_build_dir),
           "/ENTRY:HostEntryPoint",
-
           # "/NODEFAULTLIB",
         ]
       }

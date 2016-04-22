@@ -11,6 +11,9 @@ if (enable_nacl && (is_linux || is_win)) {
     ]
     deps = [
       "//base",
+
+      # Default manifest on Windows (a no-op elsewhere).
+      "//build/win:default_exe_manifest",
     ]
   }
 }

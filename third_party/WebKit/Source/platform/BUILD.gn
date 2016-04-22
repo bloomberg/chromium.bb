@@ -169,6 +169,9 @@ executable("character_data_generator") {
   configs += [ "//third_party/WebKit/Source:config" ]
   deps = [
     "//build/config/sanitizers:deps",
+
+    # Default manifest on Windows (a no-op elsewhere).
+    "//build/win:default_exe_manifest",
     "//third_party/icu",
   ]
 }

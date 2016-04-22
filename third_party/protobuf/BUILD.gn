@@ -533,6 +533,9 @@ if (current_toolchain == host_toolchain) {
     deps = [
       ":protobuf_full",
       "//build/config/sanitizers:deps",
+
+      # Default manifest on Windows (a no-op elsewhere).
+      "//build/win:default_exe_manifest",
     ]
     deps += [ "//build/config/sanitizers:deps" ]
   }
