@@ -1054,7 +1054,8 @@ libzunitc_la_CFLAGS = \
 	-I$(top_srcdir)/tools/zunitc/inc
 
 libzunitc_la_LIBADD = \
-	libshared.la
+	libshared.la \
+	$(CLOCK_GETTIME_LIBS)
 
 if ENABLE_JUNIT_XML
 libzunitc_la_CFLAGS += \
