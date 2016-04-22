@@ -91,14 +91,10 @@ LockStateController::LockStateController()
       can_cancel_lock_animation_(false),
       lock_fail_timer_is_stopped_(true),
       weak_ptr_factory_(this) {
-  // TODO(jdufault): Remove after resolving crbug.com/452599.
-  VLOG(0) << "Constructing LockStateController instance " << this;
   Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
 }
 
 LockStateController::~LockStateController() {
-  // TODO(jdufault): Remove after resolving crbug.com/452599.
-  VLOG(0) << "Destroying LockStateController instance " << this;
   Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
 }
 
