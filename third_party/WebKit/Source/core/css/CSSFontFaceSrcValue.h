@@ -29,6 +29,7 @@
 #include "core/css/CSSValue.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceOwner.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -52,6 +53,7 @@ public:
     bool isLocal() const { return m_isLocal; }
 
     void setFormat(const String& format) { m_format = format; }
+    void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
 
     bool isSupportedFormat() const;
 
@@ -84,6 +86,7 @@ private:
     String m_absoluteResource;
     String m_specifiedResource;
     String m_format;
+    Referrer m_referrer;
     bool m_isLocal;
     ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
 

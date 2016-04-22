@@ -64,6 +64,7 @@ StyleImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttributeVa
         m_isCachePending = false;
 
         FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName);
+        request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
 
         if (crossOrigin != CrossOriginAttributeNotSet)
             request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);

@@ -28,6 +28,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "platform/CrossOriginAttributeValue.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -53,6 +54,7 @@ public:
     struct ImageWithScale {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
         String imageURL;
+        Referrer referrer;
         float scaleFactor;
     };
 

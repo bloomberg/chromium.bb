@@ -64,6 +64,7 @@ void HTMLBodyElement::collectStyleForPresentationAttribute(const QualifiedName& 
         if (!url.isEmpty()) {
             CSSImageValue* imageValue = CSSImageValue::create(url, document().completeURL(url));
             imageValue->setInitiator(localName());
+            imageValue->setReferrer(Referrer(document().outgoingReferrer(), document().getReferrerPolicy()));
             style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue));
         }
     } else if (name == marginwidthAttr || name == leftmarginAttr) {

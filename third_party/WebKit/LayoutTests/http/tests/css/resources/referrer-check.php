@@ -27,16 +27,18 @@ function putFont() {
     readfile($font);
 }
 
+$expectedReferrerPaths = array(
+    "document" => "/css/css-resources-referrer.html",
+    "sheet" => "/css/resources/css-resources-referrer.css",
+    "importedSheet" => "/css/resources/css-resources-referrer-import.css",
+    "iframe" => "/from/iframe.html"
+);
+
 $from = $_GET["from"];
 $resource = $_GET["resource"];
 $referrerPath = getReferrerPath();
 
-$expectedReferrerPath = "/css/css-resources-referrer.html";
-if ($from === "iframe") {
-    $expectedReferrerPath = "/css/css-resources-referrer-srcdoc.html";
-}
-
-if ($referrerPath === $expectedReferrerPath) {
+if ($referrerPath === $expectedReferrerPaths[$from]) {
     if ($resource === "image" || $resource === "image2")
         putImage();
     else if ($resource === "font")

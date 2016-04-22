@@ -24,6 +24,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/CrossOriginAttributeValue.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -59,6 +60,9 @@ public:
 
     const String& url() const { return m_absoluteURL; }
 
+    void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
+    const Referrer& referrer() const { return m_referrer; }
+
     void reResolveURL(const Document&);
 
     String customCSSText() const;
@@ -85,6 +89,7 @@ private:
 
     AtomicString m_relativeURL;
     AtomicString m_absoluteURL;
+    Referrer m_referrer;
     bool m_isCachePending;
     Member<StyleImage> m_cachedImage;
     AtomicString m_initiatorName;

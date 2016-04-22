@@ -67,6 +67,7 @@ void CSSImageSetValue::fillImageSet()
 
         ImageWithScale image;
         image.imageURL = imageURL;
+        image.referrer = SecurityPolicy::generateReferrer(imageValue->referrer().referrerPolicy, KURL(ParsedURLString, imageURL), imageValue->referrer().referrer);
         image.scaleFactor = scaleFactor;
         m_imagesInSet.append(image);
         ++i;
@@ -112,6 +113,7 @@ StyleImage* CSSImageSetValue::cacheImage(Document* document, float deviceScaleFa
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor(deviceScaleFactor);
         FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css);
+        request.mutableResourceRequest().setHTTPReferrer(image.referrer);
 
         if (crossOrigin != CrossOriginAttributeNotSet)
             request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);

@@ -132,6 +132,7 @@ StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScal
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *document)) {
                 CSSImageValue* svgImageValue = CSSImageValue::create(document->completeURL(cursorElement->href()->currentValue()->value()));
+                svgImageValue->setReferrer(imageValue->referrer());
                 m_cachedImage = svgImageValue->cacheImage(document);
                 return m_cachedImage.get();
             }

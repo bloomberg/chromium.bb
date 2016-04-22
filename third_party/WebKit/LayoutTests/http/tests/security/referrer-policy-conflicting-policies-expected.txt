@@ -1,5 +1,0 @@
-CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/security/resources/referrer-policy-conflicting-policies.html' was loaded over HTTPS, but requested an insecure script 'http://127.0.0.1:8000/security/resources/echo-referrer-js.php?before'. This content should also be served over HTTPS.
-CONSOLE MESSAGE: line 1: url = /security/resources/echo-referrer-js.php?before, referrer = [no-referrer]
-CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/security/resources/referrer-policy-conflicting-policies.html' was loaded over HTTPS, but requested an insecure script 'http://127.0.0.1:8000/security/resources/echo-referrer-js.php?after'. This content should also be served over HTTPS.
-CONSOLE MESSAGE: line 1: url = /security/resources/echo-referrer-js.php?after, referrer = https://127.0.0.1:8443/
-Checks that a script that was loaded before a referrer policy was set is loaded with the correct referrer, in this case, without a referrer.

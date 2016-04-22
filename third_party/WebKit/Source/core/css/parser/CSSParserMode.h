@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/Referrer.h"
 
 namespace blink {
 
@@ -100,6 +101,7 @@ public:
     CSSParserMode matchMode() const { return m_matchMode; }
     const KURL& baseURL() const { return m_baseURL; }
     const String& charset() const { return m_charset; }
+    const Referrer& referrer() const { return m_referrer; }
     bool isHTMLDocument() const { return m_isHTMLDocument; }
 
     // This quirk is to maintain compatibility with Android apps built on
@@ -112,6 +114,7 @@ public:
     void setMode(CSSParserMode mode) { m_mode = mode; }
     void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
     void setCharset(const String& charset) { m_charset = charset; }
+    void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
 
     KURL completeURL(const String& url) const;
 
@@ -126,6 +129,7 @@ private:
     String m_charset;
     CSSParserMode m_mode;
     CSSParserMode m_matchMode;
+    Referrer m_referrer;
     bool m_isHTMLDocument;
     bool m_useLegacyBackgroundSizeShorthandBehavior;
     ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;

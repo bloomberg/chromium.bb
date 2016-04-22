@@ -80,6 +80,8 @@ void StyleRuleImport::setCSSStyleSheet(const String& href, const KURL& baseURL, 
     Document* document = m_parentStyleSheet ? m_parentStyleSheet->singleOwnerDocument() : nullptr;
     if (!baseURL.isNull()) {
         context.setBaseURL(baseURL);
+        if (document)
+            context.setReferrer(Referrer(baseURL.strippedForUseAsReferrer(), document->getReferrerPolicy()));
     }
 
     m_styleSheet = StyleSheetContents::create(this, href, context);
