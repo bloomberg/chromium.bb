@@ -1322,12 +1322,10 @@ TEST_P(SpdyFramerTest, Basic) {
     0x00, 0x00, 0x00, 0x00,
     0x03,
 
-    0x00, 0x00, 0x0f, 0x03,  // RST_STREAM on Stream #3
+    0x00, 0x00, 0x04, 0x03,  // RST_STREAM on Stream #3
     0x00, 0x00, 0x00, 0x00,
     0x03, 0x00, 0x00, 0x00,  // RST_STREAM_CANCEL
-    0x08, 0x52, 0x45, 0x53,  // opaque data
-    0x45, 0x54, 0x53, 0x54,
-    0x52, 0x45, 0x41, 0x4d,
+    0x08,
   };
 
   TestSpdyVisitor visitor(spdy_version_);
@@ -1349,8 +1347,7 @@ TEST_P(SpdyFramerTest, Basic) {
   } else {
     EXPECT_EQ(3, visitor.headers_frame_count_);
     EXPECT_EQ(0, visitor.syn_frame_count_);
-    StringPiece reset_stream = "RESETSTREAM";
-    EXPECT_EQ(reset_stream, visitor.fin_opaque_data_);
+    EXPECT_TRUE(visitor.fin_opaque_data_.empty());
   }
 
   EXPECT_EQ(0, visitor.fin_flag_count_);

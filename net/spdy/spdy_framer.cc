@@ -246,6 +246,7 @@ size_t SpdyFramer::GetSynReplyMinimumSize() const {
   return size;
 }
 
+// TODO(jamessynge): Rename this to GetRstStreamSize as the frame is fixed size.
 size_t SpdyFramer::GetRstStreamMinimumSize() const {
   // Size, in bytes, of a RST_STREAM frame.
   if (protocol_version_ == SPDY3) {
@@ -928,10 +929,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       }
       break;
     case RST_STREAM:
-      if ((current_frame_length_ != GetRstStreamMinimumSize() &&
-           protocol_version_ == SPDY3) ||
-          (current_frame_length_ < GetRstStreamMinimumSize() &&
-           protocol_version_ == HTTP2)) {
+      if (current_frame_length_ != GetRstStreamMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
         VLOG(1) << "Undefined frame flags for RST_STREAM frame: " << hex
@@ -2046,6 +2044,7 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
   }
 
   // Handle remaining data as opaque.
+  // TODO(jamessynge): Remove support for variable length/opaque trailer.
   bool processed_successfully = true;
   if (len > 0) {
     processed_successfully = visitor_->OnRstStreamFrameData(data, len);
