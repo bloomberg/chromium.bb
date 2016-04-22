@@ -55,17 +55,12 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // though it may be constructed on any thread.
   //
   // |natural_size_changed_cb| is run with the new natural size of the video
-  // frame whenever a change in natural size is detected. It is not called the
-  // first time UpdateCurrentFrame() is called. Run on the same thread as the
-  // caller of UpdateCurrentFrame().
+  // frame whenever a change in natural size is detected. Run on the same
+  // thread as the caller of UpdateCurrentFrame().
   //
   // |opacity_changed_cb| is run when a change in opacity is detected. It *is*
   // called the first time UpdateCurrentFrame() is called. Run on the same
   // thread as the caller of UpdateCurrentFrame().
-  //
-  // TODO(dalecurtis): Investigate the inconsistency between the callbacks with
-  // respect to why we don't call |natural_size_changed_cb| on the first frame.
-  // I suspect it was for historical reasons that no longer make sense.
   VideoFrameCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const base::Callback<void(gfx::Size)>& natural_size_changed_cb,

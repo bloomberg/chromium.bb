@@ -1332,15 +1332,16 @@ void WebMediaPlayerImpl::OnDurationChanged() {
 void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
 
+  if (size == pipeline_metadata_.natural_size)
+    return;
+
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
   media_log_->AddEvent(
       media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
 
-  if (fullscreen_ && surface_manager_ &&
-      pipeline_metadata_.natural_size != size) {
+  if (fullscreen_ && surface_manager_)
     surface_manager_->NaturalSizeChanged(size);
-  }
 
   pipeline_metadata_.natural_size = size;
   client_->sizeChanged();

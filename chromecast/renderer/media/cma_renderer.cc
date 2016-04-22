@@ -173,7 +173,7 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
   // the ready state is changed to HaveMetadata (OnPipelineMetadata) is
   // right before the pipeline calls StartPlayingFrom (in
   // Pipeline::StateTransitionTask).
-  if (!initial_video_hole_created_) {
+  if (HasVideo() && !initial_video_hole_created_) {
     initial_video_hole_created_ = true;
     video_renderer_sink_->PaintFrameUsingOldRenderingPath(
         hole_frame_factory_->CreateHoleFrame(initial_natural_size_));

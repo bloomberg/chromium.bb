@@ -193,7 +193,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
   // subsequent PutCurrentFrame() call it will mark it as rendered.
   rendered_last_frame_ = false;
 
-  if (current_frame_ &&
+  if (!current_frame_ ||
       current_frame_->natural_size() != frame->natural_size()) {
     natural_size_changed_cb_.Run(frame->natural_size());
   }
