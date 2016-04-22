@@ -155,24 +155,49 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
 
+  base::FilePath bundled_flash_dir;
+  PathService::Get(chrome::DIR_PEPPER_FLASH_PLUGIN, &bundled_flash_dir);
+  base::FilePath system_flash_path;
+  PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN, &system_flash_path);
+
   std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
-  for (std::vector<content::WebPluginInfo>::const_iterator it =
-            plugins.begin();
-        it != plugins.end();
-        ++it) {
-    if (!IsPepperFlash(*it))
+  for (const auto& plugin : plugins) {
+    if (!IsPepperFlash(plugin))
       continue;
 
-    // Do it only if the version we're trying to register is newer.
-    Version registered_version(base::UTF16ToUTF8(it->version));
+    Version registered_version(base::UTF16ToUTF8(plugin.version));
+
+    // If lower version, never register.
     if (registered_version.IsValid() &&
-        version.CompareTo(registered_version) <= 0) {
+        version.CompareTo(registered_version) < 0) {
+      return;
+    }
+
+    bool registered_is_bundled =
+        !bundled_flash_dir.empty() && bundled_flash_dir.IsParent(plugin.path);
+    bool registered_is_debug_system =
+        !system_flash_path.empty() &&
+        base::FilePath::CompareEqualIgnoreCase(plugin.path.value(),
+                                               system_flash_path.value()) &&
+        chrome::IsSystemFlashScriptDebuggerPresent();
+    bool is_on_network = false;
+#if defined(OS_WIN)
+    // On Windows, component updated DLLs can't load off network drives.
+    // See crbug.com/572131 for details.
+    is_on_network = base::IsOnNetworkDrive(path);
+#endif
+    // If equal version, register iff component is not on a network drive,
+    // and the version of flash is not bundled, and not debug system.
+    if (registered_version.IsValid() &&
+        version.CompareTo(registered_version) == 0 &&
+        (is_on_network || registered_is_bundled ||
+         registered_is_debug_system)) {
       return;
     }
 
     // If the version is newer, remove the old one first.
-    PluginService::GetInstance()->UnregisterInternalPlugin(it->path);
+    PluginService::GetInstance()->UnregisterInternalPlugin(plugin.path);
     break;
   }
 

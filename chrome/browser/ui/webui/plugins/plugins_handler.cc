@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pepper_flash.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -74,14 +75,10 @@ base::string16 GetPluginDescription(const WebPluginInfo& plugin) {
                      &system_flash_path);
     if (base::FilePath::CompareEqualIgnoreCase(plugin.path.value(),
                                                system_flash_path.value())) {
-#if defined(GOOGLE_CHROME_BUILD)
-      // Existing documentation for debugging Flash describe this plugin as
-      // "Debug" so preserve this nomenclature here.
-      desc += base::ASCIIToUTF16(" Debug");
-#else
-      // On Chromium, we can name it what it really is; the system plugin.
-      desc += base::ASCIIToUTF16(" System");
-#endif
+      if (chrome::IsSystemFlashScriptDebuggerPresent())
+        desc += base::ASCIIToUTF16(" Debug");
+      else
+        desc += base::ASCIIToUTF16(" System");
     }
   }
   return desc;

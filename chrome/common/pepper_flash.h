@@ -18,6 +18,11 @@ extern const int32_t kPepperFlashPermissions;
 // manifest, with the version specified in the manifest in |version_out|.
 bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
                               base::Version* version_out);
+
+// Returns true if the version of Flash installed on the system is the Flash
+// Script debugger.
+bool IsSystemFlashScriptDebuggerPresent();
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_PEPPER_FLASH_H_

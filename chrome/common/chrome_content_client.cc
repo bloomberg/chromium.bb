@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -51,7 +52,6 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
-#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -198,16 +198,31 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
         // !defined(WIDEVINE_CDM_IS_COMPONENT)
 }
 
+// Creates a PepperPluginInfo for the specified plugin.
+// |path| is the full path to the plugin.
+// |version| is a string representation of the plugin version.
+// |is_debug| is whether the plugin is the debug version or not.
+// |is_external| is whether the plugin is supplied external to Chrome e.g. a
+//     system installation of Adobe Flash.
+// |is_bundled| distinguishes between component updated plugin and a bundled
+//     plugin.
 content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
                                                 const std::string& version,
-                                                bool is_debug) {
+                                                bool is_debug,
+                                                bool is_external,
+                                                bool is_bundled) {
   content::PepperPluginInfo plugin;
 
   plugin.is_out_of_process = true;
   plugin.name = content::kFlashPluginName;
   plugin.path = path;
+#if defined(OS_WIN)
+  plugin.is_on_local_drive = !base::IsOnNetworkDrive(path);
+#endif
   plugin.permissions = chrome::kPepperFlashPermissions;
   plugin.is_debug = is_debug;
+  plugin.is_external = is_external;
+  plugin.is_bundled = is_bundled;
 
   std::vector<std::string> flash_version_numbers = base::SplitString(
       version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -250,7 +265,8 @@ void AddPepperFlashFromCommandLine(
           switches::kPpapiFlashVersion);
 
   plugins->push_back(
-      CreatePepperFlashInfo(base::FilePath(flash_path), flash_version, false));
+      CreatePepperFlashInfo(base::FilePath(flash_path),
+                            flash_version, false, true, false));
 }
 
 #if defined(OS_LINUX)
@@ -284,7 +300,7 @@ bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
                         "bundled or system plugin.";
         return false;
       }
-      *plugin = CreatePepperFlashInfo(flash_path, version, false);
+      *plugin = CreatePepperFlashInfo(flash_path, version, false, false, false);
       return true;
     }
     LOG(ERROR)
@@ -313,45 +329,16 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
     return false;
 
-  *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING, false);
+  *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING, false,
+                                  false, true);
   return true;
 #else
   return false;
 #endif  // FLAPPER_AVAILABLE
 }
 
-bool IsSystemFlashScriptDebuggerPresent() {
-#if defined(OS_WIN)
-  const wchar_t kFlashRegistryRoot[] =
-      L"SOFTWARE\\Macromedia\\FlashPlayerPepper";
-  const wchar_t kIsDebuggerValueName[] = L"isScriptDebugger";
-
-  base::win::RegKey path_key(HKEY_LOCAL_MACHINE, kFlashRegistryRoot, KEY_READ);
-  DWORD debug_value;
-  if (path_key.ReadValueDW(kIsDebuggerValueName, &debug_value) != ERROR_SUCCESS)
-    return false;
-
-  return (debug_value == 1);
-#else
-  // TODO(wfh): implement this on OS X and Linux. crbug.com/497996.
-  return false;
-#endif
-}
-
 bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool system_flash_is_debug = IsSystemFlashScriptDebuggerPresent();
-
-#if defined(FLAPPER_AVAILABLE)
-  // If flapper is available, only try the system plugin if either:
-  // --disable-bundled-ppapi-flash is specified, or the system debugger is the
-  // Flash Script Debugger.
-  if (!(command_line->HasSwitch(switches::kDisableBundledPpapiFlash) ||
-        system_flash_is_debug)) {
-    return false;
-  }
-#endif  // defined(FLAPPER_AVAILABLE)
-
   // Do not try and find System Pepper Flash if there is a specific path on
   // the commmand-line.
   if (command_line->HasSwitch(switches::kPpapiFlashPath))
@@ -383,8 +370,11 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   if (!chrome::CheckPepperFlashManifest(*manifest, &version))
     return false;
 
-  *plugin = CreatePepperFlashInfo(flash_filename, version.GetString(),
-                                  system_flash_is_debug);
+  *plugin = CreatePepperFlashInfo(flash_filename,
+                                  version.GetString(),
+                                  chrome::IsSystemFlashScriptDebuggerPresent(),
+                                  true,
+                                  false);
   return true;
 }
 #endif  //  defined(ENABLE_PLUGINS)
@@ -464,17 +454,22 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 // static
 content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
     const std::vector<content::PepperPluginInfo*>& plugins) {
-  auto it = std::max_element(
-      plugins.begin(), plugins.end(),
-      [](content::PepperPluginInfo* x, content::PepperPluginInfo* y) {
-        Version version_x(x->version);
-        Version version_y(y->version);
-        DCHECK(version_x.IsValid() && version_y.IsValid());
-        if (version_x == version_y)
-          return !x->is_debug && y->is_debug;
-        return version_x < version_y;
-      });
-  return it != plugins.end() ? *it : nullptr;
+  if (plugins.empty())
+    return nullptr;
+
+  using PluginSortKey = std::tuple<base::Version, bool, bool, bool, bool>;
+
+  std::map<PluginSortKey, content::PepperPluginInfo*> plugin_map;
+
+  for (const auto& plugin : plugins) {
+    Version version(plugin->version);
+    DCHECK(version.IsValid());
+    plugin_map[PluginSortKey(version, plugin->is_debug,
+                             plugin->is_bundled, plugin->is_on_local_drive,
+                             !plugin->is_external)] = plugin;
+  }
+
+  return plugin_map.rbegin()->second;
 }
 #endif  // defined(ENABLE_PLUGINS)
 

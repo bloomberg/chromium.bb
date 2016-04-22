@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/pepper_flash.h"
+
 #include <stddef.h>
 
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/common/pepper_flash.h"
 #include "chrome/common/ppapi_utils.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+
+#if defined(OS_WIN)
+#include "base/win/registry.h"
+#endif
 
 namespace chrome {
 
@@ -126,6 +131,24 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 
   *version_out = version;
   return true;
+}
+
+bool IsSystemFlashScriptDebuggerPresent() {
+#if defined(OS_WIN)
+  const wchar_t kFlashRegistryRoot[] =
+      L"SOFTWARE\\Macromedia\\FlashPlayerPepper";
+  const wchar_t kIsDebuggerValueName[] = L"isScriptDebugger";
+
+  base::win::RegKey path_key(HKEY_LOCAL_MACHINE, kFlashRegistryRoot, KEY_READ);
+  DWORD debug_value;
+  if (path_key.ReadValueDW(kIsDebuggerValueName, &debug_value) != ERROR_SUCCESS)
+    return false;
+
+  return (debug_value == 1);
+#else
+  // TODO(wfh): implement this on OS X and Linux. crbug.com/497996.
+  return false;
+#endif
 }
 
 }  // namespace chrome

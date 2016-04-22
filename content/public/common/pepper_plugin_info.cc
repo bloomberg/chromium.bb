@@ -5,6 +5,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 
 namespace content {
 
@@ -18,6 +19,9 @@ PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false),
       is_debug(false),
+      is_on_local_drive(true),
+      is_external(false),
+      is_bundled(false),
       permissions(0) {
 }
 

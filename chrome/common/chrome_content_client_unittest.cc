@@ -105,62 +105,118 @@ TEST(ChromeContentClientTest, FindMostRecent) {
       ChromeContentClient::FindMostRecentPlugin(version_vector);
   EXPECT_EQ("1.0.0.0", most_recent->version);
 
-  // Now do the generic test of a complex vector.
-  content::PepperPluginInfo info2;
-  info2.version = "2.0.0.1";
-  content::PepperPluginInfo info3;
-  info3.version = "3.5.6.7";
-  content::PepperPluginInfo info4;
-  info4.version = "4.0.0.153";
   content::PepperPluginInfo info5;
   info5.version = "5.0.12.1";
   content::PepperPluginInfo info6_12;
   info6_12.version = "6.0.0.12";
   content::PepperPluginInfo info6_13;
   info6_13.version = "6.0.0.13";
-  content::PepperPluginInfo info6_13_d;
-  info6_13_d.version = "6.0.0.13";
-  info6_13_d.is_debug = true;
 
+  // Test highest version is picked.
   version_vector.clear();
-  version_vector.push_back(&info4);
-  version_vector.push_back(&info2);
-  version_vector.push_back(&info6_13);
-  version_vector.push_back(&info3);
   version_vector.push_back(&info5);
   version_vector.push_back(&info6_12);
-  version_vector.push_back(&info6_13_d);
+  version_vector.push_back(&info6_13);
 
   most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
   EXPECT_EQ("6.0.0.13", most_recent->version);
-  EXPECT_EQ(true, most_recent->is_debug);
 
-  // Check vector order doesn't matter.
+  // Test that order does not matter, validates tests below.
   version_vector.clear();
-  version_vector.push_back(&info6_13_d);
+  version_vector.push_back(&info6_13);
   version_vector.push_back(&info6_12);
   version_vector.push_back(&info5);
-  version_vector.push_back(&info3);
-  version_vector.push_back(&info6_13);
-  version_vector.push_back(&info2);
-  version_vector.push_back(&info4);
 
   most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
   EXPECT_EQ("6.0.0.13", most_recent->version);
-  EXPECT_EQ(true, most_recent->is_debug);
 
-  // Check higher versions still trump debugger.
-  content::PepperPluginInfo info5_d;
-  info5_d.version = "5.0.12.1";
-  info5_d.is_debug = true;
+  // Test real scenarios.
+  content::PepperPluginInfo bundled_flash;
+  bundled_flash.version = "4.3.2.1";
+  bundled_flash.is_external = false;
+  bundled_flash.is_debug = false;
+  bundled_flash.is_on_local_drive = true;
+  bundled_flash.is_bundled = true;
+  bundled_flash.name = "bundled_flash";
 
+  content::PepperPluginInfo local_component_flash;
+  local_component_flash.version = "4.3.2.1";
+  local_component_flash.is_external = false;
+  local_component_flash.is_debug = false;
+  local_component_flash.is_on_local_drive = true;
+  local_component_flash.is_bundled = false;
+  local_component_flash.name = "local_component_flash";
+
+  content::PepperPluginInfo network_component_flash;
+  network_component_flash.version = "4.3.2.1";
+  network_component_flash.is_external = false;
+  network_component_flash.is_debug = false;
+  network_component_flash.is_on_local_drive = false;
+  network_component_flash.is_bundled = false;
+  network_component_flash.name = "network_component_flash";
+
+  content::PepperPluginInfo system_flash;
+  system_flash.version = "4.3.2.1";
+  system_flash.is_external = true;
+  system_flash.is_debug = false;
+  system_flash.is_on_local_drive = true;
+  system_flash.is_bundled = false;
+  system_flash.name = "system_flash";
+
+  content::PepperPluginInfo system_debug_flash;
+  system_debug_flash.version = "4.3.2.1";
+  system_debug_flash.is_external = true;
+  system_debug_flash.is_debug = true;
+  system_debug_flash.is_on_local_drive = false;
+  system_debug_flash.is_bundled = false;
+  system_debug_flash.name = "system_debug_flash";
+
+  // The order here should be:
+  // 1. Debug System Flash.
+  // 2. Bundled.
+  // 3. Component update on a local drive.
+  // 4. System Flash.
+  // 5. Component update on a network drive.
+
+  // Debug beats bundled.
   version_vector.clear();
-  version_vector.push_back(&info5_d);
-  version_vector.push_back(&info6_12);
+  version_vector.push_back(&system_debug_flash);
+  version_vector.push_back(&bundled_flash);
 
   most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
-  EXPECT_EQ("6.0.0.12", most_recent->version);
-  EXPECT_EQ(false, most_recent->is_debug);
+  EXPECT_STREQ("system_debug_flash", most_recent->name.c_str());
+
+  // Bundled beats component updated.
+  version_vector.clear();
+  version_vector.push_back(&bundled_flash);
+  version_vector.push_back(&local_component_flash);
+
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_STREQ("bundled_flash", most_recent->name.c_str());
+
+  // Bundled beats System flash
+  version_vector.clear();
+  version_vector.push_back(&bundled_flash);
+  version_vector.push_back(&system_flash);
+
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_STREQ("bundled_flash", most_recent->name.c_str());
+
+  // Local component updated beats System Flash.
+  version_vector.clear();
+  version_vector.push_back(&system_flash);
+  version_vector.push_back(&local_component_flash);
+
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_STREQ("local_component_flash", most_recent->name.c_str());
+
+  // System Flash beats component update on network drive.
+  version_vector.clear();
+  version_vector.push_back(&network_component_flash);
+  version_vector.push_back(&system_flash);
+
+  most_recent = ChromeContentClient::FindMostRecentPlugin(version_vector);
+  EXPECT_STREQ("system_flash", most_recent->name.c_str());
 }
 #endif  // defined(ENABLE_PLUGINS)
 
