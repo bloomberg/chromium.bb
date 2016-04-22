@@ -79,7 +79,7 @@ static void invalidateStyleForAllLinksRecursively(Node& rootNode, bool invalidat
 
 void VisitedLinkState::invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes)
 {
-    if (!m_linksCheckedForVisitedState.isEmpty())
+    if (!m_linksCheckedForVisitedState.isEmpty() && document().firstChild())
         invalidateStyleForAllLinksRecursively(*document().firstChild(), invalidateVisitedLinkHashes);
 }
 
@@ -99,7 +99,7 @@ static void invalidateStyleForLinkRecursively(Node& rootNode, LinkHash linkHash)
 
 void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
 {
-    if (m_linksCheckedForVisitedState.contains(linkHash))
+    if (m_linksCheckedForVisitedState.contains(linkHash) && document().firstChild())
         invalidateStyleForLinkRecursively(*document().firstChild(), linkHash);
 }
 
