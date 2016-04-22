@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_TEST_UTIL_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_TEST_UTIL_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/uploader.h"
@@ -77,7 +78,7 @@ class MockTime : public MockableTime {
   // MockableTime implementation:
   base::Time Now() override;
   base::TimeTicks NowTicks() override;
-  scoped_ptr<MockableTime::Timer> CreateTimer() override;
+  std::unique_ptr<MockableTime::Timer> CreateTimer() override;
 
   // Pretends that |delta| has passed, and runs tasks that would've happened
   // during that interval (with |Now()| returning proper values while they
@@ -122,8 +123,8 @@ class MockTime : public MockableTime {
   TaskMap tasks_;
 };
 
-scoped_ptr<DomainReliabilityConfig> MakeTestConfig();
-scoped_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
+std::unique_ptr<DomainReliabilityConfig> MakeTestConfig();
+std::unique_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
     const GURL& origin);
 DomainReliabilityScheduler::Params MakeTestSchedulerParams();
 

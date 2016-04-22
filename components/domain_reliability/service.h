@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_SERVICE_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/domain_reliability_export.h"
@@ -49,7 +49,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   // most once, and must be called before any of the below methods can be
   // called. The caller is responsible for destroying the Monitor on the given
   // task runner when it is no longer needed.
-  virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
+  virtual std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner) = 0;
 
   // Clears browsing data on the associated Monitor. |Init()| must have been
@@ -58,7 +58,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
                                  const base::Closure& callback) = 0;
 
   virtual void GetWebUIData(
-      const base::Callback<void(scoped_ptr<base::Value>)>& callback)
+      const base::Callback<void(std::unique_ptr<base::Value>)>& callback)
       const = 0;
 
  protected:

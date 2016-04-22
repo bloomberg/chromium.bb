@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_GOOGLE_CONFIGS_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_GOOGLE_CONFIGS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 

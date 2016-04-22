@@ -43,14 +43,14 @@ TEST_F(DomainReliabilityMockTimeTest, AddTask) {
 }
 
 TEST_F(DomainReliabilityMockTimeTest, TimerCreate) {
-  scoped_ptr<MockTime::Timer> timer(time_.CreateTimer());
+  std::unique_ptr<MockTime::Timer> timer(time_.CreateTimer());
 }
 
 TEST_F(DomainReliabilityMockTimeTest, TimerIsRunning) {
   const TimeDelta delta = TimeDelta::FromSeconds(1);
   TestCallback callback;
 
-  scoped_ptr<MockTime::Timer> timer(time_.CreateTimer());
+  std::unique_ptr<MockTime::Timer> timer(time_.CreateTimer());
   EXPECT_FALSE(timer->IsRunning());
   timer->Start(FROM_HERE, delta, callback.callback());
   EXPECT_TRUE(timer->IsRunning());
@@ -62,7 +62,7 @@ TEST_F(DomainReliabilityMockTimeTest, TimerGoesOff) {
   const TimeDelta delta = TimeDelta::FromSeconds(1);
   TestCallback callback;
 
-  scoped_ptr<MockTime::Timer> timer(time_.CreateTimer());
+  std::unique_ptr<MockTime::Timer> timer(time_.CreateTimer());
 
   timer->Start(FROM_HERE, 2 * delta, callback.callback());
   time_.Advance(delta);
@@ -75,7 +75,7 @@ TEST_F(DomainReliabilityMockTimeTest, TimerStopped) {
   const TimeDelta delta = TimeDelta::FromSeconds(1);
   TestCallback callback;
 
-  scoped_ptr<MockTime::Timer> timer(time_.CreateTimer());
+  std::unique_ptr<MockTime::Timer> timer(time_.CreateTimer());
 
   timer->Start(FROM_HERE, 2 * delta, callback.callback());
   time_.Advance(delta);
@@ -88,7 +88,7 @@ TEST_F(DomainReliabilityMockTimeTest, TimerRestarted) {
   const TimeDelta delta = TimeDelta::FromSeconds(1);
   TestCallback callback;
 
-  scoped_ptr<MockTime::Timer> timer(time_.CreateTimer());
+  std::unique_ptr<MockTime::Timer> timer(time_.CreateTimer());
 
   timer->Start(FROM_HERE, 2 * delta, callback.callback());
   time_.Advance(delta);
@@ -101,7 +101,7 @@ TEST_F(DomainReliabilityMockTimeTest, TimerRestarted) {
 
 TEST_F(DomainReliabilityMockTimeTest, TimerReentrantStart) {
   const TimeDelta delta = TimeDelta::FromSeconds(1);
-  scoped_ptr<MockTime::Timer> timer(time_.CreateTimer());
+  std::unique_ptr<MockTime::Timer> timer(time_.CreateTimer());
   TestCallback callback;
 
   timer->Start(

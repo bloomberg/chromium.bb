@@ -125,7 +125,7 @@ class DomainReliabilitySchedulerTest : public testing::Test {
   MockTime time_;
   size_t num_collectors_;
   DomainReliabilityScheduler::Params params_;
-  scoped_ptr<DomainReliabilityScheduler> scheduler_;
+  std::unique_ptr<DomainReliabilityScheduler> scheduler_;
 
   bool callback_called_;
   TimeDelta callback_min_;

@@ -20,12 +20,12 @@ DomainReliabilityBeacon::DomainReliabilityBeacon(
     const DomainReliabilityBeacon& other) = default;
 DomainReliabilityBeacon::~DomainReliabilityBeacon() {}
 
-scoped_ptr<Value> DomainReliabilityBeacon::ToValue(
+std::unique_ptr<Value> DomainReliabilityBeacon::ToValue(
     base::TimeTicks upload_time,
     base::TimeTicks last_network_change_time,
     const GURL& collector_url,
     const ScopedVector<std::string>& path_prefixes) const {
-  scoped_ptr<DictionaryValue> beacon_value(new DictionaryValue());
+  std::unique_ptr<DictionaryValue> beacon_value(new DictionaryValue());
   DCHECK(url.is_valid());
   GURL sanitized_url = SanitizeURLForReport(url, collector_url, path_prefixes);
   beacon_value->SetString("url", sanitized_url.spec());

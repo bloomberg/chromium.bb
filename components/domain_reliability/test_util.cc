@@ -118,8 +118,8 @@ MockTime::~MockTime() {}
 base::Time MockTime::Now() { return now_; }
 base::TimeTicks MockTime::NowTicks() { return now_ticks_; }
 
-scoped_ptr<MockableTime::Timer> MockTime::CreateTimer() {
-  return scoped_ptr<MockableTime::Timer>(new MockTimer(this));
+std::unique_ptr<MockableTime::Timer> MockTime::CreateTimer() {
+  return std::unique_ptr<MockableTime::Timer>(new MockTimer(this));
 }
 
 void MockTime::Advance(base::TimeDelta delta) {
@@ -161,11 +161,11 @@ DomainReliabilityScheduler::Params MakeTestSchedulerParams() {
   return params;
 }
 
-scoped_ptr<DomainReliabilityConfig> MakeTestConfig() {
+std::unique_ptr<DomainReliabilityConfig> MakeTestConfig() {
   return MakeTestConfigWithOrigin(GURL("https://example/"));
 }
 
-scoped_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
+std::unique_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
     const GURL& origin) {
   DomainReliabilityConfig* config = new DomainReliabilityConfig();
   config->origin = origin;
@@ -175,7 +175,7 @@ scoped_ptr<DomainReliabilityConfig> MakeTestConfigWithOrigin(
 
   DCHECK(config->IsValid());
 
-  return scoped_ptr<DomainReliabilityConfig>(config);
+  return std::unique_ptr<DomainReliabilityConfig>(config);
 }
 
 }  // namespace domain_reliability

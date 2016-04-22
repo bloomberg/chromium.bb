@@ -25,7 +25,7 @@ class DomainReliabilityHeaderTest : public testing::Test {
   const DomainReliabilityHeader* parsed() const { return parsed_.get(); }
 
  private:
-  scoped_ptr<DomainReliabilityHeader> parsed_;
+  std::unique_ptr<DomainReliabilityHeader> parsed_;
 };
 
 bool CheckReportUris(const char* pipe_separated_expected_report_uris,

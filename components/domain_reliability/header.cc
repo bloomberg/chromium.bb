@@ -5,8 +5,10 @@
 #include "components/domain_reliability/header.h"
 
 #include <stdint.h>
+
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "components/domain_reliability/config.h"
@@ -197,8 +199,8 @@ namespace domain_reliability {
 DomainReliabilityHeader::~DomainReliabilityHeader() {}
 
 // static
-scoped_ptr<DomainReliabilityHeader>
-DomainReliabilityHeader::Parse(base::StringPiece value) {
+std::unique_ptr<DomainReliabilityHeader> DomainReliabilityHeader::Parse(
+    base::StringPiece value) {
   ScopedVector<GURL> report_uri;
   base::TimeDelta max_age;
   bool include_subdomains = false;
@@ -214,20 +216,20 @@ DomainReliabilityHeader::Parse(base::StringPiece value) {
       if (got_report_uri
           || !parser.directive_has_value()
           || !ParseReportUri(parser.directive_values(), &report_uri)) {
-        return make_scoped_ptr(new DomainReliabilityHeader(PARSE_ERROR));
+        return base::WrapUnique(new DomainReliabilityHeader(PARSE_ERROR));
       }
       got_report_uri = true;
     } else if (name == "max-age") {
       if (got_max_age
           || !parser.directive_has_value()
           || !ParseMaxAge(parser.directive_values(), &max_age)) {
-        return make_scoped_ptr(new DomainReliabilityHeader(PARSE_ERROR));
+        return base::WrapUnique(new DomainReliabilityHeader(PARSE_ERROR));
       }
       got_max_age = true;
     } else if (name == "includeSubdomains") {
       if (got_include_subdomains ||
           parser.directive_has_value()) {
-        return make_scoped_ptr(new DomainReliabilityHeader(PARSE_ERROR));
+        return base::WrapUnique(new DomainReliabilityHeader(PARSE_ERROR));
       }
       include_subdomains = true;
       got_include_subdomains = true;
@@ -237,22 +239,23 @@ DomainReliabilityHeader::Parse(base::StringPiece value) {
   }
 
   if (parser.stopped_with_error() || !got_max_age)
-    return make_scoped_ptr(new DomainReliabilityHeader(PARSE_ERROR));
+    return base::WrapUnique(new DomainReliabilityHeader(PARSE_ERROR));
 
   if (max_age == base::TimeDelta::FromMicroseconds(0))
-    return make_scoped_ptr(new DomainReliabilityHeader(PARSE_CLEAR_CONFIG));
+    return base::WrapUnique(new DomainReliabilityHeader(PARSE_CLEAR_CONFIG));
 
   if (!got_report_uri)
-    return make_scoped_ptr(new DomainReliabilityHeader(PARSE_ERROR));
+    return base::WrapUnique(new DomainReliabilityHeader(PARSE_ERROR));
 
-  scoped_ptr<DomainReliabilityConfig> config(new DomainReliabilityConfig());
+  std::unique_ptr<DomainReliabilityConfig> config(
+      new DomainReliabilityConfig());
   config->include_subdomains = include_subdomains;
   config->collectors.clear();
   config->collectors.swap(report_uri);
   config->success_sample_rate = 0.0;
   config->failure_sample_rate = 1.0;
   config->path_prefixes.clear();
-  return make_scoped_ptr(new DomainReliabilityHeader(
+  return base::WrapUnique(new DomainReliabilityHeader(
       PARSE_SET_CONFIG, std::move(config), max_age));
 }
 
@@ -266,7 +269,8 @@ base::TimeDelta DomainReliabilityHeader::max_age() const {
   return max_age_;
 }
 
-scoped_ptr<DomainReliabilityConfig> DomainReliabilityHeader::ReleaseConfig() {
+std::unique_ptr<DomainReliabilityConfig>
+DomainReliabilityHeader::ReleaseConfig() {
   DCHECK_EQ(PARSE_SET_CONFIG, status_);
   status_ = PARSE_ERROR;
   return std::move(config_);
@@ -305,11 +309,9 @@ DomainReliabilityHeader::DomainReliabilityHeader(ParseStatus status)
 
 DomainReliabilityHeader::DomainReliabilityHeader(
     ParseStatus status,
-    scoped_ptr<DomainReliabilityConfig> config,
+    std::unique_ptr<DomainReliabilityConfig> config,
     base::TimeDelta max_age)
-    : status_(status),
-      config_(std::move(config)),
-      max_age_(max_age) {
+    : status_(status), config_(std::move(config)), max_age_(max_age) {
   DCHECK_EQ(PARSE_SET_CONFIG, status_);
   DCHECK(config_.get());
   DCHECK_NE(0, max_age_.InMicroseconds());

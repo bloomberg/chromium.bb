@@ -17,12 +17,12 @@ namespace domain_reliability {
 
 namespace {
 
-scoped_ptr<base::Value> GetWebUIDataOnNetworkTaskRunner(
+std::unique_ptr<base::Value> GetWebUIDataOnNetworkTaskRunner(
     base::WeakPtr<DomainReliabilityMonitor> monitor) {
   if (!monitor) {
     base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString("error", "no_monitor");
-    return scoped_ptr<base::Value>(dict);
+    return std::unique_ptr<base::Value>(dict);
   }
 
   return monitor->GetWebUIData();
@@ -40,14 +40,15 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
 
   // DomainReliabilityService implementation:
 
-  scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
+  std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
       override {
     DCHECK(!network_task_runner_.get());
 
-    scoped_ptr<DomainReliabilityMonitor> monitor(new DomainReliabilityMonitor(
-        upload_reporter_string_, base::ThreadTaskRunnerHandle::Get(),
-        network_task_runner));
+    std::unique_ptr<DomainReliabilityMonitor> monitor(
+        new DomainReliabilityMonitor(upload_reporter_string_,
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     network_task_runner));
 
     monitor_ = monitor->MakeWeakPtr();
     network_task_runner_ = network_task_runner;
@@ -67,7 +68,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
         callback);
   }
 
-  void GetWebUIData(const base::Callback<void(scoped_ptr<base::Value>)>&
+  void GetWebUIData(const base::Callback<void(std::unique_ptr<base::Value>)>&
                         callback) const override {
     DCHECK(network_task_runner_.get());
 

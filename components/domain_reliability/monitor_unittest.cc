@@ -5,13 +5,14 @@
 #include "components/domain_reliability/monitor.h"
 
 #include <stddef.h>
+
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/beacon.h"
@@ -61,7 +62,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
         monitor_("test-reporter",
                  pref_task_runner_,
                  network_task_runner_,
-                 scoped_ptr<MockableTime>(time_)) {
+                 std::unique_ptr<MockableTime>(time_)) {
     monitor_.MoveToNetworkThread();
     monitor_.InitURLRequestContext(url_request_context_getter_);
     monitor_.SetDiscardUploads(false);
@@ -92,7 +93,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
 
   DomainReliabilityContext* CreateAndAddContextForOrigin(const GURL& origin,
                                                          bool wildcard) {
-    scoped_ptr<DomainReliabilityConfig> config(
+    std::unique_ptr<DomainReliabilityConfig> config(
         MakeTestConfigWithOrigin(origin));
     config->include_subdomains = wildcard;
     return monitor_.AddContextForTesting(std::move(config));
@@ -216,7 +217,7 @@ TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
 // cache revalidation request.
 TEST_F(DomainReliabilityMonitorTest,
        NoCachedIPFromSuccessfulRevalidationRequest) {
-  scoped_ptr<DomainReliabilityConfig> config = MakeTestConfig();
+  std::unique_ptr<DomainReliabilityConfig> config = MakeTestConfig();
   config->success_sample_rate = 1.0;
   DomainReliabilityContext* context =
       monitor_.AddContextForTesting(std::move(config));

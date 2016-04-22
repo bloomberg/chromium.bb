@@ -159,10 +159,10 @@ void DomainReliabilityScheduler::OnUploadComplete(
   MaybeScheduleUpload();
 }
 
-scoped_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
+std::unique_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
   base::TimeTicks now = time_->NowTicks();
 
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> data(new base::DictionaryValue());
 
   data->SetBoolean("upload_pending", upload_pending_);
   data->SetBoolean("upload_scheduled", upload_scheduled_);
@@ -174,7 +174,7 @@ scoped_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
   data->SetInteger("collector_index", static_cast<int>(collector_index_));
 
   if (last_upload_finished_) {
-    scoped_ptr<base::DictionaryValue> last(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> last(new base::DictionaryValue());
     last->SetInteger("start_time", (now - last_upload_start_time_).InSeconds());
     last->SetInteger("end_time", (now - last_upload_end_time_).InSeconds());
     last->SetInteger("collector_index",
@@ -183,9 +183,9 @@ scoped_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
     data->Set("last_upload", std::move(last));
   }
 
-  scoped_ptr<base::ListValue> collectors_value(new base::ListValue());
+  std::unique_ptr<base::ListValue> collectors_value(new base::ListValue());
   for (const auto& collector : collectors_) {
-    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
     value->SetInteger("failures", collector->failure_count());
     value->SetInteger("next_upload",
         (collector->GetReleaseTime() - now).InSeconds());

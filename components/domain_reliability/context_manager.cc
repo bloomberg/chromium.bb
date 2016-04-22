@@ -18,7 +18,7 @@ DomainReliabilityContextManager::~DomainReliabilityContextManager() {
 }
 
 void DomainReliabilityContextManager::RouteBeacon(
-    scoped_ptr<DomainReliabilityBeacon> beacon) {
+    std::unique_ptr<DomainReliabilityBeacon> beacon) {
   DomainReliabilityContext* context = GetContextForHost(beacon->url.host());
   if (!context)
     return;
@@ -28,7 +28,7 @@ void DomainReliabilityContextManager::RouteBeacon(
 
 void DomainReliabilityContextManager::SetConfig(
     const GURL& origin,
-    scoped_ptr<DomainReliabilityConfig> config,
+    std::unique_ptr<DomainReliabilityConfig> config,
     base::TimeDelta max_age) {
   std::string key = origin.host();
 
@@ -75,11 +75,11 @@ void DomainReliabilityContextManager::ClearBeaconsInAllContexts() {
 }
 
 DomainReliabilityContext* DomainReliabilityContextManager::AddContextForConfig(
-    scoped_ptr<const DomainReliabilityConfig> config) {
+    std::unique_ptr<const DomainReliabilityConfig> config) {
   std::string key = config->origin.host();
   // TODO(juliatuttle): Convert this to actual origin.
 
-  scoped_ptr<DomainReliabilityContext> context =
+  std::unique_ptr<DomainReliabilityContext> context =
       context_factory_->CreateContextForConfig(std::move(config));
   DomainReliabilityContext** entry = &contexts_[key];
   if (*entry)
@@ -95,8 +95,9 @@ void DomainReliabilityContextManager::RemoveAllContexts() {
   contexts_.clear();
 }
 
-scoped_ptr<base::Value> DomainReliabilityContextManager::GetWebUIData() const {
-  scoped_ptr<base::ListValue> contexts_value(new base::ListValue());
+std::unique_ptr<base::Value> DomainReliabilityContextManager::GetWebUIData()
+    const {
+  std::unique_ptr<base::ListValue> contexts_value(new base::ListValue());
   for (const auto& context_entry : contexts_)
     contexts_value->Append(context_entry.second->GetWebUIData().release());
   return std::move(contexts_value);

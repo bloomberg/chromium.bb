@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_BEACON_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_BEACON_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
@@ -36,7 +36,7 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   // are being uploaded to a same-origin collector.
   // |path_prefixes| are used to include only a known-safe (not PII) prefix of
   // URLs when uploading to a non-same-origin collector.
-  scoped_ptr<base::Value> ToValue(
+  std::unique_ptr<base::Value> ToValue(
       base::TimeTicks upload_time,
       base::TimeTicks last_network_change_time,
       const GURL& collector_url,

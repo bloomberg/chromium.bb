@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_CONFIG_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_CONFIG_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/json/json_value_converter.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,7 +27,7 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
   ~DomainReliabilityConfig();
 
   // Uses the JSONValueConverter to parse the JSON for a config into a struct.
-  static scoped_ptr<const DomainReliabilityConfig> FromJSON(
+  static std::unique_ptr<const DomainReliabilityConfig> FromJSON(
       const base::StringPiece& json);
 
   bool IsValid() const;

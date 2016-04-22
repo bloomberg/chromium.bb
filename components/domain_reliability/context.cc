@@ -48,7 +48,7 @@ DomainReliabilityContext::DomainReliabilityContext(
     const base::TimeTicks* last_network_change_time,
     DomainReliabilityDispatcher* dispatcher,
     DomainReliabilityUploader* uploader,
-    scoped_ptr<const DomainReliabilityConfig> config)
+    std::unique_ptr<const DomainReliabilityConfig> config)
     : config_(std::move(config)),
       time_(time),
       upload_reporter_string_(upload_reporter_string),
@@ -68,7 +68,7 @@ DomainReliabilityContext::~DomainReliabilityContext() {
 }
 
 void DomainReliabilityContext::OnBeacon(
-    scoped_ptr<DomainReliabilityBeacon> beacon) {
+    std::unique_ptr<DomainReliabilityBeacon> beacon) {
   bool success = (beacon->status == "ok");
   double sample_rate = beacon->details.quic_port_migration_detected
                            ? 1.0
@@ -111,7 +111,7 @@ void DomainReliabilityContext::ClearBeacons() {
   uploading_beacons_size_ = 0;
 }
 
-scoped_ptr<Value> DomainReliabilityContext::GetWebUIData() const {
+std::unique_ptr<Value> DomainReliabilityContext::GetWebUIData() const {
   DictionaryValue* context_value = new DictionaryValue();
 
   context_value->SetString("origin", config().origin.spec());
@@ -120,7 +120,7 @@ scoped_ptr<Value> DomainReliabilityContext::GetWebUIData() const {
       static_cast<int>(uploading_beacons_size_));
   context_value->Set("scheduler", scheduler_.GetWebUIData());
 
-  return scoped_ptr<Value>(context_value);
+  return std::unique_ptr<Value>(context_value);
 }
 
 void DomainReliabilityContext::GetQueuedBeaconsForTesting(
@@ -197,13 +197,13 @@ void DomainReliabilityContext::OnUploadComplete(
   upload_time_ = base::TimeTicks();
 }
 
-scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
+std::unique_ptr<const Value> DomainReliabilityContext::CreateReport(
     base::TimeTicks upload_time,
     const GURL& collector_url,
     int* max_upload_depth_out) const {
   int max_upload_depth = 0;
 
-  scoped_ptr<ListValue> beacons_value(new ListValue());
+  std::unique_ptr<ListValue> beacons_value(new ListValue());
   for (const auto& beacon : beacons_) {
     beacons_value->Append(beacon->ToValue(upload_time,
                                           *last_network_change_time_,
@@ -213,7 +213,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
       max_upload_depth = beacon->upload_depth;
   }
 
-  scoped_ptr<DictionaryValue> report_value(new DictionaryValue());
+  std::unique_ptr<DictionaryValue> report_value(new DictionaryValue());
   report_value->SetString("reporter", upload_reporter_string_);
   report_value->Set("entries", beacons_value.release());
 

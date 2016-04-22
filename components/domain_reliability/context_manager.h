@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
@@ -30,10 +30,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
 
   // If |url| maps to a context added to this manager, calls |OnBeacon| on
   // that context with |beacon|. Otherwise, does nothing.
-  void RouteBeacon(scoped_ptr<DomainReliabilityBeacon> beacon);
+  void RouteBeacon(std::unique_ptr<DomainReliabilityBeacon> beacon);
 
   void SetConfig(const GURL& origin,
-                 scoped_ptr<DomainReliabilityConfig> config,
+                 std::unique_ptr<DomainReliabilityConfig> config,
                  base::TimeDelta max_age);
   void ClearConfig(const GURL& origin);
 
@@ -45,13 +45,13 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   // use a custom Context::Factory to get the created Context, and this can be
   // void.
   DomainReliabilityContext* AddContextForConfig(
-      scoped_ptr<const DomainReliabilityConfig> config);
+      std::unique_ptr<const DomainReliabilityConfig> config);
 
   // Removes all contexts from this manager (discarding all queued beacons in
   // the process).
   void RemoveAllContexts();
 
-  scoped_ptr<base::Value> GetWebUIData() const;
+  std::unique_ptr<base::Value> GetWebUIData() const;
 
   size_t contexts_size_for_testing() const { return contexts_.size(); }
 

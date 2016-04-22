@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_DOMAIN_RELIABILITY_HEADER_H_
 #define COMPONENTS_DOMAIN_RELIABILITY_HEADER_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
@@ -31,7 +31,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityHeader {
 
   ~DomainReliabilityHeader();
 
-  static scoped_ptr<DomainReliabilityHeader> Parse(base::StringPiece value);
+  static std::unique_ptr<DomainReliabilityHeader> Parse(
+      base::StringPiece value);
 
   bool IsSetConfig() const { return status_ == PARSE_SET_CONFIG; }
   bool IsClearConfig() const { return status_ == PARSE_CLEAR_CONFIG; }
@@ -41,14 +42,14 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityHeader {
   const DomainReliabilityConfig& config() const;
   base::TimeDelta max_age() const;
 
-  scoped_ptr<DomainReliabilityConfig> ReleaseConfig();
+  std::unique_ptr<DomainReliabilityConfig> ReleaseConfig();
 
   std::string ToString() const;
 
  private:
   // Constructor for PARSE_SET_CONFIG status.
   DomainReliabilityHeader(ParseStatus status,
-                          scoped_ptr<DomainReliabilityConfig> config,
+                          std::unique_ptr<DomainReliabilityConfig> config,
                           base::TimeDelta max_age);
   // Constructor for PARSE_CLEAR_CONFIG and PARSE_ERROR statuses.
   DomainReliabilityHeader(ParseStatus status);
@@ -57,7 +58,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityHeader {
 
   // The configuration specified by the header, if the status is
   // PARSE_SET_CONFIG.
-  scoped_ptr<DomainReliabilityConfig> config_;
+  std::unique_ptr<DomainReliabilityConfig> config_;
 
   // The max-age specified by the header, if the status is PARSE_SET_CONFIG.
   base::TimeDelta max_age_;

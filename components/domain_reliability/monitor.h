@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -65,7 +65,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
       const std::string& upload_reporter_string,
       const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_thread,
-      scoped_ptr<MockableTime> time);
+      std::unique_ptr<MockableTime> time);
 
   // Must be called from the pref thread if |MoveToNetworkThread| was not
   // called, or from the network thread if it was called.
@@ -118,18 +118,18 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   // Gets a Value containing data that can be formatted into a web page for
   // debugging purposes.
-  scoped_ptr<base::Value> GetWebUIData() const;
+  std::unique_ptr<base::Value> GetWebUIData() const;
 
   DomainReliabilityContext* AddContextForTesting(
-      scoped_ptr<const DomainReliabilityConfig> config);
+      std::unique_ptr<const DomainReliabilityConfig> config);
 
   size_t contexts_size_for_testing() const {
     return context_manager_.contexts_size_for_testing();
   }
 
   // DomainReliabilityContext::Factory implementation:
-  scoped_ptr<DomainReliabilityContext> CreateContextForConfig(
-      scoped_ptr<const DomainReliabilityConfig> config) override;
+  std::unique_ptr<DomainReliabilityContext> CreateContextForConfig(
+      std::unique_ptr<const DomainReliabilityConfig> config) override;
 
  private:
   friend class DomainReliabilityMonitorTest;
@@ -170,12 +170,12 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
   base::WeakPtr<DomainReliabilityMonitor> MakeWeakPtr();
 
-  scoped_ptr<MockableTime> time_;
+  std::unique_ptr<MockableTime> time_;
   base::TimeTicks last_network_change_time_;
   const std::string upload_reporter_string_;
   DomainReliabilityScheduler::Params scheduler_params_;
   DomainReliabilityDispatcher dispatcher_;
-  scoped_ptr<DomainReliabilityUploader> uploader_;
+  std::unique_ptr<DomainReliabilityUploader> uploader_;
   DomainReliabilityContextManager context_manager_;
 
   scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner_;

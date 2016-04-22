@@ -228,8 +228,8 @@ ActualTime::~ActualTime() {}
 base::Time ActualTime::Now() { return base::Time::Now(); }
 base::TimeTicks ActualTime::NowTicks() { return base::TimeTicks::Now(); }
 
-scoped_ptr<MockableTime::Timer> ActualTime::CreateTimer() {
-  return scoped_ptr<MockableTime::Timer>(new ActualTimer());
+std::unique_ptr<MockableTime::Timer> ActualTime::CreateTimer() {
+  return std::unique_ptr<MockableTime::Timer>(new ActualTimer());
 }
 
 }  // namespace domain_reliability

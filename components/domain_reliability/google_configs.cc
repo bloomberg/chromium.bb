@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/domain_reliability/config.h"
 
 namespace domain_reliability {
@@ -507,15 +508,17 @@ const char* kGoogleStandardCollectors[] = {
 const char* kGoogleOriginSpecificCollectorPathString =
   "/domainreliability/upload";
 
-static scoped_ptr<DomainReliabilityConfig>
-CreateGoogleConfig(const GoogleConfigParams& params, bool is_www) {
+static std::unique_ptr<DomainReliabilityConfig> CreateGoogleConfig(
+    const GoogleConfigParams& params,
+    bool is_www) {
   if (is_www)
     DCHECK(params.duplicate_for_www);
 
   std::string hostname = (is_www ? "www." : "") + std::string(params.hostname);
   bool include_subdomains = params.include_subdomains && !is_www;
 
-  scoped_ptr<DomainReliabilityConfig> config(new DomainReliabilityConfig());
+  std::unique_ptr<DomainReliabilityConfig> config(
+      new DomainReliabilityConfig());
   config->origin = GURL("https://" + hostname + "/");
   config->include_subdomains = include_subdomains;
   config->collectors.clear();

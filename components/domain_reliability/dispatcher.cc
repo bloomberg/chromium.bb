@@ -17,22 +17,23 @@ namespace domain_reliability {
 
 struct DomainReliabilityDispatcher::Task {
   Task(const base::Closure& closure,
-       scoped_ptr<MockableTime::Timer> timer,
+       std::unique_ptr<MockableTime::Timer> timer,
        base::TimeDelta min_delay,
        base::TimeDelta max_delay);
   ~Task();
 
   base::Closure closure;
-  scoped_ptr<MockableTime::Timer> timer;
+  std::unique_ptr<MockableTime::Timer> timer;
   base::TimeDelta min_delay;
   base::TimeDelta max_delay;
   bool eligible;
 };
 
-DomainReliabilityDispatcher::Task::Task(const base::Closure& closure,
-                                        scoped_ptr<MockableTime::Timer> timer,
-                                        base::TimeDelta min_delay,
-                                        base::TimeDelta max_delay)
+DomainReliabilityDispatcher::Task::Task(
+    const base::Closure& closure,
+    std::unique_ptr<MockableTime::Timer> timer,
+    base::TimeDelta min_delay,
+    base::TimeDelta max_delay)
     : closure(closure),
       timer(std::move(timer)),
       min_delay(min_delay),

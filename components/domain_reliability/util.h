@@ -6,11 +6,11 @@
 #define COMPONENTS_DOMAIN_RELIABILITY_UTIL_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -84,7 +84,7 @@ class DOMAIN_RELIABILITY_EXPORT MockableTime : public base::Clock,
   base::TimeTicks NowTicks() override = 0;
 
   // Returns a new Timer, or a mocked version thereof.
-  virtual scoped_ptr<MockableTime::Timer> CreateTimer() = 0;
+  virtual std::unique_ptr<MockableTime::Timer> CreateTimer() = 0;
 
  protected:
   MockableTime();
@@ -104,7 +104,7 @@ class DOMAIN_RELIABILITY_EXPORT ActualTime : public MockableTime {
   // MockableTime implementation:
   base::Time Now() override;
   base::TimeTicks NowTicks() override;
-  scoped_ptr<MockableTime::Timer> CreateTimer() override;
+  std::unique_ptr<MockableTime::Timer> CreateTimer() override;
 };
 
 }  // namespace domain_reliability

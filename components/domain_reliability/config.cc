@@ -50,16 +50,17 @@ DomainReliabilityConfig::DomainReliabilityConfig()
 DomainReliabilityConfig::~DomainReliabilityConfig() {}
 
 // static
-scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
-    const base::StringPiece& json) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+std::unique_ptr<const DomainReliabilityConfig>
+DomainReliabilityConfig::FromJSON(const base::StringPiece& json) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   base::JSONValueConverter<DomainReliabilityConfig> converter;
-  scoped_ptr<DomainReliabilityConfig> config(new DomainReliabilityConfig());
+  std::unique_ptr<DomainReliabilityConfig> config(
+      new DomainReliabilityConfig());
 
   // If we can parse and convert the JSON into a valid config, return that.
   if (value && converter.Convert(*value, config.get()) && config->IsValid())
     return std::move(config);
-  return scoped_ptr<const DomainReliabilityConfig>();
+  return std::unique_ptr<const DomainReliabilityConfig>();
 }
 
 bool DomainReliabilityConfig::IsValid() const {
