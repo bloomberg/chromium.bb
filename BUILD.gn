@@ -499,7 +499,6 @@ group("both_gn_and_gyp") {
 
       # TODO(GYP): Remove this when the gles2 tests work
       "//gpu/command_buffer/client:gles2_implementation_no_check",
-      "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
       "//mojo/edk/test:mojo_public_system_perftests",
       "//services/shell/public/cpp",
       "//testing/gmock:gmock_main",
@@ -510,6 +509,7 @@ group("both_gn_and_gyp") {
       deps += [
         "//build/sanitizers:copy_llvm_symbolizer",
         "//chrome/test:chrome_app_unittests",
+        "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
         "//media/cast:cast_benchmarks",
         "//media/cast:tap_proxy",
         "//skia:filter_fuzz_stub",

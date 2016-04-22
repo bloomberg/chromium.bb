@@ -540,27 +540,29 @@ if (internal_khronos_glcts_tests) {
   }
 }
 
-# GYP version: gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test
-test("khronos_glcts_test") {
-  sources = [
-    "khronos_glcts_test.cc",
-  ]
-
-  deps = [
-    "//base",
-    "//gpu",
-    "//testing/gtest",
-  ]
-
-  data = [
-    "khronos_glcts_test_expectations.txt",
-  ]
-
-  if (internal_khronos_glcts_tests) {
-    sources += [ "$target_gen_dir/khronos_glcts_test_autogen.cc" ]
-    deps += [
-      ":generate_khronos_glcts_tests",
-      ":khronos_glcts_test_windowless",
+if (!is_android) {
+  # GYP version: gpu/khronos_glcts_support/khronos_glcts_test.gyp:khronos_glcts_test
+  test("khronos_glcts_test") {
+    sources = [
+      "khronos_glcts_test.cc",
     ]
+
+    deps = [
+      "//base",
+      "//gpu",
+      "//testing/gtest",
+    ]
+
+    data = [
+      "khronos_glcts_test_expectations.txt",
+    ]
+
+    if (internal_khronos_glcts_tests) {
+      sources += [ "$target_gen_dir/khronos_glcts_test_autogen.cc" ]
+      deps += [
+        ":generate_khronos_glcts_tests",
+        ":khronos_glcts_test_windowless",
+      ]
+    }
   }
 }
