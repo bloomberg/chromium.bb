@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
 
+#include <memory>
+
+#include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,9 +32,9 @@ class DeadlineTaskRunnerTest : public testing::Test {
 
   void TestTask() { run_times_.push_back(clock_->NowTicks()); }
 
-  scoped_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_ptr<DeadlineTaskRunner> deadline_task_runner_;
+  std::unique_ptr<DeadlineTaskRunner> deadline_task_runner_;
   std::vector<base::TimeTicks> run_times_;
 };
 

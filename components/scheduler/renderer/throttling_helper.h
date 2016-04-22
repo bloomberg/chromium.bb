@@ -67,7 +67,7 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
   base::TickClock* tick_clock_;                // NOT OWNED
   const char* tracing_category_;               // NOT OWNED
-  scoped_ptr<ThrottledTimeDomain> time_domain_;
+  std::unique_ptr<ThrottledTimeDomain> time_domain_;
 
   CancelableClosureHolder suspend_timers_when_backgrounded_closure_;
   base::TimeTicks pending_pump_throttled_tasks_runtime_;

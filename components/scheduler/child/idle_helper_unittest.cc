@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/real_time_domain.h"
@@ -133,7 +134,7 @@ void EndIdlePeriodIdleTask(IdleHelper* idle_helper, base::TimeTicks deadline) {
 scoped_refptr<SchedulerTqmDelegate> CreateTaskRunnerDelegate(
     base::MessageLoop* message_loop,
     scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner,
-    scoped_ptr<TestTimeSource> test_time_source) {
+    std::unique_ptr<TestTimeSource> test_time_source) {
   if (message_loop)
     return SchedulerTqmDelegateImpl::Create(message_loop,
                                             std::move(test_time_source));
@@ -182,7 +183,7 @@ class BaseIdleHelperTest : public testing::Test {
         main_task_runner_(CreateTaskRunnerDelegate(
             message_loop,
             mock_task_runner_,
-            make_scoped_ptr(new TestTimeSource(clock_.get())))),
+            base::WrapUnique(new TestTimeSource(clock_.get())))),
         scheduler_helper_(
             new SchedulerHelper(main_task_runner_,
                                 "test.idle",
@@ -274,14 +275,14 @@ class BaseIdleHelperTest : public testing::Test {
                                idle_helper_->SchedulerIdlePeriodState()));
   }
 
-  scoped_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
-  scoped_ptr<SchedulerHelper> scheduler_helper_;
-  scoped_ptr<IdleHelperForTest> idle_helper_;
+  std::unique_ptr<SchedulerHelper> scheduler_helper_;
+  std::unique_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 

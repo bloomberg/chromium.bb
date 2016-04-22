@@ -33,8 +33,8 @@ class UserModelTest : public testing::Test {
         UserModel::kExpectSubsequentGestureMillis);
   }
 
-  scoped_ptr<base::SimpleTestTickClock> clock_;
-  scoped_ptr<UserModel> user_model_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<UserModel> user_model_;
 };
 
 TEST_F(UserModelTest, TimeLeftInUserGesture_NoInput) {

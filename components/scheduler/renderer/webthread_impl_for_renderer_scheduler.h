@@ -38,12 +38,12 @@ class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
   void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
 
-  scoped_ptr<WebSchedulerImpl> web_scheduler_;
+  std::unique_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   RendererSchedulerImpl* scheduler_;  // Not owned.
   blink::PlatformThreadId thread_id_;
-  scoped_ptr<WebTaskRunnerImpl> web_task_runner_;
+  std::unique_ptr<WebTaskRunnerImpl> web_task_runner_;
 };
 
 }  // namespace scheduler

@@ -201,12 +201,12 @@ class SCHEDULER_EXPORT TaskQueueManager
       const internal::TaskQueueImpl::Task& pending_task,
       const internal::TaskQueueImpl* queue);
 
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
 
   std::set<TimeDomain*> time_domains_;
-  scoped_ptr<RealTimeDomain> real_time_domain_;
+  std::unique_ptr<RealTimeDomain> real_time_domain_;
 
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_;
 

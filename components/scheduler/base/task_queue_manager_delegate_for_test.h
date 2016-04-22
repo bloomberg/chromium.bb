@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_MANAGER_DELEGATE_FOR_TEST_H_
 #define COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_MANAGER_DELEGATE_FOR_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 
@@ -16,7 +17,7 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
  public:
   static scoped_refptr<TaskQueueManagerDelegateForTest> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_ptr<base::TickClock> time_source);
+      std::unique_ptr<base::TickClock> time_source);
 
   // NestableSingleThreadTaskRunner implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -33,11 +34,11 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
   ~TaskQueueManagerDelegateForTest() override;
   TaskQueueManagerDelegateForTest(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      scoped_ptr<base::TickClock> time_source);
+      std::unique_ptr<base::TickClock> time_source);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<base::TickClock> time_source_;
+  std::unique_ptr<base::TickClock> time_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManagerDelegateForTest);
 };

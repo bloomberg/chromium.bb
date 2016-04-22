@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 
 namespace scheduler {
@@ -20,7 +21,7 @@ LazySchedulerMessageLoopDelegateForTests::
     LazySchedulerMessageLoopDelegateForTests()
     : message_loop_(base::MessageLoop::current()),
       thread_id_(base::PlatformThread::CurrentId()),
-      time_source_(make_scoped_ptr(new base::DefaultTickClock())) {
+      time_source_(base::WrapUnique(new base::DefaultTickClock())) {
   if (message_loop_)
     original_task_runner_ = message_loop_->task_runner();
 }

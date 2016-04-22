@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_WEB_TASK_RUNNER_H_
 #define COMPONENTS_SCHEDULER_CHILD_WEB_TASK_RUNNER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
@@ -34,9 +35,10 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   // blink::WebTaskRunner::Task should be wrapped by base::Passed() when
   // used with base::Bind(). See https://crbug.com/551356.
   // runTask() is a helper to call blink::WebTaskRunner::Task::run from
-  // scoped_ptr<blink::WebTaskRunner::Task>.
-  // runTask() is placed here because scoped_ptr<> cannot be used from Blink.
-  static void runTask(scoped_ptr<blink::WebTaskRunner::Task>);
+  // std::unique_ptr<blink::WebTaskRunner::Task>.
+  // runTask() is placed here because std::unique_ptr<> cannot be used from
+  // Blink.
+  static void runTask(std::unique_ptr<blink::WebTaskRunner::Task>);
 
  private:
   base::TimeTicks Now() const;

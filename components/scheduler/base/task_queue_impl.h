@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
@@ -199,8 +199,8 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     PumpPolicy pump_policy;
     TimeDomain* time_domain;
 
-    scoped_ptr<WorkQueue> delayed_work_queue;
-    scoped_ptr<WorkQueue> immediate_work_queue;
+    std::unique_ptr<WorkQueue> delayed_work_queue;
+    std::unique_ptr<WorkQueue> immediate_work_queue;
     std::priority_queue<Task> delayed_incoming_queue;
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;

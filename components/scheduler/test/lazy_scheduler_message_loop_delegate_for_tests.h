@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SCHEDULER_TEST_LAZY_SCHEDULER_MESSAGE_LOOP_DELEGATE_FOR_TESTS_H_
 #define COMPONENTS_SCHEDULER_TEST_LAZY_SCHEDULER_MESSAGE_LOOP_DELEGATE_FOR_TESTS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
@@ -51,7 +52,7 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
   // A task runner which hasn't yet been overridden in the message loop.
   mutable scoped_refptr<base::SingleThreadTaskRunner> pending_task_runner_;
   mutable scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
-  scoped_ptr<base::TickClock> time_source_;
+  std::unique_ptr<base::TickClock> time_source_;
 
   DISALLOW_COPY_AND_ASSIGN(LazySchedulerMessageLoopDelegateForTests);
 };

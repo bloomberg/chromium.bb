@@ -5,6 +5,7 @@
 #include "components/scheduler/base/time_domain.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue_impl.h"
@@ -67,7 +68,7 @@ class MockTimeDomain : public TimeDomain {
 class TimeDomainTest : public testing::Test {
  public:
   void SetUp() final {
-    time_domain_ = make_scoped_ptr(CreateMockTimeDomain());
+    time_domain_ = base::WrapUnique(CreateMockTimeDomain());
     task_queue_ = make_scoped_refptr(new internal::TaskQueueImpl(
         nullptr, time_domain_.get(), TaskQueue::Spec("test_queue"),
         "test.category", "test.category"));
@@ -82,7 +83,7 @@ class TimeDomainTest : public testing::Test {
     return new MockTimeDomain(nullptr);
   }
 
-  scoped_ptr<MockTimeDomain> time_domain_;
+  std::unique_ptr<MockTimeDomain> time_domain_;
   scoped_refptr<internal::TaskQueueImpl> task_queue_;
 };
 
@@ -215,7 +216,7 @@ class TimeDomainWithObserverTest : public TimeDomainTest {
     return new MockTimeDomain(observer_.get());
   }
 
-  scoped_ptr<MockObserver> observer_;
+  std::unique_ptr<MockObserver> observer_;
 };
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasImmediateWork) {

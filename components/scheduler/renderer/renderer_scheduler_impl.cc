@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
@@ -151,8 +152,8 @@ void RendererSchedulerImpl::Shutdown() {
   MainThreadOnly().was_shutdown = true;
 }
 
-scoped_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
-  return make_scoped_ptr(new WebThreadImplForRendererScheduler(this));
+std::unique_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
+  return base::WrapUnique(new WebThreadImplForRendererScheduler(this));
 }
 
 scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {
@@ -216,7 +217,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
   return timer_task_queue;
 }
 
-scoped_ptr<RenderWidgetSchedulingState>
+std::unique_ptr<RenderWidgetSchedulingState>
 RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
   return render_widget_scheduler_signals_.NewRenderWidgetSchedulingState();
 }
@@ -983,7 +984,7 @@ void RendererSchedulerImpl::SetTimerQueueSuspensionWhenBackgroundedEnabled(
   MainThreadOnly().timer_queue_suspension_when_backgrounded_enabled = enabled;
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValue(base::TimeTicks optional_now) const {
   base::AutoLock lock(any_thread_lock_);
   return AsValueLocked(optional_now);
@@ -1005,14 +1006,14 @@ const char* RendererSchedulerImpl::ExpensiveTaskPolicyToString(
   }
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
 
   if (optional_now.is_null())
     optional_now = helper_.scheduler_tqm_delegate()->NowTicks();
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   state->SetBoolean(
       "has_visible_render_widget_with_touch_handler",

@@ -52,7 +52,7 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
   base::Thread* thread() const { return thread_.get(); }
 
  private:
-  virtual scoped_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler();
+  virtual std::unique_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler();
 
   void AddTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
@@ -62,14 +62,14 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
   void InitOnThread(base::WaitableEvent* completion);
   void RestoreTaskRunnerOnThread(base::WaitableEvent* completion);
 
-  scoped_ptr<base::Thread> thread_;
-  scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;
-  scoped_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
+  std::unique_ptr<base::Thread> thread_;
+  std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
+  std::unique_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<TaskQueue> task_runner_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> task_runner_delegate_;
-  scoped_ptr<WebTaskRunnerImpl> web_task_runner_;
+  std::unique_ptr<WebTaskRunnerImpl> web_task_runner_;
 };
 
 }  // namespace scheduler

@@ -108,7 +108,7 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate_;
-  scoped_ptr<TaskQueueManager> task_queue_manager_;
+  std::unique_ptr<TaskQueueManager> task_queue_manager_;
   scoped_refptr<TaskQueue> control_task_runner_;
   scoped_refptr<TaskQueue> control_after_wakeup_task_runner_;
   scoped_refptr<TaskQueue> default_task_runner_;

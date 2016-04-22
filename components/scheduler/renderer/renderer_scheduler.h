@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
 #define COMPONENTS_SCHEDULER_RENDERER_RENDERER_SCHEDULER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/child_scheduler.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
@@ -36,7 +37,7 @@ class RenderWidgetSchedulingState;
 class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
  public:
   ~RendererScheduler() override;
-  static scoped_ptr<RendererScheduler> Create();
+  static std::unique_ptr<RendererScheduler> Create();
 
   // Returns the compositor task runner.
   virtual scoped_refptr<TaskQueue> CompositorTaskRunner() = 0;
@@ -56,7 +57,7 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   static const char* UseCaseToString(UseCase use_case);
 
   // Creates a WebThread implementation for the renderer main thread.
-  virtual scoped_ptr<blink::WebThread> CreateMainThread() = 0;
+  virtual std::unique_ptr<blink::WebThread> CreateMainThread() = 0;
 
   // Returns the loading task runner.  This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
@@ -75,7 +76,7 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
 
   // Returns a new RenderWidgetSchedulingState.  The signals from this will be
   // used to make scheduling decisions.
-  virtual scoped_ptr<RenderWidgetSchedulingState>
+  virtual std::unique_ptr<RenderWidgetSchedulingState>
   NewRenderWidgetSchedulingState() = 0;
 
   // Called to notify about the start of an extended period where no frames

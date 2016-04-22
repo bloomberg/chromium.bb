@@ -4,6 +4,7 @@
 
 #include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue_manager.h"
@@ -27,10 +28,10 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
-    manager_ = make_scoped_ptr(new TaskQueueManager(
-        main_task_runner_, "test.scheduler", "test.scheduler",
-        "test.scheduler.debug"));
+        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
+    manager_ = base::WrapUnique(
+        new TaskQueueManager(main_task_runner_, "test.scheduler",
+                             "test.scheduler", "test.scheduler.debug"));
     task_runner_ =
         manager_->NewTaskQueue(TaskQueue::Spec("test_task_queue"));
     initial_time_= clock_->NowTicks();
@@ -46,13 +47,13 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
   }
 
   base::TimeTicks initial_time_;
-  scoped_ptr<base::SimpleTestTickClock> clock_;
-  scoped_ptr<TestTimeSource> test_time_source_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<TestTimeSource> test_time_source_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
-  scoped_ptr<TaskQueueManager> manager_;
+  std::unique_ptr<TaskQueueManager> manager_;
   scoped_refptr<TaskQueue> task_runner_;
-  scoped_ptr<AutoAdvancingVirtualTimeDomain> auto_advancing_time_domain_;
+  std::unique_ptr<AutoAdvancingVirtualTimeDomain> auto_advancing_time_domain_;
 };
 
 namespace {

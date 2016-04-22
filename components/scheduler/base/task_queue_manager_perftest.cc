@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "components/scheduler/base/task_queue_impl.h"
@@ -35,10 +36,10 @@ class TaskQueueManagerPerfTest : public testing::Test {
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
-    manager_ = make_scoped_ptr(new TaskQueueManager(
+    manager_ = base::WrapUnique(new TaskQueueManager(
         TaskQueueManagerDelegateForTest::Create(
             message_loop_->task_runner(),
-            make_scoped_ptr(new base::DefaultTickClock())),
+            base::WrapUnique(new base::DefaultTickClock())),
         "fake.category", "fake.category", "fake.category.debug"));
     for (size_t i = 0; i < num_queues; i++)
       queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
@@ -107,8 +108,8 @@ class TaskQueueManagerPerfTest : public testing::Test {
   unsigned int num_tasks_in_flight_;
   unsigned int num_tasks_to_post_;
   unsigned int num_tasks_to_run_;
-  scoped_ptr<TaskQueueManager> manager_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<TaskQueueManager> manager_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
 };
 

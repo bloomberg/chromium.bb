@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/default_tick_clock.h"
@@ -65,7 +66,7 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       worker_scheduler_->DefaultTaskRunner(),
       worker_scheduler_->DefaultTaskRunner()));
   base::MessageLoop::current()->AddDestructionObserver(this);
-  web_task_runner_ = make_scoped_ptr(new WebTaskRunnerImpl(task_runner_));
+  web_task_runner_ = base::WrapUnique(new WebTaskRunnerImpl(task_runner_));
   completion->Signal();
 }
 
@@ -82,10 +83,10 @@ void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
   worker_scheduler_.reset();
 }
 
-scoped_ptr<scheduler::WorkerScheduler>
+std::unique_ptr<scheduler::WorkerScheduler>
 WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
   task_runner_delegate_ = SchedulerTqmDelegateImpl::Create(
-      thread_->message_loop(), make_scoped_ptr(new base::DefaultTickClock()));
+      thread_->message_loop(), base::WrapUnique(new base::DefaultTickClock()));
   return WorkerScheduler::Create(task_runner_delegate_);
 }
 

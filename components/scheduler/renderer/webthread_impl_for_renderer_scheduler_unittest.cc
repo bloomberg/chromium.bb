@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -44,7 +45,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
     clock_.reset(new base::SimpleTestTickClock());
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_.reset(new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-        &message_loop_, make_scoped_ptr(new TestTimeSource(clock_.get())))));
+        &message_loop_, base::WrapUnique(new TestTimeSource(clock_.get())))));
     default_task_runner_ = scheduler_->DefaultTaskRunner();
     thread_ = scheduler_->CreateMainThread();
   }
@@ -60,10 +61,10 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<base::SimpleTestTickClock> clock_;
-  scoped_ptr<RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<RendererSchedulerImpl> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-  scoped_ptr<blink::WebThread> thread_;
+  std::unique_ptr<blink::WebThread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadImplForRendererSchedulerTest);
 };
@@ -71,7 +72,7 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  scoped_ptr<MockTask> task(new MockTask());
+  std::unique_ptr<MockTask> task(new MockTask());
 
   {
     testing::InSequence sequence;
@@ -89,7 +90,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  scoped_ptr<MockTask> task(new MockTask());
+  std::unique_ptr<MockTask> task(new MockTask());
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
@@ -108,8 +109,8 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  scoped_ptr<MockTask> task1(new MockTask());
-  scoped_ptr<MockTask> task2(new MockTask());
+  std::unique_ptr<MockTask> task1(new MockTask());
+  std::unique_ptr<MockTask> task2(new MockTask());
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
@@ -134,9 +135,9 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
 TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
   MockTaskObserver observer;
   thread_->addTaskObserver(&observer);
-  scoped_ptr<MockTask> task1(new MockTask());
-  scoped_ptr<MockTask> task2(new MockTask());
-  scoped_ptr<MockTask> task3(new MockTask());
+  std::unique_ptr<MockTask> task1(new MockTask());
+  std::unique_ptr<MockTask> task2(new MockTask());
+  std::unique_ptr<MockTask> task3(new MockTask());
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {

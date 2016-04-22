@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "components/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -21,7 +22,7 @@ class WorkQueueSetsTest : public testing::Test {
   }
 
   void TearDown() override {
-    for (scoped_ptr<WorkQueue>& work_queue : work_queues_) {
+    for (std::unique_ptr<WorkQueue>& work_queue : work_queues_) {
       if (work_queue->work_queue_sets())
         work_queue_sets_->RemoveQueue(work_queue.get());
     }
@@ -34,7 +35,7 @@ class WorkQueueSetsTest : public testing::Test {
 
   WorkQueue* NewTaskQueue(const char* queue_name) {
     WorkQueue* queue = new WorkQueue(nullptr, "test");
-    work_queues_.push_back(make_scoped_ptr(queue));
+    work_queues_.push_back(base::WrapUnique(queue));
     work_queue_sets_->AddQueue(queue, TaskQueue::CONTROL_PRIORITY);
     return queue;
   }
@@ -46,8 +47,8 @@ class WorkQueueSetsTest : public testing::Test {
     return fake_task;
   }
 
-  std::vector<scoped_ptr<WorkQueue>> work_queues_;
-  scoped_ptr<WorkQueueSets> work_queue_sets_;
+  std::vector<std::unique_ptr<WorkQueue>> work_queues_;
+  std::unique_ptr<WorkQueueSets> work_queue_sets_;
 };
 
 TEST_F(WorkQueueSetsTest, ChangeSetIndex) {

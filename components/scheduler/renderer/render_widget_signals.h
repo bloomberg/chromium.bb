@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_SCHEDULER_RENDERER_RENDER_WIDGET_SIGNALS_H_
 #define COMPONENTS_SCHEDULER_RENDERER_RENDER_WIDGET_SIGNALS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/scheduler_export.h"
@@ -35,7 +36,7 @@ class SCHEDULER_EXPORT RenderWidgetSignals {
 
   explicit RenderWidgetSignals(Observer* observer);
 
-  scoped_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState();
+  std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState();
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 

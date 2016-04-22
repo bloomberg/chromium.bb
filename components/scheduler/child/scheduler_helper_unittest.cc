@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue.h"
@@ -49,7 +50,7 @@ class SchedulerHelperTest : public testing::Test {
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), false)),
         main_task_runner_(SchedulerTqmDelegateForTest::Create(
             mock_task_runner_,
-            make_scoped_ptr(new TestTimeSource(clock_.get())))),
+            base::WrapUnique(new TestTimeSource(clock_.get())))),
         scheduler_helper_(new SchedulerHelper(
             main_task_runner_,
             "test.scheduler",
@@ -81,11 +82,11 @@ class SchedulerHelperTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
   scoped_refptr<SchedulerTqmDelegateForTest> main_task_runner_;
-  scoped_ptr<SchedulerHelper> scheduler_helper_;
+  std::unique_ptr<SchedulerHelper> scheduler_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelperTest);

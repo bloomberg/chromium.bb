@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
@@ -74,7 +75,7 @@ void WebThreadBase::RemoveTaskObserverInternal(
 
 // static
 void WebThreadBase::RunWebThreadIdleTask(
-    scoped_ptr<blink::WebThread::IdleTask> idle_task,
+    std::unique_ptr<blink::WebThread::IdleTask> idle_task,
     base::TimeTicks deadline) {
   idle_task->run((deadline - base::TimeTicks()).InSecondsF());
 }
@@ -85,7 +86,7 @@ void WebThreadBase::postIdleTask(const blink::WebTraceLocation& web_location,
                                      web_location.fileName(), -1, nullptr);
   GetIdleTaskRunner()->PostIdleTask(
       location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(make_scoped_ptr(idle_task))));
+                           base::Passed(base::WrapUnique(idle_task))));
 }
 
 void WebThreadBase::postIdleTaskAfterWakeup(
@@ -95,7 +96,7 @@ void WebThreadBase::postIdleTaskAfterWakeup(
                                      web_location.fileName(), -1, nullptr);
   GetIdleTaskRunner()->PostIdleTaskAfterWakeup(
       location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(make_scoped_ptr(idle_task))));
+                           base::Passed(base::WrapUnique(idle_task))));
 }
 
 bool WebThreadBase::isCurrentThread() const {

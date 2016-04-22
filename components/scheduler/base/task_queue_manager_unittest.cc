@@ -5,9 +5,11 @@
 #include "components/scheduler/base/task_queue_manager.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -38,7 +40,7 @@ namespace scheduler {
 class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
  public:
   static scoped_refptr<MessageLoopTaskRunner> Create(
-      scoped_ptr<base::TickClock> tick_clock) {
+      std::unique_ptr<base::TickClock> tick_clock) {
     return make_scoped_refptr(new MessageLoopTaskRunner(std::move(tick_clock)));
   }
 
@@ -48,10 +50,10 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
   }
 
  private:
-  explicit MessageLoopTaskRunner(scoped_ptr<base::TickClock> tick_clock)
-      : TaskQueueManagerDelegateForTest(base::MessageLoop::current()
-                                            ->task_runner(),
-                                        std::move(tick_clock)) {}
+  explicit MessageLoopTaskRunner(std::unique_ptr<base::TickClock> tick_clock)
+      : TaskQueueManagerDelegateForTest(
+            base::MessageLoop::current()->task_runner(),
+            std::move(tick_clock)) {}
   ~MessageLoopTaskRunner() override {}
 };
 
@@ -61,15 +63,15 @@ class TaskQueueManagerTest : public testing::Test {
 
  protected:
   void InitializeWithClock(size_t num_queues,
-                           scoped_ptr<base::TickClock> test_time_source) {
+                           std::unique_ptr<base::TickClock> test_time_source) {
     test_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(now_src_.get(), false));
     main_task_runner_ = TaskQueueManagerDelegateForTest::Create(
         test_task_runner_.get(),
-        make_scoped_ptr(new TestTimeSource(now_src_.get())));
-    manager_ = make_scoped_ptr(new TaskQueueManager(
-        main_task_runner_, "test.scheduler", "test.scheduler",
-        "test.scheduler.debug"));
+        base::WrapUnique(new TestTimeSource(now_src_.get())));
+    manager_ = base::WrapUnique(
+        new TaskQueueManager(main_task_runner_, "test.scheduler",
+                             "test.scheduler", "test.scheduler.debug"));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -79,26 +81,26 @@ class TaskQueueManagerTest : public testing::Test {
     now_src_.reset(new base::SimpleTestTickClock());
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     InitializeWithClock(num_queues,
-                        make_scoped_ptr(new TestTimeSource(now_src_.get())));
+                        base::WrapUnique(new TestTimeSource(now_src_.get())));
   }
 
   void InitializeWithRealMessageLoop(size_t num_queues) {
     now_src_.reset(new base::SimpleTestTickClock());
     message_loop_.reset(new base::MessageLoop());
-    manager_ = make_scoped_ptr(new TaskQueueManager(
+    manager_ = base::WrapUnique(new TaskQueueManager(
         MessageLoopTaskRunner::Create(
-            make_scoped_ptr(new TestTimeSource(now_src_.get()))),
+            base::WrapUnique(new TestTimeSource(now_src_.get()))),
         "test.scheduler", "test.scheduler", "test.scheduler.debug"));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<base::SimpleTestTickClock> now_src_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<TaskQueueManagerDelegateForTest> main_task_runner_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
-  scoped_ptr<TaskQueueManager> manager_;
+  std::unique_ptr<TaskQueueManager> manager_;
   std::vector<scoped_refptr<internal::TaskQueueImpl>> runners_;
 };
 
@@ -120,9 +122,9 @@ void NopTask() {}
 
 TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
   message_loop_.reset(new base::MessageLoop());
-  manager_ = make_scoped_ptr(new TaskQueueManager(
+  manager_ = base::WrapUnique(new TaskQueueManager(
       MessageLoopTaskRunner::Create(
-          make_scoped_ptr(new TestAlwaysFailTimeSource())),
+          base::WrapUnique(new TestAlwaysFailTimeSource())),
       "test.scheduler", "test.scheduler", "test.scheduler.debug"));
 
   for (size_t i = 0; i < 3; i++)
@@ -1479,9 +1481,9 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   Initialize(2u);
 
   base::TimeTicks start_time = manager_->delegate()->NowTicks();
-  scoped_ptr<VirtualTimeDomain> domain_a(
+  std::unique_ptr<VirtualTimeDomain> domain_a(
       new VirtualTimeDomain(nullptr, start_time));
-  scoped_ptr<VirtualTimeDomain> domain_b(
+  std::unique_ptr<VirtualTimeDomain> domain_b(
       new VirtualTimeDomain(nullptr, start_time));
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
@@ -1526,7 +1528,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   Initialize(1u);
 
   base::TimeTicks start_time = manager_->delegate()->NowTicks();
-  scoped_ptr<VirtualTimeDomain> domain_a(
+  std::unique_ptr<VirtualTimeDomain> domain_a(
       new VirtualTimeDomain(nullptr, start_time));
   manager_->RegisterTimeDomain(domain_a.get());
   runners_[0]->SetTimeDomain(domain_a.get());
@@ -1546,7 +1548,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 
-  scoped_ptr<VirtualTimeDomain> domain_b(
+  std::unique_ptr<VirtualTimeDomain> domain_b(
       new VirtualTimeDomain(nullptr, start_time));
   manager_->RegisterTimeDomain(domain_b.get());
   runners_[0]->SetTimeDomain(domain_b.get());
@@ -1859,7 +1861,7 @@ class TaskQueueManagerTestWithTracing : public TaskQueueManagerTest {
  public:
   void StartTracing();
   void StopTracing();
-  scoped_ptr<trace_analyzer::TraceAnalyzer> CreateTraceAnalyzer();
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> CreateTraceAnalyzer();
 };
 
 void TaskQueueManagerTestWithTracing::StartTracing() {
@@ -1872,7 +1874,7 @@ void TaskQueueManagerTestWithTracing::StopTracing() {
   base::trace_event::TraceLog::GetInstance()->SetDisabled();
 }
 
-scoped_ptr<trace_analyzer::TraceAnalyzer>
+std::unique_ptr<trace_analyzer::TraceAnalyzer>
 TaskQueueManagerTestWithTracing::CreateTraceAnalyzer() {
   base::trace_event::TraceResultBuffer buffer;
   base::trace_event::TraceResultBuffer::SimpleOutput trace_output;
@@ -1885,7 +1887,7 @@ TaskQueueManagerTestWithTracing::CreateTraceAnalyzer() {
   run_loop.Run();
   buffer.Finish();
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
 }
 
@@ -1905,7 +1907,8 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
     test_task_runner_->RunUntilIdle();
   }
   StopTracing();
-  scoped_ptr<trace_analyzer::TraceAnalyzer> analyzer = CreateTraceAnalyzer();
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+      CreateTraceAnalyzer();
 
   trace_analyzer::TraceEventVector events;
   Query q = Query::EventPhaseIs(TRACE_EVENT_PHASE_ENTER_CONTEXT) ||

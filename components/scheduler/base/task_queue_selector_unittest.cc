@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/virtual_time_domain.h"
@@ -107,7 +109,7 @@ class TaskQueueSelectorTest : public testing::Test {
 
  protected:
   void SetUp() final {
-    virtual_time_domain_ = make_scoped_ptr<VirtualTimeDomain>(
+    virtual_time_domain_ = base::WrapUnique<VirtualTimeDomain>(
         new VirtualTimeDomain(nullptr, base::TimeTicks()));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
       scoped_refptr<TaskQueueImpl> task_queue = make_scoped_refptr(
@@ -143,7 +145,7 @@ class TaskQueueSelectorTest : public testing::Test {
   const size_t kTaskQueueCount = 5;
   base::Closure test_closure_;
   TaskQueueSelectorForTest selector_;
-  scoped_ptr<VirtualTimeDomain> virtual_time_domain_;
+  std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
 };

@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_SCHEDULER_RENDERER_WEB_FRAME_SCHEDULER_IMPL_H_
 #define COMPONENTS_SCHEDULER_RENDERER_WEB_FRAME_SCHEDULER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
@@ -52,8 +53,8 @@ class SCHEDULER_EXPORT WebFrameSchedulerImpl : public blink::WebFrameScheduler {
 
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
-  scoped_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
-  scoped_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
+  std::unique_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
+  std::unique_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;            // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;      // NOT OWNED
   base::trace_event::BlameContext* blame_context_;       // NOT OWNED

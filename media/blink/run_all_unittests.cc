@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/test/launcher/unit_test_launcher.h"

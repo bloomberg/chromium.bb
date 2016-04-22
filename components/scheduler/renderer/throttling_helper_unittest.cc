@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/test_time_source.h"
@@ -43,7 +45,7 @@ class ThrottlingHelperTest : public testing::Test {
     mock_task_runner_ =
         make_scoped_refptr(new cc::OrderedSimpleTaskRunner(clock_.get(), true));
     delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
+        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     throttling_helper_ = scheduler_->throttling_helper();
     timer_queue_ = scheduler_->NewTimerTaskRunner("test_queue");
@@ -75,10 +77,10 @@ class ThrottlingHelperTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> delegate_;
-  scoped_ptr<RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<RendererSchedulerImpl> scheduler_;
   scoped_refptr<TaskQueue> timer_queue_;
   ThrottlingHelper* throttling_helper_;  // NOT OWNED
 

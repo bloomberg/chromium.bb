@@ -113,13 +113,13 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
     completion->Signal();
   }
 
-  scoped_ptr<WebThreadImplForWorkerScheduler> thread_;
+  std::unique_ptr<WebThreadImplForWorkerScheduler> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadImplForWorkerSchedulerTest);
 };
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
-  scoped_ptr<MockTask> task(new MockTask());
+  std::unique_ptr<MockTask> task(new MockTask());
   base::WaitableEvent completion(false, false);
 
   EXPECT_CALL(*task, run());
@@ -133,7 +133,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
 
 TEST_F(WebThreadImplForWorkerSchedulerTest,
        TestTaskExecutedBeforeThreadDeletion) {
-  scoped_ptr<MockTask> task(new MockTask());
+  std::unique_ptr<MockTask> task(new MockTask());
   base::WaitableEvent completion(false, false);
 
   EXPECT_CALL(*task, run());
@@ -146,7 +146,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
 }
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
-  scoped_ptr<MockIdleTask> task(new MockIdleTask());
+  std::unique_ptr<MockIdleTask> task(new MockIdleTask());
   base::WaitableEvent completion(false, false);
 
   EXPECT_CALL(*task, run(_));
@@ -181,8 +181,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
 }
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
-  scoped_ptr<MockTask> task(new MockTask());
-  scoped_ptr<MockTask> delayed_task(new MockTask());
+  std::unique_ptr<MockTask> task(new MockTask());
+  std::unique_ptr<MockTask> delayed_task(new MockTask());
 
   EXPECT_CALL(*task, run()).Times(0);
   EXPECT_CALL(*delayed_task, run()).Times(0);

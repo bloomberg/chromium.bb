@@ -50,13 +50,13 @@ class RenderWidgetSignalsTest : public testing::Test {
         .Times(AnyNumber());
   }
 
-  scoped_ptr<MockObserver> mock_observer_;
-  scoped_ptr<RenderWidgetSignals> render_widget_signals_;
+  std::unique_ptr<MockObserver> mock_observer_;
+  std::unique_ptr<RenderWidgetSignals> render_widget_signals_;
 };
 
 TEST_F(RenderWidgetSignalsTest, RenderWidgetSchedulingStateLifeCycle) {
   EXPECT_CALL(*mock_observer_, SetAllRenderWidgetsHidden(false)).Times(1);
-  scoped_ptr<RenderWidgetSchedulingState> widget1_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget1_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -65,7 +65,7 @@ TEST_F(RenderWidgetSignalsTest, RenderWidgetSchedulingStateLifeCycle) {
 
 TEST_F(RenderWidgetSignalsTest, RenderWidget_Hidden) {
   IgnoreWidgetCreationCallbacks();
-  scoped_ptr<RenderWidgetSchedulingState> widget1_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget1_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -78,7 +78,7 @@ TEST_F(RenderWidgetSignalsTest, RenderWidget_Hidden) {
 
 TEST_F(RenderWidgetSignalsTest, RenderWidget_HiddenThreeTimesShownOnce) {
   IgnoreWidgetCreationCallbacks();
-  scoped_ptr<RenderWidgetSchedulingState> widget1_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget1_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -97,11 +97,11 @@ TEST_F(RenderWidgetSignalsTest, RenderWidget_HiddenThreeTimesShownOnce) {
 
 TEST_F(RenderWidgetSignalsTest, MultipleRenderWidgetsBecomeHiddenThenVisible) {
   IgnoreWidgetCreationCallbacks();
-  scoped_ptr<RenderWidgetSchedulingState> widget1_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget1_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
-  scoped_ptr<RenderWidgetSchedulingState> widget2_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget2_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
-  scoped_ptr<RenderWidgetSchedulingState> widget3_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget3_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -133,7 +133,7 @@ TEST_F(RenderWidgetSignalsTest, MultipleRenderWidgetsBecomeHiddenThenVisible) {
 TEST_F(RenderWidgetSignalsTest, TouchHandlerAddedAndRemoved_VisibleWidget) {
   IgnoreWidgetCreationCallbacks();
 
-  scoped_ptr<RenderWidgetSchedulingState> widget_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -154,7 +154,7 @@ TEST_F(RenderWidgetSignalsTest,
        TouchHandlerAddedThriceAndRemovedOnce_VisibleWidget) {
   IgnoreWidgetCreationCallbacks();
 
-  scoped_ptr<RenderWidgetSchedulingState> widget_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -176,7 +176,7 @@ TEST_F(RenderWidgetSignalsTest,
 TEST_F(RenderWidgetSignalsTest, TouchHandlerAddedAndRemoved_HiddenWidget) {
   IgnoreWidgetCreationCallbacks();
 
-  scoped_ptr<RenderWidgetSchedulingState> widget_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   EXPECT_CALL(*mock_observer_, SetAllRenderWidgetsHidden(true)).Times(1);
   widget_state->SetHidden(true);
@@ -195,11 +195,11 @@ TEST_F(RenderWidgetSignalsTest,
        MultipleTouchHandlerAddedAndRemoved_VisibleWidgets) {
   IgnoreWidgetCreationCallbacks();
 
-  scoped_ptr<RenderWidgetSchedulingState> widget1_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget1_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
-  scoped_ptr<RenderWidgetSchedulingState> widget2_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget2_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
-  scoped_ptr<RenderWidgetSchedulingState> widget3_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget3_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -234,7 +234,7 @@ TEST_F(RenderWidgetSignalsTest,
        TouchHandlerAddedThenWigetDeleted_VisibleWidget) {
   IgnoreWidgetCreationCallbacks();
 
-  scoped_ptr<RenderWidgetSchedulingState> widget_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   Mock::VerifyAndClearExpectations(mock_observer_.get());
 
@@ -252,7 +252,7 @@ TEST_F(RenderWidgetSignalsTest,
        TouchHandlerAddedThenWigetDeleted_HiddenWidget) {
   IgnoreWidgetCreationCallbacks();
 
-  scoped_ptr<RenderWidgetSchedulingState> widget_state =
+  std::unique_ptr<RenderWidgetSchedulingState> widget_state =
       render_widget_signals_->NewRenderWidgetSchedulingState();
   EXPECT_CALL(*mock_observer_, SetAllRenderWidgetsHidden(true)).Times(1);
   widget_state->SetHidden(true);

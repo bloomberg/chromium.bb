@@ -39,15 +39,16 @@ bool WebSchedulerImpl::canExceedIdleDeadlineIfRequired() {
   return child_scheduler_->CanExceedIdleDeadlineIfRequired();
 }
 
-void WebSchedulerImpl::runIdleTask(scoped_ptr<blink::WebThread::IdleTask> task,
-                                   base::TimeTicks deadline) {
+void WebSchedulerImpl::runIdleTask(
+    std::unique_ptr<blink::WebThread::IdleTask> task,
+    base::TimeTicks deadline) {
   task->run((deadline - base::TimeTicks()).InSecondsF());
 }
 
 void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
                                     blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
+  std::unique_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostIdleTask(
@@ -59,7 +60,7 @@ void WebSchedulerImpl::postNonNestableIdleTask(
     const blink::WebTraceLocation& web_location,
     blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
+  std::unique_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostNonNestableIdleTask(
@@ -71,7 +72,7 @@ void WebSchedulerImpl::postIdleTaskAfterWakeup(
     const blink::WebTraceLocation& web_location,
     blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  scoped_ptr<blink::WebThread::IdleTask> scoped_task(task);
+  std::unique_ptr<blink::WebThread::IdleTask> scoped_task(task);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostIdleTaskAfterWakeup(

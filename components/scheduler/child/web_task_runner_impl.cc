@@ -23,8 +23,9 @@ void WebTaskRunnerImpl::postTask(const blink::WebTraceLocation& web_location,
                                      web_location.fileName(), -1, nullptr);
   task_queue_->PostTask(
       location,
-      base::Bind(&WebTaskRunnerImpl::runTask,
-                 base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))));
+      base::Bind(
+          &WebTaskRunnerImpl::runTask,
+          base::Passed(std::unique_ptr<blink::WebTaskRunner::Task>(task))));
 }
 
 void WebTaskRunnerImpl::postDelayedTask(
@@ -36,8 +37,9 @@ void WebTaskRunnerImpl::postDelayedTask(
                                      web_location.fileName(), -1, nullptr);
   task_queue_->PostDelayedTask(
       location,
-      base::Bind(&WebTaskRunnerImpl::runTask,
-                 base::Passed(scoped_ptr<blink::WebTaskRunner::Task>(task))),
+      base::Bind(
+          &WebTaskRunnerImpl::runTask,
+          base::Passed(std::unique_ptr<blink::WebTaskRunner::Task>(task))),
       base::TimeDelta::FromMillisecondsD(delayMs));
 }
 
@@ -63,8 +65,8 @@ blink::WebTaskRunner* WebTaskRunnerImpl::clone() {
   return new WebTaskRunnerImpl(task_queue_);
 }
 
-void WebTaskRunnerImpl::runTask(scoped_ptr<blink::WebTaskRunner::Task> task)
-{
+void WebTaskRunnerImpl::runTask(
+    std::unique_ptr<blink::WebTaskRunner::Task> task) {
   task->run();
 }
 

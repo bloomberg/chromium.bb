@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -95,7 +96,7 @@ class WorkerSchedulerImplTest : public testing::Test {
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), true)),
         main_task_runner_(SchedulerTqmDelegateForTest::Create(
             mock_task_runner_,
-            make_scoped_ptr(new TestTimeSource(clock_.get())))),
+            base::WrapUnique(new TestTimeSource(clock_.get())))),
         scheduler_(
             new WorkerSchedulerImplForTest(main_task_runner_, clock_.get())),
         timeline_(nullptr) {
@@ -167,12 +168,12 @@ class WorkerSchedulerImplTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
   scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
-  scoped_ptr<WorkerSchedulerImplForTest> scheduler_;
+  std::unique_ptr<WorkerSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   std::vector<std::string>* timeline_;  // NOT OWNED

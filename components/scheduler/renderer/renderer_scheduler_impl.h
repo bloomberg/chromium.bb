@@ -42,7 +42,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:
-  scoped_ptr<blink::WebThread> CreateMainThread() override;
+  std::unique_ptr<blink::WebThread> CreateMainThread() override;
   scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<TaskQueue> CompositorTaskRunner() override;
@@ -50,7 +50,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   scoped_refptr<TaskQueue> TimerTaskRunner() override;
   scoped_refptr<TaskQueue> NewLoadingTaskRunner(const char* name) override;
   scoped_refptr<TaskQueue> NewTimerTaskRunner(const char* name) override;
-  scoped_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
+  std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
       override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
@@ -189,9 +189,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void EndIdlePeriod();
 
   // Returns the serialized scheduler state for tracing.
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValue(
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue(
       base::TimeTicks optional_now) const;
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
 
   static bool ShouldPrioritizeInputEvent(
@@ -297,7 +297,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
 
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
-  scoped_ptr<ThrottlingHelper> throttling_helper_;
+  std::unique_ptr<ThrottlingHelper> throttling_helper_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 
   const scoped_refptr<TaskQueue> control_task_runner_;
@@ -370,7 +370,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     ~CompositorThreadOnly();
 
     blink::WebInputEvent::Type last_input_type;
-    scoped_ptr<base::ThreadChecker> compositor_thread_checker;
+    std::unique_ptr<base::ThreadChecker> compositor_thread_checker;
 
     void CheckOnValidThread() {
 #if DCHECK_IS_ON()

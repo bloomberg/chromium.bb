@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
@@ -19,9 +20,9 @@ WorkerScheduler::~WorkerScheduler() {
 }
 
 // static
-scoped_ptr<WorkerScheduler> WorkerScheduler::Create(
+std::unique_ptr<WorkerScheduler> WorkerScheduler::Create(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner) {
-  return make_scoped_ptr(new WorkerSchedulerImpl(std::move(main_task_runner)));
+  return base::WrapUnique(new WorkerSchedulerImpl(std::move(main_task_runner)));
 }
 
 }  // namespace scheduler

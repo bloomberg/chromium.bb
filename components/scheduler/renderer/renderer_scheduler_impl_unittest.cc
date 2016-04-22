@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -242,18 +243,19 @@ class RendererSchedulerImplTest : public testing::Test {
     if (message_loop_) {
       main_task_runner_ = SchedulerTqmDelegateImpl::Create(
           message_loop_.get(),
-          make_scoped_ptr(new TestTimeSource(clock_.get())));
+          base::WrapUnique(new TestTimeSource(clock_.get())));
     } else {
       mock_task_runner_ = make_scoped_refptr(
           new cc::OrderedSimpleTaskRunner(clock_.get(), false));
       main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-          mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
+          mock_task_runner_,
+          base::WrapUnique(new TestTimeSource(clock_.get())));
     }
     Initialize(
-        make_scoped_ptr(new RendererSchedulerImplForTest(main_task_runner_)));
+        base::WrapUnique(new RendererSchedulerImplForTest(main_task_runner_)));
   }
 
-  void Initialize(scoped_ptr<RendererSchedulerImplForTest> scheduler) {
+  void Initialize(std::unique_ptr<RendererSchedulerImplForTest> scheduler) {
     scheduler_ = std::move(scheduler);
     default_task_runner_ = scheduler_->DefaultTaskRunner();
     compositor_task_runner_ = scheduler_->CompositorTaskRunner();
@@ -558,13 +560,13 @@ class RendererSchedulerImplTest : public testing::Test {
         &RendererSchedulerImpl::UseCaseToString);
   }
 
-  scoped_ptr<base::SimpleTestTickClock> clock_;
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
-  scoped_ptr<RendererSchedulerImplForTest> scheduler_;
+  std::unique_ptr<RendererSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
@@ -1499,9 +1501,9 @@ class RendererSchedulerImplWithMockSchedulerTest
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, make_scoped_ptr(new TestTimeSource(clock_.get())));
+        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
     mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);
-    Initialize(make_scoped_ptr(mock_scheduler_));
+    Initialize(base::WrapUnique(mock_scheduler_));
   }
 
  protected:

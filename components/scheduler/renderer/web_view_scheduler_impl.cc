@@ -52,10 +52,10 @@ void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
   }
 }
 
-scoped_ptr<WebFrameSchedulerImpl>
+std::unique_ptr<WebFrameSchedulerImpl>
 WebViewSchedulerImpl::createWebFrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context) {
-  scoped_ptr<WebFrameSchedulerImpl> frame_scheduler(
+  std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context));
   frame_scheduler->setPageVisible(page_visible_);
   frame_schedulers_.insert(frame_scheduler.get());

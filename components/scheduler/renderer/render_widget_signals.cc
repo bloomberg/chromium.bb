@@ -5,6 +5,7 @@
 #include "components/scheduler/renderer/render_widget_signals.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "components/scheduler/scheduler_export.h"
 
@@ -15,9 +16,9 @@ RenderWidgetSignals::RenderWidgetSignals(Observer* observer)
       num_visible_render_widgets_(0),
       num_visible_render_widgets_with_touch_handlers_(0) {}
 
-scoped_ptr<RenderWidgetSchedulingState>
+std::unique_ptr<RenderWidgetSchedulingState>
 RenderWidgetSignals::NewRenderWidgetSchedulingState() {
-  return make_scoped_ptr(new RenderWidgetSchedulingState(this));
+  return base::WrapUnique(new RenderWidgetSchedulingState(this));
 }
 
 void RenderWidgetSignals::IncNumVisibleRenderWidgets() {

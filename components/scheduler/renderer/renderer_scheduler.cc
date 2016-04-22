@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/default_tick_clock.h"
@@ -28,7 +29,7 @@ RendererScheduler::~RendererScheduler() {
 }
 
 // static
-scoped_ptr<RendererScheduler> RendererScheduler::Create() {
+std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   // Ensure worker.scheduler, worker.scheduler.debug and
   // renderer.scheduler.debug appear as an option in about://tracing
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
@@ -39,9 +40,9 @@ scoped_ptr<RendererScheduler> RendererScheduler::Create() {
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"));
 
   base::MessageLoop* message_loop = base::MessageLoop::current();
-  scoped_ptr<RendererSchedulerImpl> scheduler(
+  std::unique_ptr<RendererSchedulerImpl> scheduler(
       new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-          message_loop, make_scoped_ptr(new base::DefaultTickClock()))));
+          message_loop, base::WrapUnique(new base::DefaultTickClock()))));
 
   // Runtime features are not currently available in html_viewer.
   if (base::FeatureList::GetInstance()) {
@@ -54,7 +55,7 @@ scoped_ptr<RendererScheduler> RendererScheduler::Create() {
                                          base::CompareCase::INSENSITIVE_ASCII);
     scheduler->SetExpensiveTaskBlockingAllowed(blocking_allowed);
   }
-  return make_scoped_ptr<RendererScheduler>(scheduler.release());
+  return base::WrapUnique<RendererScheduler>(scheduler.release());
 }
 
 // static
