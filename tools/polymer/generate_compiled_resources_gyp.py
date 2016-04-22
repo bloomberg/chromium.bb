@@ -32,7 +32,11 @@ _COMPILED_RESOURCES_TEMPLATE = """
 def main(created_by, html_files):
   targets = ""
 
-  for html_file in html_files:
+  def _target_name(target_file):
+    assert target_file.endswith(".html")
+    return path.basename(target_file)[:-len(".html")] + "-extracted"
+
+  for html_file in sorted(html_files, key=_target_name):
     html_base = path.basename(html_file)
     if html_base in _POLYMERS:
       continue
@@ -52,7 +56,7 @@ def main(created_by, html_files):
         dependencies.append(_WEB_ANIMATIONS_TARGET)
         continue
 
-      target = import_base[:-5] + "-extracted"
+      target = _target_name(import_base)
       if not path.isfile(path.join(html_dir, import_dir, target + ".js")):
         continue
 
