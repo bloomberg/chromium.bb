@@ -17,7 +17,12 @@ namespace gfx {
 class SurfaceTexture;
 }
 
+namespace media {
+class MediaCodecBridge;
+}
+
 namespace content {
+class AVDACodecImage;
 
 // Shared state to allow communication between the AVDA and the
 // GLImages that configure GL for drawing the frames.
@@ -50,6 +55,16 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
     return surface_texture_is_attached_;
   }
 
+  // Iterates over all known codec images and updates the MediaCodec attached to
+  // each one.
+  void CodecChanged(media::MediaCodecBridge* codec);
+
+  // Methods for finding and updating the AVDACodecImage associated with a given
+  // picture buffer id. GetImageForPicture() will return null for unknown ids.
+  // Calling SetImageForPicture() with a nullptr will erase the entry.
+  void SetImageForPicture(int picture_buffer_id, AVDACodecImage* image);
+  AVDACodecImage* GetImageForPicture(int picture_buffer_id) const;
+
   // TODO(liberato): move the surface texture here and make these calls
   // attach / detach it also.  There are several changes going on in avda
   // concurrently, so I don't want to change that until the dust settles.
@@ -64,7 +79,12 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // will cause us to forget the last binding.
   void DidDetachSurfaceTexture();
 
+ protected:
+  virtual ~AVDASharedState();
+
  private:
+  friend class base::RefCounted<AVDASharedState>;
+
   // Platform gl texture Id for |surface_texture_|.  This will be zero if
   // and only if |texture_owner_| is null.
   // TODO(liberato): This should be GLuint, but we don't seem to have the type.
@@ -81,11 +101,10 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
 
- protected:
-  virtual ~AVDASharedState();
+  // Maps a picture buffer id to a AVDACodecImage.
+  std::map<int, AVDACodecImage*> codec_images_;
 
- private:
-  friend class base::RefCounted<AVDASharedState>;
+  DISALLOW_COPY_AND_ASSIGN(AVDASharedState);
 };
 
 }  // namespace content

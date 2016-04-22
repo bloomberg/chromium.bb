@@ -21,6 +21,7 @@
 namespace content {
 
 AVDACodecImage::AVDACodecImage(
+    int picture_buffer_id,
     const scoped_refptr<AVDASharedState>& shared_state,
     media::VideoCodecBridge* codec,
     const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder,
@@ -31,15 +32,19 @@ AVDACodecImage::AVDACodecImage(
       decoder_(decoder),
       surface_texture_(surface_texture),
       detach_surface_texture_on_destruction_(false),
-      texture_(0) {
+      texture_(0),
+      picture_buffer_id_(picture_buffer_id) {
   // Default to a sane guess of "flip Y", just in case we can't get
   // the matrix on the first call.
   memset(gl_matrix_, 0, sizeof(gl_matrix_));
   gl_matrix_[0] = gl_matrix_[10] = gl_matrix_[15] = 1.0f;
   gl_matrix_[5] = -1.0f;
+  shared_state_->SetImageForPicture(picture_buffer_id_, this);
 }
 
-AVDACodecImage::~AVDACodecImage() {}
+AVDACodecImage::~AVDACodecImage() {
+  shared_state_->SetImageForPicture(picture_buffer_id_, nullptr);
+}
 
 void AVDACodecImage::Destroy(bool have_context) {}
 
@@ -172,8 +177,9 @@ void AVDACodecImage::SetSize(const gfx::Size& size) {
   size_ = size;
 }
 
-void AVDACodecImage::SetMediaCodec(media::MediaCodecBridge* codec) {
+void AVDACodecImage::CodecChanged(media::MediaCodecBridge* codec) {
   media_codec_ = codec;
+  codec_buffer_index_ = kInvalidCodecBufferIndex;
 }
 
 void AVDACodecImage::SetTexture(gpu::gles2::Texture* texture) {

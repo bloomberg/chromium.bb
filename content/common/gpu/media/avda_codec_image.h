@@ -23,15 +23,12 @@ namespace content {
 // needed in order to draw them.
 class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
-  AVDACodecImage(const scoped_refptr<AVDASharedState>&,
+  AVDACodecImage(int picture_buffer_id,
+                 const scoped_refptr<AVDASharedState>& shared_state,
                  media::VideoCodecBridge* codec,
                  const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder,
                  const scoped_refptr<gfx::SurfaceTexture>& surface_texture);
 
- protected:
-  ~AVDACodecImage() override;
-
- public:
   // gl::GLImage implementation
   void Destroy(bool have_context) override;
   gfx::Size GetSize() override;
@@ -53,7 +50,6 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
 
- public:
   // Decoded buffer index that has the image for us to display.
   void SetMediaCodecBufferIndex(int buffer_index);
 
@@ -64,9 +60,13 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // Set the size of the current image.
   void SetSize(const gfx::Size& size);
 
-  void SetMediaCodec(media::MediaCodecBridge* codec);
+  // Updates the MediaCodec for this image; clears |codec_buffer_index_|.
+  void CodecChanged(media::MediaCodecBridge* codec);
 
   void SetTexture(gpu::gles2::Texture* texture);
+
+ protected:
+  ~AVDACodecImage() override;
 
  private:
   enum { kInvalidCodecBufferIndex = -1 };
@@ -125,6 +125,9 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
 
   // Texture matrix of the front buffer of the surface texture.
   float gl_matrix_[16];
+
+  // The picture buffer id attached to this image.
+  int picture_buffer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDACodecImage);
 };

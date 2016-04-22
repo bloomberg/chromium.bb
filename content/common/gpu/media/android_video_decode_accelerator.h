@@ -90,10 +90,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // Notify strategy that we have a new android MediaCodec instance.  This
     // happens when we're starting up or re-configuring mid-stream.  Any
     // previously provided codec should no longer be referenced.
-    // For convenience, a container of PictureBuffers is provided in case
-    // per-image cleanup is needed.
-    virtual void CodecChanged(media::VideoCodecBridge* codec,
-                              const OutputBufferMap& buffer_map) = 0;
+    virtual void CodecChanged(media::VideoCodecBridge* codec) = 0;
 
     // Notify the strategy that a frame is available.  This callback can happen
     // on any thread at any time.

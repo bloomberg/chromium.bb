@@ -956,7 +956,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
   // strategy to forget the codec avoids this.
   if (media_codec_) {
     media_codec_.reset();
-    strategy_->CodecChanged(nullptr, output_picture_buffers_);
+    strategy_->CodecChanged(nullptr);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -1008,7 +1008,7 @@ void AndroidVideoDecodeAccelerator::OnCodecConfigured(
   // Record one instance of the codec being initialized.
   RecordFormatChangedMetric(FormatChangedValue::CodecInitialized);
 
-  strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
+  strategy_->CodecChanged(media_codec_.get());
 
   // If we are supposed to notify that initialization is complete, then do so
   // now.  Otherwise, this is a reconfiguration.
@@ -1068,7 +1068,7 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
     media_codec_->Reset();
     // Since we just flushed all the output buffers, make sure that nothing is
     // using them.
-    strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
+    strategy_->CodecChanged(media_codec_.get());
   } else {
     DVLOG(3) << __FUNCTION__
              << " Deleting the MediaCodec and creating a new one.";

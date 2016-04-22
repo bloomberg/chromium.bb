@@ -144,8 +144,7 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
 }
 
 void AndroidCopyingBackingStrategy::CodecChanged(
-    media::VideoCodecBridge* codec,
-    const AndroidVideoDecodeAccelerator::OutputBufferMap&) {
+    media::VideoCodecBridge* codec) {
   media_codec_ = codec;
 }
 

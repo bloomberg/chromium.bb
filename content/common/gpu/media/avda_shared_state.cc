@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/avda_shared_state.h"
 
 #include "base/time/time.h"
+#include "content/common/gpu/media/avda_codec_image.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -41,6 +42,29 @@ void AVDASharedState::DidDetachSurfaceTexture() {
   context_ = nullptr;
   surface_ = nullptr;
   surface_texture_is_attached_ = false;
+}
+
+void AVDASharedState::CodecChanged(media::MediaCodecBridge* codec) {
+  for (auto& image_kv : codec_images_)
+    image_kv.second->CodecChanged(codec);
+}
+
+void AVDASharedState::SetImageForPicture(int picture_buffer_id,
+                                         AVDACodecImage* image) {
+  if (!image) {
+    DCHECK(codec_images_.find(picture_buffer_id) != codec_images_.end());
+    codec_images_.erase(picture_buffer_id);
+    return;
+  }
+
+  DCHECK(codec_images_.find(picture_buffer_id) == codec_images_.end());
+  codec_images_[picture_buffer_id] = image;
+}
+
+AVDACodecImage* AVDASharedState::GetImageForPicture(
+    int picture_buffer_id) const {
+  auto it = codec_images_.find(picture_buffer_id);
+  return it == codec_images_.end() ? nullptr : it->second;
 }
 
 }  // namespace content

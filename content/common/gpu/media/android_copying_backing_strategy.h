@@ -42,9 +42,7 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
   gfx::Size GetPictureBufferSize() const override;
   void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
                                       const media::PictureBuffer&) override;
-  void CodecChanged(
-      media::VideoCodecBridge*,
-      const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  void CodecChanged(media::VideoCodecBridge*) override;
   void OnFrameAvailable() override;
   bool ArePicturesOverlayable() override;
   void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,
