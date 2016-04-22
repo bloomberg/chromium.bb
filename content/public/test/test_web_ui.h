@@ -44,6 +44,7 @@ class TestWebUI : public WebUI {
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            const base::ListValue& args) override {}
+  bool CanCallJavascript() override;
   void CallJavascriptFunction(const std::string& function_name) override;
   void CallJavascriptFunction(const std::string& function_name,
                               const base::Value& arg1) override;

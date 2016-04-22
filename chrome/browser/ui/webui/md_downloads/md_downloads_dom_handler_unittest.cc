@@ -27,5 +27,5 @@ TEST(MdDownloadsDOMHandlerTest, ChecksForRemovedFiles) {
   testing::Mock::VerifyAndClear(&manager);
 
   EXPECT_CALL(manager, CheckForHistoryFilesRemoval());
-  handler.RenderViewReused();
+  handler.OnJavascriptDisallowed();
 }

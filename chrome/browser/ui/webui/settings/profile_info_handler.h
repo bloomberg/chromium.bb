@@ -34,7 +34,8 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
-  void RenderViewReused() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
 #if defined(OS_CHROMEOS)
   // content::NotificationObserver implementation.
@@ -66,8 +67,6 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   // Used to listen to ChromeOS user image changes.
   content::NotificationRegistrar registrar_;
 #endif
-
-  bool observers_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoHandler);
 };

@@ -31,8 +31,7 @@ namespace settings {
 const char ProfileInfoHandler::kProfileInfoChangedEventName[] =
     "profile-info-changed";
 
-ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
-    : profile_(profile), observers_registered_(false) {}
+ProfileInfoHandler::ProfileInfoHandler(Profile* profile) : profile_(profile) {}
 
 void ProfileInfoHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -40,10 +39,18 @@ void ProfileInfoHandler::RegisterMessages() {
                                    base::Unretained(this)));
 }
 
-void ProfileInfoHandler::RenderViewReused() {
-  if (!observers_registered_)
-    return;
+void ProfileInfoHandler::OnJavascriptAllowed() {
+  g_browser_process->profile_manager()
+      ->GetProfileAttributesStorage()
+      .AddObserver(this);
 
+#if defined(OS_CHROMEOS)
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+                 content::NotificationService::AllSources());
+#endif
+}
+
+void ProfileInfoHandler::OnJavascriptDisallowed() {
   g_browser_process->profile_manager()
       ->GetProfileAttributesStorage()
       .RemoveObserver(this);
@@ -51,8 +58,6 @@ void ProfileInfoHandler::RenderViewReused() {
 #if defined(OS_CHROMEOS)
   registrar_.RemoveAll();
 #endif
-
-  observers_registered_ = false;
 }
 
 #if defined(OS_CHROMEOS)
@@ -81,18 +86,7 @@ void ProfileInfoHandler::OnProfileAvatarChanged(
 }
 
 void ProfileInfoHandler::HandleGetProfileInfo(const base::ListValue* args) {
-  if (!observers_registered_) {
-    observers_registered_ = true;
-
-    g_browser_process->profile_manager()
-        ->GetProfileAttributesStorage()
-        .AddObserver(this);
-
-#if defined(OS_CHROMEOS)
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                   content::NotificationService::AllSources());
-#endif
-  }
+  AllowJavascript();
 
   CHECK_EQ(1U, args->GetSize());
   const base::Value* callback_id;

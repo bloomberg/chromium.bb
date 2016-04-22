@@ -51,6 +51,10 @@ void TestWebUI::AddMessageHandler(WebUIMessageHandler* handler) {
   handlers_.push_back(handler);
 }
 
+bool TestWebUI::CanCallJavascript() {
+  return true;
+}
+
 void TestWebUI::CallJavascriptFunction(const std::string& function_name) {
   call_data_.push_back(new CallData(function_name));
 }

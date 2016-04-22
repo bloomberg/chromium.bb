@@ -133,7 +133,11 @@ void MdDownloadsDOMHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MdDownloadsDOMHandler::RenderViewReused() {
+void MdDownloadsDOMHandler::OnJavascriptAllowed() {
+  list_tracker_.StartAndSendChunk();
+}
+
+void MdDownloadsDOMHandler::OnJavascriptDisallowed() {
   list_tracker_.Stop();
   list_tracker_.Reset();
   CheckForRemovedFiles();
@@ -146,7 +150,7 @@ void MdDownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   if (terms_changed)
     list_tracker_.Reset();
 
-  list_tracker_.StartAndSendChunk();
+  AllowJavascript();
 }
 
 void MdDownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {

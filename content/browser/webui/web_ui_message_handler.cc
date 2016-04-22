@@ -11,6 +11,20 @@
 
 namespace content {
 
+void WebUIMessageHandler::AllowJavascript() {
+  if (javascript_allowed_)
+    return;
+
+  javascript_allowed_ = true;
+  CHECK(IsJavascriptAllowed());
+
+  OnJavascriptAllowed();
+}
+
+bool WebUIMessageHandler::IsJavascriptAllowed() const {
+  return javascript_allowed_ && web_ui() && web_ui()->CanCallJavascript();
+}
+
 bool WebUIMessageHandler::ExtractIntegerValue(const base::ListValue* value,
                                               int* out_int) {
   std::string string_value;
@@ -43,6 +57,14 @@ base::string16 WebUIMessageHandler::ExtractStringValue(
     return string16_value;
   NOTREACHED();
   return base::string16();
+}
+
+void WebUIMessageHandler::RenderViewReused() {
+  if (!javascript_allowed_)
+    return;
+
+  javascript_allowed_ = false;
+  OnJavascriptDisallowed();
 }
 
 }  // namespace content

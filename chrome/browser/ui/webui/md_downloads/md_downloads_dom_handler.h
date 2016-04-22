@@ -38,7 +38,8 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
-  void RenderViewReused() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const base::ListValue* args);

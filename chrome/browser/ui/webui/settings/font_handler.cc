@@ -59,6 +59,15 @@ void FontHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void FontHandler::OnJavascriptAllowed() {
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
+}
+
+void FontHandler::OnJavascriptDisallowed() {
+  extension_registry_observer_.RemoveAll();
+}
+
 void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
@@ -71,10 +80,7 @@ void FontHandler::HandleFetchFontsData(const base::ListValue* args) {
 
 void FontHandler::HandleObserveAdvancedFontExtensionAvailable(
     const base::ListValue* /*args*/) {
-  extensions::ExtensionRegistry* observer =
-      extensions::ExtensionRegistry::Get(profile_);
-  if (!extension_registry_observer_.IsObserving(observer))
-    extension_registry_observer_.Add(observer);
+  AllowJavascript();
   NotifyAdvancedFontSettingsAvailability();
 }
 
@@ -97,7 +103,7 @@ const extensions::Extension* FontHandler::GetAdvancedFontSettingsExtension() {
 }
 
 void FontHandler::NotifyAdvancedFontSettingsAvailability() {
-  web_ui()->CallJavascriptFunction(
+  CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("advanced-font-settings-installed"),
       base::FundamentalValue(GetAdvancedFontSettingsExtension() != nullptr));
@@ -169,10 +175,6 @@ void FontHandler::FontListHasLoaded(std::string callback_id,
       extension_url.Resolve(kAdvancedFontSettingsExtensionId).spec());
 
   ResolveJavascriptCallback(base::StringValue(callback_id), response);
-}
-
-void FontHandler::RenderViewReused() {
-  extension_registry_observer_.RemoveAll();
 }
 
 }  // namespace settings

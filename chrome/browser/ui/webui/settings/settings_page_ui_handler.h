@@ -17,9 +17,6 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
   SettingsPageUIHandler();
   ~SettingsPageUIHandler() override;
 
-  // WebUIMessageHandler implementation.
-  void RegisterMessages() override {}
-
  protected:
   // Helper method for responding to JS requests initiated with
   // cr.sendWithPromise(), for the case where the returned promise should be

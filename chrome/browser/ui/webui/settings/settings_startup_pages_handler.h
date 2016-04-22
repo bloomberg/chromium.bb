@@ -30,7 +30,8 @@ class StartupPagesHandler : public SettingsPageUIHandler,
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
-  void RenderViewReused() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // ui::TableModelObserver:
   void OnModelChanged() override;

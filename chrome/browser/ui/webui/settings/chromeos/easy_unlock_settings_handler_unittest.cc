@@ -196,20 +196,12 @@ TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
   handler.reset(new TestEasyUnlockSettingsHandler(profile()));
   handler->set_web_ui(web_ui());
 
-  // Test the C++ -> JS push path.
-  handler->SendEnabledStatus();
-  VerifyEnabledStatusCallback(1U, false);
-
-  fake_easy_unlock_service()->set_is_enabled(true);
-  handler->SendEnabledStatus();
-  VerifyEnabledStatusCallback(2U, true);
-
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
   list_args.Append(new base::StringValue("test-callback-id"));
   handler->HandleGetEnabledStatus(&list_args);
 
-  EXPECT_EQ(3U, web_ui()->call_data().size());
+  EXPECT_EQ(1U, web_ui()->call_data().size());
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIResponse", data.function_name());
@@ -220,7 +212,15 @@ TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
 
   bool enabled_status = false;
   ASSERT_TRUE(data.arg3()->GetAsBoolean(&enabled_status));
-  EXPECT_TRUE(enabled_status);
+  EXPECT_FALSE(enabled_status);
+
+  // Test the C++ -> JS push path.
+  handler->SendEnabledStatus();
+  VerifyEnabledStatusCallback(2U, false);
+
+  fake_easy_unlock_service()->set_is_enabled(true);
+  handler->SendEnabledStatus();
+  VerifyEnabledStatusCallback(3U, true);
 }
 
 TEST_F(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus) {

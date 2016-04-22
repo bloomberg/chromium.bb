@@ -47,7 +47,24 @@ void StartupPagesHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void StartupPagesHandler::RenderViewReused() {
+void StartupPagesHandler::OnJavascriptAllowed() {
+  startup_custom_pages_table_model_.SetObserver(this);
+
+  PrefService* prefService = Profile::FromWebUI(web_ui())->GetPrefs();
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefService);
+  startup_custom_pages_table_model_.SetURLs(pref.urls);
+
+  if (pref.urls.empty())
+    pref.type = SessionStartupPref::DEFAULT;
+
+  pref_change_registrar_.Init(prefService);
+  pref_change_registrar_.Add(
+      prefs::kURLsToRestoreOnStartup,
+      base::Bind(&StartupPagesHandler::UpdateStartupPages,
+                 base::Unretained(this)));
+}
+
+void StartupPagesHandler::OnJavascriptDisallowed() {
   startup_custom_pages_table_model_.SetObserver(nullptr);
   pref_change_registrar_.RemoveAll();
 }
@@ -66,9 +83,9 @@ void StartupPagesHandler::OnModelChanged() {
     startup_pages.Append(entry.release());
   }
 
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("update-startup-pages"),
-                                   startup_pages);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("update-startup-pages"),
+                         startup_pages);
 }
 
 void StartupPagesHandler::OnItemsChanged(int start, int length) {
@@ -138,25 +155,7 @@ void StartupPagesHandler::HandleEditStartupPage(const base::ListValue* args) {
 
 void StartupPagesHandler::HandleOnStartupPrefsPageLoad(
     const base::ListValue* args) {
-  startup_custom_pages_table_model_.SetObserver(this);
-
-  PrefService* prefService = Profile::FromWebUI(web_ui())->GetPrefs();
-  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
-      prefService);
-  startup_custom_pages_table_model_.SetURLs(pref.urls);
-
-  if (pref.urls.empty())
-    pref.type = SessionStartupPref::DEFAULT;
-
-  pref_change_registrar_.Init(prefService);
-  pref_change_registrar_.Add(
-      prefs::kURLsToRestoreOnStartup,
-      base::Bind(&StartupPagesHandler::UpdateStartupPages,
-                 base::Unretained(this)));
-
-  const SessionStartupPref startup_pref = SessionStartupPref::GetStartupPref(
-      Profile::FromWebUI(web_ui())->GetPrefs());
-  startup_custom_pages_table_model_.SetURLs(startup_pref.urls);
+  AllowJavascript();
 }
 
 void StartupPagesHandler::HandleRemoveStartupPage(const base::ListValue* args) {

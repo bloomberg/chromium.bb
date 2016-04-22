@@ -31,7 +31,8 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
-  void RenderViewReused() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // EasyUnlockServiceObserver:
   void OnTurnOffOperationStatusChanged() override;
@@ -56,8 +57,6 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
   Profile* const profile_;
 
   PrefChangeRegistrar profile_pref_registrar_;
-
-  bool observers_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockSettingsHandler);
 };

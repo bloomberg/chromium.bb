@@ -91,10 +91,18 @@ class CONTENT_EXPORT WebUI {
                                    const std::string& message,
                                    const base::ListValue& args) = 0;
 
+  // Returns true if this WebUI can currently call JavaScript.
+  virtual bool CanCallJavascript() = 0;
+
+  // Calling these functions directly is discouraged. It's generally preferred
+  // to call WebUIMessageHandler::CallJavascriptFunction, as that has
+  // lifecycle controls to prevent calling JavaScript before the page is ready.
+  //
   // Call a Javascript function by sending its name and arguments down to
   // the renderer.  This is asynchronous; there's no way to get the result
   // of the call, and should be thought of more like sending a message to
   // the page.
+  //
   // All function names in WebUI must consist of only ASCII characters.
   // There are variants for calls with more arguments.
   virtual void CallJavascriptFunction(const std::string& function_name) = 0;
