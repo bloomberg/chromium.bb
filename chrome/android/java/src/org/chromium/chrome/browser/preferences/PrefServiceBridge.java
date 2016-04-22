@@ -80,6 +80,20 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * Interface for a class that is fetching important site information.
+     */
+    public interface ImportantSitesCallback {
+        /**
+         * Called when the list of important registerable domains has been fetched from cpp.
+         * See net/base/registry_controlled_domains/registry_controlled_domain.h for more details on
+         * registrable domains and the current list of effective eTLDs.
+         * @param domains Important registerable domains.
+         */
+        @CalledByNative("ImportantSitesCallback")
+        void onImportantRegisterableDomainsReady(String[] domains);
+    }
+
+    /**
      * Interface to a class that receives callbacks instructing it to inform the user about other
      * forms of browsing history.
      */
@@ -730,9 +744,26 @@ public final class PrefServiceBridge {
      */
     public void clearBrowsingData(
             OnClearBrowsingDataListener listener, int[] dataTypes, int timePeriod) {
+        clearBrowsingDataExcludingDomains(listener, dataTypes, timePeriod, new String[0]);
+    }
+
+    /**
+     * Same as above, but now we can specify a list of domains to exclude from clearing browsing
+     * data.
+     * Do not use this method unless caller knows what they're doing. Not all backends are supported
+     * yet, and more data than expected could be deleted. See crbug.com/113621.
+     * @param listener A listener to call back when the clearing is finished.
+     * @param dataTypes An array of browsing data types to delete, represented as values from
+     *      the shared enum {@link org.chromium.chrome.browser.BrowsingDataType}.
+     * @param timePeriod The time period for which to delete the data, represented as a value from
+     *      the shared enum {@link org.chromium.chrome.browser.TimePeriod}.
+     * @param blacklistDomains A list of registerable domains that we don't clear data for.
+     */
+    public void clearBrowsingDataExcludingDomains(OnClearBrowsingDataListener listener,
+            int[] dataTypes, int timePeriod, String[] blacklistDomains) {
         assert mClearBrowsingDataListener == null;
         mClearBrowsingDataListener = listener;
-        nativeClearBrowsingData(dataTypes, timePeriod);
+        nativeClearBrowsingData(dataTypes, timePeriod, blacklistDomains);
     }
 
     /*
@@ -748,6 +779,19 @@ public final class PrefServiceBridge {
             mClearBrowsingDataListener.onBrowsingDataCleared();
             mClearBrowsingDataListener = null;
         }
+    }
+
+    /**
+     * This fetches sites (registerable domains) that we consider important. This combines many
+     * pieces of information, including site engagement and permissions. The callback is called
+     * with the list of important registerable domains.
+     *
+     * See net/base/registry_controlled_domains/registry_controlled_domain.h for more details on
+     * registrable domains and the current list of effective eTLDs.
+     * @param callback The callback that will be used to set the list of important sites.
+     */
+    public static void fetchImportantSites(ImportantSitesCallback callback) {
+        nativeFetchImportantSites(callback);
     }
 
     /**
@@ -1050,10 +1094,12 @@ public final class PrefServiceBridge {
     private native void nativeSetBrowsingDataDeletionPreference(int dataType, boolean value);
     private native int nativeGetBrowsingDataDeletionTimePeriod();
     private native void nativeSetBrowsingDataDeletionTimePeriod(int timePeriod);
-    private native void nativeClearBrowsingData(int[] dataTypes, int timePeriod);
+    private native void nativeClearBrowsingData(
+            int[] dataTypes, int timePeriod, String[] blacklistDomains);
     private native void nativeRequestInfoAboutOtherFormsOfBrowsingHistory(
             OtherFormsOfBrowsingHistoryListener listener);
     private native boolean nativeCanDeleteBrowsingHistory();
+    private static native void nativeFetchImportantSites(ImportantSitesCallback callback);
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBackgroundSyncEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);

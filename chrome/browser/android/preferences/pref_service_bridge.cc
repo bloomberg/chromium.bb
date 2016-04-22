@@ -20,11 +20,14 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/android/preferences/important_sites_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
+#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -63,6 +66,7 @@ using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
 
 namespace {
+const size_t kMaxImportantSites = 5;
 
 Profile* GetOriginalProfile() {
   return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
@@ -558,10 +562,12 @@ static void SetBrowsingDataDeletionTimePeriod(
   GetPrefService()->SetInteger(prefs::kDeleteTimePeriod, time_period);
 }
 
-static void ClearBrowsingData(JNIEnv* env,
-                              const JavaParamRef<jobject>& obj,
-                              const JavaParamRef<jintArray>& data_types,
-                              jint time_period) {
+static void ClearBrowsingData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jintArray>& data_types,
+    jint time_period,
+    const JavaParamRef<jobjectArray>& jexcluding_domains) {
   BrowsingDataRemover* browsing_data_remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
   // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
@@ -598,16 +604,36 @@ static void ClearBrowsingData(JNIEnv* env,
         NOTREACHED();
     }
   }
+  std::vector<std::string> excluding_domains;
+  base::android::AppendJavaStringArrayToStringVector(
+      env, jexcluding_domains.obj(), &excluding_domains);
+  RegistrableDomainFilterBuilder filter_builder(
+      BrowsingDataFilterBuilder::BLACKLIST);
+  for (const std::string& domain : excluding_domains) {
+    filter_builder.AddRegisterableDomain(domain);
+  }
 
-  browsing_data_remover->Remove(
+  browsing_data_remover->RemoveWithFilter(
       BrowsingDataRemover::Period(
           static_cast<BrowsingDataRemover::TimePeriod>(time_period)),
-      remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+      remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
 }
 
 static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+}
+
+static void FetchImportantSites(JNIEnv* env,
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jobject>& java_callback) {
+  std::vector<std::string> important_domains =
+      ImportantSitesUtil::GetImportantRegisterableDomains(GetOriginalProfile(),
+                                                          kMaxImportantSites);
+  ScopedJavaLocalRef<jobjectArray> string_array =
+      base::android::ToJavaArrayOfStrings(env, important_domains);
+  Java_ImportantSitesCallback_onImportantRegisterableDomainsReady(
+      env, java_callback.obj(), string_array.obj());
 }
 
 static void ShowNoticeAboutOtherFormsOfBrowsingHistory(

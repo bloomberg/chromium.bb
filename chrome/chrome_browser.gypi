@@ -893,6 +893,8 @@
       'browser/android/precache/precache_launcher.h',
       'browser/android/preferences/autofill/autofill_profile_bridge.cc',
       'browser/android/preferences/autofill/autofill_profile_bridge.h',
+      'browser/android/preferences/important_sites_util.cc',
+      'browser/android/preferences/important_sites_util.h',
       'browser/android/preferences/pref_service_bridge.cc',
       'browser/android/preferences/pref_service_bridge.h',
       'browser/android/preferences/website_preference_bridge.cc',

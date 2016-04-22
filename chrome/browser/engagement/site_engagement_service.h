@@ -139,6 +139,7 @@ class SiteEngagementScore {
   friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
   friend class SiteEngagementServiceTest;
+  friend class ImportantSitesUtilTest;
 
   // Array holding the values corresponding to each item in Variation array.
   static double param_values[];
@@ -288,6 +289,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, EngagementLevel);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
+  FRIEND_TEST_ALL_PREFIXES(ImportantSitesUtilTest, NotificationsThenEngagement);
 
   // Only used in tests.
   SiteEngagementService(Profile* profile, std::unique_ptr<base::Clock> clock);
