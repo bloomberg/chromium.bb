@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
@@ -138,16 +139,18 @@ void MojoShellConnectionImpl::SetConnectionLostClosure(
   shell_connection_->set_connection_lost_closure(closure);
 }
 
-void MojoShellConnectionImpl::AddListener(Listener* listener) {
-  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
+void MojoShellConnectionImpl::AddListener(std::unique_ptr<Listener> listener) {
+  DCHECK(std::find(listeners_.begin(), listeners_.end(), listener.get()) ==
          listeners_.end());
-  listeners_.push_back(listener);
+  listeners_.push_back(listener.release());
 }
 
-void MojoShellConnectionImpl::RemoveListener(Listener* listener) {
+std::unique_ptr<MojoShellConnection::Listener>
+MojoShellConnectionImpl::RemoveListener(Listener* listener) {
   auto it = std::find(listeners_.begin(), listeners_.end(), listener);
   DCHECK(it != listeners_.end());
   listeners_.erase(it);
+  return base::WrapUnique(listener);
 }
 
 // static

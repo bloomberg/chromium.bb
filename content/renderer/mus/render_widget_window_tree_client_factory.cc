@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
@@ -31,7 +32,6 @@ class RenderWidgetWindowTreeClientFactoryImpl
  public:
   RenderWidgetWindowTreeClientFactoryImpl() {
     DCHECK(MojoShellConnection::Get());
-    MojoShellConnection::Get()->AddListener(this);
   }
 
   ~RenderWidgetWindowTreeClientFactoryImpl() override {}
@@ -67,7 +67,8 @@ class RenderWidgetWindowTreeClientFactoryImpl
 }  // namespace
 
 void CreateRenderWidgetWindowTreeClientFactory() {
-  new RenderWidgetWindowTreeClientFactoryImpl;
+  MojoShellConnection::Get()->AddListener(
+      base::WrapUnique(new RenderWidgetWindowTreeClientFactoryImpl()));
 }
 
 }  // namespace content

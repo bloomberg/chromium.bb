@@ -389,8 +389,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 #if defined(MOJO_SHELL_CLIENT)
   if (IsRunningAsMusClient()) {
-    interface_factory_.reset(new ChromeInterfaceFactory);
-    content::MojoShellConnection::Get()->AddListener(interface_factory_.get());
+    content::MojoShellConnection::Get()->AddListener(
+        base::WrapUnique(new ChromeInterfaceFactory));
   }
 #endif
 

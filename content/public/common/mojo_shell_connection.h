@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_MOJO_SHELL_CONNECTION_H_
 #define CONTENT_PUBLIC_COMMON_MOJO_SHELL_CONNECTION_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
@@ -64,9 +66,10 @@ class CONTENT_EXPORT MojoShellConnection {
 
   // [De]Register an impl of Listener that will be consulted when the wrapped
   // ShellConnection exposes services to inbound connections.
-  // Registered listeners are owned by this MojoShellConnection.
-  virtual void AddListener(Listener* listener) = 0;
-  virtual void RemoveListener(Listener* listener) = 0;
+  // Registered listeners are owned by this MojoShellConnection. If a listener
+  // is removed, then the ownership is transferred back to the caller.
+  virtual void AddListener(std::unique_ptr<Listener> listener) = 0;
+  virtual std::unique_ptr<Listener> RemoveListener(Listener* listener) = 0;
 
  protected:
   virtual ~MojoShellConnection();

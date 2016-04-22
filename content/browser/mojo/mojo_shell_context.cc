@@ -303,8 +303,8 @@ MojoShellContext::MojoShellContext() {
   // Attach our ShellClientFactory implementation to the global connection.
   MojoShellConnection* shell_connection = MojoShellConnection::Get();
   CHECK(shell_connection);
-  shell_connection->AddListener(
-      new ShellConnectionListener(std::move(browser_shell_connection)));
+  shell_connection->AddListener(base::WrapUnique(
+      new ShellConnectionListener(std::move(browser_shell_connection))));
 }
 
 MojoShellContext::~MojoShellContext() {

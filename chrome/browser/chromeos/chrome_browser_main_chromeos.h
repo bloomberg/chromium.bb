@@ -23,7 +23,6 @@ class ArcServiceLauncher;
 
 namespace chromeos {
 
-class ChromeInterfaceFactory;
 class DataPromoNotification;
 class EventRewriter;
 class EventRewriterController;
@@ -85,10 +84,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
-
-#if defined(MOJO_SHELL_CLIENT)
-  std::unique_ptr<ChromeInterfaceFactory> interface_factory_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

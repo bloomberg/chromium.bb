@@ -57,8 +57,8 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   shell::Connector* GetConnector() override;
   bool UsingExternalShell() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
-  void AddListener(Listener* listener) override;
-  void RemoveListener(Listener* listener) override;
+  void AddListener(std::unique_ptr<Listener> listener) override;
+  std::unique_ptr<Listener> RemoveListener(Listener* listener) override;
 
   const bool external_;
   std::unique_ptr<shell::ShellConnection> shell_connection_;
