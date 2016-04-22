@@ -144,7 +144,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         try {
             return manager.getCameraCharacteristics(Integer.toString(id));
         } catch (CameraAccessException ex) {
-            Log.e(TAG, "getNumberOfCameras: getCameraIdList(): " + ex);
+            Log.e(TAG, "getCameraCharacteristics: " + ex);
         }
         return null;
     }
@@ -168,13 +168,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // priority over the highest-quality post-processing".
         try {
             mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-        } catch (CameraAccessException ex) {
-            Log.e(TAG, "createCaptureRequest: " + ex);
-            return false;
-        } catch (IllegalArgumentException ex) {
-            Log.e(TAG, "createCaptureRequest: " + ex);
-            return false;
-        } catch (SecurityException ex) {
+        } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "createCaptureRequest: " + ex);
             return false;
         }
@@ -199,13 +193,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final CrCaptureSessionListener captureSessionListener = new CrCaptureSessionListener();
         try {
             mCameraDevice.createCaptureSession(surfaceList, captureSessionListener, null);
-        } catch (CameraAccessException ex) {
-            Log.e(TAG, "createCaptureSession: " + ex);
-            return false;
-        } catch (IllegalArgumentException ex) {
-            Log.e(TAG, "createCaptureSession: " + ex);
-            return false;
-        } catch (SecurityException ex) {
+        } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "createCaptureSession: " + ex);
             return false;
         }
@@ -221,13 +209,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             // will trigger every time a downloaded image is ready. Since
             //|handler| is null, we'll work on the current Thread Looper.
             mCaptureSession.setRepeatingRequest(mPreviewBuilder.build(), null, null);
-        } catch (CameraAccessException ex) {
-            Log.e(TAG, "setRepeatingRequest: " + ex);
-            return false;
-        } catch (IllegalArgumentException ex) {
-            Log.e(TAG, "setRepeatingRequest: " + ex);
-            return false;
-        } catch (SecurityException ex) {
+        } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "setRepeatingRequest: " + ex);
             return false;
         }
@@ -295,7 +277,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 (CameraManager) appContext.getSystemService(Context.CAMERA_SERVICE);
         try {
             return manager.getCameraIdList().length;
-        } catch (CameraAccessException ex) {
+        } catch (CameraAccessException | SecurityException ex) {
+            // SecurityException is an undocumented exception, but has been seen in
+            // http://crbug/605424.
             Log.e(TAG, "getNumberOfCameras: getCameraIdList(): " + ex);
             return 0;
         }
@@ -437,13 +421,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         final CrStateListener stateListener = new CrStateListener();
         try {
             manager.openCamera(Integer.toString(mId), stateListener, mainHandler);
-        } catch (CameraAccessException ex) {
-            Log.e(TAG, "allocate: manager.openCamera: " + ex);
-            return false;
-        } catch (IllegalArgumentException ex) {
-            Log.e(TAG, "allocate: manager.openCamera: " + ex);
-            return false;
-        } catch (SecurityException ex) {
+        } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "allocate: manager.openCamera: " + ex);
             return false;
         }
@@ -471,10 +449,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         try {
             mCaptureSession.abortCaptures();
-        } catch (CameraAccessException ex) {
-            Log.e(TAG, "abortCaptures: " + ex);
-            return false;
-        } catch (IllegalStateException ex) {
+        } catch (CameraAccessException | IllegalStateException ex) {
             Log.e(TAG, "abortCaptures: " + ex);
             return false;
         }
