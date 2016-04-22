@@ -5,6 +5,7 @@
 <style>
 #inspected {
     color: red;
+    --variable: red;
 }
 </style>
 <script>
@@ -26,6 +27,14 @@ function test() {
 
             swatch.click();
             InspectorTest.addResult("Has popover after click: " + !!document.querySelector("body > .popover-container"));
+            next();
+        },
+
+        function testColorSwatchInCustomProperty(next)
+        {
+            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("--variable");
+            var swatch = treeItem.valueElement.querySelector("span[is=color-swatch]");
+            InspectorTest.addResult("Custom property has a color swatch: " + !!swatch);
             next();
         },
 

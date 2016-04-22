@@ -10,6 +10,9 @@ After shift-click: rgb(255, 0, 0)
 Has popover before click: false
 Has popover after click: true
 
+Running: testColorSwatchInCustomProperty
+Custom property has a color swatch: true
+
 Running: testColorSwatchInComputedRules
 Initial color value: rgb(255, 0, 0)
 After shift-click color value: hsl(0, 100%, 50%)
