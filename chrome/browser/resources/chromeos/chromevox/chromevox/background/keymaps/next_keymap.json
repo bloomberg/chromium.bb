@@ -330,6 +330,7 @@
     {
       "command": "toggleStickyMode",
       "sequence": {
+        "skipStripping": false,
         "doubleTap": true,
         "keys": {
           "keyCode": [
