@@ -57,7 +57,7 @@ public:
         return new Blob(BlobDataHandle::create());
     }
 
-    static Blob* create(ExecutionContext*, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>&, const BlobPropertyBag&, ExceptionState&);
+    static Blob* create(ExecutionContext*, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&, const BlobPropertyBag&, ExceptionState&);
 
     static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
@@ -110,28 +110,9 @@ public:
 protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);
 
-    template<typename ItemType>
-    static void populateBlobData(BlobData* blobData, const HeapVector<ItemType>& parts, bool normalizeLineEndingsToNative)
-    {
-        for (size_t i = 0; i < parts.size(); ++i) {
-            const ItemType& item = parts[i];
-            if (item.isArrayBuffer()) {
-                DOMArrayBuffer* arrayBuffer = item.getAsArrayBuffer();
-                blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
-            } else if (item.isArrayBufferView()) {
-                DOMArrayBufferView* arrayBufferView = item.getAsArrayBufferView();
-                blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
-            } else if (item.isBlob()) {
-                item.getAsBlob()->appendTo(*blobData);
-            } else if (item.isString()) {
-                blobData->appendText(item.getAsString(), normalizeLineEndingsToNative);
-            } else {
-                ASSERT_NOT_REACHED();
-            }
-        }
-    }
-
+    static void populateBlobData(BlobData*, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts, bool normalizeLineEndingsToNative);
     static void clampSliceOffsets(long long size, long long& start, long long& end);
+
 private:
     Blob();
 

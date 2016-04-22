@@ -116,13 +116,32 @@ shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), (new Uint8Array(10
 shouldBe("new Blob({length: 0}).size", "0");
 shouldBe("new Blob({length: 1, 0: 'string'}).size", "6");
 
-// Test that strings are not NFC normalized
-var OMICRON_WITH_OXIA = '\u1F79'; // NFC normalized to U+3CC
-shouldBe("OMICRON_WITH_OXIA.charCodeAt(0)", "0x1F79");
-var reader = new FileReader();
-reader.readAsText(new Blob([OMICRON_WITH_OXIA]));
-reader.onload = function() {
-    shouldBe("reader.result.charCodeAt(0)", "0x1F79");
-    finishJSTest();
-};
+testNormalization();
+
+function testNormalization() {
+    // Test that strings are not NFC normalized
+    OMICRON_WITH_OXIA = '\u1F79'; // NFC normalized to U+3CC
+    shouldBe("OMICRON_WITH_OXIA.charCodeAt(0)", "0x1F79");
+    reader = new FileReader();
+    reader.readAsText(new Blob([OMICRON_WITH_OXIA]));
+    reader.onload = function() {
+        shouldBe("reader.result.charCodeAt(0)", "0x1F79");
+        testEncodingReplacements();
+    };
+}
+
+function testEncodingReplacements() {
+    // Test that invalid UTF-16 code units are replaced.
+    CONTAINS_UNPAIRED_SURROGATES = 'abc\uDC00def\uD800ghi';
+    shouldBe("CONTAINS_UNPAIRED_SURROGATES.charCodeAt(3)", "0xDC00");
+    shouldBe("CONTAINS_UNPAIRED_SURROGATES.charCodeAt(7)", "0xD800");
+    reader = new FileReader();
+    reader.readAsText(new Blob([CONTAINS_UNPAIRED_SURROGATES]));
+    reader.onload = function() {
+        shouldBe("reader.result.charCodeAt(3)", "0xFFFD");
+        shouldBe("reader.result.charCodeAt(7)", "0xFFFD");
+        finishJSTest();
+    };
+}
+
 </script>

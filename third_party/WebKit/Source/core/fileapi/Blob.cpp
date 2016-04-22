@@ -86,7 +86,7 @@ Blob::~Blob()
 }
 
 // static
-Blob* Blob::create(ExecutionContext* context, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
+Blob* Blob::create(ExecutionContext* context, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
 {
     ASSERT(options.hasType());
     if (!options.type().containsOnlyASCII()) {
@@ -120,6 +120,27 @@ Blob* Blob::create(const unsigned char* data, size_t bytes, const String& conten
     return new Blob(BlobDataHandle::create(blobData.release(), blobSize));
 }
 
+// static
+void Blob::populateBlobData(BlobData* blobData, const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts, bool normalizeLineEndingsToNative)
+{
+    for (const auto& item : parts) {
+        if (item.isArrayBuffer()) {
+            DOMArrayBuffer* arrayBuffer = item.getAsArrayBuffer();
+            blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
+        } else if (item.isArrayBufferView()) {
+            DOMArrayBufferView* arrayBufferView = item.getAsArrayBufferView();
+            blobData->appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
+        } else if (item.isBlob()) {
+            item.getAsBlob()->appendTo(*blobData);
+        } else if (item.isUSVString()) {
+            blobData->appendText(item.getAsUSVString(), normalizeLineEndingsToNative);
+        } else {
+            NOTREACHED();
+        }
+    }
+}
+
+// static
 void Blob::clampSliceOffsets(long long size, long long& start, long long& end)
 {
     ASSERT(size != -1);

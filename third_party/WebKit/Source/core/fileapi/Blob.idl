@@ -30,8 +30,9 @@
 
 // https://w3c.github.io/FileAPI/#blob
 
+typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
 [
-    Constructor(optional sequence<(ArrayBuffer or ArrayBufferView or Blob or DOMString)> blobParts, optional BlobPropertyBag options),
+    Constructor(optional sequence<BlobPart> blobParts, optional BlobPropertyBag options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=(Window,Worker),
@@ -42,7 +43,7 @@
     // readonly attribute boolean isClosed;
 
     // TODO(jsbell): start and end arguments should be [Clamp]
-    // TODO(philipj): contentType should not be optional or nullable.
+    // TODO(philipj): contentType should not be nullable.
     [RaisesException] Blob slice(optional long long start, optional long long end, [TreatUndefinedAs=NullString] optional DOMString? contentType);
     [RaisesException, CallWith=ExecutionContext, RuntimeEnabled=FileAPIBlobClose] void close();
 };

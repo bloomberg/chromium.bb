@@ -81,6 +81,10 @@ PASS new Blob({length: 0}).size is 0
 PASS new Blob({length: 1, 0: 'string'}).size is 6
 PASS OMICRON_WITH_OXIA.charCodeAt(0) is 0x1F79
 PASS reader.result.charCodeAt(0) is 0x1F79
+PASS CONTAINS_UNPAIRED_SURROGATES.charCodeAt(3) is 0xDC00
+PASS CONTAINS_UNPAIRED_SURROGATES.charCodeAt(7) is 0xD800
+PASS reader.result.charCodeAt(3) is 0xFFFD
+PASS reader.result.charCodeAt(7) is 0xFFFD
 PASS successfullyParsed is true
 
 TEST COMPLETE
