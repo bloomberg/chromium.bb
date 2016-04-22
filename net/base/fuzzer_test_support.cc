@@ -4,22 +4,31 @@
 
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
+#include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 
 namespace {
 
-// This translation unit provides a static initializer to set up ICU.
-//
-// ICU is used internally by GURL, which is used throughout the //net code.
-// Initializing ICU is important to prevent fuzztests from asserting when
-// handling non-ASCII urls.
+// Set up globals that a number of network tests use.
 //
 // Note that in general static initializers are not allowed, however this is
 // just being used by test code.
-struct InitICU {
-  InitICU() { CHECK(base::i18n::InitializeICU()); }
+struct InitGlobals {
+  InitGlobals() {
+    // Set up ICU. ICU is used internally by GURL, which is used throughout the
+    // //net code. Initializing ICU is important to prevent fuzztests from
+    // asserting when handling non-ASCII urls.
+    CHECK(base::i18n::InitializeICU());
+  }
+
+  // A number of tests use async code which depends on there being a message
+  // loop.  Setting one up here allows tests to reuse the message loop between
+  // runs.
+  base::MessageLoopForIO message_loop;
+
   base::AtExitManager at_exit_manager;
 };
 
-InitICU* init_icu = new InitICU();
+InitGlobals* init_globals = new InitGlobals();
 
 }  // namespace

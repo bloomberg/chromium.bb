@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -32,9 +31,6 @@
 //
 // |data| is used to create a FuzzedSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Needed for thread checks and waits.
-  base::MessageLoopForIO message_loop;
-
   net::TestCompletionCallback callback;
   net::BoundTestNetLog bound_test_net_log;
   std::unique_ptr<net::FuzzedSocket> fuzzed_socket(

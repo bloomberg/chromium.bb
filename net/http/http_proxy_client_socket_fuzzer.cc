@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
@@ -33,9 +32,6 @@
 // |data| is used to create a FuzzedSocket to fuzz reads and writes, see that
 // class for details.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Needed for thread checks and waits.
-  base::MessageLoopForIO message_loop;
-
   // Use a test NetLog, to exercise logging code.
   net::BoundTestNetLog bound_test_net_log;
 
