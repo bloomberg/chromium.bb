@@ -15,7 +15,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,13 +37,11 @@ public class NewTabPageAdapterTest {
 
     private NewTabPageManager mNewTabPageManager;
     private SnippetsObserver mSnippetsObserver;
-    private TabObserver mTabObserver;
 
     @Before
     public void setUp() {
         mNewTabPageManager = mock(NewTabPageManager.class);
         mSnippetsObserver = null;
-        mTabObserver = null;
 
         // Intercept the observers so that we can mock invocations.
         doAnswer(new Answer<Void>() {
@@ -53,13 +50,6 @@ public class NewTabPageAdapterTest {
                 mSnippetsObserver = invocation.getArgumentAt(0, SnippetsObserver.class);
                 return null;
             }}).when(mNewTabPageManager).setSnippetsObserver(any(SnippetsObserver.class));
-
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                mTabObserver = invocation.getArgumentAt(0, TabObserver.class);
-                return null;
-            }}).when(mNewTabPageManager).addTabObserver(any(TabObserver.class));
     }
 
     /**
@@ -111,36 +101,5 @@ public class NewTabPageAdapterTest {
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
         assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
         assertNull(mSnippetsObserver);
-    }
-
-    /**
-     * Tests the behavior on multiple loads. The snippet list should contain only the new ones.
-     */
-    @Test
-    @Feature({"Ntp"})
-    public void testSnippetMultipleLoads() {
-        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null);
-
-        List<SnippetArticle> snippets = Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("title1", "pub1", "txt1", "https://site.com/url1", null, 0, 0),
-                new SnippetArticle("title2", "pub2", "txt2", "https://site.com/url2", null, 0, 0)});
-        mSnippetsObserver.onSnippetsReceived(snippets);
-
-        // Successfull load, so we should have stopped listening to snippet changes
-        assertNull(mSnippetsObserver);
-
-        // We should be listening to tab events though, and use it to request changes.
-        mTabObserver.onShown(null);
-        assertNotNull(mSnippetsObserver);
-
-        snippets = Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("title2", "pub2", "txt2", "https://site.com/url2", null, 0, 0),
-                new SnippetArticle("title3", "pub3", "txt3", "https://site.com/url3", null, 0, 0)});
-        mSnippetsObserver.onSnippetsReceived(snippets);
-
-        List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
-        assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
-        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
-        assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
     }
 }

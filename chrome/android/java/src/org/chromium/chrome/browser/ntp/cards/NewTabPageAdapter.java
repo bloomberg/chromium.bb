@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetHeaderListItem;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,14 +79,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageListItems.add(mAboveTheFoldListItem);
 
         mNewTabPageManager.setSnippetsObserver(this);
-
-        // Fetch new snippets when switching back to the NTP, from another tab or another app.
-        mNewTabPageManager.addTabObserver(new EmptyTabObserver() {
-            @Override
-            public void onShown(Tab tab) {
-                mNewTabPageManager.setSnippetsObserver(NewTabPageAdapter.this);
-            }
-        });
     }
 
     /** Returns callbacks to configure the interactions with the RecyclerView's items. */
