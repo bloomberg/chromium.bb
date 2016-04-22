@@ -12082,6 +12082,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TargetAndDispatchResult"
+    enum="TouchTargetAndDispatchResultType">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    An enumeration identifying 3 properties: 1) a classification of the event
+    target whether it is a root scroll listener (window, document, body) or not;
+    2) the result of the dispatch; 3) whether the document was scrollable or
+    not.
+  </summary>
+</histogram>
+
 <histogram name="Event.Touch.TimedOutOnDesktopSite" enum="BooleanTimedOut">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -86166,6 +86177,22 @@ To add a new entry, add it with any value and run test to compute valid value.
     The touchpad noise events (e.g. abrupt cursor jumps) caused by the noisy
     ground.
   </int>
+</enum>
+
+<enum name="TouchTargetAndDispatchResultType" type="int">
+  <int value="0"
+      label="Non-root-scroller, non-scrollable document, not handled"/>
+  <int value="1"
+      label="Non-root-scroller, non-scrollable document, handled application"/>
+  <int value="2" label="Non-root-scroller, scrollable document, not handled"/>
+  <int value="3"
+      label="Non-root-scroller, scrollable document, handled application"/>
+  <int value="4" label="Root-scroller, non-scrollable document, not handled"/>
+  <int value="5"
+      label="Root-scroller, non-scrollable document, handled application"/>
+  <int value="6" label="Root-scroller, scrollable document, not handled"/>
+  <int value="7"
+      label="Root-scroller, scrollable document, handled application"/>
 </enum>
 
 <enum name="TPMResultCodeEnum" type="int">

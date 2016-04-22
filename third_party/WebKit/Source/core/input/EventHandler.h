@@ -502,6 +502,9 @@ private:
     // scroll which shouldn't propagate can't cause any element to
     // scroll other than the |m_previousGestureScrolledNode|.
     bool m_deltaConsumedForScrollSequence;
+
+    // True if waiting on first touch move after a touch start.
+    bool m_waitingForFirstTouchMove;
 };
 
 } // namespace blink

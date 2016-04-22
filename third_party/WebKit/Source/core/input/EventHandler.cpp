@@ -87,6 +87,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "platform/Histogram.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformTouchEvent.h"
@@ -208,6 +209,53 @@ void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
     scrollChain.push_front(DOMNodeIds::idForNode(frame.document()->scrollingElement()));
 }
 
+// These offsets change indicies into the ListenerHistogram
+// enumeration. The addition of a series of offsets then
+// produces the resulting ListenerHistogram value.
+const size_t kTouchTargetHistogramRootScrollerOffset = 4;
+const size_t kTouchTargetHistogramScrollableDocumentOffset = 2;
+const size_t kTouchTargetHistogramHandledOffset = 1;
+
+enum TouchTargetAndDispatchResultType {
+    NonRootScrollerNonScrollableNotHandled, // Non-root-scroller, non-scrollable document, not handled.
+    NonRootScrollerNonScrollableHandled, // Non-root-scroller, non-scrollable document, handled application.
+    NonRootScrollerScrollableDocumentNotHandled, // Non-root-scroller, scrollable document, not handled.
+    NonRootScrollerScrollableDocumentHandled, // Non-root-scroller, scrollable document, handled application.
+    RootScrollerNonScrollableNotHandled, // Root-scroller, non-scrollable document, not handled.
+    RootScrollerNonScrollableHandled, // Root-scroller, non-scrollable document, handled.
+    RootScrollerScrollableDocumentNotHandled, // Root-scroller, scrollable document, not handled.
+    RootScrollerScrollableDocumentHandled, // Root-scroller, scrollable document, handled.
+    TouchTargetAndDispatchResultTypeMax,
+};
+
+TouchTargetAndDispatchResultType toTouchTargetHistogramValue(EventTarget* eventTarget, DispatchEventResult dispatchResult)
+{
+    int result = 0;
+    Document* document = nullptr;
+
+    if (const LocalDOMWindow* domWindow = eventTarget->toLocalDOMWindow()) {
+        // Treat the window as a root scroller as well.
+        document = domWindow->document();
+        result += kTouchTargetHistogramRootScrollerOffset;
+    } else if (Node* node = eventTarget->toNode()) {
+        // Report if the target node is the document or body.
+        if (node->isDocumentNode() || static_cast<Node*>(node->document().documentElement()) == node || static_cast<Node*>(node->document().body()) == node) {
+            result += kTouchTargetHistogramRootScrollerOffset;
+        }
+        document = &node->document();
+    }
+
+    if (document) {
+        FrameView* view = document->view();
+        if (view && view->isScrollable())
+            result += kTouchTargetHistogramScrollableDocumentOffset;
+    }
+
+    if (dispatchResult != DispatchEventResult::NotCanceled)
+        result += kTouchTargetHistogramHandledOffset;
+    return static_cast<TouchTargetAndDispatchResultType>(result);
+}
+
 } // namespace
 
 using namespace HTMLNames;
@@ -291,6 +339,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
     , m_deltaConsumedForScrollSequence(false)
+    , m_waitingForFirstTouchMove(false)
 {
 }
 
@@ -3742,6 +3791,15 @@ public:
 WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
     HeapVector<TouchInfo>& touchInfos, bool allTouchReleased)
 {
+    bool touchStartOrFirstTouchMove = false;
+    if (event.type() == PlatformEvent::TouchStart) {
+        m_waitingForFirstTouchMove = true;
+        touchStartOrFirstTouchMove = true;
+    } else if (event.type() == PlatformEvent::TouchMove) {
+        touchStartOrFirstTouchMove = m_waitingForFirstTouchMove;
+        m_waitingForFirstTouchMove = false;
+    }
+
     // Build up the lists to use for the 'touches', 'targetTouches' and
     // 'changedTouches' attributes in the JS event. See
     // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
@@ -3828,7 +3886,15 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
                 eventName, touchEventTarget->toNode()->document().domWindow(),
                 event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
 
-            eventResult = mergeEventResult(eventResult, toWebInputEventResult(touchEventTarget->dispatchEvent(touchEvent)));
+            DispatchEventResult domDispatchResult = touchEventTarget->dispatchEvent(touchEvent);
+
+            // Only report for top level documents with a single touch on
+            // touch-start or the first touch-move.
+            if (touchStartOrFirstTouchMove && touchInfos.size() == 1 && event.cancelable() && !m_frame->document()->ownerElement()) {
+                DEFINE_STATIC_LOCAL(EnumerationHistogram, rootDocumentListenerHistogram, ("Event.Touch.TargetAndDispatchResult", TouchTargetAndDispatchResultTypeMax));
+                rootDocumentListenerHistogram.count(toTouchTargetHistogramValue(eventTarget, domDispatchResult));
+            }
+            eventResult = mergeEventResult(eventResult, toWebInputEventResult(domDispatchResult));
         }
     }
 
