@@ -59,7 +59,7 @@ class HeadlessDevToolsClientTest : public HeadlessBrowserTest,
 };
 
 class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest,
-                                             page::Observer {
+                                             page::ExperimentalObserver {
  public:
   void RunDevToolsClientTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
@@ -67,13 +67,13 @@ class HeadlessDevToolsClientNavigationTest : public HeadlessDevToolsClientTest,
         page::NavigateParams::Builder()
             .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .Build();
-    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(std::move(params));
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
-    devtools_client_->GetPage()->RemoveObserver(this);
+    devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
     FinishAsynchronousTest();
   }
 
@@ -123,11 +123,11 @@ class HeadlessDevToolsClientCallbackTest : public HeadlessDevToolsClientTest {
 
   void RunDevToolsClientTest() override {
     // Null callback without parameters.
-    devtools_client_->GetRuntime()->Run();
+    devtools_client_->GetPage()->Enable();
     // Null callback with parameters.
     devtools_client_->GetRuntime()->Evaluate("true");
     // Non-null callback without parameters.
-    devtools_client_->GetRuntime()->Disable(
+    devtools_client_->GetPage()->Disable(
         base::Bind(&HeadlessDevToolsClientCallbackTest::OnFirstResult,
                    base::Unretained(this)));
     // Non-null callback with parameters.
@@ -185,5 +185,29 @@ class HeadlessDevToolsClientObserverTest : public HeadlessDevToolsClientTest,
 };
 
 DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientObserverTest);
+
+class HeadlessDevToolsClientExperimentalTest
+    : public HeadlessDevToolsClientTest,
+      page::ExperimentalObserver {
+ public:
+  void RunDevToolsClientTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    // Check that experimental commands require parameter objects.
+    devtools_client_->GetRuntime()->GetExperimental()->Run(
+        runtime::RunParams::Builder().Build());
+
+    devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnFrameStoppedLoading(
+      const page::FrameStoppedLoadingParams& params) override {
+    FinishAsynchronousTest();
+  }
+};
+
+DEVTOOLS_CLIENT_TEST_F(HeadlessDevToolsClientExperimentalTest);
 
 }  // namespace headless

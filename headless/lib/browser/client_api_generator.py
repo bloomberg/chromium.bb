@@ -353,6 +353,31 @@ def SynthesizeEventTypes(json_api):
       domain['types'].append(event_type)
 
 
+def PatchHiddenCommandsAndEvents(json_api):
+  """
+  Mark all commands and events in hidden domains as hidden and make sure hidden
+  commands have at least empty parameters and return values.
+  """
+  for domain in json_api['domains']:
+    if domain.get('hidden', False):
+      for command in domain.get('commands', []):
+        command['hidden'] = True
+      for event in domain.get('events', []):
+        event['hidden'] = True
+    for command in domain.get('commands', []):
+      if not command.get('hidden', False):
+        continue
+      if not 'parameters' in command:
+        command['parameters'] = []
+      if not 'returns' in command:
+        command['returns'] = []
+    for event in domain.get('events', []):
+      if not event.get('hidden', False):
+        continue
+      if not 'parameters' in event:
+        event['parameters'] = []
+
+
 def Generate(jinja_env, output_dirname, json_api, class_name, file_types):
   template_context = {
     'api': json_api,
@@ -387,6 +412,7 @@ def GenerateDomains(jinja_env, output_dirname, json_api, class_name,
 if __name__ == '__main__':
   json_api, output_dirname = ParseArguments(sys.argv[1:])
   jinja_env = InitializeJinjaEnv(output_dirname)
+  PatchHiddenCommandsAndEvents(json_api)
   SynthesizeCommandTypes(json_api)
   SynthesizeEventTypes(json_api)
   PatchFullQualifiedRefs(json_api)
