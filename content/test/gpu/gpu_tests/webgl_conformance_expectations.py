@@ -121,8 +121,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/bugs/' +
               'pow-of-small-constant-in-user-defined-function.html',
         ['win'], bug=485641)
-    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
-        ['win'], bug=485642)
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
