@@ -58,13 +58,25 @@ class WiFiDisplayElementaryStreamDescriptor {
   // AVC (Advanced Video Coding) video descriptor provides basic coding
   // parameters for a video stream.
   struct AVCVideo {
+    enum Level : uint8_t {
+      LEVEL_3_1 = 31u,
+      LEVEL_3_2 = 32u,
+      LEVEL_4 = 40u,
+      LEVEL_4_1 = 41u,
+      LEVEL_4_2 = 42u
+    };
+    enum Profile : uint8_t {
+      PROFILE_BASELINE = 66u,
+      PROFILE_MAIN = 77u,
+      PROFILE_HIGH = 100u
+    };
     static WiFiDisplayElementaryStreamDescriptor Create(
-        uint8_t profile_idc,
+        Profile profile_idc,
         bool constraint_set0_flag,
         bool constraint_set1_flag,
         bool constraint_set2_flag,
         uint8_t avc_compatible_flags,
-        uint8_t level_idc,
+        Level level_idc,
         bool avc_still_present);
   };
 

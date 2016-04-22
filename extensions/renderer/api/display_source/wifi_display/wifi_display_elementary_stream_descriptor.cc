@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
 
 #include <cstring>
+
+#include "base/logging.h"
 
 namespace extensions {
 
@@ -69,12 +70,12 @@ WiFiDisplayElementaryStreamDescriptor::AVCTimingAndHRD::Create() {
 
 WiFiDisplayElementaryStreamDescriptor
 WiFiDisplayElementaryStreamDescriptor::AVCVideo::Create(
-    uint8_t profile_idc,
+    Profile profile_idc,
     bool constraint_set0_flag,
     bool constraint_set1_flag,
     bool constraint_set2_flag,
     uint8_t avc_compatible_flags,
-    uint8_t level_idc,
+    Level level_idc,
     bool avc_still_present) {
   const bool avc_24_hour_picture_flag = false;
   WiFiDisplayElementaryStreamDescriptor descriptor(DESCRIPTOR_TAG_AVC_VIDEO,

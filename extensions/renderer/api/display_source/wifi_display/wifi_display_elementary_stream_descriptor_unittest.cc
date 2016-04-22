@@ -48,33 +48,42 @@ TEST(WiFiDisplayElementaryStreamDescriptorTest, AVCTimingAndHRDDescriptor) {
 
 TEST(WiFiDisplayElementaryStreamDescriptorTest, AVCVideoDescriptor) {
   using AVCVideoDescriptor = WiFiDisplayElementaryStreamDescriptor::AVCVideo;
-  EXPECT_EQ(
-      Data("\x28\x04\x00\x00\x00\x3F"),
-      AVCVideoDescriptor::Create(0x0u, false, false, false, 0x0u, 0x0u, false));
-  EXPECT_EQ(Data("\x28\x04\x00\x00\x00\x3F"),
-            Copy(AVCVideoDescriptor::Create(0x0u, false, false, false, 0x0u,
-                                            0x0u, false)));
-  EXPECT_EQ(Data("\x28\x04\xFF\x00\x00\x3F"),
-            AVCVideoDescriptor::Create(0xFFu, false, false, false, 0x0u, 0x0u,
-                                       false));
-  EXPECT_EQ(
-      Data("\x28\x04\x00\x80\x00\x3F"),
-      AVCVideoDescriptor::Create(0x0u, true, false, false, 0x0u, 0x0u, false));
-  EXPECT_EQ(
-      Data("\x28\x04\x00\x40\x00\x3F"),
-      AVCVideoDescriptor::Create(0x0u, false, true, false, 0x0u, 0x0u, false));
-  EXPECT_EQ(
-      Data("\x28\x04\x00\x20\x00\x3F"),
-      AVCVideoDescriptor::Create(0x0u, false, false, true, 0x0u, 0x0u, false));
-  EXPECT_EQ(Data("\x28\x04\x00\x1F\x00\x3F"),
-            AVCVideoDescriptor::Create(0x0u, false, false, false, 0x1Fu, 0x0u,
-                                       false));
-  EXPECT_EQ(Data("\x28\x04\x00\x00\xFF\x3F"),
-            AVCVideoDescriptor::Create(0x0u, false, false, false, 0x0u, 0xFFu,
-                                       false));
-  EXPECT_EQ(
-      Data("\x28\x04\x00\x00\x00\xBF"),
-      AVCVideoDescriptor::Create(0x0u, false, false, false, 0x0u, 0x0u, true));
+  EXPECT_EQ(Data("\x28\x04\x42\x00\x2A\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       false, false, false, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_4_2, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x00\x2A\x3F"),
+            Copy(AVCVideoDescriptor::Create(
+                AVCVideoDescriptor::PROFILE_BASELINE, false, false, false, 0x0u,
+                AVCVideoDescriptor::LEVEL_4_2, false)));
+  EXPECT_EQ(Data("\x28\x04\x64\x00\x2A\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_HIGH, false,
+                                       false, false, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_4_2, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x80\x2A\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       true, false, false, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_4_2, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x40\x2A\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       false, true, false, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_4_2, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x20\x2A\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       false, false, true, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_4_2, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x1F\x2A\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       false, false, false, 0x1Fu,
+                                       AVCVideoDescriptor::LEVEL_4_2, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x00\x1F\x3F"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       false, false, false, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_3_1, false));
+  EXPECT_EQ(Data("\x28\x04\x42\x00\x2A\xBF"),
+            AVCVideoDescriptor::Create(AVCVideoDescriptor::PROFILE_BASELINE,
+                                       false, false, false, 0x0u,
+                                       AVCVideoDescriptor::LEVEL_4_2, true));
 }
 
 class LPCMAudioStreamDescriptorTest

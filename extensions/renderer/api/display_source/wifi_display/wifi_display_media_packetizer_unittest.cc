@@ -634,8 +634,8 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
       10u,         //
       0x28u,       // AVC video descriptor tag
       4u,          // Descriptor length
-      0xA5u,
-      0xF5u, 0xBDu, 0xBFu,
+      0x42u,
+      0xF5u, 0x2Au, 0xBFu,
       0x2Au,  // AVC timing and HRD descriptor tag
       2u,     // Descriptor length
       0x7Eu, 0x1Fu,
@@ -662,8 +662,8 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
           0u,      // Elementary stream info length (10 bits)
       0u,          //
       // CRC:
-      0x4Fu,
-      0x63u, 0xABu, 0x6Eu};
+      0x3Du,
+      0xAAu, 0x9Eu, 0x45u};
   static const uint8_t kStreamIds[] = {
       WiFiDisplayElementaryStreamPacketizer::kFirstVideoStreamId,
       WiFiDisplayElementaryStreamPacketizer::kPrivateStream1Id,
@@ -677,7 +677,8 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
       ESDescriptor::LPCMAudioStream::NUMBER_OF_CHANNELS_STEREO));
   std::vector<ESDescriptor> video_desciptors;
   video_desciptors.emplace_back(ESDescriptor::AVCVideo::Create(
-      0xA5u, true, true, true, 0x15u, 0xBDu, true));
+      ESDescriptor::AVCVideo::PROFILE_BASELINE, true, true, true, 0x15u,
+      ESDescriptor::AVCVideo::LEVEL_4_2, true));
   video_desciptors.emplace_back(ESDescriptor::AVCTimingAndHRD::Create());
   std::vector<WiFiDisplayElementaryStreamInfo> stream_infos;
   stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::VIDEO_H264,
