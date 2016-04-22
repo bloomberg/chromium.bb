@@ -145,11 +145,11 @@ public class DownloadNotificationService extends Service {
                     notificationId, isResumable, canDownloadWhileMetered, downloadGuid, fileName));
         }
         if (startTime > 0) builder.setWhen(startTime);
-        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
+        builder.addAction(R.drawable.bookmark_cancel_active,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(ACTION_DOWNLOAD_CANCEL, notificationId, downloadGuid, fileName));
         if (isResumable) {
-            builder.addAction(android.R.drawable.ic_media_pause,
+            builder.addAction(R.drawable.ic_vidcontrol_pause,
                     mContext.getResources().getString(R.string.download_notification_pause_button),
                     buildPendingIntent(ACTION_DOWNLOAD_PAUSE, notificationId, downloadGuid,
                             fileName));
@@ -191,11 +191,11 @@ public class DownloadNotificationService extends Service {
         PendingIntent cancelIntent = buildPendingIntent(ACTION_DOWNLOAD_CANCEL,
                 entry.notificationId, entry.downloadGuid, entry.fileName);
         builder.setDeleteIntent(cancelIntent);
-        builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
+        builder.addAction(R.drawable.bookmark_cancel_active,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 cancelIntent);
         if (entry.isResumable) {
-            builder.addAction(android.R.drawable.stat_sys_download_done,
+            builder.addAction(R.drawable.resume_download,
                     mContext.getResources().getString(
                             R.string.download_notification_resume_button),
                     buildPendingIntent(ACTION_DOWNLOAD_RESUME, entry.notificationId,
