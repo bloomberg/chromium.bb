@@ -15,7 +15,6 @@
 
 namespace gpu {
 class GpuMemoryBufferFactory;
-class SyncPointManager;
 struct GpuPreferences;
 }
 
@@ -28,8 +27,7 @@ class GpuProcess;
 class InProcessGpuThread : public base::Thread {
  public:
   InProcessGpuThread(const InProcessChildThreadParams& params,
-                     const gpu::GpuPreferences& gpu_preferences,
-                     gpu::SyncPointManager* sync_point_manager_override);
+                     const gpu::GpuPreferences& gpu_preferences);
   ~InProcessGpuThread() override;
 
  protected:
@@ -43,12 +41,6 @@ class InProcessGpuThread : public base::Thread {
   GpuProcess* gpu_process_;
 
   const gpu::GpuPreferences gpu_preferences_;
-
-  // Can be null if overridden.
-  std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
-
-  // Non-owning.
-  gpu::SyncPointManager* sync_point_manager_override_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 

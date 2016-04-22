@@ -13,12 +13,10 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/android/in_process/synchronous_compositor_renderer_statics.h"
-#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_messages.h"
-#include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -31,29 +29,6 @@
 #include "ui/gfx/skia_util.h"
 
 namespace content {
-
-namespace {
-
-base::LazyInstance<scoped_refptr<gpu::InProcessCommandBuffer::Service>>
-    g_gpu_service = LAZY_INSTANCE_INITIALIZER;
-
-base::Thread* CreateInProcessGpuThreadForSynchronousCompositor(
-    const InProcessChildThreadParams& params,
-    const gpu::GpuPreferences& gpu_preferences) {
-  DCHECK(g_gpu_service.Get());
-  return new InProcessGpuThread(params, gpu_preferences,
-                                g_gpu_service.Get()->sync_point_manager());
-}
-
-}  // namespace
-
-void SynchronousCompositor::SetGpuService(
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
-  DCHECK(!g_gpu_service.Get());
-  g_gpu_service.Get() = service;
-  GpuProcessHost::RegisterGpuMainThreadFactory(
-      CreateInProcessGpuThreadForSynchronousCompositor);
-}
 
 // static
 void SynchronousCompositor::SetClientForWebContents(

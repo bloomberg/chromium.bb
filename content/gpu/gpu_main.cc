@@ -30,7 +30,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -384,8 +383,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER)
     gpu_memory_buffer_factory = gpu::GpuMemoryBufferFactory::CreateNativeType();
 
-  gpu::SyncPointManager sync_point_manager(false);
-
   base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   io_thread_priority = base::ThreadPriority::DISPLAY;
@@ -395,8 +392,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   GpuChildThread* child_thread = new GpuChildThread(
       watchdog_thread.get(), dead_on_arrival, gpu_info, deferred_messages.Get(),
-      gpu_memory_buffer_factory.get(),
-      &sync_point_manager);
+      gpu_memory_buffer_factory.get());
   while (!deferred_messages.Get().empty())
     deferred_messages.Get().pop();
 

@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -158,11 +159,9 @@ GpuChildThread::GpuChildThread(
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const DeferredMessages& deferred_messages,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    gpu::SyncPointManager* sync_point_manager)
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
       dead_on_arrival_(dead_on_arrival),
-      sync_point_manager_(sync_point_manager),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
       in_browser_process_(false),
@@ -178,8 +177,7 @@ GpuChildThread::GpuChildThread(
 GpuChildThread::GpuChildThread(
     const gpu::GpuPreferences& gpu_preferences,
     const InProcessChildThreadParams& params,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    gpu::SyncPointManager* sync_point_manager)
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
@@ -187,7 +185,6 @@ GpuChildThread::GpuChildThread(
                           .Build()),
       gpu_preferences_(gpu_preferences),
       dead_on_arrival_(false),
-      sync_point_manager_(sync_point_manager),
       in_browser_process_(true),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
 #if defined(OS_WIN)
@@ -385,6 +382,17 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   if (!in_browser_process_)
     logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
+  gpu::SyncPointManager* sync_point_manager = nullptr;
+  // Note SyncPointManager from ContentGpuClient cannot be owned by this.
+  if (GetContentClient()->gpu())
+    sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
+  if (!sync_point_manager) {
+    if (!owned_sync_point_manager_) {
+      owned_sync_point_manager_.reset(new gpu::SyncPointManager(false));
+    }
+    sync_point_manager = owned_sync_point_manager_.get();
+  }
+
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
@@ -393,7 +401,7 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
                             base::ThreadTaskRunnerHandle::Get().get(),
                             ChildProcess::current()->io_task_runner(),
                             ChildProcess::current()->GetShutDownEvent(),
-                            sync_point_manager_, gpu_memory_buffer_factory_));
+                            sync_point_manager, gpu_memory_buffer_factory_));
 
   media_service_.reset(new MediaService(gpu_channel_manager_.get()));
 

@@ -64,13 +64,11 @@ class GpuChildThread : public ChildThreadImpl,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
                  const DeferredMessages& deferred_messages,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-                 gpu::SyncPointManager* sync_point_manager);
+                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   GpuChildThread(const gpu::GpuPreferences& gpu_preferences,
                  const InProcessChildThreadParams& params,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-                 gpu::SyncPointManager* sync_point_manager);
+                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   ~GpuChildThread() override;
 
@@ -157,8 +155,8 @@ class GpuChildThread : public ChildThreadImpl,
   sandbox::TargetServices* target_services_;
 #endif
 
-  // Non-owning.
-  gpu::SyncPointManager* sync_point_manager_;
+  // Can be null if overridden by ContentGpuClient.
+  std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
 
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
 

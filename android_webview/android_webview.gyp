@@ -406,6 +406,8 @@
         'common/url_constants.h',
         'crash_reporter/aw_microdump_crash_reporter.cc',
         'crash_reporter/aw_microdump_crash_reporter.h',
+        'gpu/aw_content_gpu_client.cc',
+        'gpu/aw_content_gpu_client.h',
         'lib/aw_browser_dependency_factory_impl.cc',
         'lib/aw_browser_dependency_factory_impl.h',
         'lib/main/aw_main_delegate.cc',

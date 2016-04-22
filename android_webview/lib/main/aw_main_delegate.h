@@ -20,6 +20,7 @@ class BrowserMainRunner;
 namespace android_webview {
 
 class AwContentBrowserClient;
+class AwContentGpuClient;
 class AwContentRendererClient;
 
 // Android WebView implementation of ContentMainDelegate.
@@ -38,6 +39,7 @@ class AwMainDelegate : public content::ContentMainDelegate,
       const content::MainFunctionParams& main_function_params) override;
   void ProcessExiting(const std::string& process_type) override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
+  content::ContentGpuClient* CreateContentGpuClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
 
   // JniDependencyFactory implementation.
@@ -56,6 +58,7 @@ class AwMainDelegate : public content::ContentMainDelegate,
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
   AwContentClient content_client_;
   std::unique_ptr<AwContentBrowserClient> content_browser_client_;
+  std::unique_ptr<AwContentGpuClient> content_gpu_client_;
   std::unique_ptr<AwContentRendererClient> content_renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);

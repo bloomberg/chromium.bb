@@ -7,6 +7,10 @@
 
 #include "content/public/common/content_client.h"
 
+namespace gpu {
+class SyncPointManager;
+}
+
 namespace content {
 
 class ServiceRegistry;
@@ -20,6 +24,10 @@ class CONTENT_EXPORT ContentGpuClient {
   // The registered services will be exposed to the browser process through
   // GpuProcessHost.
   virtual void RegisterMojoServices(ServiceRegistry* registry) {}
+
+  // Allows client to supply a SyncPointManager instance instead of having
+  // content internally create one.
+  virtual gpu::SyncPointManager* GetSyncPointManager();
 };
 
 }  // namespace content

@@ -1,3 +1,0 @@
-include_rules = [
-  "+content/gpu/in_process_gpu_thread.h",
-]

@@ -24,6 +24,7 @@
     'gpu/gpu_watchdog_thread.h',
     'gpu/in_process_gpu_thread.cc',
     'gpu/in_process_gpu_thread.h',
+    'public/gpu/content_gpu_client.cc',
     'public/gpu/content_gpu_client.h',
     'public/gpu/gpu_video_decode_accelerator_factory.cc',
     'public/gpu/gpu_video_decode_accelerator_factory.h',

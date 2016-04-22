@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -28,10 +28,6 @@ class ScrollOffset;
 class Transform;
 };
 
-namespace gpu {
-class GLInProcessContext;
-}
-
 namespace content {
 
 class SynchronousCompositorClient;
@@ -46,9 +42,6 @@ class CONTENT_EXPORT SynchronousCompositor {
   // instance as needed, but only if |client| is non-nullptr.
   static void SetClientForWebContents(WebContents* contents,
                                       SynchronousCompositorClient* client);
-
-  static void SetGpuService(
-      scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 
   struct Frame {
     Frame();

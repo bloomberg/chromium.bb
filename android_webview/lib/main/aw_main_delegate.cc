@@ -8,10 +8,12 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/gpu/aw_content_gpu_client.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_locale_manager_impl.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
@@ -219,6 +221,19 @@ content::ContentBrowserClient*
     AwMainDelegate::CreateContentBrowserClient() {
   content_browser_client_.reset(new AwContentBrowserClient(this));
   return content_browser_client_.get();
+}
+
+namespace {
+gpu::SyncPointManager* GetSyncPointManager() {
+  DCHECK(DeferredGpuCommandService::GetInstance());
+  return DeferredGpuCommandService::GetInstance()->sync_point_manager();
+}
+}  // namespace
+
+content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
+  content_gpu_client_.reset(
+      new AwContentGpuClient(base::Bind(&GetSyncPointManager)));
+  return content_gpu_client_.get();
 }
 
 content::ContentRendererClient*

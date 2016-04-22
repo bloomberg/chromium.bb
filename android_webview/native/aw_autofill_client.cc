@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwAutofillClient_jni.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;

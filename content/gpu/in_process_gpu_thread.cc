@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 
@@ -20,22 +19,15 @@ namespace content {
 
 InProcessGpuThread::InProcessGpuThread(
     const InProcessChildThreadParams& params,
-    const gpu::GpuPreferences& gpu_preferences,
-    gpu::SyncPointManager* sync_point_manager_override)
+    const gpu::GpuPreferences& gpu_preferences)
     : base::Thread("Chrome_InProcGpuThread"),
       params_(params),
       gpu_process_(NULL),
       gpu_preferences_(gpu_preferences),
-      sync_point_manager_override_(sync_point_manager_override),
       gpu_memory_buffer_factory_(
           gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER
           ? gpu::GpuMemoryBufferFactory::CreateNativeType()
-          : nullptr) {
-  if (!sync_point_manager_override_) {
-    sync_point_manager_.reset(new gpu::SyncPointManager(false));
-    sync_point_manager_override_ = sync_point_manager_.get();
-  }
-}
+          : nullptr) {}
 
 InProcessGpuThread::~InProcessGpuThread() {
   Stop();
@@ -59,8 +51,7 @@ void InProcessGpuThread::Init() {
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
   GpuChildThread* child_thread = new GpuChildThread(
-      gpu_preferences_, params_, gpu_memory_buffer_factory_.get(),
-      sync_point_manager_override_);
+      gpu_preferences_, params_, gpu_memory_buffer_factory_.get());
 
   // Since we are in the browser process, use the thread start time as the
   // process start time.
@@ -77,8 +68,7 @@ void InProcessGpuThread::CleanUp() {
 base::Thread* CreateInProcessGpuThread(
     const InProcessChildThreadParams& params,
     const gpu::GpuPreferences& gpu_preferences) {
-  return new InProcessGpuThread(
-      params, gpu_preferences, nullptr);
+  return new InProcessGpuThread(params, gpu_preferences);
 }
 
 }  // namespace content
