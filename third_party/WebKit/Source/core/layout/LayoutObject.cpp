@@ -2297,10 +2297,10 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Tran
         o->mapAncestorToLocal(ancestor, transformState, mode);
 
     LayoutSize containerOffset = offsetFromContainer(o);
-    if (o->isLayoutFlowThread()) {
+    if (isLayoutFlowThread()) {
         // Descending into a flow thread. Convert to the local coordinate space, i.e. flow thread coordinates.
         LayoutPoint visualPoint = LayoutPoint(transformState.mappedPoint());
-        transformState.move(visualPoint - toLayoutFlowThread(o)->visualPointToFlowThreadPoint(visualPoint));
+        transformState.move(visualPoint - toLayoutFlowThread(this)->visualPointToFlowThreadPoint(visualPoint));
     }
 
     bool preserve3D = mode & UseTransforms && (o->style()->preserves3D() || style()->preserves3D());

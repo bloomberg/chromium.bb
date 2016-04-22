@@ -491,14 +491,12 @@ TEST_F(MapCoordinatesTest, MulticolWithText)
 
     FloatPoint mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint(10, 70));
     EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
-
-    mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
-    EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
-
-    mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-    EXPECT_EQ(FloatPoint(220, 20), mappedPoint);
-
     mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
+    EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(flowThread, multicol, FloatPoint(10, 70));
+    EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
+    mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
     EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
 }
 
@@ -516,14 +514,12 @@ TEST_F(MapCoordinatesTest, MulticolWithInline)
 
     FloatPoint mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint(10, 70));
     EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
-
-    mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
-    EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
-
-    mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-    EXPECT_EQ(FloatPoint(220, 20), mappedPoint);
-
     mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
+    EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(flowThread, multicol, FloatPoint(10, 70));
+    EXPECT_EQ(FloatPoint(225, 25), mappedPoint);
+    mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
     EXPECT_EQ(FloatPoint(10, 70), mappedPoint);
 }
 
@@ -549,15 +545,13 @@ TEST_F(MapCoordinatesTest, MulticolWithBlock)
 
     mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
     EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
-
-    mappedPoint = mapLocalToAncestor(flowThread, container, mappedPoint);
-    EXPECT_EQ(FloatPoint(125, 35), mappedPoint);
-
-    mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
-    EXPECT_EQ(FloatPoint(110, 20), mappedPoint);
-
     mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
     EXPECT_EQ(FloatPoint(), mappedPoint);
+
+    mappedPoint = mapLocalToAncestor(flowThread, container, FloatPoint(10, 120));
+    EXPECT_EQ(FloatPoint(125, 35), mappedPoint);
+    mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
 }
 
 TEST_F(MapCoordinatesTest, NestedMulticolWithBlock)
@@ -623,21 +617,18 @@ TEST_F(MapCoordinatesTest, MulticolWithAbsPosInRelPos)
 
     mappedPoint = mapLocalToAncestor(target, relpos, FloatPoint());
     EXPECT_EQ(FloatPoint(25, 25), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, relpos, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
 
-    mappedPoint = mapLocalToAncestor(relpos, flowThread, mappedPoint);
+    mappedPoint = mapLocalToAncestor(relpos, flowThread, FloatPoint(25, 25));
     EXPECT_EQ(FloatPoint(29, 139), mappedPoint);
-
-    mappedPoint = mapLocalToAncestor(flowThread, multicol, mappedPoint);
-    EXPECT_EQ(FloatPoint(144, 54), mappedPoint);
-
-    mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
-    EXPECT_EQ(FloatPoint(129, 39), mappedPoint);
-
     mappedPoint = mapAncestorToLocal(relpos, flowThread, mappedPoint);
     EXPECT_EQ(FloatPoint(25, 25), mappedPoint);
 
-    mappedPoint = mapAncestorToLocal(target, relpos, mappedPoint);
-    EXPECT_EQ(FloatPoint(), mappedPoint);
+    mappedPoint = mapLocalToAncestor(flowThread, multicol, FloatPoint(29, 139));
+    EXPECT_EQ(FloatPoint(144, 54), mappedPoint);
+    mappedPoint = mapAncestorToLocal(flowThread, multicol, mappedPoint);
+    EXPECT_EQ(FloatPoint(29, 139), mappedPoint);
 }
 
 TEST_F(MapCoordinatesTest, MulticolWithAbsPosNotContained)
