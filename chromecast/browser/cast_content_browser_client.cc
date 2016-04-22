@@ -273,6 +273,14 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
 
   // Enable 5% margins for WebVTT cues to keep within title-safe area
   prefs->text_track_margin_percentage = 5;
+
+#if defined(OS_ANDROID)
+  // Enable the television style for viewport so that all cast apps have a
+  // 1280px wide layout viewport by default.
+  DCHECK(prefs->viewport_enabled);
+  DCHECK(prefs->viewport_meta_enabled);
+  prefs->viewport_style = content::ViewportStyle::TELEVISION;
+#endif  // defined(OS_ANDROID)
 }
 
 void CastContentBrowserClient::ResourceDispatcherHostCreated() {
