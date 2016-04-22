@@ -139,9 +139,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   friend class RenderWidgetHostView;
 
  private:
-  // Destroys this view without calling |Destroy| on |platform_view_|.
-  void DestroyGuestView();
-
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
@@ -154,7 +151,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   gfx::Size size_;
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
-  // compositing, the rest are directly forwared to this |platform_view_|.
+  // compositing, the rest are directly forwarded to this |platform_view_|.
   base::WeakPtr<RenderWidgetHostViewBase> platform_view_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
 };

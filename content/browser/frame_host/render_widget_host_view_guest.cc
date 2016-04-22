@@ -178,14 +178,11 @@ void RenderWidgetHostViewGuest::RenderProcessGone(
   if (platform_view_)
     platform_view_->RenderProcessGone(status, error_code);
 
-  // Destroy the guest view instance only, so we don't end up calling
-  // platform_view_->Destroy().
-  DestroyGuestView();
+  RenderWidgetHostViewChildFrame::RenderProcessGone(status, error_code);
 }
 
 void RenderWidgetHostViewGuest::Destroy() {
-  // The RenderWidgetHost's destruction led here, so don't call it.
-  DestroyGuestView();
+  RenderWidgetHostViewChildFrame::Destroy();
 
   if (platform_view_)  // The platform view might have been destroyed already.
     platform_view_->Destroy();
@@ -273,7 +270,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
   if (!platform_view_) {
-    // In theory, we can get here if there's a delay between DestroyGuestView()
+    // In theory, we can get here if there's a delay between Destroy()
     // being called and when our destructor is invoked.
     return false;
   }
@@ -500,16 +497,6 @@ void RenderWidgetHostViewGuest::LockCompositingSurface() {
 
 void RenderWidgetHostViewGuest::UnlockCompositingSurface() {
   NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewGuest::DestroyGuestView() {
-  // Let our observers know we're going away, since we don't want any event
-  // processing calls coming in after we release host_.
-  NotifyObserversAboutShutdown();
-
-  host_->SetView(NULL);
-  host_ = NULL;
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 RenderWidgetHostViewBase*
