@@ -463,14 +463,9 @@ void CacheStorageCache::Size(const SizeCallback& callback) {
     return;
   }
 
-  // If the cache isn't already initialized, wait for it.
   if (initializing_) {
-    SizeCallback pending_callback =
-        base::Bind(&CacheStorageCache::PendingSizeCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback);
-    scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::SizeImpl,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             pending_callback));
+    // Note that Size doesn't use the scheduler, see header comments for why.
+    pending_size_callbacks_.push_back(callback);
     return;
   }
 
@@ -1440,6 +1435,10 @@ void CacheStorageCache::InitGotCacheSize(CacheStorageError cache_create_error,
                     backend_state_ == BACKEND_UNINITIALIZED)
                        ? BACKEND_OPEN
                        : BACKEND_CLOSED;
+
+  for (const SizeCallback& callback : pending_size_callbacks_)
+    SizeImpl(callback);
+  pending_size_callbacks_.clear();
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult",
                             cache_create_error, CACHE_STORAGE_ERROR_LAST + 1);

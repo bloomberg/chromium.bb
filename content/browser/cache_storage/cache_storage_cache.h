@@ -129,7 +129,10 @@ class CONTENT_EXPORT CacheStorageCache
   void Close(const base::Closure& callback);
 
   // The size of the cache's contents. This runs in parallel with other Cache
-  // operations.
+  // operations. This is because QuotaManager is a dependency of the Put
+  // operation and QuotaManager calls Size. If the cache isn't yet initialized,
+  // runs immediately after initialization, before any pending operations in the
+  // scheduler are run.
   void Size(const SizeCallback& callback);
 
   // Gets the cache's size, closes the backend, and then runs |callback| with
@@ -351,6 +354,7 @@ class CONTENT_EXPORT CacheStorageCache
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_ = BACKEND_UNINITIALIZED;
   std::unique_ptr<CacheStorageScheduler> scheduler_;
+  std::vector<SizeCallback> pending_size_callbacks_;
   bool initializing_ = false;
   int64_t cache_size_ = 0;
 

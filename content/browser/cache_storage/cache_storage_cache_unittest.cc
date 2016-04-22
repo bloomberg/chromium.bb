@@ -528,17 +528,23 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     base::RunLoop run_loop;
+    bool callback_called = false;
     cache_->Size(base::Bind(&CacheStorageCacheTest::SizeCallback,
-                            base::Unretained(this), &run_loop));
+                            base::Unretained(this), &run_loop,
+                            &callback_called));
     run_loop.Run();
+    EXPECT_TRUE(callback_called);
     return callback_size_;
   }
 
   int64_t GetSizeThenClose() {
     base::RunLoop run_loop;
+    bool callback_called = false;
     cache_->GetSizeThenClose(base::Bind(&CacheStorageCacheTest::SizeCallback,
-                                        base::Unretained(this), &run_loop));
+                                        base::Unretained(this), &run_loop,
+                                        &callback_called));
     run_loop.Run();
+    EXPECT_TRUE(callback_called);
     return callback_size_;
   }
 
@@ -606,7 +612,10 @@ class CacheStorageCacheTest : public testing::Test {
       run_loop->Quit();
   }
 
-  void SizeCallback(base::RunLoop* run_loop, int64_t size) {
+  void SizeCallback(base::RunLoop* run_loop,
+                    bool* callback_called,
+                    int64_t size) {
+    *callback_called = true;
     callback_size_ = size;
     if (run_loop)
       run_loop->Quit();
@@ -1288,6 +1297,41 @@ TEST_P(CacheStorageCacheTestP, Size) {
 
   EXPECT_TRUE(Delete(body_request_));
   EXPECT_EQ(0, Size());
+}
+
+TEST_P(CacheStorageCacheTestP, SizeOperationsArePrioritized) {
+  // Test that pending size operations (those waiting for initialization) run
+  // before other scheduler operations.
+  cache_->set_delay_backend_creation(true);  // Delay cache initialization
+
+  CacheStorageBatchOperation operation;
+  operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation.request = body_request_;
+  operation.response = body_response_;
+
+  callback_error_ = CACHE_STORAGE_ERROR_NOT_FOUND;
+  base::RunLoop run_loop;
+  // Start a put operation that blocks on initialization.
+  cache_->BatchOperation(std::vector<CacheStorageBatchOperation>(1, operation),
+                         base::Bind(&CacheStorageCacheTest::ErrorTypeCallback,
+                                    base::Unretained(this), &run_loop));
+
+  // Next start a size operation that also blocks on initialization.
+  bool size_callback_called = false;
+  cache_->Size(base::Bind(&CacheStorageCacheTest::SizeCallback,
+                          base::Unretained(this), nullptr,
+                          &size_callback_called));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(size_callback_called);
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
+
+  // Finish initialization. The Size operation should complete before Put gets
+  // to run as Size has priority. See crbug.com/605663.
+  cache_->ContinueCreateBackend();
+  run_loop.Run();
+  EXPECT_TRUE(size_callback_called);
+  EXPECT_EQ(CACHE_STORAGE_OK, callback_error_);
 }
 
 TEST_P(CacheStorageCacheTestP, GetSizeThenClose) {
