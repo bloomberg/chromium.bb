@@ -83,14 +83,8 @@
     },
 
     'chromium.fyi': {
-      'Blink Linux LSan ASan': 'tbd',
-      'Browser Side Navigation Linux': 'tbd',
       'Chromium Builder': 'tbd',
       'Chromium Builder (dbg)': 'tbd',
-      'Chromium Linux Goma Canary': 'tbd',
-      'Chromium Linux Goma Canary (clobber)': 'tbd',
-      'Chromium Linux Precise Goma LinkTest': 'tbd',
-      'Chromium Linux32 Goma Canary (clobber)': 'tbd',
       'Chromium Win x64 Clobber': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
       'ClangToTAndroidASan':
@@ -116,10 +110,6 @@
       'CrWinClangLLD64': 'tbd',
       'CrWinClngLLD64dbg': 'tbd',
       'CrWinClngLLDdbg': 'tbd',
-      'Linux Trusty': 'tbd',
-      'Linux Trusty (dbg)': 'tbd',
-      'Linux V8 API Stability': 'tbd',
-      'MD Top Chrome Linux material': 'tbd',
       'Ozone ECS Linux': 'tbd',
       'Windows 8 App Certification': 'tbd',
       'Windows Builder (DrMemory)': 'tbd',
@@ -132,9 +122,14 @@
       'Android Asan Builder Tests (dbg)':
           'android_asan_gn_clang_debug_bot_minimal_symbols',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
+      'Browser Side Navigation Linux': 'gyp_release_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux': 'gn_cfi_release_bot',
+      'Chromium Linux Goma Canary': 'gyp_release_bot',
+      'Chromium Linux Goma Canary (clobber)': 'gyp_release_bot',
+      'Chromium Linux Precise Goma LinkTest': 'gyp_release_bot',
+      'Chromium Linux32 Goma Canary (clobber)': 'gyp_release_bot_x86',
       'Chromium Mac 10.10 MacViews': 'mac_views_browser_gyp_release_bot',
       'Chromium Mac 10.11': 'gyp_release_bot',
       'Chromium Mac 10.11 Force Mac Toolchain': 'gyp_release_bot',
@@ -205,11 +200,13 @@
         'gyp_chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material':
         'gyp_debug_bot_minimal_symbols_x64',
+      'MD Top Chrome Linux material': 'gyp_debug_bot',
       'LTO Linux Perf': 'gn_official_goma_lto',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
       'Linux ARM': 'swarming_gyp_release_bot_arm',
+      'Linux V8 API Stability': 'gyp_release_bot',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
       'UBSanVptr Linux': 'gn_ubsan_vptr_release_bot',
@@ -1342,6 +1339,10 @@
 
     'gyp_release_bot': [
       'gyp', 'release_bot',
+    ],
+
+    'gyp_release_bot_x86': [
+      'gyp', 'release_bot', 'x86',
     ],
 
     'gyp_release_trybot': [
