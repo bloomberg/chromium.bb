@@ -418,7 +418,7 @@ bool MediaCodecAudioDecoder::EnqueueInputBuffer(
   media::MediaCodecStatus status = MEDIA_CODEC_OK;
 
   const DecryptConfig* decrypt_config = decoder_buffer->decrypt_config();
-  if (decrypt_config) {
+  if (decrypt_config && decrypt_config->is_encrypted()) {
     // A pending buffer is already filled with data, no need to copy it again.
     const uint8_t* memory =
         input_info.is_pending ? nullptr : decoder_buffer->data();
