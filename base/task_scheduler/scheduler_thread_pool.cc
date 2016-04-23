@@ -204,7 +204,7 @@ void SchedulerThreadPool::EnqueueSequence(
 
 void SchedulerThreadPool::WaitForAllWorkerThreadsIdleForTesting() {
   AutoSchedulerLock auto_lock(idle_worker_threads_stack_lock_);
-  while (idle_worker_threads_stack_.size() < worker_threads_.size())
+  while (idle_worker_threads_stack_.Size() < worker_threads_.size())
     idle_worker_threads_stack_cv_for_testing_->Wait();
 }
 
@@ -308,7 +308,7 @@ bool SchedulerThreadPool::Initialize(ThreadPriority thread_priority,
             thread_priority, worker_thread_delegate_.get(), task_tracker_);
     if (!worker_thread)
       break;
-    idle_worker_threads_stack_.push(worker_thread.get());
+    idle_worker_threads_stack_.Push(worker_thread.get());
     worker_threads_.push_back(std::move(worker_thread));
   }
 
@@ -316,7 +316,11 @@ bool SchedulerThreadPool::Initialize(ThreadPriority thread_priority,
 }
 
 void SchedulerThreadPool::WakeUpOneThread() {
-  SchedulerWorkerThread* worker_thread = PopOneIdleWorkerThread();
+  SchedulerWorkerThread* worker_thread;
+  {
+    AutoSchedulerLock auto_lock(idle_worker_threads_stack_lock_);
+    worker_thread = idle_worker_threads_stack_.Pop();
+  }
   if (worker_thread)
     worker_thread->WakeUp();
 }
@@ -324,22 +328,11 @@ void SchedulerThreadPool::WakeUpOneThread() {
 void SchedulerThreadPool::AddToIdleWorkerThreadsStack(
     SchedulerWorkerThread* worker_thread) {
   AutoSchedulerLock auto_lock(idle_worker_threads_stack_lock_);
-  idle_worker_threads_stack_.push(worker_thread);
-  DCHECK_LE(idle_worker_threads_stack_.size(), worker_threads_.size());
+  idle_worker_threads_stack_.Push(worker_thread);
+  DCHECK_LE(idle_worker_threads_stack_.Size(), worker_threads_.size());
 
-  if (idle_worker_threads_stack_.size() == worker_threads_.size())
+  if (idle_worker_threads_stack_.Size() == worker_threads_.size())
     idle_worker_threads_stack_cv_for_testing_->Broadcast();
-}
-
-SchedulerWorkerThread* SchedulerThreadPool::PopOneIdleWorkerThread() {
-  AutoSchedulerLock auto_lock(idle_worker_threads_stack_lock_);
-
-  if (idle_worker_threads_stack_.empty())
-    return nullptr;
-
-  auto worker_thread = idle_worker_threads_stack_.top();
-  idle_worker_threads_stack_.pop();
-  return worker_thread;
 }
 
 }  // namespace internal

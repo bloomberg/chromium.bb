@@ -650,6 +650,8 @@
           'task_scheduler/scheduler_thread_pool.h',
           'task_scheduler/scheduler_worker_thread.cc',
           'task_scheduler/scheduler_worker_thread.h',
+          'task_scheduler/scheduler_worker_thread_stack.cc',
+          'task_scheduler/scheduler_worker_thread_stack.h',
           'task_scheduler/sequence.cc',
           'task_scheduler/sequence.h',
           'task_scheduler/sequence_sort_key.cc',

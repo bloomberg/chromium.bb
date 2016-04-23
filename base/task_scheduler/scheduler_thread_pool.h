@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <stack>
 #include <vector>
 
 #include "base/base_export.h"
@@ -21,6 +20,7 @@
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_task_executor.h"
 #include "base/task_scheduler/scheduler_worker_thread.h"
+#include "base/task_scheduler/scheduler_worker_thread_stack.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -97,10 +97,6 @@ class BASE_EXPORT SchedulerThreadPool : public SchedulerTaskExecutor {
   // Adds |worker_thread| to |idle_worker_threads_stack_|.
   void AddToIdleWorkerThreadsStack(SchedulerWorkerThread* worker_thread);
 
-  // Pops one idle worker thread from |idle_worker_thread_stack_| and returns
-  // it. Returns nullptr if |idle_worker_thread_stack_| is empty.
-  SchedulerWorkerThread* PopOneIdleWorkerThread();
-
   // PriorityQueue from which all threads of this thread pool get work.
   PriorityQueue shared_priority_queue_;
 
@@ -116,7 +112,7 @@ class BASE_EXPORT SchedulerThreadPool : public SchedulerTaskExecutor {
   SchedulerLock idle_worker_threads_stack_lock_;
 
   // Stack of idle worker threads.
-  std::stack<SchedulerWorkerThread*> idle_worker_threads_stack_;
+  SchedulerWorkerThreadStack idle_worker_threads_stack_;
 
   // Signaled when all worker threads become idle.
   std::unique_ptr<ConditionVariable> idle_worker_threads_stack_cv_for_testing_;
