@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <numeric>
 #include <string>
 #include <utility>
@@ -126,8 +128,8 @@ struct InstanceInfo {
 
 class NaClPluginInstance {
  public:
-  NaClPluginInstance(PP_Instance instance):
-      nexe_load_manager(instance), pexe_size(0) {}
+  explicit NaClPluginInstance(PP_Instance instance)
+      : nexe_load_manager(instance), pexe_size(0) {}
   ~NaClPluginInstance() {
     // Make sure that we do not leak a file descriptor if the NaCl loader
     // process never called ppapi_start() to initialize PPAPI.
@@ -634,11 +636,11 @@ std::string PnaclComponentURLToFilename(const std::string& url) {
 
   // Use white-listed-chars.
   size_t replace_pos;
-  static const char* white_list = "abcdefghijklmnopqrstuvwxyz0123456789_";
-  replace_pos = r.find_first_not_of(white_list);
-  while(replace_pos != std::string::npos) {
+  static const char kWhiteList[] = "abcdefghijklmnopqrstuvwxyz0123456789_";
+  replace_pos = r.find_first_not_of(kWhiteList);
+  while (replace_pos != std::string::npos) {
     r = r.replace(replace_pos, 1, "_");
-    replace_pos = r.find_first_not_of(white_list);
+    replace_pos = r.find_first_not_of(kWhiteList);
   }
   return r;
 }
@@ -876,7 +878,7 @@ void PPBNaClPrivate::ReportLoadError(PP_Instance instance,
 // static
 void PPBNaClPrivate::InstanceCreated(PP_Instance instance) {
   InstanceMap& map = g_instance_map.Get();
-  CHECK(map.find(instance) == map.end()); // Sanity check.
+  CHECK(!ContainsKey(map, instance));  // Sanity check.
   std::unique_ptr<NaClPluginInstance> new_instance(
       new NaClPluginInstance(instance));
   map.add(instance, std::move(new_instance));
@@ -1224,33 +1226,25 @@ PP_Bool PPBNaClPrivate::GetPnaclResourceInfo(PP_Instance instance,
     return PP_FALSE;
   }
 
-  base::File::Info file_info;
-  if (!file.GetInfo(&file_info)) {
+  int64_t file_size = file.GetLength();
+  if (file_size < 0) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        std::string("GetPnaclResourceInfo, GetFileInfo failed for: ") +
+        std::string("GetPnaclResourceInfo, GetLength failed for: ") +
             kFilename);
     return PP_FALSE;
   }
 
-  if (file_info.size > 1 << 20) {
+  if (file_size > 1 << 20) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("GetPnaclResourceInfo, file too large: ") + kFilename);
     return PP_FALSE;
   }
 
-  std::unique_ptr<char[]> buffer(new char[file_info.size + 1]);
-  if (buffer.get() == NULL) {
-    load_manager->ReportLoadError(
-        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        std::string("GetPnaclResourceInfo, couldn't allocate for: ") +
-            kFilename);
-    return PP_FALSE;
-  }
-
-  int rc = file.Read(0, buffer.get(), file_info.size);
-  if (rc < 0) {
+  std::unique_ptr<char[]> buffer(new char[file_size + 1]);
+  int rc = file.Read(0, buffer.get(), file_size);
+  if (rc < 0 || rc != file_size) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("GetPnaclResourceInfo, reading failed for: ") + kFilename);
@@ -1264,22 +1258,15 @@ PP_Bool PPBNaClPrivate::GetPnaclResourceInfo(PP_Instance instance,
   base::JSONReader json_reader;
   int json_read_error_code;
   std::string json_read_error_msg;
-  std::unique_ptr<base::Value> json_data(json_reader.ReadAndReturnError(
-      buffer.get(), base::JSON_PARSE_RFC, &json_read_error_code,
-      &json_read_error_msg));
-  if (!json_data) {
+  std::unique_ptr<base::DictionaryValue> json_dict(
+      base::DictionaryValue::From(json_reader.ReadAndReturnError(
+          buffer.get(), base::JSON_PARSE_RFC, &json_read_error_code,
+          &json_read_error_msg)));
+  if (!json_dict) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("Parsing resource info failed: JSON parse error: ") +
             json_read_error_msg);
-    return PP_FALSE;
-  }
-
-  base::DictionaryValue* json_dict;
-  if (!json_data->GetAsDictionary(&json_dict)) {
-    load_manager->ReportLoadError(
-        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        "Parsing resource info failed: Malformed JSON dictionary");
     return PP_FALSE;
   }
 

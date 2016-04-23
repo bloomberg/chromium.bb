@@ -907,9 +907,9 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
   if (IsPathTooLong(info_path))
     return false;
 
-  const int64_t max_json_len = 4096;
-  int64_t file_size(0);
-  if (!GetFileSize(info_path, &file_size) || file_size > max_json_len)
+  const int64_t kMaxJsonLength = 4096;
+  int64_t file_size = 0;
+  if (!GetFileSize(info_path, &file_size) || file_size > kMaxJsonLength)
     return false;
   if (!file_size) {
     NOTREACHED();
@@ -919,16 +919,12 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
   base::File file(info_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   bool success = false;
   if (file.IsValid()) {
-    std::vector<char> bytes(file_size);
-    if (file_size == file.Read(0, &bytes[0], file_size)) {
-      std::string input_js(&bytes[0], file_size);
+    std::string input_js(file_size, '\0');
+    if (file_size == file.Read(0, string_as_array(&input_js), file_size)) {
       base::JSONReader reader;
-      std::unique_ptr<base::Value> val(reader.ReadToValue(input_js));
-      if (val && val->GetType() == base::Value::TYPE_DICTIONARY) {
-        base::DictionaryValue* dict_val =
-            static_cast<base::DictionaryValue*>(val.get());
-        success = dict_val->GetString("message", message);
-      }
+      std::unique_ptr<base::DictionaryValue> val(
+          base::DictionaryValue::From(reader.ReadToValue(input_js)));
+      success = val->GetString("message", message);
     }
     file.Close();
   }

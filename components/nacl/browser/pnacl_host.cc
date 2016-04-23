@@ -418,28 +418,23 @@ void PnaclHost::ReturnMiss(const PendingTranslationMap::iterator& entry) {
 // static
 scoped_refptr<net::DrainableIOBuffer> PnaclHost::CopyFileToBuffer(
     std::unique_ptr<base::File> file) {
-  base::File::Info info;
   scoped_refptr<net::DrainableIOBuffer> buffer;
-  bool error = false;
 
   // TODO(eroman): Maximum size should be changed to size_t once that is
   // what IOBuffer requires. crbug.com/488553. Also I don't think the
   // max size should be inclusive here...
-  if (!file->GetInfo(&info) ||
-      info.size >= std::numeric_limits<int>::max()) {
-    PLOG(ERROR) << "File::GetInfo failed";
-    error = true;
-  } else {
-    buffer = new net::DrainableIOBuffer(
-        new net::IOBuffer(base::CheckedNumeric<size_t>(info.size).ValueOrDie()),
-        base::CheckedNumeric<size_t>(info.size).ValueOrDie());
-    if (file->Read(0, buffer->data(), buffer->size()) != info.size) {
-      PLOG(ERROR) << "CopyFileToBuffer file read failed";
-      error = true;
-    }
+  int64_t file_size = file->GetLength();
+  if (file_size < 0 || file_size > std::numeric_limits<int>::max()) {
+    PLOG(ERROR) << "Get file length failed " << file_size;
+    return buffer;
   }
-  if (error) {
-    buffer = NULL;
+
+  buffer = new net::DrainableIOBuffer(
+      new net::IOBuffer(base::CheckedNumeric<size_t>(file_size).ValueOrDie()),
+      base::CheckedNumeric<size_t>(file_size).ValueOrDie());
+  if (file->Read(0, buffer->data(), buffer->size()) != file_size) {
+    PLOG(ERROR) << "CopyFileToBuffer file read failed";
+    buffer = nullptr;
   }
   return buffer;
 }

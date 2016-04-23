@@ -33,15 +33,19 @@ std::unique_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
     return nullptr;
   }
 
-  size_t wav_file_length = wav_file.GetLength();
-  if (wav_file_length == 0u) {
+  int64_t wav_file_length = wav_file.GetLength();
+  if (wav_file_length < 0) {
+    LOG(ERROR) << "Failed to get size of " << wav_filename.value();
+    return nullptr;
+  }
+  if (wav_file_length == 0) {
     LOG(ERROR) << "Input file to fake device is empty: "
                << wav_filename.value();
     return nullptr;
   }
 
   std::unique_ptr<char[]> data(new char[wav_file_length]);
-  size_t read_bytes = wav_file.Read(0, data.get(), wav_file_length);
+  int read_bytes = wav_file.Read(0, data.get(), wav_file_length);
   if (read_bytes != wav_file_length) {
     LOG(ERROR) << "Failed to read all bytes of " << wav_filename.value();
     return nullptr;
