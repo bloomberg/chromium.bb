@@ -8,28 +8,26 @@
  */
 
 /**
- * Current properties of a language.
- * @typedef {{spellCheckEnabled: boolean, translateEnabled: boolean,
- *            removable: boolean}} */
+ * Settings and state for a particular enabled language.
+ * @typedef {{
+ *   language: !chrome.languageSettingsPrivate.Language,
+ *   removable: boolean,
+ *   spellCheckEnabled: boolean,
+ *   translateEnabled: boolean,
+ * }}
+ */
 var LanguageState;
 
 /**
- * Information about a language including intrinsic information (|language|)
- * and the |state| of the language.
- * @typedef {{language: !chrome.languageSettingsPrivate.Language,
- *            state: !LanguageState}}
- */
-var LanguageInfo;
-
-/**
  * Languages data to expose to consumers.
- * supportedLanguages: an array of languages, ordered alphabetically.
- * enabledLanguages: an array of enabled language info, ordered by preference.
+ * supported: an array of languages, ordered alphabetically, set once
+ *     at initialization.
+ * enabled: an array of enabled language states, ordered by preference.
  * translateTarget: the default language to translate into.
  * @typedef {{
- *   supportedLanguages: !Array<!chrome.languageSettingsPrivate.Language>,
- *   enabledLanguages: !Array<!LanguageInfo>,
- *   translateTarget: string
+ *   supported: !Array<!chrome.languageSettingsPrivate.Language>,
+ *   enabled: !Array<!LanguageState>,
+ *   translateTarget: string,
  * }}
  */
 var LanguagesModel;
@@ -48,7 +46,6 @@ LanguageHelper.prototype = {
   /** @return {!Promise} */
   whenReady: assertNotReached,
 
-<if expr="chromeos or is_win">
   /**
    * Sets the prospective UI language to the chosen language. This won't affect
    * the actual UI language until a restart.
@@ -58,7 +55,6 @@ LanguageHelper.prototype = {
 
   /** Resets the prospective UI language back to the actual UI language. */
   resetUILanguage: assertNotReached,
-</if>
 
   /**
    * Returns the "prospective" UI language, i.e. the one to be used on next

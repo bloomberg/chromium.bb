@@ -21,13 +21,13 @@ Polymer({
     /**
      * Read-only reference to the languages model provided by the
      * 'settings-languages' instance.
-     * @type {LanguagesModel|undefined}
+     * @type {!LanguagesModel|undefined}
      */
     languages: Object,
 
     /**
      * The language to display the details for.
-     * @type {LanguageInfo|undefined}
+     * @type {!LanguageState|undefined}
      */
     detail: Object,
 
@@ -57,7 +57,6 @@ Polymer({
     }
   },
 
-<if expr="chromeos or is_win">
   /**
    * Checks whether the prospective UI language (the pref that indicates what
    * language to use in Chrome) matches the current language. This pref is only
@@ -69,6 +68,7 @@ Polymer({
    * @private
    */
   isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
+    assert(cr.isChromeOS || cr.isWindows);
     return languageCode == this.languageHelper_.getProspectiveUILanguage();
   },
 
@@ -80,10 +80,10 @@ Polymer({
    * @private
    */
   isCurrentUILanguage_: function(languageCode, prospectiveUILanguage) {
+    assert(cr.isChromeOS || cr.isWindows);
     return languageCode == prospectiveUILanguage &&
            languageCode == navigator.language;
   },
-</if>
 
    /**
    * @param {string} languageCode The language code identifying a language.

@@ -26,20 +26,9 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * @private {!Array<!{code: string, displayName: string,
-     *                    nativeDisplayName: string, enabled: boolean}>|
-     *           undefined}
-     */
-    availableLanguages_: Array,
-
     /** @private {!LanguageHelper} */
     languageHelper_: Object,
   },
-
-  observers: [
-    'enabledLanguagesChanged_(languages.enabledLanguages.*)',
-  ],
 
   /** @override */
   created: function() {
@@ -47,8 +36,35 @@ Polymer({
   },
 
   /**
+   * @param {!chrome.languageSettingsPrivate.Language} language
+   * @param {!Object} change Polymer change object (provided in the HTML so this
+   *     gets called whenever languages.enabled.* changes).
+   * @return {boolean}
+   * @private
+   */
+  isCheckboxChecked_: function(language, change) {
+    return this.languageHelper_.isLanguageEnabled(language.code);
+  },
+
+  /**
+   * Determines whether a language must be enabled. If so, the checkbox in the
+   * available languages list should not be changeable.
+   * @param {!chrome.languageSettingsPrivate.Language} language
+   * @param {!Object} change Polymer change object (provided in the HTML so this
+   *     gets called whenever languages.enabled.* changes).
+   * @return {boolean}
+   * @private
+   */
+  isLanguageRequired_: function(language, change) {
+    // This check only applies to enabled languages.
+    if (!this.languageHelper_.isLanguageEnabled(language.code))
+      return false;
+    return !this.languageHelper_.canDisableLanguage(language.code);
+  },
+
+  /**
    * Handler for removing a language.
-   * @param {!{model: !{item: !LanguageInfo}}} e
+   * @param {!{model: !{item: !LanguageState}}} e
    * @private
    */
   onRemoveLanguageTap_: function(e) {
@@ -67,49 +83,5 @@ Polymer({
       this.languageHelper_.enableLanguage(code);
     else
       this.languageHelper_.disableLanguage(code);
-  },
-
-  /**
-   * True if a language is not the current or prospective UI language, ie,
-   * it could be disabled.
-   * @param {string} languageCode
-   * @param {string} prospectiveUILanguageCode
-   * @return {boolean}
-   * @private
-   */
-  canRemoveLanguage_: function(languageCode, prospectiveUILanguageCode) {
-    if (languageCode == navigator.language ||
-        languageCode == prospectiveUILanguageCode) {
-      return false;
-    }
-    return true;
-  },
-
-  /**
-   * Updates the available languages that are bound to the iron-list.
-   * @private
-   */
-  enabledLanguagesChanged_: function() {
-    if (!this.availableLanguages_) {
-      var availableLanguages = [];
-      for (var i = 0; i < this.languages.supportedLanguages.length; i++) {
-        var language = this.languages.supportedLanguages[i];
-        availableLanguages.push({
-          code: language.code,
-          displayName: language.displayName,
-          nativeDisplayName: language.nativeDisplayName,
-          enabled: this.languageHelper_.isLanguageEnabled(language.code),
-        });
-      }
-      // Set the Polymer property after building the full array.
-      this.availableLanguages_ = availableLanguages;
-    } else {
-      // Update the available languages in place.
-      for (var i = 0; i < this.availableLanguages_.length; i++) {
-        this.set('availableLanguages_.' + i + '.enabled',
-                 this.languageHelper_.isLanguageEnabled(
-                      this.availableLanguages_[i].code));
-      }
-    }
   },
 });

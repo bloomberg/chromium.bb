@@ -38,7 +38,7 @@
         </div>
         <iron-collapse id="languagesCollapse" opened="[[languagesOpened_]]">
           <div class="list-frame vertical-list">
-            <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+            <template is="dom-repeat" items="{{languages.enabled}}">
               <div class$="list-item [[getLanguageItemClass_(
                       item.language.code, prefs.intl.app_locale.value)]]"
                   on-tap="onLanguageTap_">
@@ -108,11 +108,11 @@
         <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
           <div class="list-frame vertical-list">
             <template is="dom-repeat"
-                items="[[spellCheckLanguages_(languages.enabledLanguages.*)]]">
+                items="[[spellCheckLanguages_(languages.enabled.*)]]">
               <div class="list-item">
                 <div class="start">
                   <paper-checkbox
-                      checked="[[item.state.spellCheckEnabled]]"
+                      checked="[[item.spellCheckEnabled]]"
                       on-change="onSpellCheckChange_">
                     [[item.language.displayName]]
                   </paper-checkbox>

@@ -67,7 +67,7 @@
       <div class="list-item"
           hidden$="[[shouldHideTranslate_(
               detail.language.code, prefs.translate.enabled.value)]]">
-        <paper-checkbox checked="[[detail.state.translateEnabled]]"
+        <paper-checkbox checked="[[detail.translateEnabled]]"
             on-change="onTranslateEnabledChange_"
             hidden$="[[!detail.language.supportsTranslate]]"
             disabled="[[isTranslateDisabled_(
