@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_GUEST_VIEW_RENDERER_IFRAME_GUEST_VIEW_REQUEST_H_
 #define COMPONENTS_GUEST_VIEW_RENDERER_IFRAME_GUEST_VIEW_REQUEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/guest_view/renderer/guest_view_request.h"
 #include "ipc/ipc_message.h"
@@ -21,7 +23,7 @@ class GuestViewAttachIframeRequest : public guest_view::GuestViewRequest {
   GuestViewAttachIframeRequest(GuestViewContainer* container,
                                int render_frame_routing_id,
                                int guest_instance_id,
-                               scoped_ptr<base::DictionaryValue> params,
+                               std::unique_ptr<base::DictionaryValue> params,
                                v8::Local<v8::Function> callback,
                                v8::Isolate* isolate);
   ~GuestViewAttachIframeRequest() override;
@@ -32,7 +34,7 @@ class GuestViewAttachIframeRequest : public guest_view::GuestViewRequest {
  private:
   const int render_frame_routing_id_;
   const int guest_instance_id_;
-  scoped_ptr<base::DictionaryValue> params_;
+  std::unique_ptr<base::DictionaryValue> params_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewAttachIframeRequest);
 };

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_message.h"
 

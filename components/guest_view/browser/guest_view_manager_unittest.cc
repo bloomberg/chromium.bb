@@ -4,6 +4,7 @@
 
 #include "components/guest_view/browser/guest_view_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -26,8 +27,8 @@ class GuestViewManagerTest : public content::RenderViewHostTestHarness {
   GuestViewManagerTest() {}
   ~GuestViewManagerTest() override {}
 
-  scoped_ptr<WebContents> CreateWebContents() {
-    return scoped_ptr<WebContents>(
+  std::unique_ptr<WebContents> CreateWebContents() {
+    return std::unique_ptr<WebContents>(
         WebContentsTester::CreateTestWebContents(&browser_context_, NULL));
   }
 
@@ -41,14 +42,14 @@ class GuestViewManagerTest : public content::RenderViewHostTestHarness {
 
 TEST_F(GuestViewManagerTest, AddRemove) {
   content::TestBrowserContext browser_context;
-  scoped_ptr<GuestViewManagerDelegate> delegate(
+  std::unique_ptr<GuestViewManagerDelegate> delegate(
       new GuestViewManagerDelegate());
-  scoped_ptr<TestGuestViewManager> manager(
+  std::unique_ptr<TestGuestViewManager> manager(
       new TestGuestViewManager(&browser_context, std::move(delegate)));
 
-  scoped_ptr<WebContents> web_contents1(CreateWebContents());
-  scoped_ptr<WebContents> web_contents2(CreateWebContents());
-  scoped_ptr<WebContents> web_contents3(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents1(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents2(CreateWebContents());
+  std::unique_ptr<WebContents> web_contents3(CreateWebContents());
 
   EXPECT_EQ(0, manager->last_instance_id_removed());
 

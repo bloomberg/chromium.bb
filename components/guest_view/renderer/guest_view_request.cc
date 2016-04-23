@@ -30,7 +30,7 @@ GuestViewRequest::~GuestViewRequest() {
 
 void GuestViewRequest::ExecuteCallbackIfAvailable(
     int argc,
-    scoped_ptr<v8::Local<v8::Value>[]> argv) {
+    std::unique_ptr<v8::Local<v8::Value>[]> argv) {
   if (callback_.IsEmpty())
     return;
 
@@ -51,7 +51,7 @@ void GuestViewRequest::ExecuteCallbackIfAvailable(
 GuestViewAttachRequest::GuestViewAttachRequest(
     GuestViewContainer* container,
     int guest_instance_id,
-    scoped_ptr<base::DictionaryValue> params,
+    std::unique_ptr<base::DictionaryValue> params,
     v8::Local<v8::Function> callback,
     v8::Isolate* isolate)
     : GuestViewRequest(container, callback, isolate),
@@ -102,7 +102,7 @@ void GuestViewAttachRequest::HandleResponse(const IPC::Message& message) {
   }
 
   const int argc = 1;
-  scoped_ptr<v8::Local<v8::Value>[]> argv(new v8::Local<v8::Value>[argc]);
+  std::unique_ptr<v8::Local<v8::Value>[]> argv(new v8::Local<v8::Value>[argc]);
   argv[0] = window;
 
   // Call the AttachGuest API's callback with the guest proxy as the first

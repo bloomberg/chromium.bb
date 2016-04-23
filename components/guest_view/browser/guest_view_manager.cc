@@ -66,7 +66,7 @@ GuestViewManagerFactory* GuestViewManager::factory_ = nullptr;
 
 GuestViewManager::GuestViewManager(
     content::BrowserContext* context,
-    scoped_ptr<GuestViewManagerDelegate> delegate)
+    std::unique_ptr<GuestViewManagerDelegate> delegate)
     : current_instance_id_(0),
       last_instance_id_removed_(0),
       context_(context),
@@ -78,7 +78,7 @@ GuestViewManager::~GuestViewManager() {}
 // static
 GuestViewManager* GuestViewManager::CreateWithDelegate(
     BrowserContext* context,
-    scoped_ptr<GuestViewManagerDelegate> delegate) {
+    std::unique_ptr<GuestViewManagerDelegate> delegate) {
   GuestViewManager* guest_manager = FromBrowserContext(context);
   if (!guest_manager) {
     if (factory_) {
@@ -385,10 +385,11 @@ bool GuestViewManager::IsGuestAvailableToContext(GuestViewBase* guest) {
   return delegate_->IsGuestAvailableToContext(guest);
 }
 
-void GuestViewManager::DispatchEvent(const std::string& event_name,
-                                     scoped_ptr<base::DictionaryValue> args,
-                                     GuestViewBase* guest,
-                                     int instance_id) {
+void GuestViewManager::DispatchEvent(
+    const std::string& event_name,
+    std::unique_ptr<base::DictionaryValue> args,
+    GuestViewBase* guest,
+    int instance_id) {
   // TODO(fsamuel): GuestViewManager should probably do something more useful
   // here like log an error if the event could not be dispatched.
   delegate_->DispatchEvent(event_name, std::move(args), guest, instance_id);

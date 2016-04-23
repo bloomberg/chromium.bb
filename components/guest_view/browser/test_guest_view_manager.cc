@@ -6,14 +6,13 @@
 
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 
 namespace guest_view {
 
 TestGuestViewManager::TestGuestViewManager(
     content::BrowserContext* context,
-    scoped_ptr<GuestViewManagerDelegate> delegate)
+    std::unique_ptr<GuestViewManagerDelegate> delegate)
     : GuestViewManager(context, std::move(delegate)),
       num_embedder_processes_destroyed_(0),
       num_guests_created_(0),
@@ -146,7 +145,7 @@ TestGuestViewManagerFactory::~TestGuestViewManagerFactory() {
 
 GuestViewManager* TestGuestViewManagerFactory::CreateGuestViewManager(
     content::BrowserContext* context,
-    scoped_ptr<GuestViewManagerDelegate> delegate) {
+    std::unique_ptr<GuestViewManagerDelegate> delegate) {
   if (!test_guest_view_manager_) {
     test_guest_view_manager_ =
         new TestGuestViewManager(context, std::move(delegate));

@@ -13,7 +13,7 @@
 namespace guest_view {
 
 GuestViewEvent::GuestViewEvent(const std::string& name,
-                               scoped_ptr<base::DictionaryValue> args)
+                               std::unique_ptr<base::DictionaryValue> args)
     : name_(name), args_(std::move(args)) {}
 
 GuestViewEvent::~GuestViewEvent() {

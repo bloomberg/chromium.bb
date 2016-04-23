@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -195,7 +196,7 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> params(create_params.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> params(create_params.DeepCopy());
   CreateWebContents(create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
                                weak_ptr_factory_.GetWeakPtr(),
@@ -261,13 +262,13 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
     return;
 
   // Dispatch the onResize event.
-  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(kOldWidth, old_size.width());
   args->SetInteger(kOldHeight, old_size.height());
   args->SetInteger(kNewWidth, new_size.width());
   args->SetInteger(kNewHeight, new_size.height());
   DispatchEventToGuestProxy(
-      make_scoped_ptr(new GuestViewEvent(kEventResize, std::move(args))));
+      base::WrapUnique(new GuestViewEvent(kEventResize, std::move(args))));
 }
 
 gfx::Size GuestViewBase::GetDefaultSize() const {
@@ -747,11 +748,11 @@ void GuestViewBase::OnZoomChanged(
 }
 
 void GuestViewBase::DispatchEventToGuestProxy(
-    scoped_ptr<GuestViewEvent> event) {
+    std::unique_ptr<GuestViewEvent> event) {
   event->Dispatch(this, guest_instance_id_);
 }
 
-void GuestViewBase::DispatchEventToView(scoped_ptr<GuestViewEvent> event) {
+void GuestViewBase::DispatchEventToView(std::unique_ptr<GuestViewEvent> event) {
   if (!attached() &&
       (!CanRunInDetachedState() || !can_owner_receive_events())) {
     pending_events_.push_back(std::move(event));
@@ -765,14 +766,15 @@ void GuestViewBase::SendQueuedEvents() {
   if (!attached())
     return;
   while (!pending_events_.empty()) {
-    scoped_ptr<GuestViewEvent> event_ptr = std::move(pending_events_.front());
+    std::unique_ptr<GuestViewEvent> event_ptr =
+        std::move(pending_events_.front());
     pending_events_.pop_front();
     event_ptr->Dispatch(this, view_instance_id_);
   }
 }
 
 void GuestViewBase::CompleteInit(
-    scoped_ptr<base::DictionaryValue> create_params,
+    std::unique_ptr<base::DictionaryValue> create_params,
     const WebContentsCreatedCallback& callback,
     WebContents* guest_web_contents) {
   if (!guest_web_contents) {

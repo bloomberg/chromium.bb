@@ -16,7 +16,7 @@ GuestViewAttachIframeRequest::GuestViewAttachIframeRequest(
     guest_view::GuestViewContainer* container,
     int render_frame_routing_id,
     int guest_instance_id,
-    scoped_ptr<base::DictionaryValue> params,
+    std::unique_ptr<base::DictionaryValue> params,
     v8::Local<v8::Function> callback,
     v8::Isolate* isolate)
     : GuestViewRequest(container, callback, isolate),

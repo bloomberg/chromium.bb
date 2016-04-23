@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_DELEGATE_H_
 #define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class GuestViewManagerDelegate {
   // Dispatches the event with |name| with the provided |args| to the embedder
   // of the given |guest| with |instance_id| for routing.
   virtual void DispatchEvent(const std::string& event_name,
-                             scoped_ptr<base::DictionaryValue> args,
+                             std::unique_ptr<base::DictionaryValue> args,
                              GuestViewBase* guest,
                              int instance_id) {}
 

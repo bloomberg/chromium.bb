@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_REQUEST_H_
 #define COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_REQUEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_message.h"
 #include "v8/include/v8.h"
 
@@ -40,7 +41,7 @@ class GuestViewRequest {
   // Note: the callback may be called even if a response has not been heard from
   // the browser process if the GuestViewContainer is being torn down.
   void ExecuteCallbackIfAvailable(int argc,
-                                  scoped_ptr<v8::Local<v8::Value>[]> argv);
+                                  std::unique_ptr<v8::Local<v8::Value>[]> argv);
 
   GuestViewContainer* container() const { return container_; }
 
@@ -60,21 +61,21 @@ class GuestViewRequest {
 // other GuestViewRequests in flight.
 class GuestViewAttachRequest : public GuestViewRequest {
   public:
-  GuestViewAttachRequest(GuestViewContainer* container,
-                         int guest_instance_id,
-                         scoped_ptr<base::DictionaryValue> params,
-                         v8::Local<v8::Function> callback,
-                         v8::Isolate* isolate);
-  ~GuestViewAttachRequest() override;
+   GuestViewAttachRequest(GuestViewContainer* container,
+                          int guest_instance_id,
+                          std::unique_ptr<base::DictionaryValue> params,
+                          v8::Local<v8::Function> callback,
+                          v8::Isolate* isolate);
+   ~GuestViewAttachRequest() override;
 
-  void PerformRequest() override;
-  void HandleResponse(const IPC::Message& message) override;
+   void PerformRequest() override;
+   void HandleResponse(const IPC::Message& message) override;
 
- private:
-  const int guest_instance_id_;
-  scoped_ptr<base::DictionaryValue> params_;
+  private:
+   const int guest_instance_id_;
+   std::unique_ptr<base::DictionaryValue> params_;
 
-  DISALLOW_COPY_AND_ASSIGN(GuestViewAttachRequest);
+   DISALLOW_COPY_AND_ASSIGN(GuestViewAttachRequest);
 };
 
 // This class represents a DetachGuest request from Javascript. The Detach

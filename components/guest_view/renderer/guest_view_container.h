@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_
 #define COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "ipc/ipc_message.h"
 #include "v8/include/v8.h"
@@ -85,7 +86,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   int element_instance_id_;
   content::RenderFrame* render_frame_;
-  scoped_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
+  std::unique_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
 
   bool in_destruction_;
 

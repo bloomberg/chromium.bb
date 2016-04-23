@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_FACTORY_H_
 #define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_FACTORY_H_
 
+#include <memory>
+
 namespace content {
 class BrowserContext;
 }
@@ -18,7 +20,7 @@ class GuestViewManagerFactory {
  public:
   virtual GuestViewManager* CreateGuestViewManager(
       content::BrowserContext* context,
-      scoped_ptr<GuestViewManagerDelegate> delegate) = 0;
+      std::unique_ptr<GuestViewManagerDelegate> delegate) = 0;
 
  protected:
   virtual ~GuestViewManagerFactory() {}
