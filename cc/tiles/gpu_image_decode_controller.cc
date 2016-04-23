@@ -208,6 +208,12 @@ bool GpuImageDecodeController::GetTaskForImageAndRef(
       return false;
     }
 
+    if (image_data->decode.decode_failure) {
+      // We have already tried and failed to decode this image, so just return.
+      *task = nullptr;
+      return false;
+    }
+
     if (image_data->upload.image) {
       // The image is already uploaded, ref and return.
       RefImage(draw_image);
