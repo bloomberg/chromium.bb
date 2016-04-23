@@ -107,7 +107,10 @@ class ImageUploadTaskImpl : public TileTask {
         image_(draw_image),
         source_prepare_tiles_id_(source_prepare_tiles_id) {
     DCHECK(!SkipImage(draw_image));
-    dependencies_.push_back(std::move(decode_dependency));
+    // If an image is already decoded and locked, we will not generate a
+    // decode task.
+    if (decode_dependency)
+      dependencies_.push_back(std::move(decode_dependency));
   }
 
   // Override from Task:

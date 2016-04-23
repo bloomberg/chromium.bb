@@ -130,7 +130,101 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageDifferentImage) {
   controller.UnrefImage(second_draw_image);
 }
 
-TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
+TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedAndLocked) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  GpuImageDecodeController controller(context_provider.get(),
+                                      ResourceFormat::RGBA_8888);
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  scoped_refptr<TileTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+  EXPECT_EQ(task->dependencies().size(), 1u);
+  EXPECT_TRUE(task->dependencies()[0]);
+
+  // Run the decode but don't complete it (this will keep the decode locked).
+  ScheduleTask(task->dependencies()[0].get());
+  RunTask(task->dependencies()[0].get());
+
+  // Cancel the upload.
+  ScheduleTask(task.get());
+  CompleteTask(task.get());
+
+  // Get the image again - we should have an upload task, but no dependent
+  // decode task, as the decode was already locked.
+  scoped_refptr<TileTask> another_task;
+  need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
+                                                &another_task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(another_task);
+  EXPECT_EQ(another_task->dependencies().size(), 0u);
+
+  ProcessTask(another_task.get());
+
+  // Finally, complete the original decode task.
+  CompleteTask(task->dependencies()[0].get());
+
+  controller.UnrefImage(draw_image);
+  controller.UnrefImage(draw_image);
+}
+
+TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedNotLocked) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  GpuImageDecodeController controller(context_provider.get(),
+                                      ResourceFormat::RGBA_8888);
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+  scoped_refptr<TileTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+  EXPECT_EQ(task->dependencies().size(), 1u);
+  EXPECT_TRUE(task->dependencies()[0]);
+
+  // Run the decode.
+  ProcessTask(task->dependencies()[0].get());
+
+  // Cancel the upload.
+  ScheduleTask(task.get());
+  CompleteTask(task.get());
+
+  // Unref the image.
+  controller.UnrefImage(draw_image);
+
+  // Get the image again - we should have an upload task and a dependent decode
+  // task - this dependent task will typically just re-lock the image.
+  scoped_refptr<TileTask> another_task;
+  need_unref = controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id,
+                                                &another_task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(another_task);
+  EXPECT_EQ(another_task->dependencies().size(), 1u);
+  EXPECT_TRUE(task->dependencies()[0]);
+
+  ProcessTask(another_task->dependencies()[0].get());
+  ProcessTask(another_task.get());
+
+  controller.UnrefImage(draw_image);
+}
+
+TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyUploaded) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   GpuImageDecodeController controller(context_provider.get(),
