@@ -430,7 +430,6 @@ _x86_internal_release_boards = frozenset([
     'kip',
     'kunimitsu',
     'lakitu',
-    'lakitu_mobbuild',
     'lakitu_next',
     'lars',
     'leon',
@@ -545,7 +544,6 @@ _cheets_boards = frozenset([
 
 _lakitu_boards = frozenset([
     'lakitu',
-    'lakitu_mobbuild',
     'lakitu_next',
 ])
 
