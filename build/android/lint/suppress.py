@@ -43,7 +43,7 @@ _DOC = (
 )
 
 
-_Issue = collections.namedtuple('Issue', ['severity', 'paths'])
+_Issue = collections.namedtuple('Issue', ['severity', 'paths', 'regexps'])
 
 
 def _ParseConfigFile(config_path):
@@ -53,10 +53,18 @@ def _ParseConfigFile(config_path):
   for issue in dom.getElementsByTagName('issue'):
     issue_id = issue.attributes['id'].value
     severity = issue.getAttribute('severity')
-    paths = set(
-        [p.attributes['path'].value for p in
-         issue.getElementsByTagName('ignore')])
-    issues_dict[issue_id] = _Issue(severity, paths)
+
+    path_elements = (
+        p.attributes.get('path')
+        for p in issue.getElementsByTagName('ignore'))
+    paths = set(p.value for p in path_elements if p)
+
+    regexp_elements = (
+        p.attributes.get('regexp')
+        for p in issue.getElementsByTagName('ignore'))
+    regexps = set(r.value for r in regexp_elements if r)
+
+    issues_dict[issue_id] = _Issue(severity, paths, regexps)
   return issues_dict
 
 
@@ -68,7 +76,7 @@ def _ParseAndMergeResultFile(result_path, issues_dict):
     severity = issue.attributes['severity'].value
     path = issue.getElementsByTagName('location')[0].attributes['file'].value
     if issue_id not in issues_dict:
-      issues_dict[issue_id] = _Issue(severity, set())
+      issues_dict[issue_id] = _Issue(severity, set(), set())
     issues_dict[issue_id].paths.add(path)
 
 
@@ -76,21 +84,23 @@ def _WriteConfigFile(config_path, issues_dict):
   new_dom = minidom.getDOMImplementation().createDocument(None, 'lint', None)
   top_element = new_dom.documentElement
   top_element.appendChild(new_dom.createComment(_DOC))
-  for issue_id in sorted(issues_dict.keys()):
-    severity = issues_dict[issue_id].severity
-    paths = issues_dict[issue_id].paths
-    issue = new_dom.createElement('issue')
-    issue.attributes['id'] = issue_id
-    if severity:
-      issue.attributes['severity'] = severity
-    if severity == 'ignore':
+  for issue_id, issue in sorted(issues_dict.iteritems(), key=lambda i: i[0]):
+    issue_element = new_dom.createElement('issue')
+    issue_element.attributes['id'] = issue_id
+    if issue.severity:
+      issue_element.attributes['severity'] = issue.severity
+    if issue.severity == 'ignore':
       print 'Warning: [%s] is suppressed globally.' % issue_id
     else:
-      for path in sorted(paths):
-        ignore = new_dom.createElement('ignore')
-        ignore.attributes['path'] = path
-        issue.appendChild(ignore)
-    top_element.appendChild(issue)
+      for path in sorted(issue.paths):
+        ignore_element = new_dom.createElement('ignore')
+        ignore_element.attributes['path'] = path
+        issue_element.appendChild(ignore_element)
+      for regexp in sorted(issue.regexps):
+        ignore_element = new_dom.createElement('ignore')
+        ignore_element.attributes['regexp'] = regexp
+        issue_element.appendChild(ignore_element)
+    top_element.appendChild(issue_element)
 
   with open(config_path, 'w') as f:
     f.write(new_dom.toprettyxml(indent='  ', encoding='utf-8'))
