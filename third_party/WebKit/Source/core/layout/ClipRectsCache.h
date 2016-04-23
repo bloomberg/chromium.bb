@@ -8,7 +8,7 @@
 #include "core/layout/ClipRects.h"
 
 #if ENABLE(ASSERT)
-#include "core/layout/LayoutBox.h" // For OverlayScrollbarSizeRelevancy.
+#include "core/layout/LayoutBox.h" // For OverlayScrollbarClipBehavior.
 #endif
 
 namespace blink {
@@ -38,14 +38,14 @@ public:
         Entry()
             : root(nullptr)
 #if ENABLE(ASSERT)
-            , scrollbarRelevancy(IgnoreOverlayScrollbarSize)
+            , overlayScrollbarClipBehavior(IgnoreOverlayScrollbarSize)
 #endif
         {
         }
         const PaintLayer* root;
         RefPtr<ClipRects> clipRects;
 #if ENABLE(ASSERT)
-        OverlayScrollbarSizeRelevancy scrollbarRelevancy;
+        OverlayScrollbarClipBehavior overlayScrollbarClipBehavior;
 #endif
     };
     Entry& get(ClipRectsCacheSlot slot)

@@ -60,9 +60,9 @@ public:
         return toView()->layoutSize(scrollbars);
     }
 
-    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy scrollbars = IgnoreOverlayScrollbarSize) const
+    LayoutRect overflowClipRect(const LayoutPoint& location) const
     {
-        return toView()->overflowClipRect(location, scrollbars);
+        return toView()->overflowClipRect(location);
     }
 
     void clearSelection()

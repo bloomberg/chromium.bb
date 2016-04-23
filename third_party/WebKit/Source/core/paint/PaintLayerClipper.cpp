@@ -74,7 +74,7 @@ static void applyClipRects(const ClipRectsContext& context, const LayoutBoxModel
     if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
         offset -= toIntSize(view->frameView()->scrollPosition());
     if (layoutObject.hasOverflowClip() || (layoutObject.styleRef().containsPaint() && layoutObject.isBox())) {
-        ClipRect newOverflowClip = toLayoutBox(layoutObject).overflowClipRect(offset, context.scrollbarRelevancy);
+        ClipRect newOverflowClip = toLayoutBox(layoutObject).overflowClipRect(offset, context.overlayScrollbarClipBehavior);
         newOverflowClip.setHasRadius(layoutObject.styleRef().hasBorderRadius());
         clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
         if (layoutObject.isPositioned())
@@ -105,7 +105,7 @@ ClipRects* PaintLayerClipper::clipRectsIfCached(const ClipRectsContext& context)
     // http://crbug.com/366118 for an example.
     if (context.rootLayer != entry.root)
         return 0;
-    ASSERT(entry.scrollbarRelevancy == context.scrollbarRelevancy);
+    ASSERT(entry.overlayScrollbarClipBehavior == context.overlayScrollbarClipBehavior);
 #ifdef CHECK_CACHED_CLIP_RECTS
     // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.
     ClipRectsContext tempContext(context);
@@ -122,7 +122,7 @@ ClipRects& PaintLayerClipper::storeClipRectsInCache(const ClipRectsContext& cont
     ClipRectsCache::Entry& entry = m_layer.ensureClipRectsCache().get(context.cacheSlot());
     entry.root = context.rootLayer;
 #if ENABLE(ASSERT)
-    entry.scrollbarRelevancy = context.scrollbarRelevancy;
+    entry.overlayScrollbarClipBehavior = context.overlayScrollbarClipBehavior;
 #endif
     if (parentClipRects) {
         // If our clip rects match the clip rects of our parent, we share storage.
@@ -214,7 +214,7 @@ void PaintLayerClipper::calculateRects(const ClipRectsContext& context, const La
     // Update the clip rects that will be passed to child layers.
     if ((layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context))
         || (layoutObject.styleRef().containsPaint() && layoutObject.isBox())) {
-        foregroundRect.intersect(toLayoutBox(layoutObject).overflowClipRect(offset, context.scrollbarRelevancy));
+        foregroundRect.intersect(toLayoutBox(layoutObject).overflowClipRect(offset, context.overlayScrollbarClipBehavior));
         if (layoutObject.styleRef().hasBorderRadius())
             foregroundRect.setHasRadius(true);
 

@@ -1045,16 +1045,20 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
         box().document().setAnnotatedRegionsDirty(true);
 }
 
-int PaintLayerScrollableArea::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
+int PaintLayerScrollableArea::verticalScrollbarWidth(OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const
 {
-    if (!hasVerticalScrollbar() || (verticalScrollbar()->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !verticalScrollbar()->shouldParticipateInHitTesting())))
+    if (!hasVerticalScrollbar())
+        return 0;
+    if (verticalScrollbar()->isOverlayScrollbar() && (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize || !verticalScrollbar()->shouldParticipateInHitTesting()))
         return 0;
     return verticalScrollbar()->width();
 }
 
-int PaintLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy) const
+int PaintLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const
 {
-    if (!hasHorizontalScrollbar() || (horizontalScrollbar()->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !horizontalScrollbar()->shouldParticipateInHitTesting())))
+    if (!hasHorizontalScrollbar())
+        return 0;
+    if (horizontalScrollbar()->isOverlayScrollbar() && (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize || !horizontalScrollbar()->shouldParticipateInHitTesting()))
         return 0;
     return horizontalScrollbar()->height();
 }

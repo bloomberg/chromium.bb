@@ -3254,7 +3254,6 @@ void FrameView::windowResizerRectChanged()
 
 bool FrameView::hasOverlayScrollbars() const
 {
-
     return (m_horizontalScrollbar && m_horizontalScrollbar->isOverlayScrollbar())
         || (m_verticalScrollbar && m_verticalScrollbar->isOverlayScrollbar());
 }

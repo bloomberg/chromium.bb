@@ -1522,7 +1522,7 @@ void LayoutBox::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& 
     }
 }
 
-LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy relevancy) const
+LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const
 {
     // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the property
     // here.
@@ -1531,16 +1531,16 @@ LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrol
     clipRect.setSize(clipRect.size() - LayoutSize(borderLeft() + borderRight(), borderTop() + borderBottom()));
 
     if (hasOverflowClip())
-        excludeScrollbars(clipRect, relevancy);
+        excludeScrollbars(clipRect, overlayScrollbarClipBehavior);
     return clipRect;
 }
 
-void LayoutBox::excludeScrollbars(LayoutRect& rect, OverlayScrollbarSizeRelevancy relevancy) const
+void LayoutBox::excludeScrollbars(LayoutRect& rect, OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const
 {
     if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea()) {
         if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-            rect.move(scrollableArea->verticalScrollbarWidth(relevancy), 0);
-        rect.contract(scrollableArea->verticalScrollbarWidth(relevancy), scrollableArea->horizontalScrollbarHeight(relevancy));
+            rect.move(scrollableArea->verticalScrollbarWidth(overlayScrollbarClipBehavior), 0);
+        rect.contract(scrollableArea->verticalScrollbarWidth(overlayScrollbarClipBehavior), scrollableArea->horizontalScrollbarHeight(overlayScrollbarClipBehavior));
     }
 }
 
