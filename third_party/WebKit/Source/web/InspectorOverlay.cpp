@@ -717,7 +717,8 @@ bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event)
 
     if (node && m_inspectModeHighlightConfig) {
         m_hoveredNodeForInspectMode = node;
-        m_domAgent->nodeHighlightedInOverlay(node);
+        if (m_domAgent)
+            m_domAgent->nodeHighlightedInOverlay(node);
         highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
     }
     return true;
@@ -779,7 +780,7 @@ void InspectorOverlay::inspect(Node* node)
 
 void InspectorOverlay::initializeLayoutEditorIfNeeded(Node* node)
 {
-    if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor || !node || !node->isElementNode() || !node->ownerDocument()->isActive())
+    if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor || !node || !node->isElementNode() || !node->ownerDocument()->isActive() || !m_cssAgent || !m_domAgent)
         return;
     m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent, &overlayMainFrame()->script());
     toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(true);
