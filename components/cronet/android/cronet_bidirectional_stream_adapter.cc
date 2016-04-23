@@ -58,7 +58,7 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     CronetURLRequestContextAdapter* context,
     JNIEnv* env,
     const JavaParamRef<jobject>& jbidi_stream)
-    : context_(context), owner_(env, jbidi_stream) {}
+    : context_(context), owner_(env, jbidi_stream), stream_failed_(false) {}
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {
   DCHECK(context_->IsOnNetworkThread());
@@ -236,6 +236,7 @@ void CronetBidirectionalStreamAdapter::OnTrailersReceived(
 
 void CronetBidirectionalStreamAdapter::OnFailed(int error) {
   DCHECK(context_->IsOnNetworkThread());
+  stream_failed_ = true;
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetBidirectionalStream_onError(
       env, owner_.obj(), NetErrorToUrlRequestError(error), error,
@@ -287,6 +288,14 @@ void CronetBidirectionalStreamAdapter::WriteDataOnNetworkThread(
   DCHECK(write_buffer);
   DCHECK(!write_buffer_);
 
+  if (stream_failed_) {
+    // If stream failed between the time when WriteData is invoked and
+    // WriteDataOnNetworkThread is executed, do not call into |bidi_stream_|
+    // since the underlying stream might have been destroyed. Do not invoke
+    // Java callback either, since onError is posted when |stream_failed_| is
+    // set to true.
+    return;
+  }
   write_buffer_ = write_buffer;
   bidi_stream_->SendData(write_buffer_.get(), buffer_size, end_of_stream);
 }

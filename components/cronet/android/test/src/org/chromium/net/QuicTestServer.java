@@ -23,15 +23,31 @@ public final class QuicTestServer {
     private static final String KEY_USED = "quic_test.example.com.key";
     private static final String[] CERTS_USED = {CERT_USED};
 
+    private static boolean sServerRunning = false;
+
+    /*
+     * Starts the server.
+     */
     public static void startQuicTestServer(Context context) {
+        if (sServerRunning) {
+            throw new IllegalStateException("Quic server is already running");
+        }
         TestFilesInstaller.installIfNeeded(context);
         nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context));
         sBlock.block();
+        sBlock.close();
+        sServerRunning = true;
     }
 
+    /**
+     * Shuts down the server. No-op if the server is already shut down.
+     */
     public static void shutdownQuicTestServer() {
+        if (!sServerRunning) {
+            return;
+        }
         nativeShutdownQuicTestServer();
-        sBlock.close();
+        sServerRunning = false;
     }
 
     public static String getServerURL() {
