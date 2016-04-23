@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 
 namespace base {
-class Clock;
+class TickClock;
 }  // base namespace
 
 namespace content {
@@ -41,12 +41,12 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
   void OnSessionSuspended();
   void OnSessionInactive();
 
-  void SetClockForTest(std::unique_ptr<base::Clock> testing_clock);
+  void SetClockForTest(std::unique_ptr<base::TickClock> testing_clock);
 
  private:
   base::TimeDelta total_active_time_;
-  base::Time current_active_time_;
-  std::unique_ptr<base::Clock> clock_;
+  base::TimeTicks current_active_time_;
+  std::unique_ptr<base::TickClock> clock_;
 };
 
 }  // namespace content

@@ -8,14 +8,14 @@
 
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 
 namespace content {
 
 using HistogramBase = base::HistogramBase;
 
 MediaSessionUmaHelper::MediaSessionUmaHelper()
-    : clock_(new base::DefaultClock())
+    : clock_(new base::DefaultTickClock())
 {}
 
 MediaSessionUmaHelper::~MediaSessionUmaHelper()
@@ -34,21 +34,21 @@ void MediaSessionUmaHelper::RecordRequestAudioFocusResult(bool result) const {
 }
 
 void MediaSessionUmaHelper::OnSessionActive() {
-  current_active_time_ = clock_->Now();
+  current_active_time_ = clock_->NowTicks();
 }
 
 void MediaSessionUmaHelper::OnSessionSuspended() {
   if (current_active_time_.is_null())
     return;
 
-  total_active_time_ += clock_->Now() - current_active_time_;
-  current_active_time_ = base::Time();
+  total_active_time_ += clock_->NowTicks() - current_active_time_;
+  current_active_time_ = base::TimeTicks();
 }
 
 void MediaSessionUmaHelper::OnSessionInactive() {
   if (!current_active_time_.is_null()) {
-    total_active_time_ += clock_->Now() - current_active_time_;
-    current_active_time_ = base::Time();
+    total_active_time_ += clock_->NowTicks() - current_active_time_;
+    current_active_time_ = base::TimeTicks();
   }
 
   if (total_active_time_.is_zero())
@@ -59,7 +59,7 @@ void MediaSessionUmaHelper::OnSessionInactive() {
 }
 
 void MediaSessionUmaHelper::SetClockForTest(
-    std::unique_ptr<base::Clock> testing_clock) {
+    std::unique_ptr<base::TickClock> testing_clock) {
   clock_ = std::move(testing_clock);
 }
 

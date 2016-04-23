@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -21,17 +21,17 @@ class MediaSessionUmaHelperTest : public testing::Test {
   MediaSessionUmaHelperTest() = default;
 
   void SetUp() override {
-    clock_ = new base::SimpleTestClock();
-    clock_->SetNow(base::Time::Now());
+    clock_ = new base::SimpleTestTickClock();
+    clock_->SetNowTicks(base::TimeTicks::Now());
     media_session_uma_helper_.SetClockForTest(
-        std::unique_ptr<base::SimpleTestClock>(clock_));
+        std::unique_ptr<base::SimpleTestTickClock>(clock_));
   }
 
   void TearDown() override {
     clock_ = nullptr;
   }
 
-  base::SimpleTestClock* clock() { return clock_; }
+  base::SimpleTestTickClock* clock() { return clock_; }
 
   MediaSessionUmaHelper& media_session_uma_helper() {
     return media_session_uma_helper_;
@@ -43,7 +43,7 @@ class MediaSessionUmaHelperTest : public testing::Test {
   }
 
  private:
-  base::SimpleTestClock* clock_ = nullptr;
+  base::SimpleTestTickClock* clock_ = nullptr;
   MediaSessionUmaHelper media_session_uma_helper_;
   base::HistogramTester histogram_tester_;
 };

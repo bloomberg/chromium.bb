@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "content/browser/media/session/media_session_delegate.h"
 #include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/public/browser/web_contents.h"
@@ -1039,10 +1039,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  clock->SetNow(base::Time::Now());
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
+  clock->SetNowTicks(base::TimeTicks::Now());
   media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestClock>(clock));
+      std::unique_ptr<base::SimpleTestTickClock>(clock));
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
 
@@ -1062,10 +1062,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  clock->SetNow(base::Time::Now());
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
+  clock->SetNowTicks(base::TimeTicks::Now());
   media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestClock>(clock));
+      std::unique_ptr<base::SimpleTestTickClock>(clock));
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
 
@@ -1091,10 +1091,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  clock->SetNow(base::Time::Now());
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
+  clock->SetNowTicks(base::TimeTicks::Now());
   media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestClock>(clock));
+      std::unique_ptr<base::SimpleTestTickClock>(clock));
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
 
@@ -1120,10 +1120,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  clock->SetNow(base::Time::Now());
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
+  clock->SetNowTicks(base::TimeTicks::Now());
   media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestClock>(clock));
+      std::unique_ptr<base::SimpleTestTickClock>(clock));
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
   clock->Advance(base::TimeDelta::FromMilliseconds(500));
@@ -1153,10 +1153,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  clock->SetNow(base::Time::Now());
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
+  clock->SetNowTicks(base::TimeTicks::Now());
   media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestClock>(clock));
+      std::unique_ptr<base::SimpleTestTickClock>(clock));
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
   clock->Advance(base::TimeDelta::FromMilliseconds(500));
@@ -1182,10 +1182,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   base::HistogramTester tester;
 
   MediaSessionUmaHelper* media_session_uma_helper = GetMediaSessionUMAHelper();
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  clock->SetNow(base::Time::Now());
+  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
+  clock->SetNowTicks(base::TimeTicks::Now());
   media_session_uma_helper->SetClockForTest(
-      std::unique_ptr<base::SimpleTestClock>(clock));
+      std::unique_ptr<base::SimpleTestTickClock>(clock));
 
   StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
   clock->Advance(base::TimeDelta::FromMilliseconds(10000));
