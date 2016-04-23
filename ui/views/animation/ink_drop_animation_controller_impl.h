@@ -74,8 +74,11 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
   // Enables or disables the hover state based on |is_hovered| and if an
   // animation is triggered it will be scheduled to have the given
-  // |animation_duration|.
-  void SetHoveredInternal(bool is_hovered, base::TimeDelta animation_duration);
+  // |animation_duration|. If |explode| is true the hover will expand as it
+  // fades out. |explode| is ignored when |is_hovered| is true.
+  void SetHoveredInternal(bool is_hovered,
+                          base::TimeDelta animation_duration,
+                          bool explode);
 
   // Starts the |hover_after_animation_timer_| timer. This will stop the current
   // |hover_after_animation_timer_| instance if it exists.

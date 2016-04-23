@@ -53,7 +53,8 @@ TEST_F(InkDropHoverTest, IsHoveredStateTransitions) {
   ink_drop_hover->FadeIn(base::TimeDelta::FromMilliseconds(0));
   EXPECT_TRUE(ink_drop_hover->IsFadingInOrVisible());
 
-  ink_drop_hover->FadeOut(base::TimeDelta::FromMilliseconds(0));
+  ink_drop_hover->FadeOut(base::TimeDelta::FromMilliseconds(0),
+                          false /* explode */);
   EXPECT_FALSE(ink_drop_hover->IsFadingInOrVisible());
 }
 

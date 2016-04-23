@@ -11,7 +11,9 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -32,6 +34,8 @@ class VIEWS_EXPORT InkDropHover {
                SkColor color);
   ~InkDropHover();
 
+  void set_explode_size(const gfx::Size& size) { explode_size_ = size; }
+
   // Returns true if the hover animation is either in the process of fading
   // in or is fully visible.
   bool IsFadingInOrVisible() const;
@@ -39,8 +43,9 @@ class VIEWS_EXPORT InkDropHover {
   // Fades in the hover visual over the given |duration|.
   void FadeIn(const base::TimeDelta& duration);
 
-  // Fades out the hover visual over the given |duration|.
-  void FadeOut(const base::TimeDelta& duration);
+  // Fades out the hover visual over the given |duration|. If |explode| is true
+  // then the hover will animate a size increase in addition to the fade out.
+  void FadeOut(const base::TimeDelta& duration, bool explode);
 
   // The root Layer that can be added in to a Layer tree.
   ui::Layer* layer() { return layer_.get(); }
@@ -48,15 +53,31 @@ class VIEWS_EXPORT InkDropHover {
  private:
   enum HoverAnimationType { FADE_IN, FADE_OUT };
 
-  // Animates a fade in/out as specified by |animation_type| over the given
+  // Animates a fade in/out as specified by |animation_type| combined with a
+  // transformation from the |initial_size| to the |target_size| over the given
   // |duration|.
   void AnimateFade(HoverAnimationType animation_type,
-                   const base::TimeDelta& duration);
+                   const base::TimeDelta& duration,
+                   const gfx::Size& initial_size,
+                   const gfx::Size& target_size);
+
+  // Calculates the Transform to apply to |layer_| for the given |size|.
+  gfx::Transform CalculateTransform(const gfx::Size& size) const;
 
   // The callback that will be invoked when a fade in/out animation is complete.
   bool AnimationEndedCallback(
       HoverAnimationType animation_type,
       const ui::CallbackLayerAnimationObserver& observer);
+
+  // The size of the hover shape when fully faded in.
+  gfx::Size size_;
+
+  // The target size of the hover shape when it expands during a fade out
+  // animation.
+  gfx::Size explode_size_;
+
+  // The center point of the hover shape in the parent Layer's coordinate space.
+  gfx::PointF center_point_;
 
   // True if the last animation to be initiated was a FADE_IN, and false
   // otherwise.

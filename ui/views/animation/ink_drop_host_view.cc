@@ -5,6 +5,7 @@
 #include "ui/views/animation/ink_drop_host_view.h"
 
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/animation/square_ink_drop_animation.h"
 
@@ -13,6 +14,17 @@ namespace views {
 // Default sizes for ink drop effects.
 const int kInkDropSize = 24;
 const int kInkDropLargeCornerRadius = 4;
+
+// The scale factor to compute the large ink drop size.
+const float kLargeInkDropScale = 1.333f;
+
+namespace {
+
+gfx::Size CalculateLargeInkDropSize(const gfx::Size small_size) {
+  return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
+}
+
+}  // namespace
 
 // static
 const int InkDropHostView::kInkDropSmallCornerRadius = 2;
@@ -36,12 +48,10 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 std::unique_ptr<InkDropAnimation> InkDropHostView::CreateInkDropAnimation()
     const {
-  gfx::Size large_drop(ink_drop_size_.width() * 4 / 3,
-                       ink_drop_size_.height() * 4 / 3);
-
   std::unique_ptr<InkDropAnimation> animation(new SquareInkDropAnimation(
-      large_drop, kInkDropLargeCornerRadius, ink_drop_size_,
-      kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
+      CalculateLargeInkDropSize(ink_drop_size_), kInkDropLargeCornerRadius,
+      ink_drop_size_, kInkDropSmallCornerRadius, GetInkDropCenter(),
+      GetInkDropBaseColor()));
   return animation;
 }
 
@@ -49,6 +59,7 @@ std::unique_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
   std::unique_ptr<InkDropHover> hover(
       new InkDropHover(ink_drop_size_, kInkDropSmallCornerRadius,
                        GetInkDropCenter(), GetInkDropBaseColor()));
+  hover->set_explode_size(CalculateLargeInkDropSize(ink_drop_size_));
   return hover;
 }
 

@@ -29,7 +29,7 @@ const int kHoverFadeInAfterAnimationDurationInMs = 250;
 
 // The duration, in milliseconds, of the hover state fade out animation when it
 // is triggered by an ink drop ripple animation starting.
-const int kHoverFadeOutBeforeAnimationDurationInMs = 300;
+const int kHoverFadeOutBeforeAnimationDurationInMs = 120;
 
 // The amount of time in milliseconds that |hover_| should delay after a ripple
 // animation before fading in.
@@ -85,7 +85,8 @@ void InkDropAnimationControllerImpl::AnimateToState(
 
   if (ink_drop_state != views::InkDropState::HIDDEN) {
     SetHoveredInternal(false, base::TimeDelta::FromMilliseconds(
-                                  kHoverFadeOutBeforeAnimationDurationInMs));
+                                  kHoverFadeOutBeforeAnimationDurationInMs),
+                       true);
   }
 
   ink_drop_animation_->AnimateToState(ink_drop_state);
@@ -96,7 +97,7 @@ void InkDropAnimationControllerImpl::SnapToActivated() {
   if (!ink_drop_animation_)
     CreateInkDropAnimation();
 
-  SetHoveredInternal(false, base::TimeDelta());
+  SetHoveredInternal(false, base::TimeDelta(), false);
 
   ink_drop_animation_->SnapToActivated();
 }
@@ -107,7 +108,8 @@ void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
                      is_hovered ? base::TimeDelta::FromMilliseconds(
                                       kHoverFadeInFromUserInputDurationInMs)
                                 : base::TimeDelta::FromMilliseconds(
-                                      kHoverFadeOutFromUserInputDurationInMs));
+                                      kHoverFadeOutFromUserInputDurationInMs),
+                     false);
 }
 
 void InkDropAnimationControllerImpl::DestroyHiddenTargetedAnimations() {
@@ -174,7 +176,8 @@ void InkDropAnimationControllerImpl::AnimationEnded(
 
 void InkDropAnimationControllerImpl::SetHoveredInternal(
     bool is_hovered,
-    base::TimeDelta animation_duration) {
+    base::TimeDelta animation_duration,
+    bool explode) {
   StopHoverAfterAnimationTimer();
 
   if (IsHoverFadingInOrVisible() == is_hovered)
@@ -185,7 +188,7 @@ void InkDropAnimationControllerImpl::SetHoveredInternal(
     if (hover_ && !IsVisible())
       hover_->FadeIn(animation_duration);
   } else {
-    hover_->FadeOut(animation_duration);
+    hover_->FadeOut(animation_duration, explode);
   }
 }
 
@@ -209,7 +212,8 @@ void InkDropAnimationControllerImpl::StopHoverAfterAnimationTimer() {
 
 void InkDropAnimationControllerImpl::HoverAfterAnimationTimerFired() {
   SetHoveredInternal(true, base::TimeDelta::FromMilliseconds(
-                               kHoverFadeInAfterAnimationDurationInMs));
+                               kHoverFadeInAfterAnimationDurationInMs),
+                     true);
   hover_after_animation_timer_.reset();
 }
 
