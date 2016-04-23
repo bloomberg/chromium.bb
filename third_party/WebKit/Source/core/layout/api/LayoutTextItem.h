@@ -30,16 +30,6 @@ public:
 
     LayoutTextItem() { }
 
-    bool isTextFragment() const
-    {
-        return toText()->isTextFragment();
-    }
-
-    void dirtyLineBoxes()
-    {
-        toText()->dirtyLineBoxes();
-    }
-
     void setStyle(PassRefPtr<ComputedStyle> style)
     {
         toText()->setStyle(style);

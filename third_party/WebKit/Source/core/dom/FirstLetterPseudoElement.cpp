@@ -30,7 +30,6 @@
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/api/LayoutTextFragmentItem.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/text/icu/UnicodeIcu.h"
@@ -186,17 +185,17 @@ void FirstLetterPseudoElement::updateTextFragments()
     for (auto child = layoutObject()->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isText() || !toLayoutText(child)->isTextFragment())
             continue;
-        LayoutTextFragmentItem childFragment = LayoutTextFragmentItem(toLayoutTextFragment(child));
-        if (childFragment.firstLetterPseudoElement() != this)
+        LayoutTextFragment* childFragment = toLayoutTextFragment(child);
+        if (childFragment->firstLetterPseudoElement() != this)
             continue;
 
-        childFragment.setTextFragment(oldText.impl()->substring(0, length), 0, length);
-        childFragment.dirtyLineBoxes();
+        childFragment->setTextFragment(oldText.impl()->substring(0, length), 0, length);
+        childFragment->dirtyLineBoxes();
 
         // Make sure the first-letter layoutObject is set to require a layout as it
         // needs to re-create the line boxes. The remaining text layoutObject
         // will be marked by the LayoutText::setText.
-        childFragment.setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TextChanged);
+        childFragment->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TextChanged);
         break;
     }
 }

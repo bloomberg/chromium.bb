@@ -5,8 +5,8 @@
 #ifndef LayoutItem_h
 #define LayoutItem_h
 
-#include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutObject.h"
+
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -172,11 +172,6 @@ public:
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
     {
         m_layoutObject->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-    }
-
-    void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
-    {
-        m_layoutObject->setNeedsLayoutAndPrefWidthsRecalc(reason);
     }
 
     void computeLayerHitTestRects(LayerHitTestRects& layerRects) const
