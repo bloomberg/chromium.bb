@@ -926,6 +926,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Arc OptIn cancelation reason.</summary>
 </histogram>
 
+<histogram name="Arc.ShutdownTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <summary>
+    The time it takes for ARC to shut down. This value is recorded on ARC
+    shutdown as the time is takes for the init process to exit after setting
+    'sys.powerctl shutdown'. It is reported on the next ARC startup to avoid
+    sending data during shutdown.
+  </summary>
+</histogram>
+
 <histogram name="Arc.State" enum="BooleanEnabled">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
