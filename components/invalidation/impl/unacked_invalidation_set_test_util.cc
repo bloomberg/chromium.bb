@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 
+#include <memory>
+
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -144,7 +146,7 @@ void UnackedInvalidationsMapEqMatcher::DescribeNegationTo(
 
 void PrintTo(const UnackedInvalidationSet& invalidations,
              ::std::ostream* os) {
-  scoped_ptr<base::DictionaryValue> value = invalidations.ToValue();
+  std::unique_ptr<base::DictionaryValue> value = invalidations.ToValue();
 
   std::string output;
   JSONStringValueSerializer serializer(&output);
@@ -155,7 +157,7 @@ void PrintTo(const UnackedInvalidationSet& invalidations,
 }
 
 void PrintTo(const UnackedInvalidationsMap& map, ::std::ostream* os) {
-  scoped_ptr<base::ListValue> list(new base::ListValue);
+  std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (UnackedInvalidationsMap::const_iterator it = map.begin();
        it != map.end(); ++it) {
     list->Append(it->second.ToValue().release());

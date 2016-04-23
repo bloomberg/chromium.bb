@@ -13,7 +13,7 @@
 namespace invalidation {
 
 ProfileInvalidationProvider::ProfileInvalidationProvider(
-    scoped_ptr<InvalidationService> invalidation_service)
+    std::unique_ptr<InvalidationService> invalidation_service)
     : invalidation_service_(std::move(invalidation_service)) {}
 
 ProfileInvalidationProvider::~ProfileInvalidationProvider() {

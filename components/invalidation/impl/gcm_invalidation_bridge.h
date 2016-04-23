@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_GCM_INVALIDATION_BRIDGE_H_
 #define COMPONENTS_INVALIDATION_IMPL_GCM_INVALIDATION_BRIDGE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/gcm_driver/common/gcm_messages.h"
@@ -67,7 +68,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
   void OnConnected(const net::IPEndPoint& ip_endpoint) override;
   void OnDisconnected() override;
 
-  scoped_ptr<syncer::GCMNetworkChannelDelegate> CreateDelegate();
+  std::unique_ptr<syncer::GCMNetworkChannelDelegate> CreateDelegate();
 
   void CoreInitializationDone(
       base::WeakPtr<Core> core,
@@ -100,7 +101,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
   scoped_refptr<base::SingleThreadTaskRunner> core_thread_task_runner_;
 
   // Fields related to RequestToken function.
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
   syncer::GCMNetworkChannelDelegate::RequestTokenCallback
       request_token_callback_;
   bool subscribed_for_incoming_messages_;

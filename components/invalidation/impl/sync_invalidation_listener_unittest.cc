@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -264,8 +265,8 @@ class SyncInvalidationListenerTest : public testing::Test {
         kAppsId_(kChromeSyncSourceId, "APP"),
         fake_push_client_(new notifier::FakePushClient()),
         fake_invalidation_client_(NULL),
-        listener_(scoped_ptr<SyncNetworkChannel>(new PushClientChannel(
-            scoped_ptr<notifier::PushClient>(fake_push_client_)))),
+        listener_(base::WrapUnique(
+            new PushClientChannel(base::WrapUnique(fake_push_client_)))),
         fake_delegate_(&listener_) {}
 
   void SetUp() override {

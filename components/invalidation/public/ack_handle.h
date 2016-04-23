@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_INVALIDATION_PUBLIC_ACK_HANDLE_H_
 #define COMPONENTS_INVALIDATION_PUBLIC_ACK_HANDLE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/invalidation_export.h"
 
@@ -26,7 +26,7 @@ class INVALIDATION_EXPORT AckHandle {
 
   bool Equals(const AckHandle& other) const;
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
   bool ResetFromValue(const base::DictionaryValue& value);
 
   bool IsValid() const;

@@ -4,10 +4,11 @@
 
 #include "components/invalidation/impl/non_blocking_invalidator.h"
 
+#include <memory>
+
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
@@ -85,7 +86,7 @@ class NonBlockingInvalidatorTestDelegate {
   base::MessageLoop message_loop_;
   base::Thread io_thread_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_ptr<NonBlockingInvalidator> invalidator_;
+  std::unique_ptr<NonBlockingInvalidator> invalidator_;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(

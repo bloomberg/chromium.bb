@@ -17,7 +17,7 @@
 namespace syncer {
 
 InvalidationNotifier::InvalidationNotifier(
-    scoped_ptr<SyncNetworkChannel> network_channel,
+    std::unique_ptr<SyncNetworkChannel> network_channel,
     const std::string& invalidator_client_id,
     const UnackedInvalidationsMap& saved_invalidations,
     const std::string& invalidation_bootstrap_data,

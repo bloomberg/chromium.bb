@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/invalidation/impl/invalidator_registrar.h"
+
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
-#include "components/invalidation/impl/invalidator_registrar.h"
 #include "components/invalidation/impl/invalidator_test_template.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,7 +104,7 @@ class RegistrarInvalidatorTestDelegate {
   }
 
  private:
-  scoped_ptr<RegistrarInvalidator> invalidator_;
+  std::unique_ptr<RegistrarInvalidator> invalidator_;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(

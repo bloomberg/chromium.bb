@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-
 #include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/impl/state_writer.h"
 #include "google/cacheinvalidation/include/types.h"
@@ -51,8 +51,7 @@ class MockStorageCallback {
 class SyncSystemResourcesTest : public testing::Test {
  protected:
   SyncSystemResourcesTest()
-      : push_client_channel_(
-            scoped_ptr<notifier::PushClient>(new notifier::FakePushClient())),
+      : push_client_channel_(base::WrapUnique(new notifier::FakePushClient())),
         sync_system_resources_(&push_client_channel_, &mock_state_writer_) {}
 
   ~SyncSystemResourcesTest() override {}

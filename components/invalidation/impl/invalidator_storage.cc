@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
@@ -41,9 +41,9 @@ bool ValueToUnackedInvalidationStorageMap(
   return true;
 }
 
-scoped_ptr<base::ListValue> UnackedInvalidationStorageMapToValue(
+std::unique_ptr<base::ListValue> UnackedInvalidationStorageMapToValue(
     const syncer::UnackedInvalidationsMap& map) {
-  scoped_ptr<base::ListValue> value(new base::ListValue);
+  std::unique_ptr<base::ListValue> value(new base::ListValue);
   for (syncer::UnackedInvalidationsMap::const_iterator it = map.begin();
        it != map.end(); ++it) {
     value->Append(it->second.ToValue().release());
@@ -114,7 +114,8 @@ std::string InvalidatorStorage::GetBootstrapData() const {
 
 void InvalidatorStorage::SetSavedInvalidations(
       const syncer::UnackedInvalidationsMap& map) {
-  scoped_ptr<base::ListValue> value(UnackedInvalidationStorageMapToValue(map));
+  std::unique_ptr<base::ListValue> value(
+      UnackedInvalidationStorageMapToValue(map));
   pref_service_->Set(prefs::kInvalidatorSavedInvalidations, *value.get());
 }
 

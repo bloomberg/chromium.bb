@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -89,17 +91,17 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FakeProfileOAuth2TokenService> token_service_;
-  scoped_ptr<gcm::GCMDriver> gcm_driver_;
-  scoped_ptr<FakeIdentityProvider> identity_provider_;
+  std::unique_ptr<FakeProfileOAuth2TokenService> token_service_;
+  std::unique_ptr<gcm::GCMDriver> gcm_driver_;
+  std::unique_ptr<FakeIdentityProvider> identity_provider_;
 
   std::vector<std::string> issued_tokens_;
   std::vector<GoogleServiceAuthError> request_token_errors_;
   std::string registration_id_;
   bool connection_online_;
 
-  scoped_ptr<GCMInvalidationBridge> bridge_;
-  scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate_;
+  std::unique_ptr<GCMInvalidationBridge> bridge_;
+  std::unique_ptr<syncer::GCMNetworkChannelDelegate> delegate_;
 };
 
 TEST_F(GCMInvalidationBridgeTest, RequestToken) {

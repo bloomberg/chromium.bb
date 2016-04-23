@@ -4,8 +4,9 @@
 
 #include "components/invalidation/public/object_id_invalidation_map.h"
 
-#include "google/cacheinvalidation/types.pb.h"
+#include <memory>
 
+#include "google/cacheinvalidation/types.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -76,7 +77,7 @@ TEST_F(ObjectIdInvalidationMapTest, GetSubsetWithObjectIds) {
 }
 
 TEST_F(ObjectIdInvalidationMapTest, SerializeEmpty) {
-  scoped_ptr<base::ListValue> value = empty.ToValue();
+  std::unique_ptr<base::ListValue> value = empty.ToValue();
   ASSERT_TRUE(value.get());
   ObjectIdInvalidationMap deserialized;
   deserialized.ResetFromValue(*value.get());
@@ -84,7 +85,7 @@ TEST_F(ObjectIdInvalidationMapTest, SerializeEmpty) {
 }
 
 TEST_F(ObjectIdInvalidationMapTest, SerializeOneInvalidation) {
-  scoped_ptr<base::ListValue> value = one_invalidation.ToValue();
+  std::unique_ptr<base::ListValue> value = one_invalidation.ToValue();
   ASSERT_TRUE(value.get());
   ObjectIdInvalidationMap deserialized;
   deserialized.ResetFromValue(*value.get());
@@ -92,7 +93,7 @@ TEST_F(ObjectIdInvalidationMapTest, SerializeOneInvalidation) {
 }
 
 TEST_F(ObjectIdInvalidationMapTest, SerializeInvalidateAll) {
-  scoped_ptr<base::ListValue> value = invalidate_all.ToValue();
+  std::unique_ptr<base::ListValue> value = invalidate_all.ToValue();
   ASSERT_TRUE(value.get());
   ObjectIdInvalidationMap deserialized;
   deserialized.ResetFromValue(*value.get());

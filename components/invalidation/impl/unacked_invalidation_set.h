@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/memory/weak_ptr.h"
@@ -93,7 +94,7 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   // indicate that this invalidation has been lost without being acted on.
   void Drop(const AckHandle& handle);
 
-  scoped_ptr<base::DictionaryValue> ToValue() const;
+  std::unique_ptr<base::DictionaryValue> ToValue() const;
   bool ResetFromValue(const base::DictionaryValue& value);
 
  private:

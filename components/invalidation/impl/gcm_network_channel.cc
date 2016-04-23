@@ -112,7 +112,7 @@ void RecordOutgoingMessageStatus(OutgoingMessageStatus status) {
 
 GCMNetworkChannel::GCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    scoped_ptr<GCMNetworkChannelDelegate> delegate)
+    std::unique_ptr<GCMNetworkChannelDelegate> delegate)
     : request_context_getter_(request_context_getter),
       delegate_(std::move(delegate)),
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
@@ -236,7 +236,7 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(fetcher_.get(), source);
   // Free fetcher at the end of function.
-  scoped_ptr<net::URLFetcher> fetcher = std::move(fetcher_);
+  std::unique_ptr<net::URLFetcher> fetcher = std::move(fetcher_);
 
   net::URLRequestStatus status = fetcher->GetStatus();
   diagnostic_info_.last_post_response_code_ =
@@ -403,9 +403,9 @@ GCMNetworkChannelDiagnostic::GCMNetworkChannelDiagnostic(
       registration_result_(gcm::GCMClient::UNKNOWN_ERROR),
       sent_messages_count_(0) {}
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 GCMNetworkChannelDiagnostic::CollectDebugData() const {
-  scoped_ptr<base::DictionaryValue> status(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> status(new base::DictionaryValue);
   status->SetString("GCMNetworkChannel.Channel", "GCM");
   std::string reg_id_hash = base::SHA1HashString(registration_id_);
   status->SetString("GCMNetworkChannel.HashedRegistrationID",

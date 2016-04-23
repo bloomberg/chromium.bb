@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/invalidation/impl/fake_invalidator.h"
+
+#include <memory>
+
+#include "base/compiler_specific.h"
 #include "components/invalidation/impl/invalidator_test_template.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,7 +53,7 @@ class FakeInvalidatorTestDelegate {
   }
 
  private:
-  scoped_ptr<FakeInvalidator> invalidator_;
+  std::unique_ptr<FakeInvalidator> invalidator_;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(

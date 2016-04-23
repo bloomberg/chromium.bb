@@ -8,12 +8,12 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_SYNC_INVALIDATION_LISTENER_H_
 #define COMPONENTS_INVALIDATION_IMPL_SYNC_INVALIDATION_LISTENER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
@@ -65,7 +65,7 @@ class INVALIDATION_EXPORT SyncInvalidationListener
   };
 
   explicit SyncInvalidationListener(
-      scoped_ptr<SyncNetworkChannel> network_channel);
+      std::unique_ptr<SyncNetworkChannel> network_channel);
 
   // Calls Stop().
   ~SyncInvalidationListener() override;
@@ -162,19 +162,19 @@ class INVALIDATION_EXPORT SyncInvalidationListener
   void EmitSavedInvalidations(const ObjectIdInvalidationMap& to_emit);
 
   // Generate a Dictionary with all the debugging information.
-  scoped_ptr<base::DictionaryValue> CollectDebugData() const;
+  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
 
   base::WeakPtr<AckHandler> AsWeakPtr();
 
-  scoped_ptr<SyncNetworkChannel> sync_network_channel_;
+  std::unique_ptr<SyncNetworkChannel> sync_network_channel_;
   SyncSystemResources sync_system_resources_;
   UnackedInvalidationsMap unacked_invalidations_map_;
   base::WeakPtr<InvalidationStateTracker> invalidation_state_tracker_;
   scoped_refptr<base::SequencedTaskRunner>
       invalidation_state_tracker_task_runner_;
   Delegate* delegate_;
-  scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
-  scoped_ptr<RegistrationManager> registration_manager_;
+  std::unique_ptr<invalidation::InvalidationClient> invalidation_client_;
+  std::unique_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
   ObjectIdSet registered_ids_;
 

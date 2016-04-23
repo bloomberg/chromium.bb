@@ -34,8 +34,8 @@ bool AckHandle::Equals(const AckHandle& other) const {
   return state_ == other.state_ && timestamp_ == other.timestamp_;
 }
 
-scoped_ptr<base::DictionaryValue> AckHandle::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> AckHandle::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("state", state_);
   value->SetString("timestamp",
                    base::Int64ToString(timestamp_.ToInternalValue()));

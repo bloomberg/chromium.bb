@@ -57,8 +57,8 @@ namespace invalidation {
 
 TiclInvalidationService::TiclInvalidationService(
     const std::string& user_agent,
-    scoped_ptr<IdentityProvider> identity_provider,
-    scoped_ptr<TiclSettingsProvider> settings_provider,
+    std::unique_ptr<IdentityProvider> identity_provider,
+    std::unique_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : OAuth2TokenService::Consumer("ticl_invalidation"),
@@ -85,7 +85,8 @@ TiclInvalidationService::~TiclInvalidationService() {
 }
 
 void TiclInvalidationService::Init(
-    scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker) {
+    std::unique_ptr<syncer::InvalidationStateTracker>
+        invalidation_state_tracker) {
   DCHECK(CalledOnValidThread());
   invalidation_state_tracker_ = std::move(invalidation_state_tracker);
 
@@ -105,7 +106,8 @@ void TiclInvalidationService::Init(
 }
 
 void TiclInvalidationService::InitForTest(
-    scoped_ptr<syncer::InvalidationStateTracker> invalidation_state_tracker,
+    std::unique_ptr<syncer::InvalidationStateTracker>
+        invalidation_state_tracker,
     syncer::Invalidator* invalidator) {
   // Here we perform the equivalent of Init() and StartInvalidator(), but with
   // some minor changes to account for the fact that we're injecting the

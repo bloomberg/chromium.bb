@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/gcm_network_channel.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/base64url.h"
@@ -85,7 +86,7 @@ class TestGCMNetworkChannel : public GCMNetworkChannel {
  public:
   TestGCMNetworkChannel(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      scoped_ptr<GCMNetworkChannelDelegate> delegate)
+      std::unique_ptr<GCMNetworkChannelDelegate> delegate)
       : GCMNetworkChannel(request_context_getter, std::move(delegate)) {
     ResetRegisterBackoffEntryForTest(&kTestBackoffPolicy);
   }
@@ -140,7 +141,7 @@ class GCMNetworkChannelTest
     // Ownership of delegate goes to GCNMentworkChannel but test needs pointer
     // to it.
     delegate_ = new TestGCMNetworkChannelDelegate();
-    scoped_ptr<GCMNetworkChannelDelegate> delegate(delegate_);
+    std::unique_ptr<GCMNetworkChannelDelegate> delegate(delegate_);
     gcm_network_channel_.reset(new TestGCMNetworkChannel(
         request_context_getter_, std::move(delegate)));
     gcm_network_channel_->AddObserver(this);
@@ -182,15 +183,16 @@ class GCMNetworkChannelTest
     return url_fetcher_factory_.get();
   }
 
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcherDelegate* delegate,
       const std::string& response_data,
       net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
     ++url_fetchers_created_count_;
-    return scoped_ptr<net::FakeURLFetcher>(new TestNetworkChannelURLFetcher(
-        this, url, delegate, response_data, response_code, status));
+    return std::unique_ptr<net::FakeURLFetcher>(
+        new TestNetworkChannelURLFetcher(this, url, delegate, response_data,
+                                         response_code, status));
   }
 
   void set_last_echo_token(const std::string& echo_token) {
@@ -213,9 +215,9 @@ class GCMNetworkChannelTest
  private:
   base::MessageLoop message_loop_;
   TestGCMNetworkChannelDelegate* delegate_;
-  scoped_ptr<GCMNetworkChannel> gcm_network_channel_;
+  std::unique_ptr<GCMNetworkChannel> gcm_network_channel_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  scoped_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
+  std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
   int url_fetchers_created_count_;
   std::string last_echo_token_;
   InvalidatorState last_invalidator_state_;

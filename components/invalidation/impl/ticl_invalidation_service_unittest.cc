@@ -4,9 +4,12 @@
 
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -65,17 +68,15 @@ class TiclInvalidationServiceTestDelegate {
     gcm_driver_.reset(new gcm::FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
         "TestUserAgent",
-        scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
-        scoped_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
-        gcm_driver_.get(),
-        NULL));
+        base::WrapUnique(new FakeIdentityProvider(&token_service_)),
+        std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
+        gcm_driver_.get(), NULL));
   }
 
   void InitializeInvalidationService() {
     fake_invalidator_ = new syncer::FakeInvalidator();
     invalidation_service_->InitForTest(
-        scoped_ptr<syncer::InvalidationStateTracker>(
-            new syncer::FakeInvalidationStateTracker),
+        base::WrapUnique(new syncer::FakeInvalidationStateTracker),
         fake_invalidator_);
   }
 
@@ -97,10 +98,10 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   FakeOAuth2TokenService token_service_;
-  scoped_ptr<gcm::GCMDriver> gcm_driver_;
+  std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
 
-  scoped_ptr<TiclInvalidationService> invalidation_service_;
+  std::unique_ptr<TiclInvalidationService> invalidation_service_;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(
@@ -127,7 +128,7 @@ class FakeCallbackContainer {
 // Test that requesting for detailed status doesn't crash even if the
 // underlying invalidator is not initialized.
 TEST(TiclInvalidationServiceLoggingTest, DetailedStatusCallbacksWork) {
-  scoped_ptr<TiclInvalidationServiceTestDelegate> delegate (
+  std::unique_ptr<TiclInvalidationServiceTestDelegate> delegate(
       new TiclInvalidationServiceTestDelegate());
 
   delegate->CreateUninitializedInvalidationService();

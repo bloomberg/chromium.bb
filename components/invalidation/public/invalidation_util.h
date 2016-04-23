@@ -8,10 +8,10 @@
 #define COMPONENTS_INVALIDATION_PUBLIC_INVALIDATION_UTIL_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/invalidation/public/invalidation_export.h"
 
 namespace base {
@@ -43,7 +43,7 @@ typedef std::map<invalidation::ObjectId, int, ObjectIdLessThan>
     ObjectIdCountMap;
 
 // Caller owns the returned DictionaryValue.
-scoped_ptr<base::DictionaryValue> ObjectIdToValue(
+std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
     const invalidation::ObjectId& object_id);
 
 bool ObjectIdFromValue(const base::DictionaryValue& value,

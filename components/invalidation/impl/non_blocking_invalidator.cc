@@ -5,12 +5,12 @@
 #include "components/invalidation/impl/non_blocking_invalidator.h"
 
 #include <cstddef>
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -69,7 +69,7 @@ class CallbackProxy {
 
  private:
   static void DoRun(base::Callback<void(const base::DictionaryValue&)> callback,
-                    scoped_ptr<base::DictionaryValue> value);
+                    std::unique_ptr<base::DictionaryValue> value);
 
   base::Callback<void(const base::DictionaryValue&)> callback_;
   scoped_refptr<base::SingleThreadTaskRunner> running_thread_;
@@ -86,12 +86,12 @@ CallbackProxy::~CallbackProxy() {}
 
 void CallbackProxy::DoRun(
     base::Callback<void(const base::DictionaryValue&)> callback,
-    scoped_ptr<base::DictionaryValue> value) {
+    std::unique_ptr<base::DictionaryValue> value) {
   callback.Run(*value);
 }
 
 void CallbackProxy::Run(const base::DictionaryValue& value) {
-  scoped_ptr<base::DictionaryValue> copied(value.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> copied(value.DeepCopy());
   running_thread_->PostTask(
       FROM_HERE,
       base::Bind(&CallbackProxy::DoRun, callback_, base::Passed(&copied)));
@@ -133,7 +133,7 @@ class NonBlockingInvalidator::Core
   // The variables below should be used only on the I/O thread.
   const base::WeakPtr<NonBlockingInvalidator> delegate_observer_;
   scoped_refptr<base::SingleThreadTaskRunner> delegate_observer_task_runner_;
-  scoped_ptr<InvalidationNotifier> invalidation_notifier_;
+  std::unique_ptr<InvalidationNotifier> invalidation_notifier_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
@@ -158,7 +158,7 @@ void NonBlockingInvalidator::Core::Initialize(
   network_task_runner_ =
       initialize_options.request_context_getter->GetNetworkTaskRunner();
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<SyncNetworkChannel> network_channel =
+  std::unique_ptr<SyncNetworkChannel> network_channel =
       initialize_options.network_channel_creator.Run();
   invalidation_notifier_.reset(new InvalidationNotifier(
       std::move(network_channel), initialize_options.invalidator_client_id,
@@ -330,7 +330,7 @@ NetworkChannelCreator
 
 NetworkChannelCreator NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    scoped_ptr<GCMNetworkChannelDelegate> delegate) {
+    std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
   return base::Bind(&SyncNetworkChannel::CreateGCMNetworkChannel,
                     request_context_getter,
                     base::Passed(&delegate));

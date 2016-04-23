@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "components/invalidation/impl/push_client_channel.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "jingle/notifier/listener/notification_defines.h"
@@ -21,8 +22,7 @@ class PushClientChannelTest
  protected:
   PushClientChannelTest()
       : fake_push_client_(new notifier::FakePushClient()),
-        push_client_channel_(
-            scoped_ptr<notifier::PushClient>(fake_push_client_)),
+        push_client_channel_(base::WrapUnique(fake_push_client_)),
         last_invalidator_state_(DEFAULT_INVALIDATION_ERROR) {
     push_client_channel_.AddObserver(this);
     push_client_channel_.SetMessageReceiver(

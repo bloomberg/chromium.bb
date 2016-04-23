@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -55,7 +55,7 @@ class INVALIDATION_EXPORT SingleObjectInvalidationSet {
   const_reverse_iterator rend() const;
   const Invalidation& back() const;
 
-  scoped_ptr<base::ListValue> ToValue() const;
+  std::unique_ptr<base::ListValue> ToValue() const;
   bool ResetFromValue(const base::ListValue& list);
 
  private:

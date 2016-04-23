@@ -8,6 +8,7 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_NON_BLOCKING_INVALIDATOR_H_
 #define COMPONENTS_INVALIDATION_IMPL_NON_BLOCKING_INVALIDATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -33,8 +34,8 @@ class GCMNetworkChannelDelegate;
 
 // Callback type for function that creates SyncNetworkChannel. This function
 // gets passed into NonBlockingInvalidator constructor.
-typedef base::Callback<scoped_ptr<SyncNetworkChannel>(void)>
-    NetworkChannelCreator;
+using NetworkChannelCreator =
+    base::Callback<std::unique_ptr<SyncNetworkChannel>(void)>;
 
 class INVALIDATION_EXPORT NonBlockingInvalidator
     : public Invalidator,
@@ -72,7 +73,7 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
       const notifier::NotifierOptions& notifier_options);
   static NetworkChannelCreator MakeGCMNetworkChannelCreator(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      scoped_ptr<GCMNetworkChannelDelegate> delegate);
+      std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   // These methods are forwarded to the invalidation_state_tracker_.
   void ClearAndSetNewClientId(const std::string& data) override;

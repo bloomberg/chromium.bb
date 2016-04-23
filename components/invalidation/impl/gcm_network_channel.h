@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_GCM_NETWORK_CHANNEL_H_
 #define COMPONENTS_INVALIDATION_IMPL_GCM_NETWORK_CHANNEL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "components/invalidation/impl/sync_system_resources.h"
@@ -29,7 +29,7 @@ struct GCMNetworkChannelDiagnostic {
   explicit GCMNetworkChannelDiagnostic(GCMNetworkChannel* parent);
 
   // Collect all the internal variables in a single readable dictionary.
-  scoped_ptr<base::DictionaryValue> CollectDebugData() const;
+  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
 
   // TODO(pavely): Move this toString to a more appropiate place in GCMClient.
   std::string GCMClientResultToString(
@@ -54,7 +54,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
  public:
   GCMNetworkChannel(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      scoped_ptr<GCMNetworkChannelDelegate> delegate);
+      std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   ~GCMNetworkChannel() override;
 
@@ -98,7 +98,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
   void UpdateHttpChannelState(bool online);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_ptr<GCMNetworkChannelDelegate> delegate_;
+  std::unique_ptr<GCMNetworkChannelDelegate> delegate_;
 
   // Message is saved until all conditions are met: there is valid
   // registration_id and access_token.
@@ -111,9 +111,9 @@ class INVALIDATION_EXPORT GCMNetworkChannel
   // GCM registration_id is requested one at startup and never refreshed until
   // next restart.
   std::string registration_id_;
-  scoped_ptr<net::BackoffEntry> register_backoff_entry_;
+  std::unique_ptr<net::BackoffEntry> register_backoff_entry_;
 
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   // cacheinvalidation client receives echo_token with incoming message from
   // GCM and shuld include it in headers with outgoing message over http.

@@ -33,7 +33,7 @@ namespace syncer {
 SyncInvalidationListener::Delegate::~Delegate() {}
 
 SyncInvalidationListener::SyncInvalidationListener(
-    scoped_ptr<SyncNetworkChannel> network_channel)
+    std::unique_ptr<SyncNetworkChannel> network_channel)
     : sync_network_channel_(std::move(network_channel)),
       sync_system_resources_(sync_network_channel_.get(), this),
       delegate_(NULL),
@@ -380,15 +380,17 @@ void SyncInvalidationListener::RequestDetailedStatus(
   callback.Run(*CollectDebugData());
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 SyncInvalidationListener::CollectDebugData() const {
-  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> return_value(
+      new base::DictionaryValue());
   return_value->SetString(
       "SyncInvalidationListener.PushClientState",
       std::string(InvalidatorStateToString(push_client_state_)));
   return_value->SetString("SyncInvalidationListener.TiclState",
                           std::string(InvalidatorStateToString(ticl_state_)));
-  scoped_ptr<base::DictionaryValue> unacked_map(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> unacked_map(
+      new base::DictionaryValue());
   for (UnackedInvalidationsMap::const_iterator it =
            unacked_invalidations_map_.begin();
        it != unacked_invalidations_map_.end();

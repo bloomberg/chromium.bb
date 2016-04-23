@@ -125,12 +125,12 @@ void UnackedInvalidationSet::Drop(const AckHandle& handle) {
   invalidations_.insert(unknown_version);
 }
 
-scoped_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetString(kSourceKey, base::IntToString(object_id_.source()));
   value->SetString(kNameKey, object_id_.name());
 
-  scoped_ptr<base::ListValue> list_value(new base::ListValue);
+  std::unique_ptr<base::ListValue> list_value(new base::ListValue);
   for (InvalidationsSet::const_iterator it = invalidations_.begin();
        it != invalidations_.end(); ++it) {
     list_value->Append(it->ToValue().release());
@@ -176,7 +176,8 @@ bool UnackedInvalidationSet::ResetListFromValue(
       DLOG(WARNING) << "Failed to get invalidation dictionary at index " << i;
       return false;
     }
-    scoped_ptr<Invalidation> invalidation = Invalidation::InitFromValue(*dict);
+    std::unique_ptr<Invalidation> invalidation =
+        Invalidation::InitFromValue(*dict);
     if (!invalidation) {
       DLOG(WARNING) << "Failed to parse invalidation at index " << i;
       return false;

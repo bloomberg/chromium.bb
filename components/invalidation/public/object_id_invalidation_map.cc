@@ -84,8 +84,8 @@ bool ObjectIdInvalidationMap::operator==(
   return map_ == other.map_;
 }
 
-scoped_ptr<base::ListValue> ObjectIdInvalidationMap::ToValue() const {
-  scoped_ptr<base::ListValue> value(new base::ListValue());
+std::unique_ptr<base::ListValue> ObjectIdInvalidationMap::ToValue() const {
+  std::unique_ptr<base::ListValue> value(new base::ListValue());
   for (IdToListMap::const_iterator it1 = map_.begin();
        it1 != map_.end(); ++it1) {
     for (SingleObjectInvalidationSet::const_iterator it2 =
@@ -103,7 +103,8 @@ bool ObjectIdInvalidationMap::ResetFromValue(const base::ListValue& value) {
     if (!value.GetDictionary(i, &dict)) {
       return false;
     }
-    scoped_ptr<Invalidation> invalidation = Invalidation::InitFromValue(*dict);
+    std::unique_ptr<Invalidation> invalidation =
+        Invalidation::InitFromValue(*dict);
     if (!invalidation) {
       return false;
     }

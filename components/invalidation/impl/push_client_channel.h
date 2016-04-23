@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/invalidation/impl/sync_system_resources.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "jingle/notifier/listener/push_client_observer.h"
@@ -30,7 +30,7 @@ class INVALIDATION_EXPORT PushClientChannel
  public:
   // |push_client| is guaranteed to be destroyed only when this object
   // is destroyed.
-  explicit PushClientChannel(scoped_ptr<notifier::PushClient> push_client);
+  explicit PushClientChannel(std::unique_ptr<notifier::PushClient> push_client);
 
   ~PushClientChannel() override;
 
@@ -76,9 +76,9 @@ class INVALIDATION_EXPORT PushClientChannel
                             std::string* message,
                             std::string* service_context,
                             int64_t* scheduling_hash);
-  scoped_ptr<base::DictionaryValue> CollectDebugData() const;
+  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
 
-  scoped_ptr<notifier::PushClient> push_client_;
+  std::unique_ptr<notifier::PushClient> push_client_;
   std::string service_context_;
   int64_t scheduling_hash_;
 

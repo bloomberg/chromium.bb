@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -165,18 +166,17 @@ void SyncNetworkChannel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
+std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
     const notifier::NotifierOptions& notifier_options) {
-  scoped_ptr<notifier::PushClient> push_client(
+  std::unique_ptr<notifier::PushClient> push_client(
       notifier::PushClient::CreateDefaultOnIOThread(notifier_options));
-  return scoped_ptr<SyncNetworkChannel>(
-      new PushClientChannel(std::move(push_client)));
+  return base::WrapUnique(new PushClientChannel(std::move(push_client)));
 }
 
-scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
+std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    scoped_ptr<GCMNetworkChannelDelegate> delegate) {
-  return scoped_ptr<SyncNetworkChannel>(
+    std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
+  return base::WrapUnique(
       new GCMNetworkChannel(request_context_getter, std::move(delegate)));
 }
 

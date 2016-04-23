@@ -4,8 +4,9 @@
 
 #include "components/invalidation/impl/ticl_profile_settings_provider.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
@@ -43,7 +44,7 @@ class TiclProfileSettingsProviderTest : public testing::Test {
   user_prefs::TestingPrefServiceSyncable pref_service_;
   FakeOAuth2TokenService token_service_;
 
-  scoped_ptr<TiclInvalidationService> invalidation_service_;
+  std::unique_ptr<TiclInvalidationService> invalidation_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TiclProfileSettingsProviderTest);
@@ -61,12 +62,12 @@ void TiclProfileSettingsProviderTest::SetUp() {
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
 
   invalidation_service_.reset(new TiclInvalidationService(
-      "TestUserAgent",
-      scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
-      scoped_ptr<TiclSettingsProvider>(
+      "TestUserAgent", std::unique_ptr<IdentityProvider>(
+                           new FakeIdentityProvider(&token_service_)),
+      std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
       &gcm_driver_, request_context_getter_));
-  invalidation_service_->Init(scoped_ptr<syncer::InvalidationStateTracker>(
+  invalidation_service_->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new syncer::FakeInvalidationStateTracker));
 }
 

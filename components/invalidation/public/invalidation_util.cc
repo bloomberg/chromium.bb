@@ -4,11 +4,11 @@
 
 #include "components/invalidation/public/invalidation_util.h"
 
+#include <memory>
 #include <ostream>
 #include <sstream>
 
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/invalidation/public/invalidation.h"
 #include "google/cacheinvalidation/include/types.h"
@@ -40,9 +40,9 @@ bool InvalidationVersionLessThan::operator()(const Invalidation& a,
   return a.version() < b.version();
 }
 
-scoped_ptr<base::DictionaryValue> ObjectIdToValue(
+std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
     const invalidation::ObjectId& object_id) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("source", object_id.source());
   value->SetString("name", object_id.name());
   return value;

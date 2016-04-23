@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/json/json_string_value_serializer.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -187,7 +189,8 @@ class UnackedInvalidationSetSerializationTest
     : public UnackedInvalidationSetTest {
  public:
   UnackedInvalidationSet SerializeDeserialize() {
-    scoped_ptr<base::DictionaryValue> value = unacked_invalidations_.ToValue();
+    std::unique_ptr<base::DictionaryValue> value =
+        unacked_invalidations_.ToValue();
     UnackedInvalidationSet deserialized(kObjectId_);
     deserialized.ResetFromValue(*value.get());
     return deserialized;

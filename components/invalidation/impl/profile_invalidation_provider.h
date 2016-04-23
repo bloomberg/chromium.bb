@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_PROFILE_INVALIDATION_PROVIDER_H_
 #define COMPONENTS_INVALIDATION_IMPL_PROFILE_INVALIDATION_PROVIDER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace user_prefs {
@@ -22,7 +23,7 @@ class InvalidationService;
 class ProfileInvalidationProvider : public KeyedService {
  public:
   explicit ProfileInvalidationProvider(
-      scoped_ptr<InvalidationService> invalidation_service);
+      std::unique_ptr<InvalidationService> invalidation_service);
   ~ProfileInvalidationProvider() override;
 
   InvalidationService* GetInvalidationService();
@@ -35,7 +36,7 @@ class ProfileInvalidationProvider : public KeyedService {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  scoped_ptr<InvalidationService> invalidation_service_;
+  std::unique_ptr<InvalidationService> invalidation_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProvider);
 };

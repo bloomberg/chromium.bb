@@ -4,6 +4,8 @@
 
 #include "components/invalidation/public/single_object_invalidation_set.h"
 
+#include <memory>
+
 #include "components/invalidation/impl/invalidation_test_util.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,7 +77,7 @@ TEST_F(SingleObjectInvalidationSetTest, StartWithUnknownVersion) {
 TEST_F(SingleObjectInvalidationSetTest, SerializeEmpty) {
   SingleObjectInvalidationSet list;
 
-  scoped_ptr<base::ListValue> value = list.ToValue();
+  std::unique_ptr<base::ListValue> value = list.ToValue();
   ASSERT_TRUE(value.get());
   SingleObjectInvalidationSet deserialized;
   deserialized.ResetFromValue(*value.get());
@@ -86,7 +88,7 @@ TEST_F(SingleObjectInvalidationSetTest, SerializeOne) {
   SingleObjectInvalidationSet list;
   list.Insert(Invalidation::Init(kId, 1, "one"));
 
-  scoped_ptr<base::ListValue> value = list.ToValue();
+  std::unique_ptr<base::ListValue> value = list.ToValue();
   ASSERT_TRUE(value.get());
   SingleObjectInvalidationSet deserialized;
   deserialized.ResetFromValue(*value.get());
@@ -98,7 +100,7 @@ TEST_F(SingleObjectInvalidationSetTest, SerializeMany) {
   list.Insert(Invalidation::Init(kId, 1, "one"));
   list.Insert(Invalidation::InitUnknownVersion(kId));
 
-  scoped_ptr<base::ListValue> value = list.ToValue();
+  std::unique_ptr<base::ListValue> value = list.ToValue();
   ASSERT_TRUE(value.get());
   SingleObjectInvalidationSet deserialized;
   deserialized.ResetFromValue(*value.get());

@@ -4,7 +4,6 @@
 
 #include "components/invalidation/impl/invalidation_logger.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/invalidation/impl/invalidation_logger_observer.h"
 #include "components/invalidation/public/invalidation_handler.h"

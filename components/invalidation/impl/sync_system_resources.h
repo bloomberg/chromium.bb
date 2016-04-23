@@ -9,12 +9,12 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_SYNC_SYSTEM_RESOURCES_H_
 #define COMPONENTS_INVALIDATION_IMPL_SYNC_SYSTEM_RESOURCES_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
@@ -133,11 +133,11 @@ class INVALIDATION_EXPORT SyncNetworkChannel
 
   // Helper functions that know how to construct network channels from channel
   // specific parameters.
-  static scoped_ptr<SyncNetworkChannel> CreatePushClientChannel(
+  static std::unique_ptr<SyncNetworkChannel> CreatePushClientChannel(
       const notifier::NotifierOptions& notifier_options);
-  static scoped_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
+  static std::unique_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      scoped_ptr<GCMNetworkChannelDelegate> delegate);
+      std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   // Get the count of how many valid received messages were received.
   int GetReceivedMessagesCount() const;
@@ -163,7 +163,7 @@ class INVALIDATION_EXPORT SyncNetworkChannel
       NetworkStatusReceiverList;
 
   // Callbacks into invalidation library
-  scoped_ptr<invalidation::MessageCallback> incoming_receiver_;
+  std::unique_ptr<invalidation::MessageCallback> incoming_receiver_;
   NetworkStatusReceiverList network_status_receivers_;
 
   // Last network status for new network status receivers.
@@ -236,10 +236,10 @@ class INVALIDATION_EXPORT SyncSystemResources
  private:
   bool is_started_;
   std::string platform_;
-  scoped_ptr<SyncLogger> logger_;
-  scoped_ptr<SyncInvalidationScheduler> internal_scheduler_;
-  scoped_ptr<SyncInvalidationScheduler> listener_scheduler_;
-  scoped_ptr<SyncStorage> storage_;
+  std::unique_ptr<SyncLogger> logger_;
+  std::unique_ptr<SyncInvalidationScheduler> internal_scheduler_;
+  std::unique_ptr<SyncInvalidationScheduler> listener_scheduler_;
+  std::unique_ptr<SyncStorage> storage_;
   // sync_network_channel_ is owned by SyncInvalidationListener.
   SyncNetworkChannel* sync_network_channel_;
 };

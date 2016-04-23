@@ -21,7 +21,7 @@ class URLRequestContextGetter;
 namespace invalidation {
 
 P2PInvalidationService::P2PInvalidationService(
-    scoped_ptr<IdentityProvider> identity_provider,
+    std::unique_ptr<IdentityProvider> identity_provider,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     syncer::P2PNotificationTarget notification_target)
     : identity_provider_(std::move(identity_provider)) {

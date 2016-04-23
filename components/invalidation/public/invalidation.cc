@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -43,7 +44,7 @@ Invalidation Invalidation::InitFromDroppedInvalidation(
       dropped.id_, true, kInvalidVersion, std::string(), dropped.ack_handle_);
 }
 
-scoped_ptr<Invalidation> Invalidation::InitFromValue(
+std::unique_ptr<Invalidation> Invalidation::InitFromValue(
     const base::DictionaryValue& value) {
   invalidation::ObjectId id;
 
@@ -51,39 +52,31 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
   if (!value.GetDictionary(kObjectIdKey, &object_id_dict) ||
       !ObjectIdFromValue(*object_id_dict, &id)) {
     DLOG(WARNING) << "Failed to parse id";
-    return scoped_ptr<Invalidation>();
+    return nullptr;
   }
   bool is_unknown_version;
   if (!value.GetBoolean(kIsUnknownVersionKey, &is_unknown_version)) {
     DLOG(WARNING) << "Failed to parse is_unknown_version flag";
-    return scoped_ptr<Invalidation>();
+    return nullptr;
   }
   if (is_unknown_version) {
-    return scoped_ptr<Invalidation>(new Invalidation(
-        id,
-        true,
-        kInvalidVersion,
-        std::string(),
-        AckHandle::CreateUnique()));
+    return base::WrapUnique(new Invalidation(
+        id, true, kInvalidVersion, std::string(), AckHandle::CreateUnique()));
   }
   int64_t version = 0;
   std::string version_as_string;
   if (!value.GetString(kVersionKey, &version_as_string)
       || !base::StringToInt64(version_as_string, &version)) {
     DLOG(WARNING) << "Failed to parse version";
-    return scoped_ptr<Invalidation>();
+    return nullptr;
   }
   std::string payload;
   if (!value.GetString(kPayloadKey, &payload)) {
     DLOG(WARNING) << "Failed to parse payload";
-    return scoped_ptr<Invalidation>();
+    return nullptr;
   }
-  return scoped_ptr<Invalidation>(new Invalidation(
-      id,
-      false,
-      version,
-      payload,
-      AckHandle::CreateUnique()));
+  return base::WrapUnique(
+      new Invalidation(id, false, version, payload, AckHandle::CreateUnique()));
 }
 
 Invalidation::Invalidation(const Invalidation& other) = default;
@@ -145,8 +138,8 @@ bool Invalidation::Equals(const Invalidation& other) const {
          version_ == other.version_ && payload_ == other.payload_;
 }
 
-scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> Invalidation::ToValue() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->Set(kObjectIdKey, ObjectIdToValue(id_).release());
   if (is_unknown_version_) {
     value->SetBoolean(kIsUnknownVersionKey, true);

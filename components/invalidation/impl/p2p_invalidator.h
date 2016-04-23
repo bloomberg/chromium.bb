@@ -8,12 +8,12 @@
 #ifndef COMPONENTS_INVALIDATION_IMPL_P2P_INVALIDATOR_H_
 #define COMPONENTS_INVALIDATION_IMPL_P2P_INVALIDATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -95,7 +95,7 @@ class INVALIDATION_EXPORT P2PInvalidator
   // either NOTIFY_ALL to send notifications to all clients, or NOTIFY_OTHERS
   // to send notifications to all clients except for the one that triggered the
   // notification.  See crbug.com/97780.
-  P2PInvalidator(scoped_ptr<notifier::PushClient> push_client,
+  P2PInvalidator(std::unique_ptr<notifier::PushClient> push_client,
                  const std::string& invalidator_client_id,
                  P2PNotificationTarget send_notification_target);
 
@@ -132,7 +132,7 @@ class INVALIDATION_EXPORT P2PInvalidator
   InvalidatorRegistrar registrar_;
 
   // The push client.
-  scoped_ptr<notifier::PushClient> push_client_;
+  std::unique_ptr<notifier::PushClient> push_client_;
   // Our unique ID.
   std::string invalidator_client_id_;
   // Whether we have called UpdateCredentials() yet.
