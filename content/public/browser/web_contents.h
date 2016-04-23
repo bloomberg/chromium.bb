@@ -249,6 +249,12 @@ class WebContents : public PageNavigator,
   // time and can be nullptr (during setup and teardown).
   virtual RenderWidgetHostView* GetRenderWidgetHostView() const = 0;
 
+  // Returns the outermost RenderWidgetHostView. This will return the platform
+  // specific RenderWidgetHostView (as opposed to
+  // RenderWidgetHostViewChildFrame), which can be used to create context
+  // menus.
+  virtual RenderWidgetHostView* GetTopLevelRenderWidgetHostView() = 0;
+
   // Causes the current page to be closed, including running its onunload event
   // handler.
   virtual void ClosePage() = 0;

@@ -246,6 +246,7 @@ class CONTENT_EXPORT WebContentsImpl
   RenderViewHostImpl* GetRenderViewHost() const override;
   int GetRoutingID() const override;
   RenderWidgetHostView* GetRenderWidgetHostView() const override;
+  RenderWidgetHostView* GetTopLevelRenderWidgetHostView() override;
   void ClosePage() override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const override;
   SkColor GetThemeColor() const override;

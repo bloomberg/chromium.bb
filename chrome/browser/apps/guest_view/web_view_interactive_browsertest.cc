@@ -503,12 +503,14 @@ class WebViewInteractiveTest : public WebViewInteractiveTestBase,
 
 class WebViewNewWindowInteractiveTest : public WebViewInteractiveTest {};
 
+// The tests below aren't needed in --use-cross-process-frames-for-guests.
+class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
+
 // The following class of tests do not work for OOPIF <webview>.
 // TODO(ekaramad): Make this tests work with OOPIF and replace the test classes
 // with WebViewInteractiveTest (see crbug.com/582562).
 class WebViewFocusInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewPopupInteractiveTest : public WebViewInteractiveTestBase {};
-class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewPointerLockInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewDragDropInteractiveTest : public WebViewInteractiveTestBase {};
 
@@ -896,6 +898,12 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowInteractiveTest,
 // Tests whether <webview> context menu sees <webview> local coordinates
 // in its RenderViewContextMenu params.
 // Local coordinates are required for plugin actions to work properly.
+//
+// This test is not needed in --use-cross-process-frames-for-guests,
+// since it tests that the <webview> sees local coordinates, which is not
+// true with the out-of-process iframes architecture. In that case, the
+// <webview> sees transformed coordinates, the point is transformed in
+// CrossProcessFrameConnector::TransformPointToRootCoordSpace.
 IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
                        ContextMenuParamCoordinates) {
   TestHelper("testCoordinates", "web_view/context_menus/coordinates",
@@ -913,6 +921,11 @@ IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
 
 // Tests whether <webview> context menu sees <webview> local coordinates in its
 // RenderViewContextMenu params, when it is subject to CSS transforms.
+//
+// This test doesn't makes sense in --use-cross-process-frames-for-guests, since
+// it tests that events forwarded from the embedder are properly transformed,
+// and in oopif-mode the events are sent directly to the child process without
+// the forwarding code path (relying on surface-based hittesting).
 IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
                        ContextMenuParamsAfterCSSTransforms) {
   LoadAndLaunchPlatformApp("web_view/context_menus/coordinates_with_transforms",

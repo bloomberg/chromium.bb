@@ -101,6 +101,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_utils.h"
@@ -487,15 +488,19 @@ gfx::Vector2d RenderViewContextMenu::GetOffset(
     RenderFrameHost* render_frame_host) {
   gfx::Vector2d offset;
 #if defined(ENABLE_EXTENSIONS)
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  WebContents* top_level_web_contents =
-      guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
-  if (web_contents && top_level_web_contents &&
-      web_contents != top_level_web_contents) {
-    gfx::Rect bounds = web_contents->GetContainerBounds();
-    gfx::Rect top_level_bounds = top_level_web_contents->GetContainerBounds();
-    offset = bounds.origin() - top_level_bounds.origin();
+  // When --use-cross-process-frames-for-guests is enabled, the position is
+  // transformed in the browser process hittesting code.
+  if (!content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+    WebContents* web_contents =
+        WebContents::FromRenderFrameHost(render_frame_host);
+    WebContents* top_level_web_contents =
+        guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
+    if (web_contents && top_level_web_contents &&
+        web_contents != top_level_web_contents) {
+      gfx::Rect bounds = web_contents->GetContainerBounds();
+      gfx::Rect top_level_bounds = top_level_web_contents->GetContainerBounds();
+      offset = bounds.origin() - top_level_bounds.origin();
+    }
   }
 #endif  // defined(ENABLE_EXTENSIONS)
   return offset;

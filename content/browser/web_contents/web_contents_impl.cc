@@ -854,6 +854,12 @@ RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
   return GetRenderManager()->GetRenderWidgetHostView();
 }
 
+RenderWidgetHostView* WebContentsImpl::GetTopLevelRenderWidgetHostView() {
+  if (GetOuterWebContents())
+    return GetOuterWebContents()->GetTopLevelRenderWidgetHostView();
+  return GetRenderManager()->GetRenderWidgetHostView();
+}
+
 RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView()
     const {
   RenderWidgetHost* const widget_host =

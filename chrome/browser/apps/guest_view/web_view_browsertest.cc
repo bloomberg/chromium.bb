@@ -1880,11 +1880,6 @@ static bool ContextMenuNotificationCallback(
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_PreventDefault) {
-  // TODO(lfg): Fix context menu APIs on OOPIF-based webview.
-  // https://crbug.com/581894
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
-    return;
-
   LoadAppWithGuest("web_view/context_menus/basic");
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
@@ -1917,11 +1912,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_PreventDefault) {
 // Tests that a context menu is created when right-clicking in the webview. This
 // also tests that the 'contextmenu' event is handled correctly.
 IN_PROC_BROWSER_TEST_P(WebViewTest, TestContextMenu) {
-  // TODO(lfg): Fix context menu APIs on OOPIF-based webview.
-  // https://crbug.com/581894
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
-    return;
-
   LoadAppWithGuest("web_view/context_menus/basic");
   content::WebContents* guest_web_contents = GetGuestWebContents();
 

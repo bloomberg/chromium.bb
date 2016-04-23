@@ -122,7 +122,7 @@ content::RenderWidgetHostView*
 ChromeWebContentsViewDelegateMac::GetActiveRenderWidgetHostView() {
   return web_contents_->GetFullscreenRenderWidgetHostView() ?
       web_contents_->GetFullscreenRenderWidgetHostView() :
-      web_contents_->GetRenderWidgetHostView();
+      web_contents_->GetTopLevelRenderWidgetHostView();
 }
 
 namespace chrome {
