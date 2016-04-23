@@ -466,7 +466,7 @@ private:
     // The target of each active touch point indexed by the touch ID.
     using TouchTargetMap = HeapHashMap<unsigned, Member<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchTargetMap m_targetForTouchID;
-    using TouchRegionMap = HeapHashMap<unsigned, String, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using TouchRegionMap = HashMap<unsigned, String, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchRegionMap m_regionForTouchID;
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.

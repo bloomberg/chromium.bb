@@ -362,7 +362,6 @@ DEFINE_TRACE(EventHandler)
     visitor->trace(m_frameSetBeingResized);
     visitor->trace(m_scrollbarHandlingScrollGesture);
     visitor->trace(m_targetForTouchID);
-    visitor->trace(m_regionForTouchID);
     visitor->trace(m_touchSequenceDocument);
     visitor->trace(m_scrollGestureHandlingNode);
     visitor->trace(m_previousGestureScrolledNode);
