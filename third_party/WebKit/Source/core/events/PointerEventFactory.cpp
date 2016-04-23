@@ -309,9 +309,9 @@ bool PointerEventFactory::remove(const int mappedId)
     return true;
 }
 
-HeapVector<int> PointerEventFactory::getPointerIdsOfType(WebPointerProperties::PointerType pointerType)
+Vector<int> PointerEventFactory::getPointerIdsOfType(WebPointerProperties::PointerType pointerType)
 {
-    HeapVector<int> mappedIds;
+    Vector<int> mappedIds;
 
     for (auto iter = m_pointerIdMapping.begin(); iter != m_pointerIdMapping.end(); ++iter) {
         int mappedId = iter->key;

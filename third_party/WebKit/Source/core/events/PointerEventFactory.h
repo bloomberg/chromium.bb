@@ -62,7 +62,7 @@ public:
     bool remove(const int);
 
     // Returns all ids of the given pointerType.
-    HeapVector<int> getPointerIdsOfType(WebPointerProperties::PointerType);
+    Vector<int> getPointerIdsOfType(WebPointerProperties::PointerType);
 
     // Returns whether a pointer id exists and active
     bool isActive(const int);

@@ -317,7 +317,7 @@ void PointerEventManager::blockTouchPointers()
         return;
     m_inCanceledStateForPointerTypeTouch = true;
 
-    HeapVector<int> touchPointerIds
+    Vector<int> touchPointerIds
         = m_pointerEventFactory.getPointerIdsOfType(WebPointerProperties::PointerType::Touch);
 
     for (int pointerId : touchPointerIds) {
