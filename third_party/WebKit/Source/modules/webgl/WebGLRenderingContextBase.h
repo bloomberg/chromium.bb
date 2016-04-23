@@ -380,7 +380,13 @@ public:
     void loseContextImpl(LostContextMode, AutoRecoveryMethod);
 
     WebGraphicsContext3D* webContext() const { return drawingBuffer()->context(); }
-    gpu::gles2::GLES2Interface* contextGL() const { return drawingBuffer()->contextGL(); }
+    gpu::gles2::GLES2Interface* contextGL() const
+    {
+        DrawingBuffer* d = drawingBuffer();
+        if (!d)
+            return nullptr;
+        return d->contextGL();
+    }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
     Extensions3DUtil* extensionsUtil();
 
