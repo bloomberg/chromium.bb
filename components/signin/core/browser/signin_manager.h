@@ -16,9 +16,6 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
 
 #if defined(OS_CHROMEOS)
-// On Chrome OS, SigninManagerBase is all that exists.
-#include <memory>
-
 #include "components/signin/core/browser/signin_manager_base.h"
 
 #else
