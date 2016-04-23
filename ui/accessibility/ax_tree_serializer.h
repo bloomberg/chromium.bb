@@ -494,10 +494,8 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     AXNodeData* serialized_node = &out_update->nodes[serialized_node_index];
 
     tree_->SerializeNode(node, serialized_node);
-    // TODO(dmazzoni/dtseng): Make the serializer not depend on roles to
-    // identify the root.
-    if (serialized_node->id == client_root_->id && !serialized_node->IsRoot())
-      serialized_node->SetRoot();
+    if (serialized_node->id == client_root_->id)
+      out_update->root_id = serialized_node->id;
   }
 
   // Iterate over the children, serialize them, and update the ClientTreeNode

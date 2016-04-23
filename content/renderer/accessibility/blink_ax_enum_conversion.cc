@@ -324,7 +324,7 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
     case blink::WebAXRoleUserInterfaceTooltip:
       return ui::AX_ROLE_TOOLTIP;
     case blink::WebAXRoleWebArea:
-      return ui::AX_ROLE_WEB_AREA;
+      return ui::AX_ROLE_ROOT_WEB_AREA;
     case blink::WebAXRoleLineBreak:
       return ui::AX_ROLE_LINE_BREAK;
     case blink::WebAXRoleWindow:

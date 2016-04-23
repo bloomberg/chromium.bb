@@ -103,7 +103,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
 TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
+  root.role = AX_ROLE_DIALOG;
   root.state = 1 << AX_STATE_FOCUSABLE;
   root.location = gfx::Rect(0, 0, 800, 600);
   root.child_ids.push_back(2);
@@ -122,6 +122,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   checkbox.location = gfx::Rect(20, 50, 200, 30);
 
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.push_back(root);
   initial_state.nodes.push_back(button);
   initial_state.nodes.push_back(checkbox);
@@ -156,7 +157,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
 
   EXPECT_EQ(
       "AXTree title=Title\n"
-      "id=1 rootWebArea FOCUSABLE (0, 0)-(800, 600) child_ids=2,3\n"
+      "id=1 dialog FOCUSABLE (0, 0)-(800, 600) child_ids=2,3\n"
       "  id=2 button (20, 20)-(200, 30)\n"
       "  id=3 checkBox (20, 50)-(200, 30)\n",
       dst_tree.ToString());
@@ -187,12 +188,14 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
   button.state = 0;
 
   AXTreeUpdate update;
+  update.root_id = 3;
   update.nodes.push_back(list);
   update.nodes.push_back(list_item_2);
   update.nodes.push_back(list_item_3);
   update.nodes.push_back(button);
 
   EXPECT_EQ(
+      "AXTreeUpdate: root id 3\n"
       "id=3 list (0, 0)-(0, 0) child_ids=4,5,6\n"
       "  id=5 listItem (0, 0)-(0, 0)\n"
       "  id=6 listItem (0, 0)-(0, 0)\n"
@@ -203,9 +206,9 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
 TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
 
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.push_back(root);
   AXTree tree(initial_state);
 
@@ -215,16 +218,15 @@ TEST(AXTreeTest, DeleteUnknownSubtreeFails) {
   update.node_id_to_clear = 2;
   update.nodes.resize(1);
   update.nodes[0].id = 1;
-  update.nodes[0].id = AX_ROLE_ROOT_WEB_AREA;
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Bad node_id_to_clear: 2", tree.error());
 }
 
 TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   initial_state.nodes[0].child_ids.push_back(2);
   initial_state.nodes[0].child_ids.push_back(3);
   initial_state.nodes[1].id = 2;
@@ -243,9 +245,9 @@ TEST(AXTreeTest, LeaveOrphanedDeletedSubtreeFails) {
 
 TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   AXTree tree(initial_state);
 
   // This should fail because we add a new child to the root node
@@ -253,7 +255,6 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
   AXTreeUpdate update;
   update.nodes.resize(1);
   update.nodes[0].id = 1;
-  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   update.nodes[0].child_ids.push_back(2);
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Nodes left pending by the update: 2", tree.error());
@@ -261,16 +262,15 @@ TEST(AXTreeTest, LeaveOrphanedNewChildFails) {
 
 TEST(AXTreeTest, DuplicateChildIdFails) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   AXTree tree(initial_state);
 
   // This should fail because a child id appears twice.
   AXTreeUpdate update;
   update.nodes.resize(2);
   update.nodes[0].id = 1;
-  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   update.nodes[0].child_ids.push_back(2);
   update.nodes[0].child_ids.push_back(2);
   update.nodes[1].id = 2;
@@ -280,9 +280,9 @@ TEST(AXTreeTest, DuplicateChildIdFails) {
 
 TEST(AXTreeTest, InvalidReparentingFails) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.resize(3);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   initial_state.nodes[0].child_ids.push_back(2);
   initial_state.nodes[1].id = 2;
   initial_state.nodes[1].child_ids.push_back(3);
@@ -295,7 +295,6 @@ TEST(AXTreeTest, InvalidReparentingFails) {
   AXTreeUpdate update;
   update.nodes.resize(3);
   update.nodes[0].id = 1;
-  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   update.nodes[0].child_ids.push_back(3);
   update.nodes[0].child_ids.push_back(2);
   update.nodes[1].id = 2;
@@ -304,38 +303,20 @@ TEST(AXTreeTest, InvalidReparentingFails) {
   ASSERT_EQ("Node 3 reparented from 2 to 1", tree.error());
 }
 
-TEST(AXTreeTest, TwoRootsFails) {
-  AXTreeUpdate initial_state;
-  initial_state.nodes.resize(1);
-  initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
-  AXTree tree(initial_state);
-
-  // This should fail because there are two new roots.
-  AXTreeUpdate update;
-  update.nodes.resize(2);
-  update.nodes[0].id = 2;
-  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
-  update.nodes[1].id = 3;
-  update.nodes[1].role = AX_ROLE_ROOT_WEB_AREA;
-  EXPECT_FALSE(tree.Unserialize(update));
-  ASSERT_EQ("Tree update contains two new roots", tree.error());
-}
-
 TEST(AXTreeTest, TreeDelegateIsCalled) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.resize(2);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   initial_state.nodes[0].child_ids.push_back(2);
   initial_state.nodes[1].id = 2;
 
   AXTree tree(initial_state);
   AXTreeUpdate update;
   update.node_id_to_clear = 1;
+  update.root_id = 3;
   update.nodes.resize(2);
   update.nodes[0].id = 3;
-  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   update.nodes[0].child_ids.push_back(4);
   update.nodes[1].id = 4;
 
@@ -368,9 +349,9 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
 
 TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
   AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
   initial_state.nodes.resize(1);
   initial_state.nodes[0].id = 1;
-  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
   initial_state.has_tree_data = true;
   initial_state.tree_data.title = "Initial";
   AXTree tree(initial_state);

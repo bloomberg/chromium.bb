@@ -53,9 +53,9 @@ AXTree::AXTree()
     : delegate_(NULL), root_(NULL) {
   AXNodeData root;
   root.id = -1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
 
   AXTreeUpdate initial_state;
+  initial_state.root_id = -1;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
 }
@@ -114,9 +114,16 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
+  bool root_exists = GetFromId(update.root_id) != nullptr;
   for (size_t i = 0; i < update.nodes.size(); ++i) {
-    if (!UpdateNode(update.nodes[i], &update_state))
+    bool is_new_root = !root_exists && update.nodes[i].id == update.root_id;
+    if (!UpdateNode(update.nodes[i], is_new_root, &update_state))
       return false;
+  }
+
+  if (!root_) {
+    error_ = "Tree has no root.";
+    return false;
   }
 
   if (!update_state.pending_nodes.empty()) {
@@ -169,6 +176,7 @@ AXNode* AXTree::CreateNode(AXNode* parent,
 }
 
 bool AXTree::UpdateNode(const AXNodeData& src,
+                        bool is_new_root,
                         AXTreeUpdateState* update_state) {
   // This method updates one node in the tree based on serialized data
   // received in an AXTreeUpdate. See AXTreeUpdate for pre and post
@@ -184,14 +192,9 @@ bool AXTree::UpdateNode(const AXNodeData& src,
       delegate_->OnNodeDataWillChange(this, node->data(), src);
     node->SetData(src);
   } else {
-    if (src.role != AX_ROLE_ROOT_WEB_AREA &&
-        src.role != AX_ROLE_DESKTOP) {
+    if (!is_new_root) {
       error_ = base::StringPrintf(
           "%d is not in the tree and not the new root", src.id);
-      return false;
-    }
-    if (update_state->new_root) {
-      error_ = "Tree update contains two new roots";
       return false;
     }
 
@@ -220,8 +223,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   node->SwapChildren(new_children);
 
   // Update the root of the tree if needed.
-  if ((src.role == AX_ROLE_ROOT_WEB_AREA || src.role == AX_ROLE_DESKTOP) &&
-      (!root_ || root_->id() != src.id)) {
+  if (is_new_root) {
     // Make sure root_ always points to something valid or null_, even inside
     // DestroySubtree.
     AXNode* old_root = root_;

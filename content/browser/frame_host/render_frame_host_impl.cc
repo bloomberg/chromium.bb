@@ -1682,6 +1682,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
         ax_content_tree_data_ = param.update.tree_data;
         AXContentTreeDataToAXTreeData(&detail.update.tree_data);
       }
+      detail.update.root_id = param.update.root_id;
       detail.update.node_id_to_clear = param.update.node_id_to_clear;
       detail.update.nodes.resize(param.update.nodes.size());
       for (size_t i = 0; i < param.update.nodes.size(); ++i) {
@@ -1776,6 +1777,7 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
   const auto& it = ax_tree_snapshot_callbacks_.find(callback_id);
   if (it != ax_tree_snapshot_callbacks_.end()) {
     ui::AXTreeUpdate dst_snapshot;
+    dst_snapshot.root_id = snapshot.root_id;
     dst_snapshot.nodes.resize(snapshot.nodes.size());
     for (size_t i = 0; i < snapshot.nodes.size(); ++i) {
       AXContentNodeDataToAXNodeData(snapshot.nodes[i],

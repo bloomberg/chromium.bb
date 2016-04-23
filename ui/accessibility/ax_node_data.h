@@ -99,9 +99,6 @@ struct AX_EXPORT AXNodeData {
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;
 
-  bool IsRoot() const;
-  void SetRoot();
-
   // As much as possible this should behave as a simple, serializable,
   // copyable struct.
   int32_t id;

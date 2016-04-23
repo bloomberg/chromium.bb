@@ -533,7 +533,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                            src.minValueForRange());
   }
 
-  if (dst->role == ui::AX_ROLE_WEB_AREA) {
+  if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA) {
     dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
     dst->transform.reset(
         new gfx::Transform(src.transformFromLocalParentFrame()));

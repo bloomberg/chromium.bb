@@ -69,6 +69,7 @@ ui::AXTreeUpdate
       (1 << ui::AX_STATE_BUSY);
 
   ui::AXTreeUpdate update;
+  update.root_id = empty_document.id;
   update.nodes.push_back(empty_document);
   return update;
 }

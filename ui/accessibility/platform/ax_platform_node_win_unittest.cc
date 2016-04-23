@@ -50,6 +50,7 @@ class AXPlatformNodeWinTest : public testing::Test {
   // Convenience functions to initialize directly from a few AXNodeDatas.
   void Init(const AXNodeData& node1) {
     AXTreeUpdate update;
+    update.root_id = node1.id;
     update.nodes.push_back(node1);
     Init(update);
   }
@@ -57,6 +58,7 @@ class AXPlatformNodeWinTest : public testing::Test {
   void Init(const AXNodeData& node1,
             const AXNodeData& node2) {
     AXTreeUpdate update;
+    update.root_id = node1.id;
     update.nodes.push_back(node1);
     update.nodes.push_back(node2);
     Init(update);
@@ -66,6 +68,7 @@ class AXPlatformNodeWinTest : public testing::Test {
             const AXNodeData& node2,
             const AXNodeData& node3) {
     AXTreeUpdate update;
+    update.root_id = node1.id;
     update.nodes.push_back(node1);
     update.nodes.push_back(node2);
     update.nodes.push_back(node3);
@@ -106,7 +109,6 @@ class AXPlatformNodeWinTest : public testing::Test {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.AddStringAttribute(AX_ATTR_NAME, "Name");
   Init(root);
 
@@ -123,7 +125,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.AddStringAttribute(AX_ATTR_NAME, "Name");
   Init(root);
 
@@ -141,7 +142,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.AddStringAttribute(AX_ATTR_DESCRIPTION, "Description");
   Init(root);
 
@@ -159,7 +159,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDescription) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.AddStringAttribute(AX_ATTR_VALUE, "Value");
   Init(root);
 
@@ -177,7 +176,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.AddStringAttribute(AX_ATTR_SHORTCUT, "Shortcut");
   Init(root);
 
@@ -197,7 +195,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.child_ids.push_back(2);
 
   AXNodeData child;
@@ -234,7 +231,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleLocation) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.location = gfx::Rect(10, 40, 800, 600);
   Init(root);
 
@@ -264,7 +260,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleLocation) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -371,7 +366,6 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2IndexInParent) {
   AXNodeData root;
   root.id = 1;
-  root.role = AX_ROLE_ROOT_WEB_AREA;
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 

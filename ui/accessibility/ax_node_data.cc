@@ -679,13 +679,4 @@ std::string AXNodeData::ToString() const {
   return result;
 }
 
-bool AXNodeData::IsRoot() const {
-  return (role == AX_ROLE_ROOT_WEB_AREA ||
-          role == AX_ROLE_DESKTOP);
-}
-
-void AXNodeData::SetRoot() {
-  role = AX_ROLE_ROOT_WEB_AREA;
-}
-
 }  // namespace ui

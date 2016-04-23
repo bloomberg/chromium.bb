@@ -90,7 +90,8 @@ std::string AXContentNodeData::ToString() const {
 }
 
 AXContentTreeData::AXContentTreeData()
-    : routing_id(-1),
+    : AXTreeData(),
+      routing_id(-1),
       parent_routing_id(-1) {
 }
 

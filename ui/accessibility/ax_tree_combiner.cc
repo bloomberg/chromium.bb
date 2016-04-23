@@ -122,6 +122,9 @@ bool AXTreeCombiner::Combine() {
   const AXTreeUpdate* root = tree_id_map_.find(root_tree_id_)->second;
   ProcessTree(root);
 
+  // Set the root id.
+  combined_.root_id = combined_.nodes[0].id;
+
   // Finally, handle the tree ID, taking into account which subtree might
   // have focus and mapping IDs from the tree data appropriately.
   combined_.has_tree_data = true;
@@ -167,11 +170,6 @@ void AXTreeCombiner::ProcessTree(const AXTreeUpdate* tree) {
   for (size_t i = 0; i < tree->nodes.size(); ++i) {
     AXNodeData node = tree->nodes[i];
     int32_t child_tree_id = node.GetIntAttribute(AX_ATTR_CHILD_TREE_ID);
-
-    // It's not valid to have an accessibility tree with more than one
-    // ROOT_WEB_AREA role, so change subdocuments into just groups.
-    if (node.role == AX_ROLE_ROOT_WEB_AREA && tree_id != root_tree_id_)
-      node.role = AX_ROLE_GROUP;
 
     // Map the node's ID.
     node.id = MapId(tree_id, node.id);

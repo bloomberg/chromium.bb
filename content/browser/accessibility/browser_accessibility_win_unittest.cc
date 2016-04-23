@@ -753,6 +753,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   params.push_back(AXEventNotificationDetails());
   AXEventNotificationDetails* msg = &params[0];
   msg->event_type = ui::AX_EVENT_LOAD_COMPLETE;
+  msg->update.root_id = tree1_1.id;
   msg->update.nodes.push_back(tree1_1);
   msg->update.nodes.push_back(tree1_2);
   msg->id = tree1_1.id;

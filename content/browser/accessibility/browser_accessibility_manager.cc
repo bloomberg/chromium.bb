@@ -64,6 +64,7 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
   int32_t no_id = empty_data.id;
 
   ui::AXTreeUpdate update;
+  update.root_id = node1.id;
   update.nodes.push_back(node1);
   if (node2.id != no_id)
     update.nodes.push_back(node2);

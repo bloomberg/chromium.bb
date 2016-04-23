@@ -60,6 +60,12 @@ template<typename AXNodeData, typename AXTreeData> struct AXTreeUpdateBase {
   // as part of the tree update.
   int node_id_to_clear;
 
+  // The id of the root of the tree, if the root is changing. This is
+  // required to be set if the root of the tree is changing or Unserialize
+  // will fail. If the root of the tree is not changing this is optional
+  // and it is allowed to pass 0.
+  int root_id;
+
   // A vector of nodes to update, according to the rules above.
   std::vector<AXNodeData> nodes;
 
@@ -74,7 +80,8 @@ typedef AXTreeUpdateBase<AXNodeData, AXTreeData> AXTreeUpdate;
 template<typename AXNodeData, typename AXTreeData>
 AXTreeUpdateBase<AXNodeData, AXTreeData>::AXTreeUpdateBase()
     : has_tree_data(false),
-      node_id_to_clear(0) {
+      node_id_to_clear(0),
+      root_id(0) {
 }
 
 template<typename AXNodeData, typename AXTreeData>
@@ -86,12 +93,17 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
   std::string result;
 
   if (has_tree_data) {
-    result += "AXTreeUpdate tree data:" + tree_data.ToString();
+    result += "AXTreeUpdate tree data:" + tree_data.ToString() + "\n";
   }
 
   if (node_id_to_clear != 0) {
     result += "AXTreeUpdate: clear node " +
         base::IntToString(node_id_to_clear) + "\n";
+  }
+
+  if (root_id != 0) {
+    result += "AXTreeUpdate: root id " +
+        base::IntToString(root_id) + "\n";
   }
 
   // The challenge here is that we want to indent the nodes being updated

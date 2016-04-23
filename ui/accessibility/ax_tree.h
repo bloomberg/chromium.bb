@@ -132,7 +132,9 @@ class AX_EXPORT AXTree {
   AXNode* CreateNode(AXNode* parent, int32_t id, int32_t index_in_parent);
 
   // This is called from within Unserialize(), it returns true on success.
-  bool UpdateNode(const AXNodeData& src, AXTreeUpdateState* update_state);
+  bool UpdateNode(const AXNodeData& src,
+                  bool is_new_root,
+                  AXTreeUpdateState* update_state);
 
   void OnRootChanged();
 
