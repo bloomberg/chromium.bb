@@ -16,6 +16,10 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
         ['linux', ('amd', 0x6779)], bug=479975)
 
+    # Win7 bots
+    self.Flaky('ContextLost.WebGLContextLostFromGPUProcessExit',
+               ['win7'], bug=603329)
+
     # Win8 Release and Debug NVIDIA bots.
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',
               ['win8', 'nvidia'], bug=524808)
