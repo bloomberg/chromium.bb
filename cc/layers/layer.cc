@@ -1139,7 +1139,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
-  layer->SetHasRenderSurface(has_render_surface_);
   // subtree_property_changed_ is propagated to all descendants while building
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_)
@@ -1618,12 +1617,7 @@ Layer::TakeDebugInfo() {
 }
 
 void Layer::SetHasRenderSurface(bool has_render_surface) {
-  if (has_render_surface_ == has_render_surface)
-    return;
   has_render_surface_ = has_render_surface;
-  // We do not need SetNeedsCommit here, since this is only ever called
-  // during a commit, from CalculateDrawProperties using property trees.
-  SetNeedsPushProperties();
 }
 
 void Layer::SetSubtreePropertyChanged() {

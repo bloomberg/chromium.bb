@@ -482,7 +482,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // update render surfaces without rebuilding property trees.
   if (layer->has_render_surface() != has_render_surface())
     layer->layer_tree_impl()->set_needs_update_draw_properties();
-  layer->SetHasRenderSurface(!!render_surface());
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
@@ -1419,7 +1418,6 @@ void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
   if (!!render_surface() == should_have_render_surface)
     return;
 
-  SetNeedsPushProperties();
   if (should_have_render_surface) {
     render_surface_ = base::WrapUnique(new RenderSurfaceImpl(this));
     return;
