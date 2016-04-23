@@ -3,6 +3,6 @@
 // found in the LICENSE file.
 
 if (typeof Polymer == 'undefined')
-  Polymer = {dom: 'shadow'};
+  Polymer = {dom: 'shadow', lazyRegister: true};
 else
   console.error('Polymer is already defined.');
