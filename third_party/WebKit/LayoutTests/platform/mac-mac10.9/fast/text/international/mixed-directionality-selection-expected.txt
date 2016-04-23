@@ -10,9 +10,9 @@ layer at (0,0) size 800x140
         LayoutText {#text} at (0,0) size 560x18
           text run at (0,0) width 367: "The last character (and only the last character) should be "
           text run at (366,0) width 194: "selected in the text box above."
-layer at (11,11) size 200x76
-  LayoutBlockFlow {DIV} at (3,3) size 200x76
-    LayoutText {#text} at (116,0) size 84x76
-      text run at (116,0) width 84 RTL: "[[\x{645}\x{642}\x{627}\x{644}\x{647}]]"
+layer at (11,5) size 200x88
+  LayoutBlockFlow {DIV} at (3,-3) size 200x88
+    LayoutText {#text} at (11,0) size 189x76
+      text run at (11,0) width 189 RTL: "[[\x{645}\x{642}\x{627}\x{644}\x{647}]]"
 selection start: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body
 selection end:   position 1 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body

@@ -18,7 +18,7 @@ layer at (0,0) size 800x553
         LayoutText {#text} at (112,73) size 334x70
           text run at (112,73) width 13: ", "
           text run at (124,73) width 213: "lobortis eu iaculis vel,"
-          text run at (3,115) width 208: "scelerisque nec dolor."
+          text run at (3,115) width 209: "scelerisque nec dolor."
       LayoutText {#text} at (374,119) size 6x28
         text run at (374,119) width 6: " "
       LayoutBlockFlow {DIV} at (384,4) size 366x146 [border: (3px solid #000000)]
@@ -36,7 +36,7 @@ layer at (0,0) size 800x553
         LayoutText {#text} at (112,73) size 334x70
           text run at (112,73) width 13: ", "
           text run at (124,73) width 213: "lobortis eu iaculis vel,"
-          text run at (3,115) width 208: "scelerisque nec dolor."
+          text run at (3,115) width 209: "scelerisque nec dolor."
       LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (4,167) size 366x160 [border: (3px solid #000000)]
         LayoutText {#text} at (3,18) size 70x28
@@ -97,7 +97,7 @@ layer at (0,0) size 800x553
         LayoutText {#text} at (198,101) size 334x56
           text run at (198,101) width 7: " "
           text run at (204,101) width 133: "eu iaculis vel,"
-          text run at (3,129) width 208: "scelerisque nec dolor."
+          text run at (3,129) width 209: "scelerisque nec dolor."
       LayoutText {#text} at (374,296) size 6x28
         text run at (374,296) width 6: " "
       LayoutBlockFlow {DIV} at (384,158) size 366x156 [border: (3px solid #000000)]
@@ -156,7 +156,7 @@ layer at (0,0) size 800x553
         LayoutText {#text} at (249,3) size 84x146
           text run at (249,3) width 133: "eu iaculis vel,"
           text run at (277,3) width 146: "scelerisque nec"
-          text run at (305,3) width 56: "dolor."
+          text run at (305,3) width 57: "dolor."
       LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (4,335) size 366x198 [border: (3px solid #000000)]
         LayoutText {#text} at (3,13) size 273x28
@@ -173,7 +173,7 @@ layer at (0,0) size 800x553
         LayoutText {#text} at (112,109) size 334x76
           text run at (112,109) width 13: ", "
           text run at (124,109) width 213: "lobortis eu iaculis vel,"
-          text run at (3,157) width 208: "scelerisque nec dolor."
+          text run at (3,157) width 209: "scelerisque nec dolor."
       LayoutText {#text} at (374,492) size 6x28
         text run at (374,492) width 6: " "
       LayoutBlockFlow {DIV} at (384,377) size 366x146 [border: (3px solid #000000)]
@@ -191,7 +191,7 @@ layer at (0,0) size 800x553
         LayoutText {#text} at (112,73) size 334x70
           text run at (112,73) width 13: ", "
           text run at (124,73) width 213: "lobortis eu iaculis vel,"
-          text run at (3,115) width 208: "scelerisque nec dolor."
+          text run at (3,115) width 209: "scelerisque nec dolor."
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 selection start: position 10 of child 0 {#text} of child 1 {SPAN} of child 10 {DIV} of body
