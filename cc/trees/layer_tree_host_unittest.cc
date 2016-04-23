@@ -3820,6 +3820,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     page_scale_layer->AddChild(inner_viewport_scroll_layer);
 
     scoped_refptr<Layer> content_layer = FakePictureLayer::Create(&client_);
+    content_layer_id_ = content_layer->id();
     content_layer->SetBounds(gfx::Size(10, 10));
     inner_viewport_scroll_layer->AddChild(content_layer);
 
@@ -3842,7 +3843,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     num_draws_++;
     LayerImpl* content_layer_impl =
-        host_impl->active_tree()->InnerViewportScrollLayer()->children()[0];
+        host_impl->active_tree()->LayerById(content_layer_id_);
     gfx::Transform expected_draw_transform;
     switch (num_draws_) {
       case 1:
@@ -3880,6 +3881,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
   ScrollElasticityHelper* scroll_elasticity_helper_;
+  int content_layer_id_;
   int num_draws_;
 };
 

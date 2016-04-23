@@ -42,13 +42,11 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   ASSERT_TRUE(root->render_surface());
 }
 
-void ClearDamageForAllSurfaces(LayerImpl* layer) {
-  if (layer->render_surface())
-    layer->render_surface()->damage_tracker()->DidDrawDamagedArea();
-
-  // Recursively clear damage for any existing surface.
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    ClearDamageForAllSurfaces(layer->children()[i]);
+void ClearDamageForAllSurfaces(LayerImpl* root) {
+  for (auto* layer : *root->layer_tree_impl()) {
+    if (layer->render_surface())
+      layer->render_surface()->damage_tracker()->DidDrawDamagedArea();
+  }
 }
 
 void EmulateDrawingOneFrame(LayerImpl* root) {

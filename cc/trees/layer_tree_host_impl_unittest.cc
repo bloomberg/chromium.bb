@@ -229,10 +229,9 @@ class LayerTreeHostImplTest : public testing::Test,
     return gfx::Vector2dF(delta.x(), delta.y());
   }
 
-  static void ExpectClearedScrollDeltasRecursive(LayerImpl* layer) {
-    ASSERT_EQ(ScrollDelta(layer), gfx::Vector2d());
-    for (size_t i = 0; i < layer->children().size(); ++i)
-      ExpectClearedScrollDeltasRecursive(layer->children()[i]);
+  static void ExpectClearedScrollDeltasRecursive(LayerImpl* root) {
+    for (auto* layer : *root->layer_tree_impl())
+      ASSERT_EQ(ScrollDelta(layer), gfx::Vector2d());
   }
 
   static ::testing::AssertionResult ScrollInfoContains(
