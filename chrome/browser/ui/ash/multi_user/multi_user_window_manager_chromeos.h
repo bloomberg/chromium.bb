@@ -179,6 +179,9 @@ class MultiUserWindowManagerChromeOS
                            bool visible,
                            int animation_time_in_ms);
 
+  // Notify the observers after the user switching animation is finished.
+  void NotifyAfterUserSwitchAnimationFinished();
+
   const WindowToEntryMap& window_to_entry() { return window_to_entry_; }
   MultiUserNotificationBlockerChromeOS* notification_blocker() {
     return notification_blocker_.get();

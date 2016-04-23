@@ -87,6 +87,9 @@ class LoginDisplayHost {
   // |completion_callback| can be null.
   virtual void StartUserAdding(const base::Closure& completion_callback) = 0;
 
+  // Cancel addint user into session.
+  virtual void CancelUserAdding() = 0;
+
   // Starts sign in screen.
   virtual void StartSignInScreen(const LoginScreenContext& context) = 0;
 

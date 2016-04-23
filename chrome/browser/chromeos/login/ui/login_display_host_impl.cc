@@ -129,9 +129,6 @@ const int kCrashCountLimit = 5;
 // The default fade out animation time in ms.
 const int kDefaultFadeTimeMs = 200;
 
-// The fade out animation time used when adding another user into session.
-const int kUserAddFadeTimeMs = 300;
-
 // Whether to enable tnitializing WebUI in hidden state (see
 // |initialize_webui_hidden_|) by default.
 const bool kHiddenWebUIInitializationDefault = true;
@@ -399,6 +396,13 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
 
+  chrome::MultiUserWindowManager* window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  // MultiUserWindowManager instance might be null if no user is logged in - or
+  // in a unit test.
+  if (window_manager)
+    window_manager->RemoveObserver(this);
+
   ResetKeyboardOverscrollOverride();
 
   views::FocusManager::set_arrow_key_traversal_enabled(false);
@@ -467,7 +471,12 @@ void LoginDisplayHostImpl::Finalize() {
       ScheduleFadeOutAnimation(kDefaultFadeTimeMs);
       break;
     case ANIMATION_ADD_USER:
-      ScheduleFadeOutAnimation(kUserAddFadeTimeMs);
+      // Defer the deletion of LoginDisplayHost instance until the user adding
+      // animation (which is done by UserSwitchAnimatorChromeOS) is finished.
+      // This is to guarantee OnUserSwitchAnimationFinished() is called before
+      // LoginDisplayHost deletes itself.
+      break;
+    default:
       break;
   }
 }
@@ -543,6 +552,14 @@ void LoginDisplayHostImpl::StartUserAdding(
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
   completion_callback_ = completion_callback;
   finalize_animation_type_ = ANIMATION_ADD_USER;
+  // Observe the user switch animation and defer the deletion of itself only
+  // after the animation is finished.
+  chrome::MultiUserWindowManager* window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  // MultiUserWindowManager instance might be null in a unit test.
+  if (window_manager)
+    window_manager->AddObserver(this);
+
   VLOG(1) << "Login WebUI >> user adding";
   if (!login_window_)
     LoadURL(GURL(kUserAddingURL));
@@ -574,6 +591,15 @@ void LoginDisplayHostImpl::StartUserAdding(
   GetOobeUI()->ShowSigninScreen(LoginScreenContext(),
                                 webui_login_display_,
                                 webui_login_display_);
+}
+
+void LoginDisplayHostImpl::CancelUserAdding() {
+  // ANIMATION_ADD_USER observes UserSwitchAnimatorChromeOS to shutdown the
+  // login display host. However, the animation does not run when user adding is
+  // canceled. Changing to ANIMATION_NONE so that Finalize() shuts down the host
+  // immediately.
+  finalize_animation_type_ = ANIMATION_NONE;
+  Finalize();
 }
 
 void LoginDisplayHostImpl::StartSignInScreen(
@@ -912,6 +938,13 @@ void LoginDisplayHostImpl::OnWillRemoveView(views::Widget* widget,
     return;
   login_view_ = NULL;
   widget->RemoveRemovalsObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LoginDisplayHostImpl, chrome::MultiUserWindowManager::Observer
+// implementation:
+void LoginDisplayHostImpl::OnUserSwitchAnimationFinished() {
+  ShutdownDisplayHost(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -634,6 +634,10 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     SetWindowVisible(window, false, animation_time_in_ms);
 }
 
+void MultiUserWindowManagerChromeOS::NotifyAfterUserSwitchAnimationFinished() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnUserSwitchAnimationFinished());
+}
+
 void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
   // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
   // come here with no valid window.

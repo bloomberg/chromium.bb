@@ -166,6 +166,7 @@ void UserSwitchAnimatorChromeOS::AdvanceUserTransitionAnimation() {
     case ANIMATION_STEP_FINALIZE:
       user_changed_animation_timer_.reset();
       animation_step_ = ANIMATION_STEP_ENDED;
+      owner_->NotifyAfterUserSwitchAnimationFinished();
       break;
     case ANIMATION_STEP_ENDED:
       NOTREACHED();

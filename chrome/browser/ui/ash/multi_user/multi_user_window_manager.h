@@ -52,6 +52,8 @@ class MultiUserWindowManager {
     // Invoked when the window is destroyed and the manager stop to track its
     // owner.
     virtual void OnOwnerEntryRemoved(aura::Window* window) {}
+    // Invoked when the user switch animation is finished.
+    virtual void OnUserSwitchAnimationFinished() {}
 
    protected:
     virtual ~Observer() {}

@@ -114,6 +114,43 @@ class DBTester {
   net::NSSCertDatabase* db_;
 };
 
+class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
+ public:
+  UserAddingFinishObserver() {
+    chromeos::UserAddingScreen::Get()->AddObserver(this);
+  }
+
+  ~UserAddingFinishObserver() override {
+    chromeos::UserAddingScreen::Get()->RemoveObserver(this);
+  }
+
+  void WaitUntilUserAddingFinishedOrCancelled() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (finished_)
+      return;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+  }
+
+  // chromeos::UserAddingScreen::Observer:
+  void OnUserAddingFinished() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    finished_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void OnUserAddingStarted() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    finished_ = false;
+  }
+
+ private:
+  bool finished_ = false;
+  scoped_ptr<base::RunLoop> run_loop_;
+  DISALLOW_COPY_AND_ASSIGN(UserAddingFinishObserver);
+};
+
 }  // namespace
 
 class NSSContextChromeOSBrowserTest : public chromeos::LoginManagerTest {
@@ -143,9 +180,11 @@ IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, TwoUsers) {
   ASSERT_TRUE(tester1.DoGetDBTests());
 
   // Log in second user and get their DB.
+  UserAddingFinishObserver observer;
   chromeos::UserAddingScreen::Get()->Start();
   base::RunLoop().RunUntilIdle();
   AddUser(kTestUser2);
+  observer.WaitUntilUserAddingFinishedOrCancelled();
 
   Profile* profile2 = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
       user_manager->FindUser(AccountId::FromUserEmail(kTestUser2)));
