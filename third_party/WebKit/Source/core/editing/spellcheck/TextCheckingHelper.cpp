@@ -250,6 +250,10 @@ TextCheckingHelper::~TextCheckingHelper()
 
 String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, bool markAll)
 {
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    m_start.document()->updateLayoutIgnorePendingStylesheets();
+
     WordAwareIterator it(m_start, m_end);
     firstMisspellingOffset = 0;
 

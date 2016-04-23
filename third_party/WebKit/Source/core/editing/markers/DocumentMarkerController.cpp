@@ -97,6 +97,10 @@ void DocumentMarkerController::clear()
 
 void DocumentMarkerController::addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType type, const String& description, uint32_t hash)
 {
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    start.document()->updateLayoutIgnorePendingStylesheets();
+
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance()) {
         addMarker(markedText.currentContainer(), DocumentMarker(type, markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), description, hash));
@@ -105,6 +109,10 @@ void DocumentMarkerController::addMarker(const Position& start, const Position& 
 
 void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activeMatch)
 {
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    range->startPosition().document()->updateLayoutIgnorePendingStylesheets();
+
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range->startPosition(), range->endPosition()); !markedText.atEnd(); markedText.advance())
         addMarker(markedText.currentContainer(), DocumentMarker(markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), activeMatch));
@@ -113,6 +121,10 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
 
 void DocumentMarkerController::addCompositionMarker(const Position& start, const Position& end, Color underlineColor, bool thick, Color backgroundColor)
 {
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    start.document()->updateLayoutIgnorePendingStylesheets();
+
     for (TextIterator markedText(start, end); !markedText.atEnd(); markedText.advance())
         addMarker(markedText.currentContainer(), DocumentMarker(markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), underlineColor, thick, backgroundColor));
 }
@@ -137,6 +149,10 @@ void DocumentMarkerController::removeMarkers(TextIterator& markedText, DocumentM
 
 void DocumentMarkerController::removeMarkers(const EphemeralRange& range, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
 {
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    range.startPosition().document()->updateLayoutIgnorePendingStylesheets();
+
     TextIterator markedText(range.startPosition(), range.endPosition());
     DocumentMarkerController::removeMarkers(markedText, markerTypes, shouldRemovePartiallyOverlappingMarker);
 }

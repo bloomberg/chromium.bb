@@ -65,6 +65,11 @@ static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& ra
     size_t length = range.endPosition().computeOffsetInContainerNode() - range.startPosition().computeOffsetInContainerNode();
 
     unsigned position = 0;
+
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    range.startPosition().document()->updateLayoutIgnorePendingStylesheets();
+
     for (TextIterator it(range.startPosition(), range.endPosition()); !it.atEnd() && [string length] < length; it.advance()) {
         unsigned numCharacters = it.length();
         if (!numCharacters)

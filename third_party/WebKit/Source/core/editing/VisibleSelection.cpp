@@ -290,6 +290,10 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace()
     if (searchRange.isNull())
         return;
 
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    searchRange.startPosition().document()->updateLayoutIgnorePendingStylesheets();
+
     CharacterIteratorAlgorithm<Strategy> charIt(searchRange.startPosition(), searchRange.endPosition(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     bool changed = false;
 

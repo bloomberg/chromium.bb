@@ -434,12 +434,18 @@ static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(const EphemeralRa
         TextIteratorBehaviorFlags behavior = iteratorFlagsForFindPlainText;
         if (options & FindAPICall)
             behavior |= TextIteratorForWindowFind;
+        // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+        // see http://crbug.com/590369 for more details.
+        inputRange.startPosition().document()->updateLayoutIgnorePendingStylesheets();
         CharacterIteratorAlgorithm<Strategy> findIterator(inputRange, behavior);
         matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
         if (!matchLength)
             return EphemeralRangeTemplate<Strategy>(options & Backwards ? inputRange.startPosition() : inputRange.endPosition());
     }
 
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    inputRange.startPosition().document()->updateLayoutIgnorePendingStylesheets();
     CharacterIteratorAlgorithm<Strategy> computeRangeIterator(inputRange, iteratorFlagsForFindPlainText);
     return computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
 }
