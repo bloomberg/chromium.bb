@@ -733,7 +733,6 @@ TELEMETRY_TESTS = {
     ],
     'tester_configs': [
       {
-        'allow_on_android': True,
         'allow_on_mac_nvidia': True,
       },
     ],
