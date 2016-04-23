@@ -64,10 +64,6 @@ const char kAlsaOutputAvailMin[] = "alsa-output-avail-min";
 // remain. Assumed to be 0 if --accept-resource-provider is present.
 const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 
-// Number of channels on the alsa output device that the stream mixer uses.
-// Default is 2 channels.
-const char kAlsaNumOutputChannels[] = "alsa-num-output-channels";
-
 // Optional flag to set a fixed sample rate for the alsa device.
 const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 

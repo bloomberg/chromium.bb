@@ -11,7 +11,6 @@ source_set("decoder") {
 
   deps = [
     "//base",
-    "//chromecast/base:base",
     "//chromecast/media/cma/base",
     "//media",
     "//media:shared_memory_support",

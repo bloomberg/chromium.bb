@@ -64,7 +64,7 @@ namespace media {
 namespace {
 
 const char kOutputDeviceDefaultName[] = "default";
-const int kDefaultNumOutputChannels = 2;
+const int kNumOutputChannels = 2;
 
 const int kDefaultOutputBufferSizeFrames = 4096;
 const bool kPcmRecoverIsSilent = false;
@@ -205,16 +205,11 @@ StreamMixerAlsa::StreamMixerAlsa()
             switches::kAlsaOutputDevice);
   }
 
-  GetSwitchValueAsNonNegativeInt(switches::kAlsaNumOutputChannels,
-                                 kDefaultNumOutputChannels,
-                                 &num_output_channels_);
-
   int fixed_samples_per_second;
   GetSwitchValueAsNonNegativeInt(switches::kAlsaFixedOutputSampleRate,
                                  kInvalidSampleRate, &fixed_samples_per_second);
   if (fixed_samples_per_second != kInvalidSampleRate)
     LOG(INFO) << "Setting fixed sample rate to " << fixed_samples_per_second;
-
   fixed_output_samples_per_second_ = fixed_samples_per_second;
 
   DefineAlsaParameters();
@@ -715,7 +710,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
     // If we have no inputs, fill with silence to avoid underrun.
     chunk_size = kPreventUnderrunChunkSize;
     if (!mixed_ || mixed_->frames() < chunk_size)
-      mixed_ = ::media::AudioBus::Create(num_output_channels_, chunk_size);
+      mixed_ = ::media::AudioBus::Create(kNumOutputChannels, chunk_size);
     mixed_->Zero();
     WriteMixedPcm(*mixed_, chunk_size);
     return true;
@@ -723,17 +718,17 @@ bool StreamMixerAlsa::TryWriteFrames() {
 
   // If |mixed_| has not been allocated, or it is too small, allocate a buffer.
   if (!mixed_ || mixed_->frames() < chunk_size)
-    mixed_ = ::media::AudioBus::Create(num_output_channels_, chunk_size);
+    mixed_ = ::media::AudioBus::Create(kNumOutputChannels, chunk_size);
   // If |temp_| has not been allocated, or is too small, allocate a buffer.
   if (!temp_ || temp_->frames() < chunk_size)
-    temp_ = ::media::AudioBus::Create(num_output_channels_, chunk_size);
+    temp_ = ::media::AudioBus::Create(kNumOutputChannels, chunk_size);
 
   mixed_->ZeroFramesPartial(0, chunk_size);
 
   // Loop through active inputs, polling them for data, and mixing them.
   for (InputQueue* input : active_inputs) {
     input->GetResampledData(temp_.get(), chunk_size);
-    for (int c = 0; c < num_output_channels_; ++c) {
+    for (int c = 0; c < kNumOutputChannels; ++c) {
       float volume_scalar = input->volume_multiplier();
       DCHECK(volume_scalar >= 0.0 && volume_scalar <= 1.0) << volume_scalar;
       ::media::vector_math::FMAC(temp_->channel(c), volume_scalar, chunk_size,
@@ -754,7 +749,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   CHECK_PCM_INITIALIZED();
 
-  size_t interleaved_size = static_cast<size_t>(frames * num_output_channels_) *
+  size_t interleaved_size = static_cast<size_t>(frames * kNumOutputChannels) *
                             BytesPerOutputFormatSample();
   if (interleaved_.size() < interleaved_size)
     interleaved_.resize(interleaved_size);
@@ -784,8 +779,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
     }
     frames_left -= frames_or_error;
     DCHECK_GE(frames_left, 0);
-    data +=
-        frames_or_error * num_output_channels_ * BytesPerOutputFormatSample();
+    data += frames_or_error * kNumOutputChannels * BytesPerOutputFormatSample();
   }
   UpdateRenderingDelay(frames);
   for (auto&& input : inputs_)
