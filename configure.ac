@@ -42,14 +42,10 @@ AC_ARG_VAR([WESTON_SHELL_CLIENT],
 
 PKG_PROG_PKG_CONFIG()
 
-AC_CHECK_FUNC([dlopen], [],
-              AC_CHECK_LIB([dl], [dlopen], DLOPEN_LIBS="-ldl"))
-AC_SUBST(DLOPEN_LIBS)
+WESTON_SEARCH_LIBS([DLOPEN], [dl], [dlopen])
 
 # In old glibc versions (< 2.17) clock_gettime() is in librt
-AC_SEARCH_LIBS([clock_gettime], [rt],
-             [CLOCK_GETTIME_LIBS="-lrt"])
-AC_SUBST([CLOCK_GETTIME_LIBS])
+WESTON_SEARCH_LIBS([CLOCK_GETTIME], [rt], [clock_gettime])
 
 AC_CHECK_DECL(SFD_CLOEXEC,[],
 	      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile weston")],
@@ -303,12 +299,10 @@ AC_ARG_WITH([jpeg],
             AS_HELP_STRING([--without-jpeg],
                            [Use jpeglib for JPEG decoding support [default=auto]]))
 AS_IF([test "x$with_jpeg" != "xno"],
-      [AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], [have_jpeglib=yes], [have_jpeglib=no])],
+      [WESTON_SEARCH_LIBS([JPEG], [jpeg], [jpeg_CreateDecompress], [have_jpeglib=yes], [have_jpeglib=no])],
       [have_jpeglib=no])
 AS_IF([test "x$have_jpeglib" = "xyes"],
-      [JPEG_LIBS="-ljpeg"
-       AC_SUBST([JPEG_LIBS])
-       AC_DEFINE([HAVE_JPEG], [1], [Have jpeglib])],
+      [AC_DEFINE([HAVE_JPEG], [1], [Have jpeglib])],
       [AS_IF([test "x$with_jpeg" = "xyes"],
              [AC_MSG_ERROR([JPEG support explicitly requested, but jpeglib couldn't be found])])])
 
@@ -418,12 +412,10 @@ AS_IF([test "x$enable_resize_optimization" = "xyes"],
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
 AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch == xyes)
 if test x$enable_weston_launch == xyes; then
-  AC_CHECK_LIB([pam], [pam_open_session], [have_pam=yes], [have_pam=no])
+  WESTON_SEARCH_LIBS([PAM], [pam], [pam_open_session], [have_pam=yes], [have_pam=no])
   if test x$have_pam == xno; then
     AC_ERROR([weston-launch requires pam])
   fi
-  PAM_LIBS=-lpam
-  AC_SUBST(PAM_LIBS)
 fi
 
 AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
