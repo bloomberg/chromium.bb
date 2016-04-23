@@ -1316,8 +1316,6 @@ crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.htm
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
 
-crbug.com/601166 [ Mac10.9 ] fast/text/international/mixed-directionality-selection.html [ Failure ]
-
 crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-2.html [ NeedsManualRebaseline ]
 crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-4.html [ NeedsManualRebaseline ]
 
