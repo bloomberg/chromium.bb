@@ -45,6 +45,10 @@
       'includes': ['../include_js.gypi'],
     },
     {
+      'target_name': 'input_method_private',
+      'includes': ['../include_js.gypi'],
+    },
+    {
       'target_name': 'language_settings_private',
       'includes': ['../include_js.gypi'],
     },

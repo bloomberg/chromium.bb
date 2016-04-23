@@ -175,6 +175,23 @@ class InputMethodPrivateShowInputViewFunction
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateShowInputViewFunction);
 };
 
+// Implements the inputMethodPrivate.openOptionsPage method.
+class InputMethodPrivateOpenOptionsPageFunction
+    : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateOpenOptionsPageFunction() {}
+
+ protected:
+  ~InputMethodPrivateOpenOptionsPageFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.openOptionsPage",
+                             INPUTMETHODPRIVATE_OPENOPTIONSPAGE)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateOpenOptionsPageFunction);
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

@@ -189,6 +189,8 @@ class LanguageSettingsPrivateAddInputMethodFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateAddInputMethodFunction);
 };
 
@@ -207,6 +209,8 @@ class LanguageSettingsPrivateRemoveInputMethodFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateRemoveInputMethodFunction);
 };
 

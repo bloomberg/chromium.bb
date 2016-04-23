@@ -73,6 +73,19 @@ cr.define('settings', function() {
       supportsSpellcheck: true,
       supportsUI: true,
     }];
+
+    /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */
+    this.componentExtensionImes = [{
+      id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng',
+      displayName: 'US keyboard',
+      languageCodes: ['en', 'en-US'],
+      enabled: true,
+    }, {
+      id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
+      displayName: 'US Dvorak keyboard',
+      languageCodes: ['en', 'en-US'],
+      enabled: true,
+    }];
   }
 
   FakeLanguageSettingsPrivate.prototype = {
@@ -151,7 +164,15 @@ cr.define('settings', function() {
      * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void}
      *     callback
      */
-    getInputMethodLists: wrapAssertNotReached('getInputMethodLists'),
+    getInputMethodLists: function(callback) {
+      if (!cr.isChromeOS)
+        assertNotReached();
+      callback({
+        componentExtensionImes:
+            JSON.parse(JSON.stringify(this.componentExtensionImes)),
+        thirdPartyExtensionImes: [],
+      });
+    },
 
     /**
      * Adds the input method to the current user's list of enabled input

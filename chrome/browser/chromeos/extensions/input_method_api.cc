@@ -23,6 +23,8 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "chrome/common/pref_names.h"
@@ -43,6 +45,8 @@ namespace AddWordToDictionary =
 namespace SetCurrentInputMethod =
     extensions::api::input_method_private::SetCurrentInputMethod;
 namespace SetXkbLayout = extensions::api::input_method_private::SetXkbLayout;
+namespace OpenOptionsPage =
+    extensions::api::input_method_private::OpenOptionsPage;
 namespace OnChanged = extensions::api::input_method_private::OnChanged;
 namespace OnDictionaryChanged =
     extensions::api::input_method_private::OnDictionaryChanged;
@@ -263,6 +267,36 @@ InputMethodPrivateShowInputViewFunction::Run() {
 #endif
 }
 
+ExtensionFunction::ResponseAction
+InputMethodPrivateOpenOptionsPageFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  std::unique_ptr<OpenOptionsPage::Params> params(
+      OpenOptionsPage::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
+      chromeos::input_method::InputMethodManager::Get()->GetActiveIMEState();
+  const chromeos::input_method::InputMethodDescriptor* ime =
+      ime_state->GetInputMethodFromId(params->input_method_id);
+  if (!ime)
+    return RespondNow(Error("IME not found: *", params->input_method_id));
+
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (web_contents) {
+    const GURL& options_page_url = ime->options_page_url();
+    if (!options_page_url.is_empty()) {
+      Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+      content::OpenURLParams url_params(options_page_url, content::Referrer(),
+                                        SINGLETON_TAB, ui::PAGE_TRANSITION_LINK,
+                                        false);
+      browser->OpenURL(url_params);
+    }
+  }
+  return RespondNow(NoArguments());
+#endif
+}
+
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
   EventRouter::Get(context_)->RegisterObserver(this, OnChanged::kEventName);
@@ -288,6 +322,7 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
   registry->RegisterFunction<InputMethodPrivateGetEncryptSyncEnabledFunction>();
   registry->RegisterFunction<
       InputMethodPrivateNotifyImeMenuItemActivatedFunction>();
+  registry->RegisterFunction<InputMethodPrivateOpenOptionsPageFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {

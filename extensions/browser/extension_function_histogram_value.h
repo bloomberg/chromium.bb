@@ -1178,6 +1178,7 @@ enum HistogramValue {
   WEBRTCLOGGINGPRIVATE_STOPRTCEVENTLOGGING,
   PASSWORDSPRIVATE_GETSAVEDPASSWORDLIST,
   PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST,
+  INPUTMETHODPRIVATE_OPENOPTIONSPAGE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

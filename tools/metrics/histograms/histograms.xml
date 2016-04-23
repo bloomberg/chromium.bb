@@ -69305,6 +69305,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1117" label="WEBRTCLOGGINGPRIVATE_STOPRTCEVENTLOGGING"/>
   <int value="1118" label="PASSWORDSPRIVATE_GETSAVEDPASSWORDLIST"/>
   <int value="1119" label="PASSWORDSPRIVATE_GETPASSWORDEXCEPTIONLIST"/>
+  <int value="1120" label="INPUTMETHODPRIVATE_OPENOPTIONSPAGE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
