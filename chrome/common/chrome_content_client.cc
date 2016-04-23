@@ -105,15 +105,22 @@ content::PepperPluginInfo::PPP_ShutdownModuleFunc g_nacl_shutdown_module;
 bool IsWidevineAvailable(base::FilePath* adapter_path,
                          base::FilePath* cdm_path,
                          std::vector<std::string>* codecs_supported) {
-  static bool skip_widevine_cdm_file_check = false;
+  static enum {
+    NOT_CHECKED,
+    FOUND,
+    NOT_FOUND,
+  } widevine_cdm_file_check = NOT_CHECKED;
   // TODO(jrummell): We should add a new path for DIR_WIDEVINE_CDM and use that
   // to locate the CDM and the CDM adapter.
   if (PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, adapter_path)) {
     *cdm_path = adapter_path->DirName().AppendASCII(kWidevineCdmFileName);
-    if (skip_widevine_cdm_file_check ||
-        (base::PathExists(*adapter_path) && base::PathExists(*cdm_path))) {
-      skip_widevine_cdm_file_check = true;
-
+    if (widevine_cdm_file_check == NOT_CHECKED) {
+      widevine_cdm_file_check =
+          (base::PathExists(*adapter_path) && base::PathExists(*cdm_path))
+              ? FOUND
+              : NOT_FOUND;
+    }
+    if (widevine_cdm_file_check == FOUND) {
       // Add the supported codecs as if they came from the component manifest.
       // This list must match the CDM that is being bundled with Chrome.
       codecs_supported->push_back(kCdmSupportedCodecVp8);
