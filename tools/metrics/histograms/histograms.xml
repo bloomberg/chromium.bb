@@ -71236,6 +71236,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1318" label="TextDocumentInFrame"/>
   <int value="1319" label="ViewSourceDocument"/>
   <int value="1320" label="FileAPINativeLineEndings"/>
+  <int value="1321" label="PointerEventAttributeCount"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

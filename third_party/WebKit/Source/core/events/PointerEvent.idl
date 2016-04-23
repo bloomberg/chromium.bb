@@ -8,12 +8,12 @@
     Constructor(DOMString type, optional PointerEventInit eventInitDict),
     RuntimeEnabled=PointerEvent,
 ] interface PointerEvent : MouseEvent {
-    readonly    attribute long      pointerId;
-    readonly    attribute double    width;
-    readonly    attribute double    height;
-    readonly    attribute float     pressure;
-    readonly    attribute long      tiltX;
-    readonly    attribute long      tiltY;
-    readonly    attribute DOMString pointerType;
-    readonly    attribute boolean   isPrimary;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      pointerId;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute double    width;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute double    height;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute float     pressure;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      tiltX;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      tiltY;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute DOMString pointerType;
+    [MeasureAs=PointerEventAttributeCount]   readonly    attribute boolean   isPrimary;
 };
