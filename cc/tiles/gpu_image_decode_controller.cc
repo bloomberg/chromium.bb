@@ -159,15 +159,29 @@ GpuImageDecodeController::GpuImageDecodeController(ContextProvider* context,
       bytes_used_(0) {
   // Acquire the context_lock so that we can safely retrieve the
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
-  ContextProvider::ScopedContextLock context_lock(context_);
-  context_threadsafe_proxy_ =
-      sk_sp<GrContextThreadSafeProxy>(context->GrContext()->threadSafeProxy());
+  {
+    ContextProvider::ScopedContextLock context_lock(context_);
+    context_threadsafe_proxy_ = sk_sp<GrContextThreadSafeProxy>(
+        context->GrContext()->threadSafeProxy());
+  }
+
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "cc::GpuImageDecodeController",
+        base::ThreadTaskRunnerHandle::Get());
+  }
 }
 
 GpuImageDecodeController::~GpuImageDecodeController() {
   // SetShouldAggressivelyFreeResources will zero our limits and free all
   // outstanding image memory.
   SetShouldAggressivelyFreeResources(true);
+
+  // It is safe to unregister, even if we didn't register in the constructor.
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool GpuImageDecodeController::GetTaskForImageAndRef(
@@ -342,6 +356,64 @@ void GpuImageDecodeController::SetShouldAggressivelyFreeResources(
     base::AutoLock lock(lock_);
     cached_bytes_limit_ = kMaxGpuImageBytes;
   }
+}
+
+bool GpuImageDecodeController::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& image_pair : image_data_) {
+    const ImageData* image_data = image_pair.second.get();
+    const uint32_t image_id = image_pair.first;
+
+    // If we have discardable decoded data, dump this here.
+    if (image_data->decode.data) {
+      std::string discardable_dump_name = base::StringPrintf(
+          "cc/image_memory/controller_%p/discardable/image_%d", this, image_id);
+      base::trace_event::MemoryAllocatorDump* dump =
+          image_data->decode.data->CreateMemoryAllocatorDump(
+              discardable_dump_name.c_str(), pmd);
+
+      // If our image is locked, dump the "locked_size" as an additional column.
+      // This lets us see the amount of discardable which is contributing to
+      // memory pressure.
+      if (image_data->decode.is_locked) {
+        dump->AddScalar("locked_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        image_data->size);
+      }
+    }
+
+    // If we have an uploaded image (that is actually on the GPU, not just a CPU
+    // wrapper), upload it here.
+    if (image_data->upload.image && image_data->mode == DecodedDataMode::GPU) {
+      std::string gpu_dump_name = base::StringPrintf(
+          "cc/image_memory/controller_%p/gpu/image_%d", this, image_id);
+      base::trace_event::MemoryAllocatorDump* dump =
+          pmd->CreateAllocatorDump(gpu_dump_name);
+      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      image_data->size);
+
+      // Create a global shred GUID to associate this data with its GPU process
+      // counterpart.
+      GLuint gl_id = skia::GrBackendObjectToGrGLTextureInfo(
+                         image_data->upload.image->getTextureHandle(
+                             false /* flushPendingGrContextIO */))
+                         ->fID;
+      base::trace_event::MemoryAllocatorDumpGuid guid =
+          gfx::GetGLTextureClientGUIDForTracing(
+              context_->ContextSupport()->ShareGroupTracingGUID(), gl_id);
+
+      // kImportance is somewhat arbitrary - we chose 3 to be higher than the
+      // value used in the GPU process (1), and Skia (2), causing us to appear
+      // as the owner in memory traces.
+      const int kImportance = 3;
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    }
+  }
+
+  return true;
 }
 
 void GpuImageDecodeController::DecodeImage(const DrawImage& draw_image) {

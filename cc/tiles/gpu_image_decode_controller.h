@@ -49,7 +49,9 @@ class ContextProvider;
 // used in raster. Cache entries for at-raster tasks are marked as such, which
 // prevents future tasks from taking a dependency on them and extending their
 // lifetime longer than is necessary.
-class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
+class CC_EXPORT GpuImageDecodeController
+    : public ImageDecodeController,
+      public base::trace_event::MemoryDumpProvider {
  public:
   explicit GpuImageDecodeController(ContextProvider* context,
                                     ResourceFormat decode_format);
@@ -69,6 +71,10 @@ class CC_EXPORT GpuImageDecodeController : public ImageDecodeController {
   void ReduceCacheUsage() override;
   void SetShouldAggressivelyFreeResources(
       bool aggressively_free_resources) override;
+
+  // MemoryDumpProvider overrides.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Called by Decode / Upload tasks.
   void DecodeImage(const DrawImage& image);
