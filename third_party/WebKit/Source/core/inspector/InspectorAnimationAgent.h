@@ -75,7 +75,7 @@ private:
     V8RuntimeAgent* m_runtimeAgent;
     HeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
     HeapHashMap<String, Member<blink::Animation>> m_idToAnimationClone;
-    HeapHashMap<String, String> m_idToAnimationType;
+    HashMap<String, String> m_idToAnimationType;
     bool m_isCloning;
     HashSet<String> m_clearedAnimations;
 };
