@@ -2024,7 +2024,7 @@
 
     'hybrid': {
       'gn_args': 'error', # TODO(GYP): figure out the equivalent for this
-      'gyp_defines': 'v8_target_arch=arm target_arch=ia32, host_arch=x86_64',
+      'gyp_defines': 'v8_target_arch=arm target_arch=ia32 host_arch=x86_64',
       'mixins': ['disable_nacl'],
     },
 
