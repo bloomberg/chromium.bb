@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -719,26 +720,26 @@ int PrintSystemCUPS::PrintFile(const GURL& url, http_encryption_t encryption,
                                const char* name, const char* filename,
                                const char* title, int num_options,
                                cups_option_t* options) {
-  if (url.is_empty()) {  // Use default (local) print server.
+  // Use default (local) print server.
+  if (url.is_empty())
     return cupsPrintFile(name, filename, title, num_options, options);
-  } else {
-    printing::HttpConnectionCUPS http(url, encryption);
-    http.SetBlocking(false);
-    return cupsPrintFile2(http.http(), name, filename,
-                          title, num_options, options);
-  }
+
+  printing::HttpConnectionCUPS http(url, encryption);
+  http.SetBlocking(false);
+  return cupsPrintFile2(http.http(), name, filename, title, num_options,
+                        options);
 }
 
 int PrintSystemCUPS::GetJobs(cups_job_t** jobs, const GURL& url,
                              http_encryption_t encryption,
                              const char* name, int myjobs, int whichjobs) {
-  if (url.is_empty()) {  // Use default (local) print server.
+  // Use default (local) print server.
+  if (url.is_empty())
     return cupsGetJobs(jobs, name, myjobs, whichjobs);
-  } else {
-    printing::HttpConnectionCUPS http(url, encryption);
-    http.SetBlocking(false);
-    return cupsGetJobs2(http.http(), jobs, name, myjobs, whichjobs);
-  }
+
+  printing::HttpConnectionCUPS http(url, encryption);
+  http.SetBlocking(false);
+  return cupsGetJobs2(http.http(), jobs, name, myjobs, whichjobs);
 }
 
 PlatformJobId PrintSystemCUPS::SpoolPrintJob(
@@ -788,6 +789,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
       PrintFile(server_info->url, cups_encryption_, short_printer_name.c_str(),
                 print_data_file_path.value().c_str(), job_title.c_str(),
                 cups_options.size(), cups_options.data());
+  base::DeleteFile(print_data_file_path, false);
 
   // TODO(alexyu): Output printer id.
   VLOG(1) << "CP_CUPS: Job spooled"

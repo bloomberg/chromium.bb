@@ -35,6 +35,15 @@ namespace cloud_print {
 
 namespace {
 
+bool CurrentlyOnServiceIOThread() {
+  return g_service_process->io_task_runner()->BelongsToCurrentThread();
+}
+
+bool PostIOThreadTask(const tracked_objects::Location& from_here,
+                      const base::Closure& task) {
+  return g_service_process->io_task_runner()->PostTask(from_here, task);
+}
+
 class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
  public:
   PrintSystemWatcherWin()
@@ -260,14 +269,15 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         NOTREACHED();
         return false;
       }
-      base::string16 printer_wide = base::UTF8ToWide(printer_name);
+
       // We only support PDF and XPS documents for now.
       if (print_data_mime_type == kContentTypePDF) {
+        base::string16 printer_wide = base::UTF8ToWide(printer_name);
         std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode;
         if (print_ticket_mime_type == kContentTypeJSON) {
           dev_mode = CjtToDevMode(printer_wide, print_ticket);
         } else {
-          DCHECK(print_ticket_mime_type == kContentTypeXML);
+          DCHECK_EQ(kContentTypeXML, print_ticket_mime_type);
           dev_mode = printing::XpsTicketToDevMode(printer_wide, print_ticket);
         }
 
@@ -293,10 +303,12 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
 
         printer_dc_.Set(dc);
         saved_dc_ = SaveDC(printer_dc_.Get());
-        print_data_file_path_ = print_data_file_path;
         delegate_ = delegate;
-        RenderPDFPages();
-      } else if (print_data_mime_type == kContentTypeXPS) {
+        RenderPDFPages(print_data_file_path);
+        return true;
+      }
+
+      if (print_data_mime_type == kContentTypeXPS) {
         DCHECK(print_ticket_mime_type == kContentTypeXML);
         bool ret = PrintXPSDocument(printer_name,
                                     job_title,
@@ -305,11 +317,10 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         if (ret)
           delegate_ = delegate;
         return ret;
-      } else {
-        NOTREACHED();
-        return false;
       }
-      return true;
+
+      NOTREACHED();
+      return false;
     }
 
     void PreparePageDCForPrinting(HDC, float scale_factor) {
@@ -408,25 +419,23 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       delegate_ = NULL;
     }
 
-    void RenderPDFPages() {
+    void RenderPDFPages(const base::FilePath& pdf_path) {
       int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
       int dc_width = GetDeviceCaps(printer_dc_.Get(), PHYSICALWIDTH);
       int dc_height = GetDeviceCaps(printer_dc_.Get(), PHYSICALHEIGHT);
       gfx::Rect render_area(0, 0, dc_width, dc_height);
-      g_service_process->io_task_runner()->PostTask(
-          FROM_HERE,
-          base::Bind(&JobSpoolerWin::Core::RenderPDFPagesInSandbox, this,
-                     print_data_file_path_, render_area, printer_dpi,
-                     base::ThreadTaskRunnerHandle::Get()));
+      PostIOThreadTask(FROM_HERE,
+                       base::Bind(&JobSpoolerWin::Core::RenderPDFPagesInSandbox,
+                                  this, pdf_path, render_area, printer_dpi,
+                                  base::ThreadTaskRunnerHandle::Get()));
     }
 
-    // Called on the service process IO thread.
     void RenderPDFPagesInSandbox(
         const base::FilePath& pdf_path,
         const gfx::Rect& render_area,
         int render_dpi,
         const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
-      DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
+      DCHECK(CurrentlyOnServiceIOThread());
       std::unique_ptr<ServiceUtilityProcessHost> utility_host(
           new ServiceUtilityProcessHost(this, client_task_runner.get()));
       // TODO(gene): For now we disabling autorotation for CloudPrinting.
@@ -447,12 +456,15 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
 
     bool PrintXPSDocument(const std::string& printer_name,
                           const std::string& job_title,
-                          const base::FilePath& print_data_file_path,
+                          const base::FilePath& xps_path,
                           const std::string& print_ticket) {
+      base::File xps_file(xps_path, base::File::FLAG_OPEN |
+                                        base::File::FLAG_READ |
+                                        base::File::FLAG_DELETE_ON_CLOSE);
       if (!printing::XPSPrintModule::Init())
         return false;
 
-      job_progress_event_.Set(CreateEvent(NULL, TRUE, FALSE, NULL));
+      job_progress_event_.Set(CreateEvent(nullptr, TRUE, FALSE, nullptr));
       if (!job_progress_event_.Get())
         return false;
 
@@ -461,34 +473,42 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       base::win::ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
       if (FAILED(printing::XPSPrintModule::StartXpsPrintJob(
               base::UTF8ToWide(printer_name).c_str(),
-              base::UTF8ToWide(job_title).c_str(),
-              NULL, job_progress_event_.Get(), NULL, NULL, NULL,
+              base::UTF8ToWide(job_title).c_str(), nullptr,
+              job_progress_event_.Get(), nullptr, nullptr, 0,
               xps_print_job_.Receive(), doc_stream.Receive(),
-              print_ticket_stream.Receive())))
+              print_ticket_stream.Receive()))) {
         return false;
+      }
 
       ULONG print_bytes_written = 0;
       if (FAILED(print_ticket_stream->Write(print_ticket.c_str(),
                                             print_ticket.length(),
-                                            &print_bytes_written)))
+                                            &print_bytes_written))) {
         return false;
+      }
       DCHECK_EQ(print_ticket.length(), print_bytes_written);
       if (FAILED(print_ticket_stream->Close()))
         return false;
 
-      std::string document_data;
-      base::ReadFileToString(print_data_file_path, &document_data);
-      ULONG doc_bytes_written = 0;
-      if (FAILED(doc_stream->Write(document_data.c_str(),
-                                    document_data.length(),
-                                    &doc_bytes_written)))
+      int64_t file_size = xps_file.GetLength();
+      if (file_size <= 0)
         return false;
-      DCHECK_EQ(document_data.length(), doc_bytes_written);
+
+      std::unique_ptr<char[]> document_data(new char[file_size]);
+      int bytes_read = xps_file.Read(0, document_data.get(), file_size);
+      if (bytes_read != file_size)
+        return false;
+
+      ULONG doc_bytes_written = 0;
+      if (FAILED(doc_stream->Write(document_data.get(), file_size,
+                                   &doc_bytes_written))) {
+        return false;
+      }
+      DCHECK_EQ(file_size, doc_bytes_written);
       if (FAILED(doc_stream->Close()))
         return false;
 
-      job_progress_watcher_.StartWatchingOnce(
-          job_progress_event_.Get(), this);
+      job_progress_watcher_.StartWatchingOnce(job_progress_event_.Get(), this);
       job_canceler.reset();
       return true;
     }
@@ -497,7 +517,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     PrintSystem::JobSpooler::Delegate* delegate_;
     int saved_dc_;
     base::win::ScopedCreateDC printer_dc_;
-    base::FilePath print_data_file_path_;
     base::win::ScopedHandle job_progress_event_;
     base::win::ObjectWatcher job_progress_watcher_;
     base::win::ScopedComPtr<IXpsPrintJob> xps_print_job_;
@@ -555,14 +574,14 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   }
 
   void StartGetPrinterCapsAndDefaults() {
-    g_service_process->io_task_runner()->PostTask(
+    PostIOThreadTask(
         FROM_HERE,
         base::Bind(&PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl, this,
                    base::ThreadTaskRunnerHandle::Get()));
   }
 
   void StartGetPrinterSemanticCapsAndDefaults() {
-    g_service_process->io_task_runner()->PostTask(
+    PostIOThreadTask(
         FROM_HERE,
         base::Bind(&PrinterCapsHandler::GetPrinterSemanticCapsAndDefaultsImpl,
                    this, base::ThreadTaskRunnerHandle::Get()));
@@ -573,7 +592,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
 
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
-    DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
+    DCHECK(CurrentlyOnServiceIOThread());
     std::unique_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_task_runner.get()));
     if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
@@ -587,7 +606,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
 
   void GetPrinterSemanticCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
-    DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
+    DCHECK(CurrentlyOnServiceIOThread());
     std::unique_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_task_runner.get()));
     if (utility_host->StartGetPrinterSemanticCapsAndDefaults(printer_name_)) {

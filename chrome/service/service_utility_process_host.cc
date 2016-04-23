@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -34,10 +35,6 @@
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
-
-#if defined(OS_WIN)
-#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
-#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -180,7 +177,8 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
     const printing::PdfRenderSettings& render_settings) {
   ReportUmaEvent(SERVICE_UTILITY_METAFILE_REQUEST);
   start_time_ = base::Time::Now();
-  base::File pdf_file(pdf_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::File pdf_file(pdf_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                    base::File::FLAG_DELETE_ON_CLOSE);
   if (!pdf_file.IsValid() || !StartProcess(false))
     return false;
 
@@ -230,10 +228,8 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line.AppendSwitch(switches::kLang);
 
-#if defined(OS_WIN)
   if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
     cmd_line.AppendArg(switches::kPrefetchArgumentOther);
-#endif  // defined(OS_WIN)
 
   if (Launch(&cmd_line, no_sandbox)) {
     ReportUmaEvent(SERVICE_UTILITY_STARTED);
@@ -264,12 +260,7 @@ bool ServiceUtilityProcessHost::Send(IPC::Message* msg) {
 }
 
 base::FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
-#if defined(OS_LINUX)
-  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
-#else
-  int flags = ChildProcessHost::CHILD_NORMAL;
-#endif
-  return ChildProcessHost::GetChildPath(flags);
+  return ChildProcessHost::GetChildPath(ChildProcessHost::CHILD_NORMAL);
 }
 
 void ServiceUtilityProcessHost::OnChildDisconnected() {

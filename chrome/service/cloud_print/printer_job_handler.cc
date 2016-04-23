@@ -246,7 +246,7 @@ void PrinterJobHandler::OnJobChanged() {
 }
 
 void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
-  DCHECK(base::MessageLoop::current() == print_thread_.message_loop());
+  DCHECK(CurrentlyOnPrintThread());
   job_spooler_->AddRef();
   print_thread_.message_loop()->ReleaseSoon(FROM_HERE, job_spooler_.get());
   job_spooler_ = NULL;
@@ -255,7 +255,7 @@ void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
 }
 
 void PrinterJobHandler::OnJobSpoolFailed() {
-  DCHECK(base::MessageLoop::current() == print_thread_.message_loop());
+  DCHECK(CurrentlyOnPrintThread());
   job_spooler_->AddRef();
   print_thread_.message_loop()->ReleaseSoon(FROM_HERE, job_spooler_.get());
   job_spooler_ = NULL;
@@ -780,17 +780,13 @@ void PrinterJobHandler::OnReceivePrinterCaps(
   }
 }
 
-// The following methods are called on |print_thread_|. It is not safe to
-// access any members other than |job_handler_task_runner_|,
-// |job_spooler_| and |print_system_|.
 void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                                 const std::string& printer_name) {
+  DCHECK(CurrentlyOnPrintThread());
   job_spooler_ = print_system_->CreateJobSpooler();
   UMA_HISTOGRAM_LONG_TIMES("CloudPrint.PrepareTime",
                            base::Time::Now() - job_start_time_);
   DCHECK(job_spooler_.get());
-  if (!job_spooler_.get())
-    return;
 
   base::string16 document_name =
       job_details.job_title_.empty()
@@ -813,6 +809,10 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                            this)) {
     OnJobSpoolFailed();
   }
+}
+
+bool PrinterJobHandler::CurrentlyOnPrintThread() const {
+  return base::MessageLoop::current() == print_thread_.message_loop();
 }
 
 }  // namespace cloud_print

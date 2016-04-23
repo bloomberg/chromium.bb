@@ -94,7 +94,8 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
     PrinterInfoFromCloud(const PrinterInfoFromCloud& other);
   };
 
-  // Begin public interface
+  static void ReportsStats();
+
   PrinterJobHandler(const printing::PrinterBasicInfo& printer_info,
                     const PrinterInfoFromCloud& printer_info_from_server,
                     const GURL& cloud_print_server_url,
@@ -113,9 +114,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   void Shutdown();
 
   base::TimeTicks last_job_fetch_time() const { return last_job_fetch_time_; }
-  // End public interface
-
-  // Begin Delegate implementations
 
   // CloudPrintURLFetcher::Delegate implementation.
   CloudPrintURLFetcher::ResponseAction HandleRawResponse(
@@ -148,13 +146,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   void OnJobChanged() override;
 
   // JobSpoolerDelegate implementation.
-  // Called on print_thread_.
+  // Called on |print_thread_|.
   void OnJobSpoolSucceeded(const PlatformJobId& job_id) override;
   void OnJobSpoolFailed() override;
-
-  // End Delegate implementations
-
-  static void ReportsStats();
 
  private:
   friend class base::RefCountedThreadSafe<PrinterJobHandler>;
@@ -175,10 +169,10 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
       const base::DictionaryValue* json_data,
       bool succeeded);
   // Prototype for a data handler.
-  typedef CloudPrintURLFetcher::ResponseAction
-      (PrinterJobHandler::*DataHandler)(const net::URLFetcher* source,
-                                        const GURL& url,
-                                        const std::string& data);
+  typedef CloudPrintURLFetcher::ResponseAction (
+      PrinterJobHandler::*DataHandler)(const net::URLFetcher* source,
+                                       const GURL& url,
+                                       const std::string& data);
 
   ~PrinterJobHandler() override;
 
@@ -248,13 +242,16 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // Callback that asynchronously receives printer caps and defaults.
   void OnReceivePrinterCaps(
-    bool succeeded,
-    const std::string& printer_name,
-    const printing::PrinterCapsAndDefaults& caps_and_defaults);
+      bool succeeded,
+      const std::string& printer_name,
+      const printing::PrinterCapsAndDefaults& caps_and_defaults);
 
-  // Called on print_thread_.
+  // Called on |print_thread_|. It is not safe to access any members other than
+  // |job_handler_task_runner_|, |job_spooler_| and |print_system_|.
   void DoPrint(const JobDetails& job_details,
                const std::string& printer_name);
+
+  bool CurrentlyOnPrintThread() const;
 
   scoped_refptr<CloudPrintURLFetcher> request_;
   scoped_refptr<PrintSystem> print_system_;
@@ -263,7 +260,8 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   GURL cloud_print_server_url_;
   std::string print_data_url_;
   JobDetails job_details_;
-  Delegate* delegate_;
+  Delegate* const delegate_;
+
   // Once the job has been spooled to the local spooler, this specifies the
   // job id of the job on the local spooler.
   PlatformJobId local_job_id_;
