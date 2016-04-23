@@ -319,7 +319,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['win', ('amd', 0x6779)], bug=606021)
+        ['win', ('amd', 0x6779), ('nvidia', 0x104a)], bug=606021)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -449,6 +449,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderprecision.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturefiltering/3d*',
+        ['linux', 'amd'], bug=606114)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['linux', 'amd'], bug=483282)
