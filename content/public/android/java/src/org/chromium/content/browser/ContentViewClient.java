@@ -253,4 +253,11 @@ public class ContentViewClient {
     public int getSystemWindowInsetBottom() {
         return 0;
     }
+
+    /**
+     * Return the product version.
+     */
+    public String getProductVersion() {
+        return "";
+    }
 }

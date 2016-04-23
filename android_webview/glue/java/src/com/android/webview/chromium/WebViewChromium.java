@@ -6,7 +6,6 @@ package com.android.webview.chromium;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.assist.AssistStructure.ViewNode;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -58,14 +57,11 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.SmartClipProvider;
-import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
-import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.NavigationHistory;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -1560,49 +1556,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return;
         }
-        structure.setChildCount(1);
-        final ViewStructure viewRoot = structure.asyncNewChild(0);
-        mAwContents.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
-            @Override
-            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
-                viewRoot.setHint(AwContentsStatics.getProductVersion());
-                if (root == null) {
-                    viewRoot.setClassName("android.webkit.WebView");
-                    viewRoot.asyncCommit();
-                    return;
-                }
-                createAssistStructure(viewRoot, root, 0, 0);
-            }
-        });
-    }
-
-    // When creating the Assist structure, the left and top are relative to the parent node, and
-    // scroll offsets are not needed.
-    @TargetApi(Build.VERSION_CODES.M)
-    private void createAssistStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
-            int parentX, int parentY) {
-        viewNode.setClassName(node.className);
-        if (node.hasSelection) {
-            viewNode.setText(node.text, node.startSelection, node.endSelection);
-        } else {
-            viewNode.setText(node.text);
-        }
-        // Do not pass scroll information.
-        viewNode.setDimens(node.x - parentX, node.y - parentY, 0, 0, node.width, node.height);
-        viewNode.setChildCount(node.children.size());
-        if (node.hasStyle) {
-            int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
-                    | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
-                    | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
-                    | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
-            viewNode.setTextStyle(node.textSize, node.color, node.bgcolor, style);
-        }
-        final Iterator<AccessibilitySnapshotNode> children = node.children.listIterator();
-        int i = 0;
-        while (children.hasNext()) {
-            createAssistStructure(viewNode.asyncNewChild(i++), children.next(), node.x, node.y);
-        }
-        viewNode.asyncCommit();
+        mAwContents.onProvideVirtualStructure(structure);
     }
 
     @Override

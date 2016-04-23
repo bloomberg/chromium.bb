@@ -152,4 +152,9 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
             mAwContentsClient.onHideCustomView();
         }
     }
+
+    @Override
+    public String getProductVersion() {
+        return AwContentsStatics.getProductVersion();
+    }
 }

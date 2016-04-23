@@ -3060,45 +3060,55 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    public void onProvideVirtualStructure(final ViewStructure structure) {
+    public void onProvideVirtualStructure(
+            final ViewStructure structure, final boolean ignoreScrollOffset) {
         // Do not collect accessibility tree in incognito mode
         if (getWebContents().isIncognito()) {
             structure.setChildCount(0);
             return;
         }
-
         structure.setChildCount(1);
         final ViewStructure viewRoot = structure.asyncNewChild(0);
-        getWebContents().requestAccessibilitySnapshot(
-                new AccessibilitySnapshotCallback() {
-                    @Override
-                    public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
-                        viewRoot.setClassName("");
-                        if (root == null) {
-                            viewRoot.asyncCommit();
-                            return;
-                        }
-                        createVirtualStructure(viewRoot, root, 0, 0);
-                    }
-                },
-                mRenderCoordinates.getContentOffsetYPix() - mRenderCoordinates.getScrollYPix(),
-                mRenderCoordinates.getScrollXPix());
+        getWebContents().requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
+            @Override
+            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
+                viewRoot.setClassName("");
+                viewRoot.setHint(mContentViewClient.getProductVersion());
+                if (root == null) {
+                    viewRoot.asyncCommit();
+                    return;
+                }
+                createVirtualStructure(viewRoot, root, ignoreScrollOffset);
+            }
+        });
     }
 
     // When creating the View structure, the left and top are relative to the parent node.
-    // The X scroll is not used, rather compensated through X-position, while the Y scroll
-    // is provided.
     @TargetApi(Build.VERSION_CODES.M)
     private void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
-            int parentX, int parentY) {
+            final boolean ignoreScrollOffset) {
         viewNode.setClassName(node.className);
         if (node.hasSelection) {
             viewNode.setText(node.text, node.startSelection, node.endSelection);
         } else {
             viewNode.setText(node.text);
         }
-        viewNode.setDimens(node.x - parentX - node.scrollX, node.y - parentY, 0, node.scrollY,
-                node.width, node.height);
+        int left = (int) mRenderCoordinates.fromLocalCssToPix(node.x);
+        int top = (int) mRenderCoordinates.fromLocalCssToPix(node.y);
+        int width = (int) mRenderCoordinates.fromLocalCssToPix(node.width);
+        int height = (int) mRenderCoordinates.fromLocalCssToPix(node.height);
+
+        Rect boundsInParent = new Rect(left, top, left + width, top + height);
+        if (node.isRootNode) {
+            // Offset of the web content relative to the View.
+            boundsInParent.offset(0, (int) mRenderCoordinates.getContentOffsetYPix());
+            if (!ignoreScrollOffset) {
+                boundsInParent.offset(-(int) mRenderCoordinates.getScrollXPix(),
+                        -(int) mRenderCoordinates.getScrollYPix());
+            }
+        }
+
+        viewNode.setDimens(boundsInParent.left, boundsInParent.top, 0, 0, width, height);
         viewNode.setChildCount(node.children.size());
         if (node.hasStyle) {
             int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
@@ -3108,8 +3118,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             viewNode.setTextStyle(node.textSize, node.color, node.bgcolor, style);
         }
         for (int i = 0; i < node.children.size(); i++) {
-            createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), node.x,
-                    node.y);
+            createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
         }
         viewNode.asyncCommit();
     }

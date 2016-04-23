@@ -16,8 +16,8 @@ import java.util.ArrayList;
  */
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class AccessibilitySnapshotNode {
-
-    public int x, y, scrollX, scrollY, width, height;
+    public int x, y, width, height;
+    public boolean isRootNode;
     public float textSize;
     public String text;
     public String className;
@@ -34,14 +34,7 @@ public class AccessibilitySnapshotNode {
     public ArrayList<AccessibilitySnapshotNode> children =
             new ArrayList<AccessibilitySnapshotNode>();
 
-    public AccessibilitySnapshotNode(int x, int y, int scrollX, int scrollY, int width,
-            int height, String text, String className) {
-        this.x = x;
-        this.y = y;
-        this.scrollX = scrollX;
-        this.scrollY = scrollY;
-        this.width = width;
-        this.height = height;
+    public AccessibilitySnapshotNode(String text, String className) {
         this.text = text;
         this.className = className;
     }
@@ -62,6 +55,14 @@ public class AccessibilitySnapshotNode {
         hasSelection = true;
         startSelection = start;
         endSelection = end;
+    }
+
+    public void setLocationInfo(int x, int y, int width, int height, boolean isRootNode) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.isRootNode = isRootNode;
     }
 
     public void addChild(AccessibilitySnapshotNode node) {

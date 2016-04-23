@@ -390,6 +390,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/input/ReplicaInputConnectionTest.java",
     "javatests/src/org/chromium/content/browser/input/SelectPopupTest.java",
     "javatests/src/org/chromium/content/browser/input/TestImeAdapterDelegate.java",
+    "javatests/src/org/chromium/content/browser/webcontents/AccessibilitySnapshotTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
     "javatests/src/org/chromium/content/common/CleanupReferenceTest.java",
   ]

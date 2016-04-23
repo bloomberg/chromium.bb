@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
@@ -32,6 +33,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -58,7 +60,6 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content.common.CleanupReference;
-import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -2250,13 +2251,17 @@ public class AwContents implements SmartClipProvider,
         return mWebContents.hasAccessedInitialDocument();
     }
 
-    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
+    @TargetApi(Build.VERSION_CODES.M)
+    public void onProvideVirtualStructure(ViewStructure structure) {
         if (isDestroyed(WARN)) return;
         if (!mWebContentsObserver.didEverCommitNavigation()) {
-            callback.onAccessibilitySnapshot(null);
+            // TODO(sgurun) write a test case for this condition crbug/605251
+            structure.setChildCount(0);
             return;
         }
-        mWebContents.requestAccessibilitySnapshot(callback, 0, 0);
+        // for webview, the platform already calculates the scroll (as it is a view) in
+        // ViewStructure tree. Do not offset for it in the snapshop x,y position calculations.
+        mContentViewCore.onProvideVirtualStructure(structure, true);
     }
 
     public boolean isSelectActionModeAllowed(int actionModeItem) {

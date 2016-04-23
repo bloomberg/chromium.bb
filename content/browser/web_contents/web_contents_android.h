@@ -153,9 +153,7 @@ class CONTENT_EXPORT WebContentsAndroid
   void RequestAccessibilitySnapshot(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& callback,
-      jfloat y_offset,
-      jfloat x_scroll);
+      const base::android::JavaParamRef<jobject>& callback);
 
   void ResumeMediaSession(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);

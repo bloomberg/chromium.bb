@@ -1488,10 +1488,6 @@ void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
       static_cast<jint>(y_dip * dpi_scale()));
 }
 
-float ContentViewCoreImpl::GetScaleFactor() const {
-  return page_scale_ * dpi_scale_;
-}
-
 void ContentViewCoreImpl::OnSmartClipDataExtracted(
     const base::string16& text,
     const base::string16& html,

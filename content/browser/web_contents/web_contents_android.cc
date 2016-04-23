@@ -69,18 +69,9 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
 }
 
 struct AccessibilitySnapshotParams {
-  AccessibilitySnapshotParams(float scale,
-                              float vertical_offset,
-                              float horizontal_scroll)
-      : scale_factor(scale),
-        y_offset(vertical_offset),
-        x_scroll(horizontal_scroll),
-        has_tree_data(false),
-        should_select_leaf_nodes(false) {}
+  AccessibilitySnapshotParams()
+      : has_tree_data(false), should_select_leaf_nodes(false) {}
 
-  float scale_factor;
-  float y_offset;
-  float x_scroll;
   bool has_tree_data;
   // The current text selection within this tree, if any, expressed as the
   // node ID and character offset of the anchor (selection start) and focus
@@ -96,12 +87,12 @@ struct AccessibilitySnapshotParams {
 ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
     JNIEnv* env,
     BrowserAccessibilityAndroid* node,
+    const gfx::Rect& parent_rect,
     AccessibilitySnapshotParams* params) {
   ScopedJavaLocalRef<jstring> j_text =
       ConvertUTF16ToJavaString(env, node->GetText());
   ScopedJavaLocalRef<jstring> j_class =
       ConvertUTF8ToJavaString(env, node->GetClassName());
-  const gfx::Rect& location = node->GetLocalBoundsRect();
   // The style attributes exists and valid if size attribute exists. Otherwise,
   // they are not. Use a negative size information to indicate the existence
   // of style information.
@@ -116,15 +107,18 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
     size =  node->GetFloatAttribute(ui::AX_ATTR_FONT_SIZE);
     text_style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
   }
-  float scale_factor = params->scale_factor;
+
+  const gfx::Rect& absolute_rect = node->GetLocalBoundsRect();
+  gfx::Rect parent_relative_rect = absolute_rect;
+  bool is_root = node->GetParent() == nullptr;
+  if (!is_root) {
+    parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
+  }
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(
-          env, scale_factor * location.x() - params->x_scroll,
-          scale_factor * location.y() + params->y_offset,
-          scale_factor * node->GetScrollX(), scale_factor * node->GetScrollY(),
-          scale_factor * location.width(), scale_factor * location.height(),
-          j_text.obj(), color, bgcolor, scale_factor * size, text_style,
-          j_class.obj());
+          env, parent_relative_rect.x(), parent_relative_rect.y(),
+          absolute_rect.width(), absolute_rect.height(), is_root, j_text.obj(),
+          color, bgcolor, size, text_style, j_class.obj());
 
   if (params->has_tree_data && node->PlatformIsLeaf()) {
     int start_selection = 0;
@@ -150,14 +144,14 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(
         static_cast<BrowserAccessibilityAndroid*>(
             node->PlatformGetChild(i));
     Java_WebContentsImpl_addAccessibilityNodeAsChild(
-        env, j_node.obj(), WalkAXTreeDepthFirst(env, child, params).obj());
+        env, j_node.obj(),
+        WalkAXTreeDepthFirst(env, child, absolute_rect, params).obj());
   }
   return j_node;
 }
 
 // Walks over the AXTreeUpdate and creates a light weight snapshot.
 void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                            AccessibilitySnapshotParams* params,
                             const ui::AXTreeUpdate& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (result.nodes.empty()) {
@@ -170,14 +164,17 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
   manager->set_prune_tree_for_screen_reader(false);
   BrowserAccessibilityAndroid* root =
       static_cast<BrowserAccessibilityAndroid*>(manager->GetRoot());
+  AccessibilitySnapshotParams params;
   if (result.has_tree_data) {
-    params->has_tree_data = true;
-    params->sel_anchor_object_id = result.tree_data.sel_anchor_object_id;
-    params->sel_anchor_offset = result.tree_data.sel_anchor_offset;
-    params->sel_focus_object_id = result.tree_data.sel_focus_object_id;
-    params->sel_focus_offset = result.tree_data.sel_focus_offset;
+    params.has_tree_data = true;
+    params.sel_anchor_object_id = result.tree_data.sel_anchor_object_id;
+    params.sel_anchor_offset = result.tree_data.sel_anchor_offset;
+    params.sel_focus_object_id = result.tree_data.sel_focus_object_id;
+    params.sel_focus_offset = result.tree_data.sel_focus_offset;
   }
-  ScopedJavaLocalRef<jobject> j_root = WalkAXTreeDepthFirst(env, root, params);
+  gfx::Rect parent_rect;
+  ScopedJavaLocalRef<jobject> j_root =
+      WalkAXTreeDepthFirst(env, root, parent_rect, &params);
   Java_WebContentsImpl_onAccessibilitySnapshot(
       env, j_root.obj(), callback.obj());
 }
@@ -599,21 +596,15 @@ jint WebContentsAndroid::GetThemeColor(JNIEnv* env,
 void WebContentsAndroid::RequestAccessibilitySnapshot(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& callback,
-    jfloat y_offset,
-    jfloat x_scroll) {
+    const JavaParamRef<jobject>& callback) {
   // Secure the Java callback in a scoped object and give ownership of it to the
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
   gfx::DeviceDisplayInfo device_info;
-  ContentViewCoreImpl* contentViewCore =
-      ContentViewCoreImpl::FromWebContents(web_contents_);
 
-  AccessibilitySnapshotParams* params = new AccessibilitySnapshotParams(
-      contentViewCore->GetScaleFactor(), y_offset, x_scroll);
   WebContentsImpl::AXTreeSnapshotCallback snapshot_callback =
-      base::Bind(&AXTreeSnapshotCallback, j_callback, base::Owned(params));
+      base::Bind(&AXTreeSnapshotCallback, j_callback);
   static_cast<WebContentsImpl*>(web_contents_)->RequestAXTreeSnapshot(
       snapshot_callback);
 }

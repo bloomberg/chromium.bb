@@ -391,8 +391,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
-  // returns page density (dpi) X page scale
-  float GetScaleFactor() const;
  private:
   class ContentViewUserData;
 

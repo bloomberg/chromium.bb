@@ -357,10 +357,8 @@ import java.util.UUID;
     }
 
     @Override
-    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback,
-            float offsetY, float scrollX) {
-        nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback,
-                offsetY, scrollX);
+    public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
+        nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
 
     @Override
@@ -397,12 +395,11 @@ import java.util.UUID;
     }
 
     @CalledByNative
-    private static AccessibilitySnapshotNode createAccessibilitySnapshotNode(int x,
-            int y, int scrollX, int scrollY, int width, int height, String text,
+    private static AccessibilitySnapshotNode createAccessibilitySnapshotNode(int parentRelativeLeft,
+            int parentRelativeTop, int width, int height, boolean isRootNode, String text,
             int color, int bgcolor, float size, int textStyle, String className) {
+        AccessibilitySnapshotNode node = new AccessibilitySnapshotNode(text, className);
 
-        AccessibilitySnapshotNode node = new AccessibilitySnapshotNode(x, y, scrollX,
-                scrollY, width, height, text, className);
         // if size is smaller than 0, then style information does not exist.
         if (size >= 0.0) {
             boolean bold = (textStyle & AXTextStyle.text_style_bold) > 0;
@@ -411,6 +408,7 @@ import java.util.UUID;
             boolean lineThrough = (textStyle & AXTextStyle.text_style_line_through) > 0;
             node.setStyle(color, bgcolor, size, bold, italic, underline, lineThrough);
         }
+        node.setLocationInfo(parentRelativeLeft, parentRelativeTop, width, height, isRootNode);
         return node;
     }
 
@@ -525,8 +523,8 @@ import java.util.UUID;
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
-    private native void nativeRequestAccessibilitySnapshot(long nativeWebContentsAndroid,
-            AccessibilitySnapshotCallback callback, float offsetY, float scrollX);
+    private native void nativeRequestAccessibilitySnapshot(
+            long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
     private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
     private native void nativeStopMediaSession(long nativeWebContentsAndroid);

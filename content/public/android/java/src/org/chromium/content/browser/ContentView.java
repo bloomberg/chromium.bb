@@ -357,7 +357,7 @@ public class ContentView extends FrameLayout
 
         @Override
         public void onProvideVirtualStructure(final ViewStructure structure) {
-            mContentViewCore.onProvideVirtualStructure(structure);
+            mContentViewCore.onProvideVirtualStructure(structure, false);
         }
     }
 }
