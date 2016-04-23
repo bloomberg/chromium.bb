@@ -17,6 +17,7 @@ namespace blink {
 class JavaScriptCallFrame;
 class PromiseTracker;
 class V8InspectorSessionImpl;
+class V8Regex;
 class V8StackTraceImpl;
 
 namespace protocol {
@@ -128,6 +129,8 @@ public:
         PassOwnPtr<protocol::Runtime::CallArgument> newValue,
         const String16& callFrame) override;
     void setAsyncCallStackDepth(ErrorString*, int depth) override;
+    void setBlackboxPatterns(ErrorString*,
+        PassOwnPtr<protocol::Array<String16>> patterns) override;
     void setBlackboxedRanges(ErrorString*,
         const String16& scriptId,
         PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
@@ -193,6 +196,8 @@ private:
     void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();
 
+    bool setBlackboxPattern(ErrorString*, const String16& pattern);
+
     using ScriptsMap = protocol::HashMap<String16, V8DebuggerScript>;
     using BreakpointIdToDebuggerBreakpointIdsMap = protocol::HashMap<String16, protocol::Vector<String16>>;
     using DebugServerBreakpointToBreakpointIdAndSourceMap = protocol::HashMap<String16, std::pair<String16, BreakpointSource>>;
@@ -238,6 +243,7 @@ private:
     protocol::Vector<void*> m_currentTasks;
 #endif
     protocol::Vector<OwnPtr<V8StackTraceImpl>> m_currentStacks;
+    OwnPtr<V8Regex> m_blackboxPattern;
     protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 

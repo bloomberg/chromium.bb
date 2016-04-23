@@ -29,6 +29,10 @@ V8Regex::V8Regex(V8DebuggerImpl* debugger, const String16& pattern, bool caseSen
     v8::Local<v8::RegExp> regex;
     if (v8::RegExp::New(context, toV8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags)).ToLocal(&regex))
         m_regex.Reset(isolate, regex);
+    else if (tryCatch.HasCaught())
+        m_errorMessage = toProtocolString(tryCatch.Message()->Get());
+    else
+        m_errorMessage = "Internal error";
 }
 
 int V8Regex::match(const String16& string, int startFrom, int* matchLength) const

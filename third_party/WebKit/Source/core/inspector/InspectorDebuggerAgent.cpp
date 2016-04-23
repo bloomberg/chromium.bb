@@ -243,6 +243,12 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, in
     m_v8DebuggerAgent->setAsyncCallStackDepth(errorString, inMaxDepth);
 }
 
+void InspectorDebuggerAgent::setBlackboxPatterns(ErrorString* errorString,
+    PassOwnPtr<protocol::Array<String16>> patterns)
+{
+    m_v8DebuggerAgent->setBlackboxPatterns(errorString, patterns);
+}
+
 void InspectorDebuggerAgent::setBlackboxedRanges(
     ErrorString* errorString,
     const String16& inScriptId,

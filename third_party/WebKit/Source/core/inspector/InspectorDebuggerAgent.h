@@ -73,6 +73,7 @@ public:
     void setVariableValue(ErrorString*, int scopeNumber, const String16& variableName, PassOwnPtr<protocol::Runtime::CallArgument> newValue, const String16& callFrameId) override;
     void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void setAsyncCallStackDepth(ErrorString*, int maxDepth) override;
+    void setBlackboxPatterns(ErrorString*, PassOwnPtr<protocol::Array<String16>> patterns) override;
     void setBlackboxedRanges(ErrorString*, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
     // Called by InspectorInstrumentation.

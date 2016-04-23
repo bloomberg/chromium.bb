@@ -1,0 +1,26 @@
+Pattern parser error: Uncaught SyntaxError: Invalid regular expression: /(foo([)/: Unterminated character class
+Paused in
+(...):1
+Paused in
+(...):1
+Paused in
+qwe:21
+baz:29
+(...):1
+Paused in
+bar:7
+foo:13
+qwe:21
+baz:29
+(...):1
+Paused in
+qwe:22
+baz:29
+(...):1
+Paused in
+qwe:23
+baz:29
+(...):1
+Paused in
+(...):1
+

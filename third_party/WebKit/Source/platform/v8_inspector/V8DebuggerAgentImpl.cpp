@@ -45,6 +45,7 @@ namespace DebuggerAgentState {
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 static const char asyncCallStackDepth[] = "asyncCallStackDepth";
+static const char blackboxPattern[] = "blackboxPattern";
 
 // Breakpoint properties.
 static const char url[] = "url";
@@ -250,6 +251,8 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_recursionLevelForStepFrame = 0;
     m_skipAllPauses = false;
     m_enabled = false;
+    m_blackboxPattern = nullptr;
+    m_state->remove(DebuggerAgentState::blackboxPattern);
 }
 
 void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
@@ -284,12 +287,19 @@ void V8DebuggerAgentImpl::restore()
     int pauseState = V8DebuggerImpl::DontPauseOnExceptions;
     m_state->getNumber(DebuggerAgentState::pauseOnExceptionsState, &pauseState);
     setPauseOnExceptionsImpl(&error, pauseState);
+    ASSERT(error.isEmpty());
 
     m_skipAllPauses = m_state->booleanProperty(DebuggerAgentState::skipAllPauses, false);
 
     int asyncCallStackDepth = 0;
     m_state->getNumber(DebuggerAgentState::asyncCallStackDepth, &asyncCallStackDepth);
     internalSetAsyncCallStackDepth(asyncCallStackDepth);
+
+    String16 blackboxPattern;
+    if (m_state->getString(DebuggerAgentState::blackboxPattern, &blackboxPattern)) {
+        if (!setBlackboxPattern(&error, blackboxPattern))
+            ASSERT_NOT_REACHED();
+    }
 }
 
 void V8DebuggerAgentImpl::setBreakpointsActive(ErrorString* errorString, bool active)
@@ -499,6 +509,11 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCal
     if (it == m_scripts.end()) {
         // Unknown scripts are blackboxed.
         return true;
+    }
+    if (m_blackboxPattern) {
+        String16 scriptSourceURL = it->second->sourceURL();
+        if (!scriptSourceURL.isEmpty() && m_blackboxPattern->match(scriptSourceURL) != -1)
+            return true;
     }
     auto itBlackboxedPositions = m_blackboxedPositions.find(String16::number(frame->sourceID()));
     if (itBlackboxedPositions == m_blackboxedPositions.end())
@@ -1042,6 +1057,36 @@ void V8DebuggerAgentImpl::allAsyncTasksCanceled()
 #if ENABLE(ASSERT)
     m_currentTasks.clear();
 #endif
+}
+
+void V8DebuggerAgentImpl::setBlackboxPatterns(ErrorString* errorString, PassOwnPtr<protocol::Array<String16>> patterns)
+{
+    if (!patterns->length()) {
+        m_blackboxPattern = nullptr;
+        m_state->remove(DebuggerAgentState::blackboxPattern);
+        return;
+    }
+
+    String16Builder patternBuilder;
+    patternBuilder.append("(");
+    for (size_t i = 0; i < patterns->length() - 1; ++i)
+        patternBuilder.append(patterns->get(i) + "|");
+    patternBuilder.append(patterns->get(patterns->length() - 1) + ")");
+    String16 pattern = patternBuilder.toString();
+    if (!setBlackboxPattern(errorString, pattern))
+        return;
+    m_state->setString(DebuggerAgentState::blackboxPattern, pattern);
+}
+
+bool V8DebuggerAgentImpl::setBlackboxPattern(ErrorString* errorString, const String16& pattern)
+{
+    OwnPtr<V8Regex> regex = adoptPtr(new V8Regex(m_debugger, pattern, true /** caseSensitive */, false /** multiline */));
+    if (!regex->isValid()) {
+        *errorString = "Pattern parser error: " + regex->errorMessage();
+        return false;
+    }
+    m_blackboxPattern = regex.release();
+    return true;
 }
 
 void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
