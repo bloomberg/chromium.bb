@@ -44,11 +44,10 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile);
 // menu item. Adds a supervision indicator to the profile name if appropriate.
 base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item);
 
-// Update the name of |profile| to |new_profile_name|. This updates the
-// profile preferences, which triggers an update in the ProfileInfoCache.
-// This method should be called when the user is explicitely changing
-// the profile name, as it will always set |prefs::kProfileUsingDefaultName|
-// to false.
+// Update the name of |profile| to |new_profile_name|. This updates the profile
+// preferences, which triggers an update in the ProfileAttributesStorage. This
+// method should be called when the user is explicitely changing the profile
+// name, as it will always set |prefs::kProfileUsingDefaultName| to false.
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name);
 
@@ -67,8 +66,8 @@ bool IsRegularOrGuestSession(Browser* browser);
 // Returns true if sign in is required to browse as this profile.  Call with
 // profile->GetPath() if you have a profile pointer.
 // TODO(mlerman): Refactor appropriate calls to
-// ProfileInfoCache::ProfileIsSigninRequiredAtIndex to call here instead.
-bool IsProfileLocked(const base::FilePath& path);
+// ProfileAttributesStorage::IsSigninRequired to call here instead.
+bool IsProfileLocked(const base::FilePath& profile_path);
 
 // If the lock-enabled information for this profile is not up to date, starts
 // an update for the Gaia profile info.

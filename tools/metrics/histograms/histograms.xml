@@ -40889,10 +40889,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Length of time to retrieve profile.</summary>
 </histogram>
 
+<histogram name="Profile.GetProfileInfoPath.OutsideUserDir" enum="BooleanHit">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Whether Profile::GetProfileInfoPath is called with a profile outside the
+    user data directory. We expect this to never happen but need to verify in
+    stable. This metric may be removed after M54.
+  </summary>
+</histogram>
+
 <histogram name="Profile.HistorySize" units="MB">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>Size of the history database.</summary>
+</histogram>
+
+<histogram name="Profile.InitProfileUserPrefs.OutsideUserDir" enum="BooleanHit">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Whether Profile::InitProfileUserPrefs is called with a profile outside the
+    user data directory. We expect this to never happen but need to verify in
+    stable. This metric may be removed after M54.
+  </summary>
 </histogram>
 
 <histogram name="Profile.LaunchBrowser" enum="ProfileType">

@@ -4,13 +4,16 @@
 
 #include "chrome/browser/profiles/profile_metrics.h"
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -74,17 +77,15 @@ ProfileMetrics::ProfileType GetProfileType(
 }
 
 void LogLockedProfileInformation(ProfileManager* manager) {
-  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
-  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
-
   base::Time now = base::Time::Now();
   const int kMinutesInProfileValidDuration =
       base::TimeDelta::FromDays(28).InMinutes();
-  for (size_t i = 0; i < number_of_profiles; ++i) {
+  std::vector<ProfileAttributesEntry*> entries =
+      manager->GetProfileAttributesStorage().GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
     // Find when locked profiles were locked
-    if (info_cache.ProfileIsSigninRequiredAtIndex(i)) {
-      base::TimeDelta time_since_lock = now -
-          info_cache.GetProfileActiveTimeAtIndex(i);
+    if (entry->IsSigninRequired()) {
+      base::TimeDelta time_since_lock = now - entry->GetActiveTime();
       // Specifying 100 buckets for the histogram to get a higher level of
       // granularity in the reported data, given the large number of possible
       // values (kMinutesInProfileValidDuration > 40,000).
@@ -97,13 +98,12 @@ void LogLockedProfileInformation(ProfileManager* manager) {
   }
 }
 
-bool HasProfileAtIndexBeenActiveSince(const ProfileInfoCache& info_cache,
-                                      int index,
-                                      const base::Time& active_limit) {
+bool HasProfileBeenActiveSince(const ProfileAttributesEntry* entry,
+                               const base::Time& active_limit) {
 #if !defined(OS_ANDROID)
   // TODO(mlerman): iOS and Android should set an ActiveTime in the
-  // ProfileInfoCache. (see ProfileManager::OnBrowserSetLastActive)
-  if (info_cache.GetProfileActiveTimeAtIndex(index) < active_limit)
+  // ProfileAttributesStorage. (see ProfileManager::OnBrowserSetLastActive)
+  if (entry->GetActiveTime() < active_limit)
     return false;
 #endif
   return true;
@@ -146,8 +146,8 @@ enum ProfileAvatar {
 
 bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
                                              profile_metrics::Counts* counts) {
-  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
-  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
+  ProfileAttributesStorage& storage = manager->GetProfileAttributesStorage();
+  size_t number_of_profiles = storage.GetNumberOfProfiles();
   counts->total = number_of_profiles;
 
   // Ignore other metrics if we have no profiles.
@@ -158,17 +158,19 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   base::Time oldest = base::Time::Now() -
       base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
 
-  for (size_t i = 0; i < number_of_profiles; ++i) {
-    if (!HasProfileAtIndexBeenActiveSince(info_cache, i, oldest)) {
+  std::vector<ProfileAttributesEntry*> entries =
+      storage.GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
+    if (!HasProfileBeenActiveSince(entry, oldest)) {
       counts->unused++;
     } else {
-      if (info_cache.ProfileIsSupervisedAtIndex(i))
+      if (entry->IsSupervised())
         counts->supervised++;
-      if (info_cache.ProfileIsAuthenticatedAtIndex(i)) {
+      if (entry->IsAuthenticated()) {
         counts->signedin++;
-        if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
+        if (entry->IsUsingGAIAPicture())
           counts->gaia_icon++;
-        if (info_cache.ProfileIsAuthErrorAtIndex(i))
+        if (entry->IsAuthError())
           counts->auth_errors++;
       }
     }

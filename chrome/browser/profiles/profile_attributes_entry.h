@@ -99,6 +99,7 @@ class ProfileAttributesEntry {
 
   void SetName(const base::string16& name);
   void SetShortcutName(const base::string16& name);
+  void SetActiveTimeToNow();
   void SetIsOmitted(bool is_omitted);
   void SetSupervisedUserId(const std::string& id);
   void SetLocalAuthCredentials(const std::string& auth);
@@ -121,8 +122,7 @@ class ProfileAttributesEntry {
   void SetStatsBookmarks(int value);
   void SetStatsSettings(int value);
 
-  void SetAuthInfo(const std::string& gaia_id,
-                   const base::string16& user_name);
+  void SetAuthInfo(const std::string& gaia_id, const base::string16& user_name);
 
  private:
   // These members are an implementation detail meant to smooth the migration

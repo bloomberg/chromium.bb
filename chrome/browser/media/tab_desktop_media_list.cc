@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 
 using content::BrowserThread;
 using content::DesktopMediaID;
