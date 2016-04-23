@@ -107,7 +107,12 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
           show_tabs = false;
         } else {
           const version_info::Channel channel = chrome::GetChannel();
-          show_tabs = (channel != version_info::Channel::STABLE);
+          if ((channel == version_info::Channel::STABLE) ||
+              (channel == version_info::Channel::BETA)) {
+            show_tabs = false;
+          } else {
+            show_tabs = true;
+          }
         }
         break;
 
