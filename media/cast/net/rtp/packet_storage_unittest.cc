@@ -22,20 +22,19 @@ static const size_t kStoredFrames = 10;
 
 // Generate |number_of_frames| and store into |*storage|.
 // First frame has 1 packet, second frame has 2 packets, etc.
-static void StoreFrames(size_t number_of_frames,
-                        uint32_t first_frame_id,
+static void StoreFrames(int number_of_frames,
+                        FrameId first_frame_id,
                         PacketStorage* storage) {
-  const base::TimeTicks zero;
   const int kSsrc = 1;
-  for (size_t i = 0; i < number_of_frames; ++i) {
+  for (int i = 0; i < number_of_frames; ++i) {
     SendPacketVector packets;
     // First frame has 1 packet, second frame has 2 packets, etc.
-    const size_t kNumberOfPackets = i + 1;
-    for (size_t j = 0; j < kNumberOfPackets; ++j) {
+    const int number_of_packets = i + 1;
+    for (int j = 0; j < number_of_packets; ++j) {
       Packet test_packet(1, 0);
       packets.push_back(
-          std::make_pair(PacedPacketSender::MakePacketKey(
-                             zero, kSsrc, i, base::checked_cast<uint16_t>(j)),
+          std::make_pair(PacketKey(base::TimeTicks(), kSsrc, first_frame_id + i,
+                                   base::checked_cast<uint16_t>(j)),
                          new base::RefCountedData<Packet>(test_packet)));
     }
     storage->StoreFrame(first_frame_id, packets);
@@ -46,82 +45,73 @@ static void StoreFrames(size_t number_of_frames,
 TEST(PacketStorageTest, NumberOfStoredFrames) {
   PacketStorage storage;
 
-  uint32_t frame_id = 0;
-  frame_id = ~frame_id;  // The maximum value of uint32_t.
+  // Use a big frame ID to make sure none of the offset calculations are
+  // overflowing.
+  const FrameId frame_id = FrameId::first() +
+                           std::numeric_limits<int32_t>::max() +
+                           std::numeric_limits<int32_t>::max();
   StoreFrames(kMaxUnackedFrames / 2, frame_id, &storage);
   EXPECT_EQ(static_cast<size_t>(kMaxUnackedFrames / 2),
             storage.GetNumberOfStoredFrames());
 }
 
-TEST(PacketStorageTest, GetFrameWrapAround8bits) {
+TEST(PacketStorageTest, StoreAndGetFrames) {
   PacketStorage storage;
 
-  const uint32_t kFirstFrameId = 250;
-  StoreFrames(kStoredFrames, kFirstFrameId, &storage);
-  EXPECT_EQ(std::min<size_t>(kMaxUnackedFrames, kStoredFrames),
-            storage.GetNumberOfStoredFrames());
+  // Use a big frame ID to make sure none of the offset calculations are
+  // overflowing.
+  const FrameId first_frame_id = FrameId::first() +
+                                 std::numeric_limits<int32_t>::max() +
+                                 std::numeric_limits<int32_t>::max();
 
-  // Expect we get the correct frames by looking at the number of
-  // packets.
-  uint32_t frame_id = kFirstFrameId;
-  for (size_t i = 0; i < kStoredFrames; ++i) {
-    ASSERT_TRUE(storage.GetFrame8(frame_id));
-    EXPECT_EQ(i + 1, storage.GetFrame8(frame_id)->size());
-    ++frame_id;
-  }
-}
-
-TEST(PacketStorageTest, GetFrameWrapAround32bits) {
-  PacketStorage storage;
-
-  // First frame ID is close to the maximum value of uint32_t.
-  uint32_t first_frame_id = 0xffffffff - 5;
   StoreFrames(kStoredFrames, first_frame_id, &storage);
   EXPECT_EQ(std::min<size_t>(kMaxUnackedFrames, kStoredFrames),
             storage.GetNumberOfStoredFrames());
 
   // Expect we get the correct frames by looking at the number of
   // packets.
-  uint32_t frame_id = first_frame_id;
   for (size_t i = 0; i < kStoredFrames; ++i) {
-    ASSERT_TRUE(storage.GetFrame8(frame_id));
-    EXPECT_EQ(i + 1, storage.GetFrame8(frame_id)->size());
-    ++frame_id;
+    ASSERT_TRUE(storage.GetFramePackets(first_frame_id + i));
+    EXPECT_EQ(i + 1, storage.GetFramePackets(first_frame_id + i)->size());
   }
+
+  // Expect not to see packets for frames not stored.
+  ASSERT_FALSE(storage.GetFramePackets(first_frame_id - 1));
+  ASSERT_FALSE(storage.GetFramePackets(first_frame_id + kStoredFrames + 1));
 }
 
 TEST(PacketStorageTest, FramesReleased) {
   PacketStorage storage;
 
-  const uint32_t kFirstFrameId = 0;
-  StoreFrames(5, kFirstFrameId, &storage);
+  const FrameId first_frame_id = FrameId::first();
+  StoreFrames(5, first_frame_id, &storage);
   EXPECT_EQ(std::min<size_t>(kMaxUnackedFrames, 5),
             storage.GetNumberOfStoredFrames());
 
-  for (uint32_t frame_id = kFirstFrameId; frame_id < kFirstFrameId + 5;
+  for (FrameId frame_id = first_frame_id; frame_id < first_frame_id + 5;
        ++frame_id) {
-    EXPECT_TRUE(storage.GetFrame8(frame_id));
+    EXPECT_TRUE(storage.GetFramePackets(frame_id));
   }
 
-  storage.ReleaseFrame(kFirstFrameId + 2);
+  storage.ReleaseFrame(first_frame_id + 2);
   EXPECT_EQ(4u, storage.GetNumberOfStoredFrames());
-  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 2));
+  EXPECT_FALSE(storage.GetFramePackets(first_frame_id + 2));
 
-  storage.ReleaseFrame(kFirstFrameId + 0);
+  storage.ReleaseFrame(first_frame_id + 0);
   EXPECT_EQ(3u, storage.GetNumberOfStoredFrames());
-  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 0));
+  EXPECT_FALSE(storage.GetFramePackets(first_frame_id + 0));
 
-  storage.ReleaseFrame(kFirstFrameId + 3);
+  storage.ReleaseFrame(first_frame_id + 3);
   EXPECT_EQ(2u, storage.GetNumberOfStoredFrames());
-  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 3));
+  EXPECT_FALSE(storage.GetFramePackets(first_frame_id + 3));
 
-  storage.ReleaseFrame(kFirstFrameId + 4);
+  storage.ReleaseFrame(first_frame_id + 4);
   EXPECT_EQ(1u, storage.GetNumberOfStoredFrames());
-  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 4));
+  EXPECT_FALSE(storage.GetFramePackets(first_frame_id + 4));
 
-  storage.ReleaseFrame(kFirstFrameId + 1);
+  storage.ReleaseFrame(first_frame_id + 1);
   EXPECT_EQ(0u, storage.GetNumberOfStoredFrames());
-  EXPECT_FALSE(storage.GetFrame8(kFirstFrameId + 1));
+  EXPECT_FALSE(storage.GetFramePackets(first_frame_id + 1));
 }
 
 }  // namespace cast

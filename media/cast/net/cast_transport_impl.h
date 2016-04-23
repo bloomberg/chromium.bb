@@ -80,9 +80,9 @@ class CastTransportImpl final : public CastTransport {
                         RtpTimeTicks current_time_as_rtp_timestamp) final;
 
   void CancelSendingFrames(uint32_t ssrc,
-                           const std::vector<uint32_t>& frame_ids) final;
+                           const std::vector<FrameId>& frame_ids) final;
 
-  void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) final;
+  void ResendFrameForKickstart(uint32_t ssrc, FrameId frame_id) final;
 
   PacketReceiverCallback PacketReceiverForTesting() final;
 

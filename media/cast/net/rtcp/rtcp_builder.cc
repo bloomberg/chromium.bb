@@ -44,24 +44,23 @@ bool EventTimestampLessThan(const RtcpReceiverEventLogMessage& lhs,
 
 // A class to build a string representing the NACK list in Cast message.
 //
-// The string will look like "23:3-6 25:1,5-6", meaning packets 3 to 6 in frame
-// 23 are being NACK'ed (i.e. they are missing from the receiver's point of
-// view) and packets 1, 5 and 6 are missing in frame 25. A frame that is
-// completely missing will show as "26:65535".
+// The string will look like "F23:3-6 F25:1,5-6", meaning packets 3 to 6 in
+// frame 23 are being NACK'ed (i.e. they are missing from the receiver's point
+// of view) and packets 1, 5 and 6 are missing in frame 25. A frame that is
+// completely missing will show as "F26:65535".
 class NackStringBuilder {
  public:
   NackStringBuilder()
       : frame_count_(0),
         packet_count_(0),
-        last_frame_id_(-1),
         last_packet_id_(-1),
         contiguous_sequence_(false) {}
   ~NackStringBuilder() {}
 
   bool Empty() const { return frame_count_ == 0; }
 
-  void PushFrame(int frame_id) {
-    DCHECK_GE(frame_id, 0);
+  void PushFrame(FrameId frame_id) {
+    DCHECK(!frame_id.is_null());
     if (frame_count_ > 0) {
       if (frame_id == last_frame_id_) {
         return;
@@ -79,7 +78,7 @@ class NackStringBuilder {
   }
 
   void PushPacket(int packet_id) {
-    DCHECK_GE(last_frame_id_, 0);
+    DCHECK(!last_frame_id_.is_null());
     DCHECK_GE(packet_id, 0);
     if (packet_count_ == 0) {
       stream_ << ":" << packet_id;
@@ -108,7 +107,7 @@ class NackStringBuilder {
   std::ostringstream stream_;
   int frame_count_;
   int packet_count_;
-  int last_frame_id_;
+  FrameId last_frame_id_;
   int last_packet_id_;
   bool contiguous_sequence_;
 };
@@ -220,7 +219,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage& cast,
   writer_.WriteU32(local_ssrc_);      // Add our own SSRC.
   writer_.WriteU32(cast.remote_ssrc);  // Remote SSRC.
   writer_.WriteU32(kCast);
-  writer_.WriteU8(static_cast<uint8_t>(cast.ack_frame_id));
+  writer_.WriteU8(cast.ack_frame_id.lower_8_bits());
   uint8_t* cast_loss_field_pos = reinterpret_cast<uint8_t*>(writer_.ptr());
   writer_.WriteU8(0);  // Overwritten with number_of_loss_fields.
   DCHECK_LE(target_delay.InMilliseconds(),
@@ -242,7 +241,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage& cast,
     // Iterate through all frames with missing packets.
     if (frame_it->second.empty()) {
       // Special case all packets in a frame is missing.
-      writer_.WriteU8(static_cast<uint8_t>(frame_it->first));
+      writer_.WriteU8(frame_it->first.lower_8_bits());
       writer_.WriteU16(kRtcpCastAllPacketsLost);
       writer_.WriteU8(0);
       nack_string_builder.PushPacket(kRtcpCastAllPacketsLost);
@@ -252,7 +251,7 @@ void RtcpBuilder::AddCast(const RtcpCastMessage& cast,
       while (packet_it != frame_it->second.end()) {
         uint16_t packet_id = *packet_it;
         // Write frame and packet id to buffer before calculating bitmask.
-        writer_.WriteU8(static_cast<uint8_t>(frame_it->first));
+        writer_.WriteU8(frame_it->first.lower_8_bits());
         writer_.WriteU16(packet_id);
         nack_string_builder.PushPacket(packet_id);
 

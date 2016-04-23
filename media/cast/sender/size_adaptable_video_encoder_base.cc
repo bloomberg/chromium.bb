@@ -21,7 +21,7 @@ SizeAdaptableVideoEncoderBase::SizeAdaptableVideoEncoderBase(
       video_config_(video_config),
       status_change_cb_(status_change_cb),
       frames_in_encoder_(0),
-      last_frame_id_(kFirstFrameId - 1),
+      next_frame_id_(FrameId::first()),
       weak_factory_(this) {
   cast_environment_->PostTask(
       CastEnvironment::MAIN,
@@ -156,7 +156,7 @@ void SizeAdaptableVideoEncoderBase::OnEncodedVideoFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   --frames_in_encoder_;
   DCHECK_GE(frames_in_encoder_, 0);
-  last_frame_id_ = encoded_frame->frame_id;
+  next_frame_id_ = encoded_frame->frame_id + 1;
   frame_encoded_callback.Run(std::move(encoded_frame));
 }
 

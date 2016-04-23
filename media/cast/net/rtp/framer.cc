@@ -5,13 +5,10 @@
 #include "media/cast/net/rtp/framer.h"
 
 #include "base/logging.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/constants.h"
 
 namespace media {
 namespace cast {
-
-typedef FrameList::const_iterator ConstFrameIterator;
 
 Framer::Framer(base::TickClock* clock,
                RtpPayloadFeedback* incoming_payload_feedback,
@@ -19,16 +16,15 @@ Framer::Framer(base::TickClock* clock,
                bool decoder_faster_than_max_frame_rate,
                int max_unacked_frames)
     : decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
-      cast_msg_builder_(
-          new CastMessageBuilder(clock,
-                                 incoming_payload_feedback,
-                                 this,
-                                 ssrc,
-                                 decoder_faster_than_max_frame_rate,
-                                 max_unacked_frames)),
+      cast_msg_builder_(clock,
+                        incoming_payload_feedback,
+                        this,
+                        ssrc,
+                        decoder_faster_than_max_frame_rate,
+                        max_unacked_frames),
       waiting_for_key_(true),
-      last_released_frame_(kFirstFrameId - 1),
-      newest_frame_id_(kFirstFrameId - 1) {
+      last_released_frame_(FrameId::first() - 1),
+      newest_frame_id_(FrameId::first() - 1) {
   DCHECK(incoming_payload_feedback) << "Invalid argument";
 }
 
@@ -39,47 +35,44 @@ bool Framer::InsertPacket(const uint8_t* payload_data,
                           const RtpCastHeader& rtp_header,
                           bool* duplicate) {
   *duplicate = false;
-  uint32_t frame_id = rtp_header.frame_id;
 
   if (rtp_header.is_key_frame && waiting_for_key_) {
-    last_released_frame_ = static_cast<uint32_t>(frame_id - 1);
+    last_released_frame_ = rtp_header.frame_id - 1;
     waiting_for_key_ = false;
   }
 
-  VLOG(1) << "InsertPacket frame:" << frame_id
+  VLOG(1) << "InsertPacket frame:" << rtp_header.frame_id
           << " packet:" << static_cast<int>(rtp_header.packet_id)
           << " max packet:" << static_cast<int>(rtp_header.max_packet_id);
 
-  if (IsOlderFrameId(frame_id, last_released_frame_) && !waiting_for_key_) {
+  if ((rtp_header.frame_id <= last_released_frame_) && !waiting_for_key_) {
     // Packet is too old.
     return false;
   }
 
   // Update the last received frame id.
-  if (IsNewerFrameId(frame_id, newest_frame_id_)) {
-    newest_frame_id_ = frame_id;
+  if (rtp_header.frame_id > newest_frame_id_) {
+    newest_frame_id_ = rtp_header.frame_id;
   }
 
-  // Does this packet belong to a new frame?
-  FrameList::iterator it = frames_.find(frame_id);
+  // Insert packet.
+  const auto it = frames_.find(rtp_header.frame_id);
+  FrameBuffer* buffer;
   if (it == frames_.end()) {
-    // New frame.
-    linked_ptr<FrameBuffer> frame_info(new FrameBuffer);
-    std::pair<FrameList::iterator, bool> retval =
-        frames_.insert(std::make_pair(frame_id, frame_info));
-    it = retval.first;
+    buffer = new FrameBuffer();
+    frames_.insert(std::make_pair(rtp_header.frame_id,
+                                  std::unique_ptr<FrameBuffer>(buffer)));
+  } else {
+    buffer = it->second.get();
   }
-
-    // Insert packet.
-  if (!it->second->InsertPacket(payload_data, payload_size, rtp_header)) {
-    VLOG(3) << "Packet already received, ignored: frame "
-            << static_cast<int>(rtp_header.frame_id) << ", packet "
-            << rtp_header.packet_id;
+  if (!buffer->InsertPacket(payload_data, payload_size, rtp_header)) {
+    VLOG(3) << "Packet already received, ignored: frame " << rtp_header.frame_id
+            << ", packet " << rtp_header.packet_id;
     *duplicate = true;
     return false;
   }
 
-  return it->second->Complete();
+  return buffer->Complete();
 }
 
 // This does not release the frame.
@@ -88,9 +81,9 @@ bool Framer::GetEncodedFrame(EncodedFrame* frame,
                              bool* have_multiple_decodable_frames) {
   *have_multiple_decodable_frames = HaveMultipleDecodableFrames();
 
-  uint32_t frame_id;
   // Find frame id.
-  if (NextContinuousFrame(&frame_id)) {
+  FrameBuffer* buffer = FindNextFrameForRelease();
+  if (buffer) {
     // We have our next frame.
     *next_frame = true;
   } else {
@@ -98,195 +91,110 @@ bool Framer::GetEncodedFrame(EncodedFrame* frame,
     if (!decoder_faster_than_max_frame_rate_)
       return false;
 
-    if (!NextFrameAllowingSkippingFrames(&frame_id)) {
+    buffer = FindOldestDecodableFrame();
+    if (!buffer)
       return false;
-    }
     *next_frame = false;
   }
 
-  ConstFrameIterator it = frames_.find(frame_id);
-  DCHECK(it != frames_.end());
-  if (it == frames_.end())
-    return false;
-
-  return it->second->AssembleEncodedFrame(frame);
+  return buffer->AssembleEncodedFrame(frame);
 }
 
-void Framer::AckFrame(uint32_t frame_id) {
+void Framer::AckFrame(FrameId frame_id) {
   VLOG(2) << "ACK frame " << frame_id;
-  cast_msg_builder_->CompleteFrameReceived(frame_id);
+  cast_msg_builder_.CompleteFrameReceived(frame_id);
 }
 
-void Framer::Reset() {
-  waiting_for_key_ = true;
-  last_released_frame_ = kFirstFrameId - 1;
-  newest_frame_id_ = kFirstFrameId - 1;
-  frames_.clear();
-  cast_msg_builder_->Reset();
-}
-
-void Framer::ReleaseFrame(uint32_t frame_id) {
-  RemoveOldFrames(frame_id);
-  frames_.erase(frame_id);
-
-  // We have a frame - remove all frames with lower frame id.
-  bool skipped_old_frame = false;
-  FrameList::iterator it;
-  for (it = frames_.begin(); it != frames_.end();) {
-    if (IsOlderFrameId(it->first, frame_id)) {
-      frames_.erase(it++);
-      skipped_old_frame = true;
-    } else {
-      ++it;
-    }
-  }
-  if (skipped_old_frame) {
-    cast_msg_builder_->UpdateCastMessage();
-  }
+void Framer::ReleaseFrame(FrameId frame_id) {
+  const auto it = frames_.begin();
+  const bool skipped_old_frame = it->first < frame_id;
+  frames_.erase(it, frames_.upper_bound(frame_id));
+  last_released_frame_ = frame_id;
+  if (skipped_old_frame)
+    cast_msg_builder_.UpdateCastMessage();
 }
 
 bool Framer::TimeToSendNextCastMessage(base::TimeTicks* time_to_send) {
-  return cast_msg_builder_->TimeToSendNextCastMessage(time_to_send);
+  return cast_msg_builder_.TimeToSendNextCastMessage(time_to_send);
 }
 
-void Framer::SendCastMessage() { cast_msg_builder_->UpdateCastMessage(); }
+void Framer::SendCastMessage() {
+  cast_msg_builder_.UpdateCastMessage();
+}
 
-void Framer::RemoveOldFrames(uint32_t frame_id) {
-  FrameList::iterator it = frames_.begin();
-
-  while (it != frames_.end()) {
-    if (IsNewerFrameId(it->first, frame_id)) {
-      ++it;
-    } else {
-      // Older or equal; erase.
-      frames_.erase(it++);
-    }
+FrameBuffer* Framer::FindNextFrameForRelease() {
+  for (const auto& entry : frames_) {
+    if (entry.second->Complete() && IsNextFrameForRelease(*entry.second))
+      return entry.second.get();
   }
-  last_released_frame_ = frame_id;
+  return nullptr;
 }
 
-uint32_t Framer::NewestFrameId() const {
-  return newest_frame_id_;
-}
-
-bool Framer::NextContinuousFrame(uint32_t* frame_id) const {
-  FrameList::const_iterator it;
-
-  for (it = frames_.begin(); it != frames_.end(); ++it) {
-    if (it->second->Complete() && ContinuousFrame(it->second.get())) {
-      *frame_id = it->first;
-      return true;
-    }
+FrameBuffer* Framer::FindOldestDecodableFrame() {
+  for (const auto& entry : frames_) {
+    if (entry.second->Complete() && IsDecodableFrame(*entry.second))
+      return entry.second.get();
   }
-  return false;
+  return nullptr;
 }
 
 bool Framer::HaveMultipleDecodableFrames() const {
-  // Find the oldest decodable frame.
-  FrameList::const_iterator it;
   bool found_one = false;
-  for (it = frames_.begin(); it != frames_.end(); ++it) {
-    if (it->second->Complete() && DecodableFrame(it->second.get())) {
-      if (found_one) {
-        return true;
-      } else {
-        found_one = true;
-      }
+  for (const auto& entry : frames_) {
+    if (entry.second->Complete() && IsDecodableFrame(*entry.second)) {
+      if (found_one)
+        return true;  // Found another.
+      else
+        found_one = true;  // Found first one.  Continue search for another.
     }
   }
   return false;
-}
-
-uint32_t Framer::LastContinuousFrame() const {
-  uint32_t last_continuous_frame_id = last_released_frame_;
-  uint32_t next_expected_frame = last_released_frame_;
-
-  FrameList::const_iterator it;
-
-  do {
-    next_expected_frame++;
-    it = frames_.find(next_expected_frame);
-    if (it == frames_.end())
-      break;
-    if (!it->second->Complete())
-      break;
-
-    // We found the next continuous frame.
-    last_continuous_frame_id = it->first;
-  } while (next_expected_frame != newest_frame_id_);
-  return last_continuous_frame_id;
-}
-
-bool Framer::NextFrameAllowingSkippingFrames(uint32_t* frame_id) const {
-  // Find the oldest decodable frame.
-  FrameList::const_iterator it_best_match = frames_.end();
-  FrameList::const_iterator it;
-  for (it = frames_.begin(); it != frames_.end(); ++it) {
-    if (it->second->Complete() && DecodableFrame(it->second.get())) {
-      if (it_best_match == frames_.end() ||
-          IsOlderFrameId(it->first, it_best_match->first)) {
-        it_best_match = it;
-      }
-    }
-  }
-  if (it_best_match == frames_.end())
-    return false;
-
-  *frame_id = it_best_match->first;
-  return true;
 }
 
 bool Framer::Empty() const { return frames_.empty(); }
 
 int Framer::NumberOfCompleteFrames() const {
   int count = 0;
-  FrameList::const_iterator it;
-  for (it = frames_.begin(); it != frames_.end(); ++it) {
-    if (it->second->Complete()) {
+  for (const auto& entry : frames_) {
+    if (entry.second->Complete())
       ++count;
-    }
   }
   return count;
 }
 
-bool Framer::FrameExists(uint32_t frame_id) const {
+bool Framer::FrameExists(FrameId frame_id) const {
   return frames_.end() != frames_.find(frame_id);
 }
 
-void Framer::GetMissingPackets(uint32_t frame_id,
+void Framer::GetMissingPackets(FrameId frame_id,
                                bool last_frame,
                                PacketIdSet* missing_packets) const {
-  FrameList::const_iterator it = frames_.find(frame_id);
+  const auto it = frames_.find(frame_id);
   if (it == frames_.end())
     return;
 
   it->second->GetMissingPackets(last_frame, missing_packets);
 }
 
-bool Framer::ContinuousFrame(FrameBuffer* frame) const {
-  DCHECK(frame);
-  if (waiting_for_key_ && !frame->is_key_frame())
+bool Framer::IsNextFrameForRelease(const FrameBuffer& buffer) const {
+  if (waiting_for_key_ && !buffer.is_key_frame())
     return false;
-  return static_cast<uint32_t>(last_released_frame_ + 1) == frame->frame_id();
+  return (last_released_frame_ + 1) == buffer.frame_id();
 }
 
-bool Framer::DecodableFrame(FrameBuffer* frame) const {
-  if (frame->is_key_frame())
+bool Framer::IsDecodableFrame(const FrameBuffer& buffer) const {
+  if (buffer.is_key_frame())
     return true;
-  if (waiting_for_key_ && !frame->is_key_frame())
+  if (waiting_for_key_)
     return false;
   // Self-reference?
-  if (frame->last_referenced_frame_id() == frame->frame_id())
+  if (buffer.last_referenced_frame_id() == buffer.frame_id())
     return true;
 
   // Current frame is not necessarily referencing the last frame.
-  // Do we have the reference frame?
-  if (IsOlderFrameId(frame->last_referenced_frame_id(), last_released_frame_)) {
-    return true;
-  }
-  return frame->last_referenced_frame_id() == last_released_frame_;
+  // Has the reference frame been released already?
+  return buffer.last_referenced_frame_id() <= last_released_frame_;
 }
-
 
 }  // namespace cast
 }  // namespace media

@@ -117,11 +117,11 @@ class CastTransport : public base::NonThreadSafe {
   // |ssrc| is the SSRC for the stream.
   // |frame_ids| contains the IDs of the frames that will be cancelled.
   virtual void CancelSendingFrames(uint32_t ssrc,
-                                   const std::vector<uint32_t>& frame_ids) = 0;
+                                   const std::vector<FrameId>& frame_ids) = 0;
 
   // Resends a frame or part of a frame to kickstart. This is used when the
   // stream appears to be stalled.
-  virtual void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) = 0;
+  virtual void ResendFrameForKickstart(uint32_t ssrc, FrameId frame_id) = 0;
 
   // Returns a callback for receiving packets for testing purposes.
   virtual PacketReceiverCallback PacketReceiverForTesting();

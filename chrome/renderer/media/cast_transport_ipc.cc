@@ -80,12 +80,12 @@ void CastTransportIPC::SendSenderReport(
 
 void CastTransportIPC::CancelSendingFrames(
     uint32_t ssrc,
-    const std::vector<uint32_t>& frame_ids) {
+    const std::vector<media::cast::FrameId>& frame_ids) {
   Send(new CastHostMsg_CancelSendingFrames(channel_id_, ssrc, frame_ids));
 }
 
 void CastTransportIPC::ResendFrameForKickstart(uint32_t ssrc,
-                                               uint32_t frame_id) {
+                                               media::cast::FrameId frame_id) {
   Send(new CastHostMsg_ResendFrameForKickstart(channel_id_, ssrc, frame_id));
 }
 

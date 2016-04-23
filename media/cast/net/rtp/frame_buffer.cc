@@ -10,14 +10,12 @@ namespace media {
 namespace cast {
 
 FrameBuffer::FrameBuffer()
-    : frame_id_(0),
-      max_packet_id_(0),
+    : max_packet_id_(0),
       num_packets_received_(0),
       max_seen_packet_id_(0),
       new_playout_delay_ms_(0),
       is_key_frame_(false),
       total_data_size_(0),
-      last_referenced_frame_id_(0),
       packets_() {}
 
 FrameBuffer::~FrameBuffer() {}

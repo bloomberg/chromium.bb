@@ -48,7 +48,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = AUDIO_EVENT;
   encode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
-  encode_event->frame_id = 0u;
+  encode_event->frame_id = FrameId::first();
   encode_event->size = 1234;
   encode_event->key_frame = true;
   encode_event->target_bitrate = 128u;
@@ -61,7 +61,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   playout_event->type = FRAME_PLAYOUT;
   playout_event->media_type = AUDIO_EVENT;
   playout_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
-  playout_event->frame_id = 0u;
+  playout_event->frame_id = FrameId::first();
   playout_event->delay_delta = base::TimeDelta::FromMilliseconds(100);
   cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
@@ -70,7 +70,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   decode_event->type = FRAME_DECODED;
   decode_event->media_type = AUDIO_EVENT;
   decode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
-  decode_event->frame_id = 0u;
+  decode_event->frame_id = FrameId::first();
   cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
   // Log some packet events.
@@ -79,7 +79,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = AUDIO_EVENT;
   receive_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
-  receive_event->frame_id = 0u;
+  receive_event->frame_id = FrameId::first();
   receive_event->packet_id = 1u;
   receive_event->max_packet_id = 5u;
   receive_event->size = 100u;
@@ -90,7 +90,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = VIDEO_EVENT;
   receive_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
-  receive_event->frame_id = 0u;
+  receive_event->frame_id = FrameId::first();
   receive_event->packet_id = 1u;
   receive_event->max_packet_id = 10u;
   receive_event->size = 1024u;

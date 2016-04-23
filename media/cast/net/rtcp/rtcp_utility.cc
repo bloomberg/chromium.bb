@@ -39,6 +39,10 @@ RtcpParser::RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc)
 
 RtcpParser::~RtcpParser() {}
 
+void RtcpParser::SetMaxValidFrameId(FrameId frame_id) {
+  max_valid_frame_id_ = frame_id;
+}
+
 bool RtcpParser::Parse(base::BigEndianReader* reader) {
   // Reset.
   has_sender_report_ = false;
@@ -289,6 +293,13 @@ bool RtcpParser::ParseCastReceiverLogFrameItem(
 // RFC 4585.
 bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
                                      const RtcpCommonHeader& header) {
+  // The client must provide, up-front, a reference point for expanding the
+  // truncated frame ID values.  If missing, it does not intend to process Cast
+  // Feedback messages, so just return early.
+  if (max_valid_frame_id_.is_null()) {
+    return true;
+  }
+
   // See RTC 4585 Section 6.4 for application specific feedback messages.
   if (header.IC != 15) {
     return true;
@@ -312,32 +323,40 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
 
   cast_message_.remote_ssrc = remote_ssrc;
 
-  uint8_t last_frame_id;
+  uint8_t truncated_last_frame_id;
   uint8_t number_of_lost_fields;
-  if (!reader->ReadU8(&last_frame_id) ||
+  if (!reader->ReadU8(&truncated_last_frame_id) ||
       !reader->ReadU8(&number_of_lost_fields) ||
       !reader->ReadU16(&cast_message_.target_delay_ms))
     return false;
 
-  // Please note, this frame_id is still only 8-bit!
-  cast_message_.ack_frame_id = last_frame_id;
+  // TODO(miu): 8 bits is not enough.  If an RTCP packet is received very late
+  // (e.g., more than 1.2 seconds late for 100 FPS audio), the frame ID here
+  // will be mis-interpreted as a higher-numbered frame than what the packet
+  // intends to represent.  This could make the sender's tracking of ACK'ed
+  // frames inconsistent.
+  cast_message_.ack_frame_id =
+      max_valid_frame_id_.ExpandLessThanOrEqual(truncated_last_frame_id);
 
   cast_message_.missing_frames_and_packets.clear();
   cast_message_.received_later_frames.clear();
   for (size_t i = 0; i < number_of_lost_fields; i++) {
-    uint8_t frame_id;
+    uint8_t truncated_frame_id;
     uint16_t packet_id;
     uint8_t bitmask;
-    if (!reader->ReadU8(&frame_id) ||
-        !reader->ReadU16(&packet_id) ||
+    if (!reader->ReadU8(&truncated_frame_id) || !reader->ReadU16(&packet_id) ||
         !reader->ReadU8(&bitmask))
       return false;
-    cast_message_.missing_frames_and_packets[frame_id].insert(packet_id);
+    const FrameId frame_id =
+        cast_message_.ack_frame_id.Expand(truncated_frame_id);
+    PacketIdSet& missing_packets =
+        cast_message_.missing_frames_and_packets[frame_id];
+    missing_packets.insert(packet_id);
     if (packet_id != kRtcpCastAllPacketsLost) {
       while (bitmask) {
         packet_id++;
         if (bitmask & 1)
-          cast_message_.missing_frames_and_packets[frame_id].insert(packet_id);
+          missing_packets.insert(packet_id);
         bitmask >>= 1;
       }
     }
@@ -353,17 +372,19 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
   uint8_t number_of_receiving_fields;
   if (!reader->ReadU8(&number_of_receiving_fields))
     return true;
+  FrameId starting_frame_id = cast_message_.ack_frame_id + 2;
   for (size_t i = 0; i < number_of_receiving_fields; ++i) {
-    uint32_t frame_id = cast_message_.ack_frame_id + (i << 3) + 1;
     uint8_t bitmask;
     if (!reader->ReadU8(&bitmask))
       return true;
+    FrameId frame_id = starting_frame_id;
     while (bitmask) {
-      ++frame_id;
       if (bitmask & 1)
         cast_message_.received_later_frames.push_back(frame_id);
+      ++frame_id;
       bitmask >>= 1;
     }
+    starting_frame_id += 8;
   }
 
   has_cst2_message_ = true;

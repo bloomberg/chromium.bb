@@ -48,9 +48,11 @@ class CastTransportIPC : public media::cast::CastTransport {
       uint32_t ssrc,
       base::TimeTicks current_time,
       media::cast::RtpTimeTicks current_time_as_rtp_timestamp) override;
-  void CancelSendingFrames(uint32_t ssrc,
-                           const std::vector<uint32_t>& frame_ids) override;
-  void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) override;
+  void CancelSendingFrames(
+      uint32_t ssrc,
+      const std::vector<media::cast::FrameId>& frame_ids) override;
+  void ResendFrameForKickstart(uint32_t ssrc,
+                               media::cast::FrameId frame_id) override;
   void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
                            uint32_t rtp_receiver_ssrc) override;
   void InitializeRtpReceiverRtcpBuilder(

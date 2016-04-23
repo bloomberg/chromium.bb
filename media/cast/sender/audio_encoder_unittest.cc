@@ -51,8 +51,7 @@ class TestEncodedAudioFrameReceiver {
   void FrameEncoded(std::unique_ptr<SenderEncodedFrame> encoded_frame,
                     int samples_skipped) {
     EXPECT_EQ(encoded_frame->dependency, EncodedFrame::KEY);
-    EXPECT_EQ(static_cast<uint8_t>(frames_received_ & 0xff),
-              encoded_frame->frame_id);
+    EXPECT_EQ(frames_received_, encoded_frame->frame_id - FrameId::first());
     EXPECT_EQ(encoded_frame->frame_id, encoded_frame->referenced_frame_id);
     // RTP timestamps should be monotonically increasing and integer multiples
     // of the fixed frame size.

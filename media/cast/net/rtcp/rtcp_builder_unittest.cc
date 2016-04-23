@@ -140,14 +140,16 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithCast) {
   RtcpReportBlock report_block = GetReportBlock();
 
   RtcpCastMessage cast_message(kMediaSsrc);
-  cast_message.ack_frame_id = kAckFrameId;
+  cast_message.ack_frame_id = FrameId::first() + kAckFrameId;
   PacketIdSet missing_packets;
-  cast_message.missing_frames_and_packets[kLostFrameId] = missing_packets;
+  cast_message.missing_frames_and_packets[FrameId::first() + kLostFrameId] =
+      missing_packets;
 
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets[kFrameIdWithLostPackets] =
+  cast_message
+      .missing_frames_and_packets[FrameId::first() + kFrameIdWithLostPackets] =
       missing_packets;
 
   ExpectPacketEQ(p.GetPacket(),
@@ -170,14 +172,16 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
   rrtr.ntp_fraction = kNtpLow;
 
   RtcpCastMessage cast_message(kMediaSsrc);
-  cast_message.ack_frame_id = kAckFrameId;
+  cast_message.ack_frame_id = FrameId::first() + kAckFrameId;
   PacketIdSet missing_packets;
-  cast_message.missing_frames_and_packets[kLostFrameId] = missing_packets;
+  cast_message.missing_frames_and_packets[FrameId::first() + kLostFrameId] =
+      missing_packets;
 
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets[kFrameIdWithLostPackets] =
+  cast_message
+      .missing_frames_and_packets[FrameId::first() + kFrameIdWithLostPackets] =
       missing_packets;
 
   ExpectPacketEQ(p.GetPacket(),
@@ -203,14 +207,16 @@ TEST_F(RtcpBuilderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   rrtr.ntp_fraction = kNtpLow;
 
   RtcpCastMessage cast_message(kMediaSsrc);
-  cast_message.ack_frame_id = kAckFrameId;
+  cast_message.ack_frame_id = FrameId::first() + kAckFrameId;
   PacketIdSet missing_packets;
-  cast_message.missing_frames_and_packets[kLostFrameId] = missing_packets;
+  cast_message.missing_frames_and_packets[FrameId::first() + kLostFrameId] =
+      missing_packets;
 
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets[kFrameIdWithLostPackets] =
+  cast_message
+      .missing_frames_and_packets[FrameId::first() + kFrameIdWithLostPackets] =
       missing_packets;
 
   ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);

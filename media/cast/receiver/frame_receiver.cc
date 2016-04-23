@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
@@ -118,7 +117,7 @@ void FrameReceiver::ProcessParsedPacket(const RtpCastHeader& rtp_header,
 
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
+  frame_id_to_rtp_timestamp_[rtp_header.frame_id.lower_8_bits()] =
       rtp_header.rtp_timestamp;
 
   std::unique_ptr<PacketEvent> receive_event(new PacketEvent());
@@ -182,7 +181,7 @@ void FrameReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   RtpTimeTicks rtp_timestamp =
-      frame_id_to_rtp_timestamp_[cast_message.ack_frame_id & 0xff];
+      frame_id_to_rtp_timestamp_[cast_message.ack_frame_id.lower_8_bits()];
 
   std::unique_ptr<FrameEvent> ack_sent_event(new FrameEvent());
   ack_sent_event->timestamp = now;

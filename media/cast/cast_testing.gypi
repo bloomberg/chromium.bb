@@ -95,7 +95,6 @@
         'logging/simple_event_subscriber_unittest.cc',
         'logging/stats_event_subscriber_unittest.cc',
         'net/cast_transport_impl_unittest.cc',
-        'net/frame_id_wrap_helper_test.cc',
         'net/mock_cast_transport.cc',
         'net/mock_cast_transport.h',
         'net/pacing/mock_paced_packet_sender.cc',

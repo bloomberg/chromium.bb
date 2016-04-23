@@ -65,20 +65,21 @@ class RtcpParserTest : public ::testing::Test {
   void ExpectCastFeedback(const RtcpParser& parser) {
     EXPECT_TRUE(parser.has_cast_message());
     EXPECT_EQ(kRemoteSsrc, parser.cast_message().remote_ssrc);
-    EXPECT_EQ(kAckFrameId, parser.cast_message().ack_frame_id);
+    EXPECT_EQ(FrameId::first() + kAckFrameId,
+              parser.cast_message().ack_frame_id);
 
     MissingFramesAndPacketsMap::const_iterator frame_it =
         parser.cast_message().missing_frames_and_packets.begin();
 
     EXPECT_TRUE(
         frame_it != parser.cast_message().missing_frames_and_packets.end());
-    EXPECT_EQ(kLostFrameId, frame_it->first);
+    EXPECT_EQ(FrameId::first() + kLostFrameId, frame_it->first);
     EXPECT_EQ(frame_it->second.size(), 1UL);
     EXPECT_EQ(*frame_it->second.begin(), kRtcpCastAllPacketsLost);
     ++frame_it;
     EXPECT_TRUE(
         frame_it != parser.cast_message().missing_frames_and_packets.end());
-    EXPECT_EQ(kFrameIdWithLostPackets, frame_it->first);
+    EXPECT_EQ(FrameId::first() + kFrameIdWithLostPackets, frame_it->first);
     EXPECT_EQ(3UL, frame_it->second.size());
     PacketIdSet::const_iterator packet_it = frame_it->second.begin();
     EXPECT_EQ(kLostPacketId1, *packet_it);
@@ -93,7 +94,7 @@ class RtcpParserTest : public ::testing::Test {
 
   void ExpectExtendedCastFeedback(
       const RtcpParser& parser,
-      const std::vector<uint32_t>& receiving_frames) {
+      const std::vector<FrameId>& receiving_frames) {
     EXPECT_TRUE(parser.has_cst2_message());
     EXPECT_EQ(kFeedbackSeq, parser.cast_message().feedback_count);
     ASSERT_EQ(parser.cast_message().received_later_frames.size(),
@@ -333,6 +334,7 @@ TEST_F(RtcpParserTest, InjectReceiverReportPacketWithCastFeedback) {
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
   RtcpParser parser2(kLocalSsrc, kRemoteSsrc);
+  parser2.SetMaxValidFrameId(FrameId::first() + kAckFrameId);
   EXPECT_TRUE(parser2.Parse(p2.Reader()));
   ExpectLastReport(parser2);
   ExpectCastFeedback(parser2);
@@ -344,9 +346,10 @@ TEST_F(RtcpParserTest, ExtendedCastFeedbackParsing) {
   builder.AddRr(kRemoteSsrc, 1);
   builder.AddRb(kLocalSsrc);
   builder.AddCast(kRemoteSsrc, kLocalSsrc, kTargetDelay);
-  std::vector<uint32_t> receiving_frames;
+  std::vector<FrameId> receiving_frames;
   builder.AddCst2(receiving_frames);
   RtcpParser parser(kLocalSsrc, kRemoteSsrc);
+  parser.SetMaxValidFrameId(FrameId::first() + kAckFrameId + 3);
   EXPECT_TRUE(parser.Parse(builder.Reader()));
   ExpectLastReport(parser);
   ExpectCastFeedback(parser);
@@ -357,10 +360,11 @@ TEST_F(RtcpParserTest, ExtendedCastFeedbackParsing) {
   builder2.AddRr(kRemoteSsrc, 1);
   builder2.AddRb(kLocalSsrc);
   builder2.AddCast(kRemoteSsrc, kLocalSsrc, kTargetDelay);
-  receiving_frames.push_back(kAckFrameId + 2);
-  receiving_frames.push_back(kAckFrameId + 3);
+  receiving_frames.push_back(FrameId::first() + kAckFrameId + 2);
+  receiving_frames.push_back(FrameId::first() + kAckFrameId + 3);
   builder2.AddCst2(receiving_frames);
   RtcpParser parser2(kLocalSsrc, kRemoteSsrc);
+  parser2.SetMaxValidFrameId(FrameId::first() + kAckFrameId + 3);
   EXPECT_TRUE(parser2.Parse(builder2.Reader()));
   ExpectLastReport(parser2);
   ExpectCastFeedback(parser2);
@@ -373,9 +377,10 @@ TEST_F(RtcpParserTest, ExtendedCastFeedbackParsing) {
   builder3.AddCast(kRemoteSsrc, kLocalSsrc, kTargetDelay);
   receiving_frames.clear();
   for (size_t i = 0; i < 15; ++i)
-    receiving_frames.push_back(kAckFrameId + 2 + i * 10);
+    receiving_frames.push_back(FrameId::first() + kAckFrameId + 2 + i * 10);
   builder3.AddCst2(receiving_frames);
   RtcpParser parser3(kLocalSsrc, kRemoteSsrc);
+  parser3.SetMaxValidFrameId(FrameId::first() + kAckFrameId + 152);
   EXPECT_TRUE(parser3.Parse(builder3.Reader()));
   ExpectLastReport(parser3);
   ExpectCastFeedback(parser3);
@@ -388,6 +393,7 @@ TEST_F(RtcpParserTest, ExtendedCastFeedbackParsing) {
   builder4.AddCast(kRemoteSsrc, kLocalSsrc, kTargetDelay);
   builder4.AddErrorCst2();
   RtcpParser parser4(kLocalSsrc, kRemoteSsrc);
+  parser4.SetMaxValidFrameId(FrameId::first() + kAckFrameId + 3);
   EXPECT_TRUE(parser4.Parse(builder4.Reader()));
   ExpectLastReport(parser4);
   ExpectCastFeedback(parser4);
@@ -400,6 +406,7 @@ TEST_F(RtcpParserTest, ExtendedCastFeedbackParsing) {
   receiving_frames.clear();
   builder5.AddCst2(receiving_frames);
   RtcpParser parser5(kLocalSsrc, kRemoteSsrc);
+  parser5.SetMaxValidFrameId(FrameId::first() + kAckFrameId + 3);
   EXPECT_TRUE(parser5.Parse(builder5.Reader()));
   ExpectLastReport(parser5);
   EXPECT_FALSE(parser5.has_cst2_message());

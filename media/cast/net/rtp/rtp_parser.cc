@@ -25,7 +25,7 @@ RtpParser::RtpParser(uint32_t expected_sender_ssrc,
                      uint8_t expected_payload_type)
     : expected_sender_ssrc_(expected_sender_ssrc),
       expected_payload_type_(expected_payload_type),
-      frame_id_wrap_helper_(kFirstFrameId - 1) {}
+      last_parsed_frame_id_(FrameId::first() - 1) {}
 
 RtpParser::~RtpParser() {}
 
@@ -117,20 +117,10 @@ bool RtpParser::ParsePacket(const uint8_t* packet,
 
   last_parsed_rtp_timestamp_ = header->rtp_timestamp;
 
-  // Only the lower 8 bits of the |frame_id| were serialized, so do some magic
-  // to restore the upper 24 bits.
-  //
-  // Note: The call to |frame_id_wrap_helper_| has side effects, so we must not
-  // call it until we know the entire deserialization will succeed.
-  header->frame_id =
-      frame_id_wrap_helper_.MapTo32bitsFrameId(truncated_frame_id);
-  // When the upper 24 bits are restored to |reference_frame_id|, make sure
-  // |reference_frame_id| will be strictly less than or equal to |frame_id|.
-  if (truncated_reference_frame_id <= truncated_frame_id)
-    header->reference_frame_id = header->frame_id & 0xffffff00;
-  else
-    header->reference_frame_id = (header->frame_id & 0xffffff00) - 0x00000100;
-  header->reference_frame_id |= truncated_reference_frame_id;
+  header->frame_id = last_parsed_frame_id_.Expand(truncated_frame_id);
+  header->reference_frame_id =
+      header->frame_id.Expand(truncated_reference_frame_id);
+  last_parsed_frame_id_ = header->frame_id;
 
   // All remaining data in the packet is the payload.
   *payload_data = reinterpret_cast<const uint8_t*>(reader.ptr());

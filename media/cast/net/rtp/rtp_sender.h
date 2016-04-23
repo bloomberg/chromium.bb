@@ -53,12 +53,11 @@ class RtpSender {
   // frame was just sent.
   // Returns 0 if the frame cannot be found or the frame was only sent
   // partially.
-  int64_t GetLastByteSentForFrame(uint32_t frame_id);
+  int64_t GetLastByteSentForFrame(FrameId frame_id);
 
-  void CancelSendingFrames(const std::vector<uint32_t>& frame_ids);
+  void CancelSendingFrames(const std::vector<FrameId>& frame_ids);
 
-  void ResendFrameForKickstart(uint32_t frame_id,
-                               base::TimeDelta dedupe_window);
+  void ResendFrameForKickstart(FrameId frame_id, base::TimeDelta dedupe_window);
 
   size_t send_packet_count() const {
     return packetizer_ ? packetizer_->send_packet_count() : 0;

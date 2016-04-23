@@ -56,6 +56,12 @@ class SenderRtcpSession : public RtcpSession {
     return current_round_trip_time_;
   }
 
+  // Accounts for the fact that a frame with |frame_id| is being sent to the
+  // receiver.  This is used so that the parser of the RTCP messages coming back
+  // from the receiver will not interpret the truncated frame IDs from very old
+  // packets as coming "from the future."
+  void WillSendFrame(FrameId frame_id);
+
   // Send a RTCP sender report.
   // |current_time| is the current time reported by a tick clock.
   // |current_time_as_rtp_timestamp| is the corresponding RTP timestamp.
@@ -111,9 +117,6 @@ class SenderRtcpSession : public RtcpSession {
   // remembers state about prior RTP timestamps and other sequence values to
   // re-construct "expanded" values.
   RtcpParser parser_;
-
-  // For extending received ACK frame IDs from 8-bit to 32-bit.
-  FrameIdWrapHelper ack_frame_id_wrap_helper_;
 
   // Maintains a history of receiver events.
   typedef std::pair<uint64_t, uint64_t> ReceiverEventKey;

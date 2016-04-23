@@ -59,12 +59,13 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       uint32_t ssrc,
       base::TimeTicks current_time,
       media::cast::RtpTimeTicks current_time_as_rtp_timestamp);
-  void OnCancelSendingFrames(int32_t channel_id,
-                             uint32_t ssrc,
-                             const std::vector<uint32_t>& frame_ids);
+  void OnCancelSendingFrames(
+      int32_t channel_id,
+      uint32_t ssrc,
+      const std::vector<media::cast::FrameId>& frame_ids);
   void OnResendFrameForKickstart(int32_t channel_id,
                                  uint32_t ssrc,
-                                 uint32_t frame_id);
+                                 media::cast::FrameId frame_id);
   void OnAddValidRtpReceiver(int32_t channel_id,
                              uint32_t rtp_sender_ssrc,
                              uint32_t rtp_receiver_ssrc);

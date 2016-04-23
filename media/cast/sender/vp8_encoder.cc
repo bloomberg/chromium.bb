@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/video_frame.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/constants.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 
@@ -74,7 +73,7 @@ Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
                      : kLoTargetDeadlineUtilization)),
       key_frame_requested_(true),
       bitrate_kbit_(cast_config_.start_bitrate / 1000),
-      last_encoded_frame_id_(kFirstFrameId - 1),
+      next_frame_id_(FrameId::first()),
       has_seen_zero_length_encoded_frame_(false),
       encoding_speed_acc_(
           base::TimeDelta::FromMicroseconds(kEncodingSpeedAccHalfLife)),
@@ -262,7 +261,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       << "BUG: Invalid arguments passed to vpx_codec_encode().";
 
   // Pull data from the encoder, populating a new EncodedFrame.
-  encoded_frame->frame_id = ++last_encoded_frame_id_;
+  encoded_frame->frame_id = next_frame_id_++;
   const vpx_codec_cx_pkt_t* pkt = NULL;
   vpx_codec_iter_t iter = NULL;
   while ((pkt = vpx_codec_get_cx_data(&encoder_, &iter)) != NULL) {
@@ -277,7 +276,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
       // Frame dependencies could theoretically be relaxed by looking for the
       // VPX_FRAME_IS_DROPPABLE flag, but in recent testing (Oct 2014), this
       // flag never seems to be set.
-      encoded_frame->referenced_frame_id = last_encoded_frame_id_ - 1;
+      encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
     }
     encoded_frame->rtp_timestamp =
         RtpTimeTicks::FromTimeDelta(video_frame->timestamp(), kVideoFrequency);
@@ -299,7 +298,8 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     const std::string details = base::StringPrintf(
         "SV/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,kfr=%c",
         encoded_frame->dependency == EncodedFrame::KEY ? 'K' : 'D',
-        encoded_frame->frame_id, encoded_frame->rtp_timestamp.lower_32_bits(),
+        encoded_frame->frame_id.lower_32_bits(),
+        encoded_frame->rtp_timestamp.lower_32_bits(),
         static_cast<int>(config_.rc_target_bitrate),
         key_frame_requested_ ? 'Y' : 'N');
     base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);

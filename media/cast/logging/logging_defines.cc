@@ -33,8 +33,7 @@ const char* CastLoggingToString(CastLoggingEvent event) {
 }
 
 FrameEvent::FrameEvent()
-    : frame_id(kFrameIdUnknown),
-      width(0),
+    : width(0),
       height(0),
       size(0u),
       type(UNKNOWN),
@@ -47,8 +46,7 @@ FrameEvent::FrameEvent(const FrameEvent& other) = default;
 FrameEvent::~FrameEvent() {}
 
 PacketEvent::PacketEvent()
-    : frame_id(kFrameIdUnknown),
-      max_packet_id(0),
+    : max_packet_id(0),
       packet_id(0),
       size(0),
       type(UNKNOWN),

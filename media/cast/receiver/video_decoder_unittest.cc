@@ -60,7 +60,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
 
     next_frame_size_ = gfx::Size(kStartingWidth, kStartingHeight);
     next_frame_timestamp_ = base::TimeDelta();
-    last_frame_id_ = 0;
+    last_frame_id_ = FrameId::first();
     seen_a_decoded_frame_ = false;
 
     total_video_frames_feed_in_ = 0;
@@ -155,7 +155,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   std::unique_ptr<VideoDecoder> video_decoder_;
   gfx::Size next_frame_size_;
   base::TimeDelta next_frame_timestamp_;
-  uint32_t last_frame_id_;
+  FrameId last_frame_id_;
   bool seen_a_decoded_frame_;
 
   Vp8Encoder vp8_encoder_;

@@ -10,9 +10,8 @@ namespace media {
 namespace cast {
 
 RtcpCastMessage::RtcpCastMessage(uint32_t ssrc)
-    : remote_ssrc(ssrc), ack_frame_id(0u), target_delay_ms(0) {}
-RtcpCastMessage::RtcpCastMessage()
-    : remote_ssrc(0), ack_frame_id(0u), target_delay_ms(0) {}
+    : remote_ssrc(ssrc), target_delay_ms(0) {}
+RtcpCastMessage::RtcpCastMessage() : RtcpCastMessage(0) {}
 RtcpCastMessage::~RtcpCastMessage() {}
 
 RtcpPliMessage::RtcpPliMessage(uint32_t ssrc) : remote_ssrc(ssrc) {}

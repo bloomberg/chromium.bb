@@ -56,7 +56,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   const gfx::Size& frame_size() const {
     return frame_size_;
   }
-  uint32_t last_frame_id() const { return last_frame_id_; }
+  FrameId next_frame_id() const { return next_frame_id_; }
 
   // Returns a callback that calls OnEncoderStatusChange().  The callback is
   // canceled by invalidating its bound weak pointer just before a replacement
@@ -107,8 +107,8 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   enum { kEncoderIsInitializing = -1 };
   int frames_in_encoder_;
 
-  // The ID of the last frame that was emitted from |encoder_|.
-  uint32_t last_frame_id_;
+  // The ID for the next frame to be emitted.
+  FrameId next_frame_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<SizeAdaptableVideoEncoderBase> weak_factory_;

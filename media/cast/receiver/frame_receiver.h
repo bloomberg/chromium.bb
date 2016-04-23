@@ -190,7 +190,8 @@ class FrameReceiver : public RtpPayloadFeedback,
   bool is_waiting_for_consecutive_frame_;
 
   // This mapping allows us to log FRAME_ACK_SENT as a frame event. In addition
-  // it allows the event to be transmitted via RTCP.
+  // it allows the event to be transmitted via RTCP.  The index into this ring
+  // buffer is the lower 8 bits of the FrameId.
   RtpTimeTicks frame_id_to_rtp_timestamp_[256];
 
   // Lip-sync values used to compute the playout time of each frame from its RTP

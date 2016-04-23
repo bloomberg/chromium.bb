@@ -33,15 +33,18 @@ namespace cast {
 namespace {
 
 const int kPacketSize = 1500;
-const uint32_t kFirstFrameId = 1234;
 const int kPlayoutDelayMillis = 100;
+
+FrameId GetFirstTestFrameId() {
+  return FrameId::first() + 1234;
+}
 
 class FakeFrameClient {
  public:
   FakeFrameClient() : num_called_(0) {}
   virtual ~FakeFrameClient() {}
 
-  void AddExpectedResult(uint32_t expected_frame_id,
+  void AddExpectedResult(FrameId expected_frame_id,
                          const base::TimeTicks& expected_playout_time) {
     expected_results_.push_back(
         std::make_pair(expected_frame_id, expected_playout_time));
@@ -61,7 +64,7 @@ class FakeFrameClient {
   int number_times_called() const { return num_called_; }
 
  private:
-  std::deque<std::pair<uint32_t, base::TimeTicks>> expected_results_;
+  std::deque<std::pair<FrameId, base::TimeTicks>> expected_results_;
   int num_called_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrameClient);
@@ -88,7 +91,7 @@ class FrameReceiverTest : public ::testing::Test {
 
     // Always start with a key frame.
     rtp_header_.is_key_frame = true;
-    rtp_header_.frame_id = kFirstFrameId;
+    rtp_header_.frame_id = GetFirstTestFrameId();
     rtp_header_.packet_id = 0;
     rtp_header_.max_packet_id = 0;
     rtp_header_.reference_frame_id = rtp_header_.frame_id;
@@ -207,7 +210,7 @@ TEST_F(FrameReceiverTest, ReceivesOneFrame) {
   const base::TimeDelta target_playout_delay =
       base::TimeDelta::FromMilliseconds(kPlayoutDelayMillis);
   frame_client_.AddExpectedResult(
-      kFirstFrameId, testing_clock_->NowTicks() + target_playout_delay);
+      GetFirstTestFrameId(), testing_clock_->NowTicks() + target_playout_delay);
   FeedOneFrameIntoReceiver();
   task_runner_->RunTasks();
   EXPECT_EQ(1, frame_client_.number_times_called());
@@ -264,7 +267,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   const base::TimeDelta target_playout_delay =
       base::TimeDelta::FromMilliseconds(kPlayoutDelayMillis);
   frame_client_.AddExpectedResult(
-      kFirstFrameId, first_frame_capture_time + target_playout_delay);
+      GetFirstTestFrameId(), first_frame_capture_time + target_playout_delay);
   rtp_header_.rtp_timestamp = RtpTimeTicks();
   FeedOneFrameIntoReceiver();  // Frame 1
   task_runner_->RunTasks();
@@ -277,13 +280,13 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
 
   // Receive one frame out-of-order: Make sure that we are not continuous and
   // that the RTP timestamp represents a time in the future.
-  rtp_header_.frame_id = kFirstFrameId + 2;  // "Frame 3"
+  rtp_header_.frame_id = GetFirstTestFrameId() + 2;  // "Frame 3"
   rtp_header_.reference_frame_id = rtp_header_.frame_id;
   rtp_header_.rtp_timestamp += rtp_advance_per_frame * 2;
-  frame_client_.AddExpectedResult(
-      kFirstFrameId + 2,
-      first_frame_capture_time + 2 * time_advance_per_frame +
-          target_playout_delay);
+  frame_client_.AddExpectedResult(rtp_header_.frame_id,
+                                  first_frame_capture_time +
+                                      2 * time_advance_per_frame +
+                                      target_playout_delay);
   FeedOneFrameIntoReceiver();  // Frame 3
 
   // Frame 2 should not come out at this point in time.
@@ -303,12 +306,13 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   EXPECT_EQ(2, frame_client_.number_times_called());
 
   // Receive Frame 4 and expect it to fulfill the third request immediately.
-  rtp_header_.frame_id = kFirstFrameId + 3;  // "Frame 4"
+  rtp_header_.frame_id = GetFirstTestFrameId() + 3;  // "Frame 4"
   rtp_header_.reference_frame_id = rtp_header_.frame_id;
   rtp_header_.rtp_timestamp += rtp_advance_per_frame;
-  frame_client_.AddExpectedResult(
-      kFirstFrameId + 3, first_frame_capture_time + 3 * time_advance_per_frame +
-          target_playout_delay);
+  frame_client_.AddExpectedResult(rtp_header_.frame_id,
+                                  first_frame_capture_time +
+                                      3 * time_advance_per_frame +
+                                      target_playout_delay);
   FeedOneFrameIntoReceiver();    // Frame 4
   task_runner_->RunTasks();
   EXPECT_EQ(3, frame_client_.number_times_called());
@@ -326,9 +330,9 @@ TEST_F(FrameReceiverTest, ReceivesFramesSkippingWhenAppropriate) {
   for (size_t i = 0; i < frame_events.size(); ++i) {
     EXPECT_EQ(FRAME_ACK_SENT, frame_events[i].type);
     EXPECT_EQ(AUDIO_EVENT, frame_events[i].media_type);
-    EXPECT_LE(kFirstFrameId, frame_events[i].frame_id);
-    EXPECT_GE(kFirstFrameId + 4, frame_events[i].frame_id);
-    const int frame_offset = frame_events[i].frame_id - kFirstFrameId;
+    EXPECT_LE(GetFirstTestFrameId(), frame_events[i].frame_id);
+    EXPECT_GE(GetFirstTestFrameId() + 4, frame_events[i].frame_id);
+    const int frame_offset = frame_events[i].frame_id - GetFirstTestFrameId();
     EXPECT_NE(frame_offset, 1);  // Frame 2 never received.
     EXPECT_EQ(RtpTimeTicks() + (rtp_advance_per_frame * frame_offset),
               frame_events[i].rtp_timestamp);
@@ -377,7 +381,7 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   const base::TimeDelta target_playout_delay =
       base::TimeDelta::FromMilliseconds(kPlayoutDelayMillis);
   frame_client_.AddExpectedResult(
-      kFirstFrameId, first_frame_capture_time + target_playout_delay);
+      GetFirstTestFrameId(), first_frame_capture_time + target_playout_delay);
   rtp_header_.rtp_timestamp = RtpTimeTicks();
   FeedOneFrameIntoReceiver();  // Frame 1
   task_runner_->RunTasks();
@@ -391,8 +395,8 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   // Receive one frame out-of-order: Make sure that we are not continuous and
   // that the RTP timestamp represents a time in the future.
   rtp_header_.is_key_frame = false;
-  rtp_header_.frame_id = kFirstFrameId + 2;  // "Frame 3"
-  rtp_header_.reference_frame_id = kFirstFrameId + 1;  // "Frame 2"
+  rtp_header_.frame_id = GetFirstTestFrameId() + 2;            // "Frame 3"
+  rtp_header_.reference_frame_id = GetFirstTestFrameId() + 1;  // "Frame 2"
   rtp_header_.rtp_timestamp += rtp_advance_per_frame * 2;
   FeedOneFrameIntoReceiver();  // Frame 3
 
@@ -415,14 +419,14 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
 
   // Now receive Frame 2 and expect both the second and third requests to be
   // fulfilled immediately.
-  frame_client_.AddExpectedResult(
-      kFirstFrameId + 1,  // "Frame 2"
-      first_frame_capture_time + 1 * time_advance_per_frame +
-          target_playout_delay);
-  frame_client_.AddExpectedResult(
-      kFirstFrameId + 2,  // "Frame 3"
-      first_frame_capture_time + 2 * time_advance_per_frame +
-          target_playout_delay);
+  frame_client_.AddExpectedResult(GetFirstTestFrameId() + 1,  // "Frame 2"
+                                  first_frame_capture_time +
+                                      1 * time_advance_per_frame +
+                                      target_playout_delay);
+  frame_client_.AddExpectedResult(GetFirstTestFrameId() + 2,  // "Frame 3"
+                                  first_frame_capture_time +
+                                      2 * time_advance_per_frame +
+                                      target_playout_delay);
   --rtp_header_.frame_id;  // "Frame 2"
   --rtp_header_.reference_frame_id;  // "Frame 1"
   rtp_header_.rtp_timestamp -= rtp_advance_per_frame;
@@ -443,9 +447,9 @@ TEST_F(FrameReceiverTest, ReceivesFramesRefusingToSkipAny) {
   for (size_t i = 0; i < frame_events.size(); ++i) {
     EXPECT_EQ(FRAME_ACK_SENT, frame_events[i].type);
     EXPECT_EQ(VIDEO_EVENT, frame_events[i].media_type);
-    EXPECT_LE(kFirstFrameId, frame_events[i].frame_id);
-    EXPECT_GE(kFirstFrameId + 3, frame_events[i].frame_id);
-    const int frame_offset = frame_events[i].frame_id - kFirstFrameId;
+    EXPECT_LE(GetFirstTestFrameId(), frame_events[i].frame_id);
+    EXPECT_GE(GetFirstTestFrameId() + 3, frame_events[i].frame_id);
+    const int frame_offset = frame_events[i].frame_id - GetFirstTestFrameId();
     EXPECT_EQ(RtpTimeTicks() + (rtp_advance_per_frame * frame_offset),
               frame_events[i].rtp_timestamp);
   }

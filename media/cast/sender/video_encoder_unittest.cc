@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
@@ -170,8 +169,8 @@ class VideoEncoderTest
   // encoder rejected the request.
   bool EncodeAndCheckDelivery(
       const scoped_refptr<media::VideoFrame>& video_frame,
-      uint32_t frame_id,
-      uint32_t reference_frame_id) {
+      FrameId frame_id,
+      FrameId reference_frame_id) {
     return video_encoder_->EncodeVideoFrame(
         video_frame, Now(),
         base::Bind(&VideoEncoderTest::DeliverEncodedVideoFrame,
@@ -216,8 +215,8 @@ class VideoEncoderTest
   // Checks that |encoded_frame| matches expected values.  This is the method
   // bound in the callback returned from EncodeAndCheckDelivery().
   void DeliverEncodedVideoFrame(
-      uint32_t expected_frame_id,
-      uint32_t expected_last_referenced_frame_id,
+      FrameId expected_frame_id,
+      FrameId expected_last_referenced_frame_id,
       RtpTimeTicks expected_rtp_timestamp,
       const base::TimeTicks& expected_reference_time,
       std::unique_ptr<SenderEncodedFrame> encoded_frame) {
@@ -287,8 +286,8 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   EXPECT_EQ(0, count_frames_delivered());
   ExpectVEAResponsesForExternalVideoEncoder(0, 0);
 
-  uint32_t frame_id = 0;
-  uint32_t reference_frame_id = 0;
+  FrameId frame_id = FrameId::first();
+  FrameId reference_frame_id = FrameId::first();
   const gfx::Size frame_size(1280, 720);
 
   // Some encoders drop one or more frames initially while the encoder
@@ -304,7 +303,8 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   ExpectVEAResponsesForExternalVideoEncoder(1, 3);
 
   // Expect the remaining frames are encoded as delta frames.
-  for (++frame_id; frame_id < 3; ++frame_id, ++reference_frame_id) {
+  for (++frame_id; frame_id < FrameId::first() + 3;
+       ++frame_id, ++reference_frame_id) {
     EXPECT_TRUE(EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size),
                                        frame_id,
                                        reference_frame_id));
@@ -339,7 +339,7 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
   frame_sizes.push_back(gfx::Size(34, 20));    // Grow the other dimension.
   frame_sizes.push_back(gfx::Size(192, 108));  // Grow both dimensions again.
 
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
 
   // Encode one frame at each size. For encoders with a resize delay, except no
   // frames to be delivered since each frame size change will sprun
@@ -388,7 +388,8 @@ TEST_P(VideoEncoderTest, CanBeDestroyedBeforeVEAIsCreated) {
   CreateEncoder();
 
   // Send a frame to spawn creation of the ExternalVideoEncoder instance.
-  EncodeAndCheckDelivery(CreateTestVideoFrame(gfx::Size(128, 72)), 0, 0);
+  EncodeAndCheckDelivery(CreateTestVideoFrame(gfx::Size(128, 72)),
+                         FrameId::first(), FrameId::first());
 
   // Destroy the encoder, and confirm the VEA Factory did not respond yet.
   DestroyEncoder();

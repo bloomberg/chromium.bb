@@ -13,6 +13,7 @@
 
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/common/frame_id.h"
 
 namespace media {
 namespace cast {
@@ -28,16 +29,16 @@ class CongestionControl {
   virtual void UpdateTargetPlayoutDelay(base::TimeDelta delay) = 0;
 
   // Called when an encoded frame is enqueued for transport.
-  virtual void SendFrameToTransport(uint32_t frame_id,
+  virtual void SendFrameToTransport(FrameId frame_id,
                                     size_t frame_size_in_bits,
                                     base::TimeTicks when) = 0;
 
   // Called when we receive an ACK for a frame.
-  virtual void AckFrame(uint32_t frame_id, base::TimeTicks when) = 0;
+  virtual void AckFrame(FrameId frame_id, base::TimeTicks when) = 0;
 
   // Called when the RTP receiver received frames that have frame ID larger
   // than |last_acked_frame_|.
-  virtual void AckLaterFrames(std::vector<uint32_t> received_frames,
+  virtual void AckLaterFrames(std::vector<FrameId> received_frames,
                               base::TimeTicks when) = 0;
 
   // Returns the bitrate we should use for the next frame.

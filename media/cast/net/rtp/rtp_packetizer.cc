@@ -81,14 +81,14 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     if (packet_id == 0)
       byte0 |= num_extensions;
     packet->data.push_back(byte0);
-    packet->data.push_back(static_cast<uint8_t>(frame.frame_id));
+    packet->data.push_back(frame.frame_id.lower_8_bits());
     size_t start_size = packet->data.size();
     packet->data.resize(start_size + 4);
     base::BigEndianWriter big_endian_writer(
         reinterpret_cast<char*>(&(packet->data[start_size])), 4);
     big_endian_writer.WriteU16(packet_id);
     big_endian_writer.WriteU16(static_cast<uint16_t>(num_packets - 1));
-    packet->data.push_back(static_cast<uint8_t>(frame.referenced_frame_id));
+    packet->data.push_back(frame.referenced_frame_id.lower_8_bits());
     // Add extension details only on the first packet of the frame
     if (packet_id == 0 && frame.new_playout_delay_ms) {
       packet->data.push_back(kCastRtpExtensionAdaptiveLatency << 2);
@@ -104,9 +104,9 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
                         data_iter + payload_length);
     data_iter += payload_length;
 
-    const PacketKey key = PacedPacketSender::MakePacketKey(
-        frame.reference_time, config_.ssrc, frame.frame_id, packet_id);
-    packets.push_back(make_pair(key, packet));
+    packets.push_back(make_pair(PacketKey(frame.reference_time, config_.ssrc,
+                                          frame.frame_id, packet_id),
+                                packet));
 
     // Update stats.
     ++send_packet_count_;

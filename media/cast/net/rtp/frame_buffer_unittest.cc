@@ -16,6 +16,8 @@ class FrameBufferTest : public ::testing::Test {
  protected:
   FrameBufferTest() {
     payload_.assign(kMaxIpPacketSize, 0);
+    rtp_header_.frame_id = FrameId::first();
+    rtp_header_.reference_frame_id = FrameId::first();
   }
 
   ~FrameBufferTest() override {}
@@ -30,14 +32,14 @@ class FrameBufferTest : public ::testing::Test {
 TEST_F(FrameBufferTest, OnePacketInsertSanity) {
   rtp_header_.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(3000));
   rtp_header_.is_key_frame = true;
-  rtp_header_.frame_id = 5;
-  rtp_header_.reference_frame_id = 5;
+  rtp_header_.frame_id = FrameId::first() + 5;
+  rtp_header_.reference_frame_id = FrameId::first() + 5;
   buffer_.InsertPacket(&payload_[0], payload_.size(), rtp_header_);
   EncodedFrame frame;
   EXPECT_TRUE(buffer_.AssembleEncodedFrame(&frame));
   EXPECT_EQ(EncodedFrame::KEY, frame.dependency);
-  EXPECT_EQ(5u, frame.frame_id);
-  EXPECT_EQ(5u, frame.referenced_frame_id);
+  EXPECT_EQ(FrameId::first() + 5, frame.frame_id);
+  EXPECT_EQ(FrameId::first() + 5, frame.referenced_frame_id);
   EXPECT_EQ(3000u, frame.rtp_timestamp.lower_32_bits());
 }
 

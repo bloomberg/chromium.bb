@@ -23,7 +23,6 @@
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -92,7 +91,7 @@ class ExternalVideoEncoder::VEAClientImpl
         create_video_encode_memory_cb_(create_video_encode_memory_cb),
         video_encode_accelerator_(std::move(vea)),
         encoder_active_(false),
-        next_frame_id_(0u),
+        next_frame_id_(FrameId::first()),
         key_frame_encountered_(false),
         codec_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
         key_frame_quantizer_parsable_(false),
@@ -106,7 +105,7 @@ class ExternalVideoEncoder::VEAClientImpl
   void Initialize(const gfx::Size& frame_size,
                   VideoCodecProfile codec_profile,
                   int start_bit_rate,
-                  uint32_t first_frame_id) {
+                  FrameId first_frame_id) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     requested_bit_rate_ = start_bit_rate;
@@ -315,13 +314,13 @@ class ExternalVideoEncoder::VEAClientImpl
         const char kZeroEncodeDetails[] = "zero-encode-details";
         const std::string details = base::StringPrintf(
             ("%c/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,q=%" PRIuS
-             ",act=%c,ref=%d"),
+             ",act=%c,ref=%" PRIu32),
             codec_profile_ == media::VP8PROFILE_ANY ? 'V' : 'H',
-            key_frame ? 'K' : 'D', encoded_frame->frame_id,
+            key_frame ? 'K' : 'D', encoded_frame->frame_id.lower_32_bits(),
             encoded_frame->rtp_timestamp.lower_32_bits(),
             request.target_bit_rate / 1000, in_progress_frame_encodes_.size(),
             encoder_active_ ? 'Y' : 'N',
-            static_cast<int>(encoded_frame->referenced_frame_id % 1000));
+            encoded_frame->referenced_frame_id.lower_32_bits() % 1000);
         base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);
         // Please forward crash reports to http://crbug.com/519022:
         base::debug::DumpWithoutCrashing();
@@ -453,7 +452,7 @@ class ExternalVideoEncoder::VEAClientImpl
   const CreateVideoEncodeMemoryCallback create_video_encode_memory_cb_;
   std::unique_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
   bool encoder_active_;
-  uint32_t next_frame_id_;
+  FrameId next_frame_id_;
   bool key_frame_encountered_;
   std::string stream_header_;
   VideoCodecProfile codec_profile_;
@@ -497,7 +496,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoSenderConfig& video_config,
     const gfx::Size& frame_size,
-    uint32_t first_frame_id,
+    FrameId first_frame_id,
     const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb)
@@ -565,7 +564,7 @@ void ExternalVideoEncoder::GenerateKeyFrame() {
 
 void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
     const VideoSenderConfig& video_config,
-    uint32_t first_frame_id,
+    FrameId first_frame_id,
     const StatusChangeCallback& status_change_cb,
     scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
     std::unique_ptr<media::VideoEncodeAccelerator> vea) {
@@ -631,7 +630,7 @@ SizeAdaptableExternalVideoEncoder::~SizeAdaptableExternalVideoEncoder() {}
 std::unique_ptr<VideoEncoder>
 SizeAdaptableExternalVideoEncoder::CreateEncoder() {
   return std::unique_ptr<VideoEncoder>(new ExternalVideoEncoder(
-      cast_environment(), video_config(), frame_size(), last_frame_id() + 1,
+      cast_environment(), video_config(), frame_size(), next_frame_id(),
       CreateEncoderStatusChangeCallback(), create_vea_cb_,
       create_video_encode_memory_cb_));
 }

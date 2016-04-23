@@ -271,12 +271,19 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
 }
 
 TEST_F(RtcpTest, ReportCastFeedback) {
+  // Sender has sent all frames up to and including first+5.
+  rtcp_at_rtp_sender_.WillSendFrame(FrameId::first() + 5);
+
+  // ACK all frames up to and including first+5, except NACK a few in first+1
+  // and first+2.
   RtcpCastMessage cast_message(kSenderSsrc);
-  cast_message.ack_frame_id = 5;
+  cast_message.ack_frame_id = FrameId::first() + 5;
   PacketIdSet missing_packets1 = {3, 4};
-  cast_message.missing_frames_and_packets[1] = missing_packets1;
+  cast_message.missing_frames_and_packets[FrameId::first() + 1] =
+      missing_packets1;
   PacketIdSet missing_packets2 = {5, 6};
-  cast_message.missing_frames_and_packets[2] = missing_packets2;
+  cast_message.missing_frames_and_packets[FrameId::first() + 2] =
+      missing_packets2;
 
   rtp_receiver_pacer_.SendRtcpPacket(
       rtcp_at_rtp_receiver_.local_ssrc(),
@@ -305,8 +312,12 @@ TEST_F(RtcpTest, ReportPli) {
 }
 
 TEST_F(RtcpTest, DropLateRtcpPacket) {
+  // Sender has sent all frames up to and including first+2.
+  rtcp_at_rtp_sender_.WillSendFrame(FrameId::first() + 2);
+
+  // Receiver ACKs first+1.
   RtcpCastMessage cast_message(kSenderSsrc);
-  cast_message.ack_frame_id = 1;
+  cast_message.ack_frame_id = FrameId::first() + 1;
   rtp_receiver_pacer_.SendRtcpPacket(
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(
@@ -314,9 +325,9 @@ TEST_F(RtcpTest, DropLateRtcpPacket) {
           nullptr, base::TimeDelta::FromMilliseconds(kTargetDelayMs), nullptr,
           nullptr));
 
-  // Send a packet with old timestamp
+  // Receiver ACKs first+2, but with a too-old timestamp.
   RtcpCastMessage late_cast_message(kSenderSsrc);
-  late_cast_message.ack_frame_id = 2;
+  late_cast_message.ack_frame_id = FrameId::first() + 2;
   rtp_receiver_pacer_.SendRtcpPacket(
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(
@@ -329,7 +340,7 @@ TEST_F(RtcpTest, DropLateRtcpPacket) {
   EXPECT_EQ(last_cast_message_.target_delay_ms, kTargetDelayMs);
 
   // Re-send with fresh timestamp
-  late_cast_message.ack_frame_id = 2;
+  late_cast_message.ack_frame_id = FrameId::first() + 2;
   rtp_receiver_pacer_.SendRtcpPacket(
       rtcp_at_rtp_receiver_.local_ssrc(),
       BuildRtcpPacketFromRtpReceiver(

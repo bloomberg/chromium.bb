@@ -87,10 +87,16 @@ SenderRtcpSession::SenderRtcpSession(
       pli_callback_(pli_callback),
       largest_seen_timestamp_(base::TimeTicks::FromInternalValue(
           std::numeric_limits<int64_t>::min())),
-      parser_(local_ssrc, remote_ssrc),
-      ack_frame_id_wrap_helper_(kFirstFrameId - 1) {}
+      parser_(local_ssrc, remote_ssrc) {}
 
 SenderRtcpSession::~SenderRtcpSession() {}
+
+void SenderRtcpSession::WillSendFrame(FrameId frame_id) {
+  if (parser_.max_valid_frame_id().is_null() ||
+      frame_id > parser_.max_valid_frame_id()) {
+    parser_.SetMaxValidFrameId(frame_id);
+  }
+}
 
 bool SenderRtcpSession::IncomingRtcpPacket(const uint8_t* data, size_t length) {
   // Check if this is a valid RTCP packet.
@@ -137,9 +143,6 @@ bool SenderRtcpSession::IncomingRtcpPacket(const uint8_t* data, size_t length) {
                                      parser_.delay_since_last_report());
     }
     if (parser_.has_cast_message()) {
-      parser_.mutable_cast_message()->ack_frame_id =
-          ack_frame_id_wrap_helper_.MapTo32bitsFrameId(
-              parser_.mutable_cast_message()->ack_frame_id);
       OnReceivedCastFeedback(parser_.cast_message());
     }
   }

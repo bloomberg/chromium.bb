@@ -5,13 +5,25 @@
 #include "media/cast/net/rtp/receiver_stats.h"
 
 #include "base/logging.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
 
-static const uint32_t kMaxSequenceNumber = 65536;
+namespace {
+
+constexpr uint32_t kMaxSequenceNumber = 65536;
+
+// TODO(miu): Get rid of all the special 16-bit rounding detection and special
+// handling throughout this file, and just use good 'ol int64_t.
+// http://crbug.com/530839
+bool IsNewerSequenceNumber(uint16_t sequence_number,
+                           uint16_t prev_sequence_number) {
+  return (sequence_number != prev_sequence_number) &&
+         static_cast<uint16_t>(sequence_number - prev_sequence_number) < 0x8000;
+}
+
+}  // namespace
 
 ReceiverStats::ReceiverStats(base::TickClock* clock)
     : clock_(clock),

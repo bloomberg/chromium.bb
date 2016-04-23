@@ -92,12 +92,12 @@ struct EncodedFrame {
 
   // The label associated with this frame.  Implies an ordering relative to
   // other frames in the same stream.
-  uint32_t frame_id;
+  FrameId frame_id;
 
   // The label associated with the frame upon which this frame depends.  If
   // this frame does not require any other frame in order to become decodable
   // (e.g., key frames), |referenced_frame_id| must equal |frame_id|.
-  uint32_t referenced_frame_id;
+  FrameId referenced_frame_id;
 
   // The stream timestamp, on the timeline of the signal data.  For example, RTP
   // timestamps for audio are usually defined as the total number of audio

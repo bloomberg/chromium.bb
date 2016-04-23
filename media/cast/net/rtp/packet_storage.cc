@@ -10,10 +10,7 @@
 namespace media {
 namespace cast {
 
-PacketStorage::PacketStorage()
-    : first_frame_id_in_list_(0),
-      zombie_count_(0) {
-}
+PacketStorage::PacketStorage() : zombie_count_(0) {}
 
 PacketStorage::~PacketStorage() {
 }
@@ -22,7 +19,7 @@ size_t PacketStorage::GetNumberOfStoredFrames() const {
   return frames_.size() - zombie_count_;
 }
 
-void PacketStorage::StoreFrame(uint32_t frame_id,
+void PacketStorage::StoreFrame(FrameId frame_id,
                                const SendPacketVector& packets) {
   if (packets.empty()) {
     NOTREACHED();
@@ -33,8 +30,7 @@ void PacketStorage::StoreFrame(uint32_t frame_id,
     first_frame_id_in_list_ = frame_id;
   } else {
     // Make sure frame IDs are consecutive.
-    DCHECK_EQ(first_frame_id_in_list_ + static_cast<uint32_t>(frames_.size()),
-              frame_id);
+    DCHECK_EQ(first_frame_id_in_list_ + frames_.size(), frame_id);
     // Make sure we aren't being asked to store more frames than the system's
     // design limit.
     DCHECK_LT(frames_.size(), static_cast<size_t>(kMaxUnackedFrames));
@@ -44,14 +40,12 @@ void PacketStorage::StoreFrame(uint32_t frame_id,
   frames_.push_back(packets);
 }
 
-void PacketStorage::ReleaseFrame(uint32_t frame_id) {
-  const uint32_t offset = frame_id - first_frame_id_in_list_;
-  if (static_cast<int32_t>(offset) < 0 || offset >= frames_.size() ||
-      frames_[offset].empty()) {
+void PacketStorage::ReleaseFrame(FrameId frame_id) {
+  SendPacketVector* const packets = GetFramePackets(frame_id);
+  if (!packets)
     return;
-  }
 
-  frames_[offset].clear();
+  packets->clear();
   ++zombie_count_;
 
   while (!frames_.empty() && frames_.front().empty()) {
@@ -62,15 +56,15 @@ void PacketStorage::ReleaseFrame(uint32_t frame_id) {
   }
 }
 
-const SendPacketVector* PacketStorage::GetFrame8(uint8_t frame_id_8bits) const {
-  // The requested frame ID has only 8-bits so convert the first frame ID
-  // in list to match.
-  uint8_t index_8bits = first_frame_id_in_list_ & 0xFF;
-  index_8bits = frame_id_8bits - index_8bits;
-  if (index_8bits >= frames_.size())
-    return NULL;
-  const SendPacketVector& packets = frames_[index_8bits];
-  return packets.empty() ? NULL : &packets;
+SendPacketVector* PacketStorage::GetFramePackets(FrameId frame_id) {
+  if (first_frame_id_in_list_.is_null())
+    return nullptr;
+  const int64_t offset = frame_id - first_frame_id_in_list_;
+  if (offset < 0 || offset >= static_cast<int64_t>(frames_.size()) ||
+      frames_[offset].empty()) {
+    return nullptr;
+  }
+  return &frames_[offset];
 }
 
 }  // namespace cast

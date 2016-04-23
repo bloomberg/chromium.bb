@@ -64,7 +64,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   const RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
@@ -147,7 +147,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   const RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
 
@@ -229,13 +229,13 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   base::TimeDelta upper_bound;
 
   const RtpTimeTicks rtp_timestamp_a;
-  int frame_id_a = 0;
+  FrameId frame_id_a = FrameId::first();
   const RtpTimeTicks rtp_timestamp_b =
       rtp_timestamp_a + RtpTimeDelta::FromTicks(90);
-  int frame_id_b = 1;
+  FrameId frame_id_b = frame_id_a + 1;
   const RtpTimeTicks rtp_timestamp_c =
       rtp_timestamp_b + RtpTimeDelta::FromTicks(90);
-  int frame_id_c = 2;
+  FrameId frame_id_c = frame_id_b + 1;
 
   // Frame 1 times: [20, 30+100, 60]
   // Frame 2 times: [30, 50+100, 55]

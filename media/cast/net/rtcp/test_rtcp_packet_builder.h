@@ -77,7 +77,7 @@ class TestRtcpPacketBuilder {
   void AddCast(uint32_t remote_ssrc,
                uint32_t local_ssrc,
                base::TimeDelta target_delay);
-  void AddCst2(const std::vector<uint32_t>& later_received_frames);
+  void AddCst2(const std::vector<FrameId>& later_received_frames);
   void AddErrorCst2();  // With wrong identifier.
   void AddPli(uint32_t remote_ssrc, uint32_t local_ssrc);
 

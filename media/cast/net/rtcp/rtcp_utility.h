@@ -42,6 +42,13 @@ class RtcpParser {
   RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc);
   ~RtcpParser();
 
+  // Gets/Sets the ID of the latest frame that could possibly be ACK'ed.  This
+  // is used when expanding truncated frame IDs during Parse().  This only needs
+  // to be called if the client uses cast_message().
+  FrameId max_valid_frame_id() const { return max_valid_frame_id_; }
+  void SetMaxValidFrameId(FrameId max_valid_frame_id);
+
+  // Parse the RTCP packet.
   bool Parse(base::BigEndianReader* reader);
 
   bool has_sender_report() const { return has_sender_report_; }
@@ -119,6 +126,9 @@ class RtcpParser {
   // re-expanded into full-form.
   RtpTimeTicks last_parsed_sr_rtp_timestamp_;
   RtpTimeTicks last_parsed_frame_log_rtp_timestamp_;
+
+  // The maximum possible re-expanded frame ID value.
+  FrameId max_valid_frame_id_;
 
   // Indicates if sender received the Pli message from the receiver.
   bool has_picture_loss_indicator_;

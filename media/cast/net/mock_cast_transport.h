@@ -34,8 +34,8 @@ class MockCastTransport : public CastTransport {
                     base::TimeTicks current_time,
                     RtpTimeTicks current_time_as_rtp_timestamp));
   MOCK_METHOD2(CancelSendingFrames,
-               void(uint32_t ssrc, const std::vector<uint32_t>& frame_ids));
-  MOCK_METHOD2(ResendFrameForKickstart, void(uint32_t ssrc, uint32_t frame_id));
+               void(uint32_t ssrc, const std::vector<FrameId>& frame_ids));
+  MOCK_METHOD2(ResendFrameForKickstart, void(uint32_t ssrc, FrameId frame_id));
   MOCK_METHOD0(PacketReceiverForTesting, PacketReceiverCallback());
   MOCK_METHOD2(AddValidRtpReceiver,
                void(uint32_t rtp_sender_ssrc, uint32_t rtp_receiver_ssrc));

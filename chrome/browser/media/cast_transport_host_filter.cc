@@ -223,7 +223,7 @@ void CastTransportHostFilter::OnInsertFrame(
 void CastTransportHostFilter::OnCancelSendingFrames(
     int32_t channel_id,
     uint32_t ssrc,
-    const std::vector<uint32_t>& frame_ids) {
+    const std::vector<media::cast::FrameId>& frame_ids) {
   media::cast::CastTransport* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->CancelSendingFrames(ssrc, frame_ids);
@@ -234,9 +234,10 @@ void CastTransportHostFilter::OnCancelSendingFrames(
   }
 }
 
-void CastTransportHostFilter::OnResendFrameForKickstart(int32_t channel_id,
-                                                        uint32_t ssrc,
-                                                        uint32_t frame_id) {
+void CastTransportHostFilter::OnResendFrameForKickstart(
+    int32_t channel_id,
+    uint32_t ssrc,
+    media::cast::FrameId frame_id) {
   media::cast::CastTransport* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->ResendFrameForKickstart(ssrc, frame_id);

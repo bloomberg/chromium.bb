@@ -31,7 +31,7 @@ class FakeSoftwareVideoEncoder : public SoftwareVideoEncoder {
   VideoSenderConfig video_config_;
   gfx::Size last_frame_size_;
   bool next_frame_is_key_;
-  uint32_t frame_id_;
+  FrameId frame_id_;
   int frame_size_;
 };
 

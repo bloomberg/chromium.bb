@@ -39,8 +39,17 @@ static const size_t kMaxBurstSize = 20;
 struct PacketKey {
   base::TimeTicks capture_time;
   uint32_t ssrc;
-  uint32_t frame_id;
+  FrameId frame_id;
   uint16_t packet_id;
+
+  PacketKey();  // Do not use.  This is for STL containers.
+  PacketKey(base::TimeTicks capture_time,
+            uint32_t ssrc,
+            FrameId frame_id,
+            uint16_t packet_id);
+  PacketKey(const PacketKey& other);
+
+  ~PacketKey();
 
   bool operator==(const PacketKey& key) const {
     return std::tie(capture_time, ssrc, frame_id, packet_id) ==
@@ -85,11 +94,6 @@ class PacedPacketSender {
   virtual void CancelSendingPacket(const PacketKey& packet_key) = 0;
 
   virtual ~PacedPacketSender() {}
-
-  static PacketKey MakePacketKey(base::TimeTicks capture_time,
-                                 uint32_t ssrc,
-                                 uint32_t frame_id,
-                                 uint16_t packet_id);
 };
 
 class PacedSender : public PacedPacketSender,

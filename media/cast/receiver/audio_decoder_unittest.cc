@@ -57,7 +57,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
                                 GetParam().sampling_rate,
                                 TestAudioBusFactory::kMiddleANoteFreq,
                                 0.5f));
-    last_frame_id_ = 0;
+    last_frame_id_ = FrameId::first();
     seen_a_decoded_frame_ = false;
 
     if (GetParam().codec == CODEC_AUDIO_OPUS) {
@@ -186,7 +186,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   const scoped_refptr<StandaloneCastEnvironment> cast_environment_;
   std::unique_ptr<AudioDecoder> audio_decoder_;
   std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
-  uint32_t last_frame_id_;
+  FrameId last_frame_id_;
   bool seen_a_decoded_frame_;
   std::unique_ptr<uint8_t[]> opus_encoder_memory_;
 

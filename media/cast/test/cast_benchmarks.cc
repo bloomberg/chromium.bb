@@ -130,11 +130,11 @@ class CastTransportWrapper : public CastTransport {
   }
 
   void CancelSendingFrames(uint32_t ssrc,
-                           const std::vector<uint32_t>& frame_ids) final {
+                           const std::vector<FrameId>& frame_ids) final {
     transport_->CancelSendingFrames(ssrc, frame_ids);
   }
 
-  void ResendFrameForKickstart(uint32_t ssrc, uint32_t frame_id) final {
+  void ResendFrameForKickstart(uint32_t ssrc, FrameId frame_id) final {
     transport_->ResendFrameForKickstart(ssrc, frame_id);
   }
 

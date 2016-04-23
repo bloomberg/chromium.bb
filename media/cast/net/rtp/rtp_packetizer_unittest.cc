@@ -37,7 +37,7 @@ class TestRtpPacketTransport : public PacketTransport {
         packets_sent_(0),
         expected_number_of_packets_(0),
         expected_packet_id_(0),
-        expected_frame_id_(0) {}
+        expected_frame_id_(FrameId::first() + 1) {}
 
   void VerifyRtpHeader(const RtpCastHeader& rtp_header) {
     VerifyCommonRtpHeader(rtp_header);
@@ -58,7 +58,7 @@ class TestRtpPacketTransport : public PacketTransport {
     EXPECT_EQ(expected_packet_id_, rtp_header.packet_id);
     EXPECT_EQ(expected_number_of_packets_ - 1, rtp_header.max_packet_id);
     EXPECT_TRUE(rtp_header.is_reference);
-    EXPECT_EQ(expected_frame_id_ - 1u, rtp_header.reference_frame_id);
+    EXPECT_EQ(expected_frame_id_ - 1, rtp_header.reference_frame_id);
     if (rtp_header.packet_id != 0) {
       EXPECT_EQ(rtp_header.num_extensions, 0)
           << "Extensions only allowed on first packet of a frame";
@@ -103,7 +103,7 @@ class TestRtpPacketTransport : public PacketTransport {
   size_t expected_number_of_packets_;
   // Assuming packets arrive in sequence.
   int expected_packet_id_;
-  uint32_t expected_frame_id_;
+  FrameId expected_frame_id_;
   RtpTimeTicks expected_rtp_timestamp_;
 
  private:
@@ -126,7 +126,7 @@ class RtpPacketizerTest : public ::testing::Test {
     rtp_packetizer_.reset(new RtpPacketizer(
         pacer_.get(), &packet_storage_, config_));
     video_frame_.dependency = EncodedFrame::DEPENDENT;
-    video_frame_.frame_id = 0;
+    video_frame_.frame_id = FrameId::first() + 1;
     video_frame_.referenced_frame_id = video_frame_.frame_id - 1;
     video_frame_.data.assign(kFrameSize, 123);
     video_frame_.rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(0x0055aa11));

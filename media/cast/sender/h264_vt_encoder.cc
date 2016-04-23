@@ -159,7 +159,7 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
       videotoolbox_glue_(VideoToolboxGlue::Get()),
       video_config_(video_config),
       status_change_cb_(status_change_cb),
-      last_frame_id_(kFirstFrameId - 1),
+      next_frame_id_(FrameId::first()),
       encode_next_frame_as_keyframe_(false),
       power_suspended_(false),
       weak_factory_(this) {
@@ -543,9 +543,9 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
     has_frame_data = true;
   }
 
-  // Increment the encoder-scoped frame id and assign the new value to this
-  // frame. VideoToolbox calls the output callback serially, so this is safe.
-  const uint32_t frame_id = ++encoder->last_frame_id_;
+  // Grab the next frame ID and increment |next_frame_id_| for next time.
+  // VideoToolbox calls the output callback serially, so this is safe.
+  const FrameId frame_id = encoder->next_frame_id_++;
 
   std::unique_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
   encoded_frame->frame_id = frame_id;

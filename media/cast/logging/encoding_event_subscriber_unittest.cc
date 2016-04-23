@@ -105,7 +105,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
     decoded_event->type = FRAME_DECODED;
     decoded_event->media_type = VIDEO_EVENT;
     decoded_event->rtp_timestamp = RtpTimeTicks().Expand<uint32_t>(i * 100);
-    decoded_event->frame_id = 0;
+    decoded_event->frame_id = FrameId::first();
     cast_environment_->logger()->DispatchFrameEvent(std::move(decoded_event));
 
     width += 160;
@@ -139,7 +139,7 @@ TEST_F(EncodingEventSubscriberTest, PacketEventTruncating) {
     receive_event->type = PACKET_RECEIVED;
     receive_event->media_type = AUDIO_EVENT;
     receive_event->rtp_timestamp = RtpTimeTicks().Expand<uint32_t>(i * 100);
-    receive_event->frame_id = 0;
+    receive_event->frame_id = FrameId::first();
     receive_event->packet_id = i;
     receive_event->max_packet_id = 10;
     receive_event->size = 123;
@@ -178,7 +178,7 @@ TEST_F(EncodingEventSubscriberTest, TooManyProtos) {
       receive_event->type = PACKET_RECEIVED;
       receive_event->media_type = VIDEO_EVENT;
       receive_event->rtp_timestamp = RtpTimeTicks();
-      receive_event->frame_id = 0;
+      receive_event->frame_id = FrameId::first();
       receive_event->packet_id = 0;
       receive_event->max_packet_id = 10;
       receive_event->size = 123;
@@ -210,7 +210,7 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
   video_event->type = FRAME_DECODED;
   video_event->media_type = VIDEO_EVENT;
   video_event->rtp_timestamp = rtp_timestamp;
-  video_event->frame_id = 0;
+  video_event->frame_id = FrameId::first();
   cast_environment_->logger()->DispatchFrameEvent(std::move(video_event));
 
   // This is an AUDIO_EVENT and shouldn't be processed by the subscriber.
@@ -219,7 +219,7 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
   audio_event->type = FRAME_DECODED;
   audio_event->media_type = AUDIO_EVENT;
   audio_event->rtp_timestamp = rtp_timestamp;
-  audio_event->frame_id = 0;
+  audio_event->frame_id = FrameId::first();
   cast_environment_->logger()->DispatchFrameEvent(std::move(audio_event));
 
   GetEventsAndReset();
@@ -247,7 +247,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
   decode_event->type = FRAME_DECODED;
   decode_event->media_type = VIDEO_EVENT;
   decode_event->rtp_timestamp = rtp_timestamp;
-  decode_event->frame_id = 0;
+  decode_event->frame_id = FrameId::first();
   cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
   GetEventsAndReset();
@@ -283,7 +283,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
   playout_event->type = FRAME_PLAYOUT;
   playout_event->media_type = AUDIO_EVENT;
   playout_event->rtp_timestamp = rtp_timestamp;
-  playout_event->frame_id = 0;
+  playout_event->frame_id = FrameId::first();
   playout_event->delay_delta = base::TimeDelta::FromMilliseconds(delay_ms);
   cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
@@ -322,7 +322,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = VIDEO_EVENT;
   encode_event->rtp_timestamp = rtp_timestamp;
-  encode_event->frame_id = 0;
+  encode_event->frame_id = FrameId::first();
   encode_event->size = size;
   encode_event->key_frame = key_frame;
   encode_event->target_bitrate = target_bitrate;
@@ -365,7 +365,7 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   playout_event->type = FRAME_PLAYOUT;
   playout_event->media_type = AUDIO_EVENT;
   playout_event->rtp_timestamp = rtp_timestamp1;
-  playout_event->frame_id = 0;
+  playout_event->frame_id = FrameId::first();
   playout_event->delay_delta = base::TimeDelta::FromMilliseconds(100);
   cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
@@ -376,7 +376,7 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = AUDIO_EVENT;
   encode_event->rtp_timestamp = rtp_timestamp2;
-  encode_event->frame_id = 0;
+  encode_event->frame_id = FrameId::first();
   encode_event->size = 123;
   encode_event->encoder_cpu_utilization = 0.44;
   encode_event->idealized_bitrate_utilization = 0.55;
@@ -389,7 +389,7 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   decode_event->type = FRAME_DECODED;
   decode_event->media_type = AUDIO_EVENT;
   decode_event->rtp_timestamp = rtp_timestamp1;
-  decode_event->frame_id = 0;
+  decode_event->frame_id = FrameId::first();
   cast_environment_->logger()->DispatchFrameEvent(std::move(decode_event));
 
   GetEventsAndReset();
@@ -442,7 +442,7 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = AUDIO_EVENT;
   receive_event->rtp_timestamp = rtp_timestamp;
-  receive_event->frame_id = 0;
+  receive_event->frame_id = FrameId::first();
   receive_event->packet_id = packet_id;
   receive_event->max_packet_id = 10;
   receive_event->size = size;
@@ -484,7 +484,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   send_event->type = PACKET_SENT_TO_NETWORK;
   send_event->media_type = VIDEO_EVENT;
   send_event->rtp_timestamp = rtp_timestamp;
-  send_event->frame_id = 0;
+  send_event->frame_id = FrameId::first();
   send_event->packet_id = packet_id;
   send_event->max_packet_id = 10;
   send_event->size = size;
@@ -497,7 +497,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   retransmit_event->type = PACKET_RETRANSMITTED;
   retransmit_event->media_type = VIDEO_EVENT;
   retransmit_event->rtp_timestamp = rtp_timestamp;
-  retransmit_event->frame_id = 0;
+  retransmit_event->frame_id = FrameId::first();
   retransmit_event->packet_id = packet_id;
   retransmit_event->max_packet_id = 10;
   retransmit_event->size = size;
@@ -539,7 +539,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   send_event->type = PACKET_SENT_TO_NETWORK;
   send_event->media_type = VIDEO_EVENT;
   send_event->rtp_timestamp = rtp_timestamp;
-  send_event->frame_id = 0;
+  send_event->frame_id = FrameId::first();
   send_event->packet_id = packet_id_1;
   send_event->max_packet_id = 10;
   send_event->size = size;
@@ -552,7 +552,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   retransmit_event->type = PACKET_RETRANSMITTED;
   retransmit_event->media_type = VIDEO_EVENT;
   retransmit_event->rtp_timestamp = rtp_timestamp;
-  retransmit_event->frame_id = 0;
+  retransmit_event->frame_id = FrameId::first();
   retransmit_event->packet_id = packet_id_2;
   retransmit_event->max_packet_id = 10;
   retransmit_event->size = size;
@@ -600,7 +600,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   send_event->type = PACKET_SENT_TO_NETWORK;
   send_event->media_type = VIDEO_EVENT;
   send_event->rtp_timestamp = rtp_timestamp_1;
-  send_event->frame_id = 0;
+  send_event->frame_id = FrameId::first();
   send_event->packet_id = packet_id_1;
   send_event->max_packet_id = 10;
   send_event->size = size;
@@ -613,7 +613,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   retransmit_event->type = PACKET_RETRANSMITTED;
   retransmit_event->media_type = VIDEO_EVENT;
   retransmit_event->rtp_timestamp = rtp_timestamp_2;
-  retransmit_event->frame_id = 0;
+  retransmit_event->frame_id = FrameId::first();
   retransmit_event->packet_id = packet_id_2;
   retransmit_event->max_packet_id = 10;
   retransmit_event->size = size;
@@ -753,7 +753,7 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
     ack_event->type = FRAME_ACK_RECEIVED;
     ack_event->media_type = VIDEO_EVENT;
     ack_event->rtp_timestamp = rtp_timestamp;
-    ack_event->frame_id = 0;
+    ack_event->frame_id = FrameId::first();
     cast_environment_->logger()->DispatchFrameEvent(std::move(ack_event));
 
     task_runner_->Sleep(base::TimeDelta::FromMilliseconds(30));
@@ -775,7 +775,7 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
     send_event->type = PACKET_SENT_TO_NETWORK;
     send_event->media_type = VIDEO_EVENT;
     send_event->rtp_timestamp = rtp_timestamp;
-    send_event->frame_id = 0;
+    send_event->frame_id = FrameId::first();
     send_event->packet_id = i;
     send_event->max_packet_id = kMaxPacketsPerFrame;
     send_event->size = 123;
@@ -806,7 +806,7 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
     send_event->type = PACKET_SENT_TO_NETWORK;
     send_event->media_type = VIDEO_EVENT;
     send_event->rtp_timestamp = rtp_timestamp;
-    send_event->frame_id = 0;
+    send_event->frame_id = FrameId::first();
     send_event->packet_id = 0;
     send_event->max_packet_id = 0;
     send_event->size = 123;

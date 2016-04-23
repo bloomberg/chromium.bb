@@ -196,8 +196,8 @@ class LoopBackTransport : public PacketTransport {
 
     bytes_sent_ += packet->data.size();
     if (drop_packets_belonging_to_odd_frames_) {
-      uint32_t frame_id = packet->data[13];
-      if (frame_id % 2 == 1)
+      const uint8_t truncated_frame_id = packet->data[13];
+      if (truncated_frame_id % 2 == 1)
         return true;
     }
 

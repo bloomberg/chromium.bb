@@ -87,8 +87,8 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
 
   int count_frames_delivered() const { return count_frames_delivered_; }
 
-  void PushExpectation(uint32_t expected_frame_id,
-                       uint32_t expected_last_referenced_frame_id,
+  void PushExpectation(FrameId expected_frame_id,
+                       FrameId expected_last_referenced_frame_id,
                        RtpTimeTicks expected_rtp_timestamp,
                        const base::TimeTicks& expected_reference_time) {
     expectations_.push(Expectation{expected_frame_id,
@@ -124,8 +124,8 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
   int count_frames_delivered_;
 
   struct Expectation {
-    uint32_t expected_frame_id;
-    uint32_t expected_last_referenced_frame_id;
+    FrameId expected_frame_id;
+    FrameId expected_last_referenced_frame_id;
     RtpTimeTicks expected_rtp_timestamp;
     base::TimeTicks expected_reference_time;
   };
@@ -287,12 +287,14 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFrameMetadataSequence) {
       &MetadataRecorder::CompareFrameWithExpected, metadata_recorder.get());
 
   metadata_recorder->PushExpectation(
-      0, 0, RtpTimeTicks::FromTimeDelta(frame_->timestamp(), kVideoFrequency),
+      FrameId::first(), FrameId::first(),
+      RtpTimeTicks::FromTimeDelta(frame_->timestamp(), kVideoFrequency),
       clock_->NowTicks());
   EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
   message_loop_.RunUntilIdle();
 
-  for (uint32_t frame_id = 1; frame_id < 10; ++frame_id) {
+  for (FrameId frame_id = FrameId::first() + 1;
+       frame_id < FrameId::first() + 10; ++frame_id) {
     AdvanceClockAndVideoFrameTimestamp();
     metadata_recorder->PushExpectation(
         frame_id, frame_id - 1,
@@ -317,7 +319,8 @@ TEST_F(H264VideoToolboxEncoderTest, CheckFramesAreDecodable) {
 
   VideoEncoder::FrameEncodedCallback cb =
       base::Bind(&EndToEndFrameChecker::EncodeDone, checker.get());
-  for (uint32_t frame_id = 0; frame_id < 6; ++frame_id) {
+  for (FrameId frame_id = FrameId::first(); frame_id < FrameId::first() + 6;
+       ++frame_id) {
     checker->PushExpectation(frame_);
     EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
     AdvanceClockAndVideoFrameTimestamp();

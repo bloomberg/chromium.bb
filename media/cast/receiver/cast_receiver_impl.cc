@@ -129,7 +129,7 @@ void CastReceiverImpl::DecodeEncodedAudioFrame(
                                           audio_sampling_rate_,
                                           audio_codec_));
   }
-  const uint32_t frame_id = encoded_frame->frame_id;
+  const FrameId frame_id = encoded_frame->frame_id;
   const RtpTimeTicks rtp_timestamp = encoded_frame->rtp_timestamp;
   const base::TimeTicks playout_time = encoded_frame->reference_time;
   audio_decoder_->DecodeFrame(
@@ -157,7 +157,7 @@ void CastReceiverImpl::DecodeEncodedVideoFrame(
 
   if (!video_decoder_)
     video_decoder_.reset(new VideoDecoder(cast_environment_, video_codec_));
-  const uint32_t frame_id = encoded_frame->frame_id;
+  const FrameId frame_id = encoded_frame->frame_id;
   const RtpTimeTicks rtp_timestamp = encoded_frame->rtp_timestamp;
   const base::TimeTicks playout_time = encoded_frame->reference_time;
   video_decoder_->DecodeFrame(
@@ -170,7 +170,7 @@ void CastReceiverImpl::DecodeEncodedVideoFrame(
 void CastReceiverImpl::EmitDecodedAudioFrame(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const AudioFrameDecodedCallback& callback,
-    uint32_t frame_id,
+    FrameId frame_id,
     RtpTimeTicks rtp_timestamp,
     const base::TimeTicks& playout_time,
     std::unique_ptr<AudioBus> audio_bus,
@@ -197,7 +197,7 @@ void CastReceiverImpl::EmitDecodedAudioFrame(
 void CastReceiverImpl::EmitDecodedVideoFrame(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const VideoFrameDecodedCallback& callback,
-    uint32_t frame_id,
+    FrameId frame_id,
     RtpTimeTicks rtp_timestamp,
     const base::TimeTicks& playout_time,
     const scoped_refptr<VideoFrame>& video_frame,

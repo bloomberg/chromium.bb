@@ -28,6 +28,16 @@ struct ParamTraits<media::cast::RtpTimeTicks> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template<>
+struct ParamTraits<media::cast::FrameId> {
+  using param_type = media::cast::FrameId;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // CHROME_COMMON_CAST_MESSAGES_H_
@@ -185,12 +195,12 @@ IPC_MESSAGE_CONTROL4(CastHostMsg_SendSenderReport,
 IPC_MESSAGE_CONTROL3(CastHostMsg_CancelSendingFrames,
                      int32_t /* channel_id */,
                      uint32_t /* ssrc */,
-                     std::vector<uint32_t> /* frame_ids */)
+                     std::vector<media::cast::FrameId> /* frame_ids */)
 
 IPC_MESSAGE_CONTROL3(CastHostMsg_ResendFrameForKickstart,
                      int32_t /* channel_id */,
                      uint32_t /* ssrc */,
-                     uint32_t /* frame_id */)
+                     media::cast::FrameId /* frame_id */)
 
 IPC_MESSAGE_CONTROL3(CastHostMsg_AddValidRtpReceiver,
                      int32_t /* channel id */,

@@ -182,8 +182,10 @@ void EncryptAndSendFrame(const EncodedFrame& frame,
 
 void CastTransportImpl::InsertFrame(uint32_t ssrc, const EncodedFrame& frame) {
   if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
+    audio_rtcp_session_->WillSendFrame(frame.frame_id);
     EncryptAndSendFrame(frame, &audio_encryptor_, audio_sender_.get());
   } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
+    video_rtcp_session_->WillSendFrame(frame.frame_id);
     EncryptAndSendFrame(frame, &video_encryptor_, video_sender_.get());
   } else {
     NOTREACHED() << "Invalid InsertFrame call.";
@@ -209,7 +211,7 @@ void CastTransportImpl::SendSenderReport(
 
 void CastTransportImpl::CancelSendingFrames(
     uint32_t ssrc,
-    const std::vector<uint32_t>& frame_ids) {
+    const std::vector<FrameId>& frame_ids) {
   if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
     audio_sender_->CancelSendingFrames(frame_ids);
   } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
@@ -220,7 +222,7 @@ void CastTransportImpl::CancelSendingFrames(
 }
 
 void CastTransportImpl::ResendFrameForKickstart(uint32_t ssrc,
-                                                uint32_t frame_id) {
+                                                FrameId frame_id) {
   if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
     DCHECK(audio_rtcp_session_);
     audio_sender_->ResendFrameForKickstart(

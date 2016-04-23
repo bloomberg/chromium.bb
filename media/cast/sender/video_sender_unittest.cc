@@ -340,7 +340,7 @@ TEST_F(VideoSenderTest, RtcpTimer) {
   // Build Cast msg and expect RTCP packet.
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
   video_sender_->OnReceivedCastFeedback(cast_feedback);
   RunTasks(max_rtcp_timeout.InMilliseconds());
   EXPECT_LE(1, transport_->number_of_rtcp_packets());
@@ -358,7 +358,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
   // ACK the key frame.
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
   video_sender_->OnReceivedCastFeedback(cast_feedback);
 
   video_frame = GetNewVideoFrame();
@@ -393,7 +393,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   task_runner_->RunTasks();
 
   RtcpCastMessage cast_feedback(1);
-  cast_feedback.ack_frame_id = num_frames - 1;
+  cast_feedback.ack_frame_id = FrameId::first() + num_frames - 1;
 
   video_sender_->OnReceivedCastFeedback(cast_feedback);
 
@@ -403,7 +403,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   ASSERT_TRUE(!frame_events.empty());
   EXPECT_EQ(FRAME_ACK_RECEIVED, frame_events.rbegin()->type);
   EXPECT_EQ(VIDEO_EVENT, frame_events.rbegin()->media_type);
-  EXPECT_EQ(num_frames - 1u, frame_events.rbegin()->frame_id);
+  EXPECT_EQ(FrameId::first() + num_frames - 1, frame_events.rbegin()->frame_id);
 
   cast_environment_->logger()->Unsubscribe(&event_subscriber);
 }
@@ -441,7 +441,7 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   // Start acking and make sure we're back to steady-state.
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
   video_sender_->OnReceivedCastFeedback(cast_feedback);
   EXPECT_LE(4, transport_->number_of_rtp_packets() +
                    transport_->number_of_rtcp_packets());
@@ -462,7 +462,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
   RunTasks(33);
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
 
   // Send 3 more frames but don't ACK.
   for (int i = 0; i < 3; ++i) {
@@ -476,10 +476,11 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
   for (int i = 0; i < 10; ++i) {
     RtcpCastMessage ack_feedback(1);
     ack_feedback.remote_ssrc = 2;
-    ack_feedback.ack_frame_id = 0;
+    ack_feedback.ack_frame_id = FrameId::first();
     RtcpCastMessage nack_feedback(1);
     nack_feedback.remote_ssrc = 2;
-    nack_feedback.missing_frames_and_packets[255] = PacketIdSet();
+    nack_feedback.missing_frames_and_packets[FrameId::first() + 255] =
+        PacketIdSet();
     video_sender_->OnReceivedCastFeedback(ack_feedback);
     video_sender_->OnReceivedCastFeedback(nack_feedback);
   }
@@ -489,7 +490,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
   for (int i = 0; i < 3; ++i) {
     RtcpCastMessage ack_feedback(1);
     ack_feedback.remote_ssrc = 2;
-    ack_feedback.ack_frame_id = 0;
+    ack_feedback.ack_frame_id = FrameId::first();
     video_sender_->OnReceivedCastFeedback(ack_feedback);
   }
   EXPECT_EQ(number_of_packets_sent + 1, transport_->number_of_rtp_packets());
@@ -504,7 +505,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
   RunTasks(33);
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
 
   // Send 2 more frames but don't ACK.
   for (int i = 0; i < 2; ++i) {
@@ -526,10 +527,11 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
   for (int i = 0; i < 10; ++i) {
     RtcpCastMessage ack_feedback(1);
     ack_feedback.remote_ssrc = 2;
-    ack_feedback.ack_frame_id = 0;
+    ack_feedback.ack_frame_id = FrameId::first();
     RtcpCastMessage nack_feedback(1);
     nack_feedback.remote_ssrc = 2;
-    nack_feedback.missing_frames_and_packets[255] = PacketIdSet();
+    nack_feedback.missing_frames_and_packets[FrameId::first() + 255] =
+        PacketIdSet();
     video_sender_->OnReceivedCastFeedback(ack_feedback);
     video_sender_->OnReceivedCastFeedback(nack_feedback);
   }
@@ -539,7 +541,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
   for (int i = 0; i < 3; ++i) {
     RtcpCastMessage ack_feedback(1);
     ack_feedback.remote_ssrc = 2;
-    ack_feedback.ack_frame_id = 0;
+    ack_feedback.ack_frame_id = FrameId::first();
     video_sender_->OnReceivedCastFeedback(ack_feedback);
   }
 
@@ -560,7 +562,7 @@ TEST_F(VideoSenderTest, AcksCancelRetransmits) {
   // Frame should be in buffer, waiting. Now let's ack it.
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
   video_sender_->OnReceivedCastFeedback(cast_feedback);
 
   transport_->SetPause(false);
@@ -616,7 +618,7 @@ TEST_F(VideoSenderTest, CancelSendingOnReceivingPli) {
 
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
-  cast_feedback.ack_frame_id = 0;
+  cast_feedback.ack_frame_id = FrameId::first();
   video_sender_->OnReceivedCastFeedback(cast_feedback);
 
   transport_->SetPause(true);

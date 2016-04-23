@@ -40,16 +40,17 @@ class CongestionControlTest : public ::testing::Test {
     congestion_control_->UpdateTargetPlayoutDelay(target_playout_delay);
   }
 
-  void AckFrame(uint32_t frame_id) {
+  void AckFrame(FrameId frame_id) {
     congestion_control_->AckFrame(frame_id, testing_clock_.NowTicks());
   }
 
-  void Run(uint32_t frames,
+  void Run(int num_frames,
            size_t frame_size,
            base::TimeDelta rtt,
            base::TimeDelta frame_delay,
            base::TimeDelta ack_time) {
-    for (frame_id_ = 0; frame_id_ < frames; frame_id_++) {
+    const FrameId end = FrameId::first() + num_frames;
+    for (frame_id_ = FrameId::first(); frame_id_ < end; frame_id_++) {
       congestion_control_->UpdateRtt(rtt);
       congestion_control_->SendFrameToTransport(
           frame_id_, frame_size, testing_clock_.NowTicks());
@@ -65,7 +66,7 @@ class CongestionControlTest : public ::testing::Test {
   base::SimpleTestTickClock testing_clock_;
   std::unique_ptr<CongestionControl> congestion_control_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
-  uint32_t frame_id_;
+  FrameId frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CongestionControlTest);
 };
@@ -129,7 +130,7 @@ TEST_F(CongestionControlTest, SimpleRun) {
               safe_bitrate * 0.05);
 
   // Ack the last frame.
-  std::vector<uint32_t> received_frames;
+  std::vector<FrameId> received_frames;
   received_frames.push_back(frame_id_ - 1);
   congestion_control_->AckLaterFrames(received_frames,
                                       testing_clock_.NowTicks());

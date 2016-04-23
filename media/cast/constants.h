@@ -16,9 +16,6 @@
 namespace media {
 namespace cast {
 
-// The first frame ID in an RTP stream.
-enum : uint32_t { kFirstFrameId = UINT32_C(0) };
-
 // Integer constants set either by the Cast Streaming Protocol Spec or due to
 // design limitations.
 enum Specifications {

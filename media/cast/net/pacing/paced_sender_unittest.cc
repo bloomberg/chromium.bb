@@ -117,10 +117,8 @@ class PacedSenderTest : public ::testing::Test {
     // next time this function is called.
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
     for (int i = 0; i < num_of_packets_in_frame; ++i) {
-      PacketKey key = PacedPacketSender::MakePacketKey(
-          frame_tick,
-          audio ? kAudioSsrc : kVideoSsrc,  // ssrc
-          0, i);
+      PacketKey key(frame_tick, audio ? kAudioSsrc : kVideoSsrc,
+                    FrameId::first(), i);
 
       PacketRef packet(new base::RefCountedData<Packet>);
       packet->data.resize(packet_size, kValue);

@@ -74,7 +74,7 @@ TEST_F(StatsEventSubscriberTest, CaptureEncode) {
   Init(VIDEO_EVENT);
 
   RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
   int extra_frames = 50;
   // Only the first |extra_frames| frames logged will be taken into account
   // when computing dropped frames.
@@ -156,7 +156,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
   Init(VIDEO_EVENT);
 
   RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
   int num_frames = 10;
   base::TimeTicks start_time = sender_clock_->NowTicks();
   AdvanceClocks(base::TimeDelta::FromMicroseconds(35678));
@@ -224,7 +224,7 @@ TEST_F(StatsEventSubscriberTest, Decode) {
   Init(VIDEO_EVENT);
 
   RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
   int num_frames = 10;
   base::TimeTicks start_time = sender_clock_->NowTicks();
   for (int i = 0; i < num_frames; i++) {
@@ -260,7 +260,7 @@ TEST_F(StatsEventSubscriberTest, PlayoutDelay) {
   Init(VIDEO_EVENT);
 
   RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
   int num_frames = 10;
   int late_frames = 0;
   for (int i = 0, delay_ms = -50; i < num_frames; i++, delay_ms += 10) {
@@ -295,7 +295,7 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
   Init(VIDEO_EVENT);
 
   RtpTimeTicks rtp_timestamp;
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
   int num_frames = 10;
   base::TimeDelta total_latency;
   for (int i = 0; i < num_frames; i++) {
@@ -363,7 +363,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = VIDEO_EVENT;
   encode_event->rtp_timestamp = rtp_timestamp;
-  encode_event->frame_id = 0;
+  encode_event->frame_id = FrameId::first();
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
   // Every 2nd packet will be retransmitted once.
@@ -378,7 +378,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     send_event->type = PACKET_SENT_TO_NETWORK;
     send_event->media_type = VIDEO_EVENT;
     send_event->rtp_timestamp = rtp_timestamp;
-    send_event->frame_id = 0;
+    send_event->frame_id = FrameId::first();
     send_event->packet_id = i;
     send_event->max_packet_id = num_packets - 1;
     send_event->size = size;
@@ -409,7 +409,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
       retransmit_event->type = PACKET_RETRANSMITTED;
       retransmit_event->media_type = VIDEO_EVENT;
       retransmit_event->rtp_timestamp = rtp_timestamp;
-      retransmit_event->frame_id = 0;
+      retransmit_event->frame_id = FrameId::first();
       retransmit_event->packet_id = i;
       retransmit_event->max_packet_id = num_packets - 1;
       retransmit_event->size = size;
@@ -429,7 +429,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
       retransmit_event->type = PACKET_RETRANSMITTED;
       retransmit_event->media_type = VIDEO_EVENT;
       retransmit_event->rtp_timestamp = rtp_timestamp;
-      retransmit_event->frame_id = 0;
+      retransmit_event->frame_id = FrameId::first();
       retransmit_event->packet_id = i;
       retransmit_event->max_packet_id = num_packets - 1;
       retransmit_event->size = size;
@@ -449,7 +449,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
       retransmit_event->type = PACKET_RETRANSMITTED;
       retransmit_event->media_type = VIDEO_EVENT;
       retransmit_event->rtp_timestamp = rtp_timestamp;
-      retransmit_event->frame_id = 0;
+      retransmit_event->frame_id = FrameId::first();
       retransmit_event->packet_id = i;
       retransmit_event->max_packet_id = num_packets - 1;
       retransmit_event->size = size;
@@ -461,7 +461,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
       reject_event->type = PACKET_RTX_REJECTED;
       reject_event->media_type = VIDEO_EVENT;
       reject_event->rtp_timestamp = rtp_timestamp;
-      reject_event->frame_id = 0;
+      reject_event->frame_id = FrameId::first();
       reject_event->packet_id = i;
       reject_event->max_packet_id = num_packets - 1;
       reject_event->size = size;
@@ -478,7 +478,7 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     receive_event->type = PACKET_RECEIVED;
     receive_event->media_type = VIDEO_EVENT;
     receive_event->rtp_timestamp = rtp_timestamp;
-    receive_event->frame_id = 0;
+    receive_event->frame_id = FrameId::first();
     receive_event->packet_id = i;
     receive_event->max_packet_id = num_packets - 1;
     receive_event->size = size;
@@ -570,7 +570,7 @@ TEST_F(StatsEventSubscriberTest, Histograms) {
   AdvanceClocks(base::TimeDelta::FromMilliseconds(123));
 
   RtpTimeTicks rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(123));
-  uint32_t frame_id = 0;
+  FrameId frame_id = FrameId::first();
 
   // 10 Frames with capture latency in the bucket of "10-14"ms.
   // 10 Frames with encode time in the bucket of "15-19"ms.
@@ -619,7 +619,7 @@ TEST_F(StatsEventSubscriberTest, Histograms) {
     send_event->type = PACKET_SENT_TO_NETWORK;
     send_event->media_type = VIDEO_EVENT;
     send_event->rtp_timestamp = rtp_timestamp;
-    send_event->frame_id = 0;
+    send_event->frame_id = FrameId::first();
     send_event->packet_id = i;
     send_event->max_packet_id = 2;
     send_event->size = 123;
@@ -636,7 +636,7 @@ TEST_F(StatsEventSubscriberTest, Histograms) {
     receive_event->type = PACKET_RECEIVED;
     receive_event->media_type = VIDEO_EVENT;
     receive_event->rtp_timestamp = rtp_timestamp;
-    receive_event->frame_id = 0;
+    receive_event->frame_id = FrameId::first();
     receive_event->packet_id = i;
     receive_event->max_packet_id = 2;
     receive_event->size = 123;

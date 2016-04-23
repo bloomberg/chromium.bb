@@ -4,7 +4,6 @@
 
 #include "media/cast/net/rtp/cast_message_builder.h"
 
-#include "media/cast/cast_defines.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/rtp/framer.h"
 
@@ -42,15 +41,14 @@ CastMessageBuilder::CastMessageBuilder(
       max_unacked_frames_(max_unacked_frames),
       cast_msg_(media_ssrc),
       slowing_down_ack_(false),
-      acked_last_frame_(true),
-      last_acked_frame_id_(kFirstFrameId - 1) {
-  cast_msg_.ack_frame_id = kFirstFrameId - 1;
+      acked_last_frame_(true) {
+  cast_msg_.ack_frame_id = FrameId::first() - 1;
 }
 
 CastMessageBuilder::~CastMessageBuilder() {}
 
-void CastMessageBuilder::CompleteFrameReceived(uint32_t frame_id) {
-  DCHECK_GE(static_cast<int32_t>(frame_id - last_acked_frame_id_), 0);
+void CastMessageBuilder::CompleteFrameReceived(FrameId frame_id) {
+  DCHECK_GE(frame_id, last_acked_frame_id());
   VLOG(2) << "CompleteFrameReceived: " << frame_id;
   if (last_update_time_.is_null()) {
     // Our first update.
@@ -63,18 +61,18 @@ void CastMessageBuilder::CompleteFrameReceived(uint32_t frame_id) {
   BuildPacketList();
 
   // Send cast message.
-  VLOG(2) << "Send cast message Ack:" << static_cast<int>(frame_id);
+  VLOG(2) << "Send cast message Ack:" << frame_id;
   cast_feedback_->CastFeedback(cast_msg_);
 }
 
-bool CastMessageBuilder::UpdateAckMessage(uint32_t frame_id) {
+bool CastMessageBuilder::UpdateAckMessage(FrameId frame_id) {
   if (!decoder_faster_than_max_frame_rate_) {
     int complete_frame_count = framer_->NumberOfCompleteFrames();
     if (complete_frame_count > max_unacked_frames_) {
       // We have too many frames pending in our framer; slow down ACK.
       if (!slowing_down_ack_) {
         slowing_down_ack_ = true;
-        ack_queue_.push_back(last_acked_frame_id_);
+        ack_queue_.push_back(last_acked_frame_id());
       }
     } else if (complete_frame_count <= 1) {
       // We are down to one or less frames in our framer; ACK normally.
@@ -97,16 +95,18 @@ bool CastMessageBuilder::UpdateAckMessage(uint32_t frame_id) {
     frame_id = ack_queue_.front();
   }
 
-  acked_last_frame_ = false;
   // Is it a new frame?
-  if (last_acked_frame_id_ == frame_id) {
+  if (last_acked_frame_id() == frame_id) {
+    acked_last_frame_ = false;
     return false;
   }
   acked_last_frame_ = true;
-  last_acked_frame_id_ = frame_id;
-  cast_msg_.ack_frame_id = last_acked_frame_id_;
+  cast_msg_.ack_frame_id = frame_id;
   cast_msg_.missing_frames_and_packets.clear();
   last_update_time_ = clock_->NowTicks();
+  time_last_nacked_map_.erase(
+      time_last_nacked_map_.begin(),
+      time_last_nacked_map_.upper_bound(last_acked_frame_id()));
   return true;
 }
 
@@ -130,12 +130,6 @@ void CastMessageBuilder::UpdateCastMessage() {
   cast_feedback_->CastFeedback(message);
 }
 
-void CastMessageBuilder::Reset() {
-  cast_msg_.ack_frame_id = kFirstFrameId - 1;
-  cast_msg_.missing_frames_and_packets.clear();
-  time_last_nacked_map_.clear();
-}
-
 bool CastMessageBuilder::UpdateCastMessageInternal(RtcpCastMessage* message) {
   if (last_update_time_.is_null()) {
     if (!framer_->Empty()) {
@@ -144,6 +138,7 @@ bool CastMessageBuilder::UpdateCastMessageInternal(RtcpCastMessage* message) {
     }
     return false;
   }
+
   // Is it time to update the cast message?
   base::TimeTicks now = clock_->NowTicks();
   if (now - last_update_time_ <
@@ -153,7 +148,7 @@ bool CastMessageBuilder::UpdateCastMessageInternal(RtcpCastMessage* message) {
   last_update_time_ = now;
 
   // Needed to cover when a frame is skipped.
-  UpdateAckMessage(last_acked_frame_id_);
+  UpdateAckMessage(last_acked_frame_id());
   BuildPacketList();
   *message = cast_msg_;
   return true;
@@ -169,14 +164,12 @@ void CastMessageBuilder::BuildPacketList() {
   if (framer_->Empty())
     return;
 
-  uint32_t newest_frame_id = framer_->NewestFrameId();
-  uint32_t next_expected_frame_id = cast_msg_.ack_frame_id + 1;
+  const FrameId newest_frame_id = framer_->newest_frame_id();
+  FrameId next_expected_frame_id = last_acked_frame_id() + 1;
 
   // Iterate over all frames.
-  for (; !IsNewerFrameId(next_expected_frame_id, newest_frame_id);
-       ++next_expected_frame_id) {
-    TimeLastNackMap::iterator it =
-        time_last_nacked_map_.find(next_expected_frame_id);
+  for (; next_expected_frame_id <= newest_frame_id; ++next_expected_frame_id) {
+    const auto it = time_last_nacked_map_.find(next_expected_frame_id);
     if (it != time_last_nacked_map_.end()) {
       // We have sent a NACK in this frame before, make sure enough time have
       // passed.

@@ -65,7 +65,7 @@ class CastReceiverImpl : public CastReceiver {
   static void EmitDecodedAudioFrame(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const AudioFrameDecodedCallback& callback,
-      uint32_t frame_id,
+      FrameId frame_id,
       RtpTimeTicks rtp_timestamp,
       const base::TimeTicks& playout_time,
       std::unique_ptr<AudioBus> audio_bus,
@@ -79,7 +79,7 @@ class CastReceiverImpl : public CastReceiver {
   static void EmitDecodedVideoFrame(
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoFrameDecodedCallback& callback,
-      uint32_t frame_id,
+      FrameId frame_id,
       RtpTimeTicks rtp_timestamp,
       const base::TimeTicks& playout_time,
       const scoped_refptr<VideoFrame>& video_frame,

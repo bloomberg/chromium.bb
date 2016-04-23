@@ -34,7 +34,7 @@ class ExternalVideoEncoder : public VideoEncoder {
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const gfx::Size& frame_size,
-      uint32_t first_frame_id,
+      FrameId first_frame_id,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
@@ -57,7 +57,7 @@ class ExternalVideoEncoder : public VideoEncoder {
   // |client_| holds a reference to the new VEAClientImpl.
   void OnCreateVideoEncodeAccelerator(
       const VideoSenderConfig& video_config,
-      uint32_t first_frame_id,
+      FrameId first_frame_id,
       const StatusChangeCallback& status_change_cb,
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
       std::unique_ptr<media::VideoEncodeAccelerator> vea);

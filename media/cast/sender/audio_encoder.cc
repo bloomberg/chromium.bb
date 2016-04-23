@@ -65,7 +65,7 @@ class AudioEncoder::ImplBase
             base::Time::kMicrosecondsPerSecond * samples_per_frame_ /
             sampling_rate)),
         buffer_fill_end_(0),
-        frame_id_(kFirstFrameId),
+        frame_id_(FrameId::first()),
         samples_dropped_from_buffer_(0) {
     // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
     const int kMaxSamplesTimesChannelsPerFrame = 48 * 2 * 100;
@@ -146,11 +146,10 @@ class AudioEncoder::ImplBase
       audio_frame->rtp_timestamp = frame_rtp_timestamp_;
       audio_frame->reference_time = frame_capture_time_;
 
-      TRACE_EVENT_ASYNC_BEGIN2(
-          "cast.stream",
-          "Audio Encode", audio_frame.get(),
-          "frame_id", frame_id_,
-          "rtp_timestamp", frame_rtp_timestamp_.lower_32_bits());
+      TRACE_EVENT_ASYNC_BEGIN2("cast.stream", "Audio Encode", audio_frame.get(),
+                               "frame_id", frame_id_.lower_32_bits(),
+                               "rtp_timestamp",
+                               frame_rtp_timestamp_.lower_32_bits());
       if (EncodeFromFilledBuffer(&audio_frame->data)) {
         // Compute deadline utilization as the real-world time elapsed divided
         // by the signal duration.
@@ -211,7 +210,7 @@ class AudioEncoder::ImplBase
   int buffer_fill_end_;
 
   // A counter used to label EncodedFrames.
-  uint32_t frame_id_;
+  FrameId frame_id_;
 
   // The RTP timestamp for the next frame of encoded audio.  This is defined as
   // the number of audio samples encoded so far, plus the estimated number of

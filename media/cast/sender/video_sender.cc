@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/sender/performance_metrics_overlay.h"
 #include "media/cast/sender/video_encoder.h"
@@ -310,7 +309,7 @@ int VideoSender::GetNumberOfFramesInEncoder() const {
 
 base::TimeDelta VideoSender::GetInFlightMediaDuration() const {
   if (GetUnacknowledgedFrameCount() > 0) {
-    const uint32_t oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
+    const FrameId oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
     return last_enqueued_frame_reference_time_ -
         GetRecordedReferenceTime(oldest_unacked_frame_id);
   } else {

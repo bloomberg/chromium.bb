@@ -41,10 +41,10 @@ struct RtpCastHeader {
   // Elements from Cast header (at beginning of RTP payload).
   bool is_key_frame;
   bool is_reference;
-  uint32_t frame_id;
+  FrameId frame_id;
   uint16_t packet_id;
   uint16_t max_packet_id;
-  uint32_t reference_frame_id;
+  FrameId reference_frame_id;
   uint16_t new_playout_delay_ms;
   uint8_t num_extensions;
 };

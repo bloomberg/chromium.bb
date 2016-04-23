@@ -21,8 +21,6 @@ namespace cast {
 class Framer;
 class RtpPayloadFeedback;
 
-typedef std::map<uint32_t, base::TimeTicks> TimeLastNackMap;
-
 class CastMessageBuilder {
  public:
   CastMessageBuilder(base::TickClock* clock,
@@ -33,15 +31,16 @@ class CastMessageBuilder {
                      int max_unacked_frames);
   ~CastMessageBuilder();
 
-  void CompleteFrameReceived(uint32_t frame_id);
+  void CompleteFrameReceived(FrameId frame_id);
   bool TimeToSendNextCastMessage(base::TimeTicks* time_to_send);
   void UpdateCastMessage();
-  void Reset();
 
  private:
-  bool UpdateAckMessage(uint32_t frame_id);
+  bool UpdateAckMessage(FrameId frame_id);
   void BuildPacketList();
   bool UpdateCastMessageInternal(RtcpCastMessage* message);
+
+  FrameId last_acked_frame_id() const { return cast_msg_.ack_frame_id; }
 
   base::TickClock* const clock_;  // Not owned by this class.
   RtpPayloadFeedback* const cast_feedback_;
@@ -55,12 +54,11 @@ class CastMessageBuilder {
   RtcpCastMessage cast_msg_;
   base::TimeTicks last_update_time_;
 
-  TimeLastNackMap time_last_nacked_map_;
+  std::map<FrameId, base::TimeTicks> time_last_nacked_map_;
 
   bool slowing_down_ack_;
   bool acked_last_frame_;
-  uint32_t last_acked_frame_id_;
-  std::deque<uint32_t> ack_queue_;
+  std::deque<FrameId> ack_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilder);
 };

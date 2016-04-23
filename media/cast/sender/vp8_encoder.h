@@ -71,8 +71,8 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // predict the duration of the next frame.
   base::TimeDelta last_frame_timestamp_;
 
-  // The last encoded frame's ID.
-  uint32_t last_encoded_frame_id_;
+  // The ID for the next frame to be emitted.
+  FrameId next_frame_id_;
 
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;
