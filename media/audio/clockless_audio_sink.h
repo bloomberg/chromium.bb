@@ -5,10 +5,10 @@
 #ifndef MEDIA_AUDIO_CLOCKLESS_AUDIO_SINK_H_
 #define MEDIA_AUDIO_CLOCKLESS_AUDIO_SINK_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
 
@@ -50,7 +50,7 @@ class MEDIA_EXPORT ClocklessAudioSink
   ~ClocklessAudioSink() override;
 
  private:
-  scoped_ptr<ClocklessAudioSinkThread> thread_;
+  std::unique_ptr<ClocklessAudioSinkThread> thread_;
   bool initialized_;
   bool playing_;
   bool hashing_;

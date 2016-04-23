@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -549,8 +551,8 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
  private:
   base::SyncSocket* socket_;
   int data_size_;
-  scoped_ptr<float, base::AlignedFreeDeleter> data_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<float, base::AlignedFreeDeleter> data_;
+  std::unique_ptr<AudioBus> audio_bus_;
 };
 
 struct SyncThreadContext {
@@ -572,10 +574,10 @@ DWORD __stdcall SyncSocketThread(void* context) {
   SyncThreadContext& ctx = *(reinterpret_cast<SyncThreadContext*>(context));
 
   // Setup AudioBus wrapping data we'll pass over the sync socket.
-  scoped_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
+  std::unique_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
       base::AlignedAlloc(ctx.packet_size_bytes, AudioBus::kChannelAlignment)));
-  scoped_ptr<AudioBus> audio_bus = AudioBus::WrapMemory(
-      ctx.channels, ctx.frames, data.get());
+  std::unique_ptr<AudioBus> audio_bus =
+      AudioBus::WrapMemory(ctx.channels, ctx.frames, data.get());
 
   SineWaveAudioSource sine(1, ctx.sine_freq, ctx.sample_rate);
   const int kTwoSecFrames = ctx.sample_rate * 2;

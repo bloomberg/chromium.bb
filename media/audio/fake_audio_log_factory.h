@@ -18,7 +18,7 @@ class MEDIA_EXPORT FakeAudioLogFactory
  public:
   FakeAudioLogFactory();
   ~FakeAudioLogFactory() override;
-  scoped_ptr<AudioLog> CreateAudioLog(AudioComponent component) override;
+  std::unique_ptr<AudioLog> CreateAudioLog(AudioComponent component) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAudioLogFactory);

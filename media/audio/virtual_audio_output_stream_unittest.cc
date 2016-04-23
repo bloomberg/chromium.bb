@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -68,7 +70,7 @@ class VirtualAudioOutputStreamTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<base::Thread> audio_thread_;
+  std::unique_ptr<base::Thread> audio_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAudioOutputStreamTest);

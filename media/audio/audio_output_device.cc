@@ -41,14 +41,14 @@ class AudioOutputDevice::AudioThreadCallback
 
  private:
   AudioRendererSink::RenderCallback* render_callback_;
-  scoped_ptr<AudioBus> output_bus_;
+  std::unique_ptr<AudioBus> output_bus_;
   uint64_t callback_num_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
 AudioOutputDevice::AudioOutputDevice(
-    scoped_ptr<AudioOutputIPC> ipc,
+    std::unique_ptr<AudioOutputIPC> ipc,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     int session_id,
     const std::string& device_id,

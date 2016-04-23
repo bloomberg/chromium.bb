@@ -5,8 +5,9 @@
 #ifndef MEDIA_AUDIO_AUDIO_MANAGER_FACTORY_H_
 #define MEDIA_AUDIO_AUDIO_MANAGER_FACTORY_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace base {
@@ -27,7 +28,7 @@ class MEDIA_EXPORT AudioManagerFactory {
 
   // Creates an instance of AudioManager implementation. Caller owns the
   // returned instance. |audio_log_factory| must outlive the returned instance.
-  virtual scoped_ptr<AudioManager, AudioManagerDeleter> CreateInstance(
+  virtual std::unique_ptr<AudioManager, AudioManagerDeleter> CreateInstance(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
       AudioLogFactory* audio_log_factory) = 0;

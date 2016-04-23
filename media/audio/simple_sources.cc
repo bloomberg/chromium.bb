@@ -23,8 +23,8 @@ namespace {
 // return a null pointer if we can't read the file or if it's malformed. The
 // caller takes ownership of the returned data. The size of the data is stored
 // in |read_length|.
-scoped_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
-                               size_t* read_length) {
+std::unique_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
+                                    size_t* read_length) {
   base::File wav_file(
       wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!wav_file.IsValid()) {
@@ -40,7 +40,7 @@ scoped_ptr<char[]> ReadWavFile(const base::FilePath& wav_filename,
     return nullptr;
   }
 
-  scoped_ptr<char[]> data(new char[wav_file_length]);
+  std::unique_ptr<char[]> data(new char[wav_file_length]);
   size_t read_bytes = wav_file.Read(0, data.get(), wav_file_length);
   if (read_bytes != wav_file_length) {
     LOG(ERROR) << "Failed to read all bytes of " << wav_filename.value();

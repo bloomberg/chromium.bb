@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -256,7 +258,7 @@ class MEDIA_EXPORT AudioOutputController
 
   // Flags when we've asked for a stream to start but it never did.
   base::AtomicRefCount on_more_io_data_called_;
-  scoped_ptr<base::OneShotTimer> wedge_timer_;
+  std::unique_ptr<base::OneShotTimer> wedge_timer_;
 
   // Flag which indicates errors received during Stop/Close should be ignored.
   // These errors are generally harmless since a fresh stream is about to be

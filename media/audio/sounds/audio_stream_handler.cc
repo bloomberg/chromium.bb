@@ -40,7 +40,7 @@ AudioOutputStream::AudioSourceCallback* g_audio_source_for_testing = NULL;
 class AudioStreamHandler::AudioStreamContainer
     : public AudioOutputStream::AudioSourceCallback {
  public:
-  explicit AudioStreamContainer(scoped_ptr<WavAudioHandler> wav_audio)
+  explicit AudioStreamContainer(std::unique_ptr<WavAudioHandler> wav_audio)
       : started_(false),
         stream_(NULL),
         cursor_(0),
@@ -158,7 +158,7 @@ class AudioStreamHandler::AudioStreamContainer
   base::Lock state_lock_;
   size_t cursor_;
   bool delayed_stop_posted_;
-  scoped_ptr<WavAudioHandler> wav_audio_;
+  std::unique_ptr<WavAudioHandler> wav_audio_;
   base::CancelableClosure stop_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamContainer);
@@ -171,7 +171,8 @@ AudioStreamHandler::AudioStreamHandler(const base::StringPiece& wav_data) {
     return;
   }
 
-  scoped_ptr<WavAudioHandler> wav_audio = WavAudioHandler::Create(wav_data);
+  std::unique_ptr<WavAudioHandler> wav_audio =
+      WavAudioHandler::Create(wav_data);
   if (!wav_audio) {
     LOG(ERROR) << "wav_data is not valid";
     return;

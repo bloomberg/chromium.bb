@@ -5,9 +5,9 @@
 #ifndef MEDIA_AUDIO_AUDIO_LOGGING_H_
 #define MEDIA_AUDIO_AUDIO_LOGGING_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace media {
 class AudioParameters;
@@ -76,7 +76,8 @@ class AudioLogFactory {
   // Create a new AudioLog object for tracking the behavior for one or more
   // instances of the given component.  Each instance of an "owning" class must
   // create its own AudioLog.
-  virtual scoped_ptr<AudioLog> CreateAudioLog(AudioComponent component) = 0;
+  virtual std::unique_ptr<AudioLog> CreateAudioLog(
+      AudioComponent component) = 0;
 
  protected:
   virtual ~AudioLogFactory() {}

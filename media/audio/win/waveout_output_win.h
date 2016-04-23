@@ -11,8 +11,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/audio_io.h"
@@ -127,13 +128,13 @@ class PCMWaveOutAudioOutputStream : public AudioOutputStream {
 
   // Pointer to the allocated audio buffers, we allocate all buffers in one big
   // chunk. This object owns them.
-  scoped_ptr<char[]> buffers_;
+  std::unique_ptr<char[]> buffers_;
 
   // Lock used to avoid the conflict when callbacks are called simultaneously.
   base::Lock lock_;
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMWaveOutAudioOutputStream);
 };

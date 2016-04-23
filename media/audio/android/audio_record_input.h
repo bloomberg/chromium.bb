@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -75,7 +77,7 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
   // Owned by j_audio_record_.
   uint8_t* direct_buffer_address_;
 
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
   int bytes_per_sample_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRecordInputStream);

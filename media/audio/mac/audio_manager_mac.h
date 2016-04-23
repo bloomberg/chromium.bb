@@ -8,7 +8,9 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/AudioHardware.h>
 #include <stddef.h>
+
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -125,7 +127,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // sample rate has changed, otherwise does nothing.
   void HandleDeviceChanges();
 
-  scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
+  std::unique_ptr<AudioDeviceListenerMac> output_device_listener_;
 
   // Track the output sample-rate and the default output device
   // so we can intelligently handle device notifications only when necessary.
@@ -136,7 +138,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // should defer Start() calls.  Required to workaround an OSX bug.  See
   // http://crbug.com/160920 for more details.
   class AudioPowerObserver;
-  scoped_ptr<AudioPowerObserver> power_observer_;
+  std::unique_ptr<AudioPowerObserver> power_observer_;
 
   // Tracks all constructed input and output streams.
   // TODO(alokp): We used to track these streams to close before destruction.

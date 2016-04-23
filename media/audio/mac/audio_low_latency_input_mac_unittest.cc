@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -82,7 +84,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
               uint32_t hardware_delay_bytes,
               double volume) override {
     const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16_t> interleaved(new int16_t[num_samples]);
+    std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
 

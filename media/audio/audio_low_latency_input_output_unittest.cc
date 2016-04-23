@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "base/test/test_timeouts.h"
@@ -260,13 +261,13 @@ class FullDuplexAudioSinkSource
 
  private:
   base::Lock lock_;
-  scoped_ptr<media::SeekableBuffer> buffer_;
+  std::unique_ptr<media::SeekableBuffer> buffer_;
   int sample_rate_;
   int samples_per_packet_;
   int channels_;
   int frame_size_;
   double frames_to_ms_;
-  scoped_ptr<AudioDelayState[]> delay_states_;
+  std::unique_ptr<AudioDelayState[]> delay_states_;
   size_t input_elements_to_write_;
   size_t output_elements_to_write_;
   base::TimeTicks previous_write_time_;

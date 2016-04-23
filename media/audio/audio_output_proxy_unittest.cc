@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/message_loop/message_loop.h"
@@ -83,7 +84,7 @@ class MockAudioOutputStream : public AudioOutputStream {
   bool start_called_;
   bool stop_called_;
   AudioParameters params_;
-  scoped_ptr<AudioOutputStream> fake_output_stream_;
+  std::unique_ptr<AudioOutputStream> fake_output_stream_;
 };
 
 class MockAudioManager : public AudioManagerBase {

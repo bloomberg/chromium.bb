@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
@@ -108,7 +108,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   // Handles callback timing for consumption of audio data.
   FakeAudioWorker fake_worker_;
 
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   base::ThreadChecker thread_checker_;
 

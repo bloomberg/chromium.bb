@@ -20,7 +20,7 @@ class CastAudioManagerFactory : public ::media::AudioManagerFactory {
   ~CastAudioManagerFactory() override;
 
   // ::media::AudioManagerFactory overrides.
-  scoped_ptr<::media::AudioManager, ::media::AudioManagerDeleter>
+  std::unique_ptr<::media::AudioManager, ::media::AudioManagerDeleter>
   CreateInstance(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
                  ::media::AudioLogFactory* audio_log_factory) override;

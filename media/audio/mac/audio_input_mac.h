@@ -9,6 +9,8 @@
 #include <AudioToolbox/AudioQueue.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -87,7 +89,7 @@ class PCMQueueInAudioInputStream : public AudioInputStream {
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
 
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMQueueInAudioInputStream);
 };

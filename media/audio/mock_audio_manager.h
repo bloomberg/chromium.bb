@@ -55,7 +55,7 @@ class MockAudioManager : public media::AudioManager {
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
 
-  scoped_ptr<AudioLog> CreateAudioLog(
+  std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
  protected:

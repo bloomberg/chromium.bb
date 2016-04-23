@@ -4,11 +4,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -272,7 +273,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
               uint32_t hardware_delay_bytes,
               double volume) override {
     const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16_t> interleaved(new int16_t[num_samples]);
+    std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
 
@@ -289,7 +290,7 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
  private:
   base::WaitableEvent* event_;
   AudioParameters params_;
-  scoped_ptr<media::SeekableBuffer> buffer_;
+  std::unique_ptr<media::SeekableBuffer> buffer_;
   FILE* binary_file_;
 
   DISALLOW_COPY_AND_ASSIGN(FileAudioSink);
@@ -324,7 +325,7 @@ class FullDuplexAudioSinkSource
 
     EXPECT_EQ(params_.bits_per_sample(), 16);
     const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16_t> interleaved(new int16_t[num_samples]);
+    std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
     const int size = bytes_per_sample * num_samples;
@@ -403,8 +404,8 @@ class FullDuplexAudioSinkSource
   AudioParameters params_;
   base::TimeTicks previous_time_;
   base::Lock lock_;
-  scoped_ptr<media::SeekableBuffer> fifo_;
-  scoped_ptr<uint8_t[]> buffer_;
+  std::unique_ptr<media::SeekableBuffer> fifo_;
+  std::unique_ptr<uint8_t[]> buffer_;
   bool started_;
 
   DISALLOW_COPY_AND_ASSIGN(FullDuplexAudioSinkSource);
@@ -565,7 +566,7 @@ class AudioAndroidOutputTest : public testing::Test {
     audio_output_stream_ = NULL;
   }
 
-  scoped_ptr<base::MessageLoopForUI> loop_;
+  std::unique_ptr<base::MessageLoopForUI> loop_;
   ScopedAudioManagerPtr audio_manager_;
   AudioParameters audio_output_parameters_;
   AudioOutputStream* audio_output_stream_;

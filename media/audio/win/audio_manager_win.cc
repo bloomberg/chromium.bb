@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/audio_io.h"
+#include "media/audio/win/audio_manager_win.h"
 
 #include <windows.h>
 #include <objbase.h>  // This has to be before initguid.h
@@ -11,11 +11,12 @@
 #include <setupapi.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -23,10 +24,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
+#include "media/audio/audio_io.h"
 #include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
 #include "media/audio/win/audio_low_latency_output_win.h"
-#include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/audio/win/device_enumeration_win.h"
 #include "media/audio/win/wavein_input_win.h"
@@ -219,7 +220,8 @@ base::string16 AudioManagerWin::GetAudioInputDeviceModel() {
     if (!interface_detail_size)
       continue;
 
-    scoped_ptr<char[]> interface_detail_buffer(new char[interface_detail_size]);
+    std::unique_ptr<char[]> interface_detail_buffer(
+        new char[interface_detail_size]);
     SP_DEVICE_INTERFACE_DETAIL_DATA* interface_detail =
         reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA*>(
             interface_detail_buffer.get());

@@ -5,8 +5,9 @@
 #ifndef MEDIA_AUDIO_FAKE_AUDIO_OUTPUT_STREAM_H_
 #define MEDIA_AUDIO_FAKE_AUDIO_OUTPUT_STREAM_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/fake_audio_worker.h"
 #include "media/base/audio_parameters.h"
@@ -42,7 +43,7 @@ class MEDIA_EXPORT FakeAudioOutputStream : public AudioOutputStream {
   AudioManagerBase* audio_manager_;
   AudioSourceCallback* callback_;
   FakeAudioWorker fake_worker_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioOutputStream);
 };

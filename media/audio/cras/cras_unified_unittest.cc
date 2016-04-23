@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -98,7 +99,7 @@ class CrasUnifiedStreamTest : public testing::Test {
   static const uint32_t kTestFramesPerPacket;
 
   base::TestMessageLoop message_loop_;
-  scoped_ptr<StrictMock<MockAudioManagerCras>, AudioManagerDeleter>
+  std::unique_ptr<StrictMock<MockAudioManagerCras>, AudioManagerDeleter>
       mock_manager_;
 
  private:

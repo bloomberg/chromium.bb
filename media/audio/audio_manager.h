@@ -255,7 +255,7 @@ class MEDIA_EXPORT AudioManager {
 
   // Create a new AudioLog object for tracking the behavior for one or more
   // instances of the given component.  See AudioLogFactory for more details.
-  virtual scoped_ptr<AudioLog> CreateAudioLog(
+  virtual std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) = 0;
 
  protected:

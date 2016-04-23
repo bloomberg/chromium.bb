@@ -375,7 +375,7 @@ int AudioManagerBase::GetUserBufferSize() {
   return 0;
 }
 
-scoped_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
+std::unique_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
   return audio_log_factory_->CreateAudioLog(component);
 }

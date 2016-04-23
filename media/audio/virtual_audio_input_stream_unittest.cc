@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -228,9 +229,9 @@ class VirtualAudioInputStreamTest : public testing::TestWithParam<bool> {
     done.Wait();
   }
 
-  scoped_ptr<base::Thread> audio_thread_;
+  std::unique_ptr<base::Thread> audio_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
-  scoped_ptr<base::Thread> worker_thread_;
+  std::unique_ptr<base::Thread> worker_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
 
   VirtualAudioInputStream* stream_;

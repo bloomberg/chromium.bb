@@ -24,12 +24,12 @@
 #include <alsa/asoundlib.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
@@ -200,7 +200,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // Handle to the actual PCM playback device.
   snd_pcm_t* playback_handle_;
 
-  scoped_ptr<media::SeekableBuffer> buffer_;
+  std::unique_ptr<media::SeekableBuffer> buffer_;
   uint32_t frames_per_packet_;
 
   InternalState state_;
@@ -209,11 +209,11 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   AudioSourceCallback* source_callback_;
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   // Channel mixer and temporary bus for the final mixed channel data.
-  scoped_ptr<ChannelMixer> channel_mixer_;
-  scoped_ptr<AudioBus> mixed_audio_bus_;
+  std::unique_ptr<ChannelMixer> channel_mixer_;
+  std::unique_ptr<AudioBus> mixed_audio_bus_;
 
   // Allows us to run tasks on the AlsaPcmOutputStream instance which are
   // bound by its lifetime.

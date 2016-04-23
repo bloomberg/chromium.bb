@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 #include "media/audio/audio_io.h"
@@ -72,10 +74,10 @@ class MEDIA_EXPORT FileSource : public AudioOutputStream::AudioSourceCallback,
   // The WAV data at |path_to_wav_file_| is read into memory and kept here.
   // This memory needs to survive for the lifetime of |wav_audio_handler_|,
   // so declare it first. Do not access this member directly.
-  scoped_ptr<char[]> raw_wav_data_;
+  std::unique_ptr<char[]> raw_wav_data_;
 
-  scoped_ptr<WavAudioHandler> wav_audio_handler_;
-  scoped_ptr<AudioConverter> file_audio_converter_;
+  std::unique_ptr<WavAudioHandler> wav_audio_handler_;
+  std::unique_ptr<AudioConverter> file_audio_converter_;
   int wav_file_read_pos_;
   bool load_failed_;
 
@@ -101,7 +103,7 @@ class BeepingSource : public AudioOutputStream::AudioSourceCallback {
   static void BeepOnce();
  private:
   int buffer_size_;
-  scoped_ptr<uint8_t[]> buffer_;
+  std::unique_ptr<uint8_t[]> buffer_;
   AudioParameters params_;
   base::TimeTicks last_callback_time_;
   base::TimeDelta interval_from_last_beep_;

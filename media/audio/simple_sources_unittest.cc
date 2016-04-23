@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/simple_sources.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/audio/simple_sources.h"
 #include "media/audio/sounds/test_data.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
@@ -29,7 +30,7 @@ TEST(SimpleSources, SineWaveAudioSource) {
         AudioParameters::kTelephoneSampleRate, bytes_per_sample * 8, samples);
 
   SineWaveAudioSource source(1, freq, params.sample_rate());
-  scoped_ptr<AudioBus> audio_bus = AudioBus::Create(params);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(params);
   source.OnMoreData(audio_bus.get(), 0, 0);
   EXPECT_EQ(1, source.callbacks());
   EXPECT_EQ(0, source.errors());
@@ -58,7 +59,7 @@ TEST(SimpleSources, SineWaveAudioCapped) {
   static const int kSampleCap = 100;
   source.CapSamples(kSampleCap);
 
-  scoped_ptr<AudioBus> audio_bus = AudioBus::Create(1, 2 * kSampleCap);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(1, 2 * kSampleCap);
   EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0, 0), kSampleCap);
   EXPECT_EQ(1, source.callbacks());
   EXPECT_EQ(source.OnMoreData(audio_bus.get(), 0, 0), 0);
@@ -92,7 +93,7 @@ TEST(SimpleSources, FileSourceTestData) {
   // Create AudioParameters which match those in the WAV data.
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                          CHANNEL_LAYOUT_STEREO, 48000, 16, kNumFrames);
-  scoped_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
   audio_bus->Zero();
 
   // Create a FileSource that reads this file.
@@ -124,7 +125,7 @@ TEST(SimpleSources, FileSourceTestData) {
 TEST(SimpleSources, BadFilePathFails) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                          CHANNEL_LAYOUT_STEREO, 48000, 16, 10);
-  scoped_ptr<AudioBus> audio_bus = AudioBus::Create(2, 10);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, 10);
   audio_bus->Zero();
 
   // Create a FileSource that reads this file.
@@ -162,7 +163,7 @@ TEST(SimpleSources, FileSourceCorruptTestDataFails) {
   // Create AudioParameters which match those in the WAV data.
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                          CHANNEL_LAYOUT_STEREO, 48000, 16, kNumFrames);
-  scoped_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(2, kNumFrames);
   audio_bus->Zero();
 
   // Create a FileSource that reads this file.

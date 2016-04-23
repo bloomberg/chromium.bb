@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
@@ -69,7 +71,7 @@ class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
       AudioOutputStream::AudioSourceCallback* source);
 
   base::TimeDelta duration_;
-  scoped_ptr<AudioStreamContainer> stream_;
+  std::unique_ptr<AudioStreamContainer> stream_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };

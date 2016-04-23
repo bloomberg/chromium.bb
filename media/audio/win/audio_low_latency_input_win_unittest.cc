@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/win/audio_low_latency_input_win.h"
+
 #include <windows.h>
 #include <mmsystem.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
@@ -18,7 +21,6 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
-#include "media/audio/win/audio_low_latency_input_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -131,7 +133,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
               double volume) override {
     EXPECT_EQ(bits_per_sample_, 16);
     const int num_samples = src->frames() * src->channels();
-    scoped_ptr<int16_t> interleaved(new int16_t[num_samples]);
+    std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
     const int bytes_per_sample = sizeof(*interleaved);
     src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
 

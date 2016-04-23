@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/sounds/wav_audio_handler.h"
+
 #include <stddef.h>
+
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "media/audio/sounds/test_data.h"
-#include "media/audio/sounds/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +49,7 @@ TEST(WavAudioHandlerTest, SampleDataTest) {
   const char kData[] = "\x01\x00\x01\x00";
   ASSERT_EQ(base::StringPiece(kData, arraysize(kData) - 1), handler->data());
 
-  scoped_ptr<AudioBus> bus =
+  std::unique_ptr<AudioBus> bus =
       AudioBus::Create(handler->num_channels(),
                        handler->data().size() / handler->num_channels());
 

@@ -67,11 +67,11 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
    }
 
   AudioRendererSink::RenderCallback* callback_;
-  scoped_ptr<AudioBus> audio_bus_;
-  scoped_ptr<base::WaitableEvent> stop_event_;
-  scoped_ptr<base::DelegateSimpleThread> thread_;
+  std::unique_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<base::WaitableEvent> stop_event_;
+  std::unique_ptr<base::DelegateSimpleThread> thread_;
   base::TimeDelta playback_time_;
-  scoped_ptr<AudioHash> audio_hash_;
+  std::unique_ptr<AudioHash> audio_hash_;
 };
 
 ClocklessAudioSink::ClocklessAudioSink()

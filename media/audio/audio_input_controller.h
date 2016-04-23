@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/atomicops.h"
@@ -15,7 +16,6 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -292,7 +292,7 @@ class MEDIA_EXPORT AudioInputController
   void DoClose();
   void DoReportError();
   void DoSetVolume(double volume);
-  void DoOnData(scoped_ptr<AudioBus> data);
+  void DoOnData(std::unique_ptr<AudioBus> data);
   void DoLogAudioLevels(float level_dbfs, int microphone_volume_percent);
 
   // Method to check if we get recorded data after a stream was started,
@@ -324,7 +324,7 @@ class MEDIA_EXPORT AudioInputController
   void DoDisableDebugRecording();
 
   // Called on the audio thread.
-  void WriteInputDataForDebugging(scoped_ptr<AudioBus> data);
+  void WriteInputDataForDebugging(std::unique_ptr<AudioBus> data);
 
   // Gives access to the task runner of the creating thread.
   scoped_refptr<base::SingleThreadTaskRunner> creator_task_runner_;
@@ -344,7 +344,7 @@ class MEDIA_EXPORT AudioInputController
   // whilst recording on Windows.
   // See http://crbug.com/79936 for details.
   // This member is only touched by the audio thread.
-  scoped_ptr<base::Timer> no_data_timer_;
+  std::unique_ptr<base::Timer> no_data_timer_;
 
   // This flag is used to signal that we are receiving OnData() calls, i.e,
   // that data is active. It can be touched by the audio thread and by the

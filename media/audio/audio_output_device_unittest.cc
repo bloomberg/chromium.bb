@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
@@ -140,9 +141,9 @@ AudioOutputDeviceTest::~AudioOutputDeviceTest() {
 
 void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
   audio_output_ipc_ = new MockAudioOutputIPC();
-  audio_device_ = new AudioOutputDevice(
-      scoped_ptr<AudioOutputIPC>(audio_output_ipc_), io_loop_.task_runner(), 0,
-      device_id, url::Origin());
+  audio_device_ = new AudioOutputDevice(base::WrapUnique(audio_output_ipc_),
+                                        io_loop_.task_runner(), 0, device_id,
+                                        url::Origin());
   EXPECT_CALL(*audio_output_ipc_,
               RequestDeviceAuthorization(audio_device_.get(), 0, device_id, _));
   audio_device_->RequestDeviceAuthorization();

@@ -253,7 +253,7 @@ class AudioManagerHelper : public base::PowerObserver {
   uint32_t successful_pings_ = 0;
 
 #if defined(OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_for_testing_;
+  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_for_testing_;
 #endif
 
 #if defined(OS_LINUX)

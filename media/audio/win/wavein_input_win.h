@@ -5,11 +5,12 @@
 #ifndef MEDIA_AUDIO_WIN_WAVEIN_INPUT_WIN_H_
 #define MEDIA_AUDIO_WIN_WAVEIN_INPUT_WIN_H_
 
-#include <string>
-
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdint.h>
+
+#include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -128,7 +129,7 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
 
   // Extra audio bus used for storage of deinterleaved data for the OnData
   // callback.
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMWaveInAudioInputStream);
 };

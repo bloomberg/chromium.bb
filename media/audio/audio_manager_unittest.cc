@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/audio_manager.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_unittest_util.h"
@@ -140,7 +142,7 @@ class AudioManagerTest : public ::testing::Test {
         AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO,
         AudioParameters::kAudioCDSampleRate, 16,
         1024);
-    scoped_ptr<PCMWaveInAudioInputStream> stream(
+    std::unique_ptr<PCMWaveInAudioInputStream> stream(
         static_cast<PCMWaveInAudioInputStream*>(
             amw->CreatePCMWaveInAudioInputStream(parameters, device_id)));
     return stream.get() ? stream->device_id_ : std::string();

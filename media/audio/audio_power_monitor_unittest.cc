@@ -5,6 +5,7 @@
 #include "media/audio/audio_power_monitor.h"
 
 #include <limits>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -76,7 +77,7 @@ class TestScenario {
 
   float expected_power_;
   bool expected_clipped_;
-  scoped_ptr<AudioBus> bus_;
+  std::unique_ptr<AudioBus> bus_;
 };
 
 // Value printer for TestScenario.  Required to prevent Valgrind "access to
@@ -187,7 +188,7 @@ class AudioPowerMonitorTest : public ::testing::TestWithParam<TestScenario> {
 TEST_P(AudioPowerMonitorTest, MeasuresPowerOfSignal) {
   const TestScenario& scenario = GetParam();
 
-  scoped_ptr<AudioBus> zeroed_bus =
+  std::unique_ptr<AudioBus> zeroed_bus =
       AudioBus::Create(scenario.data().channels(), scenario.data().frames());
   zeroed_bus->Zero();
 

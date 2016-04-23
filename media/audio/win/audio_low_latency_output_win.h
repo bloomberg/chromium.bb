@@ -98,11 +98,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/win/scoped_co_mem.h"
@@ -183,7 +183,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Rendering is driven by this thread (which has no message loop).
   // All OnMoreData() callbacks will be called from this thread.
-  scoped_ptr<base::DelegateSimpleThread> render_thread_;
+  std::unique_ptr<base::DelegateSimpleThread> render_thread_;
 
   // Contains the desired audio format which is set up at construction.
   // Extended PCM waveform format structure based on WAVEFORMATEXTENSIBLE.
@@ -240,7 +240,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   base::win::ScopedHandle stop_render_event_;
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   base::win::ScopedComPtr<IAudioClock> audio_clock_;
 

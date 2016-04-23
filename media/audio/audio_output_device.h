@@ -62,11 +62,11 @@
 #ifndef MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
 #define MEDIA_AUDIO_AUDIO_OUTPUT_DEVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/audio/audio_device_thread.h"
@@ -86,7 +86,7 @@ class MEDIA_EXPORT AudioOutputDevice
  public:
   // NOTE: Clients must call Initialize() before using.
   AudioOutputDevice(
-      scoped_ptr<AudioOutputIPC> ipc,
+      std::unique_ptr<AudioOutputIPC> ipc,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       int session_id,
       const std::string& device_id,
@@ -156,7 +156,7 @@ class MEDIA_EXPORT AudioOutputDevice
   // A pointer to the IPC layer that takes care of sending requests over to
   // the AudioRendererHost.  Only valid when state_ != IPC_CLOSED and must only
   // be accessed on the IO thread.
-  scoped_ptr<AudioOutputIPC> ipc_;
+  std::unique_ptr<AudioOutputIPC> ipc_;
 
   // Current state (must only be accessed from the IO thread).  See comments for
   // State enum above.
@@ -187,7 +187,7 @@ class MEDIA_EXPORT AudioOutputDevice
   // guard to control stopping and starting the audio thread.
   base::Lock audio_thread_lock_;
   AudioDeviceThread audio_thread_;
-  scoped_ptr<AudioOutputDevice::AudioThreadCallback> audio_callback_;
+  std::unique_ptr<AudioOutputDevice::AudioThreadCallback> audio_callback_;
 
   // Temporary hack to ignore OnStreamCreated() due to the user calling Stop()
   // so we don't start the audio thread pointing to a potentially freed

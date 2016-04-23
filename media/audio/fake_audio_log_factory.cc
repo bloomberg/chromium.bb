@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
+
 namespace media {
 
 class FakeAudioLogImpl : public AudioLog {
@@ -27,9 +29,9 @@ class FakeAudioLogImpl : public AudioLog {
 FakeAudioLogFactory::FakeAudioLogFactory() {}
 FakeAudioLogFactory::~FakeAudioLogFactory() {}
 
-scoped_ptr<AudioLog> FakeAudioLogFactory::CreateAudioLog(
+std::unique_ptr<AudioLog> FakeAudioLogFactory::CreateAudioLog(
     AudioComponent component) {
-  return scoped_ptr<AudioLog>(new FakeAudioLogImpl());
+  return base::WrapUnique(new FakeAudioLogImpl());
 }
 
 }  // namespace media

@@ -5,7 +5,7 @@
 #ifndef MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
 #define MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace media {
 
@@ -18,7 +18,7 @@ class AudioInputWriter {
   virtual ~AudioInputWriter() {}
 
   // Write |data| to file.
-  virtual void Write(scoped_ptr<AudioBus> data) = 0;
+  virtual void Write(std::unique_ptr<AudioBus> data) = 0;
 };
 
 }  // namspace media

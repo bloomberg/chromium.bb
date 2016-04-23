@@ -90,9 +90,9 @@ std::string MockAudioManager::GetAssociatedOutputDeviceID(
   return std::string();
 }
 
-scoped_ptr<AudioLog> MockAudioManager::CreateAudioLog(
+std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
-  return scoped_ptr<AudioLog>();
+  return nullptr;
 }
 
 }  // namespace media.

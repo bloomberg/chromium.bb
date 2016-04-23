@@ -5,10 +5,10 @@
 #ifndef MEDIA_AUDIO_NULL_AUDIO_SINK_H_
 #define MEDIA_AUDIO_NULL_AUDIO_SINK_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_renderer_sink.h"
 
 namespace base {
@@ -57,11 +57,11 @@ class MEDIA_EXPORT NullAudioSink
   RenderCallback* callback_;
 
   // Controls whether or not a running hash is computed for audio frames.
-  scoped_ptr<AudioHash> audio_hash_;
+  std::unique_ptr<AudioHash> audio_hash_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<FakeAudioWorker> fake_worker_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<FakeAudioWorker> fake_worker_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(NullAudioSink);
 };

@@ -53,7 +53,7 @@ static const char* kInvalidAudioInputDevices[] = {
 
 // static
 void AudioManagerAlsa::ShowLinuxAudioInputSettings() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
@@ -162,8 +162,8 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
   for (void** hint_iter = hints; *hint_iter != NULL; hint_iter++) {
     // Only examine devices of the right type.  Valid values are
     // "Input", "Output", and NULL which means both input and output.
-    scoped_ptr<char, base::FreeDeleter> io(wrapper_->DeviceNameGetHint(
-        *hint_iter, kIoHintName));
+    std::unique_ptr<char, base::FreeDeleter> io(
+        wrapper_->DeviceNameGetHint(*hint_iter, kIoHintName));
     if (io != NULL && strcmp(unwanted_device_type, io.get()) == 0)
       continue;
 
@@ -179,14 +179,14 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
     }
 
     // Get the unique device name for the device.
-    scoped_ptr<char, base::FreeDeleter> unique_device_name(
+    std::unique_ptr<char, base::FreeDeleter> unique_device_name(
         wrapper_->DeviceNameGetHint(*hint_iter, kNameHintName));
 
     // Find out if the device is available.
     if (IsAlsaDeviceAvailable(type, unique_device_name.get())) {
       // Get the description for the device.
-      scoped_ptr<char, base::FreeDeleter> desc(wrapper_->DeviceNameGetHint(
-          *hint_iter, kDescriptionHintName));
+      std::unique_ptr<char, base::FreeDeleter> desc(
+          wrapper_->DeviceNameGetHint(*hint_iter, kDescriptionHintName));
 
       media::AudioDeviceName name;
       name.unique_id = unique_device_name.get();
@@ -262,8 +262,8 @@ bool AudioManagerAlsa::HasAnyAlsaAudioDevice(
       for (void** hint_iter = hints; *hint_iter != NULL; hint_iter++) {
         // Only examine devices that are |stream| capable.  Valid values are
         // "Input", "Output", and NULL which means both input and output.
-        scoped_ptr<char, base::FreeDeleter> io(wrapper_->DeviceNameGetHint(
-            *hint_iter, kIoHintName));
+        std::unique_ptr<char, base::FreeDeleter> io(
+            wrapper_->DeviceNameGetHint(*hint_iter, kIoHintName));
         const char* unwanted_type = UnwantedDeviceTypeWhenEnumerating(stream);
         if (io != NULL && strcmp(unwanted_type, io.get()) == 0)
           continue;  // Wrong type, skip the device.

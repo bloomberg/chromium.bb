@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/audio_output_controller.h"
+
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_output_controller.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -176,7 +178,7 @@ class AudioOutputControllerTest : public testing::Test {
   }
 
   void ReadDivertedAudioData() {
-    scoped_ptr<AudioBus> dest = AudioBus::Create(params_);
+    std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
     ASSERT_TRUE(mock_stream_.callback());
     const int frames_read =
         mock_stream_.callback()->OnMoreData(dest.get(), 0, 0);

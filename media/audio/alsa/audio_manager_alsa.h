@@ -5,7 +5,9 @@
 #ifndef MEDIA_AUDIO_ALSA_AUDIO_MANAGER_ALSA_H_
 #define MEDIA_AUDIO_ALSA_AUDIO_MANAGER_ALSA_H_
 
+#include <memory>
 #include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -87,7 +89,7 @@ class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
 
-  scoped_ptr<AlsaWrapper> wrapper_;
+  std::unique_ptr<AlsaWrapper> wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerAlsa);
 };

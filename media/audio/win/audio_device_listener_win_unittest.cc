@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/win/audio_device_listener_win.h"
+
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_unittest_util.h"
-#include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,7 @@ class AudioDeviceListenerWinTest : public testing::Test {
 
  private:
   ScopedCOMInitializer com_init_;
-  scoped_ptr<AudioDeviceListenerWin> output_device_listener_;
+  std::unique_ptr<AudioDeviceListenerWin> output_device_listener_;
   base::SimpleTestTickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerWinTest);

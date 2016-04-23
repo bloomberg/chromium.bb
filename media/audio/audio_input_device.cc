@@ -53,7 +53,7 @@ class AudioInputDevice::AudioThreadCallback
 };
 
 AudioInputDevice::AudioInputDevice(
-    scoped_ptr<AudioInputIPC> ipc,
+    std::unique_ptr<AudioInputIPC> ipc,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
@@ -295,7 +295,7 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   for (int i = 0; i < total_segments_; ++i) {
     media::AudioInputBuffer* buffer =
         reinterpret_cast<media::AudioInputBuffer*>(ptr);
-    scoped_ptr<media::AudioBus> audio_bus =
+    std::unique_ptr<media::AudioBus> audio_bus =
         media::AudioBus::WrapMemory(audio_parameters_, buffer->audio);
     audio_buses_.push_back(std::move(audio_bus));
     ptr += segment_length_;

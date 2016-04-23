@@ -5,18 +5,17 @@
 #ifndef MEDIA_AUDIO_AUDIO_MANAGER_BASE_H_
 #define MEDIA_AUDIO_AUDIO_MANAGER_BASE_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "media/audio/audio_manager.h"
-
 #include "media/audio/audio_output_dispatcher.h"
 
 #if defined(OS_WIN)
@@ -87,7 +86,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       const std::string& device_id) override;
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
-  scoped_ptr<AudioLog> CreateAudioLog(
+  std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
   // AudioManagerBase:

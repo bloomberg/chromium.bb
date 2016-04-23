@@ -61,6 +61,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -204,7 +205,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
   // Extra audio bus used for storage of deinterleaved data for the OnData
   // callback.
-  scoped_ptr<media::AudioBus> audio_bus_;
+  std::unique_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioInputStream);
 };

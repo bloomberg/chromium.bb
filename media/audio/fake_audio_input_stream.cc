@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
@@ -103,7 +104,7 @@ void FakeAudioInputStream::ReadAudioFromSource() {
 }
 
 using AudioSourceCallback = AudioOutputStream::AudioSourceCallback;
-scoped_ptr<AudioSourceCallback> FakeAudioInputStream::ChooseSource() {
+std::unique_ptr<AudioSourceCallback> FakeAudioInputStream::ChooseSource() {
   DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -115,9 +116,9 @@ scoped_ptr<AudioSourceCallback> FakeAudioInputStream::ChooseSource() {
         << "You must pass the file to use as argument to --"
         << switches::kUseFileForFakeAudioCapture << ".";
 
-    return make_scoped_ptr(new FileSource(params_, path_to_wav_file));
+    return base::WrapUnique(new FileSource(params_, path_to_wav_file));
   }
-  return make_scoped_ptr(new BeepingSource(params_));
+  return base::WrapUnique(new BeepingSource(params_));
 }
 
 void FakeAudioInputStream::BeepOnce() {
