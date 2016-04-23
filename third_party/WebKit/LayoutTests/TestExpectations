@@ -1270,8 +1270,6 @@ crbug.com/593888 [ Linux Debug ] fast/dom/htmlcollection-reachable.html [ Timeou
 
 crbug.com/605515 svg/batik/filters/feTile.svg [ NeedsManualRebaseline ]
 
-crbug.com/601166 fast/text/basic/012.html [ NeedsRebaseline ]
-
 crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Crash ]
 crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed-and-gced.html [ Crash ]
 crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed.html [ Crash ]
