@@ -87,6 +87,7 @@ public class Utils {
                 toast.setView(new View(activity) {
                     @Override
                     public void onAttachedToWindow() {
+                        super.onAttachedToWindow();
                         accelerated.set(isHardwareAccelerated());
                         listenerCalled.notifyCalled();
                     }
@@ -111,6 +112,7 @@ public class Utils {
                 dialog.setContentView(new View(activity) {
                     @Override
                     public void onAttachedToWindow() {
+                        super.onAttachedToWindow();
                         accelerated.set(isHardwareAccelerated());
                         listenerCalled.notifyCalled();
                         dialog.dismiss();
