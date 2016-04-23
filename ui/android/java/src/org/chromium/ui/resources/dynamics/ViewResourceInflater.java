@@ -67,6 +67,11 @@ public class ViewResourceInflater {
     private View mView;
 
     /**
+     * Whether the View needs a layout update.
+     */
+    private boolean mNeedsLayoutUpdate;
+
+    /**
      * Whether the View is invalided.
      */
     private boolean mIsInvalidated;
@@ -122,6 +127,8 @@ public class ViewResourceInflater {
         onFinishInflate();
 
         registerResource();
+
+        mNeedsLayoutUpdate = true;
     }
 
     /**
@@ -140,7 +147,6 @@ public class ViewResourceInflater {
         // View must be inflated at this point. If it's not, do it now.
         if (mView == null) {
             inflate();
-            didViewSizeChange = true;
         }
 
         mIsInvalidated = true;
@@ -156,7 +162,7 @@ public class ViewResourceInflater {
 
         if (mIsAttached) {
             // Update the View's layout params, which will trigger a re-layout.
-            if (didViewSizeChange) {
+            if (didViewSizeChange || mNeedsLayoutUpdate) {
                 updateLayoutParams();
             }
         } else {
@@ -165,6 +171,8 @@ public class ViewResourceInflater {
             layout();
             invalidateResource();
         }
+
+        mNeedsLayoutUpdate = false;
     }
 
     /**
