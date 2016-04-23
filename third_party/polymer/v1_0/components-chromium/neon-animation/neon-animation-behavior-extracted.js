@@ -22,9 +22,10 @@
 
     },
 
-    registered: function() {
-      new Polymer.IronMeta({type: 'animation', key: this.is, value: this.constructor});
-    },
+    /**
+     * Can be used to determine that elements implement this behavior.
+     */
+    isNeonAnimation: true,
 
     /**
      * Do any animation configuration here.

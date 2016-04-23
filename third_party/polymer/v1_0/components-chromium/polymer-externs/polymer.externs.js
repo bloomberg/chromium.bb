@@ -140,6 +140,13 @@ PolymerElement.prototype.domHost;
 PolymerElement.prototype.notifyPath = function(path, value, fromAbove) {};
 
 /**
+ * @param {string} path Path that should be notified.
+ * @param {!Array<!PolymerSplice>} splices Array of splice records indicating
+ *     ordered changes that occurred to the array.
+ */
+PolymerElement.prototype.notifySplices = function(path, splices) {};
+
+/**
  * Convienence method for setting a value to a path and notifying any
  * elements bound to the same path.
  *
@@ -272,6 +279,42 @@ PolymerElement.prototype.unshift = function(path, var_args) {};
 PolymerElement.prototype.getContentChildren = function(slctr) {};
 
 /**
+ * Returns a list of nodes that are the effective childNodes. The effective
+ * childNodes list is the same as the element's childNodes except that
+ * any `<content>` elements are replaced with the list of nodes distributed
+ * to the `<content>`, the result of its `getDistributedNodes` method.
+ *
+ * @return {!Array<!Node>} List of effective child nodes.
+ */
+PolymerElement.prototype.getEffectiveChildNodes = function() {};
+
+/**
+ * Returns a list of elements that are the effective children. The effective
+ * children list is the same as the element's children except that
+ * any `<content>` elements are replaced with the list of elements
+ * distributed to the `<content>`.
+ *
+ * @return {!Array<!Node>} List of effective children.
+ */
+PolymerElement.prototype.getEffectiveChildren = function() {};
+
+/**
+ * Returns a string of text content that is the concatenation of the
+ * text content's of the element's effective childNodes (the elements
+ * returned by <a href="#getEffectiveChildNodes>getEffectiveChildNodes</a>.
+ *
+ * @return {string} A concatenated string of all effective childNode text
+ *   content.
+ */
+PolymerElement.prototype.getEffectiveTextContent = function() {};
+
+/**
+ * @param {string} selector
+ * @return {?HTMLElement}
+ */
+PolymerElement.prototype.queryEffectiveChildren = function(selector) {};
+
+/**
  * Fire an event.
  *
  * @param {string} type An event name.
@@ -289,7 +332,7 @@ PolymerElement.prototype.fire = function(type, detail, options) {};
  * bool is truthy and removing it if bool is falsey. If node is specified, sets
  * the class on node instead of the host element.
  * @param {string} name
- * @param {boolean} bool
+ * @param {boolean=} bool
  * @param {HTMLElement=} node
  */
 PolymerElement.prototype.toggleClass = function(name, bool, node) {};
@@ -324,7 +367,7 @@ PolymerElement.prototype.listen = function(node, eventName, methodName) {};
 
 /**
  * Convenience method to remove an event listener from a given element.
- * @param {!EventTarget} node Element to remove event listener from.
+ * @param {?EventTarget} node Element to remove event listener from.
  * @param {string} eventName Name of event to stop listening for.
  * @param {string} methodName Name of handler method on this to remove.
  */
@@ -364,6 +407,25 @@ PolymerElement.prototype.factoryImpl = function(var_args) {};
  *   and re-applies scoping for any future changes.
  */
 PolymerElement.prototype.scopeSubtree = function(container, shouldObserve) {};
+
+/**
+ * Aliases one data path as another, such that path notifications from one
+ * are routed to the other.
+ *
+ * @param {string} to Target path to link.
+ * @param {string} from Source path to link.
+ */
+PolymerElement.prototype.linkPaths = function(to, from) {}
+
+/**
+ * Removes a data path alias previously established with `linkPaths`.
+ *
+ * Note, the path to unlink should be the target (`to`) used when
+ * linking the paths.
+ *
+ * @param {string} path Target path to unlink.
+ */
+PolymerElement.prototype.unlinkPaths = function(path) {}
 
 Polymer.Base;
 
@@ -506,6 +568,13 @@ PolymerElement.prototype.updateStyles = function(properties) {};
 PolymerElement.prototype.customStyle;
 
 /**
+ * Returns the computed style value for the given property.
+ * @param {string} property
+ * @return {string} the computed value
+ */
+PolymerElement.prototype.getComputedStyleValue = function(property) {};
+
+/**
  * Logs a message to the console.
  *
  * @param {!Array} var_args
@@ -603,6 +672,9 @@ PolymerDomApi.prototype.textContent;
 
 /** @type {string} */
 PolymerDomApi.prototype.innerHTML;
+
+/** @type {?HTMLElement} */
+PolymerDomApi.prototype.activeElement;
 
 /**
  * @param {string} selector
@@ -888,7 +960,7 @@ Polymer.Templatizer = {
    *   the element.
    */
   modelForElement: function(el) {},
-  
+
   /**
    * @param {function()} fn
    * @protected
@@ -1050,7 +1122,9 @@ var PolymerTouchEvent;
  * @typedef {{
  *   index: number,
  *   removed: !Array,
- *   addedCount: number
+ *   addedCount: number,
+ *   object: !Array,
+ *   type: string,
  * }}
  */
 var PolymerSplice;
@@ -1094,3 +1168,73 @@ Polymer.Iconset = function() {};
  */
 Polymer.Iconset.prototype.applyIcon = function(
       element, icon, theme, scale) {};
+
+Polymer.ResolveUrl = {};
+
+/**
+ * @param {string} cssText Some CSS text taken from ownerDocument.
+ * @param {!Document} ownerDocument The source of the css.
+ * @return {string} The given CSS text with its URLs rewritten to be based on
+ *     the primary document of this window rather than the given ownerDocument.
+ */
+Polymer.ResolveUrl.resolveCss = function(cssText, ownerDocument) {}
+/**
+ * @param {!Element} element An element whose URL attributes need to be renormed.
+ * @param {!Document} ownerDocument The document whose URL is the base of the
+ *     element's current attributes.
+ */
+Polymer.ResolveUrl.resolveAttrs = function(element, ownerDocument) {}
+/**
+ * @param {string} url A url that needs to be renormed.
+ * @param {?string} baseURI The current base of URL for the URL.
+ * @return {string} The given url rewritten to be based on
+ *     the primary document of this window rather than the given url.
+ */
+Polymer.ResolveUrl.resolveUrl = function(url, baseURI) {}
+
+Polymer.RenderStatus;
+
+/**
+ * Makes callback when first render occurs or immediately if render has occured.
+ * @param {!function()} cb Callback function to be invoked.
+ */
+Polymer.RenderStatus.whenReady = function(cb) {}
+
+/**
+ * Queue up function call on next render.
+ * @param {!Element} element The element on which the function call is made.
+ * @param {!function()} fn The function called on next render.
+ * @param {...*} args The function arguments.
+ */
+Polymer.RenderStatus.afterNextRender = function(element, fn, args) {}
+
+Polymer.AppLayout;
+
+/** @constructor */
+Polymer.AppLayout.LocalDomWithBackground = function(){};
+/** @type {!HTMLElement} */
+Polymer.AppLayout.LocalDomWithBackground.prototype.backgroundFrontLayer;
+/** @type {!HTMLElement} */
+Polymer.AppLayout.LocalDomWithBackground.prototype.backgroundRearLayer;
+/** @type {!HTMLElement} */
+Polymer.AppLayout.LocalDomWithBackground.prototype.background;
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ */
+Polymer.AppLayout.ElementWithBackground = function(){};
+
+// TODO(garlicnation): Follow up with app-layout team and remove private api from this prototype
+Polymer.AppLayout.ElementWithBackground.prototype = {
+  /** @type {!Polymer.AppLayout.LocalDomWithBackground} */
+  $: null,
+  /** @return {boolean} True if there's content below the current element */
+  isContentBelow: function(){},
+  /** Updates the elements scroll state */
+  _updateScrollState: function(){},
+  /** @return {boolean} true if the element is on screen */
+  isOnScreen: function(){},
+  /** @type {number} Internal bookkeeping to track screen position */
+  _deltaHeight: 0,
+}

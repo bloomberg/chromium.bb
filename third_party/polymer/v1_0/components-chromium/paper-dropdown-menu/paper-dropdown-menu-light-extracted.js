@@ -274,12 +274,7 @@
           if (this.$.input && this.$.input.textContent !== this.value) {
             this.$.input.textContent = this.value;
           }
-
-          if (this.value || this.value === 0 || this.value === false) {
-            this._setHasContent(true);
-          } else {
-            this._setHasContent(false);
-          }
+          this._setHasContent(!!this.value);
         },
       });
     })();

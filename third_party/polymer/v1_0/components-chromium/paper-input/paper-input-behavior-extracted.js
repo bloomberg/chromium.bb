@@ -1,4 +1,10 @@
-/**
+// Generate unique, monotonically increasing IDs for labels (needed by
+  // aria-labelledby) and add-ons.
+  Polymer.PaperInputHelper = {};
+  Polymer.PaperInputHelper.NextLabelID = 1;
+  Polymer.PaperInputHelper.NextAddonID = 1;
+
+  /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
    * behavior is implemented by `<paper-input>`. It exposes a number of properties from
    * `<paper-input-container>` and `<input is="iron-input">` and they should be bound in your
@@ -9,6 +15,7 @@
    * @polymerBehavior Polymer.PaperInputBehavior
    */
   Polymer.PaperInputBehaviorImpl = {
+
     properties: {
       /**
        * Fired when the input changes due to user interaction.
@@ -404,7 +411,7 @@
       if (target.id) {
         this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, target.id);
       } else {
-        var id = 'paper-input-add-on-' + Math.floor((Math.random() * 100000));
+        var id = 'paper-input-add-on-' + Polymer.PaperInputHelper.NextAddonID++;
         target.id = id;
         this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, id);
       }
@@ -492,7 +499,7 @@
       if (label.id) {
         labelledBy = label.id;
       } else {
-        labelledBy = 'paper-input-label-' + new Date().getUTCMilliseconds();
+        labelledBy = 'paper-input-label-' + Polymer.PaperInputHelper.NextLabelID++;
         label.id = labelledBy;
       }
       this._ariaLabelledBy = labelledBy;
@@ -510,7 +517,7 @@
         });
       }
     }
-  };
+  }
 
   /** @polymerBehavior */
   Polymer.PaperInputBehavior = [

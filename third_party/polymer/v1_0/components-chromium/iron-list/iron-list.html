@@ -75,6 +75,13 @@ bound from the model object provided to the template scope):
 </template>
 ```
 
+### Grid layout
+
+`iron-list` supports a grid layout in addition to linear layout by setting
+the `grid` attribute.  In this case, the list template item must have both fixed
+width and height (e.g. via CSS). Based on this, the number of items
+per row are determined automatically based on the size of the list viewport.
+
 ### Accessibility
 
 `iron-list` automatically manages the focus state for the items. It also provides
@@ -136,6 +143,7 @@ will only render 20.
 @demo demo/selection.html Items selection
 @demo demo/collapse.html Collapsable items
 @demo demo/scroll-threshold.html Scroll thesholds
+@demo demo/grid.html Grid layout
 @demo demo/basic.html Basic list
 
 -->
@@ -159,9 +167,13 @@ will only render 20.
         position: relative;
       }
 
-      #items > ::content > * {
+      :host(:not([grid])) #items > ::content > * {
         width: 100%;
+      };
+
+      #items > ::content > * {
         box-sizing: border-box;
+        margin: 0;
         position: absolute;
         top: 0;
         will-change: transform;

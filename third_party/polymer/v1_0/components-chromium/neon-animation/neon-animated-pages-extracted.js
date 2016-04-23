@@ -25,19 +25,21 @@
 
     },
 
-    observers: [
-      '_selectedChanged(selected)'
-    ],
-
     listeners: {
+      'iron-select': '_onIronSelect',
       'neon-animation-finish': '_onNeonAnimationFinish'
     },
 
-    _selectedChanged: function(selected) {
+    _onIronSelect: function(event) {
+      var selectedPage = event.detail.item;
 
-      var selectedPage = this.selectedItem;
+      // Only consider child elements.
+      if (this.items.indexOf(selectedPage) < 0) {
+        return;
+      }
+      
       var oldPage = this._valueToItem(this._prevSelected) || false;
-      this._prevSelected = selected;
+      this._prevSelected = this.selected;
 
       // on initial load and if animateInitialSelection is negated, simply display selectedPage.
       if (!oldPage && !this.animateInitialSelection) {

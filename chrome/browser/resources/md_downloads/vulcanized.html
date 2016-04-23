@@ -19,6 +19,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <title>$i18n{title}</title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <style>
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 :root {
   /* These are custom, Chrome-specific colors that don't have --paper or
    * --google equivalents. Blame bettes@. http://crbug.com/598451 */
@@ -64,9 +68,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         position: relative;
       }
 
-      #items > ::content > * {
+      :host(:not([grid])) #items > ::content > * {
         width: 100%;
+      };
+
+      #items > ::content > * {
         box-sizing: border-box;
+        margin: 0;
         position: absolute;
         top: 0;
         will-change: transform;
@@ -1900,324 +1908,6 @@ paper-button {
   }
 
 </style>
-<llink rel="import" href="chrome://resources/polymer/v1_0/paper-styles/typography.html">
-
-<dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/">
-  <template>
-    <style>
-      :host, .paper-item {
-        display: block;
-        position: relative;
-        min-height: var(--paper-item-min-height, 48px);
-        padding: 0px 16px;
-      }
-
-      .paper-item {
-        @apply(--paper-font-subhead);
-        border:none;
-        outline: none;
-        background: white;
-        width: 100%;
-        text-align: left;
-      }
-
-      :host([hidden]), .paper-item[hidden] {
-        display: none !important;
-      }
-
-      :host(.iron-selected), .paper-item.iron-selected {
-        font-weight: var(--paper-item-selected-weight, bold);
-
-        @apply(--paper-item-selected);
-      }
-
-      :host([disabled]), .paper-item[disabled] {
-        color: var(--paper-item-disabled-color, --disabled-text-color);
-
-        @apply(--paper-item-disabled);
-      }
-
-      :host(:focus), .paper-item:focus {
-        position: relative;
-        outline: 0;
-
-        @apply(--paper-item-focused);
-      }
-
-      :host(:focus):before, .paper-item:focus:before {
-        @apply(--layout-fit);
-
-        background: currentColor;
-        content: '';
-        opacity: var(--dark-divider-opacity);
-        pointer-events: none;
-
-        @apply(--paper-item-focused-before);
-      }
-    </style>
-  </template>
-</dom-module>
-</llink>
-
-<dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
-  <template>
-    <style include="paper-item-shared-styles"></style>
-    <style>
-      :host {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--paper-font-subhead);
-
-        @apply(--paper-item);
-      }
-    </style>
-
-    <content></content>
-  </template>
-
-  </dom-module>
-<dom-module id="paper-menu-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
-  <template>
-    <style>
-      /* need a wrapper element to make this higher specificity than the :host rule in paper-item */
-      .selectable-content > ::content > .iron-selected {
-        font-weight: bold;
-
-        @apply(--paper-menu-selected-item);
-      }
-
-      .selectable-content > ::content > [disabled] {
-        color: var(--paper-menu-disabled-color, --disabled-text-color);
-      }
-
-      .selectable-content > ::content > *:focus {
-        position: relative;
-        outline: 0;
-
-        @apply(--paper-menu-focused-item);
-      }
-
-      .selectable-content > ::content > *:focus:after {
-        @apply(--layout-fit);
-        background: currentColor;
-        opacity: var(--dark-divider-opacity);
-        content: '';
-        pointer-events: none;
-
-        @apply(--paper-menu-focused-item-after);
-      }
-
-      .selectable-content > ::content > *[colored]:focus:after {
-        opacity: 0.26;
-      }
-    </style>
-  </template>
-</dom-module>
-
-
-<dom-module id="paper-menu" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
-  <template>
-    <style include="paper-menu-shared-styles"></style>
-    <style>
-      :host {
-        display: block;
-        padding: 8px 0;
-
-        background: var(--paper-menu-background-color, --primary-background-color);
-        color: var(--paper-menu-color, --primary-text-color);
-
-        @apply(--paper-menu);
-      }
-    </style>
-
-    <div class="selectable-content">
-      <content></content>
-    </div>
-  </template>
-
-  </dom-module>
-<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/">
-
-  <style>
-
-    :host {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: var(--iron-overlay-backdrop-background-color, #000);
-      opacity: 0;
-      transition: opacity 0.2s;
-      pointer-events: none;
-
-      @apply(--iron-overlay-backdrop);
-    }
-
-    :host([opened]) {
-      opacity: var(--iron-overlay-backdrop-opacity, 0.6);
-      pointer-events: auto;
-
-      @apply(--iron-overlay-backdrop-opened);
-    }
-
-  </style>
-
-  <template>
-    <content></content>
-  </template>
-
-</dom-module>
-
-<script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
-
-
-<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
-  <style>
-    :host {
-      position: fixed;
-    }
-
-    #contentWrapper ::content > * {
-      overflow: auto;
-    }
-
-    #contentWrapper.animating ::content > * {
-      overflow: hidden;
-    }
-  </style>
-  <template>
-    <div id="contentWrapper">
-      <content id="content" select=".dropdown-content"></content>
-    </div>
-  </template>
-
-  </dom-module>
-<dom-module id="paper-menu-button" assetpath="chrome://resources/polymer/v1_0/paper-menu-button/">
-  <template>
-    <style>
-      :host {
-        display: inline-block;
-        position: relative;
-        padding: 8px;
-        outline: none;
-
-        @apply(--paper-menu-button);
-      }
-
-      :host([disabled]) {
-        cursor: auto;
-        color: var(--disabled-text-color);
-
-        @apply(--paper-menu-button-disabled);
-      }
-
-      iron-dropdown {
-        @apply(--paper-menu-button-dropdown);
-      }
-
-      .dropdown-content {
-        @apply(--shadow-elevation-2dp);
-
-        position: relative;
-        border-radius: 2px;
-        background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
-
-        @apply(--paper-menu-button-content);
-      }
-
-      :host([vertical-align="top"]) .dropdown-content {
-        margin-bottom: 20px;
-        margin-top: -10px;
-        top: 10px;
-      }
-
-      :host([vertical-align="bottom"]) .dropdown-content {
-        bottom: 10px;
-        margin-bottom: -10px;
-        margin-top: 20px;
-      }
-    </style>
-
-    <div id="trigger" on-tap="toggle">
-      <content select=".dropdown-trigger"></content>
-    </div>
-
-    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]" on-iron-overlay-canceled="__onIronOverlayCanceled">
-      <div class="dropdown-content">
-        <content id="content" select=".dropdown-content"></content>
-      </div>
-    </iron-dropdown>
-  </template>
-
-  </dom-module>
-<dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/">
-  <template strip-whitespace="">
-    <style>
-      :host {
-        display: inline-block;
-        position: relative;
-        padding: 8px;
-        outline: none;
-        -webkit-tap-highlight-color: rgba(0,0,0,0);
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        cursor: pointer;
-        z-index: 0;
-        line-height: 1;
-
-        width: 40px;
-        height: 40px;
-
-        /* Because of polymer/2558, this style has lower specificity than * */
-        box-sizing: border-box !important;
-
-        @apply(--paper-icon-button);
-      }
-
-      :host #ink {
-        color: var(--paper-icon-button-ink-color, --primary-text-color);
-        opacity: 0.6;
-      }
-
-      :host([disabled]) {
-        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
-        pointer-events: none;
-        cursor: auto;
-
-        @apply(--paper-icon-button-disabled);
-      }
-
-      :host(:hover) {
-        @apply(--paper-icon-button-hover);
-      }
-
-      iron-icon {
-        --iron-icon-width: 100%;
-        --iron-icon-height: 100%;
-      }
-    </style>
-
-    <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
-  </template>
-
-  </dom-module>
-<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/">
-  <style>
-    :host {
-      display: inline-block;
-      position: fixed;
-      clip: rect(0px,0px,0px,0px);
-    }
-  </style>
-
-  <template>
-    <div aria-live$="[[mode]]">[[_text]]</div>
-  </template>
-
-  </dom-module>
 <style>
 /* Copyright 2015 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
@@ -2404,8 +2094,322 @@ paper-button {
   }
 
 </style>
+<dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/">
+  <template>
+    <style>
+      :host, .paper-item {
+        display: block;
+        position: relative;
+        min-height: var(--paper-item-min-height, 48px);
+        padding: 0px 16px;
+      }
+
+      .paper-item {
+        @apply(--paper-font-subhead);
+        border:none;
+        outline: none;
+        background: white;
+        width: 100%;
+        text-align: left;
+      }
+
+      :host([hidden]), .paper-item[hidden] {
+        display: none !important;
+      }
+
+      :host(.iron-selected), .paper-item.iron-selected {
+        font-weight: var(--paper-item-selected-weight, bold);
+
+        @apply(--paper-item-selected);
+      }
+
+      :host([disabled]), .paper-item[disabled] {
+        color: var(--paper-item-disabled-color, --disabled-text-color);
+
+        @apply(--paper-item-disabled);
+      }
+
+      :host(:focus), .paper-item:focus {
+        position: relative;
+        outline: 0;
+
+        @apply(--paper-item-focused);
+      }
+
+      :host(:focus):before, .paper-item:focus:before {
+        @apply(--layout-fit);
+
+        background: currentColor;
+        content: '';
+        opacity: var(--dark-divider-opacity);
+        pointer-events: none;
+
+        @apply(--paper-item-focused-before);
+      }
+    </style>
+  </template>
+</dom-module>
 
 
+<dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/">
+  <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+      }
+    </style>
+
+    <content></content>
+  </template>
+
+  </dom-module>
+<dom-module id="paper-menu-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
+  <template>
+    <style>
+      /* need a wrapper element to make this higher specificity than the :host rule in paper-item */
+      .selectable-content > ::content > .iron-selected {
+        font-weight: bold;
+
+        @apply(--paper-menu-selected-item);
+      }
+
+      .selectable-content > ::content > [disabled] {
+        color: var(--paper-menu-disabled-color, --disabled-text-color);
+      }
+
+      .selectable-content > ::content > *:focus {
+        position: relative;
+        outline: 0;
+
+        @apply(--paper-menu-focused-item);
+      }
+
+      .selectable-content > ::content > *:focus:after {
+        @apply(--layout-fit);
+        background: currentColor;
+        opacity: var(--dark-divider-opacity);
+        content: '';
+        pointer-events: none;
+
+        @apply(--paper-menu-focused-item-after);
+      }
+
+      .selectable-content > ::content > *[colored]:focus:after {
+        opacity: 0.26;
+      }
+    </style>
+  </template>
+</dom-module>
+
+
+<dom-module id="paper-menu" assetpath="chrome://resources/polymer/v1_0/paper-menu/">
+  <template>
+    <style include="paper-menu-shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+        padding: 8px 0;
+
+        background: var(--paper-menu-background-color, --primary-background-color);
+        color: var(--paper-menu-color, --primary-text-color);
+
+        @apply(--paper-menu);
+      }
+    </style>
+
+    <div class="selectable-content">
+      <content></content>
+    </div>
+  </template>
+
+  </dom-module>
+<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/">
+
+  <style>
+
+    :host {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--iron-overlay-backdrop-background-color, #000);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+
+      @apply(--iron-overlay-backdrop);
+    }
+
+    :host([opened]) {
+      opacity: var(--iron-overlay-backdrop-opacity, 0.6);
+      pointer-events: auto;
+
+      @apply(--iron-overlay-backdrop-opened);
+    }
+
+  </style>
+
+  <template>
+    <content></content>
+  </template>
+
+</dom-module>
+
+<script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
+
+
+<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/">
+  <style>
+    :host {
+      position: fixed;
+    }
+
+    #contentWrapper ::content > * {
+      overflow: auto;
+    }
+
+    #contentWrapper.animating ::content > * {
+      overflow: hidden;
+    }
+  </style>
+  <template>
+    <div id="contentWrapper">
+      <content id="content" select=".dropdown-content"></content>
+    </div>
+  </template>
+
+  </dom-module>
+<dom-module id="paper-menu-button" assetpath="chrome://resources/polymer/v1_0/paper-menu-button/">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+
+        @apply(--paper-menu-button);
+      }
+
+      :host([disabled]) {
+        cursor: auto;
+        color: var(--disabled-text-color);
+
+        @apply(--paper-menu-button-disabled);
+      }
+
+      iron-dropdown {
+        @apply(--paper-menu-button-dropdown);
+      }
+
+      .dropdown-content {
+        @apply(--shadow-elevation-2dp);
+
+        position: relative;
+        border-radius: 2px;
+        background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
+
+        @apply(--paper-menu-button-content);
+      }
+
+      :host([vertical-align="top"]) .dropdown-content {
+        margin-bottom: 20px;
+        margin-top: -10px;
+        top: 10px;
+      }
+
+      :host([vertical-align="bottom"]) .dropdown-content {
+        bottom: 10px;
+        margin-bottom: -10px;
+        margin-top: 20px;
+      }
+    </style>
+
+    <div id="trigger" on-tap="toggle">
+      <content select=".dropdown-trigger"></content>
+    </div>
+
+    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]" on-iron-overlay-canceled="__onIronOverlayCanceled">
+      <div class="dropdown-content">
+        <content id="content" select=".dropdown-content"></content>
+      </div>
+    </iron-dropdown>
+  </template>
+
+  </dom-module>
+<dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
+        line-height: 1;
+
+        width: 40px;
+        height: 40px;
+
+        /* Because of polymer/2558, this style has lower specificity than * */
+        box-sizing: border-box !important;
+
+        @apply(--paper-icon-button);
+      }
+
+      :host #ink {
+        color: var(--paper-icon-button-ink-color, --primary-text-color);
+        opacity: 0.6;
+      }
+
+      :host([disabled]) {
+        color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+        pointer-events: none;
+        cursor: auto;
+
+        @apply(--paper-icon-button-disabled);
+      }
+
+      :host(:hover) {
+        @apply(--paper-icon-button-hover);
+      }
+
+      iron-icon {
+        --iron-icon-width: 100%;
+        --iron-icon-height: 100%;
+      }
+    </style>
+
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
+  </template>
+
+  </dom-module>
+<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/">
+  <style>
+    :host {
+      display: inline-block;
+      position: fixed;
+      clip: rect(0px,0px,0px,0px);
+    }
+  </style>
+
+  <template>
+    <div aria-live$="[[mode]]">[[_text]]</div>
+  </template>
+
+  </dom-module>
 <dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/">
   <template>
     <style>
@@ -2954,6 +2958,10 @@ paper-button {
 
 </style>
     <style>
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 :root {
   /* These are custom, Chrome-specific colors that don't have --paper or
    * --google equivalents. Blame bettes@. http://crbug.com/598451 */

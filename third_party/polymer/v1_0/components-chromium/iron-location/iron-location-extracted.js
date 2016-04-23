@@ -95,8 +95,8 @@
       this.listen(window, 'popstate', '_urlChanged');
       this.listen(/** @type {!HTMLBodyElement} */(document.body), 'click', '_globalOnClick');
 
-      this._urlChanged();
       this._initialized = true;
+      this._urlChanged();
     },
     detached: function() {
       this.unlisten(window, 'hashchange', '_hashChanged');
@@ -157,14 +157,17 @@
         // nothing to do, the URL didn't change
         return;
       }
+      // Need to use a full URL in case the containing page has a base URI.
+      var fullNewUrl = new URL(
+          newUrl, window.location.protocol + '//' + window.location.host).href;
       var now = this._now();
       var shouldReplace =
           this._lastChangedAt + this.dwellTime > now;
       this._lastChangedAt = now;
       if (shouldReplace) {
-        window.history.replaceState({}, '', newUrl);
+        window.history.replaceState({}, '', fullNewUrl);
       } else {
-        window.history.pushState({}, '', newUrl);
+        window.history.pushState({}, '', fullNewUrl);
       }
       this.fire('location-changed', {}, {node: window});
     },
@@ -179,7 +182,6 @@
       if (!href) {
         return;
       }
-
       window.history.pushState({}, '', href);
       this.fire('location-changed', {}, {node: window});
       event.preventDefault();
@@ -252,8 +254,10 @@
           !this._urlSpaceRegExp.test(normalizedHref)) {
         return null;
       }
-
-      return normalizedHref;
+      // Need to use a full URL in case the containing page has a base URI.
+      var fullNormalizedHref = new URL(
+          normalizedHref, window.location.href).href;
+      return fullNormalizedHref;
     },
     _makeRegExp: function(urlSpaceRegex) {
       return RegExp(urlSpaceRegex);

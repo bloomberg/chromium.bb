@@ -134,9 +134,9 @@
         ],
 
         attached: function() {
-          this.positionTarget = this.positionTarget || this._defaultPositionTarget;
           // Memoize this to avoid expensive calculations & relayouts.
           this._isRTL = window.getComputedStyle(this).direction == 'rtl';
+          this.positionTarget = this.positionTarget || this._defaultPositionTarget;
         },
 
         /**
@@ -184,7 +184,7 @@
          * The horizontal offset value used to position the dropdown.
          * @param {ClientRect} dropdownRect
          * @param {ClientRect} positionRect
-         * @param {boolean=false} fromRight
+         * @param {boolean=} fromRight
          * @return {number} pixels
          * @private
          */
@@ -204,7 +204,7 @@
          * The vertical offset value used to position the dropdown.
          * @param {ClientRect} dropdownRect
          * @param {ClientRect} positionRect
-         * @param {boolean=false} fromBottom
+         * @param {boolean=} fromBottom
          * @return {number} pixels
          * @private
          */
@@ -222,16 +222,20 @@
 
         /**
          * Called when the value of `opened` changes.
-         *
-         * @param {boolean} opened True if the dropdown is opened.
+         * Overridden from `IronOverlayBehavior`
          */
-        _openedChanged: function(opened) {
-          if (opened && this.disabled) {
+        _openedChanged: function() {
+          if (this.opened && this.disabled) {
             this.cancel();
           } else {
             this.cancelAnimation();
             this.sizingTarget = this.containedElement || this.sizingTarget;
             this._updateAnimationConfig();
+            if (this.opened && !this.allowOutsideScroll) {
+              Polymer.IronDropdownScrollManager.pushScrollLock(this);
+            } else {
+              Polymer.IronDropdownScrollManager.removeScrollLock(this);
+            }
             Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
           }
         },
@@ -240,10 +244,6 @@
          * Overridden from `IronOverlayBehavior`.
          */
         _renderOpened: function() {
-          if (!this.allowOutsideScroll) {
-            Polymer.IronDropdownScrollManager.pushScrollLock(this);
-          }
-
           if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
             if (this.withBackdrop) {
               this.backdropElement.open();
@@ -259,7 +259,6 @@
          * Overridden from `IronOverlayBehavior`.
          */
         _renderClosed: function() {
-          Polymer.IronDropdownScrollManager.removeScrollLock(this);
           if (!this.noAnimations && this.animationConfig && this.animationConfig.close) {
             if (this.withBackdrop) {
               this.backdropElement.close();
