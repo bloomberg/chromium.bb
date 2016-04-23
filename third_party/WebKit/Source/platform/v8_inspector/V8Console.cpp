@@ -497,4 +497,10 @@ v8::MaybeLocal<v8::Object> V8Console::create(v8::Local<v8::Context> context, Ins
     return console;
 }
 
+void V8Console::clearInspectedContextIfNeeded(v8::Local<v8::Context> context, v8::Local<v8::Object> console)
+{
+    v8::Isolate* isolate = context->GetIsolate();
+    console->SetPrivate(context, inspectedContextPrivateKey(isolate), v8::External::New(isolate, nullptr));
+}
+
 } // namespace blink

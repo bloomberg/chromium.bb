@@ -1,0 +1,27 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    var swapConsoleAndRemoveIframe = "\n\
+        var a = window.console;\n\
+        window.console = iframe.contentWindow.console;\n\
+        iframe.contentWindow.console = a;\n\
+        document.getElementById(\"iframe\").remove();\n\
+    ";
+
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": swapConsoleAndRemoveIframe }, runConsoleLog);
+    function runConsoleLog(result)
+    {
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "console.log(239);" }, () => InspectorTest.completeTest());
+    }
+}
+</script>
+</head>
+<iframe id="iframe"></iframe>
+<body onLoad="runTest();">
+Tests that call to console after inspected context was destroyed shouldn't produce crash.
+</body>
+</html>

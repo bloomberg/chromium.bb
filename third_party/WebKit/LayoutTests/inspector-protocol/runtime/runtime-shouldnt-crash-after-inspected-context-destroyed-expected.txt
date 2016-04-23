@@ -1,0 +1,1 @@
+Tests that call to console after inspected context was destroyed shouldn't produce crash.

@@ -16,6 +16,7 @@ class InspectedContext;
 class V8Console {
 public:
     static v8::MaybeLocal<v8::Object> create(v8::Local<v8::Context>, InspectedContext*, bool hasMemoryAttribute);
+    static void clearInspectedContextIfNeeded(v8::Local<v8::Context>, v8::Local<v8::Object> console);
 
     static void debugCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void errorCallback(const v8::FunctionCallbackInfo<v8::Value>&);

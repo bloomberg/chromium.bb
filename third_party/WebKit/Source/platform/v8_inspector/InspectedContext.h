@@ -44,6 +44,7 @@ private:
     friend class V8DebuggerImpl;
     InspectedContext(V8DebuggerImpl*, const V8ContextInfo&, int contextId);
     static void weakCallback(const v8::WeakCallbackInfo<InspectedContext>&);
+    static void consoleWeakCallback(const v8::WeakCallbackInfo<InspectedContext>&);
 
     V8DebuggerImpl* m_debugger;
     v8::Global<v8::Context> m_context;
@@ -55,6 +56,8 @@ private:
     const String16 m_frameId;
     bool m_reported;
     OwnPtr<InjectedScript> m_injectedScript;
+    // TODO(kozyatinskiy): make this reference weak
+    v8::Global<v8::Object> m_console;
 };
 
 } // namespace blink
