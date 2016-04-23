@@ -12,12 +12,12 @@
 // handling responses from, Google's SafeBrowsing servers. The purpose of this
 // class is to get hash prefixes from the SB server for the given set of lists.
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -58,7 +58,7 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   }
 
   // Create an instance of the safe browsing v4 protocol manager.
-  static scoped_ptr<V4UpdateProtocolManager> Create(
+  static std::unique_ptr<V4UpdateProtocolManager> Create(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
       const base::hash_map<UpdateListIdentifier, std::string>&
@@ -169,7 +169,7 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
 
   // The pending update request. The request must be canceled when the object is
   // destroyed.
-  scoped_ptr<net::URLFetcher> request_;
+  std::unique_ptr<net::URLFetcher> request_;
 
   // Timer to setup the next update request.
   base::OneShotTimer update_timer_;
@@ -182,7 +182,7 @@ class V4UpdateProtocolManagerFactory {
  public:
   V4UpdateProtocolManagerFactory() {}
   virtual ~V4UpdateProtocolManagerFactory() {}
-  virtual scoped_ptr<V4UpdateProtocolManager> CreateProtocolManager(
+  virtual std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
       const base::hash_map<UpdateListIdentifier, std::string>&

@@ -12,12 +12,12 @@
 // class is to get full hash matches from the SB server for the given set of
 // hash prefixes.
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -141,7 +141,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Current active request (in case we need to cancel) for updates or chunks
   // from the SafeBrowsing service. We can only have one of these outstanding
   // at any given time unlike GetHash requests, which are tracked separately.
-  scoped_ptr<net::URLFetcher> request_;
+  std::unique_ptr<net::URLFetcher> request_;
 
   // The number of HTTP response errors since the the last successful HTTP
   // response, used for request backoff timing.

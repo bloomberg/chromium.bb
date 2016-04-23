@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -130,7 +130,7 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
     return UMA_STATUS_JSON_EMPTY;
 
   // Pick out the "matches" list.
-  scoped_ptr<base::Value> value = base::JSONReader::Read(metadata_str);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(metadata_str);
   const base::ListValue* matches = nullptr;
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY) ||
       !(static_cast<base::DictionaryValue*>(value.get()))

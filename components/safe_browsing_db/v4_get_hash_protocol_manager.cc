@@ -291,7 +291,7 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
 
   // FindFullHashes response.
   // Reset the scoped pointer so the fetcher gets destroyed properly.
-  scoped_ptr<const net::URLFetcher> fetcher(it->first);
+  std::unique_ptr<const net::URLFetcher> fetcher(it->first);
 
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();

@@ -74,13 +74,13 @@ class V4UpdateProtocolManagerFactoryImpl
  public:
   V4UpdateProtocolManagerFactoryImpl() {}
   ~V4UpdateProtocolManagerFactoryImpl() override {}
-  scoped_ptr<V4UpdateProtocolManager> CreateProtocolManager(
+  std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config,
       const base::hash_map<UpdateListIdentifier, std::string>&
           current_list_states,
       V4UpdateCallback callback) override {
-    return scoped_ptr<V4UpdateProtocolManager>(new V4UpdateProtocolManager(
+    return std::unique_ptr<V4UpdateProtocolManager>(new V4UpdateProtocolManager(
         request_context_getter, config, current_list_states, callback));
   }
 
@@ -94,7 +94,7 @@ class V4UpdateProtocolManagerFactoryImpl
 V4UpdateProtocolManagerFactory* V4UpdateProtocolManager::factory_ = NULL;
 
 // static
-scoped_ptr<V4UpdateProtocolManager> V4UpdateProtocolManager::Create(
+std::unique_ptr<V4UpdateProtocolManager> V4UpdateProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
     const V4ProtocolConfig& config,
     const base::hash_map<UpdateListIdentifier, std::string>&

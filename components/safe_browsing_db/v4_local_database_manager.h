@@ -8,6 +8,8 @@
 // A class that provides the interface between the SafeBrowsing protocol manager
 // and database that holds the downloaded updates.
 
+#include <memory>
+
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -70,7 +72,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   base::hash_map<UpdateListIdentifier, std::string> current_list_states_;
 
   // The protocol manager that downloads the hash prefix updates.
-  scoped_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
+  std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
 
   friend class base::RefCountedThreadSafe<V4LocalDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);

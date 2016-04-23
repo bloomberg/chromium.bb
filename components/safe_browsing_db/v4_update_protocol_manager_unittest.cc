@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing_db/v4_update_protocol_manager.h"
+
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_update_protocol_manager.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -56,7 +57,7 @@ class V4UpdateProtocolManagerTest : public testing::Test {
     }
   }
 
-  scoped_ptr<V4UpdateProtocolManager> CreateProtocolManager(
+  std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
       const base::hash_map<UpdateListIdentifier, std::string>
           current_list_states,
       const std::vector<ListUpdateResponse>& expected_lurs) {
@@ -146,7 +147,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
   net::TestURLFetcherFactory factory;
   const base::hash_map<UpdateListIdentifier, std::string> current_list_states;
   const std::vector<ListUpdateResponse> expected_lurs;
-  scoped_ptr<V4UpdateProtocolManager> pm(
+  std::unique_ptr<V4UpdateProtocolManager> pm(
       CreateProtocolManager(current_list_states, expected_lurs));
   runner->ClearPendingTasks();
 
@@ -180,7 +181,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
   net::TestURLFetcherFactory factory;
   const std::vector<ListUpdateResponse> expected_lurs;
   const base::hash_map<UpdateListIdentifier, std::string> current_list_states;
-  scoped_ptr<V4UpdateProtocolManager> pm(
+  std::unique_ptr<V4UpdateProtocolManager> pm(
       CreateProtocolManager(current_list_states, expected_lurs));
   runner->ClearPendingTasks();
 
@@ -217,7 +218,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
   SetupExpectedListUpdateResponse(&expected_lurs);
   base::hash_map<UpdateListIdentifier, std::string> current_list_states;
   SetupCurrentListStates(&current_list_states);
-  scoped_ptr<V4UpdateProtocolManager> pm(
+  std::unique_ptr<V4UpdateProtocolManager> pm(
       CreateProtocolManager(current_list_states, expected_lurs));
   runner->ClearPendingTasks();
 
@@ -253,7 +254,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
   SetupExpectedListUpdateResponse(&expected_lurs);
   base::hash_map<UpdateListIdentifier, std::string> current_list_states;
   SetupCurrentListStates(&current_list_states);
-  scoped_ptr<V4UpdateProtocolManager> pm(
+  std::unique_ptr<V4UpdateProtocolManager> pm(
       CreateProtocolManager(current_list_states, expected_lurs));
   runner->ClearPendingTasks();
 

@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 
@@ -160,7 +161,7 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
 }
 
 // static
-scoped_ptr<const PrefixSet> PrefixSet::LoadFile(
+std::unique_ptr<const PrefixSet> PrefixSet::LoadFile(
     const base::FilePath& filter_name) {
   int64_t size_64;
   if (!base::GetFileSize(filter_name, &size_64))
@@ -261,8 +262,7 @@ scoped_ptr<const PrefixSet> PrefixSet::LoadFile(
     return nullptr;
 
   // Steals vector contents using swap().
-  return make_scoped_ptr(
-      new PrefixSet(&index, &deltas, &full_hashes));
+  return base::WrapUnique(new PrefixSet(&index, &deltas, &full_hashes));
 }
 
 bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
@@ -376,7 +376,7 @@ PrefixSetBuilder::PrefixSetBuilder(const std::vector<SBPrefix>& prefixes)
 PrefixSetBuilder::~PrefixSetBuilder() {
 }
 
-scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSet(
+std::unique_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSet(
     const std::vector<SBFullHash>& hashes) {
   DCHECK(prefix_set_.get());
 
@@ -396,7 +396,7 @@ scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSet(
   return std::move(prefix_set_);
 }
 
-scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
+std::unique_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
   return GetPrefixSet(std::vector<SBFullHash>());
 }
 

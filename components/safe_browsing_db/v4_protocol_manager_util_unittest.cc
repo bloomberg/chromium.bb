@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+
 #include <vector>
 
 #include "base/base64.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

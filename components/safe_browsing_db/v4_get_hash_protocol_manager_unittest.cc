@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
+
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/testing_util.h"
 #include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -33,12 +34,12 @@ namespace safe_browsing {
 
 class SafeBrowsingV4GetHashProtocolManagerTest : public testing::Test {
  protected:
-  scoped_ptr<V4GetHashProtocolManager> CreateProtocolManager() {
+  std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager() {
     V4ProtocolConfig config;
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
-    return scoped_ptr<V4GetHashProtocolManager>(
+    return std::unique_ptr<V4GetHashProtocolManager>(
         V4GetHashProtocolManager::Create(NULL, config));
   }
 
@@ -85,7 +86,7 @@ void ValidateGetV4HashResults(
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
        TestGetHashErrorHandlingNetwork) {
   net::TestURLFetcherFactory factory;
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   std::vector<SBPrefix> prefixes;
   std::vector<SBFullHashResult> expected_full_hashes;
@@ -112,7 +113,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
        TestGetHashErrorHandlingResponseCode) {
   net::TestURLFetcherFactory factory;
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   std::vector<SBPrefix> prefixes;
   std::vector<SBFullHashResult> expected_full_hashes;
@@ -137,7 +138,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
   net::TestURLFetcherFactory factory;
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   std::vector<SBPrefix> prefixes;
   std::vector<SBFullHashResult> expected_full_hashes;
@@ -165,7 +166,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
 }
 
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashRequest) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FindFullHashesRequest req;
   ThreatInfo* info = req.mutable_threat_info();
@@ -200,7 +201,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashRequest) {
 }
 
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
@@ -239,7 +240,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
 // Adds an entry with an ignored ThreatEntryType.
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
        TestParseHashResponseWrongThreatEntryType) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
@@ -261,7 +262,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 // Adds an entry with a SOCIAL_ENGINEERING threat type.
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
        TestParseHashResponseSocialEngineeringThreatType) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
@@ -291,7 +292,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 // Adds metadata with a key value that is not "permission".
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
        TestParseHashResponseNonPermissionMetadata) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
@@ -326,7 +327,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
        TestParseHashResponseInconsistentThreatTypes) {
-  scoped_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FindFullHashesResponse res;
   ThreatMatch* m1 = res.add_matches();

@@ -52,12 +52,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/safe_browsing_db/util.h"
 
 namespace base {
@@ -75,7 +75,7 @@ class PrefixSet {
   bool Exists(const SBFullHash& hash) const;
 
   // Persist the set on disk.
-  static scoped_ptr<const PrefixSet> LoadFile(
+  static std::unique_ptr<const PrefixSet> LoadFile(
       const base::FilePath& filter_name);
   bool WriteFile(const base::FilePath& filter_name) const;
 
@@ -167,12 +167,12 @@ class PrefixSetBuilder {
   // Flush any buffered prefixes, and return the final PrefixSet instance.
   // |hashes| are sorted and stored in |full_hashes_|.  Any call other than the
   // destructor is illegal after this call.
-  scoped_ptr<const PrefixSet> GetPrefixSet(
+  std::unique_ptr<const PrefixSet> GetPrefixSet(
       const std::vector<SBFullHash>& hashes);
 
   // Helper for clients which only track prefixes.  Calls GetPrefixSet() with
   // empty hash vector.
-  scoped_ptr<const PrefixSet> GetPrefixSetNoHashes();
+  std::unique_ptr<const PrefixSet> GetPrefixSetNoHashes();
 
  private:
   // Encode a run of deltas for |AddRun()|.  The run is broken by a too-large
@@ -183,7 +183,7 @@ class PrefixSetBuilder {
   std::vector<SBPrefix> buffer_;
 
   // The PrefixSet being built.
-  scoped_ptr<PrefixSet> prefix_set_;
+  std::unique_ptr<PrefixSet> prefix_set_;
 };
 
 }  // namespace safe_browsing
