@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
+import android.support.v7.media.MediaRouteSelector;
 
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
@@ -69,7 +70,10 @@ public class MediaRouteChooserDialogManager extends BaseMediaRouteDialogManager 
             }
         };
 
-        fragment.setRouteSelector(mediaSource().buildRouteSelector());
+        MediaRouteSelector selector = mediaSource().buildRouteSelector();
+        if (selector == null) return null;
+
+        fragment.setRouteSelector(selector);
         fragment.show(fm, DIALOG_FRAGMENT_TAG);
         fm.executePendingTransactions();
 

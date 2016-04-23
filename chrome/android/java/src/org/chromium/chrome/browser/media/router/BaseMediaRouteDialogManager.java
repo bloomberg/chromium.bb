@@ -65,16 +65,29 @@ public abstract class BaseMediaRouteDialogManager implements MediaRouteDialogMan
 
     @Override
     public void openDialog() {
-        if (mAndroidMediaRouter == null) return;
+        if (mAndroidMediaRouter == null) {
+            mDelegate.onDialogCancelled();
+            return;
+        }
 
         FragmentActivity currentActivity =
                 (FragmentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
-        if (currentActivity == null) return;
+        if (currentActivity == null)  {
+            mDelegate.onDialogCancelled();
+            return;
+        }
 
         FragmentManager fm = currentActivity.getSupportFragmentManager();
-        if (fm == null) return;
+        if (fm == null)  {
+            mDelegate.onDialogCancelled();
+            return;
+        }
 
         mDialogFragment = openDialogInternal(fm);
+        if (mDialogFragment == null)  {
+            mDelegate.onDialogCancelled();
+            return;
+        }
     }
 
     @Override

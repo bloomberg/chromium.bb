@@ -192,11 +192,8 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         MediaSource source = MediaSource.from(sourceId);
         if (source == null) return;
 
-        // If the source is a Cast source but invalid, report no sinks available.
-        MediaRouteSelector routeSelector;
-        try {
-            routeSelector = source.buildRouteSelector();
-        } catch (IllegalArgumentException e) {
+        MediaRouteSelector routeSelector = source.buildRouteSelector();
+        if (routeSelector == null) {
             // If the application invalid, report no devices available.
             onSinksReceived(sourceId, new ArrayList<MediaSink>());
             return;

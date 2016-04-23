@@ -102,13 +102,18 @@ public class MediaSource {
 
     /**
      * Returns a new {@link MediaRouteSelector} to use for Cast device filtering for this
-     * particular media source.
-     * @return an initialized route selector.
+     * particular media source or null if the application id is invalid.
+     *
+     * @return an initialized route selector or null.
      */
     public MediaRouteSelector buildRouteSelector() {
-        return new MediaRouteSelector.Builder()
-                .addControlCategory(CastMediaControlIntent.categoryForCast(mApplicationId))
-                .build();
+        try {
+            return new MediaRouteSelector.Builder()
+                    .addControlCategory(CastMediaControlIntent.categoryForCast(mApplicationId))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**
