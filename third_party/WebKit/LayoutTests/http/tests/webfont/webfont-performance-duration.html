@@ -4,8 +4,7 @@
 <div id="target">Hello webfont</div>
 
 <script>
-if (window.testRunner)
-    testRunner.waitUntilDone();
+jsTestIsAsync = true;
 
 var waitMillisBeforeFetching = 300;
 var entry;
@@ -22,7 +21,6 @@ new Promise(function(resolve) {
     var name = document.location.origin + '/misc/resources/acid3/font.ttf';
     entry = window.performance.getEntriesByName(name)[0];
     shouldBeTrue('entry.startTime >= waitMillisBeforeFetching');
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishJSTest();
 });
 </script>

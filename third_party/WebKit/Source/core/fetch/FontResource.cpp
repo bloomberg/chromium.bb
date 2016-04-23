@@ -103,11 +103,20 @@ void FontResource::didAddClient(ResourceClient* c)
         static_cast<FontResourceClient*>(c)->fontLoadLongLimitExceeded(this);
 }
 
+void FontResource::setRevalidatingRequest(const ResourceRequest& request)
+{
+    // Reload will use the same object, and needs to reset |m_loadLimitState|
+    // before any didAddClient() is called again.
+    m_loadLimitState = UnderLimit;
+    Resource::setRevalidatingRequest(request);
+}
+
 void FontResource::startLoadLimitTimersIfNeeded()
 {
     ASSERT(!stillNeedsLoad());
     if (isLoaded() || m_fontLoadLongLimitTimer.isActive())
         return;
+    ASSERT(m_loadLimitState == UnderLimit);
     m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec, BLINK_FROM_HERE);
     m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec, BLINK_FROM_HERE);
 }

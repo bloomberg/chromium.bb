@@ -117,7 +117,7 @@ public:
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
     const ResourceRequest& lastResourceRequest() const;
 
-    void setRevalidatingRequest(const ResourceRequest&);
+    virtual void setRevalidatingRequest(const ResourceRequest&);
 
     // This url can have a fragment, but it can match resources that differ by the fragment only.
     const KURL& url() const { return m_resourceRequest.url();}

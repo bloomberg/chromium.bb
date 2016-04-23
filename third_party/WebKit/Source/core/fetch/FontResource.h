@@ -49,6 +49,8 @@ public:
 
     void didAddClient(ResourceClient*) override;
 
+    void setRevalidatingRequest(const ResourceRequest&) override;
+
     void allClientsAndObserversRemoved() override;
     void startLoadLimitTimersIfNeeded();
 
