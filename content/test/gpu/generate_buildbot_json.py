@@ -808,6 +808,9 @@ TELEMETRY_TESTS = {
     'tester_configs': [
       {
         'allow_on_mac_nvidia': True,
+         # The WebGL 2.0 conformance tests take over an hour to run on
+         # the Debug bots, which is too long.
+        'build_configs': ['Release', 'Release_x64'],
         'fyi_only': True,
         'run_on_optional': True,
       },
