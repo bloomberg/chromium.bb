@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -93,17 +94,17 @@ TEST(IPCMessageUtilsTest, StackVector) {
 
 // Tests that PickleSizer and Pickle agree on the size of a complex base::Value.
 TEST(IPCMessageUtilsTest, ValueSize) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetWithoutPathExpansion("foo", new base::FundamentalValue(42));
   value->SetWithoutPathExpansion("bar", new base::FundamentalValue(3.14));
   value->SetWithoutPathExpansion("baz", new base::StringValue("hello"));
   value->SetWithoutPathExpansion("qux", base::Value::CreateNullValue());
 
-  scoped_ptr<base::DictionaryValue> nested_dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> nested_dict(new base::DictionaryValue);
   nested_dict->SetWithoutPathExpansion("foobar", new base::FundamentalValue(5));
   value->SetWithoutPathExpansion("nested", std::move(nested_dict));
 
-  scoped_ptr<base::ListValue> list_value(new base::ListValue);
+  std::unique_ptr<base::ListValue> list_value(new base::ListValue);
   list_value->Append(new base::StringValue("im a string"));
   list_value->Append(new base::StringValue("im another string"));
   value->SetWithoutPathExpansion("awesome-list", std::move(list_value));

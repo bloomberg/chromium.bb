@@ -8,11 +8,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
@@ -224,7 +225,7 @@ class PerformanceChannelListener : public Listener {
   int count_down_;
   std::string payload_;
   EventTimeTracker latency_tracker_;
-  scoped_ptr<base::PerfTimeLogger> perf_logger_;
+  std::unique_ptr<base::PerfTimeLogger> perf_logger_;
 };
 
 IPCChannelPerfTestBase::IPCChannelPerfTestBase() = default;
@@ -286,8 +287,7 @@ void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
     const std::vector<PingPongTestParams>& params) {
   io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
   InitWithCustomMessageLoop("PerformanceClient",
-                            make_scoped_ptr(new base::MessageLoop()));
-
+                            base::WrapUnique(new base::MessageLoop()));
 
   // Set up IPC channel and start client.
   PerformanceChannelListener listener("ChannelProxy");
@@ -333,15 +333,14 @@ PingPongTestClient::PingPongTestClient()
 PingPongTestClient::~PingPongTestClient() {
 }
 
-scoped_ptr<Channel> PingPongTestClient::CreateChannel(
-    Listener* listener) {
+std::unique_ptr<Channel> PingPongTestClient::CreateChannel(Listener* listener) {
   return Channel::CreateClient(IPCTestBase::GetChannelName("PerformanceClient"),
                                listener);
 }
 
 int PingPongTestClient::RunMain() {
   LockThreadAffinity thread_locker(kSharedCore);
-  scoped_ptr<Channel> channel = CreateChannel(listener_.get());
+  std::unique_ptr<Channel> channel = CreateChannel(listener_.get());
   listener_->Init(channel.get());
   CHECK(channel->Connect());
 

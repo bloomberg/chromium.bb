@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
@@ -40,9 +41,10 @@ class IPC_MOJO_EXPORT MojoBootstrap {
 
   // Create the MojoBootstrap instance, using |handle| as the message pipe, in
   // mode as specified by |mode|. The result is passed to |delegate|.
-  static scoped_ptr<MojoBootstrap> Create(mojo::ScopedMessagePipeHandle handle,
-                                          Channel::Mode mode,
-                                          Delegate* delegate);
+  static std::unique_ptr<MojoBootstrap> Create(
+      mojo::ScopedMessagePipeHandle handle,
+      Channel::Mode mode,
+      Delegate* delegate);
 
   MojoBootstrap();
   virtual ~MojoBootstrap();

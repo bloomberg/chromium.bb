@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <set>
 
 #include "base/run_loop.h"
@@ -155,7 +156,7 @@ TEST(ChannelReaderTest, AttachmentAlreadyBrokered) {
 }
 
 TEST(ChannelReaderTest, AttachmentNotYetBrokered) {
-  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoopForIO());
+  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoopForIO());
 
   MockAttachmentBroker broker;
   MockChannelReader reader;

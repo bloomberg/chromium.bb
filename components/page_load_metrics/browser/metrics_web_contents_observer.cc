@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"

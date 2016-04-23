@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
@@ -86,14 +86,14 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   // on the background thread.  Any message not handled by the filter will be
   // dispatched to the listener.  The given task runner correspond to a thread
   // on which IPC::Channel is created and used (e.g. IO thread).
-  static scoped_ptr<ChannelProxy> Create(
+  static std::unique_ptr<ChannelProxy> Create(
       const IPC::ChannelHandle& channel_handle,
       Channel::Mode mode,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
-  static scoped_ptr<ChannelProxy> Create(
-      scoped_ptr<ChannelFactory> factory,
+  static std::unique_ptr<ChannelProxy> Create(
+      std::unique_ptr<ChannelFactory> factory,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
@@ -106,7 +106,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   void Init(const IPC::ChannelHandle& channel_handle,
             Channel::Mode mode,
             bool create_pipe_now);
-  void Init(scoped_ptr<ChannelFactory> factory, bool create_pipe_now);
+  void Init(std::unique_ptr<ChannelFactory> factory, bool create_pipe_now);
 
   // Close the IPC::Channel.  This operation completes asynchronously, once the
   // background thread processes the command to close the channel.  It is ok to
@@ -214,7 +214,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     friend class IpcSecurityTestUtil;
 
     // Create the Channel
-    void CreateChannel(scoped_ptr<ChannelFactory> factory);
+    void CreateChannel(std::unique_ptr<ChannelFactory> factory);
 
     void set_attachment_broker_endpoint(bool is_endpoint) {
       attachment_broker_endpoint_ = is_endpoint;
@@ -223,7 +223,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     }
 
     // Methods called on the IO thread.
-    void OnSendMessage(scoped_ptr<Message> message_ptr);
+    void OnSendMessage(std::unique_ptr<Message> message_ptr);
     void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
 
@@ -247,7 +247,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // But once it has been set, it must only be read or cleared on the IPC
     // thread.
     // One exception is the thread-safe send. See the class comment.
-    scoped_ptr<Channel> channel_;
+    std::unique_ptr<Channel> channel_;
     std::string channel_id_;
     bool channel_connected_called_;
 
@@ -260,7 +260,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
 
     // Routes a given message to a proper subset of |filters_|, depending
     // on which message classes a filter might support.
-    scoped_ptr<MessageFilterRouter> message_filter_router_;
+    std::unique_ptr<MessageFilterRouter> message_filter_router_;
 
     // Holds filters between the AddFilter call on the listerner thread and the
     // IPC thread when they're added to filters_.

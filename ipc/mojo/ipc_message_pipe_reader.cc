@@ -83,7 +83,7 @@ void MessagePipeReader::Close() {
     binding_.Close();
 }
 
-bool MessagePipeReader::Send(scoped_ptr<Message> message) {
+bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
   TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
                          "MessagePipeReader::Send",
                          message->flags(),

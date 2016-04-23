@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -305,14 +304,14 @@ bool ReadValue(const base::Pickle* m,
       break;
     }
     case base::Value::TYPE_DICTIONARY: {
-      scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
+      std::unique_ptr<base::DictionaryValue> val(new base::DictionaryValue());
       if (!ReadDictionaryValue(m, iter, val.get(), recursion))
         return false;
       *value = val.release();
       break;
     }
     case base::Value::TYPE_LIST: {
-      scoped_ptr<base::ListValue> val(new base::ListValue());
+      std::unique_ptr<base::ListValue> val(new base::ListValue());
       if (!ReadListValue(m, iter, val.get(), recursion))
         return false;
       *value = val.release();

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -118,7 +119,7 @@ class ChannelClient {
  private:
   base::MessageLoopForIO main_message_loop_;
   mojo::ScopedMessagePipeHandle handle_;
-  scoped_ptr<IPC::ChannelMojo> channel_;
+  std::unique_ptr<IPC::ChannelMojo> channel_;
 };
 
 class IPCChannelMojoTest : public testing::Test {
@@ -150,7 +151,7 @@ class IPCChannelMojoTest : public testing::Test {
   base::TestIOThread io_thread_;
   mojo::edk::test::MultiprocessTestHelper helper_;
   mojo::ScopedMessagePipeHandle handle_;
-  scoped_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::Channel> channel_;
 };
 
 class TestChannelListenerWithExtraExpectations
@@ -516,7 +517,7 @@ TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitValidMessagePipe) {
 
   TestingMessagePipe pipe;
 
-  scoped_ptr<IPC::Message> message(new IPC::Message());
+  std::unique_ptr<IPC::Message> message(new IPC::Message());
   IPC::ParamTraits<mojo::MessagePipeHandle>::Write(message.get(),
                                                    pipe.peer.release());
   WriteOK(pipe.self.get());
@@ -548,7 +549,7 @@ TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitInvalidMessagePipe) {
   ASSERT_TRUE(ConnectChannel());
 
   mojo::MessagePipeHandle invalid_handle;
-  scoped_ptr<IPC::Message> message(new IPC::Message());
+  std::unique_ptr<IPC::Message> message(new IPC::Message());
   IPC::ParamTraits<mojo::MessagePipeHandle>::Write(message.get(),
                                                    invalid_handle);
 

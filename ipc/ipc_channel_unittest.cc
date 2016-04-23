@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/pickle.h"
@@ -158,7 +159,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(GenericClient) {
   IPC::TestChannelListener listener;
 
   // Set up IPC channel.
-  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName("GenericClient"), &listener));
   CHECK(channel->Connect());
   listener.Init(channel.get());

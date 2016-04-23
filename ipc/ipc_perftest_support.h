@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -53,7 +54,7 @@ class IPCChannelPerfTestBase : public IPCTestBase {
   }
 
  private:
-  scoped_ptr<base::TestIOThread> io_thread_;
+  std::unique_ptr<base::TestIOThread> io_thread_;
 };
 
 class PingPongTestClient {
@@ -61,14 +62,14 @@ class PingPongTestClient {
   PingPongTestClient();
   virtual ~PingPongTestClient();
 
-  virtual scoped_ptr<Channel> CreateChannel(Listener* listener);
+  virtual std::unique_ptr<Channel> CreateChannel(Listener* listener);
   int RunMain();
   scoped_refptr<base::TaskRunner> task_runner();
 
  private:
   base::MessageLoopForIO main_message_loop_;
-  scoped_ptr<ChannelReflectorListener> listener_;
-  scoped_ptr<Channel> channel_;
+  std::unique_ptr<ChannelReflectorListener> listener_;
+  std::unique_ptr<Channel> channel_;
 };
 
 // This class locks the current thread to a particular CPU core. This is

@@ -5,10 +5,12 @@
 #include "ipc/attachment_broker_privileged.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ipc/ipc_endpoint.h"
@@ -52,12 +54,11 @@ base::PortProvider* g_port_provider = nullptr;
 // responsible for ensuring that the attachment broker lives longer than
 // every IPC::Channel. The new instance automatically registers itself as the
 // global attachment broker.
-scoped_ptr<AttachmentBrokerPrivileged> CreateBroker() {
+std::unique_ptr<AttachmentBrokerPrivileged> CreateBroker() {
 #if defined(OS_WIN)
-  return scoped_ptr<AttachmentBrokerPrivileged>(
-      new IPC::AttachmentBrokerPrivilegedWin);
+  return base::WrapUnique(new IPC::AttachmentBrokerPrivilegedWin);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  return scoped_ptr<AttachmentBrokerPrivileged>(
+  return base::WrapUnique(
       new IPC::AttachmentBrokerPrivilegedMac(g_port_provider));
 #else
   return nullptr;
@@ -72,7 +73,7 @@ class AttachmentBrokerMakeOnce {
   AttachmentBrokerMakeOnce() : attachment_broker_(CreateBroker()) {}
 
  private:
-  scoped_ptr<IPC::AttachmentBrokerPrivileged> attachment_broker_;
+  std::unique_ptr<IPC::AttachmentBrokerPrivileged> attachment_broker_;
 };
 
 base::LazyInstance<AttachmentBrokerMakeOnce>::Leaky

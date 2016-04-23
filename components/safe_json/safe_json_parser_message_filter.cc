@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/safe_json/safe_json_parser_messages.h"
 #include "content/public/utility/utility_thread.h"

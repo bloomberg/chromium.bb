@@ -4,7 +4,10 @@
 
 #include "ipc/attachment_broker_unprivileged.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
@@ -28,13 +31,11 @@ namespace {
 // responsible for ensuring that the attachment broker lives longer than
 // every IPC::Channel. The new instance automatically registers itself as the
 // global attachment broker.
-scoped_ptr<AttachmentBrokerUnprivileged> CreateBroker() {
+std::unique_ptr<AttachmentBrokerUnprivileged> CreateBroker() {
 #if defined(OS_WIN)
-  return scoped_ptr<AttachmentBrokerUnprivileged>(
-      new IPC::AttachmentBrokerUnprivilegedWin);
+  return base::WrapUnique(new IPC::AttachmentBrokerUnprivilegedWin);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  return scoped_ptr<AttachmentBrokerUnprivileged>(
-      new IPC::AttachmentBrokerUnprivilegedMac);
+  return base::WrapUnique(new IPC::AttachmentBrokerUnprivilegedMac);
 #else
   return nullptr;
 #endif
@@ -53,7 +54,7 @@ class AttachmentBrokerMakeOnce {
   }
 
  private:
-  scoped_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
+  std::unique_ptr<IPC::AttachmentBrokerUnprivileged> attachment_broker_;
 };
 
 base::LazyInstance<AttachmentBrokerMakeOnce>::Leaky

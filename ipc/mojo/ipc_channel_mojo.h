@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -42,17 +42,16 @@ class IPC_MOJO_EXPORT ChannelMojo
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
   // Creates a ChannelMojo.
-  static scoped_ptr<ChannelMojo> Create(mojo::ScopedMessagePipeHandle handle,
-                                        Mode mode,
-                                        Listener* listener);
+  static std::unique_ptr<ChannelMojo>
+  Create(mojo::ScopedMessagePipeHandle handle, Mode mode, Listener* listener);
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
-  static scoped_ptr<ChannelFactory> CreateServerFactory(
+  static std::unique_ptr<ChannelFactory> CreateServerFactory(
       mojo::ScopedMessagePipeHandle handle);
 
-  static scoped_ptr<ChannelFactory> CreateClientFactory(
+  static std::unique_ptr<ChannelFactory> CreateClientFactory(
       mojo::ScopedMessagePipeHandle handle);
 
   ~ChannelMojo() override;
@@ -107,13 +106,13 @@ class IPC_MOJO_EXPORT ChannelMojo
   scoped_refptr<base::TaskRunner> task_runner_;
 
   const mojo::MessagePipeHandle pipe_;
-  scoped_ptr<MojoBootstrap> bootstrap_;
+  std::unique_ptr<MojoBootstrap> bootstrap_;
   Listener* listener_;
 
   // Guards access to the fields below.
   mutable base::Lock lock_;
-  scoped_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
-  std::vector<scoped_ptr<Message>> pending_messages_;
+  std::unique_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
+  std::vector<std::unique_ptr<Message>> pending_messages_;
   bool waiting_connect_;
 
   base::WeakPtrFactory<ChannelMojo> weak_factory_;

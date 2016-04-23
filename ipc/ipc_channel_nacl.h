@@ -6,11 +6,11 @@
 #define IPC_IPC_CHANNEL_NACL_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/simple_thread.h"
@@ -50,7 +50,7 @@ class ChannelNacl : public Channel,
   AttachmentBroker* GetAttachmentBroker() override;
 
   // Posted to the main thread by ReaderThreadRunner.
-  void DidRecvMsg(scoped_ptr<MessageContents> contents);
+  void DidRecvMsg(std::unique_ptr<MessageContents> contents);
   void ReadDidFail();
 
  private:
@@ -90,8 +90,8 @@ class ChannelNacl : public Channel,
   // imc_recvmsg supports non-blocking reads, but there's no easy way to be
   // informed when a write or read can be done without blocking (this is handled
   // by libevent in Posix).
-  scoped_ptr<ReaderThreadRunner> reader_thread_runner_;
-  scoped_ptr<base::DelegateSimpleThread> reader_thread_;
+  std::unique_ptr<ReaderThreadRunner> reader_thread_runner_;
+  std::unique_ptr<base::DelegateSimpleThread> reader_thread_;
 
   // IPC::ChannelReader expects to be able to call ReadData on us to
   // synchronously read data waiting in the pipe's buffer without blocking.

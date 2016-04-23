@@ -13,6 +13,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
+
 #if defined(OS_OPENBSD)
 #include <sys/uio.h>
 #endif
@@ -31,7 +35,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -820,9 +823,8 @@ int ChannelPosix::GetHelloMessageProcId() const {
 
 void ChannelPosix::QueueHelloMessage() {
   // Create the Hello message
-  scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
-                                      HELLO_MESSAGE_TYPE,
-                                      IPC::Message::PRIORITY_NORMAL));
+  std::unique_ptr<Message> msg(new Message(MSG_ROUTING_NONE, HELLO_MESSAGE_TYPE,
+                                           IPC::Message::PRIORITY_NORMAL));
   if (!msg->WriteInt(GetHelloMessageProcId())) {
     NOTREACHED() << "Unable to pickle hello message proc id";
   }
@@ -976,9 +978,9 @@ void ChannelPosix::QueueCloseFDMessage(int fd, int hops) {
     case 1:
     case 2: {
       // Create the message
-      scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
-                                          CLOSE_FD_MESSAGE_TYPE,
-                                          IPC::Message::PRIORITY_NORMAL));
+      std::unique_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
+                                               CLOSE_FD_MESSAGE_TYPE,
+                                               IPC::Message::PRIORITY_NORMAL));
       if (!msg->WriteInt(hops - 1) || !msg->WriteInt(fd)) {
         NOTREACHED() << "Unable to pickle close fd.";
       }
@@ -1101,10 +1103,11 @@ void ChannelPosix::ResetSafely(base::ScopedFD* fd) {
 // Channel's methods
 
 // static
-scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
-                                    Mode mode,
-                                    Listener* listener) {
-  return make_scoped_ptr(new ChannelPosix(channel_handle, mode, listener));
+std::unique_ptr<Channel> Channel::Create(
+    const IPC::ChannelHandle& channel_handle,
+    Mode mode,
+    Listener* listener) {
+  return base::WrapUnique(new ChannelPosix(channel_handle, mode, listener));
 }
 
 // static

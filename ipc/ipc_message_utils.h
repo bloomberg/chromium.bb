@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <tuple>
@@ -20,7 +21,6 @@
 #include "base/containers/stack_container.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -941,8 +941,8 @@ struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
 };
 
 template <class P>
-struct ParamTraits<scoped_ptr<P> > {
-  typedef scoped_ptr<P> param_type;
+struct ParamTraits<std::unique_ptr<P>> {
+  typedef std::unique_ptr<P> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
     bool valid = !!p;
     GetParamSize(sizer, valid);

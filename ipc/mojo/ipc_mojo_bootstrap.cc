@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message_utils.h"
@@ -125,15 +126,15 @@ void MojoClientBootstrap::Init(mojom::ChannelAssociatedRequest receive_channel,
 // MojoBootstrap
 
 // static
-scoped_ptr<MojoBootstrap> MojoBootstrap::Create(
+std::unique_ptr<MojoBootstrap> MojoBootstrap::Create(
     mojo::ScopedMessagePipeHandle handle,
     Channel::Mode mode,
     Delegate* delegate) {
   CHECK(mode == Channel::MODE_CLIENT || mode == Channel::MODE_SERVER);
-  scoped_ptr<MojoBootstrap> self =
+  std::unique_ptr<MojoBootstrap> self =
       mode == Channel::MODE_CLIENT
-          ? scoped_ptr<MojoBootstrap>(new MojoClientBootstrap())
-          : scoped_ptr<MojoBootstrap>(new MojoServerBootstrap());
+          ? std::unique_ptr<MojoBootstrap>(new MojoClientBootstrap)
+          : std::unique_ptr<MojoBootstrap>(new MojoServerBootstrap);
 
   self->Init(std::move(handle), delegate);
   return self;

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -24,7 +26,7 @@ class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
     test::IPCChannelPerfTestBase::TearDown();
   }
 
-  scoped_ptr<ChannelFactory> CreateChannelFactory(
+  std::unique_ptr<ChannelFactory> CreateChannelFactory(
       const ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
     ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner()));
@@ -41,7 +43,7 @@ class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
   }
 
   mojo::edk::test::MultiprocessTestHelper helper_;
-  scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
+  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
 };
 
 TEST_F(MojoChannelPerfTest, ChannelPingPong) {
@@ -78,7 +80,7 @@ class MojoPerfTestClient : public test::PingPongTestClient {
 
   MojoPerfTestClient();
 
-  scoped_ptr<Channel> CreateChannel(Listener* listener) override;
+  std::unique_ptr<Channel> CreateChannel(Listener* listener) override;
 
   int Run(MojoHandle handle);
 
@@ -92,9 +94,9 @@ MojoPerfTestClient::MojoPerfTestClient()
   mojo::edk::test::MultiprocessTestHelper::ChildSetup();
 }
 
-scoped_ptr<Channel> MojoPerfTestClient::CreateChannel(Listener* listener) {
-  return scoped_ptr<Channel>(
-      ChannelMojo::Create(std::move(handle_), Channel::MODE_CLIENT, listener));
+std::unique_ptr<Channel> MojoPerfTestClient::CreateChannel(Listener* listener) {
+  return ChannelMojo::Create(std::move(handle_), Channel::MODE_CLIENT,
+                             listener);
 }
 
 int MojoPerfTestClient::Run(MojoHandle handle) {

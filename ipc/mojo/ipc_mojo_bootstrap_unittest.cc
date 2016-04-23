@@ -5,6 +5,7 @@
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/files/file.h"
@@ -68,7 +69,7 @@ TEST_F(IPCMojoBootstrapTest, MAYBE_Connect) {
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
-  scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
+  std::unique_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
       helper_.StartChild("IPCMojoBootstrapTestClient"),
       IPC::Channel::MODE_SERVER, &delegate);
 
@@ -86,7 +87,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
-  scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
+  std::unique_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
       mojo::edk::CreateChildMessagePipe(
           mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token),
       IPC::Channel::MODE_CLIENT, &delegate);

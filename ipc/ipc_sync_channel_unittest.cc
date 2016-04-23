@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -158,7 +158,7 @@ class Worker : public Listener, public Sender {
   }
 
   virtual SyncChannel* CreateChannel() {
-    scoped_ptr<SyncChannel> channel = SyncChannel::Create(
+    std::unique_ptr<SyncChannel> channel = SyncChannel::Create(
         channel_name_, mode_, this, ipc_thread_.task_runner().get(), true,
         &shutdown_event_);
     return channel.release();
@@ -224,11 +224,11 @@ class Worker : public Listener, public Sender {
     thread->StartWithOptions(options);
   }
 
-  scoped_ptr<WaitableEvent> done_;
-  scoped_ptr<WaitableEvent> channel_created_;
+  std::unique_ptr<WaitableEvent> done_;
+  std::unique_ptr<WaitableEvent> channel_created_;
   std::string channel_name_;
   Channel::Mode mode_;
-  scoped_ptr<SyncChannel> channel_;
+  std::unique_ptr<SyncChannel> channel_;
   base::Thread ipc_thread_;
   base::Thread listener_thread_;
   base::Thread* overrided_thread_;
@@ -1251,7 +1251,7 @@ class RestrictedDispatchClient : public Worker {
   NonRestrictedDispatchServer* server2_;
   int* success_;
   WaitableEvent* sent_ping_event_;
-  scoped_ptr<SyncChannel> non_restricted_channel_;
+  std::unique_ptr<SyncChannel> non_restricted_channel_;
 };
 
 TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
@@ -1599,7 +1599,7 @@ class RestrictedDispatchPipeWorker : public Worker {
     return true;
   }
 
-  scoped_ptr<SyncChannel> other_channel_;
+  std::unique_ptr<SyncChannel> other_channel_;
   WaitableEvent* event1_;
   WaitableEvent* event2_;
   std::string other_channel_name_;
@@ -1680,7 +1680,7 @@ class ReentrantReplyServer1 : public Worker {
   }
 
   WaitableEvent* server_ready_;
-  scoped_ptr<SyncChannel> server2_channel_;
+  std::unique_ptr<SyncChannel> server2_channel_;
 };
 
 class ReentrantReplyServer2 : public Worker {

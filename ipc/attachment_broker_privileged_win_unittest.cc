@@ -6,12 +6,12 @@
 
 #include <windows.h>
 
+#include <memory>
 #include <tuple>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/win/scoped_handle.h"
@@ -83,7 +83,7 @@ ScopedHandle GetHandleFromTestHandleWinMsg(const IPC::Message& message) {
 }
 
 // Returns a mapped, shared memory region based on the handle in |message|.
-scoped_ptr<base::SharedMemory> GetSharedMemoryFromSharedMemoryHandleMsg1(
+std::unique_ptr<base::SharedMemory> GetSharedMemoryFromSharedMemoryHandleMsg1(
     const IPC::Message& message,
     size_t size) {
   // Expect a message with a brokered attachment.
@@ -100,7 +100,7 @@ scoped_ptr<base::SharedMemory> GetSharedMemoryFromSharedMemoryHandleMsg1(
   }
 
   base::SharedMemoryHandle handle = std::get<0>(p);
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle, false));
 
   shared_memory->Map(size);
@@ -313,7 +313,7 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_path_;
   ProxyListener proxy_listener_;
-  scoped_ptr<IPC::AttachmentBrokerUnprivilegedWin> broker_;
+  std::unique_ptr<IPC::AttachmentBrokerUnprivilegedWin> broker_;
   MockObserver observer_;
   DWORD handle_count_;
 };
@@ -479,7 +479,7 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendSharedMemoryHandle) {
   ResultListener result_listener;
   get_proxy_listener()->set_listener(&result_listener);
 
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   shared_memory->CreateAndMapAnonymous(kSharedMemorySize);
   memcpy(shared_memory->memory(), kDataBuffer, strlen(kDataBuffer));
   sender()->Send(new TestSharedMemoryHandleMsg1(shared_memory->handle()));
@@ -504,7 +504,7 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 
   // Set up IPC channel.
   IPC::AttachmentBrokerPrivilegedWin broker;
-  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName(channel_name), &listener));
   broker.RegisterCommunicationChannel(channel.get(), nullptr);
   CHECK(channel->Connect());
@@ -639,7 +639,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleTwice) {
 
 void SendSharedMemoryHandleCallback(IPC::Sender* sender,
                                     const IPC::Message& message) {
-  scoped_ptr<base::SharedMemory> shared_memory =
+  std::unique_ptr<base::SharedMemory> shared_memory =
       GetSharedMemoryFromSharedMemoryHandleMsg1(message, kSharedMemorySize);
   bool success =
       memcmp(shared_memory->memory(), kDataBuffer, strlen(kDataBuffer)) == 0;

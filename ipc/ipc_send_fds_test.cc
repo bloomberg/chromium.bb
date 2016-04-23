@@ -16,6 +16,7 @@ extern "C" {
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
@@ -158,7 +159,7 @@ int SendFdsClientCommon(const std::string& test_client_name,
   MyChannelDescriptorListener listener(expected_inode_num);
 
   // Set up IPC channel.
-  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName(test_client_name), &listener));
   CHECK(channel->Connect());
 
@@ -266,8 +267,8 @@ class PipeChannelHelper {
         FROM_HERE, base::Bind(&PipeChannelHelper::Connect, out.get()));
   }
 
-  static void DestroyChannel(scoped_ptr<IPC::Channel> *c,
-                             base::WaitableEvent *event) {
+  static void DestroyChannel(std::unique_ptr<IPC::Channel>* c,
+                             base::WaitableEvent* event) {
     c->reset(0);
     event->Signal();
   }
@@ -300,7 +301,7 @@ class PipeChannelHelper {
   }
 
  private:
-  scoped_ptr<IPC::Channel> in, out;
+  std::unique_ptr<IPC::Channel> in, out;
   base::Thread* in_thread_;
   base::Thread* out_thread_;
   MyCBListener cb_listener_;
@@ -359,9 +360,9 @@ class IPCMultiSendingFdsTest : public testing::Test {
     // Unless the workaround is in place. With 10000 sends, we
     // should see at least a 3% failure rate.
     const int pipes_to_send = 20000;
-    scoped_ptr<base::Thread> producer(CreateThread("producer"));
-    scoped_ptr<base::Thread> middleman(CreateThread("middleman"));
-    scoped_ptr<base::Thread> consumer(CreateThread("consumer"));
+    std::unique_ptr<base::Thread> producer(CreateThread("producer"));
+    std::unique_ptr<base::Thread> middleman(CreateThread("middleman"));
+    std::unique_ptr<base::Thread> consumer(CreateThread("consumer"));
     PipeChannelHelper pipe1(
         middleman.get(),
         consumer.get(),

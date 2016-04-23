@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"

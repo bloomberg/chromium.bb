@@ -237,7 +237,7 @@ bool ChannelReader::HandleExternalMessage(
   }
 
   // Make a deep copy of |external_message| to add to the queue.
-  scoped_ptr<Message> m(new Message(*external_message));
+  std::unique_ptr<Message> m(new Message(*external_message));
   queued_messages_.push_back(m.release());
   return true;
 }

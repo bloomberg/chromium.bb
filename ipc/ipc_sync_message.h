@@ -6,13 +6,14 @@
 #define IPC_IPC_SYNC_MESSAGE_H_
 
 #include <stdint.h>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
 
@@ -82,7 +83,7 @@ class IPC_EXPORT SyncMessage : public Message {
   static bool ReadSyncHeader(const Message& msg, SyncHeader* header);
   static bool WriteSyncHeader(Message* msg, const SyncHeader& header);
 
-  scoped_ptr<MessageReplyDeserializer> deserializer_;
+  std::unique_ptr<MessageReplyDeserializer> deserializer_;
   base::WaitableEvent* pump_messages_event_;
 };
 

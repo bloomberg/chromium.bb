@@ -6,7 +6,6 @@
 #define IPC_ATTACHMENT_BROKER_UNPRIVILEGED_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_export.h"
 

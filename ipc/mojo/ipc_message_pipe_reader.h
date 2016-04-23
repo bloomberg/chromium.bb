@@ -13,7 +13,6 @@
 #include "base/atomicops.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc_message.h"
 #include "ipc/mojo/ipc.mojom.h"
@@ -90,7 +89,7 @@ class MessagePipeReader : public mojom::Channel {
 
   // Sends an IPC::Message to the other end of the pipe. Safe to call from any
   // thread.
-  bool Send(scoped_ptr<Message> message);
+  bool Send(std::unique_ptr<Message> message);
 
   base::ProcessId GetPeerPid() const { return peer_pid_; }
 

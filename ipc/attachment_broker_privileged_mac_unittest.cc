@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
@@ -102,10 +103,10 @@ base::mac::ScopedMachReceiveRight CommonChildProcessSetUp(
 }
 
 // Creates a new shared memory region populated with 'a'.
-scoped_ptr<base::SharedMemory> CreateAndPopulateSharedMemoryHandle(
+std::unique_ptr<base::SharedMemory> CreateAndPopulateSharedMemoryHandle(
     size_t size) {
   base::SharedMemoryHandle shm(size);
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(shm, false));
   shared_memory->Map(size);
   memset(shared_memory->memory(), 'a', size);
@@ -114,10 +115,10 @@ scoped_ptr<base::SharedMemory> CreateAndPopulateSharedMemoryHandle(
 
 // Create a shared memory region from a memory object. The returned object takes
 // ownership of |memory_object|.
-scoped_ptr<base::SharedMemory> MapMemoryObject(mach_port_t memory_object,
-                                               size_t size) {
+std::unique_ptr<base::SharedMemory> MapMemoryObject(mach_port_t memory_object,
+                                                    size_t size) {
   base::SharedMemoryHandle shm(memory_object, size, base::GetCurrentProcId());
-  scoped_ptr<base::SharedMemory> shared_memory(
+  std::unique_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(shm, false));
   shared_memory->Map(size);
   return shared_memory;
@@ -187,7 +188,7 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertRight) {
   IPC::AttachmentBrokerPrivilegedMac broker(&port_provider_);
 
   // Create some shared memory.
-  scoped_ptr<base::SharedMemory> shared_memory =
+  std::unique_ptr<base::SharedMemory> shared_memory =
       CreateAndPopulateSharedMemoryHandle(s_memory_size);
   ASSERT_TRUE(shared_memory->handle().IsValid());
 
@@ -227,7 +228,7 @@ MULTIPROCESS_TEST_MAIN(InsertRightClient) {
   EXPECT_EQ(original_name_count + 1, GetActiveNameCount());
 
   // Map the memory object and check its contents.
-  scoped_ptr<base::SharedMemory> shared_memory(MapMemoryObject(
+  std::unique_ptr<base::SharedMemory> shared_memory(MapMemoryObject(
       memory_object.release(),
       AttachmentBrokerPrivilegedMacMultiProcessTest::s_memory_size));
   const char* start = static_cast<const char*>(shared_memory->memory());
@@ -251,7 +252,7 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertSameRightTwice) {
   IPC::AttachmentBrokerPrivilegedMac broker(&port_provider_);
 
   // Create some shared memory.
-  scoped_ptr<base::SharedMemory> shared_memory =
+  std::unique_ptr<base::SharedMemory> shared_memory =
       CreateAndPopulateSharedMemoryHandle(s_memory_size);
   ASSERT_TRUE(shared_memory->handle().IsValid());
 
@@ -301,7 +302,7 @@ MULTIPROCESS_TEST_MAIN(InsertSameRightTwiceClient) {
   EXPECT_EQ(original_name_count + 1, GetActiveNameCount());
 
   // Map both memory objects and check their contents.
-  scoped_ptr<base::SharedMemory> shared_memory(MapMemoryObject(
+  std::unique_ptr<base::SharedMemory> shared_memory(MapMemoryObject(
       memory_object.release(),
       AttachmentBrokerPrivilegedMacMultiProcessTest::s_memory_size));
   char* start = static_cast<char*>(shared_memory->memory());
@@ -310,7 +311,7 @@ MULTIPROCESS_TEST_MAIN(InsertSameRightTwiceClient) {
     DCHECK_EQ(start[i], 'a');
   }
 
-  scoped_ptr<base::SharedMemory> shared_memory2(MapMemoryObject(
+  std::unique_ptr<base::SharedMemory> shared_memory2(MapMemoryObject(
       memory_object2.release(),
       AttachmentBrokerPrivilegedMacMultiProcessTest::s_memory_size));
   char* start2 = static_cast<char*>(shared_memory2->memory());
@@ -345,7 +346,7 @@ TEST_F(AttachmentBrokerPrivilegedMacMultiProcessTest, InsertTwoRights) {
 
   for (int i = 0; i < 2; ++i) {
     // Create some shared memory.
-    scoped_ptr<base::SharedMemory> shared_memory =
+    std::unique_ptr<base::SharedMemory> shared_memory =
         CreateAndPopulateSharedMemoryHandle(s_memory_size);
     ASSERT_TRUE(shared_memory->handle().IsValid());
 
@@ -393,7 +394,7 @@ MULTIPROCESS_TEST_MAIN(InsertTwoRightsClient) {
   EXPECT_EQ(original_name_count + 2, GetActiveNameCount());
 
   // Map both memory objects and check their contents.
-  scoped_ptr<base::SharedMemory> shared_memory(MapMemoryObject(
+  std::unique_ptr<base::SharedMemory> shared_memory(MapMemoryObject(
       memory_object.release(),
       AttachmentBrokerPrivilegedMacMultiProcessTest::s_memory_size));
   char* start = static_cast<char*>(shared_memory->memory());
@@ -402,7 +403,7 @@ MULTIPROCESS_TEST_MAIN(InsertTwoRightsClient) {
     DCHECK_EQ(start[i], 'a');
   }
 
-  scoped_ptr<base::SharedMemory> shared_memory2(MapMemoryObject(
+  std::unique_ptr<base::SharedMemory> shared_memory2(MapMemoryObject(
       memory_object2.release(),
       AttachmentBrokerPrivilegedMacMultiProcessTest::s_memory_size));
   char* start2 = static_cast<char*>(shared_memory2->memory());

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <utility>
 
@@ -14,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_listener.h"
@@ -48,7 +50,7 @@ class MojoChannelFactory : public ChannelFactory {
 
   std::string GetName() const override { return ""; }
 
-  scoped_ptr<Channel> BuildChannel(Listener* listener) override {
+  std::unique_ptr<Channel> BuildChannel(Listener* listener) override {
     return ChannelMojo::Create(std::move(handle_), mode_, listener);
   }
 
@@ -199,24 +201,24 @@ MojoResult UnwrapAttachment(mojom::SerializedHandlePtr handle,
 //------------------------------------------------------------------------------
 
 // static
-scoped_ptr<ChannelMojo> ChannelMojo::Create(
+std::unique_ptr<ChannelMojo> ChannelMojo::Create(
     mojo::ScopedMessagePipeHandle handle,
     Mode mode,
     Listener* listener) {
-  return make_scoped_ptr(new ChannelMojo(std::move(handle), mode, listener));
+  return base::WrapUnique(new ChannelMojo(std::move(handle), mode, listener));
 }
 
 // static
-scoped_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
+std::unique_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
     mojo::ScopedMessagePipeHandle handle) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new MojoChannelFactory(std::move(handle), Channel::MODE_SERVER));
 }
 
 // static
-scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
+std::unique_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
     mojo::ScopedMessagePipeHandle handle) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new MojoChannelFactory(std::move(handle), Channel::MODE_CLIENT));
 }
 
@@ -246,7 +248,7 @@ bool ChannelMojo::Connect() {
 }
 
 void ChannelMojo::Close() {
-  scoped_ptr<internal::MessagePipeReader, ReaderDeleter> reader;
+  std::unique_ptr<internal::MessagePipeReader, ReaderDeleter> reader;
   {
     base::AutoLock lock(lock_);
     if (!message_reader_)
@@ -280,9 +282,9 @@ void ChannelMojo::InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
                                     base::ProcessId peer_pid) {
   mojom::ChannelAssociatedPtr sender_ptr;
   sender_ptr.Bind(std::move(sender));
-  scoped_ptr<internal::MessagePipeReader, ChannelMojo::ReaderDeleter> reader(
-      new internal::MessagePipeReader(pipe_, std::move(sender_ptr),
-                                      std::move(receiver), peer_pid, this));
+  std::unique_ptr<internal::MessagePipeReader, ChannelMojo::ReaderDeleter>
+      reader(new internal::MessagePipeReader(
+          pipe_, std::move(sender_ptr), std::move(receiver), peer_pid, this));
 
   bool connected = true;
   {
@@ -326,13 +328,13 @@ void ChannelMojo::OnPipeError() {
 bool ChannelMojo::Send(Message* message) {
   base::AutoLock lock(lock_);
   if (!message_reader_) {
-    pending_messages_.push_back(make_scoped_ptr(message));
+    pending_messages_.push_back(base::WrapUnique(message));
     // Counts as OK before the connection is established, but it's an
     // error otherwise.
     return waiting_connect_;
   }
 
-  if (!message_reader_->Send(make_scoped_ptr(message))) {
+  if (!message_reader_->Send(base::WrapUnique(message))) {
     OnPipeError();
     return false;
   }

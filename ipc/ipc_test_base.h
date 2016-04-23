@@ -5,10 +5,10 @@
 #ifndef IPC_IPC_TEST_BASE_H_
 #define IPC_IPC_TEST_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "build/build_config.h"
@@ -50,7 +50,7 @@ class IPCTestBase : public base::MultiProcessTest {
   // thread.
   virtual void InitWithCustomMessageLoop(
       const std::string& test_client_name,
-      scoped_ptr<base::MessageLoop> message_loop);
+      std::unique_ptr<base::MessageLoop> message_loop);
 
   // Creates a channel with the given listener and connects to the channel
   // (returning true if successful), respectively. Use these to use a channel
@@ -62,8 +62,8 @@ class IPCTestBase : public base::MultiProcessTest {
 
   // Releases or replaces existing channel.
   // These are useful for testing specific types of channel subclasses.
-  scoped_ptr<IPC::Channel> ReleaseChannel();
-  void SetChannel(scoped_ptr<IPC::Channel> channel);
+  std::unique_ptr<IPC::Channel> ReleaseChannel();
+  void SetChannel(std::unique_ptr<IPC::Channel> channel);
 
   // Use this instead of CreateChannel() if you want to use some different
   // channel specification (then use ConnectChannel() as usual).
@@ -109,8 +109,9 @@ class IPCTestBase : public base::MultiProcessTest {
   const base::Process& client_process() const { return client_process_; }
   scoped_refptr<base::SequencedTaskRunner> task_runner();
 
-  virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
-      const IPC::ChannelHandle& handle, base::SequencedTaskRunner* runner);
+  virtual std::unique_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle,
+      base::SequencedTaskRunner* runner);
 
   virtual bool DidStartClient();
 
@@ -118,10 +119,10 @@ class IPCTestBase : public base::MultiProcessTest {
   std::string GetTestMainName() const;
 
   std::string test_client_name_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
-  scoped_ptr<IPC::Channel> channel_;
-  scoped_ptr<IPC::ChannelProxy> channel_proxy_;
+  std::unique_ptr<IPC::Channel> channel_;
+  std::unique_ptr<IPC::ChannelProxy> channel_proxy_;
 
   base::Process client_process_;
 

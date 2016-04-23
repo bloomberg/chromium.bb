@@ -9,8 +9,8 @@
 #include <string.h>
 
 #include <limits>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -93,11 +93,11 @@ TEST(IPCMessageTest, DictionaryValue) {
   input.Set("int", new base::FundamentalValue(42));
   input.SetWithoutPathExpansion("int.with.dot", new base::FundamentalValue(43));
 
-  scoped_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> subdict(new base::DictionaryValue());
   subdict->Set("str", new base::StringValue("forty two"));
   subdict->Set("bool", new base::FundamentalValue(false));
 
-  scoped_ptr<base::ListValue> sublist(new base::ListValue());
+  std::unique_ptr<base::ListValue> sublist(new base::ListValue());
   sublist->Set(0, new base::FundamentalValue(42.42));
   sublist->Set(1, new base::StringValue("forty"));
   sublist->Set(2, new base::StringValue("two"));

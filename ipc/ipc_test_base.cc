@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/kill.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -36,14 +37,13 @@ void IPCTestBase::TearDown() {
 }
 
 void IPCTestBase::Init(const std::string& test_client_name) {
-  InitWithCustomMessageLoop(
-      test_client_name,
-      scoped_ptr<base::MessageLoop>(new base::MessageLoopForIO()));
+  InitWithCustomMessageLoop(test_client_name,
+                            base::WrapUnique(new base::MessageLoopForIO()));
 }
 
 void IPCTestBase::InitWithCustomMessageLoop(
     const std::string& test_client_name,
-    scoped_ptr<base::MessageLoop> message_loop) {
+    std::unique_ptr<base::MessageLoop> message_loop) {
   DCHECK(!test_client_name.empty());
   DCHECK(test_client_name_.empty());
   DCHECK(!message_loop_);
@@ -61,11 +61,11 @@ bool IPCTestBase::ConnectChannel() {
   return channel_->Connect();
 }
 
-scoped_ptr<IPC::Channel> IPCTestBase::ReleaseChannel() {
+std::unique_ptr<IPC::Channel> IPCTestBase::ReleaseChannel() {
   return std::move(channel_);
 }
 
-void IPCTestBase::SetChannel(scoped_ptr<IPC::Channel> channel) {
+void IPCTestBase::SetChannel(std::unique_ptr<IPC::Channel> channel) {
   channel_ = std::move(channel);
 }
 
@@ -158,7 +158,7 @@ scoped_refptr<base::SequencedTaskRunner> IPCTestBase::task_runner() {
   return message_loop_->task_runner();
 }
 
-scoped_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
+std::unique_ptr<IPC::ChannelFactory> IPCTestBase::CreateChannelFactory(
     const IPC::ChannelHandle& handle,
     base::SequencedTaskRunner* runner) {
   return IPC::ChannelFactory::Create(handle, IPC::Channel::MODE_SERVER);

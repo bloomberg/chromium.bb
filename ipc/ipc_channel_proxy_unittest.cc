@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/pickle.h"
 #include "base/threading/thread.h"
@@ -268,8 +269,8 @@ class IPCChannelProxyTest : public IPCTestBase {
   }
 
  private:
-  scoped_ptr<base::Thread> thread_;
-  scoped_ptr<QuitListener> listener_;
+  std::unique_ptr<base::Thread> thread_;
+  std::unique_ptr<QuitListener> listener_;
 };
 
 #if defined(OS_ANDROID)
@@ -423,7 +424,7 @@ class IPCChannelBadMessageTest : public IPCTestBase {
   }
 
  private:
-  scoped_ptr<QuitListener> listener_;
+  std::unique_ptr<QuitListener> listener_;
 };
 
 #if !defined(OS_WIN)
@@ -440,7 +441,7 @@ TEST_F(IPCChannelBadMessageTest, BadMessage) {
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ChannelProxyClient) {
   base::MessageLoopForIO main_message_loop;
   ChannelReflectorListener listener;
-  scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
+  std::unique_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName("ChannelProxyClient"), &listener));
   CHECK(channel->Connect());
   listener.Init(channel.get());

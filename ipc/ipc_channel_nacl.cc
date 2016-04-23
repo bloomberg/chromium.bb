@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
@@ -77,7 +78,7 @@ class ChannelNacl::ReaderThreadRunner
   //                      above callbacks.
   ReaderThreadRunner(
       int pipe,
-      base::Callback<void(scoped_ptr<MessageContents>)> data_read_callback,
+      base::Callback<void(std::unique_ptr<MessageContents>)> data_read_callback,
       base::Callback<void()> failure_callback,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
@@ -87,7 +88,7 @@ class ChannelNacl::ReaderThreadRunner
 
  private:
   int pipe_;
-  base::Callback<void (scoped_ptr<MessageContents>)> data_read_callback_;
+  base::Callback<void(std::unique_ptr<MessageContents>)> data_read_callback_;
   base::Callback<void ()> failure_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
@@ -96,18 +97,17 @@ class ChannelNacl::ReaderThreadRunner
 
 ChannelNacl::ReaderThreadRunner::ReaderThreadRunner(
     int pipe,
-    base::Callback<void(scoped_ptr<MessageContents>)> data_read_callback,
+    base::Callback<void(std::unique_ptr<MessageContents>)> data_read_callback,
     base::Callback<void()> failure_callback,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : pipe_(pipe),
       data_read_callback_(data_read_callback),
       failure_callback_(failure_callback),
-      main_task_runner_(main_task_runner) {
-}
+      main_task_runner_(main_task_runner) {}
 
 void ChannelNacl::ReaderThreadRunner::Run() {
   while (true) {
-    scoped_ptr<MessageContents> msg_contents(new MessageContents);
+    std::unique_ptr<MessageContents> msg_contents(new MessageContents);
     bool success = ReadDataOnReaderThread(pipe_, msg_contents.get());
     if (success) {
       main_task_runner_->PostTask(
@@ -206,7 +206,7 @@ bool ChannelNacl::Send(Message* message) {
   DCHECK(!message->HasAttachments());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type();
-  scoped_ptr<Message> message_ptr(message);
+  std::unique_ptr<Message> message_ptr(message);
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::GetInstance()->OnSendMessage(message_ptr.get(), "");
@@ -227,7 +227,7 @@ AttachmentBroker* ChannelNacl::GetAttachmentBroker() {
   return nullptr;
 }
 
-void ChannelNacl::DidRecvMsg(scoped_ptr<MessageContents> contents) {
+void ChannelNacl::DidRecvMsg(std::unique_ptr<MessageContents> contents) {
   // Close sets the pipe to -1. It's possible we'll get a buffer sent to us from
   // the reader thread after Close is called. If so, we ignore it.
   if (pipe_ == -1)
@@ -397,10 +397,11 @@ bool ChannelNacl::IsAttachmentBrokerEndpoint() {
 // Channel's methods
 
 // static
-scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
-                                    Mode mode,
-                                    Listener* listener) {
-  return scoped_ptr<Channel>(new ChannelNacl(channel_handle, mode, listener));
+std::unique_ptr<Channel> Channel::Create(
+    const IPC::ChannelHandle& channel_handle,
+    Mode mode,
+    Listener* listener) {
+  return base::WrapUnique(new ChannelNacl(channel_handle, mode, listener));
 }
 
 }  // namespace IPC

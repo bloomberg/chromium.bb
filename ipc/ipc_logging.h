@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "ipc/ipc_export.h"
