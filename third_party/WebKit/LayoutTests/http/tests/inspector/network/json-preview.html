@@ -16,16 +16,20 @@ function test()
 
     function testPreviewer(request)
     {
-        var previewView = new WebInspector.RequestPreviewView(request, null);
-        var previewer = previewView._createPreviewView();
-        InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer instanceof WebInspector.JSONView));
+        return new Promise(function(done) {
+            var previewView = new WebInspector.RequestPreviewView(request, null);
+
+            previewView._createPreviewView(function(previewer) {
+                InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer instanceof WebInspector.JSONView));
+                done();
+            });
+        });
     }
 
     function testType(contentType, callback)
     {
         var request = createNetworkRequestWithJSONMIMEType(contentType);
-        testPreviewer(request);
-        callback();
+        testPreviewer(request).then(callback);
     }
     InspectorTest.runTestSuite([
         function test1(next)
