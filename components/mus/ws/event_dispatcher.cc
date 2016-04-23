@@ -196,7 +196,7 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
 }
 
 void EventDispatcher::ProcessEvent(const ui::Event& event) {
-  if (!root_)
+  if (!root_)  // Tests may not have a root window.
     return;
 
   if (event.IsKeyEvent()) {
@@ -229,9 +229,11 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
   if (focused_window) {
     delegate_->DispatchInputEventToWindow(focused_window, false, event,
                                           post_target);
-  } else if (post_target) {
-    delegate_->OnAccelerator(post_target->id(), event);
+    return;
   }
+  delegate_->OnEventTargetNotFound(event);
+  if (post_target)
+    delegate_->OnAccelerator(post_target->id(), event);
 }
 
 void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
@@ -380,8 +382,10 @@ bool EventDispatcher::AreAnyPointersDown() const {
 
 void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
                                               const ui::LocatedEvent& event) {
-  if (!target.window)
+  if (!target.window) {
+    delegate_->OnEventTargetNotFound(event);
     return;
+  }
 
   gfx::Point location(event.location());
   gfx::Transform transform(GetTransformToWindow(surface_id_, target.window));

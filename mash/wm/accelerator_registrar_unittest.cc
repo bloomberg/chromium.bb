@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "components/mus/public/cpp/event_matcher.h"
+#include "components/mus/public/cpp/event_matcher_util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

@@ -42,6 +42,7 @@ struct EventFlagsMatcher {
 // A matcher to match any key-press event would be:
 // - |type_matcher.type| = mus::mojom::EventType::KEY_PRESSED
 struct EventMatcher {
+  // TODO(jamescook): Move this to somewhere accelerator-specific.
   AcceleratorPhase accelerator_phase;
   EventTypeMatcher? type_matcher;
   EventFlagsMatcher? flags_matcher;

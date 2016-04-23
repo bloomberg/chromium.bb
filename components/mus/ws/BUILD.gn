@@ -25,6 +25,8 @@ source_set("lib") {
     "event_dispatcher.cc",
     "event_dispatcher.h",
     "event_dispatcher_delegate.h",
+    "event_matcher.cc",
+    "event_matcher.h",
     "focus_controller.cc",
     "focus_controller.h",
     "focus_controller_delegate.h",
@@ -164,6 +166,7 @@ test("mus_ws_unittests") {
   sources = [
     "display_unittest.cc",
     "event_dispatcher_unittest.cc",
+    "event_matcher_unittest.cc",
     "focus_controller_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
     "server_window_surface_manager_test_api.cc",

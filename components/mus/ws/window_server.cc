@@ -411,6 +411,16 @@ void WindowServer::ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
     display->OnCursorUpdated(window);
 }
 
+void WindowServer::SendToEventObservers(const ui::Event& event,
+                                        const UserId& user_id,
+                                        WindowTree* ignore_tree) {
+  for (auto& pair : tree_map_) {
+    WindowTree* tree = pair.second.get();
+    if (tree->user_id() == user_id && tree != ignore_tree)
+      tree->SendToEventObserver(event);
+  }
+}
+
 void WindowServer::SetPaintCallback(
     const base::Callback<void(ServerWindow*)>& callback) {
   DCHECK(delegate_->IsTestConfig()) << "Paint callbacks are expensive, and "

@@ -39,6 +39,7 @@ namespace ws {
 class AccessPolicy;
 class DisplayManager;
 class Display;
+class EventMatcher;
 class ServerWindow;
 class TargetedEvent;
 class WindowManagerState;
@@ -211,6 +212,9 @@ class WindowTree : public mojom::WindowTree,
                                      const ServerWindow* transient_window,
                                      bool originated_change);
 
+  // Sends this event to the client if it matches an active event observer.
+  void SendToEventObserver(const ui::Event& event);
+
  private:
   friend class test::WindowTreeTestApi;
 
@@ -339,6 +343,8 @@ class WindowTree : public mojom::WindowTree,
       override;
   void SetCapture(uint32_t change_id, Id window_id) override;
   void ReleaseCapture(uint32_t change_id, Id window_id) override;
+  void SetEventObserver(mojom::EventMatcherPtr matcher,
+                        uint32_t observer_id) override;
   void SetWindowBounds(uint32_t change_id,
                        Id window_id,
                        mojo::RectPtr bounds) override;
@@ -407,7 +413,7 @@ class WindowTree : public mojom::WindowTree,
 
   WindowServer* window_server_;
 
-  const UserId user_id_;
+  UserId user_id_;
 
   // Id of this tree as assigned by WindowServer.
   const ConnectionSpecificId id_;
@@ -433,6 +439,13 @@ class WindowTree : public mojom::WindowTree,
   base::hash_map<WindowId, ClientWindowId> window_id_to_client_id_map_;
 
   uint32_t event_ack_id_;
+
+  // Set when the client is using SetEventObserver() to observe events,
+  // otherwise null.
+  std::unique_ptr<EventMatcher> event_observer_matcher_;
+
+  // The ID supplied by the client for the current event observer.
+  uint32_t event_observer_id_ = 0;
 
   // WindowManager the current event came from.
   WindowManagerState* event_source_wms_ = nullptr;

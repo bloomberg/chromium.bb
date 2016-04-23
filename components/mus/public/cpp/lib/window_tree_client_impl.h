@@ -220,7 +220,10 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                                      mojo::Array<uint8_t> new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
-                          mojom::EventPtr event) override;
+                          mojom::EventPtr event,
+                          uint32_t event_observer_id) override;
+  void OnEventObserved(mojom::EventPtr event,
+                       uint32_t event_observer_id) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
                                        mojom::Cursor cursor) override;

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "components/mus/public/cpp/event_matcher.h"
+#include "components/mus/public/cpp/event_matcher_util.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"

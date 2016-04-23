@@ -41,6 +41,10 @@ class EventDispatcherDelegate {
                                           const ui::Event& event,
                                           Accelerator* accelerator) = 0;
 
+  // Called when event dispatch could not find a target. OnAccelerator may still
+  // be called.
+  virtual void OnEventTargetNotFound(const ui::Event& event) = 0;
+
  protected:
   virtual ~EventDispatcherDelegate() {}
 };

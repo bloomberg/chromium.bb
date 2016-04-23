@@ -36,6 +36,7 @@ enum ChangeType {
   CHANGE_TYPE_NODE_DRAWN_STATE_CHANGED,
   CHANGE_TYPE_NODE_DELETED,
   CHANGE_TYPE_INPUT_EVENT,
+  CHANGE_TYPE_EVENT_OBSERVED,
   CHANGE_TYPE_PROPERTY_CHANGED,
   CHANGE_TYPE_FOCUSED,
   CHANGE_TYPE_CURSOR_CHANGED,
@@ -78,6 +79,7 @@ struct Change {
   mojo::Rect bounds;
   mojo::Rect bounds2;
   int32_t event_action;
+  uint32_t event_observer_id;
   mojo::String embed_url;
   mojom::OrderDirection direction;
   bool bool_value;
@@ -156,7 +158,10 @@ class TestChangeTracker {
   void OnWindowVisibilityChanged(Id window_id, bool visible);
   void OnWindowOpacityChanged(Id window_id, float opacity);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
-  void OnWindowInputEvent(Id window_id, mojom::EventPtr event);
+  void OnWindowInputEvent(Id window_id,
+                          mojom::EventPtr event,
+                          uint32_t event_observer_id);
+  void OnEventObserved(mojom::EventPtr event, uint32_t event_observer_id);
   void OnWindowSharedPropertyChanged(Id window_id,
                                      mojo::String name,
                                      mojo::Array<uint8_t> data);

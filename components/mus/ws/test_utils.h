@@ -18,6 +18,7 @@
 #include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/user_display_manager.h"
+#include "components/mus/ws/user_id.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_server_delegate.h"
@@ -69,12 +70,16 @@ class WindowTreeTestApi {
   WindowTreeTestApi(WindowTree* tree);
   ~WindowTreeTestApi();
 
+  void set_user_id(const UserId& user_id) { tree_->user_id_ = user_id; }
   void set_window_manager_internal(mojom::WindowManager* wm_internal) {
     tree_->window_manager_internal_ = wm_internal;
   }
 
   void ClearAck() { tree_->event_ack_id_ = 0; }
   void EnableCapture() { tree_->event_ack_id_ = 1u; }
+
+  void SetEventObserver(mojom::EventMatcherPtr matcher,
+                        uint32_t event_observer_id);
 
  private:
   WindowTree* tree_;
@@ -289,7 +294,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                                      mojo::Array<uint8_t> new_data) override;
   void OnWindowInputEvent(uint32_t event_id,
                           uint32_t window,
-                          mojom::EventPtr event) override;
+                          mojom::EventPtr event,
+                          uint32_t event_observer_id) override;
+  void OnEventObserved(mojom::EventPtr event,
+                       uint32_t event_observer_id) override;
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
                                        mojom::Cursor cursor_id) override;

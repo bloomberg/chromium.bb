@@ -5,13 +5,16 @@
 #ifndef COMPONENTS_MUS_WS_ACCELERATOR_H_
 #define COMPONENTS_MUS_WS_ACCELERATOR_H_
 
-#include <memory>
+#include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/input_event_matcher.mojom.h"
-#include "ui/events/event.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "components/mus/ws/event_matcher.h"
+
+namespace ui {
+class Event;
+}
 
 namespace mus {
 namespace ws {
@@ -40,27 +43,9 @@ class Accelerator {
   uint32_t id() const { return id_; }
 
  private:
-  enum MatchFields {
-    NONE = 0,
-    TYPE = 1 << 0,
-    FLAGS = 1 << 1,
-    KEYBOARD_CODE = 1 << 2,
-    POINTER_KIND = 1 << 3,
-    POINTER_LOCATION = 1 << 4,
-  };
-
   uint32_t id_;
-  uint32_t fields_to_match_;
   mojom::AcceleratorPhase accelerator_phase_;
-  ui::EventType event_type_;
-  // Bitfields of kEventFlag* and kMouseEventFlag* values in
-  // input_event_constants.mojom.
-  int event_flags_;
-  int ignore_event_flags_;
-  uint16_t keyboard_code_;
-  ui::EventPointerType pointer_type_;
-  gfx::RectF pointer_region_;
-
+  EventMatcher event_matcher_;
   base::WeakPtrFactory<Accelerator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Accelerator);

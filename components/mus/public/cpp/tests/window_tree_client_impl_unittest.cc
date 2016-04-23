@@ -465,14 +465,14 @@ TEST_F(WindowTreeClientImplTest, InputEventBasic) {
       new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
   setup.window_tree_client()->OnWindowInputEvent(
-      1, server_id(root), mojom::Event::From(*ui_event.get()));
+      1, server_id(root), mojom::Event::From(*ui_event.get()), false);
   EXPECT_TRUE(event_handler.received_event());
   EXPECT_TRUE(setup.window_tree()->WasEventAcked(1));
   event_handler.Reset();
 
   event_handler.set_should_manually_ack();
   setup.window_tree_client()->OnWindowInputEvent(
-      33, server_id(root), mojom::Event::From(*ui_event.get()));
+      33, server_id(root), mojom::Event::From(*ui_event.get()), false);
   EXPECT_TRUE(event_handler.received_event());
   EXPECT_FALSE(setup.window_tree()->WasEventAcked(33));
 

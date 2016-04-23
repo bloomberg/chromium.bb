@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/event_matcher.h"
+#include "components/mus/public/cpp/event_matcher_util.h"
 
 namespace mus {
 

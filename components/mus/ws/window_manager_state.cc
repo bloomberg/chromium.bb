@@ -329,8 +329,15 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
     event_awaiting_input_ack_ = ui::Event::Clone(event);
     post_target_accelerator_ = accelerator;
   }
+
+  // Ignore |tree| because it will receive the event via normal dispatch.
+  window_server()->SendToEventObservers(event, user_id_, tree);
+
   tree->DispatchInputEvent(target, event);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// EventDispatcherDelegate:
 
 void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        const ui::Event& event) {
@@ -381,6 +388,11 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
     weak_accelerator = accelerator->GetWeakPtr();
   DispatchInputEventToWindowImpl(target, in_nonclient_area, event,
                                  weak_accelerator);
+}
+
+void WindowManagerState::OnEventTargetNotFound(const ui::Event& event) {
+  window_server()->SendToEventObservers(event, user_id_,
+                                        nullptr /* ignore_tree */);
 }
 
 }  // namespace ws

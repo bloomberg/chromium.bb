@@ -110,6 +110,11 @@ PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
 WindowTreeTestApi::WindowTreeTestApi(WindowTree* tree) : tree_(tree) {}
 WindowTreeTestApi::~WindowTreeTestApi() {}
 
+void WindowTreeTestApi::SetEventObserver(mojom::EventMatcherPtr matcher,
+                                         uint32_t event_observer_id) {
+  tree_->SetEventObserver(std::move(matcher), event_observer_id);
+}
+
 // DisplayTestApi  ------------------------------------------------------------
 
 DisplayTestApi::DisplayTestApi(Display* display) : display_(display) {}
@@ -256,8 +261,14 @@ void TestWindowTreeClient::OnWindowSharedPropertyChanged(
 
 void TestWindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                               uint32_t window,
-                                              mojom::EventPtr event) {
-  tracker_.OnWindowInputEvent(window, std::move(event));
+                                              mojom::EventPtr event,
+                                              uint32_t event_observer_id) {
+  tracker_.OnWindowInputEvent(window, std::move(event), event_observer_id);
+}
+
+void TestWindowTreeClient::OnEventObserved(mojom::EventPtr event,
+                                           uint32_t event_observer_id) {
+  tracker_.OnEventObserved(std::move(event), event_observer_id);
 }
 
 void TestWindowTreeClient::OnWindowFocused(uint32_t focused_window_id) {

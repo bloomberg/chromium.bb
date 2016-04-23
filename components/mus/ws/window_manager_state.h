@@ -164,6 +164,7 @@ class WindowManagerState : public EventDispatcherDelegate {
                                   bool in_nonclient_area,
                                   const ui::Event& event,
                                   Accelerator* accelerator) override;
+  void OnEventTargetNotFound(const ui::Event& event) override;
 
   Display* display_;
   PlatformDisplay* platform_display_;

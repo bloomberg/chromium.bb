@@ -7,6 +7,7 @@ module mus.mojom;
 import "components/mus/public/interfaces/compositor_frame.mojom";
 import "components/mus/public/interfaces/cursor.mojom";
 import "components/mus/public/interfaces/input_events.mojom";
+import "components/mus/public/interfaces/input_event_matcher.mojom";
 import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/surface_id.mojom";
 import "components/mus/public/interfaces/window_manager.mojom";
@@ -108,6 +109,14 @@ interface WindowTree {
   // Releases input event capture for the given |window_id|. This does nothing
   // if |window_id| does not currently have capture.
   ReleaseCapture(uint32 change_id, uint32 window_id);
+
+  // Sets an observer that monitors all events, even if they are not targeted
+  // at a window in this tree. If an event matchs |matcher| the observer reports
+  // it to the WindowTreeClient via OnWindowInputEvent (if the event target is
+  // this window tree) or OnEventObserved (if the target is another tree). The
+  // client must supply a non-zero |observer_id|, which is reported back with
+  // observed events.  Set the matcher to null to clear the observer.
+  SetEventObserver(EventMatcher? matcher, uint32 observer_id);
 
   // Sets the specified bounds of the specified window.
   SetWindowBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
@@ -358,9 +367,18 @@ interface WindowTreeClient {
   // Invoked when an event is targeted at the specified window. The client must
   // call WindowTree::OnWindowInputEventAck() with the same |event_id| to notify
   // that the event has been processed, and with an EventResult value to notify
-  // if the event was consumed. The client will not receive farther events until
-  // the event is ack'ed.
-  OnWindowInputEvent(uint32 event_id, uint32 window, Event event);
+  // if the event was consumed. |event_observer_id| is non-zero if the event
+  // also matched the active event observer for this client. The client will not
+  // receive farther events until the event is ack'ed.
+  OnWindowInputEvent(uint32 event_id,
+                     uint32 window,
+                     Event event,
+                     uint32 event_observer_id);
+
+  // Invoked when an |event| is sent via the EventObserver and not targeted at a
+  // specific window. The |event_observer_id| is the one supplied to
+  // SetEventObserver. The client should not acknowledge these events.
+  OnEventObserved(Event event, uint32 event_observer_id);
 
   // Called in two distinct cases: when a window known to the connection gains
   // focus, or when focus moves from a window known to the connection to a

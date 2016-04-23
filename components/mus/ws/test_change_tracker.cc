@@ -109,10 +109,20 @@ std::string ChangeToDescription(const Change& change,
                                 WindowIdToString(change.window_id).c_str(),
                                 change.bool_value ? "true" : "false");
 
-    case CHANGE_TYPE_INPUT_EVENT:
-      return base::StringPrintf("InputEvent window=%s event_action=%d",
-                                WindowIdToString(change.window_id).c_str(),
-                                change.event_action);
+    case CHANGE_TYPE_INPUT_EVENT: {
+      std::string result = base::StringPrintf(
+          "InputEvent window=%s event_action=%d",
+          WindowIdToString(change.window_id).c_str(), change.event_action);
+      if (change.event_observer_id != 0)
+        base::StringAppendF(&result, " event_observer_id=%u",
+                            change.event_observer_id);
+      return result;
+    }
+
+    case CHANGE_TYPE_EVENT_OBSERVED:
+      return base::StringPrintf(
+          "EventObserved event_action=%d event_observer_id=%u",
+          change.event_action, change.event_observer_id);
 
     case CHANGE_TYPE_PROPERTY_CHANGED:
       return base::StringPrintf("PropertyChanged window=%s key=%s value=%s",
@@ -216,8 +226,11 @@ Change::Change()
       window_id2(0),
       window_id3(0),
       event_action(0),
+      event_observer_id(0u),
       direction(mojom::OrderDirection::ABOVE),
       bool_value(false),
+      float_value(0.f),
+      cursor_id(0),
       change_id(0u) {}
 
 Change::Change(const Change& other) = default;
@@ -362,11 +375,22 @@ void TestChangeTracker::OnWindowParentDrawnStateChanged(Id window_id,
 }
 
 void TestChangeTracker::OnWindowInputEvent(Id window_id,
-                                           mojom::EventPtr event) {
+                                           mojom::EventPtr event,
+                                           uint32_t event_observer_id) {
   Change change;
   change.type = CHANGE_TYPE_INPUT_EVENT;
   change.window_id = window_id;
   change.event_action = static_cast<int32_t>(event->action);
+  change.event_observer_id = event_observer_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnEventObserved(mojom::EventPtr event,
+                                        uint32_t event_observer_id) {
+  Change change;
+  change.type = CHANGE_TYPE_EVENT_OBSERVED;
+  change.event_action = static_cast<int32_t>(event->action);
+  change.event_observer_id = event_observer_id;
   AddChange(change);
 }
 

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/mus/public/cpp/event_matcher.h"
+#include "components/mus/public/cpp/event_matcher_util.h"
 #include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"
@@ -45,6 +45,10 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
         lost_capture_window_(nullptr),
         last_accelerator_(0) {}
   ~TestEventDispatcherDelegate() override {}
+
+  ui::Event* last_event_target_not_found() {
+    return last_event_target_not_found_.get();
+  }
 
   uint32_t GetAndClearLastAccelerator() {
     uint32_t return_value = last_accelerator_;
@@ -103,12 +107,16 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     details->accelerator = accelerator;
     dispatched_event_queue_.push(std::move(details));
   }
+  void OnEventTargetNotFound(const ui::Event& event) override {
+    last_event_target_not_found_ = ui::Event::Clone(event);
+  }
 
   ServerWindow* root_;
   ServerWindow* focused_window_;
   ServerWindow* lost_capture_window_;
   uint32_t last_accelerator_;
   std::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
+  std::unique_ptr<ui::Event> last_event_target_not_found_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
@@ -295,6 +303,24 @@ TEST_F(EventDispatcherTest, ProcessEvent) {
   ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
   EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
   EXPECT_EQ(gfx::Point(10, 15), dispatched_event->location());
+}
+
+TEST_F(EventDispatcherTest, ProcessEventNoTarget) {
+  // Send event without a target.
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  event_dispatcher()->ProcessEvent(key);
+
+  // Event wasn't dispatched to a target.
+  std::unique_ptr<DispatchedEventDetails> details =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(details);
+
+  // Delegate was informed that there wasn't a target.
+  ui::Event* event_out =
+      test_event_dispatcher_delegate()->last_event_target_not_found();
+  ASSERT_TRUE(event_out);
+  EXPECT_TRUE(event_out->IsKeyEvent());
+  EXPECT_EQ(ui::VKEY_A, event_out->AsKeyEvent()->key_code());
 }
 
 TEST_F(EventDispatcherTest, AcceleratorBasic) {

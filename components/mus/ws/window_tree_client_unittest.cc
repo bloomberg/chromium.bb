@@ -357,7 +357,8 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   void OnWindowInputEvent(uint32_t event_id,
                           Id window_id,
-                          EventPtr event) override {
+                          EventPtr event,
+                          uint32_t event_observer_id) override {
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
     // event to notify of entry.
@@ -365,6 +366,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }
+  void OnEventObserved(EventPtr event, uint32_t event_observer_id) override {}
   void OnWindowSharedPropertyChanged(uint32_t window,
                                      const String& name,
                                      Array<uint8_t> new_data) override {

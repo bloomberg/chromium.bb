@@ -15,6 +15,7 @@
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/event_matcher.h"
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/platform_display.h"
@@ -954,9 +955,16 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
   event_source_wms_ = GetWindowManagerState(target);
   // Should only get events from windows attached to a host.
   DCHECK(event_source_wms_);
-  client()->OnWindowInputEvent(event_ack_id_,
-                               ClientWindowIdForWindow(target).id,
-                               mojom::Event::From(event));
+  bool matched_observer =
+      event_observer_matcher_ && event_observer_matcher_->MatchesEvent(event);
+  client()->OnWindowInputEvent(
+      event_ack_id_, ClientWindowIdForWindow(target).id,
+      mojom::Event::From(event), matched_observer ? event_observer_id_ : 0);
+}
+
+void WindowTree::SendToEventObserver(const ui::Event& event) {
+  if (event_observer_matcher_ && event_observer_matcher_->MatchesEvent(event))
+    client()->OnEventObserved(mojom::Event::From(event), event_observer_id_);
 }
 
 void WindowTree::NewWindow(
@@ -1110,6 +1118,17 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
     success = wms->SetCapture(nullptr, false);
   }
   client()->OnChangeCompleted(change_id, success);
+}
+
+void WindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
+                                  uint32_t observer_id) {
+  if (!matcher.is_null() && observer_id != 0) {
+    event_observer_matcher_.reset(new EventMatcher(*matcher));
+    event_observer_id_ = observer_id;
+  } else {
+    event_observer_matcher_.reset();
+    event_observer_id_ = 0;
+  }
 }
 
 void WindowTree::SetWindowBounds(uint32_t change_id,
