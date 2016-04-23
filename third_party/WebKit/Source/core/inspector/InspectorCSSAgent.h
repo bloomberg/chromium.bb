@@ -227,6 +227,7 @@ private:
 
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
+    int m_resourceContentLoaderClientId;
 
     friend class InspectorResourceContentLoaderCallback;
     friend class StyleSheetBinder;

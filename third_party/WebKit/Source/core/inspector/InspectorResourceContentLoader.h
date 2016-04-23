@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 #include "wtf/Functional.h"
+#include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -28,7 +29,9 @@ public:
     void dispose();
     DECLARE_TRACE();
 
-    void ensureResourcesContentLoaded(PassOwnPtr<SameThreadClosure> callback);
+    int createClientId();
+    void ensureResourcesContentLoaded(int clientId, PassOwnPtr<SameThreadClosure> callback);
+    void cancel(int clientId);
     void didCommitLoadForLocalFrame(LocalFrame*);
 
 private:
@@ -41,12 +44,14 @@ private:
     void stop();
     bool hasFinished();
 
-    Vector<OwnPtr<SameThreadClosure>> m_callbacks;
+    using Callbacks = Vector<OwnPtr<SameThreadClosure>>;
+    HashMap<int, Callbacks> m_callbacks;
     bool m_allRequestsStarted;
     bool m_started;
     Member<LocalFrame> m_inspectedFrame;
     HeapHashSet<Member<ResourceClient>> m_pendingResourceClients;
     HeapVector<Member<Resource>> m_resources;
+    int m_lastClientId;
 
     friend class ResourceClient;
 };

@@ -153,8 +153,8 @@ private:
     String m_scriptToEvaluateOnLoadOnce;
     bool m_enabled;
     bool m_reloading;
-
     Member<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
+    int m_resourceContentLoaderClientId;
 };
 
 

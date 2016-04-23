@@ -354,6 +354,7 @@ InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client*
     , m_enabled(false)
     , m_reloading(false)
     , m_inspectorResourceContentLoader(resourceContentLoader)
+    , m_resourceContentLoaderClientId(resourceContentLoader->createClientId())
 {
 }
 
@@ -380,6 +381,7 @@ void InspectorPageAgent::disable(ErrorString*)
     m_scriptToEvaluateOnLoadOnce = String();
     m_pendingScriptToEvaluateOnLoadOnce = String();
     m_instrumentingAgents->setInspectorPageAgent(0);
+    m_inspectorResourceContentLoader->cancel(m_resourceContentLoaderClientId);
 
     stopScreencast(0);
 
@@ -516,7 +518,7 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, callback));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, callback));
 }
 
 void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassOwnPtr<SearchInResourceCallback> callback)
@@ -546,7 +548,7 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false), callback));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false), callback));
 }
 
 void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const String& frameId, const String& html)

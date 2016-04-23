@@ -619,6 +619,7 @@ InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrame
     , m_resourceContainer(resourceContainer)
     , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
+    , m_resourceContentLoaderClientId(resourceContentLoader->createClientId())
 {
 }
 
@@ -666,7 +667,7 @@ void InspectorCSSAgent::enable(ErrorString* errorString, PassOwnPtr<EnableCallba
         return;
     }
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
-    m_resourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorCSSAgent::resourceContentLoaded, this, prpCallback));
+    m_resourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorCSSAgent::resourceContentLoaded, this, prpCallback));
 }
 
 void InspectorCSSAgent::resourceContentLoaded(PassOwnPtr<EnableCallback> callback)
@@ -695,6 +696,7 @@ void InspectorCSSAgent::disable(ErrorString*)
     m_domAgent->setDOMListener(nullptr);
     m_instrumentingAgents->setInspectorCSSAgent(0);
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
+    m_resourceContentLoader->cancel(m_resourceContentLoaderClientId);
 }
 
 void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)

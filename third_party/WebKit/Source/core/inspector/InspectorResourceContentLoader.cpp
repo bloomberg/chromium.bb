@@ -81,6 +81,7 @@ InspectorResourceContentLoader::InspectorResourceContentLoader(LocalFrame* inspe
     : m_allRequestsStarted(false)
     , m_started(false)
     , m_inspectedFrame(inspectedFrame)
+    , m_lastClientId(0)
 {
 }
 
@@ -145,12 +146,22 @@ void InspectorResourceContentLoader::start()
     checkDone();
 }
 
-void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtr<SameThreadClosure> callback)
+int InspectorResourceContentLoader::createClientId()
+{
+    return ++m_lastClientId;
+}
+
+void InspectorResourceContentLoader::ensureResourcesContentLoaded(int clientId, PassOwnPtr<SameThreadClosure> callback)
 {
     if (!m_started)
         start();
-    m_callbacks.append(callback);
+    m_callbacks.add(clientId, Callbacks()).storedValue->value.append(callback);
     checkDone();
+}
+
+void InspectorResourceContentLoader::cancel(int clientId)
+{
+    m_callbacks.remove(clientId);
 }
 
 InspectorResourceContentLoader::~InspectorResourceContentLoader()
@@ -198,10 +209,12 @@ void InspectorResourceContentLoader::checkDone()
 {
     if (!hasFinished())
         return;
-    Vector<OwnPtr<SameThreadClosure>> callbacks;
+    HashMap<int, Callbacks> callbacks;
     callbacks.swap(m_callbacks);
-    for (const auto& callback : callbacks)
-        (*callback)();
+    for (const auto& keyValue : callbacks) {
+        for (const auto& callback : keyValue.value)
+            (*callback)();
+    }
 }
 
 void InspectorResourceContentLoader::resourceFinished(ResourceClient* client)
