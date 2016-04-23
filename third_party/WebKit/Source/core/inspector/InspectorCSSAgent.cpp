@@ -143,9 +143,9 @@ HeapVector<Member<Element>> elementsFromRect(LayoutRect rect, Document& document
 }
 
 // Blends the colors from the given gradient with the existing colors.
-void blendWithColorsFromGradient(CSSGradientValue* gradient, HeapVector<Color>& colors, bool& foundNonTransparentColor, bool& foundOpaqueColor, const LayoutObject& layoutObject)
+void blendWithColorsFromGradient(CSSGradientValue* gradient, Vector<Color>& colors, bool& foundNonTransparentColor, bool& foundOpaqueColor, const LayoutObject& layoutObject)
 {
-    HeapVector<Color> stopColors;
+    Vector<Color> stopColors;
     gradient->getStopColors(stopColors, layoutObject);
 
     if (colors.isEmpty()) {
@@ -168,7 +168,7 @@ void blendWithColorsFromGradient(CSSGradientValue* gradient, HeapVector<Color>& 
 }
 
 // Gets the colors from an image style, if one exists and it is a gradient.
-void addColorsFromImageStyle(const ComputedStyle& style, HeapVector<Color>& colors, bool& foundOpaqueColor, bool& foundNonTransparentColor, const LayoutObject& layoutObject)
+void addColorsFromImageStyle(const ComputedStyle& style, Vector<Color>& colors, bool& foundOpaqueColor, bool& foundNonTransparentColor, const LayoutObject& layoutObject)
 {
     const FillLayer& backgroundLayers = style.backgroundLayers();
     if (!backgroundLayers.hasImage())
@@ -199,7 +199,7 @@ void addColorsFromImageStyle(const ComputedStyle& style, HeapVector<Color>& colo
 // walking up all the elements returned by a hit test (but not going beyond
 // |topElement|) covering the area of the rect, and blending their background
 // colors.
-bool getColorsFromRect(LayoutRect rect, Document& document, Element* topElement, HeapVector<Color>& colors)
+bool getColorsFromRect(LayoutRect rect, Document& document, Element* topElement, Vector<Color>& colors)
 {
     HeapVector<Member<Element>> elementsUnderRect = elementsFromRect(rect, document);
 
@@ -2031,7 +2031,7 @@ void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId
     if (textBounds.size().isEmpty())
         return;
 
-    HeapVector<Color> colors;
+    Vector<Color> colors;
     FrameView* view = element->document().view();
     if (!view) {
         *errorString = "No view.";

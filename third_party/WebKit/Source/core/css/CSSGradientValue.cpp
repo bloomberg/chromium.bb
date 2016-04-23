@@ -573,7 +573,7 @@ bool CSSGradientValue::knownToBeOpaque(const LayoutObject& object) const
     return true;
 }
 
-void CSSGradientValue::getStopColors(HeapVector<Color>& stopColors, const LayoutObject& object) const
+void CSSGradientValue::getStopColors(Vector<Color>& stopColors, const LayoutObject& object) const
 {
     for (auto& stop : m_stops) {
         if (!stop.isHint())

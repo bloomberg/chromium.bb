@@ -111,7 +111,7 @@ public:
 
     void loadSubimages(Document*) { }
 
-    void getStopColors(HeapVector<Color>& stopColors, const LayoutObject&) const;
+    void getStopColors(Vector<Color>& stopColors, const LayoutObject&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
