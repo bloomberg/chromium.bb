@@ -53,23 +53,49 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // Decoded buffer index that has the image for us to display.
   void SetMediaCodecBufferIndex(int buffer_index);
 
-  // Return the codec buffer that we will return to the codec, or
-  // <0 if there is no such buffer.
-  int GetMediaCodecBufferIndex() const;
-
   // Set the size of the current image.
   void SetSize(const gfx::Size& size);
+
+  enum class UpdateMode {
+    // Discards the codec buffer, no UpdateTexImage().
+    DISCARD_CODEC_BUFFER,
+
+    // Renders to back buffer, no UpdateTexImage(); can only be used with a
+    // valid |surface_texture_|.
+    RENDER_TO_BACK_BUFFER,
+
+    // Renders to the back buffer. When used with a SurfaceView, promotion to
+    // the front buffer is automatic. When using a |surface_texture_|,
+    // UpdateTexImage() is called to promote the back buffer into the front.
+    RENDER_TO_FRONT_BUFFER
+  };
+
+  // Releases the attached codec buffer (if not already released) indicated by
+  // |codec_buffer_index_| and updates the surface if specified by the given
+  // |update_mode|.  See UpdateMode documentation for details.
+  void UpdateSurface(UpdateMode update_mode);
 
   // Updates the MediaCodec for this image; clears |codec_buffer_index_|.
   void CodecChanged(media::MediaCodecBridge* codec);
 
   void SetTexture(gpu::gles2::Texture* texture);
 
+  // Indicates if the codec buffer has been released to the back buffer.
+  bool is_rendered_to_back_buffer() const {
+    return codec_buffer_index_ == kUpdateOnly;
+  }
+
+  // Indicates if the codec buffer has been released to the front or back
+  // buffer.
+  bool is_rendered() const {
+    return codec_buffer_index_ <= kInvalidCodecBufferIndex;
+  }
+
  protected:
   ~AVDACodecImage() override;
 
  private:
-  enum { kInvalidCodecBufferIndex = -1 };
+  enum { kInvalidCodecBufferIndex = -1, kUpdateOnly = -2 };
 
   // Make sure that the surface texture's front buffer is current.  This will
   // save / restore the current context.  It will optionally restore the texture
@@ -81,17 +107,24 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   enum RestoreBindingsMode { kDontRestoreBindings, kDoRestoreBindings };
   void UpdateSurfaceTexture(RestoreBindingsMode mode);
 
+  // Internal helper for UpdateSurface() that allows callers to specify the
+  // RestoreBindingsMode when a SurfaceTexture is already attached prior to
+  // calling this method.
+  void UpdateSurfaceInternal(UpdateMode update_mode,
+                             RestoreBindingsMode attached_bindings_mode);
+
+  // Releases the attached codec buffer (if not already released) indicated by
+  // |codec_buffer_index_|. Never updates the actual surface. See UpdateMode
+  // documentation for details. For the purposes of this function the values
+  // RENDER_TO_FRONT_BUFFER and RENDER_TO_BACK_BUFFER do the same thing.
+  void ReleaseOutputBuffer(UpdateMode update_mode);
+
   // Attach the surface texture to our GL context to whatever texture is bound
   // on the active unit.
   void AttachSurfaceTextureToContext();
 
   // Make shared_state_->context() current if it isn't already.
   std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded();
-
-  // Return whether or not the current context is in the same share group as
-  // |surface_texture_|'s client texture.
-  // TODO(liberato): is this needed?
-  bool IsCorrectShareGroup() const;
 
   // Return whether there is a codec buffer that we haven't rendered yet.  Will
   // return false also if there's no codec or we otherwise can't update.

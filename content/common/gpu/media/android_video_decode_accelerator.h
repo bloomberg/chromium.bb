@@ -91,6 +91,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     virtual void ReleaseCodecBuffers(
         const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {}
 
+    // Attempts to free up codec output buffers by rendering early.
+    virtual void MaybeRenderEarly() {}
+
     // Notify strategy that we have a new android MediaCodec instance.  This
     // happens when we're starting up or re-configuring mid-stream.  Any
     // previously provided codec should no longer be referenced.

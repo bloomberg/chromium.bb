@@ -35,14 +35,16 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
   gfx::ScopedJavaSurface Initialize(int surface_view_id) override;
-  void Cleanup(bool have_context,
-               const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  void Cleanup(
+      bool have_context,
+      const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
   gfx::Size GetPictureBufferSize() const override;
-  void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
-                                      const media::PictureBuffer&) override;
-  void CodecChanged(media::VideoCodecBridge*) override;
+  void UseCodecBufferForPictureBuffer(
+      int32_t codec_buffer_index,
+      const media::PictureBuffer& picture_buffer) override;
+  void CodecChanged(media::VideoCodecBridge* codec) override;
   void OnFrameAvailable() override;
   bool ArePicturesOverlayable() override;
   void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,

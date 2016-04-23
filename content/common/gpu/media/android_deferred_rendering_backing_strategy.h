@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_MEDIA_ANDROID_DEFERRED_RENDERING_BACKING_STRATEGY_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
@@ -40,16 +41,20 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
   gfx::ScopedJavaSurface Initialize(int surface_view_id) override;
-  void Cleanup(bool have_context,
-               const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  void Cleanup(
+      bool have_context,
+      const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
   gfx::Size GetPictureBufferSize() const override;
-  void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
-                                      const media::PictureBuffer&) override;
+  void UseCodecBufferForPictureBuffer(
+      int32_t codec_buffer_index,
+      const media::PictureBuffer& picture_buffer) override;
   void AssignOnePictureBuffer(const media::PictureBuffer&, bool) override;
-  void ReuseOnePictureBuffer(const media::PictureBuffer&) override;
-  void CodecChanged(media::VideoCodecBridge*) override;
+  void ReuseOnePictureBuffer(
+      const media::PictureBuffer& picture_buffer) override;
+  void MaybeRenderEarly() override;
+  void CodecChanged(media::VideoCodecBridge* codec) override;
   void ReleaseCodecBuffers(
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
   void OnFrameAvailable() override;
@@ -93,6 +98,10 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
   media::VideoCodecBridge* media_codec_;
+
+  // Picture buffer IDs that are out for display. Stored in order of frames as
+  // they are returned from the decoder.
+  std::vector<int32_t> pictures_out_for_display_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidDeferredRenderingBackingStrategy);
 };

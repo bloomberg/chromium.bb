@@ -504,10 +504,10 @@ void AndroidVideoDecodeAccelerator::SetCdm(int cdm_id) {
 void AndroidVideoDecodeAccelerator::DoIOTask(bool start_timer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::DoIOTask");
-  if (state_ == ERROR || state_ == WAITING_FOR_CODEC) {
+  if (state_ == ERROR || state_ == WAITING_FOR_CODEC)
     return;
-  }
 
+  strategy_->MaybeRenderEarly();
   bool did_work = QueueInput();
   while (DequeueOutput())
     did_work = true;

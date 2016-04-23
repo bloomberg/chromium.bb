@@ -56,7 +56,7 @@ gfx::ScopedJavaSurface AndroidCopyingBackingStrategy::Initialize(
 
 void AndroidCopyingBackingStrategy::Cleanup(
     bool have_context,
-    const AndroidVideoDecodeAccelerator::OutputBufferMap&) {
+    const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
   DCHECK(state_provider_->ThreadChecker().CalledOnValidThread());
 
   if (copier_)

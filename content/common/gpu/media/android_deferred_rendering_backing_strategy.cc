@@ -179,11 +179,14 @@ void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
   AVDACodecImage* avda_image =
       shared_state_->GetImageForPicture(picture_buffer.id());
   RETURN_IF_NULL(avda_image);
-  DCHECK_EQ(avda_image->GetMediaCodecBufferIndex(), -1);
+
   // Note that this is not a race, since we do not re-use a PictureBuffer
   // until after the CC is done drawing it.
+  pictures_out_for_display_.push_back(picture_buffer.id());
   avda_image->SetMediaCodecBufferIndex(codec_buf_index);
   avda_image->SetSize(state_provider_->GetSize());
+
+  MaybeRenderEarly();
 }
 
 void AndroidDeferredRenderingBackingStrategy::AssignOnePictureBuffer(
@@ -218,33 +221,71 @@ void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBufferForPicture(
   AVDACodecImage* avda_image =
       shared_state_->GetImageForPicture(picture_buffer.id());
   RETURN_IF_NULL(avda_image);
-
-  if (!avda_image)
-    return;
-
-  // See if there is a media codec buffer still attached to this image.
-  const int32_t codec_buffer = avda_image->GetMediaCodecBufferIndex();
-
-  if (codec_buffer >= 0) {
-    // PictureBuffer wasn't displayed, so release the buffer.
-    media_codec_->ReleaseOutputBuffer(codec_buffer, false);
-    avda_image->SetMediaCodecBufferIndex(-1);
-  }
+  avda_image->UpdateSurface(AVDACodecImage::UpdateMode::DISCARD_CODEC_BUFFER);
 }
 
 void AndroidDeferredRenderingBackingStrategy::ReuseOnePictureBuffer(
     const media::PictureBuffer& picture_buffer) {
+  pictures_out_for_display_.erase(
+      std::remove(pictures_out_for_display_.begin(),
+                  pictures_out_for_display_.end(), picture_buffer.id()),
+      pictures_out_for_display_.end());
+
   // At this point, the CC must be done with the picture.  We can't really
   // check for that here directly.  it's guaranteed in gpu_video_decoder.cc,
   // when it waits on the sync point before releasing the mailbox.  That sync
   // point is inserted by destroying the resource in VideoLayerImpl::DidDraw.
   ReleaseCodecBufferForPicture(picture_buffer);
+  MaybeRenderEarly();
 }
 
 void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBuffers(
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
   for (const std::pair<int, media::PictureBuffer>& entry : buffers)
     ReleaseCodecBufferForPicture(entry.second);
+}
+
+void AndroidDeferredRenderingBackingStrategy::MaybeRenderEarly() {
+  // See if we can consume the front buffer / render to the SurfaceView.
+  if (pictures_out_for_display_.size() == 1u) {
+    AVDACodecImage* avda_image =
+        shared_state_->GetImageForPicture(*pictures_out_for_display_.begin());
+    RETURN_IF_NULL(avda_image);
+    avda_image->UpdateSurface(
+        AVDACodecImage::UpdateMode::RENDER_TO_FRONT_BUFFER);
+    return;
+  }
+
+  // Back buffer rendering is only available for surface textures.
+  if (!surface_texture_)
+    return;
+
+  // See if the back buffer is free. If so, then render the earliest frame.  The
+  // listing is in render order, so we can just use the first unrendered frame
+  // if there is back buffer space.
+  AVDACodecImage* first_renderable_image = nullptr;
+  for (int id : pictures_out_for_display_) {
+    AVDACodecImage* avda_image = shared_state_->GetImageForPicture(id);
+    if (!avda_image)
+      continue;
+
+    // If the back buffer is unavailable, there's nothing left to do.
+    if (avda_image->is_rendered_to_back_buffer())
+      return;
+
+    // If the image is rendered to the front buffer or has been dropped, it is
+    // not valid for rendering.
+    if (avda_image->is_rendered())
+      continue;
+
+    if (!first_renderable_image)
+      first_renderable_image = avda_image;
+  }
+
+  if (first_renderable_image) {
+    first_renderable_image->UpdateSurface(
+        AVDACodecImage::UpdateMode::RENDER_TO_BACK_BUFFER);
+  }
 }
 
 void AndroidDeferredRenderingBackingStrategy::CodecChanged(
