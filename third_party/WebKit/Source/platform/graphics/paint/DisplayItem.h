@@ -68,6 +68,7 @@ public:
         DragImage,
         SVGImage,
         LinkHighlight,
+        ImageAreaFocusRing,
         PageOverlay,
         PageWidgetDelegateBackgroundFallback,
         PopupContainerBorder,

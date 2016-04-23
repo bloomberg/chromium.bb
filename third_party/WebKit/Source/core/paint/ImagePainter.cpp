@@ -60,11 +60,11 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo, const L
     if (!outlineWidth)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutImage, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutImage, DisplayItem::ImageAreaFocusRing))
         return;
 
     IntRect focusRect = m_layoutImage.absoluteContentBox();
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, DisplayItem::ImageAreaFocusRing, focusRect);
 
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
