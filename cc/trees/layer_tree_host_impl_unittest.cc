@@ -288,7 +288,8 @@ class LayerTreeHostImplTest : public testing::Test,
 
     std::unique_ptr<LayerImpl> inner_scroll =
         LayerImpl::Create(layer_tree_impl, kInnerViewportScrollLayerId);
-    inner_scroll->SetIsContainerForFixedPositionLayers(true);
+    inner_scroll->test_properties()->is_container_for_fixed_position_layers =
+        true;
     inner_scroll->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(inner_scroll->id(),
@@ -309,7 +310,8 @@ class LayerTreeHostImplTest : public testing::Test,
     std::unique_ptr<LayerImpl> outer_clip =
         LayerImpl::Create(layer_tree_impl, kOuterViewportClipLayerId);
     outer_clip->SetBounds(content_size);
-    outer_clip->SetIsContainerForFixedPositionLayers(true);
+    outer_clip->test_properties()->is_container_for_fixed_position_layers =
+        true;
 
     std::unique_ptr<LayerImpl> outer_scroll =
         LayerImpl::Create(layer_tree_impl, kOuterViewportScrollLayerId);
@@ -3466,7 +3468,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
       static_cast<DidDrawCheckLayer*>(layer1->children()[0]);
 
   layer1->test_properties()->force_render_surface = true;
-  layer1->SetShouldFlattenTransform(true);
+  layer1->test_properties()->should_flatten_transform = true;
 
   EXPECT_FALSE(root->did_draw_called());
   EXPECT_FALSE(layer1->did_draw_called());
@@ -3879,14 +3881,15 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     root->SetBounds(outer_viewport_size);
     root->SetPosition(gfx::PointF());
     root->SetDrawsContent(false);
-    root->SetIsContainerForFixedPositionLayers(true);
     root_clip->test_properties()->force_render_surface = true;
+    root->test_properties()->is_container_for_fixed_position_layers = true;
     outer_clip->SetBounds(outer_viewport_size);
     outer_scroll->SetScrollClipLayer(outer_clip->id());
     outer_scroll->SetBounds(scroll_layer_size);
     outer_scroll->SetPosition(gfx::PointF());
     outer_scroll->SetDrawsContent(false);
-    outer_scroll->SetIsContainerForFixedPositionLayers(true);
+    outer_scroll->test_properties()->is_container_for_fixed_position_layers =
+        true;
 
     int inner_viewport_scroll_layer_id = root->id();
     int outer_viewport_scroll_layer_id = outer_scroll->id();
@@ -4204,7 +4207,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
   child->SetBounds(sub_content_size);
   child->SetPosition(gfx::PointF());
   child->SetDrawsContent(true);
-  child->SetIsContainerForFixedPositionLayers(true);
+  child->test_properties()->is_container_for_fixed_position_layers = true;
 
   // scroll child to limit
   SetScrollOffsetDelta(child.get(), gfx::Vector2dF(0, 100.f));
@@ -5078,7 +5081,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   root_clip->test_properties()->force_render_surface = true;
   std::unique_ptr<LayerImpl> root_scrolling =
       CreateScrollableLayer(3, surface_size, root_clip.get());
-  root_scrolling->SetIsContainerForFixedPositionLayers(true);
+  root_scrolling->test_properties()->is_container_for_fixed_position_layers =
+      true;
 
   std::unique_ptr<LayerImpl> grand_child =
       CreateScrollableLayer(5, surface_size, root_clip.get());
@@ -5214,7 +5218,7 @@ TEST_F(LayerTreeHostImplTest, ScrollEventBubbling) {
   // child will have zero max_scroll_offset and scrolls will bubble.
   std::unique_ptr<LayerImpl> child =
       CreateScrollableLayer(2, content_size, root_scroll.get());
-  child->SetIsContainerForFixedPositionLayers(true);
+  child->test_properties()->is_container_for_fixed_position_layers = true;
   root_scroll->SetBounds(content_size);
 
   int root_scroll_id = root_scroll->id();
@@ -5256,8 +5260,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
       LayerImpl::Create(host_impl_->active_tree(), 2);
   std::unique_ptr<LayerImpl> root_scroll =
       CreateScrollableLayer(3, surface_size, root_clip.get());
-  root_scroll->SetIsContainerForFixedPositionLayers(true);
   root_clip->test_properties()->force_render_surface = true;
+  root_scroll->test_properties()->is_container_for_fixed_position_layers = true;
   root_clip->AddChild(std::move(root_scroll));
   root_ptr->AddChild(std::move(root_clip));
   host_impl_->active_tree()->SetRootLayer(std::move(root_ptr));
@@ -5277,7 +5281,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
       LayerImpl::Create(host_impl_->active_tree(), 5);
   std::unique_ptr<LayerImpl> root_scroll2 =
       CreateScrollableLayer(6, surface_size, root_clip2.get());
-  root_scroll2->SetIsContainerForFixedPositionLayers(true);
+  root_scroll2->test_properties()->is_container_for_fixed_position_layers =
+      true;
   root_clip2->AddChild(std::move(root_scroll2));
   root_clip2->test_properties()->force_render_surface = true;
   root_ptr2->AddChild(std::move(root_clip2));
@@ -7813,7 +7818,7 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
 
   std::unique_ptr<LayerImpl> root_scroll =
       CreateScrollableLayer(1, content_size, root_clip.get());
-  root_scroll->SetIsContainerForFixedPositionLayers(true);
+  root_scroll->test_properties()->is_container_for_fixed_position_layers = true;
   std::unique_ptr<LayerImpl> child =
       CreateScrollableLayer(2, content_size, root_clip.get());
 
@@ -8897,7 +8902,8 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
 
     std::unique_ptr<LayerImpl> inner_scroll =
         LayerImpl::Create(layer_tree_impl, kInnerViewportScrollLayerId);
-    inner_scroll->SetIsContainerForFixedPositionLayers(true);
+    inner_scroll->test_properties()->is_container_for_fixed_position_layers =
+        true;
     inner_scroll->layer_tree_impl()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(inner_scroll->id(),
@@ -8917,7 +8923,8 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
     std::unique_ptr<LayerImpl> outer_clip =
         LayerImpl::Create(layer_tree_impl, kOuterViewportClipLayerId);
     outer_clip->SetBounds(outer_viewport);
-    outer_clip->SetIsContainerForFixedPositionLayers(true);
+    outer_clip->test_properties()->is_container_for_fixed_position_layers =
+        true;
 
     std::unique_ptr<LayerImpl> outer_scroll =
         LayerImpl::Create(layer_tree_impl, kOuterViewportScrollLayerId);

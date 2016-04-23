@@ -59,19 +59,15 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
           MainThreadScrollingReason::kNotScrollingOnMain),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
-      should_flatten_transform_(true),
       should_flatten_transform_from_property_tree_(false),
       layer_property_changed_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
-      is_root_for_isolated_group_(false),
       use_parent_backface_visibility_(false),
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
       hide_layer_and_subtree_(false),
-      transform_is_invertible_(true),
-      is_container_for_fixed_position_layers_(false),
       is_affected_by_page_scale_(true),
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
@@ -79,7 +75,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
-      num_descendants_that_draw_content_(0),
       transform_tree_index_(-1),
       effect_tree_index_(-1),
       clip_tree_index_(-1),
@@ -202,13 +197,6 @@ void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
   ScrollNode* node = layer_tree_impl()->property_trees()->scroll_tree.Node(
       scroll_tree_index());
   layer_tree_impl()->ApplyScroll(node, scroll_state);
-}
-
-void LayerImpl::SetNumDescendantsThatDrawContent(int num_descendants) {
-  if (num_descendants_that_draw_content_ == num_descendants)
-    return;
-  num_descendants_that_draw_content_ = num_descendants;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetClipParent(LayerImpl* ancestor) {
@@ -504,12 +492,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetContentsOpaque(contents_opaque_);
   layer->SetOpacity(opacity_);
   layer->SetBlendMode(blend_mode_);
-  layer->SetIsRootForIsolatedGroup(is_root_for_isolated_group_);
   layer->SetPosition(position_);
-  layer->SetIsContainerForFixedPositionLayers(
-      is_container_for_fixed_position_layers_);
-  layer->SetPositionConstraint(position_constraint_);
-  layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   layer->set_draw_blend_mode(draw_blend_mode_);
@@ -517,7 +500,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUseLocalTransformForBackfaceVisibility(
       use_local_transform_for_backface_visibility_);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
-  layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
+  layer->SetTransform(transform_);
   if (layer_property_changed_)
     layer->NoteLayerPropertyChanged();
 
@@ -528,7 +511,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
 
   layer->Set3dSortingContextId(sorting_context_id_);
-  layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
 
   layer->SetTransformTreeIndex(transform_tree_index_);
   layer->SetClipTreeIndex(clip_tree_index_);
@@ -1169,26 +1151,11 @@ void LayerImpl::SetBlendMode(SkXfermode::Mode blend_mode) {
   blend_mode_ = blend_mode;
 }
 
-void LayerImpl::SetIsRootForIsolatedGroup(bool root) {
-  if (is_root_for_isolated_group_ == root)
-    return;
-
-  is_root_for_isolated_group_ = root;
-  SetNeedsPushProperties();
-}
-
 void LayerImpl::SetPosition(const gfx::PointF& position) {
   if (position_ == position)
     return;
 
   position_ = position;
-}
-
-void LayerImpl::SetShouldFlattenTransform(bool flatten) {
-  if (should_flatten_transform_ == flatten)
-    return;
-
-  should_flatten_transform_ = flatten;
 }
 
 void LayerImpl::Set3dSortingContextId(int id) {
@@ -1202,18 +1169,6 @@ void LayerImpl::SetTransform(const gfx::Transform& transform) {
     return;
 
   transform_ = transform;
-  transform_is_invertible_ = transform_.IsInvertible();
-}
-
-void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,
-                                             bool transform_is_invertible) {
-  if (transform_ == transform) {
-    DCHECK(transform_is_invertible_ == transform_is_invertible)
-        << "Can't change invertibility if transform is unchanged";
-    return;
-  }
-  transform_ = transform;
-  transform_is_invertible_ = transform_is_invertible;
 }
 
 bool LayerImpl::TransformIsAnimating() const {
@@ -1379,8 +1334,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   if (!transform().IsIdentity())
     MathUtil::AddToTracedValue("transform", transform(), state);
 
-  state->SetBoolean("should_flatten", should_flatten_transform_);
-
   bool clipped;
   gfx::QuadF layer_quad =
       MathUtil::MapQuad(ScreenSpaceTransform(),
@@ -1460,10 +1413,6 @@ size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
 
 void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
   benchmark->RunOnLayer(this);
-}
-
-int LayerImpl::NumDescendantsThatDrawContent() const {
-  return num_descendants_that_draw_content_;
 }
 
 void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {

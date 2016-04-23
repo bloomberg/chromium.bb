@@ -5,18 +5,19 @@
 #ifndef CC_LAYERS_LAYER_IMPL_TEST_PROPERTIES_H_
 #define CC_LAYERS_LAYER_IMPL_TEST_PROPERTIES_H_
 
+#include "cc/layers/layer_position_constraint.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 namespace cc {
 
 struct LayerImplTestProperties {
-  LayerImplTestProperties()
-      : transform_origin(gfx::Point3F()),
-        double_sided(true),
-        force_render_surface(false) {}
+  bool double_sided = true;
+  bool force_render_surface = false;
+  bool is_container_for_fixed_position_layers = false;
+  bool should_flatten_transform = true;
+  int num_descendants_that_draw_content = 0;
+  LayerPositionConstraint position_constraint;
   gfx::Point3F transform_origin;
-  bool double_sided;
-  bool force_render_surface;
 };
 
 }  // namespace cc

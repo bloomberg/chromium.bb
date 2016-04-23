@@ -160,7 +160,6 @@ class CC_EXPORT LayerImpl {
 
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
-  void SetNumDescendantsThatDrawContent(int num_descendants);
   void SetClipParent(LayerImpl* ancestor);
 
   LayerImpl* clip_parent() {
@@ -232,7 +231,6 @@ class CC_EXPORT LayerImpl {
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
-  int NumDescendantsThatDrawContent() const;
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
 
@@ -292,35 +290,12 @@ class CC_EXPORT LayerImpl {
     return blend_mode_ == SkXfermode::kSrcOver_Mode;
   }
 
-  void SetIsRootForIsolatedGroup(bool root);
-  bool is_root_for_isolated_group() const {
-    return is_root_for_isolated_group_;
-  }
-
   void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
-
-  void SetIsContainerForFixedPositionLayers(bool container) {
-    is_container_for_fixed_position_layers_ = container;
-  }
-  // This is a non-trivial function in Layer.
-  bool IsContainerForFixedPositionLayers() const {
-    return is_container_for_fixed_position_layers_;
-  }
 
   bool IsAffectedByPageScale() const;
 
   gfx::Vector2dF FixedContainerSizeDelta() const;
-
-  void SetPositionConstraint(const LayerPositionConstraint& constraint) {
-    position_constraint_ = constraint;
-  }
-  const LayerPositionConstraint& position_constraint() const {
-    return position_constraint_;
-  }
-
-  void SetShouldFlattenTransform(bool flatten);
-  bool should_flatten_transform() const { return should_flatten_transform_; }
 
   bool Is3dSorted() const { return sorting_context_id_ != 0; }
 
@@ -461,9 +436,6 @@ class CC_EXPORT LayerImpl {
   bool TransformIsAnimatingOnImplOnly() const;
   bool HasOnlyTranslationTransforms() const;
   bool AnimationsPreserveAxisAlignment() const;
-  void SetTransformAndInvertibility(const gfx::Transform& transform,
-                                    bool transform_is_invertible);
-  bool transform_is_invertible() const { return transform_is_invertible_; }
 
   bool MaximumTargetScale(float* max_scale) const;
   bool AnimationStartScale(float* start_scale) const;
@@ -648,7 +620,6 @@ class CC_EXPORT LayerImpl {
 
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
-  bool should_flatten_transform_ : 1;
   bool should_flatten_transform_from_property_tree_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
@@ -656,18 +627,11 @@ class CC_EXPORT LayerImpl {
 
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;
-  bool is_root_for_isolated_group_ : 1;
   bool use_parent_backface_visibility_ : 1;
   bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
-
-  // Cache transform_'s invertibility.
-  bool transform_is_invertible_ : 1;
-
-  // Set for the layer that other layers are fixed to.
-  bool is_container_for_fixed_position_layers_ : 1;
 
   bool is_affected_by_page_scale_ : 1;
 
@@ -687,10 +651,6 @@ class CC_EXPORT LayerImpl {
   SkXfermode::Mode draw_blend_mode_;
   gfx::PointF position_;
   gfx::Transform transform_;
-
-  LayerPositionConstraint position_constraint_;
-
-  int num_descendants_that_draw_content_;
 
   gfx::Rect clip_rect_in_target_space_;
   int transform_tree_index_;

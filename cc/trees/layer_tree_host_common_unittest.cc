@@ -968,10 +968,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
                                true, false, false);
 
   // No layers in this test should preserve 3d.
-  ASSERT_TRUE(root->should_flatten_transform());
-  ASSERT_TRUE(child->should_flatten_transform());
-  ASSERT_TRUE(grand_child->should_flatten_transform());
-  ASSERT_TRUE(great_grand_child->should_flatten_transform());
+  ASSERT_TRUE(root->test_properties()->should_flatten_transform);
+  ASSERT_TRUE(child->test_properties()->should_flatten_transform);
+  ASSERT_TRUE(grand_child->test_properties()->should_flatten_transform);
+  ASSERT_TRUE(great_grand_child->test_properties()->should_flatten_transform);
 
   gfx::Transform expected_child_draw_transform = rotation_about_y_axis;
   gfx::Transform expected_child_screen_space_transform = rotation_about_y_axis;
@@ -1032,7 +1032,7 @@ TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true, false, false);
 
-  grand_child->SetShouldFlattenTransform(false);
+  grand_child->test_properties()->should_flatten_transform = false;
   grand_child->SetDrawsContent(true);
 
   ExecuteCalculateDrawProperties(root);
@@ -1642,13 +1642,13 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
                                gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
 
-  grand_child->SetShouldFlattenTransform(false);
+  grand_child->test_properties()->should_flatten_transform = false;
 
   // Only grand_child should preserve 3d.
-  EXPECT_TRUE(root->should_flatten_transform());
-  EXPECT_TRUE(parent->should_flatten_transform());
-  EXPECT_TRUE(child->should_flatten_transform());
-  EXPECT_FALSE(grand_child->should_flatten_transform());
+  EXPECT_TRUE(root->test_properties()->should_flatten_transform);
+  EXPECT_TRUE(parent->test_properties()->should_flatten_transform);
+  EXPECT_TRUE(child->test_properties()->should_flatten_transform);
+  EXPECT_FALSE(grand_child->test_properties()->should_flatten_transform);
 
   gfx::Transform expected_child_draw_transform = identity_matrix;
   gfx::Transform expected_grand_child_draw_transform = identity_matrix;
@@ -6461,10 +6461,10 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
                                gfx::PointF(), gfx::Size(20, 20), true, false,
                                false);
 
-  root->SetShouldFlattenTransform(false);
+  root->test_properties()->should_flatten_transform = false;
   root->Set3dSortingContextId(1);
   back_facing->Set3dSortingContextId(1);
-  back_facing->SetShouldFlattenTransform(false);
+  back_facing->test_properties()->should_flatten_transform = false;
   render_surface1->test_properties()->double_sided = false;
   render_surface2->Set3dSortingContextId(2);
   render_surface2->test_properties()->double_sided = false;
@@ -7002,12 +7002,12 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   fixed->SetDrawsContent(true);
   child->SetDrawsContent(true);
 
-  root->SetIsContainerForFixedPositionLayers(true);
   render_surface->test_properties()->force_render_surface = true;
+  root->test_properties()->is_container_for_fixed_position_layers = true;
 
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
-  fixed->SetPositionConstraint(constraint);
+  fixed->test_properties()->position_constraint = constraint;
 
   SetLayerPropertiesForTesting(root, gfx::Transform(), gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false);
@@ -7075,11 +7075,11 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
       LayerImpl::Create(host_impl.active_tree(), 4);
   LayerImpl* fixed_layer = fixed.get();
 
-  container->SetIsContainerForFixedPositionLayers(true);
+  container->test_properties()->is_container_for_fixed_position_layers = true;
 
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
-  fixed->SetPositionConstraint(constraint);
+  fixed->test_properties()->position_constraint = constraint;
 
   scroller->SetScrollClipLayer(container->id());
 
@@ -8416,13 +8416,13 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
                                true, false, false);
 
   root->SetMasksToBounds(true);
-  root->SetIsContainerForFixedPositionLayers(true);
+  root->test_properties()->is_container_for_fixed_position_layers = true;
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
-  grandchild->SetPositionConstraint(constraint);
+  grandchild->test_properties()->position_constraint = constraint;
   grandchild->SetDrawsContent(true);
 
-  root->SetIsContainerForFixedPositionLayers(true);
+  root->test_properties()->is_container_for_fixed_position_layers = true;
 
   ExecuteCalculateDrawProperties(root);
 
@@ -8451,13 +8451,13 @@ TEST_F(LayerTreeHostCommonTest,
                                true, false, false);
 
   root->SetMasksToBounds(true);
-  child->SetIsContainerForFixedPositionLayers(true);
+  child->test_properties()->is_container_for_fixed_position_layers = true;
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
-  grandchild->SetPositionConstraint(constraint);
+  grandchild->test_properties()->position_constraint = constraint;
   grandchild->SetDrawsContent(true);
 
-  root->SetIsContainerForFixedPositionLayers(true);
+  root->test_properties()->is_container_for_fixed_position_layers = true;
 
   ExecuteCalculateDrawProperties(root);
 
@@ -8527,7 +8527,7 @@ TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
 
   SetLayerPropertiesForTesting(root, identity, gfx::Point3F(), gfx::PointF(),
                                gfx::Size(800, 800), true, false, true);
-  root->SetIsContainerForFixedPositionLayers(true);
+  root->test_properties()->is_container_for_fixed_position_layers = true;
 
   SetLayerPropertiesForTesting(frame_clip, translate_z, gfx::Point3F(),
                                gfx::PointF(500, 100), gfx::Size(100, 100), true,
@@ -8539,7 +8539,7 @@ TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
 
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
-  fixed->SetPositionConstraint(constraint);
+  fixed->test_properties()->position_constraint = constraint;
   fixed->SetDrawsContent(true);
 
   ExecuteCalculateDrawProperties(root);
@@ -8567,7 +8567,7 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
                                gfx::PointF(100, 100), gfx::Size(50, 50), true,
                                false, true);
 
-  root->SetIsContainerForFixedPositionLayers(true);
+  root->test_properties()->is_container_for_fixed_position_layers = true;
   root->SetDrawsContent(true);
 
   frame_clip->SetMasksToBounds(true);
@@ -8579,7 +8579,7 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
 
   LayerPositionConstraint constraint;
   constraint.set_is_fixed_position(true);
-  fixed->SetPositionConstraint(constraint);
+  fixed->test_properties()->position_constraint = constraint;
   fixed->SetMasksToBounds(true);
   fixed->SetDrawsContent(true);
 

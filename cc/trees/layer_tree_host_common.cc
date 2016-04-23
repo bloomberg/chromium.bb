@@ -199,9 +199,13 @@ static inline bool IsRootLayer(const Layer* layer) {
   return !layer->parent();
 }
 
-template <typename LayerType>
-static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
+static bool HasInvertibleOrAnimatedTransform(Layer* layer) {
   return layer->transform_is_invertible() ||
+         layer->HasPotentiallyRunningTransformAnimation();
+}
+
+static bool HasInvertibleOrAnimatedTransformForTesting(LayerImpl* layer) {
+  return layer->transform().IsInvertible() ||
          layer->HasPotentiallyRunningTransformAnimation();
 }
 
@@ -325,7 +329,7 @@ static void PreCalculateMetaInformationInternalForTesting(
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
-  if (!HasInvertibleOrAnimatedTransform(layer)) {
+  if (!HasInvertibleOrAnimatedTransformForTesting(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
     return;
@@ -357,8 +361,8 @@ static void PreCalculateMetaInformationInternalForTesting(
       (recursive_data->num_layer_or_descendants_with_touch_handler != 0));
   // TODO(enne): this should be synced from the main thread, so is only
   // for tests constructing layers on the compositor thread.
-  layer->SetNumDescendantsThatDrawContent(
-      recursive_data->num_descendants_that_draw_content);
+  layer->test_properties()->num_descendants_that_draw_content =
+      recursive_data->num_descendants_that_draw_content;
 
   if (layer->DrawsContent())
     recursive_data->num_descendants_that_draw_content++;

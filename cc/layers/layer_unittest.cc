@@ -1799,7 +1799,7 @@ TEST_F(LayerTest, CheckTransformIsInvertible) {
   layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_FALSE(layer->transform_is_invertible());
-  EXPECT_FALSE(impl_layer->transform_is_invertible());
+  EXPECT_FALSE(impl_layer->transform().IsInvertible());
 
   gfx::Transform rotation_transform;
   rotation_transform.RotateAboutZAxis(-45.0);
@@ -1807,7 +1807,7 @@ TEST_F(LayerTest, CheckTransformIsInvertible) {
   layer->SetTransform(rotation_transform);
   layer->PushPropertiesTo(impl_layer.get());
   EXPECT_TRUE(layer->transform_is_invertible());
-  EXPECT_TRUE(impl_layer->transform_is_invertible());
+  EXPECT_TRUE(impl_layer->transform().IsInvertible());
 
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
@@ -1830,7 +1830,7 @@ TEST_F(LayerTest, TransformIsInvertibleAnimation) {
   layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_FALSE(layer->transform_is_invertible());
-  EXPECT_FALSE(impl_layer->transform_is_invertible());
+  EXPECT_FALSE(impl_layer->transform().IsInvertible());
 
   gfx::Transform identity_transform;
 
@@ -1839,7 +1839,7 @@ TEST_F(LayerTest, TransformIsInvertibleAnimation) {
   layer->OnTransformAnimated(singular_transform);
   layer->PushPropertiesTo(impl_layer.get());
   EXPECT_FALSE(layer->transform_is_invertible());
-  EXPECT_FALSE(impl_layer->transform_is_invertible());
+  EXPECT_FALSE(impl_layer->transform().IsInvertible());
 
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }

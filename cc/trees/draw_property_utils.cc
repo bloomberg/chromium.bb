@@ -47,6 +47,12 @@ static LayerImpl* EffectNodeOwner(LayerImpl* layer) {
   return layer->layer_tree_impl()->LayerById(node->owner_id);
 }
 
+static void inline ValidateIsNotRootForIsolatedGroup(Layer* layer) {
+  DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
+}
+
+static void inline ValidateIsNotRootForIsolatedGroup(LayerImpl* layer) {}
+
 template <typename LayerType>
 static void ValidateRenderSurfaceForLayer(LayerType* layer) {
   // This test verifies that there are no cases where a LayerImpl needs
@@ -61,8 +67,8 @@ static void ValidateRenderSurfaceForLayer(LayerType* layer) {
     return;
   DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
   DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
-  DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
   DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
+  ValidateIsNotRootForIsolatedGroup(layer);
 }
 
 static void ValidateRenderSurfacesRecursive(Layer* layer) {

@@ -1072,7 +1072,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
   SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
                                position, bounds, true, false, true);
   root->SetDrawsContent(true);
-  root->SetShouldFlattenTransform(false);
+  root->test_properties()->should_flatten_transform = false;
   root->Set3dSortingContextId(1);
   {
     // child 1 and child2 are initialized to overlap between x=50 and x=60.
@@ -1094,7 +1094,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
                                  transform_origin, position, bounds, true,
                                  false, false);
     child1->SetDrawsContent(true);
-    child1->SetShouldFlattenTransform(false);
+    child1->test_properties()->should_flatten_transform = false;
     child1->Set3dSortingContextId(1);
 
     position = gfx::PointF(50.f, 10.f);
@@ -1104,7 +1104,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
     SetLayerPropertiesForTesting(child2.get(), translate_z, transform_origin,
                                  position, bounds, true, false, false);
     child2->SetDrawsContent(true);
-    child2->SetShouldFlattenTransform(false);
+    child2->test_properties()->should_flatten_transform = false;
     child2->Set3dSortingContextId(1);
 
     // Remember that grand_child is positioned with respect to its parent (i.e.
@@ -1116,7 +1116,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
                                  transform_origin, position, bounds, true,
                                  false, false);
     grand_child1->SetDrawsContent(true);
-    grand_child1->SetShouldFlattenTransform(false);
+    grand_child1->test_properties()->should_flatten_transform = false;
 
     child1->AddChild(std::move(grand_child1));
     root->AddChild(std::move(child1));

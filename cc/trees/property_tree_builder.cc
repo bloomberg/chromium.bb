@@ -72,10 +72,18 @@ struct DataForRecursionFromChild {
   }
 };
 
+static LayerPositionConstraint PositionConstraint(Layer* layer) {
+  return layer->position_constraint();
+}
+
+static LayerPositionConstraint PositionConstraint(LayerImpl* layer) {
+  return layer->test_properties()->position_constraint;
+}
+
 template <typename LayerType>
 static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
                                      LayerType* layer) {
-  return layer->position_constraint().is_fixed_position()
+  return PositionConstraint(layer).is_fixed_position()
              ? data.transform_fixed_parent
              : data.transform_tree_parent;
 }
@@ -169,7 +177,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
               parent->data.layers_are_clipped_when_surfaces_disabled);
   } else {
     LayerType* transform_parent = data_for_children->transform_tree_parent;
-    if (layer->position_constraint().is_fixed_position() &&
+    if (PositionConstraint(layer).is_fixed_position() &&
         !created_transform_node) {
       transform_parent = data_for_children->transform_fixed_parent;
     }
@@ -228,6 +236,22 @@ static inline gfx::Point3F TransformOrigin(LayerImpl* layer) {
   return layer->test_properties()->transform_origin;
 }
 
+static inline bool IsContainerForFixedPositionLayers(Layer* layer) {
+  return layer->IsContainerForFixedPositionLayers();
+}
+
+static inline bool IsContainerForFixedPositionLayers(LayerImpl* layer) {
+  return layer->test_properties()->is_container_for_fixed_position_layers;
+}
+
+static inline bool ShouldFlattenTransform(Layer* layer) {
+  return layer->should_flatten_transform();
+}
+
+static inline bool ShouldFlattenTransform(LayerImpl* layer) {
+  return layer->test_properties()->should_flatten_transform;
+}
+
 template <typename LayerType>
 bool AddTransformNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
@@ -239,7 +263,7 @@ bool AddTransformNodeIfNeeded(
   const bool is_overscroll_elasticity_layer =
       layer == data_from_ancestor.overscroll_elasticity_layer;
   const bool is_scrollable = layer->scrollable();
-  const bool is_fixed = layer->position_constraint().is_fixed_position();
+  const bool is_fixed = PositionConstraint(layer).is_fixed_position();
 
   const bool has_significant_transform =
       !layer->transform().IsIdentityOr2DTranslation();
@@ -299,7 +323,7 @@ bool AddTransformNodeIfNeeded(
     }
   }
 
-  if (layer->IsContainerForFixedPositionLayers() || is_root) {
+  if (IsContainerForFixedPositionLayers(layer) || is_root) {
     data_for_children->affected_by_inner_viewport_bounds_delta =
         layer == data_from_ancestor.inner_viewport_scroll_layer;
     data_for_children->affected_by_outer_viewport_bounds_delta =
@@ -314,11 +338,11 @@ bool AddTransformNodeIfNeeded(
   }
   data_for_children->transform_tree_parent = layer;
 
-  if (layer->IsContainerForFixedPositionLayers() || is_fixed)
+  if (IsContainerForFixedPositionLayers(layer) || is_fixed)
     data_for_children->scroll_snap = gfx::Vector2dF();
 
   if (!requires_node) {
-    data_for_children->should_flatten |= layer->should_flatten_transform();
+    data_for_children->should_flatten |= ShouldFlattenTransform(layer);
     gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
                                   layer->transform().To2dTranslation();
     gfx::Vector2dF source_to_parent;
@@ -357,7 +381,7 @@ bool AddTransformNodeIfNeeded(
 
   // Surfaces inherently flatten transforms.
   data_for_children->should_flatten =
-      layer->should_flatten_transform() || has_surface;
+      ShouldFlattenTransform(layer) || has_surface;
   DCHECK_GT(data_from_ancestor.effect_tree->size(), 0u);
 
   node->data.target_id =
@@ -423,9 +447,9 @@ bool AddTransformNodeIfNeeded(
   if (is_fixed) {
     if (data_from_ancestor.affected_by_inner_viewport_bounds_delta) {
       node->data.affected_by_inner_viewport_bounds_delta_x =
-          layer->position_constraint().is_fixed_to_right_edge();
+          PositionConstraint(layer).is_fixed_to_right_edge();
       node->data.affected_by_inner_viewport_bounds_delta_y =
-          layer->position_constraint().is_fixed_to_bottom_edge();
+          PositionConstraint(layer).is_fixed_to_bottom_edge();
       if (node->data.affected_by_inner_viewport_bounds_delta_x ||
           node->data.affected_by_inner_viewport_bounds_delta_y) {
         data_for_children->transform_tree
@@ -433,9 +457,9 @@ bool AddTransformNodeIfNeeded(
       }
     } else if (data_from_ancestor.affected_by_outer_viewport_bounds_delta) {
       node->data.affected_by_outer_viewport_bounds_delta_x =
-          layer->position_constraint().is_fixed_to_right_edge();
+          PositionConstraint(layer).is_fixed_to_right_edge();
       node->data.affected_by_outer_viewport_bounds_delta_y =
-          layer->position_constraint().is_fixed_to_bottom_edge();
+          PositionConstraint(layer).is_fixed_to_bottom_edge();
       if (node->data.affected_by_outer_viewport_bounds_delta_x ||
           node->data.affected_by_outer_viewport_bounds_delta_y) {
         data_for_children->transform_tree
@@ -494,6 +518,22 @@ static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
          (layer->parent()->sorting_context_id() == layer->sorting_context_id());
 }
 
+static inline bool IsRootForIsolatedGroup(Layer* layer) {
+  return layer->is_root_for_isolated_group();
+}
+
+static inline bool IsRootForIsolatedGroup(LayerImpl* layer) {
+  return false;
+}
+
+static inline int NumDescendantsThatDrawContent(Layer* layer) {
+  return layer->NumDescendantsThatDrawContent();
+}
+
+static inline int NumDescendantsThatDrawContent(LayerImpl* layer) {
+  return layer->test_properties()->num_descendants_that_draw_content;
+}
+
 template <typename LayerType>
 bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
@@ -527,14 +567,12 @@ bool ShouldCreateRenderSurface(LayerType* layer,
     return true;
   }
 
-  int num_descendants_that_draw_content =
-      layer->NumDescendantsThatDrawContent();
+  int num_descendants_that_draw_content = NumDescendantsThatDrawContent(layer);
 
   // If the layer flattens its subtree, but it is treated as a 3D object by its
   // parent (i.e. parent participates in a 3D rendering context).
   if (LayerIsInExisting3DRenderingContext(layer) &&
-      layer->should_flatten_transform() &&
-      num_descendants_that_draw_content > 0) {
+      ShouldFlattenTransform(layer) && num_descendants_that_draw_content > 0) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface flattening",
         TRACE_EVENT_SCOPE_THREAD);
@@ -571,7 +609,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
       num_descendants_that_draw_content > 0 &&
       (layer->DrawsContent() || num_descendants_that_draw_content > 1);
 
-  if (layer->EffectiveOpacity() != 1.f && layer->should_flatten_transform() &&
+  if (layer->EffectiveOpacity() != 1.f && ShouldFlattenTransform(layer) &&
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface opacity",
@@ -584,7 +622,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   // the blending descendants might have access to the content behind this layer
   // (layer has transparent background or descendants overflow).
   // https://code.google.com/p/chromium/issues/detail?id=301738
-  if (layer->is_root_for_isolated_group()) {
+  if (IsRootForIsolatedGroup(layer)) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface isolation",
         TRACE_EVENT_SCOPE_THREAD);

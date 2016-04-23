@@ -88,7 +88,8 @@ int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
     num_children_that_draw_content +=
         RecursiveUpdateNumChildren(layer->children()[i]);
   }
-  layer->SetNumDescendantsThatDrawContent(num_children_that_draw_content);
+  layer->test_properties()->num_descendants_that_draw_content =
+      num_children_that_draw_content;
   return num_children_that_draw_content + (layer->DrawsContent() ? 1 : 0);
 }
 

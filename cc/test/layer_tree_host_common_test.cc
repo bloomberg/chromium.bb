@@ -32,8 +32,9 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     bool flatten_transform,
     bool is_3d_sorted) {
   SetLayerPropertiesForTestingInternal(layer, transform, position, bounds,
-                                       flatten_transform, is_3d_sorted);
+                                       is_3d_sorted);
   layer->SetTransformOrigin(transform_origin);
+  layer->SetShouldFlattenTransform(flatten_transform);
 }
 
 void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
@@ -45,8 +46,9 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     bool flatten_transform,
     bool is_3d_sorted) {
   SetLayerPropertiesForTestingInternal(layer, transform, position, bounds,
-                                       flatten_transform, is_3d_sorted);
+                                       is_3d_sorted);
   layer->test_properties()->transform_origin = transform_origin;
+  layer->test_properties()->should_flatten_transform = flatten_transform;
 }
 
 void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
@@ -59,8 +61,9 @@ void LayerTreeHostCommonTestBase::SetLayerPropertiesForTesting(
     bool is_3d_sorted,
     bool create_render_surface) {
   SetLayerPropertiesForTestingInternal(layer, transform, position, bounds,
-                                       flatten_transform, is_3d_sorted);
+                                       is_3d_sorted);
   layer->test_properties()->transform_origin = transform_origin;
+  layer->test_properties()->should_flatten_transform = flatten_transform;
   if (create_render_surface) {
     layer->test_properties()->force_render_surface = true;
   }

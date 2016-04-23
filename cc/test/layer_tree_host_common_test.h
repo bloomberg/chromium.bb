@@ -41,12 +41,10 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
       const gfx::Transform& transform,
       const gfx::PointF& position,
       const gfx::Size& bounds,
-      bool flatten_transform,
       bool is_3d_sorted) {
     layer->SetTransform(transform);
     layer->SetPosition(position);
     layer->SetBounds(bounds);
-    layer->SetShouldFlattenTransform(flatten_transform);
     layer->Set3dSortingContextId(is_3d_sorted ? 1 : 0);
   }
 
