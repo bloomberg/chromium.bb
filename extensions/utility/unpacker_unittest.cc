@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -54,7 +56,7 @@ class UnpackerTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<Unpacker> unpacker_;
+  std::unique_ptr<Unpacker> unpacker_;
 };
 
 TEST_F(UnpackerTest, EmptyDefaultLocale) {

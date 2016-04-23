@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMPONENTS_NATIVE_APP_WINDOW_NATIVE_APP_WINDOW_VIEWS_H_
 #define EXTENSIONS_COMPONENTS_NATIVE_APP_WINDOW_NATIVE_APP_WINDOW_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -141,7 +143,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) override;
   SkRegion* GetDraggableRegion() override;
-  void UpdateShape(scoped_ptr<SkRegion> region) override;
+  void UpdateShape(std::unique_ptr<SkRegion> region) override;
   void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   bool IsFrameless() const override;
@@ -173,7 +175,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   views::WebView* web_view_;
   views::Widget* widget_;
 
-  scoped_ptr<SkRegion> draggable_region_;
+  std::unique_ptr<SkRegion> draggable_region_;
 
   bool frameless_;
   bool resizable_;

@@ -5,6 +5,7 @@
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/app_modal/javascript_dialog_extensions_client.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -80,7 +81,7 @@ class JavaScriptDialogExtensionsClientImpl
 void InstallClient() {
   app_modal::JavaScriptDialogManager::GetInstance()->
       SetExtensionsClient(
-          make_scoped_ptr(new JavaScriptDialogExtensionsClientImpl));
+          base::WrapUnique(new JavaScriptDialogExtensionsClientImpl));
 }
 
 }  // namespace javascript_dialog_extensions_client

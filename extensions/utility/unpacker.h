@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_UTILITY_UNPACKER_H_
 #define EXTENSIONS_UTILITY_UNPACKER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/manifest.h"
 
 class SkBitmap;
@@ -56,7 +56,7 @@ class Unpacker {
   bool DumpMessageCatalogsToFile();
 
   // Parse the manifest.json file inside the extension (not in the header).
-  scoped_ptr<base::DictionaryValue> ReadManifest();
+  std::unique_ptr<base::DictionaryValue> ReadManifest();
 
   // Parse all _locales/*/messages.json files inside the extension.
   bool ReadAllMessageCatalogs(const std::string& default_locale);
@@ -89,16 +89,16 @@ class Unpacker {
   int creation_flags_;
 
   // The parsed version of the manifest JSON contained in the extension.
-  scoped_ptr<base::DictionaryValue> parsed_manifest_;
+  std::unique_ptr<base::DictionaryValue> parsed_manifest_;
 
   // A list of decoded images and the paths where those images came from.  Paths
   // are relative to the manifest file.
   struct InternalData;
-  scoped_ptr<InternalData> internal_data_;
+  std::unique_ptr<InternalData> internal_data_;
 
   // Dictionary of relative paths and catalogs per path. Paths are in the form
   // of _locales/locale, without messages.json base part.
-  scoped_ptr<base::DictionaryValue> parsed_catalogs_;
+  std::unique_ptr<base::DictionaryValue> parsed_catalogs_;
 
   // The last error message that was set.  Empty if there were no errors.
   base::string16 error_message_;
