@@ -67,6 +67,27 @@ if (target_cpu == "arm" || current_cpu == "arm") {
     } else {
       arm_fpu = "vfpv3-d16"
     }
+  } else if (arm_version == 8) {
+    arm_arch = "armv8-a"
+    if (arm_tune == "") {
+      arm_tune = "generic-armv8-a"
+    }
+
+    if (arm_float_abi == "") {
+      if (is_android) {
+        arm_float_abi = "softfp"
+      } else {
+        arm_float_abi = "hard"
+      }
+    }
+
+    arm_use_thumb = true
+
+    if (arm_use_neon) {
+      arm_fpu = "neon"
+    } else {
+      arm_fpu = "vfpv3-d16"
+    }
   }
 } else if (current_cpu == "arm64") {
   # arm64 supports only "hard".
