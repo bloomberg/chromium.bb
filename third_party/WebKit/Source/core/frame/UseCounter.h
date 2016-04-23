@@ -1137,6 +1137,7 @@ public:
         ViewSourceDocument = 1319,
         FileAPINativeLineEndings = 1320,
         PointerEventAttributeCount = 1321,
+        CompositedReplication = 1322,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

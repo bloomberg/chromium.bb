@@ -512,6 +512,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         if (m_owningLayer.reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
             GraphicsLayer* reflectionLayer = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping()->mainGraphicsLayer();
             m_graphicsLayer->setReplicatedByLayer(reflectionLayer);
+            UseCounter::count(m_owningLayer.layoutObject()->document(), UseCounter::CompositedReplication);
         }
     } else {
         m_graphicsLayer->setReplicatedByLayer(nullptr);
