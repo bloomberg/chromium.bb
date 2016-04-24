@@ -70,7 +70,29 @@
 
 
 ```
-## **\--markdown**: write the output in the Markdown format.
+## **\--fail-on-unused-args**: Treat unused build args as fatal errors.
+
+```
+  If you set a value in a build's "gn args" and never use it in the
+  build (in a declare_args() block), GN will normally print an error
+  but not fail the build.
+
+  In many cases engineers would use build args to enable or disable
+  features that would sometimes get removed. It would by annoying to
+  block work for typically benign problems. In Chrome in particular,
+  flags might be configured for build bots in a separate infrastructure
+  repository, or a declare_args block might be changed in a third party
+  repository. Treating these errors as blocking forced complex multi-
+  way patches to land what would otherwise be simple changes.
+
+  In some cases, such concerns are not as important, and a mismatch
+  in build flags between the invoker of the build and the build files
+  represents a critical mismatch that should be immediately fixed. Such
+  users can set this flag to force GN to fail in that case.
+
+
+```
+## **\--markdown**: Write help output in the Markdown format.
 
 ## **\--[no]color**: Forces colored output on or off.
 
@@ -5925,7 +5947,8 @@
 **  \--args**: Specifies build arguments overrides.
 **  \--color**: Force colored output.
 **  \--dotfile**: Override the name of the ".gn" file.
-**  \--markdown**: write the output in the Markdown format.
+**  \--fail-on-unused-args**: Treat unused build args as fatal errors.
+**  \--markdown**: Write help output in the Markdown format.
 **  \--nocolor**: Force non-colored output.
 **  -q**: Quiet mode. Don't print output on success.
 **  \--root**: Explicitly specify source root.

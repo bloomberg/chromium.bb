@@ -194,25 +194,12 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
   if (all_overrides.empty())
     return true;
 
-  // Get a list of all possible overrides for help with error finding.
-  //
-  // It might be nice to do edit distance checks to see if we can find one close
-  // to what you typed.
-  std::string all_declared_str;
-  for (const auto& map_pair : declared_arguments_per_toolchain_) {
-    for (const auto& cur_str : map_pair.second) {
-      if (!all_declared_str.empty())
-        all_declared_str += ", ";
-      all_declared_str += cur_str.first.as_string();
-    }
-  }
-
   *err = Err(
       all_overrides.begin()->second.origin(), "Build argument has no effect.",
       "The variable \"" + all_overrides.begin()->first.as_string() +
           "\" was set as a build argument\nbut never appeared in a " +
-          "declare_args() block in any buildfile.\n\nPossible arguments: " +
-          all_declared_str);
+          "declare_args() block in any buildfile.\n\n"
+          "To view possible args, run \"gn args --list <builddir>\"");
   return false;
 }
 

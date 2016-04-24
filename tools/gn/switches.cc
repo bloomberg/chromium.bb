@@ -69,11 +69,34 @@ const char kDotfile_Help[] =
     "  Note that this interacts with \"--root\" in a possibly incorrect way.\n"
     "  It would be nice to test the edge cases and document or fix.\n";
 
+const char kFailOnUnusedArgs[] = "fail-on-unused-args";
+const char kFailOnUnusedArgs_HelpShort[] =
+    "--fail-on-unused-args: Treat unused build args as fatal errors.";
+const char kFailOnUnusedArgs_Help[] =
+    "--fail-on-unused-args: Treat unused build args as fatal errors.\n"
+    "\n"
+    "  If you set a value in a build's \"gn args\" and never use it in the\n"
+    "  build (in a declare_args() block), GN will normally print an error\n"
+    "  but not fail the build.\n"
+    "\n"
+    "  In many cases engineers would use build args to enable or disable\n"
+    "  features that would sometimes get removed. It would by annoying to\n"
+    "  block work for typically benign problems. In Chrome in particular,\n"
+    "  flags might be configured for build bots in a separate infrastructure\n"
+    "  repository, or a declare_args block might be changed in a third party\n"
+    "  repository. Treating these errors as blocking forced complex multi-\n"
+    "  way patches to land what would otherwise be simple changes.\n"
+    "\n"
+    "  In some cases, such concerns are not as important, and a mismatch\n"
+    "  in build flags between the invoker of the build and the build files\n"
+    "  represents a critical mismatch that should be immediately fixed. Such\n"
+    "  users can set this flag to force GN to fail in that case.\n";
+
 const char kMarkdown[] = "markdown";
 const char kMarkdown_HelpShort[] =
-    "--markdown: write the output in the Markdown format.";
+    "--markdown: Write help output in the Markdown format.";
 const char kMarkdown_Help[] =
-    "--markdown: write the output in the Markdown format.\n";
+    "--markdown: Write help output in the Markdown format.\n";
 
 const char kNoColor[] = "nocolor";
 const char kNoColor_HelpShort[] =
@@ -223,6 +246,7 @@ const SwitchInfoMap& GetSwitches() {
     INSERT_VARIABLE(Args)
     INSERT_VARIABLE(Color)
     INSERT_VARIABLE(Dotfile)
+    INSERT_VARIABLE(FailOnUnusedArgs)
     INSERT_VARIABLE(Markdown)
     INSERT_VARIABLE(NoColor)
     INSERT_VARIABLE(Root)
