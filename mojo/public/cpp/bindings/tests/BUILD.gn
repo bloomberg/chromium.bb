@@ -28,7 +28,6 @@ source_set("tests") {
     "message_queue.cc",
     "message_queue.h",
     "multiplex_router_unittest.cc",
-    "pickle_unittest.cc",
     "request_response_unittest.cc",
     "router_test_util.cc",
     "router_test_util.h",
@@ -37,7 +36,6 @@ source_set("tests") {
     "serialization_warning_unittest.cc",
     "stl_converters_unittest.cc",
     "string_unittest.cc",
-    "struct_traits_unittest.cc",
     "struct_unittest.cc",
     "sync_method_unittest.cc",
     "type_conversion_unittest.cc",
@@ -56,10 +54,20 @@ source_set("tests") {
     "//mojo/public/interfaces/bindings/tests:test_associated_interfaces",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces_wtf",
     "//mojo/public/interfaces/bindings/tests:test_struct_traits_interfaces",
     "//testing/gtest",
   ]
+
+  if (is_ios) {
+    assert_no_deps = [ "//third_party/WebKit/*" ]
+  } else {
+    sources += [
+      "pickle_unittest.cc",
+      "struct_traits_unittest.cc",
+    ]
+
+    deps += [ "//mojo/public/interfaces/bindings/tests:test_interfaces_wtf" ]
+  }
 }
 
 source_set("for_blink_tests") {

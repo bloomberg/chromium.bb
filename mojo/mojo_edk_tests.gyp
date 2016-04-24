@@ -105,6 +105,23 @@
         'public/cpp/bindings/tests/validation_unittest.cc',
         'public/cpp/bindings/tests/variant_test_util.h',
       ],
+      'conditions': [
+        ['OS=="ios"', {
+          'dependencies!': [
+            'mojo_public.gyp:mojo_public_test_interfaces_blink',
+          ],
+          'sources!': [
+            'public/cpp/bindings/tests/pickle_unittest.cc',
+            'public/cpp/bindings/tests/pickled_struct_blink.cc',
+            'public/cpp/bindings/tests/pickled_struct_blink.h',
+            'public/cpp/bindings/tests/pickled_struct_chromium.cc',
+            'public/cpp/bindings/tests/pickled_struct_chromium.h',
+            'public/cpp/bindings/tests/rect_blink.h',
+            'public/cpp/bindings/tests/rect_blink_traits.h',
+            'public/cpp/bindings/tests/struct_traits_unittest.cc',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //mojo/public/cpp/bindings/tests:for_blink_tests
