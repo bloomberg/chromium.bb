@@ -40,7 +40,8 @@ public:
     LineClampValue lineClamps;
     DraggableRegionMode draggableRegions;
 
-    void* dataRefs[10];
+    void* dataRefs[8];
+    DataPersistent<void*> dataPersistents[2];
     void* ownPtrs[4];
     Persistent<void*> persistentHandles[2];
     void* refPtrs[2];

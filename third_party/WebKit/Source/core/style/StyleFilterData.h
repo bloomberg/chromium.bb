@@ -28,15 +28,10 @@
 
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-// FIXME: Oilpan: resorting to RefCountedGarbageCollected<> here so as to support
-// DataRef<StyleFilterData> uses. Once/if DataRef<> is able to move away from
-// relying on RefPtr<>, switch to GarbageCollected<>.
-class StyleFilterData final : public RefCountedGarbageCollected<StyleFilterData> {
+class StyleFilterData final : public GarbageCollected<StyleFilterData> {
 public:
     static StyleFilterData* create()
     {
@@ -67,6 +62,5 @@ private:
 };
 
 } // namespace blink
-
 
 #endif // StyleFilterData_h

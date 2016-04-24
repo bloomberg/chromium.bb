@@ -31,6 +31,7 @@
 #include "core/style/BasicShapes.h"
 #include "core/style/CounterDirectives.h"
 #include "core/style/CursorData.h"
+#include "core/style/DataPersistent.h"
 #include "core/style/DataRef.h"
 #include "core/style/FillLayer.h"
 #include "core/style/ComputedStyleConstants.h"
@@ -116,8 +117,8 @@ public:
     DataRef<StyleTransformData> m_transform; // Transform properties (rotate, scale, skew, etc.)
     DataRef<StyleWillChangeData> m_willChange; // CSS Will Change
 
-    DataRef<StyleFilterData> m_filter; // Filter operations (url, sepia, blur, etc.)
-    DataRef<StyleFilterData> m_backdropFilter; // Backdrop filter operations (url, sepia, blur, etc.)
+    DataPersistent<StyleFilterData> m_filter; // Filter operations (url, sepia, blur, etc.)
+    DataPersistent<StyleFilterData> m_backdropFilter; // Backdrop filter operations (url, sepia, blur, etc.)
 
     DataRef<StyleGridData> m_grid;
     DataRef<StyleGridItemData> m_gridItem;

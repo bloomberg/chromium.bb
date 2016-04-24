@@ -24,7 +24,6 @@
 #ifndef DataRef_h
 #define DataRef_h
 
-#include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 
