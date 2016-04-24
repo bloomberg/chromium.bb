@@ -40,12 +40,6 @@ Polymer({
     },
 
     /** @private */
-    inputMethodsSecondary_: {
-      type: String,
-      value: 'Placeholder, e.g. US keyboard',
-    },
-
-    /** @private */
     spellCheckSecondary_: {
       type: String,
       value: 'Placeholder, e.g. English (United States)',
@@ -117,6 +111,43 @@ Polymer({
   onShowLanguageDetailTap_: function(e) {
     this.detailLanguage_ = e.model.item;
     this.$.pages.setSubpageChain(['language-detail']);
+  },
+
+  /**
+   * Opens the Manage Input Methods page.
+   * @private
+   */
+  onManageInputMethodsTap_: function() {
+    assert(cr.isChromeOS);
+    this.$.pages.setSubpageChain(['manage-input-methods']);
+  },
+
+  /**
+   * Handler for clicking an input method on the main page, which sets it as
+   * the current input method.
+   * @param {!{model: !{item: !chrome.languageSettingsPrivate.InputMethod},
+   *           target: !{tagName: string}}} e
+   */
+  onInputMethodTap_: function(e) {
+    assert(cr.isChromeOS);
+
+    // Taps on the paper-icon-button are handled in onInputMethodOptionsTap_.
+    if (e.target.tagName == 'PAPER-ICON-BUTTON')
+      return;
+
+    // Set the input method.
+    this.languageHelper_.setCurrentInputMethod(e.model.item.id);
+  },
+
+  /**
+   * Opens the input method extension's options page in a new tab (or focuses
+   * an existing instance of the IME's options).
+   * @param {!{model: !{item: chrome.languageSettingsPrivate.InputMethod}}} e
+   * @private
+   */
+  onInputMethodOptionsTap_: function(e) {
+    assert(cr.isChromeOS);
+    this.languageHelper_.openInputMethodOptions(e.model.item.id);
   },
 
   /**
@@ -202,6 +233,15 @@ Polymer({
   getInputMethodItemClass_: function(id, currentId) {
     assert(cr.isChromeOS);
     return this.isCurrentInputMethod_(id, currentId) ? 'selected' : '';
+  },
+
+  getInputMethodName_: function(id) {
+    assert(cr.isChromeOS);
+    var inputMethod = this.languages.inputMethods.enabled.find(
+        function(inputMethod) {
+          return inputMethod.id == id;
+        });
+    return inputMethod ? inputMethod.displayName : '';
   },
 
   /**

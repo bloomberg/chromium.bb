@@ -418,6 +418,14 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_PAGE_HTML"
+                   file="languages_page/manage_input_methods_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_PAGE_JS"
+                   file="languages_page/manage_input_methods_page.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_PAGE_HTML"
                  file="languages_page/manage_languages_page.html"
                  type="chrome_html" />

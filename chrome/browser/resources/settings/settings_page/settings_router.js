@@ -332,6 +332,14 @@ Polymer({
       section: 'languages',
       subpage: ['language-detail'],
     },
+<if expr="chromeos">
+    {
+      url: '/inputMethods',
+      page: 'advanced',
+      section: 'languages',
+      subpage: ['manage-input-methods'],
+    },
+</if>
 <if expr="not is_macosx">
     {
       url: '/editDictionary',

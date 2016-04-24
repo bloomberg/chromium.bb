@@ -89,5 +89,20 @@ cr.define('settings_languages_page', function() {
 
       // TODO(michaelpg): Test other modifications.
     });
+
+    if (cr.isChromeOS) {
+      test('modifying input methods', function() {
+        assertEquals(2, languageHelper.languages.inputMethods.enabled.length);
+        var inputMethods = languageHelper.getInputMethodsForLanguage('en-US');
+        assertEquals(2, inputMethods.length);
+
+        var dvorak =
+            '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng';
+        languageHelper.removeInputMethod(dvorak);
+        assertEquals(1, languageHelper.languages.inputMethods.enabled.length);
+
+        // TODO(michaelpg): Test other modifications.
+      });
+    }
   });
 });

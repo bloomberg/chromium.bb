@@ -238,7 +238,13 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["settings.enable_screen_lock"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
-  // Input settings.
+  // Input method settings.
+  (*s_whitelist)["settings.language.preload_engines"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["settings.language.enabled_extension_imes"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+
+  // Device settings.
   (*s_whitelist)["settings.touchpad.enable_tap_to_click"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.touchpad.natural_scroll"] =

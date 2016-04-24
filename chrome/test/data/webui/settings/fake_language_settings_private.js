@@ -186,7 +186,18 @@ cr.define('settings', function() {
      * methods, disabling the input method for the current user. Chrome OS only.
      * @param {string} inputMethodId
      */
-    removeInputMethod: wrapAssertNotReached('removeInputMethod'),
+    removeInputMethod: function(inputMethodId) {
+      assert(cr.isChromeOS);
+      var inputMethod = this.componentExtensionImes.find(function(ime) {
+        return ime.id == inputMethodId;
+      });
+      assertTrue(!!inputMethod);
+      inputMethod.enabled = false;
+      this.settingsPrefs_.set(
+          'prefs.settings.language.preload_engines.value',
+          this.settingsPrefs_.prefs.settings.language.preload_engines.value
+              .replace(inputMethodId, ''));
+    },
 
     /**
      * Called when the pref for the dictionaries used for spell checking changes

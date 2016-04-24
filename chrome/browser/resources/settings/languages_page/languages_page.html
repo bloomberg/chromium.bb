@@ -18,6 +18,10 @@
 <link rel="import" href="edit_dictionary_page.html">
 </if>
 
+<if expr="chromeos">
+<link rel="import" href="manage_input_methods_page.html">
+</if>
+
 <dom-module id="settings-languages-page">
   <template>
     <style include="settings-shared"></style>
@@ -38,7 +42,7 @@
         </div>
         <iron-collapse id="languagesCollapse" opened="[[languagesOpened_]]">
           <div class="list-frame vertical-list">
-            <template is="dom-repeat" items="{{languages.enabled}}">
+            <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(
                       item.language.code, prefs.intl.app_locale.value)]]"
                   on-tap="onLanguageTap_">
@@ -71,7 +75,9 @@
         <div class="settings-box two-line">
           <div class="start">
             <div>$i18n{inputMethodsListTitle}</div>
-            <div class="secondary">[[inputMethodsSecondary_]]</div>
+            <div class="secondary">
+              [[getInputMethodName_(languages.inputMethods.currentId)]]
+            </div>
           </div>
           <cr-expand-button expanded="{{inputMethodsOpened_}}">
           </cr-expand-button>
@@ -79,20 +85,28 @@
         <iron-collapse id="inputMethodsCollapse"
             opened="[[inputMethodsOpened_]]">
           <div class="list-frame vertical-list">
-            <template is="dom-repeat" items="{{languages.inputMethods}}">
-              <div class$=
-                  "list-item [[getInputMethodItemClass_(id, currentId)]]">
-                <div class="start">
-                  <div>[[item.name]]</div>
+            <template is="dom-repeat"
+                items="[[languages.inputMethods.enabled]]">
+              <div class$="list-item [[getInputMethodItemClass_(
+                      item.id, languages.inputMethods.currentId)]]"
+                  on-tap="onInputMethodTap_">
+                <div>[[item.displayName]]</div>
+                <div class="middle">
                   <iron-icon icon="done"
                       hidden$="[[!isCurrentInputMethod_(
-                          item.id, languages.currentInputMethod)]]">
+                          item.id, languages.inputMethods.currentId)]]">
                   </iron-icon>
                 </div>
-                <paper-icon-button icon="settings"></paper-icon-button>
+                <paper-icon-button icon="settings"
+                    on-tap="onInputMethodOptionsTap_"
+                    hidden$="[[!item.hasOptionsPage]]">
+                </paper-icon-button>
               </div>
             </template>
-            <div class="list-item list-button">$i18n{manageInputMethods}</div>
+            <div class="list-item list-button"
+                on-tap="onManageInputMethodsTap_">
+              $i18n{manageInputMethods}
+            </div>
           </div>
         </iron-collapse>
 </if>
@@ -142,6 +156,14 @@
           </settings-language-detail-page>
         </settings-subpage>
       </template>
+<if expr="chromeos">
+      <template is="dom-if" name="manage-input-methods">
+        <settings-subpage page-title="[[i18n('manageInputMethods')]]">
+          <settings-manage-input-methods-page>
+          </settings-manage-input-methods-page>
+        </settings-subpage>
+      </template>
+</if>
 <if expr="not is_macosx">
       <template is="dom-if" name="edit-dictionary">
         <settings-subpage page-title="$i18n{editDictionaryPageTitle}">

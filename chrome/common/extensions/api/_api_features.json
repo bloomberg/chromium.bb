@@ -559,10 +559,16 @@
     "dependencies": ["permission:input"],
     "contexts": ["blessed_extension"]
   },
-  "inputMethodPrivate": {
+  "inputMethodPrivate": [{
     "dependencies": ["permission:inputMethodPrivate"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*"
+    ]
+  }],
   "instanceID": {
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]

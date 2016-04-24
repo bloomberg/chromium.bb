@@ -93,6 +93,20 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       assertEquals('en-US', languageDetailPage.detail.language.code);
     });
 
+    test('manage input methods', function() {
+      var inputMethodsCollapse = languagesPage.$.inputMethodsCollapse;
+      var inputMethodSettingsExist = !!inputMethodsCollapse;
+      if (cr.isChromeOS) {
+        assertTrue(inputMethodSettingsExist);
+        var manageInputMethodsButton =
+            inputMethodsCollapse.querySelector('.list-button');
+        MockInteractions.tap(manageInputMethodsButton);
+        assertTrue(!!languagesPage.$$('settings-manage-input-methods-page'));
+      } else {
+        assertFalse(inputMethodSettingsExist);
+      }
+    });
+
     test('spellcheck', function() {
       var spellCheckCollapse = languagesPage.$.spellCheckCollapse;
       var spellCheckSettingsExist = !!spellCheckCollapse;
