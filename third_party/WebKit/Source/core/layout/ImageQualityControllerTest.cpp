@@ -25,6 +25,7 @@ private:
     void TearDown() override
     {
     }
+
     ImageQualityController* m_controller;
 };
 
@@ -107,11 +108,42 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(1, 1)));
 }
 
+class MockTaskRunner : public WebTaskRunner {
+public:
+    void setTime(double newTime) { m_time = newTime; }
+
+    MockTaskRunner()
+    : WebTaskRunner(), m_time(0.0), m_currentTask(nullptr)
+    { }
+
+    virtual ~MockTaskRunner()
+    {
+        if (m_currentTask)
+            delete m_currentTask;
+    }
+
+private:
+    void postTask(const WebTraceLocation&, Task*) override { }
+    void postDelayedTask(const WebTraceLocation&, Task* task, double) override
+    {
+        if (m_currentTask)
+            delete m_currentTask;
+        m_currentTask = task;
+
+    }
+    WebTaskRunner* clone() override { return nullptr; }
+    double virtualTimeSeconds() const override { return 0.0; }
+    double monotonicallyIncreasingVirtualTimeSeconds() const override { return m_time; }
+
+    double m_time;
+    Task* m_currentTask;
+};
+
 class MockTimer : public Timer<ImageQualityController> {
     typedef void (ImageQualityController::*TimerFiredFunction)(Timer*);
 public:
     MockTimer(ImageQualityController* o, TimerFiredFunction f)
-    : Timer<ImageQualityController>(o, f)
+    : Timer<ImageQualityController>(o, f, &m_taskRunner)
     {
     }
 
@@ -120,6 +152,14 @@ public:
         this->Timer<ImageQualityController>::fired();
         stop();
     }
+
+    void setTime(double newTime)
+    {
+        m_taskRunner.setTime(newTime);
+    }
+
+private:
+    MockTaskRunner m_taskRunner;
 };
 
 TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
@@ -201,6 +241,34 @@ TEST_F(ImageQualityControllerTest, DontKickTheAnimationTimerWhenPaintingAtTheSam
     EXPECT_EQ(InterpolationLow, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(4, 4)));
     // Check that the timer was not kicked. It should not have been, since the image was painted at the same size as last time.
     EXPECT_FALSE(mockTimer->isActive());
+}
+
+TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced)
+{
+    MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
+    controller()->setTimer(mockTimer);
+    setBodyInnerHTML("<img src='myimage'></img>");
+    LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
+
+    RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
+
+    // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
+    mockTimer->setTime(0.1);
+    EXPECT_EQ(false, controller()->shouldPaintAtLowQuality(*img, testImage.get(), testImage.get(), LayoutSize(2, 2), 0.1));
+    EXPECT_EQ(ImageQualityController::cLowQualityTimeThreshold, mockTimer->nextFireInterval());
+
+    // Go into low-quality mode now that the size changed.
+    double nextTime = 0.1 + ImageQualityController::cTimerRestartThreshold / 2.0;
+    mockTimer->setTime(nextTime);
+    EXPECT_EQ(true, controller()->shouldPaintAtLowQuality(*img, testImage.get(), testImage.get(), LayoutSize(3, 3), nextTime));
+    // The fire interval has decreased, because we have not restarted the timer.
+    EXPECT_EQ(ImageQualityController::cLowQualityTimeThreshold - ImageQualityController::cTimerRestartThreshold / 2.0, mockTimer->nextFireInterval());
+
+    // This animation is far enough in the future to make the timer restart, since it is half over.
+    nextTime = 0.1 + ImageQualityController::cTimerRestartThreshold + 0.01;
+    EXPECT_EQ(true, controller()->shouldPaintAtLowQuality(*img, testImage.get(), testImage.get(), LayoutSize(4, 4), nextTime));
+    // Now the timer has restarted, leading to a larger fire interval.
+    EXPECT_EQ(ImageQualityController::cLowQualityTimeThreshold, mockTimer->nextFireInterval());
 }
 
 #endif

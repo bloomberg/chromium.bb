@@ -1111,4 +1111,9 @@ PassOwnPtr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(BlameContex
     return adoptPtr(m_webView->scheduler()->createFrameScheduler(blameContext).release());
 }
 
+double ChromeClientImpl::lastFrameTimeMonotonic() const
+{
+    return m_webView->lastFrameTimeMonotonic();
+}
+
 } // namespace blink

@@ -32,10 +32,13 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 
 namespace blink {
 
-static const double cLowQualityTimeThreshold = 0.500; // 500 ms
+const double ImageQualityController::cLowQualityTimeThreshold = 0.500; // 500 ms
+const double ImageQualityController::cTimerRestartThreshold = 0.250; // 250 ms
 
 static ImageQualityController* gImageQualityController = nullptr;
 
@@ -71,7 +74,7 @@ InterpolationQuality ImageQualityController::chooseInterpolationQuality(const La
     if (InterpolationDefault == InterpolationLow)
         return InterpolationLow;
 
-    if (shouldPaintAtLowQuality(object, image, layer, layoutSize))
+    if (shouldPaintAtLowQuality(object, image, layer, layoutSize, object.frameView()->page()->chromeClient().lastFrameTimeMonotonic()))
         return InterpolationLow;
 
     // For images that are potentially animated we paint them at medium quality.
@@ -89,6 +92,7 @@ ImageQualityController::~ImageQualityController()
 
 ImageQualityController::ImageQualityController()
     : m_timer(adoptPtr(new Timer<ImageQualityController>(this, &ImageQualityController::highQualityRepaintTimerFired)))
+    , m_frameTimeWhenTimerStarted(0.0)
 {
 }
 
@@ -138,14 +142,18 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
         const_cast<LayoutObject*>(i.key)->setShouldDoFullPaintInvalidation();
         i.value.isResizing = false;
     }
+    m_frameTimeWhenTimerStarted = 0.0;
 }
 
-void ImageQualityController::restartTimer()
+void ImageQualityController::restartTimer(double lastFrameTimeMonotonic)
 {
-    m_timer->startOneShot(cLowQualityTimeThreshold, BLINK_FROM_HERE);
+    if (!m_timer->isActive() || lastFrameTimeMonotonic == 0.0 || m_frameTimeWhenTimerStarted == 0.0 || (lastFrameTimeMonotonic - m_frameTimeWhenTimerStarted > cTimerRestartThreshold)) {
+        m_timer->startOneShot(cLowQualityTimeThreshold, BLINK_FROM_HERE);
+        m_frameTimeWhenTimerStarted = lastFrameTimeMonotonic;
+    }
 }
 
-bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object, Image* image, const void *layer, const LayoutSize& layoutSize)
+bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object, Image* image, const void *layer, const LayoutSize& layoutSize, double lastFrameTimeMonotonic)
 {
     // If the image is not a bitmap image, then none of this is relevant and we just paint at high
     // quality.
@@ -187,14 +195,14 @@ bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object,
         bool sizesChanged = oldSize != layoutSize;
         set(object, innerMap, layer, layoutSize, sizesChanged);
         if (sizesChanged)
-            restartTimer();
+            restartTimer(lastFrameTimeMonotonic);
         return true;
     }
     // If this is the first time resizing this image, or its size is the
     // same as the last resize, draw at high res, but record the paint
     // size and set the timer.
     if (isFirstResize || oldSize == layoutSize) {
-        restartTimer();
+        restartTimer(lastFrameTimeMonotonic);
         set(object, innerMap, layer, layoutSize, false);
         return false;
     }
@@ -208,7 +216,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object,
     // is active, so draw at low quality, set the flag for animated resizes and
     // the object to the list for high quality redraw.
     set(object, innerMap, layer, layoutSize, true);
-    restartTimer();
+    restartTimer(lastFrameTimeMonotonic);
     return true;
 }
 

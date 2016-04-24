@@ -276,6 +276,9 @@ public:
 
     virtual PassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) = 0;
 
+    // Returns the time of the beginning of the last beginFrame, in seconds, if any, and 0.0 otherwise.
+    virtual double lastFrameTimeMonotonic() const { return 0.0; }
+
 protected:
     ~ChromeClient() override { }
 

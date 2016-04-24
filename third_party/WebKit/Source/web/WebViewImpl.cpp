@@ -444,6 +444,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_displayMode(WebDisplayModeBrowser)
     , m_elasticOverscroll(FloatSize())
     , m_scheduler(adoptPtr(Platform::current()->currentThread()->scheduler()->createWebViewScheduler(this).release()))
+    , m_lastFrameTimeMonotonic(0)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = m_chromeClientImpl.get();
@@ -1958,6 +1959,8 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
 
     if (!mainFrameImpl())
         return;
+
+    m_lastFrameTimeMonotonic = lastFrameTimeMonotonic;
 
     DocumentLifecycle::AllowThrottlingScope throttlingScope(mainFrameImpl()->frame()->document()->lifecycle());
     PageWidgetDelegate::animate(*m_page, lastFrameTimeMonotonic);

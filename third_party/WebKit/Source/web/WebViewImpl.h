@@ -525,6 +525,8 @@ public:
     bool isTransparent() const;
     void setIsTransparent(bool value);
 
+    double lastFrameTimeMonotonic() const { return m_lastFrameTimeMonotonic; }
+
 private:
     InspectorOverlay* inspectorOverlay();
 
@@ -751,6 +753,8 @@ private:
 
     // Manages the layer tree created for this page in Slimming Paint v2.
     PaintArtifactCompositor m_paintArtifactCompositor;
+
+    double m_lastFrameTimeMonotonic;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());

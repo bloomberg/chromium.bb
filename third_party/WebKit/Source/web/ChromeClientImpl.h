@@ -184,6 +184,8 @@ public:
 
     PassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) override;
 
+    double lastFrameTimeMonotonic() const override;
+
 private:
     explicit ChromeClientImpl(WebViewImpl*);
 
