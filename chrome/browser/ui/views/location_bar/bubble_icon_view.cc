@@ -98,7 +98,7 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
     ExecuteCommand(EXECUTE_SOURCE_MOUSE);
 }
 
-bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
+bool BubbleIconView::OnKeyReleased(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
     return false;
 

@@ -31,12 +31,12 @@ class LocationIconView : public IconLabelBubbleView {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
   SkColor GetTextColor() const override;
   SkColor GetBorderColor() const override;
+  bool OnActivate() override;
 
   // Whether we should show the tooltip for this icon or not.
   void set_show_tooltip(bool show_tooltip) { show_tooltip_ = show_tooltip; }
@@ -51,8 +51,7 @@ class LocationIconView : public IconLabelBubbleView {
   void SetBackground(bool should_show_ev);
 
  private:
-  void ProcessEvent(const ui::LocatedEvent& event);
-  void ProcessEvent(const ui::KeyEvent& event);
+  void ProcessLocatedEvent(const ui::LocatedEvent& event);
 
   // Returns what the minimum size would be if the preferred size were |size|.
   gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;

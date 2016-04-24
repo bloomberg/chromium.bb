@@ -74,9 +74,14 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // Returns true when animation is in progress and is shrinking.
   virtual bool IsShrinking() const;
 
+  // The view has been activated by a user gesture such as spacebar. Returns
+  // true if some handling was performed.
+  virtual bool OnActivate();
+
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;

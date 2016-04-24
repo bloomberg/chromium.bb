@@ -25,29 +25,6 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-namespace {
-
-void ProcessEventInternal(LocationBarView* view) {
-  WebContents* contents = view->GetWebContents();
-  if (!contents)
-    return;
-
-  // Important to use GetVisibleEntry to match what's showing in the omnibox.
-  NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  // The visible entry can be nullptr in the case of window.open("").
-  if (!entry)
-    return;
-
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  DCHECK(model_client);
-
-  view->delegate()->ShowWebsiteSettings(contents, entry->GetURL(),
-                                        model_client->GetSecurityInfo());
-}
-
-}  // namespace
-
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    SkColor parent_background_color,
                                    LocationBarView* location_bar)
@@ -105,13 +82,6 @@ bool LocationIconView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool LocationIconView::OnKeyReleased(const ui::KeyEvent& event) {
-  if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
-    return false;
-  ProcessEvent(event);
-  return true;
-}
-
 void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() != ui::ET_GESTURE_TAP)
     return;
@@ -131,17 +101,12 @@ void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
   // location bar is at the NTP.
   if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
     return;
-  ProcessEvent(event);
+  ProcessLocatedEvent(event);
 }
 
-void LocationIconView::ProcessEvent(const ui::LocatedEvent& event) {
-  if (!HitTestPoint(event.location()))
-    return;
-  ProcessEventInternal(location_bar_);
-}
-
-void LocationIconView::ProcessEvent(const ui::KeyEvent& event) {
-  ProcessEventInternal(location_bar_);
+void LocationIconView::ProcessLocatedEvent(const ui::LocatedEvent& event) {
+  if (HitTestPoint(event.location()))
+    OnActivate();
 }
 
 gfx::Size LocationIconView::GetMinimumSize() const {
@@ -161,6 +126,26 @@ SkColor LocationIconView::GetTextColor() const {
 
 SkColor LocationIconView::GetBorderColor() const {
   return GetTextColor();
+}
+
+bool LocationIconView::OnActivate() {
+  WebContents* contents = location_bar_->GetWebContents();
+  if (!contents)
+    return false;
+
+  // Important to use GetVisibleEntry to match what's showing in the omnibox.
+  NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  // The visible entry can be nullptr in the case of window.open("").
+  if (!entry)
+    return false;
+
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  DCHECK(model_client);
+
+  location_bar_->delegate()->ShowWebsiteSettings(
+      contents, entry->GetURL(), model_client->GetSecurityInfo());
+  return true;
 }
 
 gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
