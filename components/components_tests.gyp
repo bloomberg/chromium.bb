@@ -433,6 +433,7 @@
       'omnibox/browser/shortcuts_database_unittest.cc',
       'omnibox/browser/shortcuts_provider_unittest.cc',
       'omnibox/browser/suggestion_answer_unittest.cc',
+      'omnibox/browser/url_prefix_unittest.cc',
       'omnibox/browser/zero_suggest_provider_unittest.cc',
     ],
     'open_from_clipboard_unittest_sources': [

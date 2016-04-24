@@ -232,6 +232,7 @@ source_set("unit_tests") {
     "shortcuts_database_unittest.cc",
     "shortcuts_provider_unittest.cc",
     "suggestion_answer_unittest.cc",
+    "url_prefix_unittest.cc",
     "zero_suggest_provider_unittest.cc",
   ]
 

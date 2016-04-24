@@ -10,27 +10,42 @@
 
 namespace {
 
-// Like URLPrefix::BestURLPrefix() except also handles the prefix of
-// "www.".
+// Implements URLPrefix::BestURLPrefix(). Expects parameters to
+// already be lowercased.
+const URLPrefix* BestURLPrefixInternal(
+    const base::string16& lower_text,
+    const base::string16& lower_prefix_suffix) {
+  const URLPrefixes& list = URLPrefix::GetURLPrefixes();
+  for (const URLPrefix& prefix : list) {
+    if (base::StartsWith(lower_text, prefix.prefix + lower_prefix_suffix,
+                         base::CompareCase::SENSITIVE))
+      return &prefix;
+  }
+  return nullptr;
+}
+
+// Like BestURLPrefixInternal() except also handles the prefix of "www.".
 const URLPrefix* BestURLPrefixWithWWWCase(
-    const base::string16& text,
-    const base::string16& prefix_suffix) {
+    const base::string16& lower_text,
+    const base::string16& lower_prefix_suffix) {
   CR_DEFINE_STATIC_LOCAL(URLPrefix, www_prefix,
                          (base::ASCIIToUTF16("www."), 1));
-  const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(text, prefix_suffix);
-  if ((best_prefix == NULL) ||
-      (best_prefix->num_components < www_prefix.num_components)) {
-    if (URLPrefix::PrefixMatch(www_prefix, text, prefix_suffix))
-      best_prefix = &www_prefix;
-  }
+  const URLPrefix* best_prefix =
+      BestURLPrefixInternal(lower_text, lower_prefix_suffix);
+  if ((best_prefix == nullptr ||
+       best_prefix->num_components < www_prefix.num_components) &&
+      base::StartsWith(lower_text, www_prefix.prefix + lower_prefix_suffix,
+                       base::CompareCase::SENSITIVE))
+    best_prefix = &www_prefix;
   return best_prefix;
 }
 
 }  // namespace
 
-URLPrefix::URLPrefix(const base::string16& prefix, size_t num_components)
-    : prefix(prefix),
-      num_components(num_components) {
+URLPrefix::URLPrefix(const base::string16& lower_prefix, size_t num_components)
+    : prefix(lower_prefix), num_components(num_components) {
+  // Input prefix must be in lowercase.
+  DCHECK_EQ(lower_prefix, base::i18n::ToLower(lower_prefix));
 }
 
 // static
@@ -49,32 +64,10 @@ const URLPrefixes& URLPrefix::GetURLPrefixes() {
 }
 
 // static
-bool URLPrefix::IsURLPrefix(const base::string16& prefix) {
-  const URLPrefixes& list = GetURLPrefixes();
-  for (URLPrefixes::const_iterator i = list.begin(); i != list.end(); ++i)
-    if (i->prefix == prefix)
-      return true;
-  return false;
-}
-
-// static
 const URLPrefix* URLPrefix::BestURLPrefix(const base::string16& text,
                                           const base::string16& prefix_suffix) {
-  const URLPrefixes& list = GetURLPrefixes();
-  for (URLPrefixes::const_iterator i = list.begin(); i != list.end(); ++i)
-    if (PrefixMatch(*i, text, prefix_suffix))
-      return &(*i);
-  return NULL;
-}
-
-// static
-bool URLPrefix::PrefixMatch(const URLPrefix& prefix,
-                            const base::string16& text,
-                            const base::string16& prefix_suffix) {
-  return base::StartsWith(
-      base::i18n::ToLower(text),
-      base::i18n::ToLower(prefix.prefix + prefix_suffix),
-      base::CompareCase::SENSITIVE);
+  return BestURLPrefixInternal(base::i18n::ToLower(text),
+                               base::i18n::ToLower(prefix_suffix));
 }
 
 // static
@@ -83,17 +76,24 @@ size_t URLPrefix::GetInlineAutocompleteOffset(
     const base::string16& fixed_up_input,
     const bool allow_www_prefix_without_scheme,
     const base::string16& text) {
-  const URLPrefix* best_prefix = allow_www_prefix_without_scheme ?
-      BestURLPrefixWithWWWCase(text, input) : BestURLPrefix(text, input);
+  const base::string16 lower_text(base::i18n::ToLower(text));
+  const base::string16 lower_input(base::i18n::ToLower(input));
+  const URLPrefix* best_prefix =
+      allow_www_prefix_without_scheme
+          ? BestURLPrefixWithWWWCase(lower_text, lower_input)
+          : BestURLPrefixInternal(lower_text, lower_input);
   const base::string16* matching_string = &input;
   // If we failed to find a best_prefix initially, try again using a fixed-up
   // version of the user input.  This is especially useful to get about: URLs
   // to inline against chrome:// shortcuts.  (about: URLs are fixed up to the
   // chrome:// scheme.)
   if (!best_prefix && !fixed_up_input.empty() && (fixed_up_input != input)) {
-    best_prefix = allow_www_prefix_without_scheme ?
-        BestURLPrefixWithWWWCase(text, fixed_up_input) :
-        BestURLPrefix(text, fixed_up_input);
+    const base::string16 lower_fixed_up_input(
+        base::i18n::ToLower(fixed_up_input));
+    best_prefix =
+        allow_www_prefix_without_scheme
+            ? BestURLPrefixWithWWWCase(lower_text, lower_fixed_up_input)
+            : BestURLPrefixInternal(lower_text, lower_fixed_up_input);
     matching_string = &fixed_up_input;
   }
   return (best_prefix != NULL) ?
