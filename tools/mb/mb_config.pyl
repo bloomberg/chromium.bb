@@ -83,12 +83,6 @@
 
     'chromium.fyi': {
       'ChromiumOS Linux Tests': 'tbd',
-      'ClangToTAndroidASan':
-        'android_clang_no_chrome_plugins_asan_gn_debug_bot_minimal_symbols',
-      'ClangToTLinux': 'tbd',
-      'ClangToTLinux (dbg)': 'tbd',
-      'ClangToTLinuxASan': 'tbd',
-      'ClangToTLinuxUBSanVptr': 'tbd',
       'ClangToTMac': 'tbd',
       'ClangToTMac (dbg)': 'tbd',
       'ClangToTMacASan': 'tbd',
@@ -145,9 +139,17 @@
         'swarming_gyp_clang_official_release_bot_minimal_symbols_x64',
       'CrWinGoma': 'gyp_release_bot_minimal_symbols_x86',
       'CrWinGoma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
+      'ClangToTAndroidASan':
+        'android_clang_tot_asan_gn_debug_bot_minimal_symbols',
       'ClangToTAndroidASan tester': 'none',
+      'ClangToTLinux':
+        'swarming_gyp_clang_tot_linux_dump_symbols_shared_release',
       'ClangToTLinux tester': 'none',
+      'ClangToTLinux (dbg)': 'swarming_gyp_clang_tot_shared_debug',
+      'ClangToTLinuxASan': 'swarming_gyp_clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASan tester': 'none',
+      'ClangToTLinuxUBSanVptr':
+        'swarming_gyp_clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ClangToTLinuxUBSanVptr tester': 'none',
       'ClangToTMac tester': 'none',
       'ClangToTMacASan tester': 'none',
@@ -893,9 +895,8 @@
       'android', 'blink_logging', 'gyp', 'debug_static_bot', 'arm64',
     ],
 
-    'android_clang_no_chrome_plugins_asan_gn_debug_bot_minimal_symbols': [
-      'android', 'clang_no_chrome_plugins', 'asan', 'gn',
-      'debug_bot_minimal_symbols',
+    'android_clang_tot_asan_gn_debug_bot_minimal_symbols': [
+      'android', 'clang_tot', 'asan', 'gn', 'debug_bot_minimal_symbols',
     ],
 
     'android_clang_asan_findbugs_gyp_debug_bot_minimal_symbols': [
@@ -1494,6 +1495,26 @@
       'chromeos_with_codecs', 'goma', 'gyp', 'ozone', 'static', 'swarming',
     ],
 
+    'swarming_gyp_clang_tot_edge_ubsan_no_recover_hack_static_release': [
+      'swarming', 'gyp', 'clang_tot', 'edge', 'ubsan_no_recover_hack',
+      'static', 'release',
+    ],
+
+    'swarming_gyp_clang_tot_asan_lsan_static_release': [
+      'swarming', 'gyp', 'clang_tot', 'asan', 'lsan', 'static', 'release',
+    ],
+
+    'swarming_gyp_clang_tot_shared_debug': [
+      'swarming', 'gyp', 'clang_tot', 'shared', 'debug',
+    ],
+
+    'swarming_gyp_clang_tot_linux_dump_symbols_shared_release': [
+      # Enable debug info, as on official builders, to catch issues with
+      # optimized debug info.
+      'swarming', 'gyp', 'clang_tot', 'linux_dump_symbols',
+      'shared', 'release',
+    ],
+
     'swarming_gyp_debug_trybot': [
       'swarming', 'gyp', 'debug_trybot',
     ],
@@ -1891,9 +1912,9 @@
       'mixins': ['chromeos', 'chromeos_codecs'],
     },
 
-    'clang_no_chrome_plugins': {
-      'gn_args': 'clang_use_chrome_plugins=false',
-      'gyp_defines': 'clang_use_chrome_plugins=0',
+    'clang_tot': {
+      'gn_args': 'llvm_force_head_revision=true clang_use_chrome_plugins=false',
+      'gyp_defines': 'llvm_force_head_revision=1 clang_use_chrome_plugins=0',
       'mixins': ['clang'],
     },
 
@@ -2044,6 +2065,11 @@
       'gyp_defines': 'debug_extra_cflags="-gline-tables-only"',
     },
 
+    'linux_dump_symbols': {
+      'gn_args': 'error', # TODO(crbug.com/605819): implement this.
+      'gyp_defines': 'linux_dump_symbols=1',
+    },
+
     'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
 
     'lsan': {
@@ -2181,6 +2207,14 @@
     'ubsan': {
       'gn_args': 'is_ubsan=true',
       'gyp_defines': 'ubsan=1',
+    },
+
+    'ubsan_no_recover_hack': {
+      # TODO(krasin): Remove when https://llvm.org/bugs/show_bug.cgi?id=25569
+      # is fixed and just use ubsan_vptr instead.
+      'mixins': ['ubsan_vptr'],
+      'gn_args': 'error', # TODO(GYP): need a GN equivalent for this
+      'gyp_defines': 'release_extra_cflags=-fno-sanitize-recover=undefined',
     },
 
     'ubsan_vptr': {

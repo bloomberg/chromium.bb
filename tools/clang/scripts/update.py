@@ -799,6 +799,9 @@ def main():
                       'picks /opt/foo/bin/gcc')
   parser.add_argument('--lto-gold-plugin', action='store_true',
                       help='build LLVM Gold plugin with LTO')
+  parser.add_argument('--llvm-force-head-revision', action='store_true',
+                      help=('use the revision in the repo when printing '
+                            'the revision'))
   parser.add_argument('--print-revision', action='store_true',
                       help='print current clang revision and exit.')
   parser.add_argument('--print-clang-version', action='store_true',
@@ -842,7 +845,7 @@ def main():
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
-    if use_head_revision:
+    if use_head_revision or args.llvm_force_head_revision:
       print GetSvnRevision(LLVM_DIR)
     else:
       print PACKAGE_VERSION

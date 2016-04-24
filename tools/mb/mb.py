@@ -1079,6 +1079,21 @@ class MetaBuildWrapper(object):
     # Ensure that we have an environment that only contains
     # the exact values of the GYP variables we need.
     env = os.environ.copy()
+
+    # This is a terrible hack to work around the fact that
+    # //tools/clang/scripts/update.py is invoked by GYP and GN but
+    # currently relies on an environment variable to figure out
+    # what revision to embed in the command line #defines.
+    # For GN, we've made this work via a gn arg that will cause update.py
+    # to get an additional command line arg, but getting that to work
+    # via GYP_DEFINES has proven difficult, so we rewrite the GYP_DEFINES
+    # to get rid of the arg and add the old var in, instead.
+    # See crbug.com/582737 for more on this. This can hopefully all
+    # go away with GYP.
+    if 'llvm_force_head_revision=1' in gyp_defines:
+      env['LLVM_FORCE_HEAD_REVISION'] = 1
+      gyp_defines = gyp_defines.replace('llvm_force_head_revision=1', '')
+
     env['GYP_GENERATORS'] = 'ninja'
     if 'GYP_CHROMIUM_NO_ACTION' in env:
       del env['GYP_CHROMIUM_NO_ACTION']

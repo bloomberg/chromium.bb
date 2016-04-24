@@ -90,6 +90,23 @@ declare_args() {
   # Gold icf level, values are "none", "safe", "all". If value isn't overridden,
   # default initialization is below.
   gold_icf_level = ""
+
+  # If this is set to true, or if LLVM_FORCE_HEAD_REVISION is set to 1
+  # in the environment, we use the revision in the llvm repo to determine
+  # the CLANG_REVISION to use, instead of the version hard-coded into
+  # //tools/clang/scripts/update.py. This should only be used in
+  # conjunction with setting LLVM_FORCE_HEAD_REVISION in the
+  # environment when `gclient runhooks` is run as well.
+  llvm_force_head_revision = false
+}
+
+if (is_clang && !is_nacl) {
+  update_args = [ "--print-revision" ]
+  if (llvm_force_head_revision) {
+    update_args += [ "--llvm-force-head-revision" ]
+  }
+  clang_revision =
+      exec_script("//tools/clang/scripts/update.py", update_args, "trim string")
 }
 
 # Apply the default logic for these values if they were not set explicitly.
@@ -226,10 +243,7 @@ config("compiler") {
     # when turning clang on or off. (defines are passed via the command line,
     # and build system rebuild things when their commandline changes). Nothing
     # should ever read this define.
-    defines +=
-        [ "CR_CLANG_REVISION=" + exec_script("//tools/clang/scripts/update.py",
-                                             [ "--print-revision" ],
-                                             "trim string") ]
+    defines += [ "CR_CLANG_REVISION=$clang_revision" ]
   }
 
   # Non-Mac Posix compiler flags setup.
@@ -974,9 +988,7 @@ config("default_warnings") {
         "-Wno-shift-negative-value",
       ]
 
-      if (exec_script("//tools/clang/scripts/update.py",
-                      [ "--print-revision" ],
-                      "trim string") != "266460-1") {
+      if (llvm_force_head_revision) {
         cflags += [
           # TODO(thakis): https://crbug.com/604888
           "-Wno-undefined-var-template",
