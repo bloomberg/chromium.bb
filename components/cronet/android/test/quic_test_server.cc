@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/QuicTestServer_jni.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/test_data_directory.h"
 #include "net/quic/crypto/proof_source_chromium.h"
@@ -37,8 +38,6 @@ void StartOnServerThread(const base::FilePath& test_files_root) {
   CHECK(base::PathExists(file_dir)) << "Quic data does not exist";
   net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
       file_dir.value());
-  net::IPAddressNumber ip;
-  net::ParseIPLiteralToNumber(kFakeQuicDomain, &ip);
   net::QuicConfig config;
 
   // Set up server certs.
@@ -55,7 +54,8 @@ void StartOnServerThread(const base::FilePath& test_files_root) {
                                             net::QuicSupportedVersions());
 
   // Start listening.
-  int rv = g_quic_server->Listen(net::IPEndPoint(ip, kServerPort));
+  int rv = g_quic_server->Listen(
+      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kServerPort));
   CHECK_GE(rv, 0) << "Quic server fails to start";
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_QuicTestServer_onServerStarted(env);

@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/test_data_directory.h"
 #include "net/quic/crypto/proof_source_chromium.h"
@@ -18,9 +19,6 @@
 
 namespace cronet {
 
-// This must match the certificate used (quic_test.example.com.crt and
-// quic_test.example.com.key.pkcs8).
-const char kFakeQuicDomain[] = "test.example.com";
 static const int kServerPort = 6121;
 
 base::Thread* g_quic_server_thread = nullptr;
@@ -38,8 +36,6 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
       file_dir.value());
    */
-  net::IPAddressNumber ip;
-  net::ParseIPLiteralToNumber(kFakeQuicDomain, &ip);
   net::QuicConfig config;
 
   // Set up server certs.
@@ -57,7 +53,8 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
                                             net::QuicSupportedVersions());
 
   // Start listening.
-  int rv = g_quic_server->Listen(net::IPEndPoint(ip, kServerPort));
+  int rv = g_quic_server->Listen(
+      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kServerPort));
   CHECK_GE(rv, 0) << "Quic server fails to start";
   server_started_event->Signal();
 }
