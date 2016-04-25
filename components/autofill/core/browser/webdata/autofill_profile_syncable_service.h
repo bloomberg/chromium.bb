@@ -121,7 +121,13 @@ class AutofillProfileSyncableService
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            UpdateField);
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
-                           MergeProfile);
+                           MergeSimilarProfiles_AdditionalInfoInBothProfiles);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           MergeSimilarProfiles_DifferentUseDates);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           MergeSimilarProfiles_DifferentNames);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           MergeSimilarProfiles_NonZeroUseCounts);
 
   // The map of the guid to profiles owned by the |profiles_| vector.
   typedef std::map<std::string, AutofillProfile*> GUIDToProfileMap;
@@ -162,14 +168,13 @@ class AutofillProfileSyncableService
                           const std::string& new_value,
                           AutofillProfile* autofill_profile);
 
-  // Calls merge_into->OverwriteWithOrAddTo() and then checks if the
-  // |merge_into| has extra data. Returns true if |merge_from| needs updating to
-  // be in sync with |merge_into|.
-  // TODO(isherman): Seems like this should return |true| if |merge_into| was
-  // modified at all: http://crbug.com/248440
-  static bool MergeProfile(const AutofillProfile& merge_from,
-                           AutofillProfile* merge_into,
-                           const std::string& app_locale);
+  // Calls merge_into->OverwriteWith() and then checks if the
+  // |merge_into| has extra data. Returns true if the merge has made a change to
+  // |merge_into|. This should be used only for similar profiles ie. profiles
+  // where the PrimaryValue() matches.
+  static bool MergeSimilarProfiles(const AutofillProfile& merge_from,
+                                   AutofillProfile* merge_into,
+                                   const std::string& app_locale);
 
   AutofillWebDataBackend* webdata_backend_;  // WEAK
   std::string app_locale_;

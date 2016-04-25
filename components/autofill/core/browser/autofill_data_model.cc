@@ -13,8 +13,11 @@ namespace autofill {
 
 AutofillDataModel::AutofillDataModel(const std::string& guid,
                                      const std::string& origin)
-    : guid_(guid), origin_(origin), use_count_(0) {
-}
+    : guid_(guid),
+      origin_(origin),
+      use_count_(1),
+      use_date_(base::Time::Now()),
+      modification_date_(base::Time::Now()) {}
 AutofillDataModel::~AutofillDataModel() {}
 
 bool AutofillDataModel::IsVerified() const {

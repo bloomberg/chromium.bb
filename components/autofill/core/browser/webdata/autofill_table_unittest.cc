@@ -1738,19 +1738,19 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   table_->GetServerCreditCards(&outputs.get());
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
-  EXPECT_EQ(0U, outputs[0]->use_count());
-  EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(1U, outputs[0]->use_count());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
   outputs.clear();
 
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
   inputs.back().set_use_count(4U);
-  inputs.back().set_use_date(base::Time::Now());
+  inputs.back().set_use_date(base::Time());
   table_->UpdateServerCardUsageStats(inputs.back());
   table_->GetServerCreditCards(&outputs.get());
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
-  EXPECT_NE(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
   outputs.clear();
 
   // Setting the cards again shouldn't delete the usage stats.
@@ -1759,7 +1759,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
-  EXPECT_NE(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
   outputs.clear();
 
   // Set a card list where the card is missing --- this should clear metadata.
@@ -1773,8 +1773,8 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   table_->GetServerCreditCards(&outputs.get());
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
-  EXPECT_EQ(0U, outputs[0]->use_count());
-  EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(1U, outputs[0]->use_count());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
   outputs.clear();
 }
 

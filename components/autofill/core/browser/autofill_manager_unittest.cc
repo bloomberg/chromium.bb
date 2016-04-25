@@ -1523,6 +1523,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
                           "5231567890123456",  // Mastercard
                           "05", "2999");
   credit_card->set_guid("00000000-0000-0000-0000-000000000007");
+  credit_card->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
   autofill_manager_->AddCreditCard(credit_card);
 
   // Set up our form data.
@@ -1784,8 +1785,8 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   AutofillProfile* profile = autofill_manager_->GetProfileWithGUID(guid);
   ASSERT_TRUE(profile);
-  EXPECT_EQ(0U, profile->use_count());
-  EXPECT_EQ(base::Time(), profile->use_date());
+  EXPECT_EQ(1U, profile->use_count());
+  EXPECT_NE(base::Time(), profile->use_date());
 
   int response_page_id = 0;
   FormData response_data;
@@ -1795,7 +1796,7 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
                                false);
 
-  EXPECT_EQ(1U, profile->use_count());
+  EXPECT_EQ(2U, profile->use_count());
   EXPECT_NE(base::Time(), profile->use_date());
 }
 
@@ -4179,6 +4180,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -4212,6 +4214,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_FeatureNotEnabled) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(false);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -4246,6 +4249,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_FeatureNotEnabled) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_CvcUnavailable) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -4283,6 +4287,11 @@ TEST_F(AutofillManagerTest, UploadCreditCard_CvcUnavailable) {
 
 TEST_F(AutofillManagerTest, UploadCreditCard_MultipleCvcFields) {
   autofill_manager_->set_credit_card_upload_enabled(true);
+
+  // Remove the profiles that were created in the TestPersonalDataManager
+  // constructor because they would result in conflicting names that would
+  // prevent the upload.
+  personal_data_.ClearAutofillProfiles();
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4336,6 +4345,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_MultipleCvcFields) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoProfileAvailable) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Don't fill or submit an address form.
@@ -4366,6 +4376,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoProfileAvailable) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -4402,6 +4413,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoNameAvailable) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesConflict) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit two address forms with different zip codes.
@@ -4446,6 +4458,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesConflict) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit two address forms with different zip codes.
@@ -4490,6 +4503,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NoZipCodeAvailable) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -4533,6 +4547,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NoZipCodeAvailable) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NamesMatchLoosely) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit two address forms with different names.
@@ -4580,6 +4595,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NamesMatchLoosely) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_NamesHaveToMatch) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Create, fill and submit two address forms with different names.
@@ -4624,6 +4640,7 @@ TEST_F(AutofillManagerTest, UploadCreditCard_NamesHaveToMatch) {
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard_UploadDetailsFails) {
+  personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
   // Anything other than "en-US" will cause GetUploadDetails to return a failure

@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -69,6 +70,7 @@ using autofill::AutofillProfileSyncableService;
 using autofill::AutofillTable;
 using autofill::AutofillWebDataService;
 using autofill::PersonalDataManager;
+using autofill::ServerFieldType;
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
@@ -979,20 +981,27 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
 }
 
-TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
+// Tests that a sync with a new native profile that matches a more recent new
+// sync profile but with less information results in the native profile being
+// deleted and replaced by the sync profile with merged usage stats.
+TEST_F(
+    ProfileSyncServiceAutofillTest,
+    HasNativeHasSyncMergeSimilarProfileCombine_SyncHasMoreInfoAndMoreRecent) {
+  // Create two almost identical profiles. The GUIDs are different and the
+  // native profile has no value for company name.
   AutofillProfile sync_profile;
-  autofill::test::SetProfileInfoWithGuid(&sync_profile,
-      "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
-      "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+      "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
+  sync_profile.set_use_date(base::Time::FromTimeT(4321));
 
   AutofillProfile* native_profile = new AutofillProfile;
-  // Same address, but different names, phones and e-mails.
-  autofill::test::SetProfileInfoWithGuid(native_profile,
-      "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "19482937549");
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "", "123 Zoo St.", "unit 5",
+      "Hollywood", "CA", "91601", "US", "12345678910");
+  native_profile->set_use_date(base::Time::FromTimeT(1234));
 
   AutofillProfile expected_profile(sync_profile);
   expected_profile.OverwriteWith(*native_profile, "en-US");
@@ -1012,17 +1021,189 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
   AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
 
   EXPECT_CALL(personal_data_manager(), Refresh());
+  // Adds all entries in |sync_profiles| to sync.
   StartSyncService(add_autofill.callback(), false, AUTOFILL_PROFILE);
   ASSERT_TRUE(add_autofill.success());
 
   std::vector<AutofillProfile> new_sync_profiles;
-  ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
-      &new_sync_profiles));
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
   // Check that key fields are the same.
   EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
+  // Make sure the additional information from the sync profile was kept.
+  EXPECT_EQ(base::ASCIIToUTF16("Fox"),
+            new_sync_profiles[0].GetRawInfo(ServerFieldType::COMPANY_NAME));
+  // Check that the latest use date is saved.
+  EXPECT_EQ(base::Time::FromTimeT(4321), new_sync_profiles[0].use_date());
+  // Check that the use counts were added (default value is 1).
+  EXPECT_EQ(2U, new_sync_profiles[0].use_count());
 }
 
+// Tests that a sync with a new native profile that matches an older new sync
+// profile but with less information results in the native profile being deleted
+// and replaced by the sync profile with merged usage stats.
+TEST_F(ProfileSyncServiceAutofillTest,
+       HasNativeHasSyncMergeSimilarProfileCombine_SyncHasMoreInfoAndOlder) {
+  // Create two almost identical profiles. The GUIDs are different and the
+  // native profile has no value for company name.
+  AutofillProfile sync_profile;
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+      "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
+  sync_profile.set_use_date(base::Time::FromTimeT(1234));
+
+  AutofillProfile* native_profile = new AutofillProfile;
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "", "123 Zoo St.", "unit 5",
+      "Hollywood", "CA", "91601", "US", "12345678910");
+  native_profile->set_use_date(base::Time::FromTimeT(4321));
+
+  AutofillProfile expected_profile(sync_profile);
+  expected_profile.OverwriteWith(*native_profile, "en-US");
+
+  std::vector<AutofillProfile*> native_profiles;
+  native_profiles.push_back(native_profile);
+  EXPECT_CALL(autofill_table(), GetAutofillProfiles(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_profiles), Return(true)));
+  EXPECT_CALL(autofill_table(),
+              AddAutofillProfile(MatchProfiles(expected_profile)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(autofill_table(),
+              RemoveAutofillProfile("23355099-1170-4B71-8ED4-144470CC9EBF"))
+      .WillOnce(Return(true));
+  std::vector<AutofillProfile> sync_profiles;
+  sync_profiles.push_back(sync_profile);
+  AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
+
+  EXPECT_CALL(personal_data_manager(), Refresh());
+  // Adds all entries in |sync_profiles| to sync.
+  StartSyncService(add_autofill.callback(), false, AUTOFILL_PROFILE);
+  ASSERT_TRUE(add_autofill.success());
+
+  std::vector<AutofillProfile> new_sync_profiles;
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
+  ASSERT_EQ(1U, new_sync_profiles.size());
+  // Check that key fields are the same.
+  EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
+  // Make sure the additional information from the sync profile was kept.
+  EXPECT_EQ(base::ASCIIToUTF16("Fox"),
+            new_sync_profiles[0].GetRawInfo(ServerFieldType::COMPANY_NAME));
+  // Check that the latest use date is saved.
+  EXPECT_EQ(base::Time::FromTimeT(4321), new_sync_profiles[0].use_date());
+  // Check that the use counts were added (default value is 1).
+  EXPECT_EQ(2U, new_sync_profiles[0].use_count());
+}
+
+// Tests that a sync with a new native profile that matches an a new sync
+// profile but with more information results in the native profile being deleted
+// and replaced by the sync profile with the native profiles additional
+// information merged in. The merge should happen even if the sync profile is
+// more recent.
+TEST_F(ProfileSyncServiceAutofillTest,
+       HasNativeHasSyncMergeSimilarProfileCombine_NativeHasMoreInfo) {
+  // Create two almost identical profiles. The GUIDs are different and the
+  // sync profile has no value for company name.
+  AutofillProfile sync_profile;
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "", "123 Zoo St.", "unit 5",
+      "Hollywood", "CA", "91601", "US", "12345678910");
+  sync_profile.set_use_date(base::Time::FromTimeT(4321));
+
+  AutofillProfile* native_profile = new AutofillProfile;
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+      "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
+  native_profile->set_use_date(base::Time::FromTimeT(1234));
+
+  AutofillProfile expected_profile(sync_profile);
+  expected_profile.OverwriteWith(*native_profile, "en-US");
+
+  std::vector<AutofillProfile*> native_profiles;
+  native_profiles.push_back(native_profile);
+  EXPECT_CALL(autofill_table(), GetAutofillProfiles(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_profiles), Return(true)));
+  EXPECT_CALL(autofill_table(),
+              AddAutofillProfile(MatchProfiles(expected_profile)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(autofill_table(),
+              RemoveAutofillProfile("23355099-1170-4B71-8ED4-144470CC9EBF"))
+      .WillOnce(Return(true));
+  std::vector<AutofillProfile> sync_profiles;
+  sync_profiles.push_back(sync_profile);
+  AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
+
+  EXPECT_CALL(personal_data_manager(), Refresh());
+  // Adds all entries in |sync_profiles| to sync.
+  StartSyncService(add_autofill.callback(), false, AUTOFILL_PROFILE);
+  ASSERT_TRUE(add_autofill.success());
+
+  std::vector<AutofillProfile> new_sync_profiles;
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
+  ASSERT_EQ(1U, new_sync_profiles.size());
+  // Check that key fields are the same.
+  EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(expected_profile, "en-US"));
+  // Make sure the addtional information of the native profile was saved into
+  // the sync profile.
+  EXPECT_EQ(base::ASCIIToUTF16("Fox"),
+            new_sync_profiles[0].GetRawInfo(ServerFieldType::COMPANY_NAME));
+  // Check that the latest use date is saved.
+  EXPECT_EQ(base::Time::FromTimeT(4321), new_sync_profiles[0].use_date());
+  // Check that the use counts were added (default value is 1).
+  EXPECT_EQ(2U, new_sync_profiles[0].use_count());
+}
+
+// Tests that a sync with a new native profile that differ only by name a new
+// sync profile results in keeping both profiles.
+TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSync_DifferentPrimaryInfo) {
+  AutofillProfile sync_profile;
+  autofill::test::SetProfileInfoWithGuid(
+      &sync_profile, "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
+      "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+      "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
+  sync_profile.set_use_date(base::Time::FromTimeT(4321));
+
+  AutofillProfile* native_profile = new AutofillProfile;
+  autofill::test::SetProfileInfoWithGuid(
+      native_profile, "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing", "John",
+      "Smith", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood",
+      "CA", "91601", "US", "12345678910");
+  native_profile->set_use_date(base::Time::FromTimeT(1234));
+
+  AutofillProfile expected_profile(sync_profile);
+  expected_profile.OverwriteWith(*native_profile, "en-US");
+
+  std::vector<AutofillProfile*> native_profiles;
+  native_profiles.push_back(native_profile);
+  EXPECT_CALL(autofill_table(), GetAutofillProfiles(_))
+      .WillOnce(DoAll(SetArgumentPointee<0>(native_profiles), Return(true)));
+  EXPECT_CALL(autofill_table(), AddAutofillProfile(MatchProfiles(sync_profile)))
+      .WillOnce(Return(true));
+  std::vector<AutofillProfile> sync_profiles;
+  sync_profiles.push_back(sync_profile);
+  AddAutofillHelper<AutofillProfile> add_autofill(this, sync_profiles);
+
+  EXPECT_CALL(personal_data_manager(), Refresh());
+  // Adds all entries in |sync_profiles| to sync.
+  StartSyncService(add_autofill.callback(), false, AUTOFILL_PROFILE);
+  ASSERT_TRUE(add_autofill.success());
+
+  std::vector<AutofillProfile> new_sync_profiles;
+  ASSERT_TRUE(
+      GetAutofillProfilesFromSyncDBUnderProfileNode(&new_sync_profiles));
+  // The two profiles should be kept.
+  ASSERT_EQ(2U, new_sync_profiles.size());
+}
+
+// Tests that a new native profile that is the same as a new sync profile except
+// with different GUIDs results in the native profile being deleted and replaced
+// by the sync profile.
 TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   AutofillProfile sync_profile;
 
@@ -1031,6 +1212,8 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
+  sync_profile.set_use_count(20);
+  sync_profile.set_use_date(base::Time::FromTimeT(1234));
 
   std::string native_guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
   AutofillProfile* native_profile = new AutofillProfile;
@@ -1039,6 +1222,8 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
       "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910");
+  native_profile->set_use_count(5);
+  native_profile->set_use_date(base::Time::FromTimeT(4321));
 
   std::vector<AutofillProfile*> native_profiles;
   native_profiles.push_back(native_profile);
@@ -1059,9 +1244,15 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
   std::vector<AutofillProfile> new_sync_profiles;
   ASSERT_TRUE(GetAutofillProfilesFromSyncDBUnderProfileNode(
       &new_sync_profiles));
+  // Check that the profiles were merged.
   ASSERT_EQ(1U, new_sync_profiles.size());
   EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
+  // Check that the sync guid was kept.
   EXPECT_EQ(sync_profile.guid(), new_sync_profiles[0].guid());
+  // Check that the sync profile use count was kept.
+  EXPECT_EQ(20U, new_sync_profiles[0].use_count());
+  // Check that the sync profile use date was kept.
+  EXPECT_EQ(base::Time::FromTimeT(1234), new_sync_profiles[0].use_date());
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {

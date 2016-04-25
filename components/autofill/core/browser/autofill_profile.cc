@@ -432,7 +432,8 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
 }
 
 const base::string16 AutofillProfile::PrimaryValue() const {
-  return GetRawInfo(ADDRESS_HOME_LINE1) + GetRawInfo(ADDRESS_HOME_CITY);
+  return GetRawInfo(NAME_FIRST) + GetRawInfo(NAME_LAST) +
+         GetRawInfo(ADDRESS_HOME_LINE1) + GetRawInfo(ADDRESS_HOME_CITY);
 }
 
 bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,

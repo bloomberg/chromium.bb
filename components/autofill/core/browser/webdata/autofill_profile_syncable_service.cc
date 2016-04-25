@@ -120,38 +120,48 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
   sync_processor_ = std::move(sync_processor);
 
-  GUIDToProfileMap remaining_profiles;
-  CreateGUIDToProfileMap(profiles_.get(), &remaining_profiles);
+  GUIDToProfileMap remaining_local_profiles;
+  CreateGUIDToProfileMap(profiles_.get(), &remaining_local_profiles);
   DataBundle bundle;
-  // Go through and check for all the profiles that sync already knows about.
+  // For every incoming profile from sync, attempt to update a local profile or
+  // otherwise create a new one.
   for (const auto& sync_iter : initial_sync_data) {
     GUIDToProfileMap::iterator it =
-        CreateOrUpdateProfile(sync_iter, &remaining_profiles, &bundle);
+        CreateOrUpdateProfile(sync_iter, &remaining_local_profiles, &bundle);
     // |it| points to created/updated profile. Add it to the |profiles_map_| and
-    // then remove it from |remaining_profiles|. After this loop is completed
-    // |remaining_profiles| will have only those profiles that are not in the
-    // sync.
+    // then remove it from |remaining_local_profiles|. After this loop is
+    // completed |remaining_local_profiles| will have only those profiles that
+    // are not in the sync.
     profiles_map_[it->first] = it->second;
-    remaining_profiles.erase(it);
+    // This may be a no-op since |it| is sometimes an entirely new profile that
+    // came from sync.
+    remaining_local_profiles.erase(it);
   }
 
   // Check for similar unmatched profiles - they are created independently on
   // two systems, so merge them.
-  for (const auto& it : bundle.candidates_to_merge) {
+  for (const auto& sync_profile_it : bundle.candidates_to_merge) {
     GUIDToProfileMap::iterator profile_to_merge =
-        remaining_profiles.find(it.first);
-    if (profile_to_merge != remaining_profiles.end()) {
+        remaining_local_profiles.find(sync_profile_it.first);
+    if (profile_to_merge != remaining_local_profiles.end()) {
       bundle.profiles_to_delete.push_back(profile_to_merge->second->guid());
-      if (MergeProfile(*(profile_to_merge->second), it.second, app_locale_))
-        bundle.profiles_to_sync_back.push_back(it.second);
+      // For similar profile pairs, the local profile is always removed and its
+      // content merged (if applicable) in the profile that came from sync.
+      if (MergeSimilarProfiles(*(profile_to_merge->second),
+                               sync_profile_it.second, app_locale_)) {
+        // if new changes were merged into |sync_profile_it.second| from
+        // |profile_to_merge|, they will be synced back.
+        bundle.profiles_to_sync_back.push_back(sync_profile_it.second);
+      }
       DVLOG(2) << "[AUTOFILL SYNC]"
-               << "Found similar profile in sync db but with a different guid: "
-               << UTF16ToUTF8(it.second->GetRawInfo(NAME_FIRST))
-               << UTF16ToUTF8(it.second->GetRawInfo(NAME_LAST))
-               << "New guid " << it.second->guid()
+               << "Found similar profile in sync db but with a "
+                  "different guid: "
+               << UTF16ToUTF8(sync_profile_it.second->GetRawInfo(NAME_FIRST))
+               << UTF16ToUTF8(sync_profile_it.second->GetRawInfo(NAME_LAST))
+               << "New guid " << sync_profile_it.second->guid()
                << ". Profile to be deleted "
                << profile_to_merge->second->guid();
-      remaining_profiles.erase(profile_to_merge);
+      remaining_local_profiles.erase(profile_to_merge);
     }
   }
 
@@ -163,7 +173,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
   }
 
   syncer::SyncChangeList new_changes;
-  for (const auto& it : remaining_profiles) {
+  for (const auto& it : remaining_local_profiles) {
     new_changes.push_back(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_ADD,
@@ -627,13 +637,14 @@ bool AutofillProfileSyncableService::UpdateField(
   return true;
 }
 
-bool AutofillProfileSyncableService::MergeProfile(
+bool AutofillProfileSyncableService::MergeSimilarProfiles(
     const AutofillProfile& merge_from,
     AutofillProfile* merge_into,
     const std::string& app_locale) {
+  const AutofillProfile old_merge_into = *merge_into;
   // Overwrites all values. Does not overwrite GUID.
   merge_into->OverwriteWith(merge_from, app_locale);
-  return !merge_into->EqualsForSyncPurposes(merge_from);
+  return !merge_into->EqualsForSyncPurposes(old_merge_into);
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {

@@ -359,6 +359,27 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
+// Test that a new profile has its basic information set.
+TEST_F(PersonalDataManagerTest, AddProfile_BasicInformation) {
+  // Add a profile to the database.
+  AutofillProfile profile(test::GetFullProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("j@s.com"));
+  personal_data_->AddProfile(profile);
+
+  // Reload the database.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Verify the addition.
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, profile.Compare(*results[0]));
+
+  // Make sure the use count and use date were set.
+  EXPECT_EQ(1U, results[0]->use_count());
+  EXPECT_NE(base::Time(), results[0]->use_date());
+  EXPECT_NE(base::Time(), results[0]->modification_date());
+}
+
 TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
   EnableWalletCardImport();
 
@@ -406,7 +427,7 @@ TEST_F(PersonalDataManagerTest, DontDuplicateServerProfile) {
 // Tests that SaveImportedProfile sets the modification date on new profiles.
 TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
   AutofillProfile profile(test::GetFullProfile());
-  EXPECT_EQ(base::Time(), profile.modification_date());
+  EXPECT_NE(base::Time(), profile.modification_date());
 
   personal_data_->SaveImportedProfile(profile);
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
@@ -526,6 +547,28 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   cards.push_back(&credit_card0);
   cards.push_back(&credit_card2);
   ExpectSameElements(cards, personal_data_->GetCreditCards());
+}
+
+// Test that a new credit card has its basic information set.
+TEST_F(PersonalDataManagerTest, AddCreditCard_BasicInformation) {
+  // Add a credit to the database.
+  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card, "John Dillinger",
+                          "423456789012" /* Visa */, "01", "2999");
+  personal_data_->AddCreditCard(credit_card);
+
+  // Reload the database.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Verify the addition.
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, credit_card.Compare(*results[0]));
+
+  // Make sure the use count and use date were set.
+  EXPECT_EQ(1U, results[0]->use_count());
+  EXPECT_NE(base::Time(), results[0]->use_date());
+  EXPECT_NE(base::Time(), results[0]->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
@@ -3666,18 +3709,24 @@ TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_DifferentCards) {
 }
 
 TEST_F(PersonalDataManagerTest, RecordUseOf) {
+  base::Time creation_time = base::Time::FromTimeT(12345);
+
   AutofillProfile profile(test::GetFullProfile());
-  EXPECT_EQ(0U, profile.use_count());
-  EXPECT_EQ(base::Time(), profile.use_date());
-  EXPECT_EQ(base::Time(), profile.modification_date());
+  profile.set_use_date(creation_time);
+  profile.set_modification_date(creation_time);
+  EXPECT_EQ(1U, profile.use_count());
+  EXPECT_EQ(creation_time, profile.use_date());
+  EXPECT_EQ(creation_time, profile.modification_date());
   personal_data_->AddProfile(profile);
 
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "423456789012" /* Visa */, "01", "2999");
-  EXPECT_EQ(0U, credit_card.use_count());
-  EXPECT_EQ(base::Time(), credit_card.use_date());
-  EXPECT_EQ(base::Time(), credit_card.modification_date());
+  credit_card.set_use_date(creation_time);
+  credit_card.set_modification_date(creation_time);
+  EXPECT_EQ(1U, credit_card.use_count());
+  EXPECT_EQ(creation_time, credit_card.use_date());
+  EXPECT_EQ(creation_time, credit_card.modification_date());
   personal_data_->AddCreditCard(credit_card);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3689,18 +3738,18 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
       personal_data_->GetProfileByGUID(profile.guid());
   ASSERT_TRUE(added_profile);
   EXPECT_EQ(*added_profile, profile);
-  EXPECT_EQ(0U, added_profile->use_count());
-  EXPECT_EQ(base::Time(), added_profile->use_date());
-  EXPECT_NE(base::Time(), added_profile->modification_date());
+  EXPECT_EQ(1U, added_profile->use_count());
+  EXPECT_EQ(creation_time, added_profile->use_date());
+  EXPECT_NE(creation_time, added_profile->modification_date());
   personal_data_->RecordUseOf(profile);
 
   CreditCard* added_card =
       personal_data_->GetCreditCardByGUID(credit_card.guid());
   ASSERT_TRUE(added_card);
   EXPECT_EQ(*added_card, credit_card);
-  EXPECT_EQ(0U, added_card->use_count());
-  EXPECT_EQ(base::Time(), added_card->use_date());
-  EXPECT_NE(base::Time(), added_card->modification_date());
+  EXPECT_EQ(1U, added_card->use_count());
+  EXPECT_EQ(creation_time, added_card->use_date());
+  EXPECT_NE(creation_time, added_card->modification_date());
   personal_data_->RecordUseOf(credit_card);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3710,15 +3759,15 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   // Verify usage stats are updated.
   added_profile = personal_data_->GetProfileByGUID(profile.guid());
   ASSERT_TRUE(added_profile);
-  EXPECT_EQ(1U, added_profile->use_count());
-  EXPECT_NE(base::Time(), added_profile->use_date());
-  EXPECT_NE(base::Time(), added_profile->modification_date());
+  EXPECT_EQ(2U, added_profile->use_count());
+  EXPECT_NE(creation_time, added_profile->use_date());
+  EXPECT_NE(creation_time, added_profile->modification_date());
 
   added_card = personal_data_->GetCreditCardByGUID(credit_card.guid());
   ASSERT_TRUE(added_card);
-  EXPECT_EQ(1U, added_card->use_count());
-  EXPECT_NE(base::Time(), added_card->use_date());
-  EXPECT_NE(base::Time(), added_card->modification_date());
+  EXPECT_EQ(2U, added_card->use_count());
+  EXPECT_NE(creation_time, added_card->use_date());
+  EXPECT_NE(creation_time, added_card->modification_date());
 }
 
 TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
@@ -3776,15 +3825,16 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   for (size_t i = 0; i < 3; ++i)
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
 
-  // For an unmasked card, usage data starts out as 1 and Now().
-  EXPECT_EQ(1U, personal_data_->GetCreditCards()[0]->use_count());
+  // For an unmasked card, usage data starts out as 2 because of the unmasking
+  // which is considered a use.
+  EXPECT_EQ(2U, personal_data_->GetCreditCards()[0]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
 
-  EXPECT_EQ(0U, personal_data_->GetCreditCards()[1]->use_count());
-  EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 
-  // Having unmasked this card, usage stats should be 1 and Now().
-  EXPECT_EQ(1U, personal_data_->GetCreditCards()[2]->use_count());
+  // Having unmasked this card, usage stats should be 2 and Now().
+  EXPECT_EQ(2U, personal_data_->GetCreditCards()[2]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
   base::Time initial_use_date = personal_data_->GetCreditCards()[2]->use_date();
 
@@ -3795,13 +3845,13 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   base::MessageLoop::current()->Run();
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
 
-  EXPECT_EQ(1U, personal_data_->GetCreditCards()[0]->use_count());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards()[0]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
 
-  EXPECT_EQ(0U, personal_data_->GetCreditCards()[1]->use_count());
-  EXPECT_EQ(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 
-  EXPECT_EQ(2U, personal_data_->GetCreditCards()[2]->use_count());
+  EXPECT_EQ(3U, personal_data_->GetCreditCards()[2]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
   // Time may or may not have elapsed between unmasking and RecordUseOf.
   EXPECT_LE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
@@ -3813,7 +3863,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(1U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards()[1]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 
   // Upgrading to unmasked retains the usage stats (and increments them).
@@ -3828,7 +3878,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_EQ(3U, personal_data_->GetCreditCards()[1]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 }
 

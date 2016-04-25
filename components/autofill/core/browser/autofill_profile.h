@@ -99,9 +99,9 @@ class AutofillProfile : public AutofillDataModel {
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
-  // Returns concatenation of full name and address line 1.  This acts as the
-  // basis of comparison for new values that are submitted through forms to
-  // aid with correct aggregation of new data.
+  // Returns concatenation of first name, last name, address line 1 and city.
+  // This acts as the basis of comparison for new values that are submitted
+  // through forms to aid with correct aggregation of new data.
   const base::string16 PrimaryValue() const;
 
   // Returns true if the data in this AutofillProfile is a subset of the data in
