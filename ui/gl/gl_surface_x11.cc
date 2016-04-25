@@ -24,6 +24,8 @@
 
 namespace gfx {
 
+namespace {
+
 // This OSMesa GL surface can use XLib to swap the contents of the buffer to a
 // view.
 class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
@@ -55,33 +57,6 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
 };
-
-bool GLSurface::InitializeOneOffInternal() {
-  switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGL:
-      if (!GLSurfaceGLX::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationOSMesaGL:
-      if (!NativeViewGLSurfaceOSMesa::InitializeOneOff()) {
-        LOG(ERROR) << "NativeViewGLSurfaceOSMesa::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    default:
-      break;
-  }
-
-  return true;
-}
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::AcceleratedWidget window)
@@ -266,6 +241,35 @@ gfx::SwapResult NativeViewGLSurfaceOSMesa::PostSubBuffer(int x,
 
 NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
   Destroy();
+}
+
+}  // namespace
+
+bool GLSurface::InitializeOneOffInternal() {
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL:
+      if (!GLSurfaceGLX::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
+        return false;
+      }
+      break;
+    case kGLImplementationOSMesaGL:
+      if (!NativeViewGLSurfaceOSMesa::InitializeOneOff()) {
+        LOG(ERROR) << "NativeViewGLSurfaceOSMesa::InitializeOneOff failed.";
+        return false;
+      }
+      break;
+    case kGLImplementationEGLGLES2:
+      if (!GLSurfaceEGL::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
+        return false;
+      }
+      break;
+    default:
+      break;
+  }
+
+  return true;
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(

@@ -85,8 +85,9 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
             new GLContextStubWithExtensions());
         mock_context->SetGLVersionString("3.0");
         InitializeDynamicGLBindingsGL(mock_context.get());
-      } else
+      } else {
         InitializeDynamicGLBindingsGL(context);
+      }
       break;
     default:
       return false;
@@ -96,11 +97,15 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
 }
 
 void InitializeDebugGLBindings() {
+  InitializeDebugGLBindingsEGL();
+  InitializeDebugGLBindingsGL();
+  InitializeDebugGLBindingsOSMESA();
 }
 
 void ClearGLBindings() {
   ClearGLBindingsEGL();
   ClearGLBindingsGL();
+  ClearGLBindingsOSMESA();
   SetGLImplementation(kGLImplementationNone);
   UnloadGLNativeLibraries();
 }

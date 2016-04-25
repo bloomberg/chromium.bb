@@ -58,24 +58,16 @@ void CleanupNativeLibraries(void* unused) {
 base::ThreadLocalPointer<GLApi>* g_current_gl_context_tls = NULL;
 OSMESAApi* g_current_osmesa_context;
 
+#if defined(USE_EGL)
+EGLApi* g_current_egl_context;
+#endif
+
 #if defined(OS_WIN)
-
-EGLApi* g_current_egl_context;
 WGLApi* g_current_wgl_context;
+#endif
 
-#elif defined(USE_X11)
-
-EGLApi* g_current_egl_context;
+#if defined(USE_GLX)
 GLXApi* g_current_glx_context;
-
-#elif defined(USE_OZONE)
-
-EGLApi* g_current_egl_context;
-
-#elif defined(OS_ANDROID)
-
-EGLApi* g_current_egl_context;
-
 #endif
 
 GLImplementation GetNamedGLImplementation(const std::string& name) {

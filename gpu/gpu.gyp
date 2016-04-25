@@ -312,6 +312,7 @@
         '../testing/gmock.gyp:gmock',
         '../third_party/mesa/mesa.gyp:mesa_headers',
         '../ui/gfx/gfx.gyp:gfx_test_support',
+        '../ui/gl/gl.gyp:gl',
         '../ui/gl/gl.gyp:gl_unittest_utils',
         '../ui/gl/gl.gyp:gl_test_support',
         '../url/url.gyp:url_lib',

@@ -28,7 +28,7 @@
 #include <GL/wglext.h>
 #elif defined(OS_MACOSX)
 #include <OpenGL/OpenGL.h>
-#elif defined(USE_X11)
+#elif defined(USE_GLX)
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
@@ -372,16 +372,16 @@ typedef uint64_t EGLuint64CHROMIUM;
 #include "gl_bindings_autogen_gl.h"
 #include "gl_bindings_autogen_osmesa.h"
 
+#if defined(USE_EGL)
+#include "gl_bindings_autogen_egl.h"
+#endif
+
 #if defined(OS_WIN)
-#include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_wgl.h"
-#elif defined(USE_X11)
-#include "gl_bindings_autogen_egl.h"
+#endif
+
+#if defined(USE_GLX)
 #include "gl_bindings_autogen_glx.h"
-#elif defined(USE_OZONE)
-#include "gl_bindings_autogen_egl.h"
-#elif defined(OS_ANDROID)
-#include "gl_bindings_autogen_egl.h"
 #endif
 
 namespace gfx {
@@ -436,7 +436,7 @@ struct GL_EXPORT DriverWGL {
 };
 #endif
 
-#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
+#if defined(USE_EGL)
 struct GL_EXPORT DriverEGL {
   void InitializeStaticBindings();
   void InitializeExtensionBindings();
@@ -452,7 +452,7 @@ struct GL_EXPORT DriverEGL {
 };
 #endif
 
-#if defined(USE_X11)
+#if defined(USE_GLX)
 struct GL_EXPORT DriverGLX {
   void InitializeStaticBindings();
   void InitializeExtensionBindings();
@@ -476,30 +476,19 @@ GL_EXPORT extern OSMESAApi* g_current_osmesa_context;
 GL_EXPORT extern DriverGL g_driver_gl;
 GL_EXPORT extern DriverOSMESA g_driver_osmesa;
 
+#if defined(USE_EGL)
+GL_EXPORT extern EGLApi* g_current_egl_context;
+GL_EXPORT extern DriverEGL g_driver_egl;
+#endif
+
 #if defined(OS_WIN)
-
-GL_EXPORT extern EGLApi* g_current_egl_context;
 GL_EXPORT extern WGLApi* g_current_wgl_context;
-GL_EXPORT extern DriverEGL g_driver_egl;
 GL_EXPORT extern DriverWGL g_driver_wgl;
+#endif
 
-#elif defined(USE_X11)
-
-GL_EXPORT extern EGLApi* g_current_egl_context;
+#if defined(USE_GLX)
 GL_EXPORT extern GLXApi* g_current_glx_context;
-GL_EXPORT extern DriverEGL g_driver_egl;
 GL_EXPORT extern DriverGLX g_driver_glx;
-
-#elif defined(USE_OZONE)
-
-GL_EXPORT extern EGLApi* g_current_egl_context;
-GL_EXPORT extern DriverEGL g_driver_egl;
-
-#elif defined(OS_ANDROID)
-
-GL_EXPORT extern EGLApi* g_current_egl_context;
-GL_EXPORT extern DriverEGL g_driver_egl;
-
 #endif
 
 }  // namespace gfx

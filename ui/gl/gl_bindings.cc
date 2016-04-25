@@ -4,13 +4,13 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
+#if defined(USE_EGL)
 #include <EGL/egl.h>
 #endif
 
 #include "ui/gl/gl_bindings.h"
 
-#if defined(USE_X11)
+#if defined(USE_GLX)
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
@@ -18,7 +18,7 @@
 #include "ui/gl/gl_surface_wgl.h"
 #endif
 
-#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
+#if defined(USE_EGL)
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
@@ -38,7 +38,7 @@ std::string DriverWGL::GetPlatformExtensions() {
 }
 #endif
 
-#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || defined(USE_OZONE)
+#if defined(USE_EGL)
 std::string DriverEGL::GetPlatformExtensions() {
   EGLDisplay display = GLSurfaceEGL::InitializeDisplay();
   if (display == EGL_NO_DISPLAY)
@@ -54,7 +54,7 @@ std::string DriverEGL::GetClientExtensions() {
 }
 #endif
 
-#if defined(USE_X11)
+#if defined(USE_GLX)
 std::string DriverGLX::GetPlatformExtensions() {
   const char* str = glXQueryExtensionsString(gfx::GetXDisplay(), 0);
   return str ? std::string(str) : "";

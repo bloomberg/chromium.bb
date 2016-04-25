@@ -148,6 +148,14 @@
             'gl_surface_egl.cc',
             'gl_surface_egl.h',
           ],
+          'direct_dependent_settings': {
+            'defines': [
+              'USE_EGL',
+            ],
+          },
+         'defines': [
+            'USE_EGL',
+          ],
           'include_dirs': [
             '<(DEPTH)/third_party/khronos',
         ],
@@ -175,11 +183,15 @@
             'gl_surface_glx.cc',
             'gl_surface_glx.h',
           ],
-          'all_dependent_settings': {
+          'direct_dependent_settings': {
             'defines': [
               'GL_GLEXT_PROTOTYPES',
+              'USE_GLX',
             ],
           },
+          'defines': [
+            'USE_GLX',
+          ],
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:x11',
             '<(DEPTH)/build/linux/system.gyp:xcomposite',

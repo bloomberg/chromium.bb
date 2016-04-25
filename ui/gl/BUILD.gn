@@ -5,14 +5,24 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+use_egl = is_win || is_android || is_linux
+use_glx = use_x11
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
 config("gl_config") {
-  if (use_x11) {
-    defines = [ "GL_GLEXT_PROTOTYPES" ]
+  defines = []
+  if (use_glx) {
+    defines += [
+      "GL_GLEXT_PROTOTYPES",
+      "USE_GLX",
+    ]
+  }
+  if (use_egl) {
+    defines += [ "USE_EGL" ]
   }
 }
 
@@ -135,7 +145,7 @@ component("gl") {
     "//ui/gfx/geometry",
   ]
 
-  if (is_win || is_android || is_linux) {
+  if (use_egl) {
     sources += [
       "egl_util.cc",
       "egl_util.h",
@@ -143,6 +153,8 @@ component("gl") {
       "gl_bindings_autogen_egl.h",
       "gl_context_egl.cc",
       "gl_context_egl.h",
+      "gl_egl_api_implementation.cc",
+      "gl_egl_api_implementation.h",
       "gl_fence_egl.cc",
       "gl_fence_egl.h",
       "gl_image_egl.cc",
@@ -162,23 +174,41 @@ component("gl") {
   }
   if (use_x11) {
     sources += [
+      "gl_context_x11.cc",
+      "gl_implementation_x11.cc",
+      "gl_surface_egl_x11.cc",
+      "gl_surface_egl_x11.h",
+      "gl_surface_x11.cc",
+    ]
+
+    data_deps = [
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+    ]
+  }
+  if (use_ozone) {
+    sources += [
+      "gl_context_ozone.cc",
+      "gl_image_ozone_native_pixmap.cc",
+      "gl_image_ozone_native_pixmap.h",
+      "gl_implementation_ozone.cc",
+      "gl_surface_ozone.cc",
+    ]
+
+    deps += [ "//ui/ozone" ]
+  }
+  if (use_glx) {
+    sources += [
       "gl_bindings_autogen_glx.cc",
       "gl_bindings_autogen_glx.h",
       "gl_context_glx.cc",
       "gl_context_glx.h",
-      "gl_context_x11.cc",
-      "gl_egl_api_implementation.cc",
-      "gl_egl_api_implementation.h",
       "gl_glx_api_implementation.cc",
       "gl_glx_api_implementation.h",
       "gl_image_glx.cc",
       "gl_image_glx.h",
-      "gl_implementation_x11.cc",
-      "gl_surface_egl_x11.cc",
-      "gl_surface_egl_x11.h",
       "gl_surface_glx.cc",
       "gl_surface_glx.h",
-      "gl_surface_x11.cc",
     ]
 
     configs += [
@@ -188,10 +218,6 @@ component("gl") {
     ]
 
     deps += [ "//ui/gfx/x" ]
-    data_deps = [
-      "//third_party/angle:libEGL",
-      "//third_party/angle:libGLESv2",
-    ]
   }
   if (is_win) {
     sources += [
@@ -201,8 +227,6 @@ component("gl") {
       "gl_bindings_autogen_wgl.h",
       "gl_context_wgl.cc",
       "gl_context_wgl.h",
-      "gl_egl_api_implementation.cc",
-      "gl_egl_api_implementation.h",
       "gl_surface_wgl.cc",
       "gl_surface_wgl.h",
       "gl_wgl_api_implementation.cc",
@@ -242,8 +266,6 @@ component("gl") {
   }
   if (is_android) {
     sources += [
-      "gl_egl_api_implementation.cc",
-      "gl_egl_api_implementation.h",
       "gl_image_surface_texture.cc",
       "gl_image_surface_texture.h",
     ]
@@ -259,18 +281,6 @@ component("gl") {
       ":gl_jni_headers",
       "//ui/android:ui_java",
     ]
-  }
-  if (use_ozone) {
-    sources += [
-      "gl_context_ozone.cc",
-      "gl_egl_api_implementation.cc",
-      "gl_egl_api_implementation.h",
-      "gl_image_ozone_native_pixmap.cc",
-      "gl_image_ozone_native_pixmap.h",
-      "gl_implementation_ozone.cc",
-      "gl_surface_ozone.cc",
-    ]
-    deps += [ "//ui/ozone" ]
   }
 }
 
@@ -318,10 +328,7 @@ source_set("test_support") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
-    deps += [
-      "//ui/gfx/x",
-      "//ui/platform_window/x11",
-    ]
+    deps += [ "//ui/platform_window/x11" ]
   }
 }
 
@@ -334,14 +341,14 @@ test("gl_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  if (is_win || is_android || is_linux) {
+  if (use_egl) {
     sources += [
       "egl_api_unittest.cc",
       "test/egl_initialization_displays_unittest.cc",
     ]
   }
 
-  if (use_x11) {
+  if (use_glx) {
     sources += [ "glx_api_unittest.cc" ]
   }
 
