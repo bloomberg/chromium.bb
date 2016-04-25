@@ -36,23 +36,11 @@
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InstrumentingSessions.h"
+#include "core/page/ChromeClient.h"
 
 namespace blink {
 
 class WorkerGlobalScope;
-
-class CORE_EXPORT InspectorInstrumentationCookie {
-    STACK_ALLOCATED();
-public:
-    InspectorInstrumentationCookie();
-    explicit InspectorInstrumentationCookie(InstrumentingSessions*);
-    InspectorInstrumentationCookie(const InspectorInstrumentationCookie&);
-    InspectorInstrumentationCookie& operator=(const InspectorInstrumentationCookie&);
-    ~InspectorInstrumentationCookie();
-    InstrumentingSessions* instrumentingSessions() const { return m_instrumentingSessions.get(); }
-private:
-    Member<InstrumentingSessions> m_instrumentingSessions;
-};
 
 namespace InspectorInstrumentation {
 
@@ -78,6 +66,26 @@ public:
 private:
     Member<InstrumentingSessions> m_instrumentingSessions;
     bool m_sync;
+};
+
+class CORE_EXPORT StyleRecalc {
+    STACK_ALLOCATED();
+public:
+    StyleRecalc(Document*);
+    ~StyleRecalc();
+private:
+    Member<InstrumentingSessions> m_instrumentingSessions;
+};
+
+class CORE_EXPORT JavaScriptDialog {
+    STACK_ALLOCATED();
+public:
+    JavaScriptDialog(LocalFrame*, const String& message, ChromeClient::DialogType);
+    void setResult(bool);
+    ~JavaScriptDialog();
+private:
+    Member<InstrumentingSessions> m_instrumentingSessions;
+    bool m_result;
 };
 
 class CORE_EXPORT FrontendCounter {

@@ -786,7 +786,7 @@ void InspectorResourceAgent::willRecalculateStyle(Document*)
     m_isRecalculatingStyle = true;
 }
 
-void InspectorResourceAgent::didRecalculateStyle(int)
+void InspectorResourceAgent::didRecalculateStyle()
 {
     m_isRecalculatingStyle = false;
     m_styleRecalculationInitiator = nullptr;

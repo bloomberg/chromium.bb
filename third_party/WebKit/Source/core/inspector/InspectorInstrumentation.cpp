@@ -39,6 +39,7 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorSession.h"
@@ -124,39 +125,60 @@ NativeBreakpoint::~NativeBreakpoint()
     }
 }
 
+StyleRecalc::StyleRecalc(Document* document)
+    : m_instrumentingSessions(instrumentingSessionsFor(document))
+{
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorResourceAgent())
+            session->instrumentingAgents()->inspectorResourceAgent()->willRecalculateStyle(document);
+    }
+}
+
+StyleRecalc::~StyleRecalc()
+{
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorResourceAgent())
+            session->instrumentingAgents()->inspectorResourceAgent()->didRecalculateStyle();
+        if (session->instrumentingAgents()->inspectorPageAgent())
+            session->instrumentingAgents()->inspectorPageAgent()->didRecalculateStyle();
+    }
+}
+
+JavaScriptDialog::JavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType)
+    : m_instrumentingSessions(instrumentingSessionsFor(frame))
+    , m_result(false)
+{
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorPageAgent())
+            session->instrumentingAgents()->inspectorPageAgent()->willRunJavaScriptDialog(message, dialogType);
+    }
+}
+
+void JavaScriptDialog::setResult(bool result)
+{
+    m_result = result;
+}
+
+JavaScriptDialog::~JavaScriptDialog()
+{
+    if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
+        return;
+    for (InspectorSession* session : *m_instrumentingSessions) {
+        if (session->instrumentingAgents()->inspectorPageAgent())
+            session->instrumentingAgents()->inspectorPageAgent()->didRunJavaScriptDialog(m_result);
+    }
+}
+
 int FrontendCounter::s_frontendCounter = 0;
 
 // Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
 const char kInspectorEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
-}
-
-InspectorInstrumentationCookie::InspectorInstrumentationCookie()
-    : m_instrumentingSessions(nullptr)
-{
-}
-
-InspectorInstrumentationCookie::InspectorInstrumentationCookie(InstrumentingSessions* sessions)
-    : m_instrumentingSessions(sessions)
-{
-}
-
-InspectorInstrumentationCookie::InspectorInstrumentationCookie(const InspectorInstrumentationCookie& other)
-    : m_instrumentingSessions(other.m_instrumentingSessions)
-{
-}
-
-InspectorInstrumentationCookie& InspectorInstrumentationCookie::operator=(const InspectorInstrumentationCookie& other)
-{
-    if (this != &other)
-        m_instrumentingSessions = other.m_instrumentingSessions;
-    return *this;
-}
-
-InspectorInstrumentationCookie::~InspectorInstrumentationCookie()
-{
-}
-
-namespace InspectorInstrumentation {
 
 bool isDebuggerPaused(LocalFrame*)
 {

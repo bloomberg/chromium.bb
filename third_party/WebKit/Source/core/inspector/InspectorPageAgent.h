@@ -125,7 +125,7 @@ public:
     void didRunJavaScriptDialog(bool result);
     void didUpdateLayout();
     void didResizeMainFrame();
-    void didRecalculateStyle(int);
+    void didRecalculateStyle();
     void windowCreated(LocalFrame*);
 
     // Inspector Controller API

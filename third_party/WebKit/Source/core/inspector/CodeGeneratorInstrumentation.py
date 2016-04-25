@@ -212,29 +212,20 @@ class Method:
         # Splitting parameters by a comma, assuming that attribute lists contain no more than one attribute.
         self.params = map(Parameter, map(str.strip, match.group(4).split(",")))
 
-        self.accepts_cookie = len(self.params) and self.params[0].type == "const InspectorInstrumentationCookie&"
-        self.returns_cookie = self.return_type == "InspectorInstrumentationCookie"
-
         self.returns_value = self.return_type != "void"
-
         if self.return_type == "bool":
             self.default_return_value = "false"
-        elif self.returns_cookie:
-            self.default_return_value = self.return_type + "()"
         elif self.returns_value:
-            sys.stderr.write("Can only return bool or cookie: %s\n" % self.name)
+            sys.stderr.write("Can only return bool: %s\n" % self.name)
             sys.exit(1)
 
-        self.params_impl = self.params
-        if not self.accepts_cookie:
-            if not "Keep" in self.params_impl[0].options:
-                self.params_impl = self.params_impl[1:]
-        else:
-            self.params_impl = self.params_impl[1:]
+        self.params_agent = self.params
+        if "Keep" not in self.params_agent[0].options:
+            self.params_agent = self.params_agent[1:]
 
         self.agents = filter(lambda option: not "=" in option, self.options)
 
-        if self.returns_value and not self.returns_cookie and len(self.agents) > 1:
+        if self.returns_value and len(self.agents) > 1:
             sys.stderr.write("Can only return value from a single agent: %s\n" % self.name)
             sys.exit(1)
 
@@ -243,18 +234,12 @@ class Method:
             self.return_type, self.name, ", ".join(map(Parameter.to_str_class, self.params))))
 
     def generate_cpp(self, cpp_lines):
-        if self.accepts_cookie:
-            sessions_getter = "%s.instrumentingSessions()" % self.params[0].name
-        else:
-            sessions_getter = "instrumentingSessionsFor(%s)" % self.params[0].name
+        sessions_getter = "instrumentingSessionsFor(%s)" % self.params[0].name
 
         default_return = "return;"
         maybe_default_return = ""
         if self.returns_value:
             default_return = "return %s;" % self.default_return_value
-            maybe_default_return = "\n    " + default_return
-        if self.returns_cookie:
-            default_return = "return InspectorInstrumentationCookie(sessions);"
             maybe_default_return = "\n    " + default_return
 
         body_lines = map(self.generate_ref_ptr, self.params)
@@ -272,9 +257,9 @@ class Method:
 
     def generate_agent_call(self, agent):
         agent_class, agent_getter = agent_getter_signature(agent)
-        if not self.returns_value or self.returns_cookie:
-            maybe_return = ""
-        else:
+
+        maybe_return = ""
+        if self.returns_value:
             maybe_return = "return "
 
         return template_agent_call.substitute(
@@ -283,7 +268,7 @@ class Method:
             agent_class=agent_class,
             agent_getter=agent_getter,
             maybe_return=maybe_return,
-            params_agent=", ".join(map(Parameter.to_str_value, self.params_impl)))
+            params_agent=", ".join(map(Parameter.to_str_value, self.params_agent)))
 
     def generate_ref_ptr(self, param):
         if param.is_prp:

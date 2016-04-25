@@ -84,9 +84,9 @@ static bool openJavaScriptDialog(LocalFrame* frame, const String& message, Chrom
     // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message, dialogType);
+    InspectorInstrumentation::JavaScriptDialog instrumentation(frame, message, dialogType);
     bool result = delegate();
-    InspectorInstrumentation::didRunJavaScriptDialog(cookie, result);
+    instrumentation.setResult(result);
     return result;
 }
 

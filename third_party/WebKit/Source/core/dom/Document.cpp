@@ -1709,7 +1709,7 @@ void Document::updateLayoutTree()
 
     unsigned startElementCount = styleEngine().styleForElementCount();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
+    InspectorInstrumentation::StyleRecalc instrumentation(this);
 
     DocumentAnimations::updateAnimationTimingIfNeeded(*this);
     evaluateMediaQueryListIfNeeded();
@@ -1743,7 +1743,6 @@ void Document::updateLayoutTree()
     unsigned elementCount = styleEngine().styleForElementCount() - startElementCount;
 
     TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree", "elementCount", elementCount);
-    InspectorInstrumentation::didRecalculateStyle(cookie, elementCount);
 
 #if DCHECK_IS_ON()
     assertLayoutTreeUpdated(*this);

@@ -46,7 +46,7 @@
 *   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
 *       Keep - pass first parameter (used to access the InstrumentingAgents instance) to agents.
 *
-*   returnValue: C++ return value. Only "void", "bool" and "InspectorInstrumentationCookie" are supported.
+*   returnValue: C++ return value. Only "void" and "bool" are supported.
 *
 *   methodName: C++ name for the public instrumentation method and agents methods.
 *
@@ -62,7 +62,6 @@ interface InspectorInstrumentation {
 #include "core/animation/Animation.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/PseudoElement.h"
-#include "core/page/ChromeClient.h"
 
 class ThreadableLoaderClient;
 class WebSocketHandshakeRequest;
@@ -136,12 +135,6 @@ class XMLHttpRequest;
 
     [LayerTree]
     void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
-
-    [Resource]
-    InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);
-
-    [Resource, Page]
-    void didRecalculateStyle(const InspectorInstrumentationCookie&, int elementCount);
 
     [Resource]
     void didScheduleStyleRecalculation([Keep] Document*);
@@ -244,12 +237,6 @@ class XMLHttpRequest;
 
     [Page, Resource]
     void frameClearedScheduledNavigation([Keep] LocalFrame*);
-
-    [Page]
-    InspectorInstrumentationCookie willRunJavaScriptDialog(LocalFrame*, const String& message, ChromeClient::DialogType dialogType);
-
-    [Page]
-    void didRunJavaScriptDialog(const InspectorInstrumentationCookie&, bool result);
 
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
