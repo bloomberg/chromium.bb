@@ -4638,6 +4638,7 @@ protected:
     void runTest(const char* testFile)
     {
         registerMockedHttpURLLoad(testFile);
+        m_webViewHelper.webView()->setFocus(true);
         FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), m_baseURL + testFile);
         m_webViewHelper.webView()->updateAllLifecyclePhases();
 
@@ -4751,6 +4752,7 @@ TEST_P(ParameterizedWebFrameTest, CompositedSelectionBoundsCleared)
     webViewHelper.webView()->settings()->setDefaultFontSize(12);
     webViewHelper.webView()->setDefaultPageScaleLimits(1, 1);
     webViewHelper.resize(WebSize(viewWidth, viewHeight));
+    webViewHelper.webView()->setFocus(true);
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "select_range_basic.html");
 
     // The frame starts with no selection.
