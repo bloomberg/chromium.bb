@@ -124,7 +124,6 @@ private:
     FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
     FloatRect calculateObjectBoundingBox() const;
     FloatRect calculateStrokeBoundingBox() const;
-    void updatePaintInvalidationBoundingBox();
     void updateLocalTransform();
 
 private:

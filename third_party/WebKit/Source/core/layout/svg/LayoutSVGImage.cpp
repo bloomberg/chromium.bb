@@ -79,29 +79,32 @@ void LayoutSVGImage::layout()
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
 
+    // Invalidate all resources of this client if our layout changed.
+    if (everHadLayout() && selfNeedsLayout())
+        SVGResourcesCache::clientLayoutChanged(this);
+
     updateBoundingBox();
 
-    bool transformOrBoundariesUpdate = m_needsTransformUpdate || m_needsBoundariesUpdate;
+    bool updateParentBoundaries = false;
     if (m_needsTransformUpdate) {
         m_localTransform = toSVGImageElement(element())->calculateAnimatedLocalTransform();
         m_needsTransformUpdate = false;
+        updateParentBoundaries = true;
     }
 
     if (m_needsBoundariesUpdate) {
         m_paintInvalidationBoundingBox = m_objectBoundingBox;
         SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
-
         m_needsBoundariesUpdate = false;
+        updateParentBoundaries = true;
     }
 
-    // Invalidate all resources of this client if our layout changed.
-    if (everHadLayout() && selfNeedsLayout())
-        SVGResourcesCache::clientLayoutChanged(this);
-
     // If our bounds changed, notify the parents.
-    if (transformOrBoundariesUpdate)
+    if (updateParentBoundaries)
         LayoutSVGModelObject::setNeedsBoundariesUpdate();
 
+    ASSERT(!m_needsBoundariesUpdate);
+    ASSERT(!m_needsTransformUpdate);
     clearNeedsLayout();
 }
 

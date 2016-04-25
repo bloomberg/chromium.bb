@@ -81,6 +81,7 @@ void LayoutSVGContainer::layout()
         LayoutSVGModelObject::setNeedsBoundariesUpdate();
     }
 
+    ASSERT(!m_needsBoundariesUpdate);
     clearNeedsLayout();
 }
 

@@ -156,31 +156,40 @@ void LayoutSVGShape::updateLocalTransform()
 
 void LayoutSVGShape::layout()
 {
-    bool updateCachedBoundariesInParents = false;
     LayoutAnalyzer::Scope analyzer(*this);
-
-    if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
-        updateShapeFromElement();
-        m_needsShapeUpdate = false;
-        updatePaintInvalidationBoundingBox();
-        m_needsBoundariesUpdate = false;
-        updateCachedBoundariesInParents = true;
-    }
-
-    if (m_needsTransformUpdate) {
-        updateLocalTransform();
-        m_needsTransformUpdate = false;
-        updateCachedBoundariesInParents = true;
-    }
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && selfNeedsLayout())
         SVGResourcesCache::clientLayoutChanged(this);
 
+    bool updateParentBoundaries = false;
+    // updateShapeFromElement() also updates the object & stroke bounds - which
+    // feeds into the paint invalidation rect - so we need to call it for both
+    // the shape-update and the bounds-update flag, since .
+    if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
+        updateShapeFromElement();
+        m_needsShapeUpdate = false;
+
+        m_paintInvalidationBoundingBox = strokeBoundingBox();
+        SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
+        m_needsBoundariesUpdate = false;
+
+        updateParentBoundaries = true;
+    }
+
+    if (m_needsTransformUpdate) {
+        updateLocalTransform();
+        m_needsTransformUpdate = false;
+        updateParentBoundaries = true;
+    }
+
     // If our bounds changed, notify the parents.
-    if (updateCachedBoundariesInParents)
+    if (updateParentBoundaries)
         LayoutSVGModelObject::setNeedsBoundariesUpdate();
 
+    ASSERT(!m_needsShapeUpdate);
+    ASSERT(!m_needsBoundariesUpdate);
+    ASSERT(!m_needsTransformUpdate);
     clearNeedsLayout();
 }
 
@@ -281,12 +290,6 @@ FloatRect LayoutSVGShape::calculateStrokeBoundingBox() const
     }
 
     return strokeBoundingBox;
-}
-
-void LayoutSVGShape::updatePaintInvalidationBoundingBox()
-{
-    m_paintInvalidationBoundingBox = strokeBoundingBox();
-    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 }
 
 float LayoutSVGShape::strokeWidth() const
