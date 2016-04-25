@@ -43,6 +43,7 @@ $ python visualmetrics.py -h
 * **-e, --end**: Specify an ending time (in milliseconds) for calculating the various metrics.
 * **-v, --verbose**: Display debug messages while processing. Specify multiple times (up to 4) to increase detail.
 * **-k, --perceptual**: Calculates perceptual speed Index for a given input video.
+* **-j, --json**: Sets output format to JSON.
 
 ## Examples
 
