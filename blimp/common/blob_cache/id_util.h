@@ -13,14 +13,17 @@
 
 namespace blimp {
 
-// Returns the bytes of a SHA1 hash of the input. The string is guaranteed
-// to have length base::kSHA1Length.
+// Returns a unique Id for the Blob, based on its content. All BlobIds have
+// the same length.
 BLIMP_COMMON_EXPORT const BlobId CalculateBlobId(const void* data,
                                                  size_t data_size);
 
-// Returns a hexadecimal string representation of a SHA1 hash. The input is
-// required to have length base::kSHA1Length.
-BLIMP_COMMON_EXPORT const std::string FormatBlobId(const BlobId& data);
+// Returns a hexadecimal string representation of a BlobId. The input must
+// be a valid BlobId.
+BLIMP_COMMON_EXPORT const std::string BlobIdToString(const BlobId& id);
+
+// Returns whether the BlobId is valid.
+BLIMP_COMMON_EXPORT bool IsValidBlobId(const BlobId& id);
 
 }  // namespace blimp
 

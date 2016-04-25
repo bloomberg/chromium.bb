@@ -5,9 +5,6 @@
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
 
 #include "base/logging.h"
-#include "base/sha1.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 
 namespace blimp {
 

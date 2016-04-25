@@ -31,6 +31,7 @@ component("blimp_common") {
     "//base",
     "//blimp/common/proto",
     "//cc",
+    "//crypto",
     "//skia",
     "//third_party/libwebp",
     "//ui/gfx/geometry",
@@ -42,6 +43,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "blob_cache/id_util_unittest.cc",
     "blob_cache/in_memory_blob_cache_unittest.cc",
     "create_blimp_message_unittest.cc",
     "logging_unittest.cc",

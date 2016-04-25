@@ -11,9 +11,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/compositor/webp_decoder.h"
@@ -76,7 +74,7 @@ class WebPImageEncoder : public SkPixelSerializer {
     picture.height = pixmap.height();
 
     const BlobId blob_id = CalculateBlobId(pixmap.addr(), pixmap.getSafeSize());
-    std::string blob_id_hex = FormatBlobId(blob_id);
+    std::string blob_id_hex = BlobIdToString(blob_id);
 
     // Create proto with all requires information.
     BlobCacheImageMetadata proto;

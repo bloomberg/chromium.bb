@@ -7,9 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
@@ -44,14 +42,12 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
     return false;
   }
 
-  // The cache uses the SHA1 hex string of the ID.
-  if (deserialized.id().length() != base::kSHA1Length) {
-    LOG(WARNING) << "Length of ID is not base::kSHA1Length ("
-                 << base::kSHA1Length << "), but "
+  if (!IsValidBlobId(BlobId(deserialized.id()))) {
+    LOG(WARNING) << "Length of ID is not correct "
                  << deserialized.id().length();
     return false;
   }
-  std::string hex_id = FormatBlobId(deserialized.id());
+  std::string hex_id = BlobIdToString(deserialized.id());
 
   // Declared here to still be in scope while decoding WebP data.
   BlobDataPtr cached;
@@ -70,7 +66,7 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
     cached = g_blob_cache.Get().Get(deserialized.id());
     webp_data.bytes = reinterpret_cast<const uint8_t*>(cached->data.data());
     webp_data.size = cached->data.size();
-    DVLOG(2) << "Found SHA1 " << hex_id << " with size = " << webp_data.size;
+    DVLOG(2) << "Found id " << hex_id << " with size = " << webp_data.size;
     found_in_cache = true;
   } else {
     // The image was not found in the cache, so decode using the payload.
@@ -129,7 +125,7 @@ bool WebPDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
   }
 
   if (!found_in_cache) {
-    DVLOG(2) << "Inserting image to cache with SHA1: " << hex_id
+    DVLOG(2) << "Inserting image to cache with id: " << hex_id
              << " size: " << webp_data.size;
     BlobDataPtr to_cache(new BlobData(std::string(
         reinterpret_cast<const char*>(webp_data.bytes), webp_data.size)));

@@ -3,6 +3,7 @@ include_rules = [
   "+cc",
   "-cc/blink",
   "-content",
+  "+crypto",
   "+third_party/libwebp",
   "+third_party/skia",
   "+ui/base/ime/text_input_type.h",
