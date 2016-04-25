@@ -79,6 +79,49 @@ PlatformMouseEvent mouseEventWithRegion(Node* node, const PlatformMouseEvent& mo
     return newMouseEvent;
 }
 
+void buildAncestorChainsAndFindCommonAncestors(
+    EventTarget* exitedTarget, EventTarget* enteredTarget,
+    HeapVector<Member<Node>, 20>* exitedAncestorsOut,
+    HeapVector<Member<Node>, 20>* enteredAncestorsOut,
+    size_t* exitedAncestorsCommonParentIndexOut,
+    size_t* enteredAncestorsCommonParentIndexOut)
+{
+    DCHECK(exitedAncestorsOut);
+    DCHECK(enteredAncestorsOut);
+    DCHECK(exitedAncestorsCommonParentIndexOut);
+    DCHECK(enteredAncestorsCommonParentIndexOut);
+
+    // Index 0 element in the ancestors arrays will be the corresponding
+    // target. So the root of their document will be their last element.
+
+    if (isInDocument(exitedTarget)) {
+        Node* exitedNode = exitedTarget->toNode();
+        DCHECK(exitedNode);
+        exitedNode->updateDistribution();
+        for (Node* node = exitedNode; node; node = FlatTreeTraversal::parent(*node))
+            exitedAncestorsOut->append(node);
+    }
+
+    if (isInDocument(enteredTarget)) {
+        Node* enteredNode = enteredTarget->toNode();
+        DCHECK(enteredNode);
+        enteredNode->updateDistribution();
+        for (Node* node = enteredNode; node; node = FlatTreeTraversal::parent(*node))
+            enteredAncestorsOut->append(node);
+    }
+
+    *exitedAncestorsCommonParentIndexOut = exitedAncestorsOut->size();
+    *enteredAncestorsCommonParentIndexOut = enteredAncestorsOut->size();
+    while (*exitedAncestorsCommonParentIndexOut > 0
+        && *enteredAncestorsCommonParentIndexOut > 0) {
+        if ((*exitedAncestorsOut)[(*exitedAncestorsCommonParentIndexOut)-1]
+            != (*enteredAncestorsOut)[(*enteredAncestorsCommonParentIndexOut)-1])
+            break;
+        (*exitedAncestorsCommonParentIndexOut)--;
+        (*enteredAncestorsCommonParentIndexOut)--;
+    }
+}
+
 } // namespace
 
 WebInputEventResult PointerEventManager::dispatchPointerEvent(
@@ -180,21 +223,12 @@ void PointerEventManager::sendNodeTransitionEvents(
     }
 
     // Create lists of all exited/entered ancestors, locate the common ancestor
-    HeapVector<Member<Node>, 32> exitedAncestors;
-    HeapVector<Member<Node>, 32> enteredAncestors;
-    if (isInDocument(exitedTarget)) {
-        Node* exitedNode = exitedTarget->toNode();
-        exitedNode->updateDistribution();
-        for (Node* node = exitedNode; node; node = FlatTreeTraversal::parent(*node))
-            exitedAncestors.append(node);
-    }
-
-    if (isInDocument(enteredTarget)) {
-        Node* enteredNode = enteredTarget->toNode();
-        enteredNode->updateDistribution();
-        for (Node* node = enteredNode; node; node = FlatTreeTraversal::parent(*node))
-            enteredAncestors.append(node);
-    }
+    // Based on httparchive, in more than 97% cases the depth of DOM is less
+    // than 20.
+    HeapVector<Member<Node>, 20> exitedAncestors;
+    HeapVector<Member<Node>, 20> enteredAncestors;
+    size_t exitedAncestorsCommonParentIndex = 0;
+    size_t enteredAncestorsCommonParentIndex = 0;
 
     // A note on mouseenter and mouseleave: These are non-bubbling events, and they are dispatched if there
     // is a capturing event handler on an ancestor or a normal event handler on the element itself. This special
@@ -210,22 +244,10 @@ void PointerEventManager::sendNodeTransitionEvents(
     //
     // TODO(mustaq): Confirm spec conformance, double-check with other browsers.
 
-    size_t numExitedAncestors = exitedAncestors.size();
-    size_t numEnteredAncestors = enteredAncestors.size();
-
-    size_t exitedAncestorIndex = numExitedAncestors;
-    size_t enteredAncestorIndex = numEnteredAncestors;
-    for (size_t i = 0; i < numExitedAncestors; i++) {
-        for (size_t j = 0; j < numEnteredAncestors; j++) {
-            if (exitedAncestors[i] == enteredAncestors[j]) {
-                exitedAncestorIndex = i;
-                enteredAncestorIndex = j;
-                break;
-            }
-        }
-        if (exitedAncestorIndex <  exitedAncestors.size())
-            break;
-    }
+    buildAncestorChainsAndFindCommonAncestors(
+        exitedTarget, enteredTarget,
+        &exitedAncestors, &enteredAncestors,
+        &exitedAncestorsCommonParentIndex, &enteredAncestorsCommonParentIndex);
 
     bool exitedNodeHasCapturingAncestor = false;
     for (size_t j = 0; j < exitedAncestors.size(); j++) {
@@ -236,7 +258,7 @@ void PointerEventManager::sendNodeTransitionEvents(
     }
 
     // Dispatch pointerleave/mouseleave events, in child-to-parent order.
-    for (size_t j = 0; j < exitedAncestorIndex; j++) {
+    for (size_t j = 0; j < exitedAncestorsCommonParentIndex; j++) {
         if (!sendMouseEvent) {
             dispatchPointerEvent(exitedAncestors[j].get(),
                 m_pointerEventFactory.createPointerTransitionEvent(
@@ -272,7 +294,7 @@ void PointerEventManager::sendNodeTransitionEvents(
     }
 
     // Dispatch pointerenter/mouseenter events, in parent-to-child order.
-    for (size_t i = enteredAncestorIndex; i > 0; i--) {
+    for (size_t i = enteredAncestorsCommonParentIndex; i > 0; i--) {
         if (!sendMouseEvent) {
             dispatchPointerEvent(enteredAncestors[i-1].get(),
                 m_pointerEventFactory.createPointerTransitionEvent(
