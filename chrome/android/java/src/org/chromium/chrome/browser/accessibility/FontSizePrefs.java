@@ -33,6 +33,8 @@ public class FontSizePrefs {
      */
     public static final float FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER = 1.3f;
 
+    private static final float EPSILON = 0.001f;
+
     static final String PREF_USER_SET_FORCE_ENABLE_ZOOM = "user_set_force_enable_zoom";
     static final String PREF_USER_FONT_SCALE_FACTOR = "user_font_scale_factor";
 
@@ -114,10 +116,18 @@ public class FontSizePrefs {
     public float getUserFontScaleFactor() {
         float userFontScaleFactor = mSharedPreferences.getFloat(PREF_USER_FONT_SCALE_FACTOR, 0f);
         if (userFontScaleFactor == 0f) {
-            // Initialize userFontScaleFactor based on fontScaleFactor, since userFontScaleFactor
-            // was added long after fontScaleFactor.
-            userFontScaleFactor = MathUtils.clamp(getFontScaleFactor() / getSystemFontScale(),
-                    0.5f, 2f);
+            float fontScaleFactor = getFontScaleFactor();
+
+            if (Math.abs(fontScaleFactor - 1f) <= EPSILON) {
+                // If the font scale factor is 1, assume that the user hasn't customized their font
+                // scale and/or wants the default value
+                userFontScaleFactor = 1f;
+            } else {
+                // Initialize userFontScaleFactor based on fontScaleFactor, since
+                // userFontScaleFactor was added long after fontScaleFactor.
+                userFontScaleFactor =
+                        MathUtils.clamp(fontScaleFactor / getSystemFontScale(), 0.5f, 2f);
+            }
             SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
             sharedPreferencesEditor.putFloat(PREF_USER_FONT_SCALE_FACTOR, userFontScaleFactor);
             sharedPreferencesEditor.apply();
@@ -126,8 +136,8 @@ public class FontSizePrefs {
     }
 
     /**
-     * Returns the fontScaleFactor. This is the produce of the userFontScaleFactor and the system
-     * fon scale, and is the amount by which webpage text will be scaled during font boosting.
+     * Returns the fontScaleFactor. This is the product of the userFontScaleFactor and the system
+     * font scale, and is the amount by which webpage text will be scaled during font boosting.
      */
     public float getFontScaleFactor() {
         return nativeGetFontScaleFactor(mFontSizePrefsAndroidPtr);
