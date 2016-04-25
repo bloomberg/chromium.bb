@@ -112,6 +112,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MojoChannel": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "OfferUploadCreditCards": [
         {
             "group_name": "Enabled"

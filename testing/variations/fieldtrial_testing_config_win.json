@@ -137,6 +137,11 @@
             "group_name": "Enabled"
         }
     ],
+    "MojoChannel": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "group_name": "Enabled",
