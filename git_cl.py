@@ -17,9 +17,11 @@ import json
 import logging
 import optparse
 import os
+import Queue
 import re
 import stat
 import sys
+import tempfile
 import textwrap
 import time
 import traceback
@@ -2899,8 +2901,20 @@ def color_for_status(status):
     'error': Fore.WHITE,
   }.get(status, Fore.WHITE)
 
+def fetch_cl_status(branch, auth_config=None):
+  """Fetches information for an issue and returns (branch, issue, status)."""
+  cl = Changelist(branchref=branch, auth_config=auth_config)
+  url = cl.GetIssueURL()
+  status = cl.GetStatus()
+
+  if url and (not status or status == 'error'):
+    # The issue probably doesn't exist anymore.
+    url += ' (broken)'
+
+  return (branch, url, status)
+
 def get_cl_statuses(
-    changes, fine_grained, max_processes=None):
+    branches, fine_grained, max_processes=None, auth_config=None):
   """Returns a blocking iterable of (branch, issue, color) for given branches.
 
   If fine_grained is true, this will fetch CL statuses from the server.
@@ -2916,21 +2930,23 @@ def get_cl_statuses(
   if fine_grained:
     # Process one branch synchronously to work through authentication, then
     # spawn processes to process all the other branches in parallel.
-    if changes:
-      fetch = lambda cl: (cl, cl.GetStatus())
-      yield fetch(changes[0])
+    if branches:
+      fetch = lambda branch: fetch_cl_status(branch, auth_config=auth_config)
+      yield fetch(branches[0])
 
-      changes_to_fetch = changes[1:]
+      branches_to_fetch = branches[1:]
       pool = ThreadPool(
-          min(max_processes, len(changes_to_fetch))
+          min(max_processes, len(branches_to_fetch))
               if max_processes is not None
-              else len(changes_to_fetch))
-      for x in pool.imap_unordered(fetch, changes_to_fetch):
+              else len(branches_to_fetch))
+      for x in pool.imap_unordered(fetch, branches_to_fetch):
         yield x
   else:
     # Do not use GetApprovingReviewers(), since it requires an HTTP request.
-    for cl in changes:
-      yield (cl, 'waiting' if cl.GetIssueURL() else 'error')
+    for b in branches:
+      cl = Changelist(branchref=b, auth_config=auth_config)
+      url = cl.GetIssueURL()
+      yield (b, url, 'waiting' if url else 'error')
 
 
 def upload_branch_deps(cl, args):
@@ -3083,27 +3099,25 @@ def CMDstatus(parser, args):
     print('No local branch found.')
     return 0
 
-  changes = [
+  changes = (
       Changelist(branchref=b, auth_config=auth_config)
-      for b in branches.splitlines()]
+      for b in branches.splitlines())
+  # TODO(tandrii): refactor to use CLs list instead of branches list.
+  branches = [c.GetBranch() for c in changes]
+  alignment = max(5, max(len(b) for b in branches))
   print 'Branches associated with reviews:'
-  output = get_cl_statuses(changes,
+  output = get_cl_statuses(branches,
                            fine_grained=not options.fast,
-                           max_processes=options.maxjobs)
+                           max_processes=options.maxjobs,
+                           auth_config=auth_config)
 
   branch_statuses = {}
-  alignment = max(5, max(len(ShortBranchName(c.GetBranch())) for c in changes))
-  for cl in sorted(changes, key=lambda c: c.GetBranch()):
-    branch = cl.GetBranch()
+  alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
+  for branch in sorted(branches):
     while branch not in branch_statuses:
-      c, status = output.next()
-      branch_statuses[c.GetBranch()] = status
-    status = branch_statuses.pop(branch)
-    url = cl.GetIssueURL()
-    if url and (not status or status == 'error'):
-      # The issue probably doesn't exist anymore.
-      url += ' (broken)'
-
+      b, i, status = output.next()
+      branch_statuses[b] = (i, status)
+    issue_url, status = branch_statuses.pop(branch)
     color = color_for_status(status)
     reset = Fore.RESET
     if not setup_color.IS_TTY:
@@ -3111,8 +3125,8 @@ def CMDstatus(parser, args):
       reset = ''
     status_str = '(%s)' % status if status else ''
     print '  %*s : %s%s %s%s' % (
-          alignment, ShortBranchName(branch), color, url,
-          status_str, reset)
+          alignment, ShortBranchName(branch), color, issue_url, status_str,
+          reset)
 
   cl = Changelist(auth_config=auth_config)
   print
