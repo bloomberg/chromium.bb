@@ -6,7 +6,6 @@ syntax = "proto2";
 
 import "layer.proto";
 import "layer_selection_bound.proto";
-import "layer_tree_settings.proto";
 import "layer_tree_debug_state.proto";
 import "property_tree.proto";
 import "size.proto";
