@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -516,7 +518,10 @@ void StartupAppLauncher::BeginInstall() {
 
 void StartupAppLauncher::MaybeInstallSecondaryApps() {
   if (!AreSecondaryAppsInstalled() && !delegate_->IsNetworkReady()) {
-    OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
+    DelayNetworkCall(
+        base::TimeDelta::FromMilliseconds(kDefaultNetworkRetryDelayMS),
+        base::Bind(&StartupAppLauncher::MaybeInstallSecondaryApps,
+                   AsWeakPtr()));
     return;
   }
 
