@@ -134,4 +134,22 @@ test(function() {
     assert_false(element.hasAttributeNS(xlinkNs, 'href'), '"xlink:href" no longer exist');
     assert_equals(element.href.baseVal, '');
 }, document.title+', IDL href reflects "xlink:href"; removeAttribute(xlink:href) w/o NS-prefix resets to default.');
+
+test(function() {
+    var element = document.createElementNS(svgNs, 'a');
+    element.setAttributeNS(xlinkNs, 'xlink:href', 'bar');
+    assert_false(element.hasAttributeNS(null, 'href'), '"href" does not exist');
+    assert_true(element.hasAttributeNS(xlinkNs, 'href'), '"xlink:href" exists');
+    assert_equals(element.href.baseVal, 'bar', 'baseVal reflects "xlink:href"');
+    assert_equals(element.href.animVal, 'bar', 'animVal reflects "xlink:href"');
+}, document.title+', href.animVal reflects "xlink:href" when it is set.');
+
+test(function() {
+    var element = document.createElementNS(svgNs, 'a');
+    element.setAttributeNS(null, 'href', 'bar');
+    assert_true(element.hasAttributeNS(null, 'href'), '"href" exists');
+    assert_false(element.hasAttributeNS(xlinkNs, 'href'), '"xlink:href" does not exist');
+    assert_equals(element.href.baseVal, 'bar', 'baseVal reflects "href"');
+    assert_equals(element.href.animVal, 'bar', 'animVal reflects "href"');
+}, document.title+', href.animVal reflects "href" when it is set.');
 </script>

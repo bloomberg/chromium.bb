@@ -64,8 +64,7 @@ void SVGAnimatedHref::setBaseVal(const String& value, ExceptionState& exceptionS
 String SVGAnimatedHref::animVal()
 {
     UseCounter::count(contextElement()->document(), UseCounter::SVGHrefAnimVal);
-    // We should only animate (non-XLink) 'href'.
-    return SVGAnimatedString::animVal();
+    return backingString()->SVGAnimatedString::animVal();
 }
 
 SVGAnimatedString* SVGAnimatedHref::backingString()
