@@ -8,13 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace policy {
 
 // This class observes the device setting |DeviceAllowBluetooth|, and calls
-// BluetoothAdapter::SetDisabled() appropriately based on the value of that
+// BluetoothAdapter::Shutdown() appropriately based on the value of that
 // setting.
 class BluetoothPolicyHandler {
  public:
@@ -23,13 +25,19 @@ class BluetoothPolicyHandler {
 
  private:
   // Once a trusted set of policies is established, this function calls
-  // |SetDisabled| with the trusted state of the |DeviceAllowBluetooth| policy
+  // |Shutdown| with the trusted state of the |DeviceAllowBluetooth| policy
   // through helper function |SetBluetoothPolicy|.
   void OnBluetoothPolicyChanged();
+
+  // Helper function used in device::BluetoothAdapterFactory::GetAdapter
+  // callback. Saves a reference to the adapter (so it stays alive) and calls
+  // |Shutdown| on the Bluetooth stack in order to disable it.
+  void SetBluetoothPolicy(scoped_refptr<device::BluetoothAdapter> adapter);
 
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       bluetooth_policy_subscription_;
+  scoped_refptr<device::BluetoothAdapter> adapter_;
   base::WeakPtrFactory<BluetoothPolicyHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPolicyHandler);

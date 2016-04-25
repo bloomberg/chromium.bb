@@ -8,20 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
-#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
 namespace policy {
-
-namespace {
-
-void SetBluetoothPolicy(bool allow_bluetooth,
-                        scoped_refptr<device::BluetoothAdapter> adapter) {
-  if (!allow_bluetooth)
-    adapter->Shutdown();
-}
-
-}  // namespace
 
 BluetoothPolicyHandler::BluetoothPolicyHandler(
     chromeos::CrosSettings* cros_settings)
@@ -45,12 +34,20 @@ void BluetoothPolicyHandler::OnBluetoothPolicyChanged() {
   if (status != chromeos::CrosSettingsProvider::TRUSTED)
     return;
 
+  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+      &BluetoothPolicyHandler::SetBluetoothPolicy, weak_factory_.GetWeakPtr()));
+}
+
+void BluetoothPolicyHandler::SetBluetoothPolicy(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
   // Get the updated policy.
   bool allow_bluetooth = true;
   cros_settings_->GetBoolean(chromeos::kAllowBluetooth, &allow_bluetooth);
 
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&SetBluetoothPolicy, allow_bluetooth));
+  if (!allow_bluetooth) {
+    adapter_ = adapter;
+    adapter_->Shutdown();
+  }
 }
 
 }  // namespace policy
