@@ -219,7 +219,7 @@ params_create(struct wl_client *client,
 		 * by the kernel not supporting seeking on dmabuf */
 		size = lseek(buffer->attributes.fd[i], 0, SEEK_END);
 		if (size == -1)
-			break;
+			continue;
 
 		if (buffer->attributes.offset[i] >= size) {
 			wl_resource_post_error(params_resource,
