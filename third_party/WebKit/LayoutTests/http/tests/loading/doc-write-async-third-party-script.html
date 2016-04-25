@@ -3,7 +3,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
     var t = async_test('Cross origin but asynchronous doc.written scripts are not blocked');
-    var src = 'http://localhost:8000/loading/resources/js-loaded.js?2';
+    var src = 'http://localhost:8000/loading/resources/js-loaded.js?async-third-party-script';
     var jsLoaded = false;
     var loadSuccess = false;
     if (window.internals) {

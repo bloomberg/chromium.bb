@@ -86,6 +86,17 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     if (!document.settings())
         return false;
 
+    if (!document.frame())
+        return false;
+
+    // Do not block scripts if it is a page reload. This is to enable pages to
+    // recover if blocking of a script is leading to a page break and the user
+    // reloads the page.
+    const FrameLoadType loadType = document.frame()->loader().loadType();
+    const bool isReload = (loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache || loadType == FrameLoadTypeSame);
+    if (isReload)
+        return false;
+
     const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
     const bool disallowFetch = document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() && isSlowConnection);
     if (!disallowFetch)
