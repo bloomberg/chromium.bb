@@ -63,8 +63,8 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
   if (overridden_device_metrics_->touch) {
     base::DictionaryValue emulate_touch_params;
     emulate_touch_params.SetBoolean("enabled", true);
-    status = client_->SendCommand(
-        "Page.setTouchEmulationEnabled", emulate_touch_params);
+    status = client_->SendCommand("Emulation.setTouchEmulationEnabled",
+                                  emulate_touch_params);
   }
 
   return Status(kOk);
