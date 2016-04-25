@@ -553,7 +553,9 @@ class GitWrapper(SCMWrapper):
 
     if current_type == 'detached':
       # case 0
-      self._CheckClean(rev_str)
+      if not options.force:
+        # Don't do this check if nuclear option is on.
+        self._CheckClean(rev_str)
       self._CheckDetachedHead(rev_str, options)
       if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
         self.Print('Up-to-date; skipping checkout.')
@@ -563,7 +565,7 @@ class GitWrapper(SCMWrapper):
         self._Checkout(
             options,
             revision,
-            force=(options.force and options.delete_unversioned_trees),
+            force=(options.force or options.delete_unversioned_trees),
             quiet=True,
         )
       if not printed_path:
