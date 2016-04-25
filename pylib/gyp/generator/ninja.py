@@ -1369,7 +1369,8 @@ class NinjaWriter(object):
                                  is_command_start=not package_framework)
     if package_framework and not is_empty:
       if spec['type'] == 'shared_library' and self.xcode_settings.isIOS:
-        self.ninja.build(output, 'package_ios_framework', mac_bundle_depends)
+        self.ninja.build(output, 'package_ios_framework', mac_bundle_depends,
+                         variables=variables)
       else:
         variables.append(('version', self.xcode_settings.GetFrameworkVersion()))
         self.ninja.build(output, 'package_framework', mac_bundle_depends,

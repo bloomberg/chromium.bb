@@ -312,7 +312,8 @@ class XcodeSettings(object):
     """Returns the qualified path to the bundle's plist file. E.g.
     Chromium.app/Contents/Info.plist. Only valid for bundles."""
     assert self._IsBundle()
-    if self.spec['type'] in ('executable', 'loadable_module'):
+    if self.spec['type'] in ('executable', 'loadable_module') or \
+        self.IsIosFramework():
       return os.path.join(self.GetBundleContentsFolderPath(), 'Info.plist')
     else:
       return os.path.join(self.GetBundleContentsFolderPath(),
@@ -1008,10 +1009,20 @@ class XcodeSettings(object):
          self.IsIosFramework()):
       return []
 
+    postbuilds = []
+    product_name = self.GetFullProductName()
     settings = self.xcode_settings[configname]
+
+    # Xcode expects XCTests to be copied into the TEST_HOST dir.
+    if self._IsXCTest():
+      source = os.path.join("${BUILT_PRODUCTS_DIR}", product_name)
+      test_host = os.path.dirname(settings.get('TEST_HOST'));
+      xctest_destination = os.path.join(test_host, 'PlugIns', product_name)
+      postbuilds.extend(['ditto %s %s' % (source, xctest_destination)])
+
     key = self._GetIOSCodeSignIdentityKey(settings)
     if not key:
-      return []
+      return postbuilds
 
     # Warn for any unimplemented signing xcode keys.
     unimpl = ['OTHER_CODE_SIGN_FLAGS']
@@ -1020,11 +1031,41 @@ class XcodeSettings(object):
       print 'Warning: Some codesign keys not implemented, ignoring: %s' % (
           ', '.join(sorted(unimpl)))
 
-    return ['%s code-sign-bundle "%s" "%s" "%s"' % (
+    if self._IsXCTest():
+      # For device xctests, Xcode copies two extra frameworks into $TEST_HOST.
+      test_host = os.path.dirname(settings.get('TEST_HOST'));
+      frameworks_dir = os.path.join(test_host, 'Frameworks')
+      platform_root = self._XcodePlatformPath(configname)
+      frameworks = \
+          ['Developer/Library/PrivateFrameworks/IDEBundleInjection.framework',
+           'Developer/Library/Frameworks/XCTest.framework']
+      for framework in frameworks:
+        source = os.path.join(platform_root, framework)
+        destination = os.path.join(frameworks_dir, os.path.basename(framework))
+        postbuilds.extend(['ditto %s %s' % (source, destination)])
+
+        # Then re-sign everything with 'preserve=True'
+        postbuilds.extend(['%s code-sign-bundle "%s" "%s" "%s" "%s" %s' % (
+            os.path.join('${TARGET_BUILD_DIR}', 'gyp-mac-tool'), key,
+            settings.get('CODE_SIGN_ENTITLEMENTS', ''),
+            settings.get('PROVISIONING_PROFILE', ''), destination, True)
+        ])
+      plugin_dir = os.path.join(test_host, 'PlugIns')
+      targets = [os.path.join(plugin_dir, product_name), test_host]
+      for target in targets:
+        postbuilds.extend(['%s code-sign-bundle "%s" "%s" "%s" "%s" %s' % (
+            os.path.join('${TARGET_BUILD_DIR}', 'gyp-mac-tool'), key,
+            settings.get('CODE_SIGN_ENTITLEMENTS', ''),
+            settings.get('PROVISIONING_PROFILE', ''), target, True)
+        ])
+
+    postbuilds.extend(['%s code-sign-bundle "%s" "%s" "%s" "%s" %s' % (
         os.path.join('${TARGET_BUILD_DIR}', 'gyp-mac-tool'), key,
         settings.get('CODE_SIGN_ENTITLEMENTS', ''),
-        settings.get('PROVISIONING_PROFILE', ''))
-    ]
+        settings.get('PROVISIONING_PROFILE', ''),
+        os.path.join("${BUILT_PRODUCTS_DIR}", product_name), False)
+    ])
+    return postbuilds
 
   def _GetIOSCodeSignIdentityKey(self, settings):
     identity = settings.get('CODE_SIGN_IDENTITY')

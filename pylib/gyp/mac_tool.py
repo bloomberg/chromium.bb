@@ -405,7 +405,7 @@ class MacTool(object):
       self._MergePlist(merged_plist, plist)
     plistlib.writePlist(merged_plist, output)
 
-  def ExecCodeSignBundle(self, key, entitlements, provisioning):
+  def ExecCodeSignBundle(self, key, entitlements, provisioning, path, preserve):
     """Code sign a bundle.
 
     This function tries to code sign an iOS bundle, following the same
@@ -419,11 +419,14 @@ class MacTool(object):
         provisioning, self._GetCFBundleIdentifier())
     entitlements_path = self._InstallEntitlements(
         entitlements, substitutions, overrides)
-    subprocess.check_call([
-        'codesign', '--force', '--sign', key, '--entitlements',
-        entitlements_path, '--timestamp=none', os.path.join(
-            os.environ['TARGET_BUILD_DIR'],
-            os.environ['FULL_PRODUCT_NAME'])])
+
+    args = ['codesign', '--force', '--sign', key]
+    if preserve == 'True':
+      args.extend(['--deep', '--preserve-metadata=identifier,entitlements'])
+    else:
+      args.extend(['--entitlements', entitlements_path])
+    args.extend(['--timestamp=none', path])
+    subprocess.check_call(args)
 
   def _InstallProvisioningProfile(self, profile, bundle_identifier):
     """Installs embedded.mobileprovision into the bundle.
