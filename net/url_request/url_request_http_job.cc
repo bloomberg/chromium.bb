@@ -1620,7 +1620,9 @@ void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {
               "Net.HttpJob.TotalTimeCached.Secure.NotQuic", total_time);
         }
       }
-    } else  {
+      if (response_info_->unused_since_prefetch)
+        UMA_HISTOGRAM_COUNTS("Net.Prefetch.HitBytes", prefilter_bytes_read());
+    } else {
       UMA_HISTOGRAM_TIMES("Net.HttpJob.TotalTimeNotCached", total_time);
       if (is_https_google) {
         if (used_quic) {

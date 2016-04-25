@@ -27063,6 +27063,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="Net.Prefetch.HitBytes" units="bytes">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Bytes read for requests that were served from a cache entry filled by a
+    prefetch request. An entry is considered filled by a prefetch if its
+    unused_since_prefetch bit is true.
+  </summary>
+</histogram>
+
 <histogram name="Net.Prefetch.Pattern" enum="PrefetchStatus">
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -27091,6 +27100,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>jkarlin@chromium.org</owner>
   <summary>
     Time spent on prefetch requests before the request was canceled.
+  </summary>
+</histogram>
+
+<histogram name="Net.Prefetch.TimeSpentOnPrefetchHit" units="ms">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Time spent on requests that were served from a cache entry filled by a
+    prefetch request. An entry is considered filled by a prefetch if its
+    unused_since_prefetch bit is true.
   </summary>
 </histogram>
 

@@ -744,6 +744,9 @@ void ResourceLoader::RecordHistograms() {
     }
 
     UMA_HISTOGRAM_ENUMERATION("Net.Prefetch.Pattern", status, STATUS_MAX);
+  } else if (request_->response_info().unused_since_prefetch) {
+    TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
+    UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentOnPrefetchHit", total_time);
   }
 }
 
