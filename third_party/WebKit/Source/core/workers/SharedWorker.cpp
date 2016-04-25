@@ -32,7 +32,6 @@
 #include "core/workers/SharedWorker.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessageChannel.h"
 #include "core/dom/MessagePort.h"

@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"

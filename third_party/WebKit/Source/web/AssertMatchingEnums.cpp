@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/IconURL.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"

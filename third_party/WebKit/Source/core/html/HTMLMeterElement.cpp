@@ -24,7 +24,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDivElement.h"

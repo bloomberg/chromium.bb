@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BodyStreamBuffer.h"

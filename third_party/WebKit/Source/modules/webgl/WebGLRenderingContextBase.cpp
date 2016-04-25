@@ -30,7 +30,6 @@
 #include "bindings/modules/v8/WebGLAny.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/ImageBitmap.h"

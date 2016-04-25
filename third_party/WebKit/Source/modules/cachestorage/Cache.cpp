@@ -12,7 +12,6 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/BodyStreamBuffer.h"

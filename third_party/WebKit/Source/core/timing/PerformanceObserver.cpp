@@ -5,7 +5,6 @@
 #include "core/timing/PerformanceObserver.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceEntry.h"

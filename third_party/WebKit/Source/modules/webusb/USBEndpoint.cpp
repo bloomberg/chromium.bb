@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
 #include "device/usb/public/interfaces/device.mojom-wtf.h"
 #include "modules/webusb/USBAlternateInterface.h"
 

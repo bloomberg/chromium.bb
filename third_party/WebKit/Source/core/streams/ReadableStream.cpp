@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/streams/ReadableStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 
