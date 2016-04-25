@@ -27633,6 +27633,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.QuicEphemeralPortsSuggested">
+  <obsolete>
+    Deprecated as of 04/2016.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>The number of ports suggested per server.</summary>
 </histogram>

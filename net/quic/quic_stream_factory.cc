@@ -1538,8 +1538,6 @@ int QuicStreamFactory::CreateSession(
     return rv;
   }
 
-  UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
-                       port_suggester->call_count());
   if (enable_port_selection) {
     DCHECK_LE(1u, port_suggester->call_count());
   } else {
