@@ -4,4 +4,5 @@ The output should be the following pieces of text on lines by themselves: "repla
 
 replacement content
 B
+D
 

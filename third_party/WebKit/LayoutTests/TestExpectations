@@ -11,13 +11,6 @@ crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [
 crbug.com/345655 fast/dom/StyleSheet/detached-stylesheet-without-wrapper.html [ Failure ]
 crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
 
-# With Oilpan, parent pointers in the DOM tree do not
-# mysteriously disappear. This is the intended behavior.
-crbug.com/356658 fast/dom/gc-3.html [ Failure ]
-crbug.com/356658 fast/dom/gc-5.html [ Failure ]
-crbug.com/356658 fast/dom/gc-12.html [ Failure ]
-crbug.com/356658 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Failure Timeout ]
-
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure Pass ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
