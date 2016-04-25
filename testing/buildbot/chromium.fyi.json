@@ -1537,6 +1537,13 @@
       }
     ]
   },
+  "ClangToTAndroidASan tester": {
+    "junit_tests": [
+      {
+        "test": "base_junit_tests"
+      }
+    ]
+  },
   "ClangToTLinux tester": {
     "gtest_tests": [
       {
