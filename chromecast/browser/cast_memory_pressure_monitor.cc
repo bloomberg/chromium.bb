@@ -4,22 +4,21 @@
 
 #include "chromecast/browser/cast_memory_pressure_monitor.h"
 
-#include <sys/sysinfo.h>
-
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/process/process_metrics.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 
 namespace chromecast {
 namespace {
 
-// This memory threshold is set for Chromecast. See the UMA histogram
-// Platform.MeminfoMemFree when tuning.
-// TODO(halliwell): Allow these to be customised, also take buffers and
-// cache memory into account.
-const int kCriticalMinFreeMemMB = 24;
-const int kPollingIntervalMS = 5000;
+// Memory thresholds (as fraction of total memory) for memory pressure levels.
+// See more detailed description of pressure heuristic in PollPressureLevel.
+// TODO(halliwell): tune thresholds based on data.
+constexpr float kCriticalMemoryThreshold = 0.2f;
+constexpr float kModerateMemoryThreshold = 0.3f;
+constexpr int kPollingIntervalMS = 5000;
 
 }  // namespace
 
@@ -39,17 +38,27 @@ CastMemoryPressureMonitor::GetCurrentPressureLevel() const {
 void CastMemoryPressureMonitor::PollPressureLevel() {
   MemoryPressureLevel level =
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-  struct sysinfo sys;
 
-  if (sysinfo(&sys) == -1) {
-    LOG(ERROR) << "platform_poll_freemem(): sysinfo failed";
+  base::SystemMemoryInfoKB info;
+  if (!base::GetSystemMemoryInfo(&info)) {
+    LOG(ERROR) << "GetSystemMemoryInfo failed";
   } else {
-    int free_mem_mb =
-        static_cast<int64_t>(sys.freeram) * sys.mem_unit / (1024 * 1024);
+    // 'buffers' and 'cached' memory is included in free memory calculation,
+    // because the kernel can typically free some of it when necessary;
+    // using just 'free' memory would lead to us being in memory pressure state
+    // nearly all of the time.
+    // However, some cached memory cannot be reclaimed, and even when it can,
+    // it can cause performance problems.  To counter this, the memory pressure
+    // thresholds should be high enough that we take action well before running
+    // out of all available memory.
+    // TODO(halliwell): provide 'system reserved' amount for OEMs to configure.
+    const float max_free = info.free + info.buffers + info.cached;
+    const float total = info.total;
 
-    if (free_mem_mb <= kCriticalMinFreeMemMB) {
+    if ((max_free / total) < kCriticalMemoryThreshold)
       level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-    }
+    else if ((max_free / total) < kModerateMemoryThreshold)
+      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
   }
 
   UpdateMemoryPressureLevel(level);
