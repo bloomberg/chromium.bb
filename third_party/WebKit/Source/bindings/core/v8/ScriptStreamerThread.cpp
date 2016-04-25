@@ -59,7 +59,7 @@ void ScriptStreamerThread::postTask(PassOwnPtr<CrossThreadClosure> task)
     MutexLocker locker(m_mutex);
     ASSERT(!m_runningTask);
     m_runningTask = true;
-    platformThread().getWebTaskRunner()->postTask(BLINK_FROM_HERE, task);
+    platformThread().getWebTaskRunner()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 void ScriptStreamerThread::taskDone()

@@ -56,7 +56,7 @@ void Microtask::enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task> callback)
 
 void Microtask::enqueueMicrotask(PassOwnPtr<SameThreadClosure> callback)
 {
-    enqueueMicrotask(adoptPtr(new SameThreadTask(callback)));
+    enqueueMicrotask(adoptPtr(new SameThreadTask(std::move(callback))));
 }
 
 } // namespace blink

@@ -541,7 +541,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             return;
         }
 
-        ScriptStreamerThread::shared()->postTask(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, scriptStreamingTask.release(), AllowCrossThreadAccess(this)));
+        ScriptStreamerThread::shared()->postTask(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, passed(scriptStreamingTask.release()), AllowCrossThreadAccess(this)));
         recordStartedStreamingHistogram(m_scriptType, 1);
     }
     if (m_stream)

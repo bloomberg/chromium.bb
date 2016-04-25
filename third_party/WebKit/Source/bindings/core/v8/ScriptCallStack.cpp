@@ -75,7 +75,7 @@ PassRefPtr<ScriptCallStack> ScriptCallStack::captureForConsole()
 }
 
 ScriptCallStack::ScriptCallStack(PassOwnPtr<V8StackTrace> stackTrace)
-    : m_stackTrace(stackTrace)
+    : m_stackTrace(std::move(stackTrace))
 {
 }
 

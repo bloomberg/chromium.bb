@@ -217,10 +217,10 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
 
     // Then look it up in the reported errors.
     for (size_t i = 0; i < m_reportedAsErrors.size(); ++i) {
-        auto& message = m_reportedAsErrors.at(i);
+        OwnPtr<Message>& message = m_reportedAsErrors.at(i);
         if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
             message->makePromiseStrong();
-            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, this, message.release()));
+            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, this, passed(message.release())));
             m_reportedAsErrors.remove(i);
             return;
         }
@@ -249,7 +249,7 @@ void RejectedPromises::processQueue()
 
     OwnPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
-    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), queue.release()));
+    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), passed(queue.release())));
 }
 
 void RejectedPromises::processQueueNow(PassOwnPtr<MessageQueue> queue)
