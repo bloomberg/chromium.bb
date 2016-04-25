@@ -43,6 +43,13 @@
 
 class SkRefCnt;
 
+namespace WTF {
+
+template <typename T>
+class PassedWrapper;
+
+}
+
 namespace blink {
 
 class IntRect;
@@ -160,6 +167,13 @@ struct CrossThreadCopier<WeakMember<T>*> {
     }
 };
 
+template <typename T>
+struct CrossThreadCopier<WTF::PassedWrapper<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    using Type = WTF::PassedWrapper<typename CrossThreadCopier<T>::Type>;
+    static Type copy(WTF::PassedWrapper<T>&& value) { return passed(CrossThreadCopier<T>::copy(value.moveOut())); }
+};
+
 template<typename T>
 struct CrossThreadCopier<CrossThreadWeakPersistentThisPointer<T>> : public CrossThreadCopierPassThrough<CrossThreadWeakPersistentThisPointer<T>> {
     STATIC_ONLY(CrossThreadCopier);
@@ -189,14 +203,14 @@ struct CrossThreadCopier<ResourceError> {
 template <>
 struct CrossThreadCopier<ResourceRequest> {
     STATIC_ONLY(CrossThreadCopier);
-    typedef PassOwnPtr<CrossThreadResourceRequestData> Type;
+    typedef WTF::PassedWrapper<PassOwnPtr<CrossThreadResourceRequestData>> Type;
     PLATFORM_EXPORT static Type copy(const ResourceRequest&);
 };
 
 template <>
 struct CrossThreadCopier<ResourceResponse> {
     STATIC_ONLY(CrossThreadCopier);
-    typedef PassOwnPtr<CrossThreadResourceResponseData> Type;
+    typedef WTF::PassedWrapper<PassOwnPtr<CrossThreadResourceResponseData>> Type;
     PLATFORM_EXPORT static Type copy(const ResourceResponse&);
 };
 

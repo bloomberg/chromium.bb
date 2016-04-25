@@ -55,12 +55,12 @@ CrossThreadCopier<ResourceError>::Type CrossThreadCopier<ResourceError>::copy(co
 
 CrossThreadCopier<ResourceRequest>::Type CrossThreadCopier<ResourceRequest>::copy(const ResourceRequest& request)
 {
-    return request.copyData();
+    return passed(request.copyData());
 }
 
 CrossThreadCopier<ResourceResponse>::Type CrossThreadCopier<ResourceResponse>::copy(const ResourceResponse& response)
 {
-    return response.copyData();
+    return passed(response.copyData());
 }
 
 // Test CrossThreadCopier using static_assert.
