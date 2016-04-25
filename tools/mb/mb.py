@@ -1122,7 +1122,7 @@ class MetaBuildWrapper(object):
     # See crbug.com/582737 for more on this. This can hopefully all
     # go away with GYP.
     if 'llvm_force_head_revision=1' in gyp_defines:
-      env['LLVM_FORCE_HEAD_REVISION'] = 1
+      env['LLVM_FORCE_HEAD_REVISION'] = '1'
       gyp_defines = gyp_defines.replace('llvm_force_head_revision=1', '')
 
     env['GYP_GENERATORS'] = 'ninja'
