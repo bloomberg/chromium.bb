@@ -35,18 +35,6 @@ class _PageCycler(perf_benchmark.PerfBenchmark):
         report_speed_index=options.report_speed_index)
 
 
-# This is an old page set, we intend to remove it after more modern benchmarks
-# work on CrOS.
-@benchmark.Enabled('chromeos')
-class PageCyclerDhtml(_PageCycler):
-  """Benchmarks for various DHTML operations like simple animations."""
-  page_set = page_sets.DhtmlPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'page_cycler.dhtml'
-
-
 class PageCyclerIntlArFaHe(_PageCycler):
   """Page load time for a variety of pages in Arabic, Farsi and Hebrew.
 
