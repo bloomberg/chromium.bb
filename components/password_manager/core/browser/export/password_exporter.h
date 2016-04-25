@@ -32,7 +32,7 @@ class PasswordExporter {
   // the export will be selected based on the file extension in |path|.
   static void Export(
       const base::FilePath& path,
-      std::vector<std::unique_ptr<autofill::PasswordForm>> passwords,
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords,
       scoped_refptr<base::TaskRunner> blocking_task_runner);
 
   // Returns the file extensions corresponding to supported formats.

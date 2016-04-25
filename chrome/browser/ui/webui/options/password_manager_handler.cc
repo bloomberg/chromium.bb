@@ -405,10 +405,9 @@ void PasswordManagerHandler::ExportPasswordFileSelected(
   UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                        password_list.size());
   password_manager::PasswordExporter::Export(
-      path, std::move(password_list),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE)
-          .get());
+      path, password_list, content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::FILE)
+                               .get());
 }
 
 }  // namespace options

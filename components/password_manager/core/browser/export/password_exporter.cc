@@ -28,7 +28,7 @@ void WriteToFile(const base::FilePath& path,
 // static
 void PasswordExporter::Export(
     const base::FilePath& path,
-    std::vector<std::unique_ptr<autofill::PasswordForm>> passwords,
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords,
     scoped_refptr<base::TaskRunner> blocking_task_runner) {
   blocking_task_runner->PostTask(
       FROM_HERE,

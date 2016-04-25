@@ -40,7 +40,7 @@ class PasswordExporterTest : public testing::Test {
   void StartExportAndWaitUntilCompleteThenReadOutput(
       const base::FilePath::StringType& provided_extension,
       const base::FilePath::StringType& expected_extension,
-      std::vector<std::unique_ptr<autofill::PasswordForm>> passwords,
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& passwords,
       std::string* output) {
     base::FilePath temporary_dir;
     ASSERT_TRUE(base::CreateNewTempDirectory(base::FilePath::StringType(),
@@ -48,7 +48,7 @@ class PasswordExporterTest : public testing::Test {
     base::FilePath output_file =
         temporary_dir.AppendASCII("passwords").AddExtension(provided_extension);
 
-    PasswordExporter::Export(output_file, std::move(passwords),
+    PasswordExporter::Export(output_file, passwords,
                              message_loop_.task_runner());
 
     base::RunLoop run_loop;
