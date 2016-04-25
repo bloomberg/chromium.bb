@@ -942,6 +942,8 @@ test("ui_base_unittests") {
       "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
       "//third_party/mesa:osmesa",
     ]
+  } else if (is_android) {
+    data += [ "test/data/data_pack_unittest/truncated-header.pak" ]
   }
   if (is_linux || is_win) {
     data += [

@@ -17,6 +17,7 @@ from pylib.base import test_instance
 from pylib.constants import host_paths
 from pylib.instrumentation import test_result
 from pylib.instrumentation import instrumentation_parser
+from pylib.utils import isolator
 from pylib.utils import proguard
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
@@ -292,7 +293,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def _initializeDataDependencyAttributes(self, args, isolate_delegate):
     self._data_deps = []
-    if args.isolate_file_path:
+    if (args.isolate_file_path and
+        not isolator.IsIsolateEmpty(args.isolate_file_path)):
       if os.path.isabs(args.isolate_file_path):
         self._isolate_abs_path = args.isolate_file_path
       else:
