@@ -114,11 +114,12 @@ void DrawWindowTree(cc::RenderPass* pass,
     const gfx::Rect bounds_at_origin(window->bounds().size());
     // TODO(fsamuel): These clipping and visible rects are incorrect. They need
     // to be populated from CompositorFrame structs.
-    sqs->SetAll(
-        quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
-        bounds_at_origin /* visible_layer_bounds */,
-        bounds_at_origin /* clip_rect */, false /* is_clipped */,
-        window->opacity(), SkXfermode::kSrc_Mode, 0 /* sorting-context_id */);
+    sqs->SetAll(quad_to_target_transform,
+                bounds_at_origin.size() /* layer_bounds */,
+                bounds_at_origin /* visible_layer_bounds */,
+                bounds_at_origin /* clip_rect */, false /* is_clipped */,
+                window->opacity(), SkXfermode::kSrcOver_Mode,
+                0 /* sorting-context_id */);
     auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
@@ -134,11 +135,12 @@ void DrawWindowTree(cc::RenderPass* pass,
     cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
     const gfx::Rect bounds_at_origin(
         underlay_surface->last_submitted_frame_size());
-    sqs->SetAll(
-        quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
-        bounds_at_origin /* visible_layer_bounds */,
-        bounds_at_origin /* clip_rect */, false /* is_clipped */,
-        window->opacity(), SkXfermode::kSrc_Mode, 0 /* sorting-context_id */);
+    sqs->SetAll(quad_to_target_transform,
+                bounds_at_origin.size() /* layer_bounds */,
+                bounds_at_origin /* visible_layer_bounds */,
+                bounds_at_origin /* clip_rect */, false /* is_clipped */,
+                window->opacity(), SkXfermode::kSrcOver_Mode,
+                0 /* sorting-context_id */);
 
     auto quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     quad->SetAll(sqs, bounds_at_origin /* rect */,
