@@ -31,6 +31,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -222,6 +223,15 @@ class CONTENT_EXPORT MediaStreamManager
       const base::Callback<void(const std::string&)>& callback);
   void UnregisterNativeLogCallback(int renderer_host_id);
 
+  // Register and unregister subscribers for device-change notifications.
+  // It is an error to try to subscribe a |subscriber| that is already
+  // subscribed or to cancel the subscription of a |subscriber| that is not
+  // subscribed. Also, subscribers must make sure to invoke
+  // CancelDeviceChangeNotifications() before destruction. Otherwise, dangling
+  // pointers and use-after-destruction problems will occur.
+  void SubscribeToDeviceChangeNotifications(MediaStreamRequester* subscriber);
+  void CancelDeviceChangeNotifications(MediaStreamRequester* subscriber);
+
   // Generates a hash of a device's unique ID usable by one
   // particular security origin.
   static std::string GetHMACForMediaDeviceID(
@@ -401,6 +411,8 @@ class CONTENT_EXPORT MediaStreamManager
       const base::Callback<void(const std::string&)>& callback);
   void DoNativeLogCallbackUnregistration(int renderer_host_id);
 
+  void NotifyDeviceChangeSubscribers(MediaStreamType type);
+
   // Task runner shared by VideoCaptureManager and AudioInputDeviceManager and
   // used for enumerating audio output devices.
   // Note: Enumeration tasks may take seconds to complete so must never be run
@@ -435,6 +447,9 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Maps render process hosts to log callbacks. Used on the IO thread.
   std::map<int, base::Callback<void(const std::string&)>> log_callbacks_;
+
+  // Objects subscribed to changes in the set of media devices.
+  std::vector<MediaStreamRequester*> device_change_subscribers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };

@@ -90,6 +90,14 @@ void MediaStreamDispatcherHost::DeviceOpened(
       render_frame_id, page_request_id, label, video_device));
 }
 
+void MediaStreamDispatcherHost::DevicesChanged(MediaStreamType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << "MediaStreamDispatcherHost::DevicesChanged("
+           << "{type = " << type << "})";
+  // TODO(guidou): check permissions and forward notifications to renderer.
+  //               crbug.com/388648
+}
+
 bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MediaStreamDispatcherHost, message)

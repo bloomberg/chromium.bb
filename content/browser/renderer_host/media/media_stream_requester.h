@@ -44,6 +44,9 @@ class CONTENT_EXPORT MediaStreamRequester {
                             int page_request_id,
                             const std::string& label,
                             const StreamDeviceInfo& device_info) = 0;
+  // Called when the set of media devices has changed, provided the
+  // MediaStreamRequester is subscribed and authorized to receive such messages.
+  virtual void DevicesChanged(MediaStreamType type) = 0;
 
  protected:
   virtual ~MediaStreamRequester() {

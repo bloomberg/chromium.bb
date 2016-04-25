@@ -121,6 +121,7 @@ class MockMediaStreamRequester : public MediaStreamRequester {
                                   int page_request_id,
                                   const std::string& label,
                                   const StreamDeviceInfo& device_info));
+  MOCK_METHOD1(DevicesChanged, void(MediaStreamType type));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamRequester);

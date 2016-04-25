@@ -54,6 +54,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                     int page_request_id,
                     const std::string& label,
                     const StreamDeviceInfo& video_device) override;
+  void DevicesChanged(MediaStreamType type) override;
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

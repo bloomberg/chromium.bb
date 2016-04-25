@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <algorithm>
 #include <cctype>
 #include <list>
 #include <utility>
@@ -419,6 +420,7 @@ MediaStreamManager::~MediaStreamManager() {
   DVLOG(1) << "~MediaStreamManager";
   DCHECK(requests_.empty());
   DCHECK(!device_task_runner_.get());
+  DCHECK(device_change_subscribers_.empty());
 
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // The PowerMonitor instance owned by BrowserMainLoops always outlives the
@@ -1708,6 +1710,7 @@ void MediaStreamManager::DevicesEnumerated(
 
   // Only cache the device list when the device list has been changed.
   bool need_update_clients = false;
+  bool need_update_device_change_subscribers = false;
   EnumerationCache* cache = stream_type == MEDIA_DEVICE_AUDIO_CAPTURE
                                 ? &audio_enumeration_cache_
                                 : &video_enumeration_cache_;
@@ -1715,8 +1718,13 @@ void MediaStreamManager::DevicesEnumerated(
       !std::equal(devices.begin(), devices.end(), cache->devices.begin(),
                   StreamDeviceInfo::IsEqual)) {
     StopRemovedDevices(cache->devices, devices);
-    cache->devices = devices;
     need_update_clients = true;
+    // Device-change subscribers should not be notified the first time the cache
+    // is loaded , as this is not a change in the set of devices. The same
+    // applies to enumerations listing no devices when the cache is empty.
+    need_update_device_change_subscribers =
+        cache->valid && (devices.size() != 0 || cache->devices.size() != 0);
+    cache->devices = devices;
 
     // The device might not be able to be enumerated when it is not warmed up,
     // for example, when the machine just wakes up from sleep. We set the cache
@@ -1727,6 +1735,9 @@ void MediaStreamManager::DevicesEnumerated(
 
   if (need_update_clients && monitoring_started_)
     NotifyDevicesChanged(stream_type, devices);
+
+  if (need_update_device_change_subscribers)
+    NotifyDeviceChangeSubscribers(stream_type);
 
   // Publish the result for all requests waiting for device list(s).
   // Find the requests waiting for this device list, store their labels and
@@ -2081,6 +2092,33 @@ void MediaStreamManager::DoNativeLogCallbackUnregistration(
     int renderer_host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   log_callbacks_.erase(renderer_host_id);
+}
+
+void MediaStreamManager::SubscribeToDeviceChangeNotifications(
+    MediaStreamRequester* subscriber) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(subscriber);
+  DCHECK(std::find_if(device_change_subscribers_.begin(),
+                      device_change_subscribers_.end(),
+                      [subscriber](MediaStreamRequester* item) {
+                        return subscriber == item;
+                      }) == device_change_subscribers_.end());
+  device_change_subscribers_.push_back(subscriber);
+}
+
+void MediaStreamManager::CancelDeviceChangeNotifications(
+    MediaStreamRequester* subscriber) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto it = std::find(device_change_subscribers_.begin(),
+                      device_change_subscribers_.end(), subscriber);
+  DCHECK(it != device_change_subscribers_.end());
+  device_change_subscribers_.erase(it);
+}
+
+void MediaStreamManager::NotifyDeviceChangeSubscribers(MediaStreamType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (auto* subscriber : device_change_subscribers_)
+    subscriber->DevicesChanged(type);
 }
 
 // static
