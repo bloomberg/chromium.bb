@@ -47,14 +47,10 @@ class AwContentRendererClient : public content::ContentRendererClient {
                         blink::WebNavigationPolicy default_policy,
                         bool is_redirect) override;
   bool ShouldUseMediaPlayerForURL(const GURL& url) override;
-  bool ShouldOverridePageVisibilityState(
-      const content::RenderFrame* render_frame,
-      blink::WebPageVisibilityState* override_state) override;
 
  private:
   std::unique_ptr<AwRenderThreadObserver> aw_render_thread_observer_;
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
-  const bool disable_page_visibility_;
 };
 
 }  // namespace android_webview

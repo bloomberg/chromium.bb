@@ -277,14 +277,6 @@ void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     // The only kind of a child process WebView can have is renderer.
     DCHECK_EQ(switches::kRendererProcess,
               command_line->GetSwitchValueASCII(switches::kProcessType));
-
-    const base::CommandLine& browser_command_line =
-        *base::CommandLine::ForCurrentProcess();
-    static const char* const kCommonSwitchNames[] = {
-      switches::kDisablePageVisibility,
-    };
-    command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
-                                   arraysize(kCommonSwitchNames));
   }
 }
 

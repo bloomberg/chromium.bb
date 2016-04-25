@@ -89,12 +89,10 @@ BrowserViewRenderer* BrowserViewRenderer::FromWebContents(
 
 BrowserViewRenderer::BrowserViewRenderer(
     BrowserViewRendererClient* client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    bool disable_page_visibility)
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
       ui_task_runner_(ui_task_runner),
       compositor_frame_consumer_(nullptr),
-      disable_page_visibility_(disable_page_visibility),
       compositor_(NULL),
       is_paused_(false),
       view_visible_(false),
@@ -454,9 +452,6 @@ bool BrowserViewRenderer::IsVisible() const {
 }
 
 bool BrowserViewRenderer::IsClientVisible() const {
-  if (disable_page_visibility_)
-    return !is_paused_;
-
   return !is_paused_ && (!attached_to_window_ || window_visible_);
 }
 

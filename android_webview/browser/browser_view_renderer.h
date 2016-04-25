@@ -46,8 +46,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   BrowserViewRenderer(
       BrowserViewRendererClient* client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      bool disable_page_visibility);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~BrowserViewRenderer() override;
 
@@ -154,7 +153,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   CompositorFrameConsumer* compositor_frame_consumer_;
-  bool disable_page_visibility_;
 
   // The current compositor that's owned by the current RVH.
   content::SynchronousCompositor* compositor_;

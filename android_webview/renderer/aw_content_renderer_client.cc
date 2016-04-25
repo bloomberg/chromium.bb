@@ -52,13 +52,9 @@ using content::RenderThread;
 
 namespace android_webview {
 
-AwContentRendererClient::AwContentRendererClient()
-    : disable_page_visibility_(
-          base::CommandLine::ForCurrentProcess()
-              ->HasSwitch(switches::kDisablePageVisibility)) {}
+AwContentRendererClient::AwContentRendererClient() {}
 
-AwContentRendererClient::~AwContentRendererClient() {
-}
+AwContentRendererClient::~AwContentRendererClient() {}
 
 void AwContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -247,17 +243,6 @@ bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
       return true;
     }
   }
-  return false;
-}
-
-bool AwContentRendererClient::ShouldOverridePageVisibilityState(
-    const content::RenderFrame* render_frame,
-    blink::WebPageVisibilityState* override_state) {
-  if (disable_page_visibility_) {
-    *override_state = blink::WebPageVisibilityStateVisible;
-    return true;
-  }
-
   return false;
 }
 

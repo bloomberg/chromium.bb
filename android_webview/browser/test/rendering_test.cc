@@ -23,11 +23,8 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
  public:
   TestBrowserViewRenderer(
       RenderingTest* rendering_test,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      bool disable_page_visibility)
-      : BrowserViewRenderer(rendering_test,
-                            ui_task_runner,
-                            disable_page_visibility),
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
+      : BrowserViewRenderer(rendering_test, ui_task_runner),
         rendering_test_(rendering_test) {}
 
   void OnParentDrawConstraintsUpdated() override {
@@ -55,7 +52,7 @@ void RenderingTest::SetUpTestHarness() {
   render_thread_manager_.reset(
       new RenderThreadManager(this, base::ThreadTaskRunnerHandle::Get()));
   browser_view_renderer_.reset(new TestBrowserViewRenderer(
-      this, base::ThreadTaskRunnerHandle::Get(), false));
+      this, base::ThreadTaskRunnerHandle::Get()));
   browser_view_renderer_->SetCompositorFrameConsumer(
       render_thread_manager_.get());
   InitializeCompositor();
