@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "net/cookies/cookie_store.h"
@@ -97,13 +96,9 @@ void URLRequestContext::AssertNoURLRequests() const {
     const URLRequest* request = *url_requests_->begin();
     base::strlcpy(url_buf, request->url().spec().c_str(), arraysize(url_buf));
     int load_flags = request->load_flags();
-    base::debug::StackTrace stack_trace(NULL, 0);
-    if (request->stack_trace())
-      stack_trace = *request->stack_trace();
     base::debug::Alias(url_buf);
     base::debug::Alias(&num_requests);
     base::debug::Alias(&load_flags);
-    base::debug::Alias(&stack_trace);
     CHECK(false) << "Leaked " << num_requests << " URLRequest(s). First URL: "
                  << request->url().spec().c_str() << ".";
   }

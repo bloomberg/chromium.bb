@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -346,9 +345,6 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   int64_t current_response_bytes_;
   // Total expected bytes to receive (-1 if it cannot be determined).
   int64_t total_response_bytes_;
-
-  // TODO(willchan): Get rid of this after debugging crbug.com/90971.
-  base::debug::StackTrace stack_trace_;
 
   static base::LazyInstance<Registry> g_registry;
 

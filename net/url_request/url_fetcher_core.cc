@@ -556,7 +556,6 @@ void URLFetcherCore::StartURLRequest() {
   request_context_getter_->AddObserver(this);
   request_ = request_context_getter_->GetURLRequestContext()->CreateRequest(
       original_url_, DEFAULT_PRIORITY, this);
-  request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
 
   // TODO(mmenke): This should really be with the other code to set the upload
