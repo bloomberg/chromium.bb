@@ -254,7 +254,10 @@ cr.define('user_manager.create_profile_tests', function() {
       test('Create profile success', function() {
         return new Promise(function(resolve, reject) {
           // Create was successful. We expect to leave the page.
-          createProfileElement.addEventListener('change-page', resolve);
+          createProfileElement.addEventListener('change-page', function(event) {
+            if (event.detail.page == 'user-pods-page')
+              resolve();
+          });
 
           // Simulate clicking 'Create'.
           MockInteractions.tap(createProfileElement.$.save);
@@ -264,7 +267,45 @@ cr.define('user_manager.create_profile_tests', function() {
             assertTrue(createProfileElement.createInProgress_);
             assertTrue(createProfileElement.$$('paper-spinner').active);
 
-            cr.webUIListenerCallback('create-profile-success');
+            cr.webUIListenerCallback('create-profile-success',
+                                     {name: 'profile name',
+                                      filePath: 'path/to/profile'});
+
+            // The paper-spinner is not active when create is not in progress.
+            assertFalse(createProfileElement.createInProgress_);
+            assertFalse(createProfileElement.$$('paper-spinner').active);
+          });
+        });
+      });
+
+      test('Create supervised profile success', function() {
+        return new Promise(function(resolve, reject) {
+          /**
+           * Profile Info of the successfully created supervised user.
+           * @type {!ProfileInfo}
+           */
+          var profileInfo = {name: 'profile name',
+                             filePath: 'path/to/profile',
+                             showConfirmation: true};
+
+          // Create was successful. We expect to leave the page.
+          createProfileElement.addEventListener('change-page', function(event) {
+            if (event.detail.page == 'supervised-create-confirm-page' &&
+                event.detail.data == profileInfo) {
+              resolve();
+            }
+          });
+
+          // Simulate clicking 'Create'.
+          MockInteractions.tap(createProfileElement.$.save);
+
+          browserProxy.whenCalled('createProfile').then(function(args) {
+            // The paper-spinner is active when create is in progress.
+            assertTrue(createProfileElement.createInProgress_);
+            assertTrue(createProfileElement.$$('paper-spinner').active);
+
+            cr.webUIListenerCallback('create-profile-success', profileInfo);
+
             // The paper-spinner is not active when create is not in progress.
             assertFalse(createProfileElement.createInProgress_);
             assertFalse(createProfileElement.$$('paper-spinner').active);
@@ -295,8 +336,7 @@ cr.define('user_manager.create_profile_tests', function() {
         MockInteractions.tap(createProfileElement.$.save);
 
         return browserProxy.whenCalled('createProfile').then(function(args) {
-          cr.webUIListenerCallback('create-profile-warning',
-                                   'Warning Message');
+          cr.webUIListenerCallback('create-profile-warning', 'Warning Message');
 
           // Create is no longer in progress.
           assertFalse(createProfileElement.createInProgress_);

@@ -353,7 +353,12 @@ Polymer({
    */
   handleSuccess_: function(profileInfo) {
     this.createInProgress_ = false;
-    this.fire('change-page', {page: 'user-pods-page'});
+    if (profileInfo.showConfirmation) {
+      this.fire('change-page', {page: 'supervised-create-confirm-page',
+                                data: profileInfo});
+    } else {
+      this.fire('change-page', {page: 'user-pods-page'});
+    }
   },
 
   /**

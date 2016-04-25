@@ -106,6 +106,37 @@ void SigninCreateProfileHandler::GetLocalizedValues(
       "custodianAccountNotSelectedError",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_NO_CUSTODIAN_ACCOUNT_ERROR));
+  localized_strings->SetString(
+      "supervisedUserCreatedTitle",
+       l10n_util::GetStringUTF16(IDS_LEGACY_SUPERVISED_USER_CREATED_TITLE));
+  // The first substitution parameter remains to be filled by the page JS.
+  localized_strings->SetString(
+      "supervisedUserCreatedTextPart1",
+      l10n_util::GetStringFUTF16(
+            IDS_SUPERVISED_USER_CREATED_TEXT_PART1,
+            base::ASCIIToUTF16("$1"),
+            base::ASCIIToUTF16(chrome::kLegacySupervisedUserManagementURL),
+            base::ASCIIToUTF16(
+                chrome::kLegacySupervisedUserManagementDisplayURL)));
+  // The first two substitution parameters remain to be filled by the page JS.
+  localized_strings->SetString(
+      "supervisedUserCreatedTextPart2",
+      l10n_util::GetStringFUTF16(
+            IDS_SUPERVISED_USER_CREATED_TEXT_PART2,
+            base::ASCIIToUTF16("$1"),
+            base::ASCIIToUTF16("$2")));
+  localized_strings->SetString(
+      "exitAndChildlockLabel",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));
+  localized_strings->SetString(
+      "supervisedUserCreatedDone",
+      l10n_util::GetStringUTF16(
+          IDS_LEGACY_SUPERVISED_USER_CREATED_DONE_BUTTON));
+  localized_strings->SetString(
+      "supervisedUserCreatedSwitch",
+      l10n_util::GetStringUTF16(
+          IDS_LEGACY_SUPERVISED_USER_CREATED_SWITCH_BUTTON));
 }
 
 void SigninCreateProfileHandler::RegisterMessages() {
@@ -114,6 +145,11 @@ void SigninCreateProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "cancelCreateProfile",
       base::Bind(&SigninCreateProfileHandler::HandleCancelProfileCreation,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "switchToProfile",
+      base::Bind(&SigninCreateProfileHandler::SwitchToProfile,
                  base::Unretained(this)));
 #endif
   web_ui()->RegisterMessageCallback(
@@ -294,7 +330,7 @@ void SigninCreateProfileHandler::HandleProfileCreationSuccess(
   switch (profile_creation_type_) {
     case NON_SUPERVISED_PROFILE_CREATION: {
       DCHECK(supervised_user_id.empty());
-      CreateShortcutAndShowSuccess(create_shortcut, profile);
+      CreateShortcutAndShowSuccess(create_shortcut, nullptr, profile);
       break;
     }
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -312,6 +348,7 @@ void SigninCreateProfileHandler::HandleProfileCreationSuccess(
 
 void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
     bool create_shortcut,
+    Profile* custodian_profile,
     Profile* profile) {
   if (create_shortcut) {
     ProfileShortcutManager* shortcut_manager =
@@ -327,28 +364,37 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   base::DictionaryValue dict;
   dict.SetString("name", profile->GetPrefs()->GetString(prefs::kProfileName));
   dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
+
+  bool open_new_window = true;
+
 #if defined(ENABLE_SUPERVISED_USERS)
+  // If the new profile is a supervised user, instead of opening a new window
+  // right away, a confirmation page will be shown by JS from the creation
+  // dialog. If we are importing an existing supervised profile or creating a
+  // new non-supervised user profile we don't show any confirmation, so open
+  // the new window now.
+  open_new_window = profile_creation_type_ != SUPERVISED_PROFILE_CREATION;
+  dict.SetBoolean("showConfirmation", !open_new_window);
+
   bool is_supervised = profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
                        profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
   dict.SetBoolean("isSupervised", is_supervised);
+
+  if (is_supervised) {
+    DCHECK(custodian_profile);
+    if (custodian_profile) {
+      std::string custodian_username = custodian_profile->GetProfileUserName();
+      dict.SetString("custodianUsername", custodian_username);
+    }
+  }
 #endif
+
   web_ui()->CallJavascriptFunction(
       "cr.webUIListenerCallback",
       GetWebUIListenerName(PROFILE_CREATION_SUCCESS),
       dict);
 
-  // If the new profile is a supervised user, instead of opening a new window
-  // right away, a confirmation overlay will be shown by JS from the creation
-  // dialog. If we are importing an existing supervised profile or creating a
-  // new non-supervised user profile we don't show any confirmation, so open
-  // the new window now.
-  bool should_open_new_window = true;
-#if defined(ENABLE_SUPERVISED_USERS)
-  if (profile_creation_type_ == SUPERVISED_PROFILE_CREATION)
-    should_open_new_window = false;
-#endif
-
-  if (should_open_new_window) {
+  if (open_new_window) {
     // Opening the new window must be the last action, after all callbacks
     // have been run, to give them a chance to initialize the profile.
     OpenNewWindowForProfile(profile, Profile::CREATE_STATUS_INITIALIZED);
@@ -416,27 +462,12 @@ base::string16 SigninCreateProfileHandler::GetProfileCreateErrorMessageSignin()
 
 base::StringValue SigninCreateProfileHandler::GetWebUIListenerName(
     ProfileCreationStatus status) const {
-  switch (profile_creation_type_) {
-#if defined(ENABLE_SUPERVISED_USERS)
-    case SUPERVISED_PROFILE_IMPORT:
-      switch (status) {
-        case PROFILE_CREATION_SUCCESS:
-          return base::StringValue("create-profile-success");
-        case PROFILE_CREATION_ERROR:
-          return base::StringValue("create-profile-error");
-      }
-      break;
-#endif
-    default:
-      switch (status) {
-        case PROFILE_CREATION_SUCCESS:
-          return base::StringValue("create-profile-success");
-        case PROFILE_CREATION_ERROR:
-          return base::StringValue("create-profile-error");
-      }
-      break;
+  switch (status) {
+    case PROFILE_CREATION_SUCCESS:
+      return base::StringValue("create-profile-success");
+    case PROFILE_CREATION_ERROR:
+      return base::StringValue("create-profile-error");
   }
-
   NOTREACHED();
   return base::StringValue(std::string());
 }
@@ -474,7 +505,6 @@ void SigninCreateProfileHandler::LoadCustodianProfileCallback(
   // This method gets called once before with Profile::CREATE_STATUS_CREATED.
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL: {
-      // TODO(mahmadi): see if a better error message is required here.
       ShowProfileCreationError(nullptr, GetProfileCreationErrorMessageLocal());
       break;
     }
@@ -492,6 +522,8 @@ void SigninCreateProfileHandler::LoadCustodianProfileCallback(
         return;
       }
 
+      // TODO(mahmadi): return proper error message if policy-controlled prefs
+      // prohibit adding supervised users (also disable the controls in the UI).
       PrefService* prefs = custodian_profile->GetPrefs();
       if (!prefs->GetBoolean(prefs::kSupervisedUserCreationAllowed))
         return;
@@ -499,6 +531,8 @@ void SigninCreateProfileHandler::LoadCustodianProfileCallback(
       if (!supervised_user_id.empty()) {
         profile_creation_type_ = SUPERVISED_PROFILE_IMPORT;
 
+        // Load all supervised users managed by this user in order to
+        // check if this supervised user already exists on this device.
         SupervisedUserSyncService* supervised_user_sync_service =
             SupervisedUserSyncServiceFactory::GetForProfile(custodian_profile);
         if (supervised_user_sync_service) {
@@ -506,6 +540,9 @@ void SigninCreateProfileHandler::LoadCustodianProfileCallback(
               &SigninCreateProfileHandler::DoCreateProfileIfPossible,
               weak_ptr_factory_.GetWeakPtr(), name, icon_url, create_shortcut,
               supervised_user_id, custodian_profile));
+        } else {
+          ShowProfileCreationError(nullptr,
+                                   GetProfileCreateErrorMessageRemote());
         }
       } else {
         profile_creation_type_ = SUPERVISED_PROFILE_CREATION;
@@ -574,7 +611,6 @@ void SigninCreateProfileHandler::DoCreateProfileIfPossible(
           GetProfileAttributesStorage().GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     if (supervised_user_id == entry->GetSupervisedUserId()) {
-      // TODO(mahmadi): see whether we need a more specific error message here.
       ShowProfileCreationError(nullptr, GetProfileCreationErrorMessageLocal());
       return;
     }
@@ -635,21 +671,25 @@ void SigninCreateProfileHandler::RegisterSupervisedUser(
   // Register the supervised user using the profile of the custodian.
   supervised_user_registration_utility_ =
       SupervisedUserRegistrationUtility::Create(custodian_profile);
-  supervised_user_service->RegisterAndInitSync(
-      supervised_user_registration_utility_.get(), custodian_profile,
-      supervised_user_id,
-      base::Bind(&SigninCreateProfileHandler::OnSupervisedUserRegistered,
-                 weak_ptr_factory_.GetWeakPtr(), create_shortcut, new_profile));
+  if (supervised_user_service) {
+    supervised_user_service->RegisterAndInitSync(
+        supervised_user_registration_utility_.get(), custodian_profile,
+        supervised_user_id,
+        base::Bind(&SigninCreateProfileHandler::OnSupervisedUserRegistered,
+                   weak_ptr_factory_.GetWeakPtr(), create_shortcut,
+                   custodian_profile, new_profile));
+  }
 }
 
 void SigninCreateProfileHandler::OnSupervisedUserRegistered(
     bool create_shortcut,
+    Profile* custodian_profile,
     Profile* profile,
     const GoogleServiceAuthError& error) {
   GoogleServiceAuthError::State state = error.state();
   RecordSupervisedProfileCreationMetrics(state);
   if (state == GoogleServiceAuthError::NONE) {
-    CreateShortcutAndShowSuccess(create_shortcut, profile);
+    CreateShortcutAndShowSuccess(create_shortcut, custodian_profile, profile);
     return;
   }
 
@@ -689,6 +729,26 @@ void SigninCreateProfileHandler::RecordSupervisedProfileCreationMetrics(
         "Profile.SupervisedProfileTotalImportTime",
         base::TimeTicks::Now() - profile_creation_start_time_);
   }
+}
+
+void SigninCreateProfileHandler::SwitchToProfile(
+      const base::ListValue* args) {
+  DCHECK(args);
+  const base::Value* file_path_value;
+  if (!args->Get(0, &file_path_value))
+    return;
+
+  base::FilePath profile_file_path;
+  if (!base::GetValueAsFilePath(*file_path_value, &profile_file_path))
+    return;
+
+  Profile* profile = g_browser_process->profile_manager()->
+      GetProfileByPath(profile_file_path);
+  DCHECK(profile);
+
+  profiles::FindOrCreateNewWindowForProfile(
+      profile, chrome::startup::IS_PROCESS_STARTUP,
+      chrome::startup::IS_FIRST_RUN, false);
 }
 
 #endif

@@ -117,7 +117,9 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   // Creates desktop shortcut and updates the UI to indicate success
   // when creating a profile.
-  void CreateShortcutAndShowSuccess(bool create_shortcut, Profile* profile);
+  void CreateShortcutAndShowSuccess(bool create_shortcut,
+                                    Profile* custodian_profile,
+                                    Profile* profile);
 
   // Updates the UI to show an error when creating a profile.
   void ShowProfileCreationError(Profile* profile, const base::string16& error);
@@ -194,6 +196,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   // Called back with the result of the supervised user registration.
   void OnSupervisedUserRegistered(bool create_shortcut,
+                                  Profile* custodian_profile,
                                   Profile* profile,
                                   const GoogleServiceAuthError& error);
 
@@ -211,10 +214,13 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
                                  Profile* custodian_profile,
                                  const base::DictionaryValue* dict);
 
-
   // Opens a new window for |profile|.
   virtual void OpenNewWindowForProfile(Profile* profile,
                                        Profile::CreateStatus status);
+
+  // Callback for the "switchToProfile" message. Opens a new window for the
+  // profile. The profile file path is passed as a string argument.
+  void SwitchToProfile(const base::ListValue* args);
 
   std::unique_ptr<SupervisedUserRegistrationUtility>
       supervised_user_registration_utility_;

@@ -99,6 +99,10 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
                           IDR_MD_IMPORT_SUPERVISED_USER_HTML);
   source->AddResourcePath("import_supervised_user.js",
                           IDR_MD_IMPORT_SUPERVISED_USER_JS);
+  source->AddResourcePath("supervised_user_create_confirm.html",
+                          IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_HTML);
+  source->AddResourcePath("supervised_user_create_confirm.js",
+                          IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_JS);
 
   source->SetDefaultResource(IDR_MD_USER_MANAGER_HTML);
 

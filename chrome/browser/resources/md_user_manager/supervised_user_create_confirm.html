@@ -1,0 +1,114 @@
+<link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
+<link rel="import" href="chrome://md-user-manager/shared_styles.html">
+<link rel="import" href="chrome://resources/html/parse_html_subset.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+
+<dom-module id="supervised-user-create-confirm">
+  <template>
+    <style include="shared-styles">
+      :host {
+        align-self: center;
+      }
+
+      #container {
+        color: var(--paper-grey-800);
+        line-height: 20px;
+        width: 624px;
+      }
+
+      #title-area {
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+        font-size: 16px;
+        padding-bottom: 16px;
+      }
+
+      #title-area iron-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+        color: var(--google-grey-500);
+      }
+
+      .content-area {
+        padding-top: 32px;
+      }
+
+      .content {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      #childlock-button-example {
+        align-items: center;
+        display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        margin: 20px 0;
+      }
+
+      #childlock-button-example iron-icon {
+        --iron-icon-height: 16px;
+        --iron-icon-width: 16px;
+        margin-right: 10px;
+      }
+
+      #actions {
+        bottom: 16px;
+        position: absolute;
+        right: 16px;
+      }
+
+      :host-context([dir='rtl']) #actions {
+        left: 16px;
+        right: auto;
+      }
+
+      #actions paper-button {
+        border-radius: 2px;
+        font-weight: 500;
+        line-height: 32px;
+        margin: 0;
+        min-width: 52px;
+        padding: 0 16px;
+      }
+
+      #actions #ok {
+        color: var(--paper-grey-600);
+      }
+
+      #actions #switchUser {
+        -webkit-margin-start: 8px;
+        background: var(--google-blue-500);
+        color: white;
+      }
+    </style>
+    <div id="container">
+      <div id="title-area" class="horizontal justified layout">
+        <span id="title">[[titleText_(profileInfo)]]</span>
+        <iron-icon icon="supervisor-account"></iron-icon>
+      </div>
+      <div class="content-area">
+        <div class="content" inner-h-t-m-l="[[htmlMessage1_(profileInfo)]]">
+        </div>
+        <div id="childlock-button-example">
+          <iron-icon icon="lock"></iron-icon>
+          <span i18n-content="exitAndChildlockLabel"></span>
+        </div>
+        <div class="content" inner-h-t-m-l="[[htmlMessage2_(profileInfo)]]">
+        </div>
+      </div>
+      <div id="actions">
+        <paper-button id="ok" on-tap="onOkTap_"
+            i18n-content="supervisedUserCreatedDone">
+        </paper-button>
+        <paper-button id="switchUser" on-tap="onSwitchUserTap_">
+          [[switchUserText_(profileInfo)]]
+        </paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="chrome://md-user-manager/supervised_user_create_confirm.js"></script>
+</dom-module>

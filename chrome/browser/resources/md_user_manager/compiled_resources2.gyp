@@ -15,7 +15,6 @@
       'target_name': 'create_profile',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'profile_browser_proxy',
@@ -39,9 +38,18 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'supervised_user_create_confirm',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:parse_html_subset',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        'profile_browser_proxy',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'supervised_user_learn_more',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'profile_browser_proxy',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

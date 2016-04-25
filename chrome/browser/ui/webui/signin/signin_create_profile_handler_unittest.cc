@@ -143,6 +143,7 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
     // Call the callback method to resume profile creation flow.
     SigninCreateProfileHandler::OnSupervisedUserRegistered(
         create_shortcut,
+        custodian_profile,
         new_profile,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }

@@ -7,7 +7,7 @@
 }
 
 #container {
-  color: var(--google-grey-800);
+  color: var(--paper-grey-800);
   line-height: 20px;
   width: 624px;
 }

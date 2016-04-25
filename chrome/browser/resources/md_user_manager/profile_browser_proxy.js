@@ -10,13 +10,20 @@
 /** @typedef {{username: string, profilePath: string}} */
 var SignedInUser;
 
-/** @typedef {{name: string, filePath: string, isSupervised: boolean}} */
+/**
+ * @typedef {{name: string,
+ *            filePath: string,
+ *            isSupervised: boolean,
+ *            custodianUsername: string,
+ *            showConfirmation: boolean}}
+ */
 var ProfileInfo;
 
-/** @typedef {{id: string,
- *             name: string,
- *             iconURL: string,
- *             onCurrentDevice: boolean}}
+/**
+ * @typedef {{id: string,
+ *            name: string,
+ *            iconURL: string,
+ *            onCurrentDevice: boolean}}
  */
 var SupervisedUser;
 
@@ -104,6 +111,14 @@ cr.define('signin', function() {
     openUrlInLastActiveProfileBrowser: function(url) {
       assertNotReached();
     },
+
+    /**
+     * Switches to the profile with the given path.
+     * @param {string} profilePath Path to the profile to switch to.
+     */
+    switchToProfile: function(profilePath) {
+      assertNotReached();
+    }
   };
 
   /**
@@ -164,6 +179,11 @@ cr.define('signin', function() {
     openUrlInLastActiveProfileBrowser: function(url) {
       chrome.send('openUrlInLastActiveProfileBrowser', [url]);
     },
+
+    /** @override */
+    switchToProfile: function(profilePath) {
+      chrome.send('switchToProfile', [profilePath]);
+    }
   };
 
   return {

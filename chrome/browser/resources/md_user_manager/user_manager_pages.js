@@ -17,6 +17,15 @@ Polymer({
     selectedPage_: {
       type: String,
       value: 'user-pods-page'
+    },
+
+    /**
+     * Data passed to the currently selected page.
+     * @private {?Object}
+     */
+    pageData_: {
+      type: Object,
+      value: null
     }
   },
 
@@ -30,6 +39,7 @@ Polymer({
    * @private
    */
   changePage_: function(e) {
+    this.pageData_ = e.detail.data || null;
     this.selectedPage_ = e.detail.page;
   },
 

@@ -305,6 +305,8 @@ without changes to the corresponding grd file. -->
                  file="html/i18n_template.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_LOAD_TIME_DATA"
                  file="html/load_time_data.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_PARSE_HTML_SUBSET"
+                 file="html/parse_html_subset.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_POLYMER"
                  file="html/polymer.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_I18N_BEHAVIOR"

@@ -25,7 +25,8 @@ Polymer({
   },
 
   /**
-   * General handler for tap event on the host.
+   * Handles tap events from dynamically created links in the
+   * supervisedUserLearnMoreText i18n string.
    * @param {!Event} event
    * @private
    */
