@@ -312,6 +312,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
+    # Win / NVidia
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
+        ['win', 'nvidia'], bug=606021)
+
     # Win / AMD
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
@@ -319,7 +323,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['win', ('amd', 0x6779), ('nvidia', 0x104a)], bug=606021)
+        ['win', ('amd', 0x6779)], bug=606021)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
