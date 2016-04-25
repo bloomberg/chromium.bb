@@ -77,7 +77,7 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
 
   std::vector<scoped_refptr<Sequence>> EnqueuedSequences() {
     AutoSchedulerLock auto_lock(lock_);
-    return enqueued_sequences_;
+    return re_enqueued_sequences_;
   }
 
   std::unique_ptr<SchedulerWorkerThread> worker_thread_;
@@ -133,10 +133,10 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
   }
 
   // This override verifies that |sequence| contains the expected number of
-  // Tasks and adds it to |enqueued_sequences_|. Unlike a normal EnqueueSequence
-  // implementation, it doesn't reinsert |sequence| into a queue for further
-  // execution.
-  void EnqueueSequence(scoped_refptr<Sequence> sequence) override {
+  // Tasks and adds it to |re_enqueued_sequences_|. Unlike a normal
+  // ReEnqueueSequence implementation, it doesn't reinsert |sequence| into a
+  // queue for further execution.
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
     EXPECT_GT(TasksPerSequence(), 1U);
 
     // Verify that |sequence| contains TasksPerSequence() - 1 Tasks.
@@ -146,10 +146,10 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
     }
     EXPECT_FALSE(sequence->PeekTask());
 
-    // Add |sequence| to |enqueued_sequences_|.
+    // Add |sequence| to |re_enqueued_sequences_|.
     AutoSchedulerLock auto_lock(lock_);
-    enqueued_sequences_.push_back(std::move(sequence));
-    EXPECT_LE(enqueued_sequences_.size(), created_sequences_.size());
+    re_enqueued_sequences_.push_back(std::move(sequence));
+    EXPECT_LE(re_enqueued_sequences_.size(), created_sequences_.size());
   }
 
   void RunTaskCallback() {
@@ -183,7 +183,7 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t>,
   std::vector<scoped_refptr<Sequence>> created_sequences_;
 
   // Sequences passed to EnqueueSequence().
-  std::vector<scoped_refptr<Sequence>> enqueued_sequences_;
+  std::vector<scoped_refptr<Sequence>> re_enqueued_sequences_;
 
   // Number of times that RunTaskCallback() has been called.
   size_t num_run_tasks_ = 0;

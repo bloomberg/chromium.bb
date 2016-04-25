@@ -46,7 +46,7 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
 
     // Called when |sequence| isn't empty after the SchedulerWorkerThread pops a
     // Task from it. |sequence| is the last Sequence returned by GetWork().
-    virtual void EnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
+    virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
   };
 
   // Creates a SchedulerWorkerThread with priority |thread_priority| that runs

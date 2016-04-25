@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task_scheduler/scheduler_thread_pool.h"
+#include "base/task_scheduler/scheduler_thread_pool_impl.h"
 
 #include <stddef.h>
 
@@ -36,15 +36,30 @@ const size_t kNumThreadsInThreadPool = 4;
 const size_t kNumThreadsPostingTasks = 4;
 const size_t kNumTasksPostedPerThread = 150;
 
-class TaskSchedulerThreadPoolTest
+class TestDelayedTaskManager : public DelayedTaskManager {
+ public:
+  TestDelayedTaskManager() : DelayedTaskManager(Bind(&DoNothing)) {}
+
+  void SetCurrentTime(TimeTicks now) { now_ = now; }
+
+  // DelayedTaskManager:
+  TimeTicks Now() const override { return now_; }
+
+ private:
+  TimeTicks now_ = TimeTicks::Now();
+
+  DISALLOW_COPY_AND_ASSIGN(TestDelayedTaskManager);
+};
+
+class TaskSchedulerThreadPoolImplTest
     : public testing::TestWithParam<ExecutionMode> {
  protected:
-  TaskSchedulerThreadPoolTest() : delayed_task_manager_(Bind(&DoNothing)) {}
+  TaskSchedulerThreadPoolImplTest() = default;
 
   void SetUp() override {
-    thread_pool_ = SchedulerThreadPool::CreateThreadPool(
+    thread_pool_ = SchedulerThreadPoolImpl::CreateThreadPool(
         ThreadPriority::NORMAL, kNumThreadsInThreadPool,
-        Bind(&TaskSchedulerThreadPoolTest::EnqueueSequenceCallback,
+        Bind(&TaskSchedulerThreadPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),
         &task_tracker_, &delayed_task_manager_);
     ASSERT_TRUE(thread_pool_);
@@ -55,21 +70,21 @@ class TaskSchedulerThreadPoolTest
     thread_pool_->JoinForTesting();
   }
 
-  std::unique_ptr<SchedulerThreadPool> thread_pool_;
-
- private:
-  void EnqueueSequenceCallback(scoped_refptr<Sequence> sequence) {
-    // In production code, this callback would be implemented by the
-    // TaskScheduler which would first determine which PriorityQueue the
-    // sequence must be reinserted.
-    const SequenceSortKey sort_key(sequence->GetSortKey());
-    thread_pool_->EnqueueSequence(std::move(sequence), sort_key);
-  }
+  std::unique_ptr<SchedulerThreadPoolImpl> thread_pool_;
 
   TaskTracker task_tracker_;
-  DelayedTaskManager delayed_task_manager_;
+  TestDelayedTaskManager delayed_task_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerThreadPoolTest);
+ private:
+  void ReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence) {
+    // In production code, this callback would be implemented by the
+    // TaskScheduler which would first determine which PriorityQueue the
+    // sequence must be re-enqueued.
+    const SequenceSortKey sort_key(sequence->GetSortKey());
+    thread_pool_->ReEnqueueSequence(std::move(sequence), sort_key);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerThreadPoolImplTest);
 };
 
 using PostNestedTask = test::TestTaskFactory::PostNestedTask;
@@ -86,7 +101,7 @@ class ThreadPostingTasks : public SimpleThread {
   // WAIT_FOR_ALL_THREADS_IDLE, the thread waits until all worker threads in
   // |thread_pool| are idle before posting a new task. If |post_nested_task| is
   // YES, each task posted by this thread posts another task when it runs.
-  ThreadPostingTasks(SchedulerThreadPool* thread_pool,
+  ThreadPostingTasks(SchedulerThreadPoolImpl* thread_pool,
                      ExecutionMode execution_mode,
                      WaitBeforePostTask wait_before_post_task,
                      PostNestedTask post_nested_task)
@@ -115,7 +130,7 @@ class ThreadPostingTasks : public SimpleThread {
     }
   }
 
-  SchedulerThreadPool* const thread_pool_;
+  SchedulerThreadPoolImpl* const thread_pool_;
   const scoped_refptr<TaskRunner> task_runner_;
   const WaitBeforePostTask wait_before_post_task_;
   const PostNestedTask post_nested_task_;
@@ -126,7 +141,18 @@ class ThreadPostingTasks : public SimpleThread {
 
 using WaitBeforePostTask = ThreadPostingTasks::WaitBeforePostTask;
 
-TEST_P(TaskSchedulerThreadPoolTest, PostTasks) {
+void ShouldNotRunCallback() {
+  ADD_FAILURE() << "Ran a task that shouldn't run.";
+}
+
+void SignalEventCallback(WaitableEvent* event) {
+  DCHECK(event);
+  event->Signal();
+}
+
+}  // namespace
+
+TEST_P(TaskSchedulerThreadPoolImplTest, PostTasks) {
   // Create threads to post tasks.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
@@ -147,7 +173,7 @@ TEST_P(TaskSchedulerThreadPoolTest, PostTasks) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_P(TaskSchedulerThreadPoolTest, PostTasksWaitAllThreadsIdle) {
+TEST_P(TaskSchedulerThreadPoolImplTest, PostTasksWaitAllThreadsIdle) {
   // Create threads to post tasks. To verify that worker threads can sleep and
   // be woken up when new tasks are posted, wait for all threads to become idle
   // before posting a new task.
@@ -170,7 +196,7 @@ TEST_P(TaskSchedulerThreadPoolTest, PostTasksWaitAllThreadsIdle) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_P(TaskSchedulerThreadPoolTest, NestedPostTasks) {
+TEST_P(TaskSchedulerThreadPoolImplTest, NestedPostTasks) {
   // Create threads to post tasks. Each task posted by these threads will post
   // another task when it runs.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
@@ -192,7 +218,7 @@ TEST_P(TaskSchedulerThreadPoolTest, NestedPostTasks) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_P(TaskSchedulerThreadPoolTest, PostTasksWithOneAvailableThread) {
+TEST_P(TaskSchedulerThreadPoolImplTest, PostTasksWithOneAvailableThread) {
   // Post tasks to keep all threads busy except one until |event| is signaled.
   // Use different factories so that tasks are added to different sequences and
   // can run simultaneously when the execution mode is SEQUENCED.
@@ -224,7 +250,7 @@ TEST_P(TaskSchedulerThreadPoolTest, PostTasksWithOneAvailableThread) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_P(TaskSchedulerThreadPoolTest, Saturate) {
+TEST_P(TaskSchedulerThreadPoolImplTest, Saturate) {
   // Verify that it is possible to have |kNumThreadsInThreadPool|
   // tasks/sequences running simultaneously. Use different factories so that
   // tasks are added to different sequences and can run simultaneously when the
@@ -247,13 +273,47 @@ TEST_P(TaskSchedulerThreadPoolTest, Saturate) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
+// Verify that a Task can't be posted after shutdown.
+TEST_P(TaskSchedulerThreadPoolImplTest, PostTaskAfterShutdown) {
+  auto task_runner =
+      thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam());
+  task_tracker_.Shutdown();
+  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRunCallback)));
+}
+
+// Verify that a Task posted with a delay is added to the DelayedTaskManager and
+// doesn't run before its delay expires.
+TEST_P(TaskSchedulerThreadPoolImplTest, PostDelayedTask) {
+  EXPECT_TRUE(delayed_task_manager_.GetDelayedRunTime().is_null());
+
+  // Post a delayed task.
+  WaitableEvent task_ran(true, false);
+  EXPECT_TRUE(thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam())
+                  ->PostDelayedTask(FROM_HERE, Bind(&SignalEventCallback,
+                                                    Unretained(&task_ran)),
+                                    TimeDelta::FromSeconds(10)));
+
+  // The task should have been added to the DelayedTaskManager.
+  EXPECT_FALSE(delayed_task_manager_.GetDelayedRunTime().is_null());
+
+  // The task shouldn't run.
+  EXPECT_FALSE(task_ran.IsSignaled());
+
+  // Fast-forward time and post tasks that are ripe for execution.
+  delayed_task_manager_.SetCurrentTime(
+      delayed_task_manager_.GetDelayedRunTime());
+  delayed_task_manager_.PostReadyTasks();
+
+  // The task should run.
+  task_ran.Wait();
+}
+
 INSTANTIATE_TEST_CASE_P(Parallel,
-                        TaskSchedulerThreadPoolTest,
+                        TaskSchedulerThreadPoolImplTest,
                         ::testing::Values(ExecutionMode::PARALLEL));
 INSTANTIATE_TEST_CASE_P(Sequenced,
-                        TaskSchedulerThreadPoolTest,
+                        TaskSchedulerThreadPoolImplTest,
                         ::testing::Values(ExecutionMode::SEQUENCED));
 
-}  // namespace
 }  // namespace internal
 }  // namespace base

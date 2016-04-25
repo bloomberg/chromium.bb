@@ -23,11 +23,11 @@
 namespace base {
 namespace internal {
 
-class SchedulerTaskExecutor;
+class SchedulerThreadPool;
 
 // A DelayedTaskManager holds delayed Tasks until they become ripe for
 // execution. When they become ripe for execution, it posts them to their
-// associated Sequence and SchedulerTaskExecutor. This class is thread-safe.
+// associated Sequence and SchedulerThreadPool. This class is thread-safe.
 class BASE_EXPORT DelayedTaskManager {
  public:
   // |on_delayed_run_time_updated| is invoked when the delayed run time is
@@ -36,15 +36,15 @@ class BASE_EXPORT DelayedTaskManager {
   ~DelayedTaskManager();
 
   // Adds |task| to a queue of delayed tasks. The task will be posted to
-  // |executor| as part of |sequence| the first time that PostReadyTasks() is
+  // |thread_pool| as part of |sequence| the first time that PostReadyTasks() is
   // called while Now() is passed |task->delayed_run_time|.
   //
-  // TODO(robliao): Find a concrete way to manage |executor|'s memory. It is
+  // TODO(robliao): Find a concrete way to manage |thread_pool|'s memory. It is
   // never deleted in production, but it is better not to spread this assumption
   // throughout the scheduler.
   void AddDelayedTask(std::unique_ptr<Task> task,
                       scoped_refptr<Sequence> sequence,
-                      SchedulerTaskExecutor* executor);
+                      SchedulerThreadPool* thread_pool);
 
   // Posts delayed tasks that are ripe for execution.
   // TODO(robliao): Call this from a service thread.
@@ -54,14 +54,14 @@ class BASE_EXPORT DelayedTaskManager {
   // execution, or a null TimeTicks if there are no pending delayed tasks.
   TimeTicks GetDelayedRunTime() const;
 
+  // Returns the current time. Can be overridden for tests.
+  virtual TimeTicks Now() const;
+
  private:
   struct DelayedTask;
   struct DelayedTaskComparator {
     bool operator()(const DelayedTask& left, const DelayedTask& right) const;
   };
-
-  // Returns the current time. Can be overridden for tests.
-  virtual TimeTicks Now() const;
 
   const Closure on_delayed_run_time_updated_;
 

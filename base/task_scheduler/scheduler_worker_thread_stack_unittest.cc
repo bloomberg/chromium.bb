@@ -26,7 +26,7 @@ class MockSchedulerWorkerThreadDelegate
       SchedulerWorkerThread* worker_thread) override {
     return nullptr;
   }
-  void EnqueueSequence(scoped_refptr<Sequence> sequence) override {
+  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
     NOTREACHED();
   }
 };
