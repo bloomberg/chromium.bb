@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <set>
+
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -79,6 +82,10 @@ class FontServiceThread : public base::Thread,
                             base::File* output_file,
                             mojo::ScopedHandle handle);
 
+  // Connection to |font_service_| has gone away. Called on the background
+  // thread.
+  void OnFontServiceConnectionError();
+
   // base::Thread
   void Init() override;
   void CleanUp() override;
@@ -90,6 +97,16 @@ class FontServiceThread : public base::Thread,
   // This member is set in Init(). It takes |font_service_info_|, which is
   // non-thread bound, and binds it to the newly created thread.
   mojo::InterfacePtr<FontService> font_service_;
+
+  // All WaitableEvents supplied to OpenStreamImpl() are added here while
+  // waiting on the response from the |font_service_| (FontService::OpenStream()
+  // was called, but the callback has not been processed yet). If
+  // |font_service_| gets an error during this time all events in
+  // |pending_waitable_events_| are signaled. This is necessary as when the
+  // pipe is closed the callbacks are never received.
+  std::set<base::WaitableEvent*> pending_waitable_events_;
+
+  base::WeakPtrFactory<FontServiceThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FontServiceThread);
 };

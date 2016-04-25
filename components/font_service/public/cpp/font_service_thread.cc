@@ -22,7 +22,8 @@ const char kFontThreadName[] = "Font_Proxy_Thread";
 
 FontServiceThread::FontServiceThread(FontServicePtr font_service)
     : base::Thread(kFontThreadName),
-      font_service_info_(font_service.PassInterface()) {
+      font_service_info_(font_service.PassInterface()),
+      weak_factory_(this) {
   base::Thread::Options options;
   options.message_pump_factory =
       base::Bind(&mojo::common::MessagePumpMojo::Create);
@@ -147,6 +148,7 @@ void FontServiceThread::OpenStreamImpl(base::WaitableEvent* done_event,
     return;
   }
 
+  pending_waitable_events_.insert(done_event);
   font_service_->OpenStream(
       id_number, base::Bind(&FontServiceThread::OnOpenStreamComplete, this,
                             done_event, output_file));
@@ -155,6 +157,7 @@ void FontServiceThread::OpenStreamImpl(base::WaitableEvent* done_event,
 void FontServiceThread::OnOpenStreamComplete(base::WaitableEvent* done_event,
                                              base::File* output_file,
                                              mojo::ScopedHandle handle) {
+  pending_waitable_events_.erase(done_event);
   if (handle.is_valid()) {
     MojoPlatformHandle platform_handle;
     CHECK(MojoExtractPlatformHandle(handle.release().value(),
@@ -165,8 +168,18 @@ void FontServiceThread::OnOpenStreamComplete(base::WaitableEvent* done_event,
   done_event->Signal();
 }
 
+void FontServiceThread::OnFontServiceConnectionError() {
+  std::set<base::WaitableEvent*> events;
+  events.swap(pending_waitable_events_);
+  for (base::WaitableEvent* event : events)
+    event->Signal();
+}
+
 void FontServiceThread::Init() {
   font_service_.Bind(std::move(font_service_info_));
+  font_service_.set_connection_error_handler(
+      base::Bind(&FontServiceThread::OnFontServiceConnectionError,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FontServiceThread::CleanUp() {
