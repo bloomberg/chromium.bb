@@ -17,12 +17,20 @@
 using device::BluetoothUUID;
 
 namespace {
-// TODO(ortuno): Remove once we have a macro to histogram strings.
-// http://crbug.com/520284
-int HashUUID(const std::string& uuid) {
-  uint32_t data = base::SuperFastHash(uuid.data(), uuid.size());
 
-  // Strip off the signed bit because UMA doesn't support negative values,
+// Generates a hash from a canonical UUID string suitable for
+// UMA_HISTOGRAM_SPARSE_SLOWLY (positive int).
+//
+// Hash values can be produced manually using tool: bluetooth_metrics_hash.
+int HashUUID(const std::string& canonical_uuid) {
+  DCHECK(canonical_uuid == BluetoothUUID(canonical_uuid).canonical_value());
+
+  // TODO(520284): Other than verifying that uuid is canonical, this logic
+  // should be migrated to a dedicated histogram macro for hashed strings.
+  uint32_t data =
+      base::SuperFastHash(canonical_uuid.data(), canonical_uuid.size());
+
+  // Strip off the sign bit because UMA doesn't support negative values,
   // but takes a signed int as input.
   return static_cast<int>(data & 0x7fffffff);
 }
