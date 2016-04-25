@@ -301,8 +301,7 @@ void LayoutGrid::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
 
     if (explicitGridDidResize(*oldStyle)
         || namedGridLinesDefinitionDidChange(*oldStyle)
-        || oldStyle->getGridAutoFlow() != styleRef().getGridAutoFlow()
-        || (diff.needsLayout() && (styleRef().gridAutoRepeatColumns().size() || styleRef().gridAutoRepeatRows().size())))
+        || oldStyle->getGridAutoFlow() != styleRef().getGridAutoFlow())
         dirtyGrid();
 }
 
@@ -311,9 +310,7 @@ bool LayoutGrid::explicitGridDidResize(const ComputedStyle& oldStyle) const
     return oldStyle.gridTemplateColumns().size() != styleRef().gridTemplateColumns().size()
         || oldStyle.gridTemplateRows().size() != styleRef().gridTemplateRows().size()
         || oldStyle.namedGridAreaColumnCount() != styleRef().namedGridAreaColumnCount()
-        || oldStyle.namedGridAreaRowCount() != styleRef().namedGridAreaRowCount()
-        || oldStyle.gridAutoRepeatColumns().size() != styleRef().gridAutoRepeatColumns().size()
-        || oldStyle.gridAutoRepeatRows().size() != styleRef().gridAutoRepeatRows().size();
+        || oldStyle.namedGridAreaRowCount() != styleRef().namedGridAreaRowCount();
 }
 
 bool LayoutGrid::namedGridLinesDefinitionDidChange(const ComputedStyle& oldStyle) const
@@ -697,40 +694,13 @@ static bool shouldClearOverrideContainingBlockContentSizeForChild(const LayoutBo
     return child.hasRelativeLogicalHeight() || child.styleRef().logicalHeight().isIntrinsicOrAuto();
 }
 
-const GridTrackSize& LayoutGrid::rawGridTrackSize(GridTrackSizingDirection direction, size_t translatedIndex) const
+GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size_t i) const
 {
-    bool isRowAxis = direction == ForColumns;
-    const Vector<GridTrackSize>& trackStyles = isRowAxis ? styleRef().gridTemplateColumns() : styleRef().gridTemplateRows();
-    const Vector<GridTrackSize>& autoRepeatTrackStyles = isRowAxis ? styleRef().gridAutoRepeatColumns() : styleRef().gridAutoRepeatRows();
-    const GridTrackSize& autoTrackSize = isRowAxis ? styleRef().gridAutoColumns() : styleRef().gridAutoRows();
-    size_t insertionPoint = isRowAxis ? styleRef().gridAutoRepeatColumnsInsertionPoint() : styleRef().gridAutoRepeatRowsInsertionPoint();
-    size_t repetitions = autoRepeatCountForDirection(direction);
-
-    // We should not use GridPositionsResolver::explicitGridXXXCount() for this because the
-    // explicit grid might be larger than the number of tracks in grid-template-rows|columns (if
-    // grid-template-areas is specified for example).
-    size_t explicitTracksCount = trackStyles.size() + repetitions;
-
-    int untranslatedIndexAsInt = translatedIndex + (isRowAxis ? m_smallestColumnStart : m_smallestRowStart);
-    if (untranslatedIndexAsInt < 0)
-        return autoTrackSize;
-
-    size_t untranslatedIndex = static_cast<size_t>(untranslatedIndexAsInt);
-    if (untranslatedIndex >= explicitTracksCount)
-        return autoTrackSize;
-
-    if (LIKELY(!repetitions) || untranslatedIndex < insertionPoint)
-        return trackStyles[untranslatedIndex];
-
-    if (untranslatedIndex < (insertionPoint + repetitions))
-        return autoRepeatTrackStyles[0];
-
-    return trackStyles[untranslatedIndex - repetitions];
-}
-
-GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size_t translatedIndex) const
-{
-    const GridTrackSize& trackSize = rawGridTrackSize(direction, translatedIndex);
+    bool isForColumns = direction == ForColumns;
+    const Vector<GridTrackSize>& trackStyles = isForColumns ? style()->gridTemplateColumns() : style()->gridTemplateRows();
+    const GridTrackSize& autoTrackSize = isForColumns ? style()->gridAutoColumns() : style()->gridAutoRows();
+    int translatedIndex = i + (isForColumns ? m_smallestColumnStart : m_smallestRowStart);
+    const GridTrackSize& trackSize = (translatedIndex < 0 || translatedIndex >= static_cast<int>(trackStyles.size())) ? autoTrackSize : trackStyles[translatedIndex];
 
     GridLength minTrackBreadth = trackSize.minTrackBreadth();
     GridLength maxTrackBreadth = trackSize.maxTrackBreadth();
@@ -1212,77 +1182,8 @@ void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridArea& area)
 
 size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection direction) const
 {
-    bool isRowAxis = direction == ForColumns;
-    const auto& autoRepeatTracks = isRowAxis ? styleRef().gridAutoRepeatColumns() : styleRef().gridAutoRepeatRows();
-
-    if (!autoRepeatTracks.size())
-        return 0;
-
-    DCHECK_EQ(autoRepeatTracks.size(), static_cast<size_t>(1));
-    auto autoTrackSize = autoRepeatTracks.at(0);
-    DCHECK(autoTrackSize.minTrackBreadth().isLength());
-    DCHECK(!autoTrackSize.minTrackBreadth().isContentSized());
-
-    LayoutUnit availableSize = isRowAxis ? availableLogicalWidth() : computeContentLogicalHeight(MainOrPreferredSize, styleRef().logicalHeight(), LayoutUnit(-1));
-    if (availableSize == -1) {
-        const Length& maxLength = isRowAxis ? styleRef().logicalMaxWidth() : styleRef().logicalMaxHeight();
-        if (!maxLength.isMaxSizeNone()) {
-            availableSize = isRowAxis
-                ? computeLogicalWidthUsing(MaxSize, maxLength, containingBlockLogicalWidthForContent(), containingBlock())
-                : computeContentLogicalHeight(MaxSize, maxLength, LayoutUnit(-1));
-        }
-    } else {
-        availableSize = isRowAxis
-            ? constrainLogicalWidthByMinMax(availableSize, availableLogicalWidth(), containingBlock())
-            : constrainLogicalHeightByMinMax(availableSize, LayoutUnit(-1));
-    }
-
-    bool needsToFulfillMinimumSize = false;
-    bool indefiniteMainAndMaxSizes = availableSize == LayoutUnit(-1);
-    if (indefiniteMainAndMaxSizes) {
-        const Length& minSize = isRowAxis ? styleRef().logicalMinWidth() : styleRef().logicalMinHeight();
-        if (!minSize.isSpecified())
-            return 1;
-
-        LayoutUnit containingBlockAvailableSize = isRowAxis ? containingBlockLogicalWidthForContent() : containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
-        availableSize = valueForLength(minSize, containingBlockAvailableSize);
-        needsToFulfillMinimumSize = true;
-    }
-
-    bool hasDefiniteMaxTrackSizingFunction = autoTrackSize.maxTrackBreadth().isLength() && !autoTrackSize.maxTrackBreadth().isContentSized();
-    const Length trackLength = hasDefiniteMaxTrackSizingFunction ? autoTrackSize.maxTrackBreadth().length() : autoTrackSize.minTrackBreadth().length();
-    // For the purpose of finding the number of auto-repeated tracks, the UA must floor the track size to a UA-specified
-    // value to avoid division by zero. It is suggested that this floor be 1px.
-    LayoutUnit autoRepeatTrackSize = std::max<LayoutUnit>(LayoutUnit(1), valueForLength(trackLength, availableSize));
-
-    // There will be always at least 1 auto-repeat track, so take it already into account when computing the total track size.
-    LayoutUnit tracksSize = autoRepeatTrackSize;
-    const Vector<GridTrackSize>& trackSizes = isRowAxis ? styleRef().gridTemplateColumns() : styleRef().gridTemplateRows();
-
-    for (const auto& track : trackSizes) {
-        bool hasDefiniteMaxTrackBreadth = track.maxTrackBreadth().isLength() && !track.maxTrackBreadth().isContentSized();
-        DCHECK(hasDefiniteMaxTrackBreadth || (track.minTrackBreadth().isLength() && !track.minTrackBreadth().isContentSized()));
-        tracksSize += valueForLength(hasDefiniteMaxTrackBreadth ? track.maxTrackBreadth().length() : track.minTrackBreadth().length(), availableSize);
-    }
-
-    // Add gutters as if there where only 1 auto repeat track. Gaps between auto repeat tracks will be added later when
-    // computing the repetitions.
-    LayoutUnit gapSize = guttersSize(direction, 2);
-    tracksSize += gapSize * trackSizes.size();
-
-    LayoutUnit freeSpace = availableSize - tracksSize;
-    if (freeSpace <= 0)
-        return 1;
-
-    size_t repetitions = 1 + (freeSpace / (autoRepeatTrackSize + gapSize)).toInt();
-
-    // Provided the grid container does not have a definite size or max-size in the relevant axis,
-    // if the min size is definite then the number of repetitions is the largest possible positive
-    // integer that fulfills that minimum requirement.
-    if (needsToFulfillMinimumSize)
-        ++repetitions;
-
-    return repetitions;
+    // TODO(svillar): implement the algorithm to compute the number of auto repeat tracks.
+    return 0;
 }
 
 void LayoutGrid::placeItemsOnGrid()
