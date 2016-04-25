@@ -105,10 +105,7 @@ user_manager::User* FakeUserManager::GetActiveUserInternal() const {
     if (active_account_id_.is_valid()) {
       for (user_manager::UserList::const_iterator it = users_.begin();
            it != users_.end(); ++it) {
-        // TODO (alemate): Chenge this to GetAccountId(), once a real AccountId
-        // is
-        // passed. crbug.com/546876
-        if ((*it)->GetEmail() == active_account_id_.GetUserEmail())
+        if ((*it)->GetAccountId() == active_account_id_)
           return *it;
       }
     }

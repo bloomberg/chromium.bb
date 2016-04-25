@@ -1065,7 +1065,10 @@ void BrowserOptionsHandler::InitializePage() {
         "BrowserOptions.enableFactoryResetSection");
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  user_manager::User const* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
   OnAccountPictureManagedChanged(
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
           ->policy_service()
@@ -1075,7 +1078,7 @@ void BrowserOptionsHandler::InitializePage() {
 
   OnWallpaperManagedChanged(
       chromeos::WallpaperManager::Get()->IsPolicyControlled(
-          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()));
+          user->GetAccountId()));
 
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
@@ -1088,7 +1091,7 @@ void BrowserOptionsHandler::InitializePage() {
   if (!arc::ArcBridgeService::GetEnabled(
           base::CommandLine::ForCurrentProcess()) ||
       arc::ArcAuthService::IsOptInVerificationDisabled() ||
-      profile->IsLegacySupervised()) {
+      profile->IsLegacySupervised() || !user->HasGaiaAccount()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.hideAndroidAppsSection");
   }
   OnSystemTimezoneAutomaticDetectionPolicyChanged();

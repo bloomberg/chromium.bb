@@ -24,6 +24,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -339,7 +340,7 @@ const user_manager::User* ProfileHelper::GetUserByProfile(
              user_list_for_testing_.begin();
          it != user_list_for_testing_.end();
          ++it) {
-      if ((*it)->email() == user_name)
+      if ((*it)->GetAccountId().GetUserEmail() == user_name)
         return *it;
     }
 

@@ -222,8 +222,11 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   Shutdown();
 
-  if (profile->IsLegacySupervised()) {
-    VLOG(2) << "Supervised profiles are not supported in Arc.";
+  user_manager::User const* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (profile->IsLegacySupervised() || !user->HasGaiaAccount()) {
+    VLOG(2) << "Supervised users and users without GAIA accounts are not "
+               "supported in Arc.";
     return;
   }
 

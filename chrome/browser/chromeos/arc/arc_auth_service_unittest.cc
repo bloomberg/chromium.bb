@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -19,7 +23,9 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -41,7 +47,8 @@ const char kTestAuthCode[] = "4/Qa3CPIhh-WcMfWSf9HZaYcGUhEeax-F9sQK9CNRhZWs";
 class ArcAuthServiceTest : public testing::Test {
  public:
   ArcAuthServiceTest()
-      : thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)) {}
+      : thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
+        user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
   ~ArcAuthServiceTest() override = default;
 
   void SetUp() override {
@@ -62,9 +69,19 @@ class ArcAuthServiceTest : public testing::Test {
     EXPECT_EQ(true, !ArcBridgeService::Get()->available());
     EXPECT_EQ(ArcBridgeService::State::STOPPED,
               ArcBridgeService::Get()->state());
+
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId("user@gmail.com", "1234567890"));
+    GetFakeUserManager()->AddUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
   }
 
   void TearDown() override {}
+
+  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
 
  protected:
   Profile* profile() { return profile_.get(); }
@@ -86,6 +103,7 @@ class ArcAuthServiceTest : public testing::Test {
   std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
   std::unique_ptr<arc::ArcAuthService> auth_service_;
   std::unique_ptr<TestingProfile> profile_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
@@ -94,7 +112,7 @@ class ArcAuthServiceTest : public testing::Test {
 TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
-  PrefService* pref = profile()->GetPrefs();
+  PrefService* const pref = profile()->GetPrefs();
   DCHECK_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
@@ -155,7 +173,7 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
 }
 
 TEST_F(ArcAuthServiceTest, CancelFetchingDisablesArc) {
-  PrefService* pref = profile()->GetPrefs();
+  PrefService* const pref = profile()->GetPrefs();
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
@@ -170,7 +188,7 @@ TEST_F(ArcAuthServiceTest, CancelFetchingDisablesArc) {
 }
 
 TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
-  PrefService* pref = profile()->GetPrefs();
+  PrefService* const pref = profile()->GetPrefs();
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
@@ -188,7 +206,7 @@ TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
 }
 
 TEST_F(ArcAuthServiceTest, EnableDisablesArc) {
-  PrefService* pref = profile()->GetPrefs();
+  const PrefService* pref = profile()->GetPrefs();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
@@ -202,7 +220,7 @@ TEST_F(ArcAuthServiceTest, EnableDisablesArc) {
 }
 
 TEST_F(ArcAuthServiceTest, SignInStatus) {
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* const prefs = profile()->GetPrefs();
 
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
@@ -233,6 +251,28 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
+  PrefService* const prefs = profile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  prefs->SetBoolean(prefs::kArcEnabled, true);
+
+  // Create device local account and set it as active.
+  const std::string email = "device-local-account@fake-email.com";
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetProfileName(email);
+  std::unique_ptr<TestingProfile> device_local_profile(profile_builder.Build());
+  const AccountId account_id(AccountId::FromUserEmail(email));
+  GetFakeUserManager()->AddPublicAccountUser(account_id);
+  GetFakeUserManager()->SwitchActiveUser(account_id);
+
+  // Check that user without GAIA account can't use ARC.
+  auth_service()->OnPrimaryUserProfilePrepared(device_local_profile.get());
+  EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();

@@ -78,6 +78,7 @@ const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
                              IDR_PROFILE_PICTURE_LOADING))),
                      user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
+  chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
   return user;
 }
 
