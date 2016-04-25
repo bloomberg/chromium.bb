@@ -208,7 +208,7 @@ public:
     template<typename T>
     void registerWeakCell(T** cell)
     {
-        Derived::fromHelper(this)->registerWeakCellWithCallback(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
+        Derived::fromHelper(this)->registerWeakCellWithCallback(reinterpret_cast<void**>(const_cast<typename std::remove_const<T>::type**>(cell)), &handleWeakCell<T>);
     }
 
     template<typename T, void (T::*method)(Visitor*)>

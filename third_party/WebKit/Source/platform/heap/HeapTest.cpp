@@ -6527,4 +6527,43 @@ TEST(HeapTest, TestClearOnShutdown)
     ThreadedClearOnShutdownTester::test();
 }
 
+// Verify that WeakMember<const T> compiles and behaves as expected.
+class WithWeakConstObject final : public GarbageCollected<WithWeakConstObject> {
+public:
+    static WithWeakConstObject* create(const IntWrapper* intWrapper)
+    {
+        return new WithWeakConstObject(intWrapper);
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_wrapper);
+    }
+
+    const IntWrapper* value() const { return m_wrapper; }
+
+private:
+    WithWeakConstObject(const IntWrapper* intWrapper)
+        : m_wrapper(intWrapper)
+    {
+    }
+
+    WeakMember<const IntWrapper> m_wrapper;
+};
+
+TEST(HeapTest, TestWeakConstObject)
+{
+    Persistent<WithWeakConstObject> weakWrapper;
+    {
+        const IntWrapper* wrapper = IntWrapper::create(42);
+        weakWrapper = WithWeakConstObject::create(wrapper);
+        conservativelyCollectGarbage();
+        EXPECT_EQ(wrapper, weakWrapper->value());
+        // Stub out any stack reference.
+        wrapper = nullptr;
+    }
+    preciselyCollectGarbage();
+    EXPECT_EQ(nullptr, weakWrapper->value());
+}
+
 } // namespace blink
