@@ -112,7 +112,7 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
 
   // ESC key feature tracking
   var pluginElement = connectionInfo.plugin().element();
-  var onKeyDown = function(event) {
+  var onKeyDown = function(/** KeyboardEvent **/ event) {
     if (event && event.keyCode == ESCAPE_KEY_CODE
       && remoting.fullscreen.isActive()) {
       this.logger_.incrementFeatureUsage('fullscreen_esc_count');

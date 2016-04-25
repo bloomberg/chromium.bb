@@ -223,7 +223,6 @@ remoting.ChromotingEvent.SessionSummary = function() {
 /**
  * For tracking features like keypress count.
  * All counting fields will be initialized to 0.
- * @struct
  * @constructor
  */
 remoting.ChromotingEvent.FeatureTracker = function() {
