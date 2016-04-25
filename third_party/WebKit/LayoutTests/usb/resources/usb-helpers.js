@@ -119,15 +119,20 @@ function usbMocks(mojo) {
     }
 
     class MockDevice extends device.Device.stubClass {
-      constructor(info, pipe) {
+      constructor(info, pipe, closeHandler) {
         super();
         this.info_ = info;
         this.pipe_ = pipe;
         this.router_ = new mojo.router.Router(pipe);
         this.router_.setIncomingReceiver(this);
+        this.router_.setErrorHandler(() => {
+          if (this.opened_)
+            this.close();
+        });
         this.opened_ = false;
         this.currentConfiguration_ = undefined;
         this.claimedInterfaces_ = new Map();
+        this.closeHandler_ = closeHandler;
       }
 
       getDeviceInfo() {
@@ -152,6 +157,7 @@ function usbMocks(mojo) {
       close() {
         assert_true(this.opened_);
         this.opened_ = false;
+        this.closeHandler_();
         return Promise.resolve({ error: device.OpenDeviceError.OK });
       }
 
@@ -324,6 +330,7 @@ function usbMocks(mojo) {
         this.addedDevices_ = [];
         this.removedDevices_ = [];
         this.deviceChangePromiseResolvers_ = [];
+        this.deviceCloseHandler_ = null;
       }
 
       reset() {
@@ -353,6 +360,10 @@ function usbMocks(mojo) {
         this.mockDevices_.delete(info.guid);
         this.removedDevices_.push(info);
         this.maybeResolveDeviceChangePromise();
+      }
+
+      setDeviceCloseHandler(handler) {
+        this.deviceCloseHandler_ = handler;
       }
 
       bindToPipe(pipe) {
@@ -402,7 +413,10 @@ function usbMocks(mojo) {
         if (device === undefined) {
           mojo.core.close(pipe);
         } else {
-          var mock = new MockDevice(device.info, pipe);
+          var mock = new MockDevice(device.info, pipe, () => {
+            if (this.deviceCloseHandler_)
+              this.deviceCloseHandler_(device.info);
+          });
           device.handles.push(mock);
         }
       }
@@ -448,6 +462,7 @@ function usbMocks(mojo) {
     return fakeUsbDevices().then(fakeDevices => Promise.resolve({
       DeviceManager: deviceManager.DeviceManager,
       Device: device.Device,
+      MockDeviceManager: MockDeviceManager,
       mockDeviceManager: mockDeviceManager,
       mockChooserService: mockChooserService,
       fakeDevices: fakeDevices,

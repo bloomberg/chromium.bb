@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-devices.js"></script>
+<script src="resources/usb-helpers.js"></script>
+<script>
+'use strict';
+
+function runIframeDisconnectTest(usb, onDeviceConnected) {
+  return new Promise((resolve, reject) => {
+    let mockDeviceManager = new usb.MockDeviceManager;
+    let opened = false;
+    let iframe = document.createElement('iframe');
+
+    window.onmessage = messageEvent => {
+      if (messageEvent.data === 'Ready') {
+        mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+      } else if (messageEvent.data === 'Success') {
+        opened = true;
+        onDeviceConnected(iframe);
+      } else {
+        reject(messageEvent.data);
+      }
+    };
+
+    mockDeviceManager.setDeviceCloseHandler(info => {
+      assert_equals(info, usb.fakeDevices[0]);
+      assert_true(opened);
+      resolve();
+    });
+
+    iframe.src = 'resources/open-in-iframe.html';
+    iframe.onload = () => {
+      iframe.contentWindow.mojo.define(
+          "Mojo Service Registry",
+          [ 'content/public/renderer/frame_service_registry' ],
+          (frameServiceRegistry) => {
+        frameServiceRegistry.addServiceOverrideForTesting(
+            usb.DeviceManager.name,
+            pipe => { mockDeviceManager.bindToPipe(pipe); });
+        iframe.contentWindow.postMessage('Ready', '*');
+      });
+    }
+    document.body.appendChild(iframe);
+  });
+}
+
+usb_test(usb => {
+  return runIframeDisconnectTest(usb, iframe => {
+    document.body.removeChild(iframe);
+  });
+}, 'detaching iframe disconnects device.');
+
+usb_test(usb => {
+  return runIframeDisconnectTest(usb, iframe => {
+    iframe.src = 'about:blank';
+  });
+}, 'navigating iframe disconnects device.');
+</script>

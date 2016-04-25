@@ -20,6 +20,7 @@ define("mojo/public/js/router", [
       connectorFactory = Connector;
     this.connector_ = new connectorFactory(handle);
     this.incomingReceiver_ = null;
+    this.errorHandler_ = null;
     this.nextRequestID_ = 0;
     this.completers_ = new Map();
     this.payloadValidators_ = [];
@@ -72,6 +73,10 @@ define("mojo/public/js/router", [
     this.payloadValidators_ = payloadValidators;
   };
 
+  Router.prototype.setErrorHandler = function(handler) {
+    this.errorHandler_ = handler;
+  };
+
   Router.prototype.encounteredError = function() {
     return this.connector_.encounteredError();
   };
@@ -118,6 +123,8 @@ define("mojo/public/js/router", [
     this.completers_.forEach(function(value) {
       value.reject(result);
     });
+    if (this.errorHandler_)
+      this.errorHandler_();
     this.close();
   };
 
