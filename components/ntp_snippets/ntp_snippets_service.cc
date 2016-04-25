@@ -33,6 +33,8 @@ namespace ntp_snippets {
 
 namespace {
 
+const int kMaxSnippetCount = 10;
+
 const int kFetchingIntervalWifiChargingSeconds = 30 * 60;
 const int kFetchingIntervalWifiSeconds = 2 * 60 * 60;
 const int kFetchingIntervalFallbackSeconds = 24 * 60 * 60;
@@ -235,11 +237,11 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDontRestrict)) {
-    snippets_fetcher_->FetchSnippets(std::set<std::string>());
+    snippets_fetcher_->FetchSnippets(std::set<std::string>(), kMaxSnippetCount);
     return;
   }
   if (!hosts.empty()) {
-    snippets_fetcher_->FetchSnippets(hosts);
+    snippets_fetcher_->FetchSnippets(hosts, kMaxSnippetCount);
   } else {
     last_fetch_status_ = kStatusMessageEmptyHosts;
     LoadingSnippetsFinished();
@@ -308,6 +310,11 @@ void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
 
 void NTPSnippetsService::RemoveObserver(NTPSnippetsServiceObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// static
+int NTPSnippetsService::GetMaxSnippetCountForTesting() {
+  return kMaxSnippetCount;
 }
 
 void NTPSnippetsService::OnSuggestionsChanged(
@@ -413,6 +420,11 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
   snippets_.insert(snippets_.begin(),
                    std::make_move_iterator(new_snippets.begin()),
                    std::make_move_iterator(new_snippets.end()));
+
+  // If there are more snippets now than we want to show, drop the extra ones
+  // from the end of the list.
+  if (snippets_.size() > kMaxSnippetCount)
+    snippets_.resize(kMaxSnippetCount);
 
   return true;
 }

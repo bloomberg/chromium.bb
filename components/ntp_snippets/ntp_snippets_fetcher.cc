@@ -56,7 +56,7 @@ const char kRequestParameterFormat[] =
     "%s"
     "    },"
     "    \"global_scoring_params\": {"
-    "      \"num_to_return\": 10"
+    "      \"num_to_return\": %i"
     "    }"
     "  }"
     "}";
@@ -77,15 +77,15 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       url_request_context_getter_(url_request_context_getter),
       is_stable_channel_(is_stable_channel) {}
 
-NTPSnippetsFetcher::~NTPSnippetsFetcher() {
-}
+NTPSnippetsFetcher::~NTPSnippetsFetcher() {}
 
 scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
 NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
   return callback_list_.Add(callback);
 }
 
-void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts) {
+void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts,
+                                       int count) {
   // TODO(treib): What to do if there's already a pending request?
   const std::string& key = is_stable_channel_
                                ? google_apis::GetAPIKey()
@@ -104,7 +104,8 @@ void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts) {
     host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
   url_fetcher_->SetUploadData("application/json",
                               base::StringPrintf(kRequestParameterFormat,
-                                                 host_restricts.c_str()));
+                                                 host_restricts.c_str(),
+                                                 count));
 
   // Fetchers are sometimes cancelled because a network change was detected.
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);

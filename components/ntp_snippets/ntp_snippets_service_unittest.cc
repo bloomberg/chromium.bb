@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -254,6 +255,29 @@ TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
   // The snippet loaded last should be at the first position in the list now.
   const NTPSnippet& first_snippet = *service()->begin();
   EXPECT_EQ(first_snippet.url(), GURL("http://second"));
+}
+
+TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
+  int max_snippet_count = NTPSnippetsService::GetMaxSnippetCountForTesting();
+  int snippets_per_load = max_snippet_count / 2 + 1;
+
+  const char snippet_format[] =
+      "{ \"contentInfo\": { \"url\" : \"http://localhost/%i\" }}";
+  std::vector<std::string> snippets1;
+  std::vector<std::string> snippets2;
+  for (int i = 0; i < snippets_per_load; i++) {
+    snippets1.push_back(base::StringPrintf(snippet_format, i));
+    snippets2.push_back(base::StringPrintf(snippet_format,
+                                           snippets_per_load + i));
+  }
+
+  LoadFromJSONString(
+      "{ \"recos\": [ " + base::JoinString(snippets1, ", ") + "]}");
+  ASSERT_EQ(snippets1.size(), service()->size());
+
+  LoadFromJSONString(
+      "{ \"recos\": [ " + base::JoinString(snippets2, ", ") + "]}");
+  EXPECT_EQ(max_snippet_count, (int)service()->size());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {

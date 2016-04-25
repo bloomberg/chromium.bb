@@ -124,6 +124,9 @@ class NTPSnippetsService : public KeyedService {
   const_iterator begin() const { return const_iterator(snippets_.begin()); }
   const_iterator end() const { return const_iterator(snippets_.end()); }
 
+  // Returns the maximum number of snippets that will be shown at once.
+  static int GetMaxSnippetCountForTesting();
+
  private:
   friend class NTPSnippetsServiceTest;
 
