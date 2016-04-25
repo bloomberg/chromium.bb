@@ -73,7 +73,7 @@ void PersistentRegion::releasePersistentNode(PersistentNode* persistentNode, Thr
 // a PersistentNodeSlot that contains only freed PersistentNodes,
 // we delete the PersistentNodeSlot. This function rebuilds the free
 // list of PersistentNodes.
-void PersistentRegion::tracePersistentNodes(Visitor* visitor, ShouldTraceCallback shouldTrace)
+void PersistentRegion::tracePersistentNodes(Visitor* visitor)
 {
     size_t debugMarkedObjectSize = ProcessHeap::totalMarkedObjectSize();
     base::debug::Alias(&debugMarkedObjectSize);
@@ -95,10 +95,8 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor, ShouldTraceCallbac
                 freeListNext = node;
                 ++freeCount;
             } else {
-                ++persistentCount;
-                if (!shouldTrace(visitor, node))
-                    continue;
                 node->tracePersistentNode(visitor);
+                ++persistentCount;
                 debugMarkedObjectSize = ProcessHeap::totalMarkedObjectSize();
             }
         }
@@ -121,14 +119,12 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor, ShouldTraceCallbac
     ASSERT(persistentCount == m_persistentCount);
 }
 
-bool CrossThreadPersistentRegion::shouldTracePersistentNode(Visitor* visitor, PersistentNode* node)
-{
-    CrossThreadPersistent<DummyGCBase>* persistent = reinterpret_cast<CrossThreadPersistent<DummyGCBase>*>(node->self());
-    ASSERT(persistent);
-    Address rawObject = reinterpret_cast<Address>(persistent->get());
-    if (!rawObject)
-        return false;
-    return &visitor->heap() == &ThreadState::fromObject(rawObject)->heap();
+
+namespace {
+class GCObject final : public GarbageCollected<GCObject> {
+public:
+    DEFINE_INLINE_TRACE() { }
+};
 }
 
 void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* threadState)

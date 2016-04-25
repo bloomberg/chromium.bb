@@ -313,8 +313,6 @@ public:
 
     inline MarkingMode getMarkingMode() const { return m_markingMode; }
 
-    inline ThreadHeap& heap() const { return m_state->heap(); }
-
 protected:
     Visitor(ThreadState*, MarkingMode);
 
