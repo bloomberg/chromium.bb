@@ -25,13 +25,23 @@ static void DrawGLFunction(long view_context,
 
 namespace android_webview {
 
+namespace {
+int g_instance_count = 0;
+}
+
 AwGLFunctor::AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref)
     : java_ref_(java_ref),
       render_thread_manager_(
           this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {}
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ++g_instance_count;
+}
 
-AwGLFunctor::~AwGLFunctor() {}
+AwGLFunctor::~AwGLFunctor() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  --g_instance_count;
+}
 
 bool AwGLFunctor::RequestInvokeGL(bool wait_for_completion) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -52,6 +62,7 @@ void AwGLFunctor::DetachFunctorFromView() {
 
 void AwGLFunctor::Destroy(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   java_ref_.reset();
   delete this;
 }
@@ -59,27 +70,37 @@ void AwGLFunctor::Destroy(JNIEnv* env,
 void AwGLFunctor::DeleteHardwareRenderer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   render_thread_manager_.DeleteHardwareRendererOnUI();
 }
 
 jlong AwGLFunctor::GetAwDrawGLViewContext(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return reinterpret_cast<intptr_t>(&render_thread_manager_);
 }
 
+static jint GetNativeInstanceCount(JNIEnv* env, const JavaParamRef<jclass>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return g_instance_count;
+}
+
 static jlong GetAwDrawGLFunction(JNIEnv* env, const JavaParamRef<jclass>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return reinterpret_cast<intptr_t>(&DrawGLFunction);
 }
 
 static jlong Create(JNIEnv* env,
                     const JavaParamRef<jclass>&,
                     const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return reinterpret_cast<intptr_t>(
       new AwGLFunctor(JavaObjectWeakGlobalRef(env, obj)));
 }
 
 bool RegisterAwGLFunctor(JNIEnv* env) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return RegisterNativesImpl(env);
 }
 

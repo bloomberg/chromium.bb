@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.graphics.Canvas;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.common.CleanupReference;
@@ -19,7 +20,7 @@ import org.chromium.content.common.CleanupReference;
  * the render node hierarchy.
  */
 @JNINamespace("android_webview")
-class AwGLFunctor {
+public class AwGLFunctor {
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwGLFunctor;
 
@@ -96,10 +97,20 @@ class AwGLFunctor {
         return nativeGetAwDrawGLViewContext(mNativeAwGLFunctor);
     }
 
+    /**
+     * Intended for test code.
+     * @return the number of native instances of this class.
+     */
+    @VisibleForTesting
+    public static int getNativeInstanceCount() {
+        return nativeGetNativeInstanceCount();
+    }
+
     private native void nativeDeleteHardwareRenderer(long nativeAwGLFunctor);
     private native long nativeGetAwDrawGLViewContext(long nativeAwGLFunctor);
 
     private static native long nativeGetAwDrawGLFunction();
     private static native void nativeDestroy(long nativeAwGLFunctor);
     private static native long nativeCreate(AwGLFunctor javaProxy);
+    private static native int nativeGetNativeInstanceCount();
 }
