@@ -160,7 +160,7 @@ instrumentation_test_apk("content_shell_test_apk") {
   apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"
-  isolate_file = "../../content_shell_test_apk.isolate"
+  isolate_file = "../../content_shell_test_data.isolate"
 }
 
 if (current_cpu != "x64") {

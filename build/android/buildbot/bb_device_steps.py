@@ -63,7 +63,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'org.chromium.content_shell_apk',
       'ContentShellTest',
       'content:content/test/data/android/device_files',
-      isolate_file_path='content/content_shell_test_apk.isolate'),
+      isolate_file_path='content/content_shell_test_data.isolate'),
     I('ChromePublic',
       'ChromePublic.apk',
       'org.chromium.chrome',

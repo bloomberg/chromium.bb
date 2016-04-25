@@ -2101,7 +2101,7 @@
             'additional_src_dirs': ['public/android/javatests/', ],
             'is_test_apk': 1,
             'test_type': 'instrumentation',
-            'isolate_file': 'content_shell_test_apk.isolate',
+            'isolate_file': 'content_shell_test_data.isolate',
           },
           'includes': [
             '../build/java_apk.gypi',
@@ -2159,7 +2159,7 @@
                   '../build/isolate.gypi',
                 ],
                 'sources': [
-                  'content_shell_test_apk_run.isolate',
+                  'content_shell_test_apk.isolate',
                 ],
               },
               {
