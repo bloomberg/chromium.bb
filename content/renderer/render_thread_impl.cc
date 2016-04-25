@@ -837,13 +837,9 @@ void RenderThreadImpl::Init(
   DCHECK(parsed_num_raster_threads) << string_value;
   DCHECK_GT(num_raster_threads, 0);
 
-#if defined(OS_ANDROID)
-  // Note: Currently, enabling image decode tasks only provides a benefit if
-  // we use high quality interpolation filters, which are disabled on android.
-  are_image_decode_tasks_enabled_ = false;
-#else
+  // TODO(vmpstr): If the flag sticks, we should clean it up and always have
+  // image decode tasks.
   are_image_decode_tasks_enabled_ = true;
-#endif
 
   raster_worker_pool_->Start(num_raster_threads);
 
