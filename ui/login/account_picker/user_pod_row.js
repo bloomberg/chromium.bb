@@ -1682,8 +1682,10 @@ cr.define('login', function() {
         if (this.multiProfilesPolicyApplied)
           this.userTypeBubbleElement.classList.add('bubble-shown');
 
-        // Prevent default so that we don't trigger 'focus' event.
-        e.preventDefault();
+        // Prevent default so that we don't trigger 'focus' event and
+        // stop propagation so that the 'click' event does not bubble
+        // up and accidentally closes the bubble tooltip.
+        stopEventPropagation(e);
       }
     },
 
