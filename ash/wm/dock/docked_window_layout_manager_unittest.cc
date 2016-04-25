@@ -5,6 +5,7 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -77,8 +78,7 @@ class DockedWindowLayoutManagerTest
           test::TestShelfDelegate::instance();
       shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
-          static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
-              layout_manager());
+          PanelLayoutManager::Get(wm::WmWindowAura::Get(window));
       manager->Relayout();
     }
     return window;
@@ -94,16 +94,10 @@ class DockedWindowLayoutManagerTest
           test::TestShelfDelegate::instance();
       shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
-          static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
-              layout_manager());
+          PanelLayoutManager::Get(wm::WmWindowAura::Get(window));
       manager->Relayout();
     }
     return window;
-  }
-
-  aura::Window* GetPanelContainer(aura::Window* panel) {
-    return Shell::GetContainer(panel->GetRootWindow(),
-                               kShellWindowId_PanelContainer);
   }
 
   static WindowResizer* CreateSomeWindowResizer(

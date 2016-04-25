@@ -16,6 +16,9 @@ enum class WmWindowProperty {
 
   // Type bool.
   ALWAYS_ON_TOP,
+
+  // Type int.
+  SHELF_ID,
 };
 
 }  // namespace wm

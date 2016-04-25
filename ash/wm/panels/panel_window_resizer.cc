@@ -4,39 +4,26 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_parenting_utils.h"
+#include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
-#include "base/memory/weak_ptr.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
 namespace {
-const int kPanelSnapToLauncherDistance = 30;
 
-PanelLayoutManager* GetPanelLayoutManager(aura::Window* panel_container) {
-  DCHECK(panel_container->id() == kShellWindowId_PanelContainer);
-  return static_cast<PanelLayoutManager*>(panel_container->layout_manager());
-}
+const int kPanelSnapToLauncherDistance = 30;
 
 }  // namespace
 
@@ -51,8 +38,7 @@ PanelWindowResizer::Create(WindowResizer* next_window_resizer,
 }
 
 void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
-  last_location_ = location;
-  ::wm::ConvertPointToScreen(GetAuraTarget()->parent(), &last_location_);
+  last_location_ = GetTarget()->GetParent()->ConvertPointToScreen(location);
   if (!did_move_or_resize_) {
     did_move_or_resize_ = true;
     StartedDragging();
@@ -63,24 +49,24 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   const gfx::Display dst_display =
       screen->GetDisplayNearestPoint(last_location_);
   if (dst_display.id() !=
-      screen->GetDisplayNearestWindow(panel_container_->GetRootWindow()).id()) {
+      panel_container_->GetRootWindow()->GetDisplayNearestWindow().id()) {
     // The panel is being dragged to a new display. If the previous container is
     // the current parent of the panel it will be informed of the end of drag
     // when the panel is reparented, otherwise let the previous container know
     // the drag is complete. If we told the panel's parent that the drag was
     // complete it would begin positioning the panel.
-    if (GetAuraTarget()->parent() != panel_container_)
-      GetPanelLayoutManager(panel_container_)->FinishDragging();
-    aura::Window* dst_root = Shell::GetInstance()
-                                 ->window_tree_host_manager()
-                                 ->GetRootWindowForDisplayId(dst_display.id());
+    if (GetTarget()->GetParent() != panel_container_)
+      PanelLayoutManager::Get(panel_container_)->FinishDragging();
+    wm::WmWindow* dst_root =
+        wm::WmRootWindowController::GetWithDisplayId(dst_display.id())
+            ->GetWindow();
     panel_container_ =
-        Shell::GetContainer(dst_root, kShellWindowId_PanelContainer);
+        dst_root->GetChildByShellWindowId(kShellWindowId_PanelContainer);
 
     // The panel's parent already knows that the drag is in progress for this
     // panel.
-    if (panel_container_ && GetAuraTarget()->parent() != panel_container_)
-      GetPanelLayoutManager(panel_container_)->StartDragging(GetAuraTarget());
+    if (panel_container_ && GetTarget()->GetParent() != panel_container_)
+      PanelLayoutManager::Get(panel_container_)->StartDragging(GetTarget());
   }
   gfx::Point offset;
   gfx::Rect bounds(CalculateBoundsForDrag(location));
@@ -124,8 +110,8 @@ PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
       was_attached_(window_state->panel_attached()),
       weak_ptr_factory_(this) {
   DCHECK(details().is_resizable);
-  panel_container_ = Shell::GetContainer(GetAuraTarget()->GetRootWindow(),
-                                         kShellWindowId_PanelContainer);
+  panel_container_ = GetTarget()->GetRootWindow()->GetChildByShellWindowId(
+      kShellWindowId_PanelContainer);
   initial_panel_container_ = panel_container_;
 }
 
@@ -134,11 +120,11 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
   bool should_attach = false;
   if (panel_container_) {
     PanelLayoutManager* panel_layout_manager =
-        GetPanelLayoutManager(panel_container_);
-    gfx::Rect launcher_bounds = ScreenUtil::ConvertRectFromScreen(
-        GetAuraTarget()->parent(), panel_layout_manager->shelf()
-                                       ->shelf_widget()
-                                       ->GetWindowBoundsInScreen());
+        PanelLayoutManager::Get(panel_container_);
+    gfx::Rect launcher_bounds = GetTarget()->GetParent()->ConvertRectFromScreen(
+        panel_layout_manager->shelf()
+            ->shelf_widget()
+            ->GetWindowBoundsInScreen());
     switch (panel_layout_manager->shelf()->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
       case SHELF_ALIGNMENT_BOTTOM_LOCKED:
@@ -171,21 +157,19 @@ void PanelWindowResizer::StartedDragging() {
   // Tell the panel layout manager that we are dragging this panel before
   // attaching it so that it does not get repositioned.
   if (panel_container_)
-    GetPanelLayoutManager(panel_container_)->StartDragging(GetAuraTarget());
+    PanelLayoutManager::Get(panel_container_)->StartDragging(GetTarget());
   if (!was_attached_) {
     // Attach the panel while dragging placing it in front of other panels.
     window_state_->set_panel_attached(true);
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
-    aura::Window* target = GetAuraTarget();
-    aura::Window* target_root = target->GetRootWindow();
-    aura::Window* old_parent = target->parent();
-    aura::client::ParentWindowWithContext(
-        target, target_root, target_root->GetBoundsInScreen());
-    ash::wm::ReparentTransientChildrenOfChild(
-        ash::wm::WmWindowAura::Get(target),
-        ash::wm::WmWindowAura::Get(old_parent),
-        ash::wm::WmWindowAura::Get(target->parent()));
+    wm::WmWindow* target = GetTarget();
+    wm::WmWindow* target_root = target->GetRootWindow();
+    wm::WmWindow* old_parent = target->GetParent();
+    target->SetParentUsingContext(target_root,
+                                  target_root->GetBoundsInScreen());
+    wm::ReparentTransientChildrenOfChild(target, old_parent,
+                                         target->GetParent());
   }
 }
 
@@ -196,32 +180,31 @@ void PanelWindowResizer::FinishDragging() {
     window_state_->set_panel_attached(details().should_attach_to_shelf);
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
-    aura::Window* target = GetAuraTarget();
-    aura::Window* target_root = target->GetRootWindow();
-    aura::Window* old_parent = target->parent();
-    aura::client::ParentWindowWithContext(
-        target, target_root, gfx::Rect(last_location_, gfx::Size()));
-    ash::wm::ReparentTransientChildrenOfChild(
-        ash::wm::WmWindowAura::Get(target),
-        ash::wm::WmWindowAura::Get(old_parent),
-        ash::wm::WmWindowAura::Get(target->parent()));
+    wm::WmWindow* target = GetTarget();
+    wm::WmWindow* target_root = target->GetRootWindow();
+    wm::WmWindow* old_parent = target->GetParent();
+    target->SetParentUsingContext(target_root,
+                                  gfx::Rect(last_location_, gfx::Size()));
+    wm::ReparentTransientChildrenOfChild(target, old_parent,
+                                         target->GetParent());
   }
 
   // If we started the drag in one root window and moved into another root
   // but then canceled the drag we may need to inform the original layout
   // manager that the drag is finished.
   if (initial_panel_container_ != panel_container_)
-     GetPanelLayoutManager(initial_panel_container_)->FinishDragging();
+    PanelLayoutManager::Get(initial_panel_container_)->FinishDragging();
   if (panel_container_)
-    GetPanelLayoutManager(panel_container_)->FinishDragging();
+    PanelLayoutManager::Get(panel_container_)->FinishDragging();
 }
 
 void PanelWindowResizer::UpdateLauncherPosition() {
   if (panel_container_) {
-    GetPanelLayoutManager(panel_container_)
+    PanelLayoutManager::Get(panel_container_)
         ->shelf()
-        ->UpdateIconPositionForWindow(GetAuraTarget());
+        ->UpdateIconPositionForWindow(
+            wm::WmWindowAura::GetAuraWindow(GetTarget()));
   }
 }
 
-}  // namespace aura
+}  // namespace ash

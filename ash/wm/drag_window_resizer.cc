@@ -166,4 +166,8 @@ bool DragWindowResizer::ShouldAllowMouseWarp() {
          wm::IsWindowUserPositionable(GetAuraTarget());
 }
 
+aura::Window* DragWindowResizer::GetAuraTarget() {
+  return wm::WmWindowAura::GetAuraWindow(GetTarget());
+}
+
 }  // namespace ash

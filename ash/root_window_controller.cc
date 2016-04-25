@@ -822,8 +822,9 @@ void RootWindowController::InitLayoutManagers() {
 
   // Create Panel layout manager
   aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
-  panel_layout_manager_ = new PanelLayoutManager(panel_container);
-  panel_container->SetLayoutManager(panel_layout_manager_);
+  wm::WmWindow* wm_panel_container = wm::WmWindowAura::Get(panel_container);
+  panel_layout_manager_ = new PanelLayoutManager(wm_panel_container);
+  wm_panel_container->SetLayoutManager(base::WrapUnique(panel_layout_manager_));
   panel_container_handler_.reset(new PanelWindowEventHandler);
   panel_container->AddPreTargetHandler(panel_container_handler_.get());
 

@@ -128,9 +128,8 @@ class WorkspaceControllerTest : public test::AshTestBase {
     test::TestShelfDelegate* shelf_delegate =
         test::TestShelfDelegate::instance();
     shelf_delegate->AddShelfItem(window);
-    PanelLayoutManager* manager = static_cast<PanelLayoutManager*>(
-        Shell::GetContainer(window->GetRootWindow(),
-                            kShellWindowId_PanelContainer)->layout_manager());
+    PanelLayoutManager* manager =
+        PanelLayoutManager::Get(wm::WmWindowAura::Get(window));
     manager->Relayout();
     return window;
   }

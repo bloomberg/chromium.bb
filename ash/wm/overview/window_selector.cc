@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/switchable_windows.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
@@ -278,9 +279,8 @@ void WindowSelector::Init(const WindowList& windows) {
 
     // Hide the callout widgets for panels. It is safe to call this for
     // root windows that don't contain any panel windows.
-    static_cast<PanelLayoutManager*>(
-        Shell::GetContainer(*iter, kShellWindowId_PanelContainer)
-            ->layout_manager())->SetShowCalloutWidgets(false);
+    PanelLayoutManager::Get(wm::WmWindowAura::Get(*iter))
+        ->SetShowCalloutWidgets(false);
 
     std::unique_ptr<WindowGrid> grid(new WindowGrid(*iter, windows, this));
     if (grid->empty())
@@ -340,9 +340,8 @@ void WindowSelector::Shutdown() {
        iter != root_windows.end(); iter++) {
     // Un-hide the callout widgets for panels. It is safe to call this for
     // root_windows that don't contain any panel windows.
-    static_cast<PanelLayoutManager*>(
-        Shell::GetContainer(*iter, kShellWindowId_PanelContainer)
-            ->layout_manager())->SetShowCalloutWidgets(true);
+    PanelLayoutManager::Get(wm::WmWindowAura::Get(*iter))
+        ->SetShowCalloutWidgets(true);
   }
 
   size_t remaining_items = 0;

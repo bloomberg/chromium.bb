@@ -8,6 +8,8 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/common/wm_globals.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -17,7 +19,9 @@ namespace ash {
 namespace wm {
 
 class ASH_EXPORT WmGlobalsAura : public WmGlobals,
-                                 public aura::client::ActivationChangeObserver {
+                                 public aura::client::ActivationChangeObserver,
+                                 public WindowTreeHostManager::Observer,
+                                 public ShellObserver {
  public:
   WmGlobalsAura();
   ~WmGlobalsAura() override;
@@ -37,6 +41,10 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   UserMetricsRecorder* GetUserMetricsRecorder() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;
+  void AddDisplayObserver(WmDisplayObserver* observer) override;
+  void RemoveDisplayObserver(WmDisplayObserver* observer) override;
+  void AddOverviewModeObserver(WmOverviewModeObserver* observer) override;
+  void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) override;
 
  private:
   // aura::client::ActivationChangeObserver:
@@ -44,8 +52,19 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
+
+  // ShellObserver:
+  void OnOverviewModeEnded() override;
+
   bool added_activation_observer_ = false;
   base::ObserverList<WmActivationObserver> activation_observers_;
+
+  bool added_display_observer_ = false;
+  base::ObserverList<WmDisplayObserver> display_observers_;
+
+  base::ObserverList<WmOverviewModeObserver> overview_mode_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmGlobalsAura);
 };

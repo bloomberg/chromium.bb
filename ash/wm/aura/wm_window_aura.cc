@@ -5,6 +5,7 @@
 #include "ash/wm/aura/wm_window_aura.h"
 
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf_util.h"
 #include "ash/wm/aura/aura_layout_manager_adapter.h"
 #include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
@@ -201,10 +202,21 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
 
     case WmWindowProperty::ALWAYS_ON_TOP:
       return window_->GetProperty(aura::client::kAlwaysOnTopKey);
+
+    default:
+      NOTREACHED();
+      break;
   }
 
-  NOTREACHED();
   return false;
+}
+
+int WmWindowAura::GetIntProperty(WmWindowProperty key) {
+  if (key == WmWindowProperty::SHELF_ID)
+    return GetShelfIDForWindow(window_);
+
+  NOTREACHED();
+  return 0;
 }
 
 const WindowState* WmWindowAura::GetWindowState() const {
@@ -524,6 +536,8 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY;
   } else if (key == aura::client::kAlwaysOnTopKey) {
     wm_property = WmWindowProperty::ALWAYS_ON_TOP;
+  } else if (key == kShelfID) {
+    wm_property = WmWindowProperty::SHELF_ID;
   } else {
     return;
   }

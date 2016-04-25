@@ -61,6 +61,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool GetTargetVisibility() const override;
   bool IsVisible() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
+  int GetIntProperty(WmWindowProperty key) override;
   const WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   void SetParentUsingContext(WmWindow* context,

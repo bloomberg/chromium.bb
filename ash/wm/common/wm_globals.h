@@ -22,6 +22,8 @@ class UserMetricsRecorder;
 namespace wm {
 
 class WmActivationObserver;
+class WmDisplayObserver;
+class WmOverviewModeObserver;
 class WmWindow;
 
 // Used for accessing global state.
@@ -62,6 +64,12 @@ class ASH_EXPORT WmGlobals {
 
   virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
   virtual void RemoveActivationObserver(WmActivationObserver* observer) = 0;
+
+  virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
+  virtual void RemoveDisplayObserver(WmDisplayObserver* observer) = 0;
+
+  virtual void AddOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
+  virtual void RemoveOverviewModeObserver(WmOverviewModeObserver* observer) = 0;
 };
 
 }  // namespace wm

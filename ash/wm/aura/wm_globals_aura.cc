@@ -10,6 +10,8 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_activation_observer.h"
+#include "ash/wm/common/wm_display_observer.h"
+#include "ash/wm/common/wm_overview_mode_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/focus_client.h"
@@ -31,6 +33,7 @@ WmGlobals* WmGlobals::Get() {
 WmGlobalsAura::WmGlobalsAura() {
   DCHECK(!instance_);
   instance_ = this;
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 WmGlobalsAura::~WmGlobalsAura() {
@@ -39,6 +42,10 @@ WmGlobalsAura::~WmGlobalsAura() {
     aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())
         ->RemoveObserver(this);
   }
+  if (added_display_observer_)
+    Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 // static
@@ -115,6 +122,27 @@ void WmGlobalsAura::RemoveActivationObserver(WmActivationObserver* observer) {
   activation_observers_.RemoveObserver(observer);
 }
 
+void WmGlobalsAura::AddDisplayObserver(WmDisplayObserver* observer) {
+  if (!added_display_observer_) {
+    added_display_observer_ = true;
+    Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  }
+  display_observers_.AddObserver(observer);
+}
+
+void WmGlobalsAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
+  display_observers_.RemoveObserver(observer);
+}
+
+void WmGlobalsAura::AddOverviewModeObserver(WmOverviewModeObserver* observer) {
+  overview_mode_observers_.AddObserver(observer);
+}
+
+void WmGlobalsAura::RemoveOverviewModeObserver(
+    WmOverviewModeObserver* observer) {
+  overview_mode_observers_.RemoveObserver(observer);
+}
+
 void WmGlobalsAura::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -122,6 +150,16 @@ void WmGlobalsAura::OnWindowActivated(
   FOR_EACH_OBSERVER(WmActivationObserver, activation_observers_,
                     OnWindowActivated(WmWindowAura::Get(gained_active),
                                       WmWindowAura::Get(lost_active)));
+}
+
+void WmGlobalsAura::OnDisplayConfigurationChanged() {
+  FOR_EACH_OBSERVER(WmDisplayObserver, display_observers_,
+                    OnDisplayConfigurationChanged());
+}
+
+void WmGlobalsAura::OnOverviewModeEnded() {
+  FOR_EACH_OBSERVER(WmOverviewModeObserver, overview_mode_observers_,
+                    OnOverviewModeEnded());
 }
 
 }  // namespace wm
