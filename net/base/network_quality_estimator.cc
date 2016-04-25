@@ -405,9 +405,16 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
 
   // Update |estimated_median_network_quality_| if this is a main frame request.
   if (request.load_flags() & LOAD_MAIN_FRAME) {
-    estimated_median_network_quality_ = NetworkQuality(
-        GetURLRequestRTTEstimateInternal(base::TimeTicks(), 50),
-        GetDownlinkThroughputKbpsEstimateInternal(base::TimeTicks(), 50));
+    base::TimeDelta rtt;
+    if (!GetURLRequestRTTEstimate(&rtt))
+      rtt = InvalidRTT();
+
+    int32_t downstream_throughput_kbps;
+    if (!GetDownlinkThroughputKbpsEstimate(&downstream_throughput_kbps))
+      downstream_throughput_kbps = kInvalidThroughput;
+
+    estimated_median_network_quality_ =
+        NetworkQuality(rtt, downstream_throughput_kbps);
   }
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -600,104 +607,34 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (peak_network_quality_.rtt() != InvalidRTT()) {
-    switch (current_network_id_.type) {
-      case NetworkChangeNotifier::CONNECTION_UNKNOWN:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Unknown",
-                            peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_ETHERNET:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Ethernet",
-                            peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_WIFI:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Wifi", peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_2G:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.2G", peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_3G:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.3G", peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_4G:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.4G", peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_NONE:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.None", peak_network_quality_.rtt());
-        break;
-      case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Bluetooth",
-                            peak_network_quality_.rtt());
-        break;
-      default:
-        NOTREACHED() << "Unexpected connection type = "
-                     << current_network_id_.type;
-        break;
-    }
+    base::HistogramBase* rtt_histogram =
+        GetHistogram("FastestRTT.", current_network_id_.type, 10 * 1000);
+    rtt_histogram->Add(peak_network_quality_.rtt().InMilliseconds());
   }
 
   if (peak_network_quality_.downstream_throughput_kbps() !=
       kInvalidThroughput) {
-    switch (current_network_id_.type) {
-      case NetworkChangeNotifier::CONNECTION_UNKNOWN:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.Unknown",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_ETHERNET:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.Ethernet",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_WIFI:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.Wifi",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_2G:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.2G",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_3G:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.3G",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_4G:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.4G",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_NONE:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.None",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-        UMA_HISTOGRAM_COUNTS(
-            "NQE.PeakKbps.Bluetooth",
-            peak_network_quality_.downstream_throughput_kbps());
-        break;
-      default:
-        NOTREACHED() << "Unexpected connection type = "
-                     << current_network_id_.type;
-        break;
-    }
+    base::HistogramBase* downstream_throughput_histogram =
+        GetHistogram("PeakKbps.", current_network_id_.type, 1000 * 1000);
+    downstream_throughput_histogram->Add(
+        peak_network_quality_.downstream_throughput_kbps());
   }
 
-  base::TimeDelta rtt = GetURLRequestRTTEstimateInternal(base::TimeTicks(), 50);
-  if (rtt != InvalidRTT()) {
+  base::TimeDelta rtt;
+  if (GetURLRequestRTTEstimate(&rtt)) {
     // Add the 50th percentile value.
     base::HistogramBase* rtt_percentile =
-        GetHistogram("RTT.Percentile50.", current_network_id_.type,
-                     10 * 1000);  // 10 seconds
+        GetHistogram("RTT.Percentile50.", current_network_id_.type, 10 * 1000);
     rtt_percentile->Add(rtt.InMilliseconds());
 
     // Add the remaining percentile values.
     static const int kPercentiles[] = {0, 10, 90, 100};
+    std::vector<ObservationSource> disallowed_observation_sources;
+    disallowed_observation_sources.push_back(TCP);
+    disallowed_observation_sources.push_back(QUIC);
     for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
-      rtt =
-          GetURLRequestRTTEstimateInternal(base::TimeTicks(), kPercentiles[i]);
+      rtt = GetRTTEstimateInternal(disallowed_observation_sources,
+                                   base::TimeTicks(), kPercentiles[i]);
 
       rtt_percentile = GetHistogram(
           "RTT.Percentile" + base::IntToString(kPercentiles[i]) + ".",
@@ -774,23 +711,17 @@ NetworkQualityEstimator::GetEffectiveConnectionType() const {
 bool NetworkQualityEstimator::GetURLRequestRTTEstimate(
     base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(rtt);
-  if (rtt_observations_.Size() == 0) {
-    *rtt = InvalidRTT();
-    return false;
-  }
-  *rtt = GetURLRequestRTTEstimateInternal(base::TimeTicks(), 50);
+  std::vector<ObservationSource> disallowed_observation_sources;
+  disallowed_observation_sources.push_back(TCP);
+  disallowed_observation_sources.push_back(QUIC);
+  *rtt = GetRTTEstimateInternal(disallowed_observation_sources,
+                                base::TimeTicks(), 50);
   return (*rtt != InvalidRTT());
 }
 
 bool NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(
     int32_t* kbps) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(kbps);
-  if (downstream_throughput_kbps_observations_.Size() == 0) {
-    *kbps = kInvalidThroughput;
-    return false;
-  }
   *kbps = GetDownlinkThroughputKbpsEstimateInternal(base::TimeTicks(), 50);
   return (*kbps != kInvalidThroughput);
 }
@@ -799,8 +730,11 @@ bool NetworkQualityEstimator::GetRecentURLRequestRTTMedian(
     const base::TimeTicks& begin_timestamp,
     base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(rtt);
-  *rtt = GetURLRequestRTTEstimateInternal(begin_timestamp, 50);
+  std::vector<ObservationSource> disallowed_observation_sources;
+  disallowed_observation_sources.push_back(TCP);
+  disallowed_observation_sources.push_back(QUIC);
+  *rtt = GetRTTEstimateInternal(disallowed_observation_sources, begin_timestamp,
+                                50);
   return (*rtt != InvalidRTT());
 }
 
@@ -808,7 +742,6 @@ bool NetworkQualityEstimator::GetRecentMedianDownlinkThroughputKbps(
     const base::TimeTicks& begin_timestamp,
     int32_t* kbps) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(kbps);
   *kbps = GetDownlinkThroughputKbpsEstimateInternal(begin_timestamp, 50);
   return (*kbps != kInvalidThroughput);
 }
@@ -826,23 +759,19 @@ NetworkQualityEstimator::ObservationBuffer<ValueType>::ObservationBuffer(
 template <typename ValueType>
 NetworkQualityEstimator::ObservationBuffer<ValueType>::~ObservationBuffer() {}
 
-base::TimeDelta NetworkQualityEstimator::GetURLRequestRTTEstimateInternal(
+base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
+    const std::vector<ObservationSource>& disallowed_observation_sources,
     const base::TimeTicks& begin_timestamp,
     int percentile) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GE(percentile, 0);
-  DCHECK_LE(percentile, 100);
-  if (rtt_observations_.Size() == 0)
-    return InvalidRTT();
 
   // RTT observations are sorted by duration from shortest to longest, thus
   // a higher percentile RTT will have a longer RTT than a lower percentile.
   base::TimeDelta rtt = InvalidRTT();
-  std::vector<ObservationSource> disallowed_observation_sources;
-  disallowed_observation_sources.push_back(TCP);
-  disallowed_observation_sources.push_back(QUIC);
-  rtt_observations_.GetPercentile(begin_timestamp, &rtt, percentile,
-                                  disallowed_observation_sources);
+  if (!rtt_observations_.GetPercentile(begin_timestamp, &rtt, percentile,
+                                       disallowed_observation_sources)) {
+    return InvalidRTT();
+  }
   return rtt;
 }
 
@@ -850,17 +779,15 @@ int32_t NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimateInternal(
     const base::TimeTicks& begin_timestamp,
     int percentile) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GE(percentile, 0);
-  DCHECK_LE(percentile, 100);
-  if (downstream_throughput_kbps_observations_.Size() == 0)
-    return kInvalidThroughput;
 
   // Throughput observations are sorted by kbps from slowest to fastest,
   // thus a higher percentile throughput will be faster than a lower one.
   int32_t kbps = kInvalidThroughput;
-  downstream_throughput_kbps_observations_.GetPercentile(
-      begin_timestamp, &kbps, 100 - percentile,
-      std::vector<ObservationSource>());
+  if (!downstream_throughput_kbps_observations_.GetPercentile(
+          begin_timestamp, &kbps, 100 - percentile,
+          std::vector<ObservationSource>())) {
+    return kInvalidThroughput;
+  }
   return kbps;
 }
 
@@ -909,6 +836,9 @@ bool NetworkQualityEstimator::ObservationBuffer<ValueType>::GetPercentile(
     const std::vector<ObservationSource>& disallowed_observation_sources)
     const {
   DCHECK(result);
+  DCHECK_GE(percentile, 0);
+  DCHECK_LE(percentile, 100);
+
   // Stores WeightedObservation in increasing order of value.
   std::vector<WeightedObservation<ValueType>> weighted_observations;
 
@@ -1111,13 +1041,16 @@ void NetworkQualityEstimator::CacheNetworkQualityEstimate() {
   if (current_network_id_.id.empty())
     return;
 
-  NetworkQuality network_quality = NetworkQuality(
-      GetURLRequestRTTEstimateInternal(base::TimeTicks(), 50),
-      GetDownlinkThroughputKbpsEstimateInternal(base::TimeTicks(), 50));
-  if (network_quality.rtt() == InvalidRTT() ||
-      network_quality.downstream_throughput_kbps() == kInvalidThroughput) {
+  base::TimeDelta rtt = InvalidRTT();
+  int32_t downlink_throughput_kbps = kInvalidThroughput;
+
+  if (!GetURLRequestRTTEstimate(&rtt) ||
+      !GetDownlinkThroughputKbpsEstimate(&downlink_throughput_kbps)) {
     return;
   }
+
+  NetworkQuality network_quality =
+      NetworkQuality(rtt, downlink_throughput_kbps);
 
   if (cached_network_qualities_.size() == kMaximumNetworkQualityCacheSize) {
     // Remove the oldest entry.
