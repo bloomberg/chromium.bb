@@ -57,7 +57,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patch=True, update_presentation=True,
                       force=False, patch_root=None, no_shallow=False,
                       with_branch_heads=False, refs=None,
-                      patch_project_roots=None, patch_oauth2=False,
+                      patch_oauth2=False,
                       output_manifest=True, clobber=False,
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False, **kwargs):
@@ -85,14 +85,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
     root = patch_root
-    if (root == 'TODO(TANDRII): REMOVE THIS TRANSITION TO patch_projects' or
-        root is None):
-      # This special condition is here for initial rollout of this code,
-      # because it's hard to test this change without rolling into build
-      # repository.
-      # After the switch to new code is complete, this special TODOstring will
-      # be removed in favor of "root is None"
-      assert patch_project_roots is None
+    if root is None:
       root = self.m.gclient.calculate_patch_root(
           self.m.properties.get('patch_project'), cfg)
 
