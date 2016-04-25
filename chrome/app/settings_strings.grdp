@@ -693,6 +693,9 @@
   <message name="IDS_SETTINGS_RESET" desc="Name of the settings page where settings may be reset.">
     Reset
   </message>
+  <message name="IDS_SETTINGS_RESET_VIEW_REPORTED_SETTINGS" desc="Label of a link that when clicked displays the settings that will be reported to Google for analysis.">
+    View reported settings
+  </message>
 
   <!-- Search Page -->
   <message name="IDS_SETTINGS_SEARCH" desc="Name of the settings page which displays search engine preferences.">

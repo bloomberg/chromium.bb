@@ -51,16 +51,12 @@ Polymer({
    */
   onShowReportedSettingsTap_: function() {
     this.browserProxy_.getReportedSettings().then(function(settings) {
-      var feedbackObj = {};
-      settings.forEach(function(entry) {
-        // Break strings with '\n' characters into arrays to make the settings a
-        // bit more readable.
-        var values = entry.value.split('\n');
-        feedbackObj[entry.key] = values.length == 1 ? values[0] : values;
+      var output = settings.map(function(entry) {
+        return entry.key + ': ' + entry.value.replace(/\n/g, ', ');
       });
       var win = window.open('about:blank');
       var div = win.document.createElement('div');
-      div.textContent = JSON.stringify(feedbackObj, null, 2 /* spaces */);
+      div.textContent = output.join('\n');
       div.style.whiteSpace = 'pre';
       win.document.body.appendChild(div);
     });

@@ -78,4 +78,9 @@
       Continue running background apps when Google Chrome is closed
     </message>
   </if>
+
+  <!-- Reset Page -->
+  <message name="IDS_SETTINGS_RESET_PROFILE_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
+    Help make Chrome better by reporting the current settings.
+  </message>
 </grit-part>

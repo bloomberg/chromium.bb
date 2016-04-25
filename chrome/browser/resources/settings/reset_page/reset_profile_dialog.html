@@ -1,9 +1,8 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://md-settings/reset_page/reset_browser_proxy.html">
@@ -13,7 +12,11 @@
 <dom-module id="settings-reset-profile-dialog">
   <link rel="import" type="css" href="reset_page_dialog.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .footer a {
+        vertical-align: middle;
+      }
+    </style>
     <settings-dialog id="dialog">
       <div class="title" i18n-content="resetPageTitle"></div>
       <div class="body">
@@ -30,11 +33,13 @@
       </div>
       <div class="footer">
         <paper-checkbox id="sendSettings" i18n-content="resetPageFeedback"
-            checked></paper-checkbox>
-        <iron-icon icon="icons:help" on-tap="onShowReportedSettingsTap_">
-        </iron-icon>
+            checked>
+        </paper-checkbox>
+        <a is="action-link" i18n-content="viewReportedSettings"
+            on-tap="onShowReportedSettingsTap_"></a>
       </div>
     </settings-dialog>
   </template>
+  <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <script src="reset_profile_dialog.js"></script>
 </dom-module>

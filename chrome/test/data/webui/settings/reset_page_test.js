@@ -192,9 +192,9 @@ cr.define('settings_reset_page', function() {
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
 
-        var showReportedSettingsButton = dialog.$$('iron-icon');
-        assertTrue(!!showReportedSettingsButton);
-        MockInteractions.tap(showReportedSettingsButton);
+        var showReportedSettingsLink = dialog.$$('.footer a');
+        assertTrue(!!showReportedSettingsLink);
+        MockInteractions.tap(showReportedSettingsLink);
 
         return browserProxy.whenCalled('getReportedSettings').then(function() {
           MockInteractions.tap(dialog.$.reset);

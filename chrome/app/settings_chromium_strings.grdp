@@ -71,4 +71,9 @@
       Continue running background apps when Chromium is closed
     </message>
   </if>
+
+  <!-- Reset Page -->
+  <message name="IDS_SETTINGS_RESET_PROFILE_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
+    Help make Chromium better by reporting the current settings.
+  </message>
 </grit-part>
