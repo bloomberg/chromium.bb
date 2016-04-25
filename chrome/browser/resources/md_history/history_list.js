@@ -157,17 +157,29 @@ Polymer({
    * @param {number} overallItemCount The number of items selected.
    */
   removeDeletedHistory: function(overallItemCount) {
+    var splices = [];
     for (var i = this.historyData.length - 1; i >= 0; i--) {
       if (!this.historyData[i].selected)
         continue;
 
-      // Removes the selected item from historyData.
-      this.splice('historyData', i, 1);
+      // Removes the selected item from historyData. Use unshift so |splices|
+      // ends up in index order.
+      splices.unshift({
+        index: i,
+        removed: [this.historyData[i]],
+        addedCount: 0,
+        object: this.historyData,
+        type: 'splice'
+      });
+      this.historyData.splice(i, 1);
 
       overallItemCount--;
       if (overallItemCount == 0)
         break;
     }
+    // notifySplices gives better performance than individually splicing as it
+    // batches all of the updates together.
+    this.notifySplices('historyData', splices);
   },
 
   /**
