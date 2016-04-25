@@ -108,7 +108,7 @@ static Vector<String> convertSessionTypes(const WebVector<WebEncryptedMediaSessi
 
 MediaKeySystemAccess::MediaKeySystemAccess(const String& keySystem, PassOwnPtr<WebContentDecryptionModuleAccess> access)
     : m_keySystem(keySystem)
-    , m_access(access)
+    , m_access(std::move(access))
 {
 }
 

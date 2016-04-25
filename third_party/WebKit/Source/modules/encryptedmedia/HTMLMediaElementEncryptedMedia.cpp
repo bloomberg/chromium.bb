@@ -60,8 +60,8 @@ typedef Function<void(ExceptionCode, const String&)> FailureCallback;
 class SetContentDecryptionModuleResult final : public ContentDecryptionModuleResult {
 public:
     SetContentDecryptionModuleResult(PassOwnPtr<SuccessCallback> success, PassOwnPtr<FailureCallback> failure)
-        : m_successCallback(success)
-        , m_failureCallback(failure)
+        : m_successCallback(std::move(success))
+        , m_failureCallback(std::move(failure))
     {
     }
 

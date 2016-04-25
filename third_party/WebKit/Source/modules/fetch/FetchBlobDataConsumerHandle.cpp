@@ -128,7 +128,7 @@ private:
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
             return;
         }
-        m_updater->update(handle);
+        m_updater->update(std::move(handle));
     }
 
     void didFinishLoading(unsigned long, double) override
@@ -182,7 +182,7 @@ public:
     public:
         ReaderImpl(Client* client, PassRefPtr<ReaderContext> readerContext, PassOwnPtr<WebDataConsumerHandle::Reader> reader)
             : m_readerContext(readerContext)
-            , m_reader(reader)
+            , m_reader(std::move(reader))
             , m_notifier(client) { }
         ~ReaderImpl() override { }
 

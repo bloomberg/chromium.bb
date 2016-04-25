@@ -57,7 +57,7 @@ public:
     {
         m_thread = adoptPtr(new Thread("src thread", Thread::WithExecutionContext));
         m_waitableEvent = adoptPtr(new WaitableEvent());
-        m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2)));
+        m_thread->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), passed(std::move(src)), AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2)));
         m_waitableEvent->wait();
     }
 
@@ -66,7 +66,7 @@ public:
 private:
     void runInternal(PassOwnPtr<Handle> src, OwnPtr<Handle>* dest1, OwnPtr<Handle>* dest2)
     {
-        DataConsumerTee::create(m_thread->getExecutionContext(), src, dest1, dest2);
+        DataConsumerTee::create(m_thread->getExecutionContext(), std::move(src), dest1, dest2);
         m_waitableEvent->signal();
     }
 

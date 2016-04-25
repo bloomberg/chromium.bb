@@ -74,7 +74,7 @@ private:
 };
 
 BodyStreamBuffer::BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> handle)
-    : m_handle(handle)
+    : m_handle(std::move(handle))
     , m_reader(m_handle->obtainReader(this))
     , m_stream(new ReadableByteStream(this, new ReadableByteStream::StrictStrategy))
     , m_streamNeedsMore(false)

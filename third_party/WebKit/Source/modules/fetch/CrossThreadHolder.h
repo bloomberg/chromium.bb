@@ -36,7 +36,7 @@ public:
     static PassOwnPtr<CrossThreadHolder<T>> create(ExecutionContext* executionContext, PassOwnPtr<T> obj)
     {
         ASSERT(executionContext->isContextThread());
-        return adoptPtr(new CrossThreadHolder(executionContext, obj));
+        return adoptPtr(new CrossThreadHolder(executionContext, std::move(obj)));
     }
 
     // Can be called from any thread.
@@ -53,7 +53,7 @@ public:
             // The bridge has already disappeared.
             return;
         }
-        m_bridge->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::runTask, m_bridge.get(), task));
+        m_bridge->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::runTask, m_bridge.get(), passed(std::move(task))));
     }
 
     ~CrossThreadHolder()
@@ -95,7 +95,7 @@ private:
     public:
         Bridge(ExecutionContext* executionContext, PassOwnPtr<T> obj, PassRefPtr<MutexWrapper> mutex, CrossThreadHolder* holder)
             : ActiveDOMObject(executionContext)
-            , m_obj(obj)
+            , m_obj(std::move(obj))
             , m_mutex(mutex)
             , m_holder(holder)
         {
@@ -161,7 +161,7 @@ private:
 
     CrossThreadHolder(ExecutionContext* executionContext, PassOwnPtr<T> obj)
         : m_mutex(MutexWrapper::create())
-        , m_bridge(new Bridge(executionContext, obj, m_mutex, this))
+        , m_bridge(new Bridge(executionContext, std::move(obj), m_mutex, this))
     {
     }
 

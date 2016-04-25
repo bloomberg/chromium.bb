@@ -84,7 +84,7 @@ private:
 
 MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
 {
-    MediaKeys* mediaKeys = new MediaKeys(context, supportedSessionTypes, cdm);
+    MediaKeys* mediaKeys = new MediaKeys(context, supportedSessionTypes, std::move(cdm));
     mediaKeys->suspendIfNeeded();
     return mediaKeys;
 }
@@ -93,7 +93,7 @@ MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMedi
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_supportedSessionTypes(supportedSessionTypes)
-    , m_cdm(cdm)
+    , m_cdm(std::move(cdm))
     , m_mediaElement(nullptr)
     , m_reservedForMediaElement(false)
     , m_timer(this, &MediaKeys::timerFired)

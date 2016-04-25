@@ -32,7 +32,7 @@ private:
 class CompositeDataConsumerHandle::Context final : public ThreadSafeRefCounted<Context> {
 public:
     using Token = unsigned;
-    static PassRefPtr<Context> create(PassOwnPtr<WebDataConsumerHandle> handle) { return adoptRef(new Context(handle)); }
+    static PassRefPtr<Context> create(PassOwnPtr<WebDataConsumerHandle> handle) { return adoptRef(new Context(std::move(handle))); }
     ~Context()
     {
         ASSERT(!m_readerThread);
@@ -67,7 +67,7 @@ public:
     void update(PassOwnPtr<WebDataConsumerHandle> handle)
     {
         MutexLocker locker(m_mutex);
-        m_handle = handle;
+        m_handle = std::move(handle);
         if (!m_readerThread) {
             // There is no reader.
             return;
@@ -107,7 +107,7 @@ public:
 
 private:
     explicit Context(PassOwnPtr<WebDataConsumerHandle> handle)
-        : m_handle(handle)
+        : m_handle(std::move(handle))
         , m_readerThread(nullptr)
         , m_client(nullptr)
         , m_token(0)
@@ -196,11 +196,11 @@ void CompositeDataConsumerHandle::Updater::update(PassOwnPtr<WebDataConsumerHand
 {
     ASSERT(handle);
     ASSERT(m_thread->isCurrentThread());
-    m_context->update(handle);
+    m_context->update(std::move(handle));
 }
 
 CompositeDataConsumerHandle::CompositeDataConsumerHandle(PassOwnPtr<WebDataConsumerHandle> handle, Updater** updater)
-    : m_context(Context::create(handle))
+    : m_context(Context::create(std::move(handle)))
 {
     *updater = new Updater(m_context);
 }

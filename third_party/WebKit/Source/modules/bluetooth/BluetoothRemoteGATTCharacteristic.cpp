@@ -31,7 +31,7 @@ DOMDataView* ConvertWebVectorToDataView(const WebVector<uint8_t>& webVector)
 
 BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(ExecutionContext* context, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic)
     : ActiveDOMObject(context)
-    , m_webCharacteristic(webCharacteristic)
+    , m_webCharacteristic(std::move(webCharacteristic))
     , m_stopped(false)
 {
     m_properties = BluetoothCharacteristicProperties::create(m_webCharacteristic->characteristicProperties);
@@ -44,7 +44,7 @@ BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(Scrip
     if (!webCharacteristic) {
         return nullptr;
     }
-    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->getExecutionContext(), webCharacteristic);
+    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->getExecutionContext(), std::move(webCharacteristic));
     // See note in ActiveDOMObject about suspendIfNeeded.
     characteristic->suspendIfNeeded();
     return characteristic;

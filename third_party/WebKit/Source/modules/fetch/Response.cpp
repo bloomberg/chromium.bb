@@ -236,7 +236,7 @@ Response* Response::create(ExecutionContext* context, PassOwnPtr<FetchDataConsum
             exceptionState.throwTypeError("Response with null body status cannot have body");
             return nullptr;
         }
-        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(bodyHandle));
+        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(std::move(bodyHandle)));
         if (!contentType.isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", contentType);
     }

@@ -50,9 +50,9 @@ public:
     {
         ASSERT(handle);
         Updater* u = nullptr;
-        auto p = adoptPtr(new CompositeDataConsumerHandle(handle, &u));
+        OwnPtr<CompositeDataConsumerHandle> p = adoptPtr(new CompositeDataConsumerHandle(std::move(handle), &u));
         *updater = u;
-        return p;
+        return p.release();
     }
     ~CompositeDataConsumerHandle() override;
 

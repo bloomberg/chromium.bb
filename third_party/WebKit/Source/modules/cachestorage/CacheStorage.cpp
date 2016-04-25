@@ -327,7 +327,7 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
 
 CacheStorage::CacheStorage(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
     : m_scopedFetcher(fetcher)
-    , m_webCacheStorage(webCacheStorage)
+    , m_webCacheStorage(std::move(webCacheStorage))
 {
 }
 

@@ -33,11 +33,11 @@ namespace blink {
 
 IDBCursorWithValue* IDBCursorWithValue::create(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
-    return new IDBCursorWithValue(backend, direction, request, source, transaction);
+    return new IDBCursorWithValue(std::move(backend), direction, request, source, transaction);
 }
 
 IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
-    : IDBCursor(backend, direction, request, source, transaction)
+    : IDBCursor(std::move(backend), direction, request, source, transaction)
 {
 }
 

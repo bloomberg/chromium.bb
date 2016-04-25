@@ -115,7 +115,7 @@ class RequestCacheNames
 public:
     RequestCacheNames(const String& securityOrigin, PassOwnPtr<RequestCacheNamesCallback> callback)
         : m_securityOrigin(securityOrigin)
-        , m_callback(callback)
+        , m_callback(std::move(callback))
     {
     }
 
@@ -170,7 +170,7 @@ public:
         : m_params(params)
         , m_numResponsesLeft(numResponses)
         , m_responses(static_cast<size_t>(numResponses))
-        , m_callback(callback)
+        , m_callback(std::move(callback))
     {
     }
 
@@ -252,8 +252,8 @@ class GetCacheKeysForRequestData : public WebServiceWorkerCache::CacheWithReques
 public:
     GetCacheKeysForRequestData(const DataRequestParams& params, PassOwnPtr<WebServiceWorkerCache> cache, PassOwnPtr<RequestEntriesCallback> callback)
         : m_params(params)
-        , m_cache(cache)
-        , m_callback(callback)
+        , m_cache(std::move(cache))
+        , m_callback(std::move(callback))
     {
     }
     ~GetCacheKeysForRequestData() override { }
@@ -293,7 +293,7 @@ class GetCacheForRequestData
 public:
     GetCacheForRequestData(const DataRequestParams& params, PassOwnPtr<RequestEntriesCallback> callback)
         : m_params(params)
-        , m_callback(callback)
+        , m_callback(std::move(callback))
     {
     }
     ~GetCacheForRequestData() override { }
@@ -319,7 +319,7 @@ class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
 
 public:
     DeleteCache(PassOwnPtr<DeleteCacheCallback> callback)
-        : m_callback(callback)
+        : m_callback(std::move(callback))
     {
     }
     ~DeleteCache() override { }
@@ -343,7 +343,7 @@ class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
 public:
 
     DeleteCacheEntry(PassOwnPtr<DeleteEntryCallback> callback)
-        : m_callback(callback)
+        : m_callback(std::move(callback))
     {
     }
     ~DeleteCacheEntry() override { }
@@ -370,7 +370,7 @@ public:
     GetCacheForDeleteEntry(const String& requestSpec, const String& cacheName, PassOwnPtr<DeleteEntryCallback> callback)
         : m_requestSpec(requestSpec)
         , m_cacheName(cacheName)
-        , m_callback(callback)
+        , m_callback(std::move(callback))
     {
     }
     ~GetCacheForDeleteEntry() override { }
@@ -427,7 +427,7 @@ void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, con
         callback->sendFailure(*errorString);
         return;
     }
-    cache->dispatchKeys(new RequestCacheNames(securityOrigin, callback));
+    cache->dispatchKeys(new RequestCacheNames(securityOrigin, std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::requestEntries(ErrorString* errorString, const String& cacheId, int skipCount, int pageSize, PassOwnPtr<RequestEntriesCallback> callback)
@@ -442,7 +442,7 @@ void InspectorCacheStorageAgent::requestEntries(ErrorString* errorString, const 
     params.cacheName = cacheName;
     params.pageSize = pageSize;
     params.skipCount = skipCount;
-    cache->dispatchOpen(new GetCacheForRequestData(params, callback), WebString(cacheName));
+    cache->dispatchOpen(new GetCacheForRequestData(params, std::move(callback)), WebString(cacheName));
 }
 
 void InspectorCacheStorageAgent::deleteCache(ErrorString* errorString, const String& cacheId, PassOwnPtr<DeleteCacheCallback> callback)
@@ -453,7 +453,7 @@ void InspectorCacheStorageAgent::deleteCache(ErrorString* errorString, const Str
         callback->sendFailure(*errorString);
         return;
     }
-    cache->dispatchDelete(new DeleteCache(callback), WebString(cacheName));
+    cache->dispatchDelete(new DeleteCache(std::move(callback)), WebString(cacheName));
 }
 
 void InspectorCacheStorageAgent::deleteEntry(ErrorString* errorString, const String& cacheId, const String& request, PassOwnPtr<DeleteEntryCallback> callback)
@@ -464,7 +464,7 @@ void InspectorCacheStorageAgent::deleteEntry(ErrorString* errorString, const Str
         callback->sendFailure(*errorString);
         return;
     }
-    cache->dispatchOpen(new GetCacheForDeleteEntry(request, cacheName, callback), WebString(cacheName));
+    cache->dispatchOpen(new GetCacheForDeleteEntry(request, cacheName, std::move(callback)), WebString(cacheName));
 }
 
 

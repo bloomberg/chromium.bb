@@ -346,10 +346,10 @@ PassOwnPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
             }
             name->setSources(nameSourceProperties.release());
         }
-        nodeObject->setProperties(properties);
+        nodeObject->setProperties(std::move(properties));
         nodeObject->setName(name.release());
     } else {
-        nodeObject->setProperties(properties);
+        nodeObject->setProperties(std::move(properties));
     }
 
     fillCoreProperties(axObject, nodeObject.get());

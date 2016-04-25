@@ -23,7 +23,7 @@ class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, pu
 public:
     static PaintRenderingContext2D* create(PassOwnPtr<ImageBuffer> imageBuffer)
     {
-        return new PaintRenderingContext2D(imageBuffer);
+        return new PaintRenderingContext2D(std::move(imageBuffer));
     }
 
     // BaseRenderingContext2D

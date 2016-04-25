@@ -246,7 +246,7 @@ FileWriterBaseCallbacks::FileWriterBaseCallbacks(FileWriterBase* fileWriter, Fil
 
 void FileWriterBaseCallbacks::didCreateFileWriter(PassOwnPtr<WebFileWriter> fileWriter, long long length)
 {
-    m_fileWriter->initialize(fileWriter, length);
+    m_fileWriter->initialize(std::move(fileWriter), length);
     if (m_successCallback)
         handleEventOrScheduleCallback(m_successCallback.release(), m_fileWriter.release());
 }

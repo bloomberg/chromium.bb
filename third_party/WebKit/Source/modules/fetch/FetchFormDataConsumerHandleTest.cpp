@@ -52,7 +52,7 @@ class LoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
 public:
     explicit LoaderFactory(PassOwnPtr<WebDataConsumerHandle> handle)
         : m_client(nullptr)
-        , m_handle(handle) {}
+        , m_handle(std::move(handle)) {}
     PassOwnPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient* client, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
     {
         m_client = client;

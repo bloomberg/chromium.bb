@@ -82,7 +82,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 {
     IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
     if (m_contextStopped || !getExecutionContext()) {
-        OwnPtr<WebIDBDatabase> db = backend;
+        OwnPtr<WebIDBDatabase> db = std::move(backend);
         db->abort(m_transactionId);
         db->close();
         return;
@@ -92,7 +92,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 
     ASSERT(m_databaseCallbacks);
 
-    IDBDatabase* idbDatabase = IDBDatabase::create(getExecutionContext(), backend, m_databaseCallbacks.release());
+    IDBDatabase* idbDatabase = IDBDatabase::create(getExecutionContext(), std::move(backend), m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
 
     if (oldVersion == IDBDatabaseMetadata::NoVersion) {
@@ -114,7 +114,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
 {
     IDB_TRACE("IDBOpenDBRequest::onSuccess()");
     if (m_contextStopped || !getExecutionContext()) {
-        OwnPtr<WebIDBDatabase> db = backend;
+        OwnPtr<WebIDBDatabase> db = std::move(backend);
         if (db)
             db->close();
         return;
@@ -132,7 +132,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
     } else {
         ASSERT(backend.get());
         ASSERT(m_databaseCallbacks);
-        idbDatabase = IDBDatabase::create(getExecutionContext(), backend, m_databaseCallbacks.release());
+        idbDatabase = IDBDatabase::create(getExecutionContext(), std::move(backend), m_databaseCallbacks.release());
         setResult(IDBAny::create(idbDatabase));
     }
     idbDatabase->setMetadata(metadata);

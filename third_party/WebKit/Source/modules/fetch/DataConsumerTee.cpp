@@ -408,7 +408,7 @@ void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<WebD
     RefPtr<DestinationContext> context1 = DestinationContext::create();
     RefPtr<DestinationContext> context2 = DestinationContext::create();
 
-    root->initialize(new SourceContext(root, src, context1, context2, executionContext));
+    root->initialize(new SourceContext(root, std::move(src), context1, context2, executionContext));
 
     *dest1 = DestinationHandle::create(DestinationContext::Proxy::create(context1, tracker));
     *dest2 = DestinationHandle::create(DestinationContext::Proxy::create(context2, tracker));
@@ -424,7 +424,7 @@ void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<Fetc
     }
 
     OwnPtr<WebDataConsumerHandle> webDest1, webDest2;
-    DataConsumerTee::create(executionContext, static_cast<PassOwnPtr<WebDataConsumerHandle>>(src), &webDest1, &webDest2);
+    DataConsumerTee::create(executionContext, static_cast<PassOwnPtr<WebDataConsumerHandle>>(std::move(src)), &webDest1, &webDest2);
     *dest1 = createFetchDataConsumerHandleFromWebHandle(webDest1.release());
     *dest2 = createFetchDataConsumerHandleFromWebHandle(webDest2.release());
     return;

@@ -19,7 +19,7 @@ namespace blink {
 
 BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDevice> webDevice)
     : ActiveDOMObject(context)
-    , m_webDevice(webDevice)
+    , m_webDevice(std::move(webDevice))
     , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower, m_webDevice->rssi))
     , m_gatt(BluetoothRemoteGATTServer::create(this))
 {
@@ -30,7 +30,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBlueto
 BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDevice> webDevice)
 {
     ASSERT(webDevice);
-    BluetoothDevice* device = new BluetoothDevice(resolver->getExecutionContext(), webDevice);
+    BluetoothDevice* device = new BluetoothDevice(resolver->getExecutionContext(), std::move(webDevice));
     device->suspendIfNeeded();
     return device;
 }

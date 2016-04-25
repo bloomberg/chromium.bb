@@ -71,11 +71,11 @@ private:
 
 class WebToFetchDataConsumerHandleAdapter : public FetchDataConsumerHandle {
 public:
-    WebToFetchDataConsumerHandleAdapter(PassOwnPtr<WebDataConsumerHandle> handle) : m_handle(handle) { }
+    WebToFetchDataConsumerHandleAdapter(PassOwnPtr<WebDataConsumerHandle> handle) : m_handle(std::move(handle)) { }
 private:
     class ReaderImpl final : public FetchDataConsumerHandle::Reader {
     public:
-        ReaderImpl(PassOwnPtr<WebDataConsumerHandle::Reader> reader) : m_reader(reader) { }
+        ReaderImpl(PassOwnPtr<WebDataConsumerHandle::Reader> reader) : m_reader(std::move(reader)) { }
         Result read(void* data, size_t size, Flags flags, size_t* readSize) override
         {
             return m_reader->read(data, size, flags, readSize);
@@ -119,7 +119,7 @@ PassOwnPtr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle()
 
 PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    return adoptPtr(new WebToFetchDataConsumerHandleAdapter(handle));
+    return adoptPtr(new WebToFetchDataConsumerHandleAdapter(std::move(handle)));
 }
 
 NotifyOnReaderCreationHelper::NotifyOnReaderCreationHelper(WebDataConsumerHandle::Client* client)

@@ -18,7 +18,7 @@
 namespace blink {
 
 BluetoothRemoteGATTService::BluetoothRemoteGATTService(PassOwnPtr<WebBluetoothRemoteGATTService> webService)
-    : m_webService(webService)
+    : m_webService(std::move(webService))
 {
 }
 
@@ -27,7 +27,7 @@ BluetoothRemoteGATTService* BluetoothRemoteGATTService::take(ScriptPromiseResolv
     if (!webService) {
         return nullptr;
     }
-    return new BluetoothRemoteGATTService(webService);
+    return new BluetoothRemoteGATTService(std::move(webService));
 }
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristic(ScriptState* scriptState,

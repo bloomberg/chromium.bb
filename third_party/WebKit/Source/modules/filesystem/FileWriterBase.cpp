@@ -45,7 +45,7 @@ void FileWriterBase::initialize(PassOwnPtr<WebFileWriter> writer, long long leng
 {
     ASSERT(!m_writer);
     ASSERT(length >= 0);
-    m_writer = writer;
+    m_writer = std::move(writer);
     m_length = length;
 }
 

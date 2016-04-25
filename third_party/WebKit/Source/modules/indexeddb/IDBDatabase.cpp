@@ -68,7 +68,7 @@ const char IDBDatabase::databaseClosedErrorMessage[] = "The database connection 
 
 IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, IDBDatabaseCallbacks* callbacks)
 {
-    IDBDatabase* idbDatabase = new IDBDatabase(context, database, callbacks);
+    IDBDatabase* idbDatabase = new IDBDatabase(context, std::move(database), callbacks);
     idbDatabase->suspendIfNeeded();
     return idbDatabase;
 }
@@ -76,7 +76,7 @@ IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDat
 IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> backend, IDBDatabaseCallbacks* callbacks)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
-    , m_backend(backend)
+    , m_backend(std::move(backend))
     , m_databaseCallbacks(callbacks)
 {
     m_databaseCallbacks->connect(this);

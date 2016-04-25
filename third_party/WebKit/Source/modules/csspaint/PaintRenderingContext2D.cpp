@@ -9,7 +9,7 @@
 namespace blink {
 
 PaintRenderingContext2D::PaintRenderingContext2D(PassOwnPtr<ImageBuffer> imageBuffer)
-    : m_imageBuffer(imageBuffer)
+    : m_imageBuffer(std::move(imageBuffer))
 {
     m_clipAntialiasing = AntiAliased;
     modifiableState().setShouldAntialias(true);

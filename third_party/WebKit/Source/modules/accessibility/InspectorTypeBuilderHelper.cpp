@@ -16,7 +16,7 @@ using namespace protocol::Accessibility;
 
 PassOwnPtr<AXProperty> createProperty(const String& name, PassOwnPtr<AXValue> value)
 {
-    return AXProperty::create().setName(name).setValue(value).build();
+    return AXProperty::create().setName(name).setValue(std::move(value)).build();
 }
 
 String ignoredReasonName(AXIgnoredReason reason)

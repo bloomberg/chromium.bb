@@ -23,7 +23,7 @@ CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(CompositorWorke
 }
 
 CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
-    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOriginPrivilegeData, workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, std::move(starterOriginPrivilegeData), workerClients)
     , m_callbackCollection(this)
 {
 }

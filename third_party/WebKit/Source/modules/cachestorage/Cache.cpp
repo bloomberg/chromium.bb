@@ -363,7 +363,7 @@ private:
 
 Cache* Cache::create(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
 {
-    return new Cache(fetcher, webCache);
+    return new Cache(fetcher, std::move(webCache));
 }
 
 ScriptPromise Cache::match(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
@@ -475,7 +475,7 @@ WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptio
 
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher, PassOwnPtr<WebServiceWorkerCache> webCache)
     : m_scopedFetcher(fetcher)
-    , m_webCache(webCache)
+    , m_webCache(std::move(webCache))
 {
 }
 

@@ -68,7 +68,7 @@ WorkerBackingThread& CompositorWorkerThread::workerBackingThread()
 WorkerGlobalScope*CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorWorkerThread::createWorkerGlobalScope");
-    return CompositorWorkerGlobalScope::create(this, startupData, m_timeOrigin);
+    return CompositorWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
 }
 
 void CompositorWorkerThread::clearSharedBackingThread()
