@@ -14,7 +14,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -55,7 +54,7 @@ void MaybeExecuteSRTFromBlockingPool(
   if (base::PathExists(downloaded_path)) {
     base::FilePath executable_path(
         downloaded_path.ReplaceExtension(kExecutableExtension));
-    if (base::ReplaceFile(downloaded_path, executable_path, NULL)) {
+    if (base::ReplaceFile(downloaded_path, executable_path, nullptr)) {
       base::CommandLine srt_command_line(executable_path);
       srt_command_line.AppendSwitch(kChromePromptSwitch);
       base::Process srt_process(
@@ -158,17 +157,12 @@ void SRTGlobalError::OnBubbleViewDidClose(Browser* browser) {
 }
 
 void SRTGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
-  RecordSRTPromptHistogram(SRT_PROMPT_ACCEPTED);
-  interacted_ = true;
-  global_error_service_->RemoveGlobalError(this);
+  OnUserinteractionStarted(SRT_PROMPT_ACCEPTED);
   MaybeExecuteSRT();
 }
 
 void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
-  RecordSRTPromptHistogram(SRT_PROMPT_DENIED);
-  interacted_ = true;
-  global_error_service_->RemoveGlobalError(this);
-
+  OnUserinteractionStarted(SRT_PROMPT_DENIED);
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
   OnUserinteractionDone();
@@ -208,6 +202,20 @@ void SRTGlobalError::FallbackToDownloadPage() {
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
   OnUserinteractionDone();
+}
+
+void SRTGlobalError::OnUserinteractionStarted(
+    SRTPromptHistogramValue histogram_value) {
+  // This is for cases where the UI doesn't go away quickly enough and user
+  // might click on the button more than once, or more than one button.
+  if (interacted_)
+    return;
+  RecordSRTPromptHistogram(histogram_value);
+  interacted_ = true;
+  if (global_error_service_) {
+    global_error_service_->RemoveGlobalError(this);
+    global_error_service_ = nullptr;
+  }
 }
 
 void SRTGlobalError::OnUserinteractionDone() {

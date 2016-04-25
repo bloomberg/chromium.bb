@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 
 class GlobalErrorService;
@@ -58,6 +59,9 @@ class SRTGlobalError : public GlobalErrorWithStandardBubble {
   // Falls back to a navigation to the download page when we failed to
   // download and execute the SRT.
   void FallbackToDownloadPage();
+
+  // Called when user interaction has started.
+  void OnUserinteractionStarted(SRTPromptHistogramValue histogram_value);
 
   // Called when user interaction is done.
   void OnUserinteractionDone();
