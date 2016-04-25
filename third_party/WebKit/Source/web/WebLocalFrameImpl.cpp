@@ -746,7 +746,7 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
 {
     DCHECK(frame());
 
-    MessageLevel webCoreMessageLevel;
+    MessageLevel webCoreMessageLevel = LogMessageLevel;
     switch (message.level) {
     case WebConsoleMessage::LevelDebug:
         webCoreMessageLevel = DebugMessageLevel;
@@ -760,9 +760,10 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
     case WebConsoleMessage::LevelError:
         webCoreMessageLevel = ErrorMessageLevel;
         break;
-    default:
-        NOTREACHED();
-        return;
+    // Unsupported values.
+    case WebConsoleMessage::LevelInfo:
+    case WebConsoleMessage::LevelRevokedError:
+        break;
     }
 
     frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, message.url, message.lineNumber, message.columnNumber));

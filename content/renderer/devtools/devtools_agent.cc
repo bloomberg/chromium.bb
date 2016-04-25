@@ -21,11 +21,9 @@
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-using blink::WebConsoleMessage;
 using blink::WebDevToolsAgent;
 using blink::WebDevToolsAgentClient;
 using blink::WebLocalFrame;
@@ -243,29 +241,6 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
 void DevToolsAgent::OnRequestNewWindowACK(bool success) {
   if (!success)
     GetWebAgent()->failedToRequestDevTools();
-}
-
-void DevToolsAgent::AddMessageToConsole(ConsoleMessageLevel level,
-                                        const std::string& message) {
-  WebLocalFrame* web_frame = frame_->GetWebFrame();
-
-  WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
-  switch (level) {
-    case CONSOLE_MESSAGE_LEVEL_DEBUG:
-      target_level = WebConsoleMessage::LevelDebug;
-      break;
-    case CONSOLE_MESSAGE_LEVEL_LOG:
-      target_level = WebConsoleMessage::LevelLog;
-      break;
-    case CONSOLE_MESSAGE_LEVEL_WARNING:
-      target_level = WebConsoleMessage::LevelWarning;
-      break;
-    case CONSOLE_MESSAGE_LEVEL_ERROR:
-      target_level = WebConsoleMessage::LevelError;
-      break;
-  }
-  web_frame->addMessageToConsole(
-      WebConsoleMessage(target_level, WebString::fromUTF8(message)));
 }
 
 void DevToolsAgent::ContinueProgram() {

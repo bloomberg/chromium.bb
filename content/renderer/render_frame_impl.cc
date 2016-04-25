@@ -161,6 +161,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameSerializer.h"
@@ -2359,8 +2360,25 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
 
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
                                           const std::string& message) {
-  if (devtools_agent_)
-    devtools_agent_->AddMessageToConsole(level, message);
+  blink::WebConsoleMessage::Level target_level =
+      blink::WebConsoleMessage::LevelLog;
+  switch (level) {
+    case CONSOLE_MESSAGE_LEVEL_DEBUG:
+      target_level = blink::WebConsoleMessage::LevelDebug;
+      break;
+    case CONSOLE_MESSAGE_LEVEL_LOG:
+      target_level = blink::WebConsoleMessage::LevelLog;
+      break;
+    case CONSOLE_MESSAGE_LEVEL_WARNING:
+      target_level = blink::WebConsoleMessage::LevelWarning;
+      break;
+    case CONSOLE_MESSAGE_LEVEL_ERROR:
+      target_level = blink::WebConsoleMessage::LevelError;
+      break;
+  }
+
+  blink::WebConsoleMessage wcm(target_level, WebString::fromUTF8(message));
+  frame_->addMessageToConsole(wcm);
 }
 
 bool RenderFrameImpl::IsUsingLoFi() const {

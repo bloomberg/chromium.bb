@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 
@@ -47,9 +46,6 @@ class CONTENT_EXPORT DevToolsAgent
   blink::WebDevToolsAgent* GetWebAgent();
 
   bool IsAttached();
-
-  void AddMessageToConsole(ConsoleMessageLevel level,
-                           const std::string& message);
 
  private:
   friend class DevToolsAgentTest;
