@@ -2,19 +2,38 @@
 <body>
 <script src="../resources/runner.js"></script>
 <script>
+var isDone = false;
 
-var times = 100000;
-var worker = new Worker('resources/worker.js');
-worker.onmessage = function(event) {
-    console.log("received");
+function runTest() {
+    var numRound = 1000;
+    var worker = new Worker('resources/worker.js');
+
+    var startTime = PerfTestRunner.now();
+    worker.onmessage = function(event) {
+        numRound--;
+        if (numRound > 0) {
+            worker.postMessage('next');
+        } else {
+            PerfTestRunner.measureValueAsync(PerfTestRunner.now() - startTime);
+            if (!isDone)
+                runTest();
+        }
+    };
+    worker.postMessage('start');
+}
+
+function testDone() {
+    isDone = true;
+}
+
+window.onload = function () {
+    PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measures time to run 1000 postMessage round trips in serial.",
+        unit: 'ms',
+        done: testDone,
+    });
+    runTest();
 };
-
-PerfTestRunner.measureTime({
-    description: "Measures performance of postMessage().",
-    run: function() {
-        for (var i = 0; i < times; i++)
-            worker.postMessage('foo');
-    }
-});
 </script>
+<div id="log"></div>
 </body>
