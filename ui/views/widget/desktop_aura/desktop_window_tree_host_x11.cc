@@ -166,6 +166,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       window_mapped_(false),
       is_fullscreen_(false),
       is_always_on_top_(false),
+      is_override_redirect_(false),
       use_native_frame_(false),
       should_maximize_after_map_(false),
       use_argb_visual_(false),
@@ -969,6 +970,11 @@ void DesktopWindowTreeHostX11::HideImpl() {
   if (window_mapped_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;
+    if (is_override_redirect_) {
+      // If we're override-redirect, we won't receive an UnmapNotify message,
+      // so run the unmap handler directly.
+      OnX11WindowUnmapped();
+    }
   }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
@@ -1122,6 +1128,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
 
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
+
+  is_override_redirect_ = swa.override_redirect;
 
   Visual* visual;
   int depth;
@@ -1380,6 +1388,32 @@ void DesktopWindowTreeHostX11::OnFrameExtentsUpdated() {
   } else {
     native_window_frame_borders_in_pixels_ = gfx::Insets();
   }
+}
+
+void DesktopWindowTreeHostX11::OnX11WindowMapped() {
+  if (!window_mapped_) {
+    window_mapped_ = true;
+
+    FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
+                      observer_list_,
+                      OnWindowMapped(xwindow_));
+
+    UpdateMinAndMaxSize();
+
+    // Some WMs only respect maximize hints after the window has been mapped.
+    // Check whether we need to re-do a maximization.
+    if (should_maximize_after_map_) {
+      Maximize();
+      should_maximize_after_map_ = false;
+    }
+  }
+}
+
+void DesktopWindowTreeHostX11::OnX11WindowUnmapped() {
+  window_mapped_ = false;
+  FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
+                    observer_list_,
+                    OnWindowUnmapped(xwindow_));
 }
 
 void DesktopWindowTreeHostX11::UpdateMinAndMaxSize() {
@@ -1654,12 +1688,17 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   }
 
   XMapWindow(xdisplay_, xwindow_);
-
-  // We now block until our window is mapped. Some X11 APIs will crash and
-  // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
-  // asynchronous.
-  if (ui::X11EventSource::GetInstance())
-    ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
+  if (is_override_redirect_) {
+    // Override redirect windows don't get routed through the window manager;
+    // we won't reliably get a MapNotify.
+    OnX11WindowMapped();
+  } else {
+    // We now block until our window is mapped. Some X11 APIs will crash and
+    // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
+    // asynchronous.
+    if (ui::X11EventSource::GetInstance())
+      ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
+  }
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
@@ -1873,27 +1912,11 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case MapNotify: {
-      window_mapped_ = true;
-
-      FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
-                        observer_list_,
-                        OnWindowMapped(xwindow_));
-
-      UpdateMinAndMaxSize();
-
-      // Some WMs only respect maximize hints after the window has been mapped.
-      // Check whether we need to re-do a maximization.
-      if (should_maximize_after_map_) {
-        Maximize();
-        should_maximize_after_map_ = false;
-      }
-
+      OnX11WindowMapped();
       break;
     }
     case UnmapNotify: {
-      FOR_EACH_OBSERVER(DesktopWindowTreeHostObserverX11,
-                        observer_list_,
-                        OnWindowUnmapped(xwindow_));
+      OnX11WindowUnmapped();
       break;
     }
     case ClientMessage: {
