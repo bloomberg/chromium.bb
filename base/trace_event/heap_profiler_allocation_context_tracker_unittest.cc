@@ -62,13 +62,11 @@ class AllocationContextTrackerTest : public testing::Test {
   void SetUp() override {
     TraceConfig config("");
     TraceLog::GetInstance()->SetEnabled(config, TraceLog::RECORDING_MODE);
-    AllocationContextTracker::SetCaptureMode(
-        AllocationContextTracker::CaptureMode::PSEUDO_STACK);
+    AllocationContextTracker::SetCaptureEnabled(true);
   }
 
   void TearDown() override {
-    AllocationContextTracker::SetCaptureMode(
-        AllocationContextTracker::CaptureMode::DISABLED);
+    AllocationContextTracker::SetCaptureEnabled(false);
     TraceLog::GetInstance()->SetDisabled();
   }
 };

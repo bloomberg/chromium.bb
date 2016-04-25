@@ -14,8 +14,7 @@
 namespace base {
 namespace trace_event {
 
-subtle::Atomic32 AllocationContextTracker::capture_mode_ =
-    static_cast<int32_t>(AllocationContextTracker::CaptureMode::DISABLED);
+subtle::Atomic32 AllocationContextTracker::capture_enabled_ = 0;
 
 namespace {
 
@@ -61,21 +60,21 @@ AllocationContextTracker::~AllocationContextTracker() {}
 
 // static
 void AllocationContextTracker::SetCurrentThreadName(const char* name) {
-  if (name && capture_mode() != CaptureMode::DISABLED) {
+  if (name && capture_enabled()) {
     GetInstanceForCurrentThread()->thread_name_ = name;
   }
 }
 
 // static
-void AllocationContextTracker::SetCaptureMode(CaptureMode mode) {
+void AllocationContextTracker::SetCaptureEnabled(bool enabled) {
   // When enabling capturing, also initialize the TLS slot. This does not create
   // a TLS instance yet.
-  if (mode != CaptureMode::DISABLED && !g_tls_alloc_ctx_tracker.initialized())
+  if (enabled && !g_tls_alloc_ctx_tracker.initialized())
     g_tls_alloc_ctx_tracker.Initialize(DestructAllocationContextTracker);
 
-  // Release ordering ensures that when a thread observes |capture_mode_| to
+  // Release ordering ensures that when a thread observes |capture_enabled_| to
   // be true through an acquire load, the TLS slot has been initialized.
-  subtle::Release_Store(&capture_mode_, static_cast<int32_t>(mode));
+  subtle::Release_Store(&capture_enabled_, enabled);
 }
 
 void AllocationContextTracker::PushPseudoStackFrame(
@@ -130,65 +129,25 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
     return ctx;
   }
 
-  CaptureMode mode = static_cast<CaptureMode>(
-      subtle::NoBarrier_Load(&capture_mode_));
+  // Fill the backtrace.
+  {
+    auto backtrace = std::begin(ctx.backtrace.frames);
+    auto backtrace_end = std::end(ctx.backtrace.frames);
 
-  auto backtrace = std::begin(ctx.backtrace.frames);
-  auto backtrace_end = std::end(ctx.backtrace.frames);
+    // Add the thread name as the first entry
+    if (thread_name_) {
+      *backtrace++ = StackFrame::FromThreadName(thread_name_);
+    }
 
-  // Add the thread name as the first entry
-  if (thread_name_) {
-    *backtrace++ = StackFrame::FromThreadName(thread_name_);
+    for (const char* event_name: pseudo_stack_) {
+      if (backtrace == backtrace_end) {
+        break;
+      }
+      *backtrace++ = StackFrame::FromTraceEventName(event_name);
+    }
+
+    ctx.backtrace.frame_count = backtrace - std::begin(ctx.backtrace.frames);
   }
-
-  switch (mode) {
-    case CaptureMode::DISABLED:
-      {
-        break;
-      }
-    case CaptureMode::PSEUDO_STACK:
-      {
-        for (const auto& event_name: pseudo_stack_) {
-          if (backtrace == backtrace_end) {
-            break;
-          }
-          *backtrace++ = StackFrame::FromTraceEventName(event_name);
-        }
-        break;
-      }
-#if ENABLE_NATIVE_ALLOCATION_TRACES
-    case CaptureMode::NATIVE_STACK:
-      {
-        // base::trace_event::AllocationContextTracker::GetContextSnapshot()
-        const size_t kKnownFrameCount = 1;
-
-        // Backtrace contract requires us to return bottom frames, i.e.
-        // from main() and up. Stack unwinding produces top frames, i.e.
-        // from this point and up until main(). We request many frames to
-        // make sure we reach main(), and then copy bottom portion of them.
-        const void* frames[50];
-        static_assert(arraysize(frames) >= Backtrace::kMaxFrameCount,
-                      "not requesting enough frames to fill Backtrace");
-        size_t frame_count = debug::TraceStackFramePointers(
-            frames,
-            arraysize(frames),
-            kKnownFrameCount);
-
-        // Copy frames backwards
-        size_t backtrace_capacity = backtrace_end - backtrace;
-        ssize_t top_frame_index = (backtrace_capacity >= frame_count) ?
-            0 :
-            frame_count - backtrace_capacity;
-        for (ssize_t i = frame_count - 1; i >= top_frame_index; --i) {
-          const void* frame = frames[i];
-          *backtrace++ = StackFrame::FromProgramCounter(frame);
-        }
-        break;
-      }
-#endif  // ENABLE_NATIVE_ALLOCATION_TRACES
-  }
-
-  ctx.backtrace.frame_count = backtrace - std::begin(ctx.backtrace.frames);
 
   // TODO(ssid): Fix crbug.com/594803 to add file name as 3rd dimension
   // (component name) in the heap profiler and not piggy back on the type name.

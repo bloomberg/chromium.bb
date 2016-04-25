@@ -1056,21 +1056,17 @@ class ScopedTaskExecutionEvent {
  public:
   explicit ScopedTaskExecutionEvent(const char* task_context)
       : context_(task_context) {
-    using base::trace_event::AllocationContextTracker;
     if (UNLIKELY(
-            AllocationContextTracker::capture_mode() !=
-            AllocationContextTracker::CaptureMode::DISABLED)) {
-      AllocationContextTracker::GetInstanceForCurrentThread()
+            base::trace_event::AllocationContextTracker::capture_enabled())) {
+      base::trace_event::AllocationContextTracker::GetInstanceForCurrentThread()
           ->PushCurrentTaskContext(context_);
     }
   }
 
   ~ScopedTaskExecutionEvent() {
-    using base::trace_event::AllocationContextTracker;
     if (UNLIKELY(
-            AllocationContextTracker::capture_mode() !=
-            AllocationContextTracker::CaptureMode::DISABLED)) {
-      AllocationContextTracker::GetInstanceForCurrentThread()
+            base::trace_event::AllocationContextTracker::capture_enabled())) {
+      base::trace_event::AllocationContextTracker::GetInstanceForCurrentThread()
           ->PopCurrentTaskContext(context_);
     }
   }

@@ -20,10 +20,6 @@ const char kEnableCrashReporter[]           = "enable-crash-reporter";
 // the memory-infra category is enabled.
 const char kEnableHeapProfiling[]           = "enable-heap-profiling";
 
-// Report native (walk the stack) allocation traces. By default pseudo stacks
-// derived from trace events are reported.
-const char kEnableHeapProfilingModeNative[] = "native";
-
 // Generates full memory crash dump.
 const char kFullMemoryCrashReport[]         = "full-memory-crash-report";
 
