@@ -6,6 +6,7 @@
 
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 
 namespace blink {
 

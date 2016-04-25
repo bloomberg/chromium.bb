@@ -19,14 +19,14 @@ OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D()
 }
 
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs)
-    : OffscreenCanvasRenderingContext(canvas)
+    : CanvasRenderingContext(canvas)
     , m_hasAlpha(attrs.alpha())
 {
 }
 
 DEFINE_TRACE(OffscreenCanvasRenderingContext2D)
 {
-    OffscreenCanvasRenderingContext::trace(visitor);
+    CanvasRenderingContext::trace(visitor);
     BaseRenderingContext2D::trace(visitor);
 }
 

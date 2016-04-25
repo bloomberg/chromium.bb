@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: If there're more context types implemented, they should be added here
-// to form a union type of OffscreenCanvasRenderingContext
-typedef OffscreenCanvasRenderingContext2D OffscreenRenderingContext;
-
 [
     Constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height),
     Exposed=(Window,Worker),
@@ -14,6 +10,5 @@ typedef OffscreenCanvasRenderingContext2D OffscreenRenderingContext;
     [EnforceRange] attribute unsigned long width;
     [EnforceRange] attribute unsigned long height;
 
-    OffscreenRenderingContext? getContext(DOMString contextId, optional CanvasContextCreationAttributes attributes);
     [RaisesException] ImageBitmap transferToImageBitmap();
 };

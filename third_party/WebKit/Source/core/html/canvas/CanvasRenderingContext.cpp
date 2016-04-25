@@ -36,6 +36,11 @@ CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
 {
 }
 
+CanvasRenderingContext::CanvasRenderingContext(OffscreenCanvas* canvas)
+    : m_offscreenCanvas(canvas)
+{
+}
+
 CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(const String& id)
 {
     if (id == "2d")
@@ -85,6 +90,7 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
 DEFINE_TRACE(CanvasRenderingContext)
 {
     visitor->trace(m_canvas);
+    visitor->trace(m_offscreenCanvas);
 }
 
 } // namespace blink

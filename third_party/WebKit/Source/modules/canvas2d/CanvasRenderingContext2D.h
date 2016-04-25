@@ -78,7 +78,6 @@ public:
             return new CanvasRenderingContext2D(canvas, attrs, document);
         }
         CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::Context2d; }
-        void onError(HTMLCanvasElement*, const String& error) override { }
     };
 
     ~CanvasRenderingContext2D() override;

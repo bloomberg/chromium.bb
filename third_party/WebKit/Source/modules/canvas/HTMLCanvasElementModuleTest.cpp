@@ -8,8 +8,8 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/EmptyClients.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/offscreencanvas/OffscreenCanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

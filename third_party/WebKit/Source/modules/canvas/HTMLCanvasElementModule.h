@@ -7,7 +7,6 @@
 
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/ModulesExport.h"
-#include "modules/offscreencanvas/OffscreenCanvas.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -15,6 +14,7 @@ namespace blink {
 class CanvasContextCreationAttributes;
 class HTMLCanvasElement;
 class ScriptState;
+class OffscreenCanvas;
 
 class MODULES_EXPORT HTMLCanvasElementModule {
     STATIC_ONLY(HTMLCanvasElementModule);

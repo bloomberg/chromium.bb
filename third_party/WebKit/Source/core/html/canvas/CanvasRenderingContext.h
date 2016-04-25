@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
@@ -41,6 +42,7 @@ namespace blink {
 class CanvasImageSource;
 class HTMLCanvasElement;
 class ImageData;
+class ImageBitmap;
 
 class CORE_EXPORT CanvasRenderingContext : public GarbageCollectedFinalized<CanvasRenderingContext>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
@@ -119,13 +121,19 @@ public:
     bool wouldTaintOrigin(CanvasImageSource*);
     void didMoveToNewDocument(Document*);
 
+    // OffscreenCanvas-specific methods
+    OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
+    virtual ImageBitmap* transferToImageBitmap(ExceptionState&) { return nullptr; }
+
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);
+    CanvasRenderingContext(OffscreenCanvas*);
     DECLARE_VIRTUAL_TRACE();
     virtual void stop() = 0;
 
 private:
     Member<HTMLCanvasElement> m_canvas;
+    Member<OffscreenCanvas> m_offscreenCanvas;
     HashSet<String> m_cleanURLs;
     HashSet<String> m_dirtyURLs;
 };
