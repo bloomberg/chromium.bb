@@ -76,6 +76,15 @@ class ArcAppListPrefs : public KeyedService,
     // Notifies an observer that the name of an app has changed.
     virtual void OnAppNameUpdated(const std::string& id,
                                   const std::string& name) {}
+    // Notifies that task has been created and provides information about
+    // initial activity.
+    virtual void OnTaskCreated(int32_t task_id,
+                               const std::string& package_name,
+                               const std::string& activity) {}
+    // Notifies that task has been destroyed.
+    virtual void OnTaskDestroyed(int32_t task_id) {}
+    // Notifies that task has been activated and moved to the front.
+    virtual void OnTaskSetActive(int32_t task_id) {}
 
    protected:
     virtual ~Observer() {}
@@ -143,6 +152,12 @@ class ArcAppListPrefs : public KeyedService,
                  const mojo::String& activity,
                  arc::mojom::ScaleFactor scale_factor,
                  mojo::Array<uint8_t> icon_png_data) override;
+  void OnTaskCreated(int32_t task_id,
+                     const mojo::String& package_name,
+                     const mojo::String& activity) override;
+  void OnTaskDestroyed(int32_t task_id) override;
+  void OnTaskSetActive(int32_t task_id) override;
+
 
   void AddApp(const arc::mojom::AppInfo& app);
   void RemoveApp(const std::string& app_id);

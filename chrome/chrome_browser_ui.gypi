@@ -747,6 +747,8 @@
       'browser/ui/app_list/arc/arc_app_utils.h',
       'browser/ui/app_list/search/arc_app_result.cc',
       'browser/ui/app_list/search/arc_app_result.h',
+      'browser/ui/ash/launcher/arc_app_window_launcher_controller.cc',
+      'browser/ui/ash/launcher/arc_app_window_launcher_controller.h',
       'browser/ui/ash/launcher/arc_app_window_launcher_item_controller.cc',
       'browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h',
       'browser/ui/ash/launcher/arc_launcher_context_menu.cc',

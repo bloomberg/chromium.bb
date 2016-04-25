@@ -24,9 +24,11 @@ AppWindowLauncherItemController::AppWindowLauncherItemController(
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
 
-void AppWindowLauncherItemController::AddWindow(ui::BaseWindow* window) {
-  windows_.push_front(window);
-  observed_windows_.Add(window->GetNativeWindow());
+void AppWindowLauncherItemController::AddWindow(ui::BaseWindow* app_window) {
+  windows_.push_front(app_window);
+  aura::Window* window = app_window->GetNativeWindow();
+  if (window)
+    observed_windows_.Add(window);
 }
 
 AppWindowLauncherItemController::WindowList::iterator
@@ -37,22 +39,34 @@ AppWindowLauncherItemController::GetFromNativeWindow(aura::Window* window) {
                       });
 }
 
-void AppWindowLauncherItemController::RemoveWindowForNativeWindow(
-    aura::Window* window) {
-  auto iter = GetFromNativeWindow(window);
-  if (iter != windows_.end()) {
-    if (*iter == last_active_window_)
-      last_active_window_ = nullptr;
-    OnWindowRemoved(*iter);
-    windows_.erase(iter);
+void AppWindowLauncherItemController::RemoveWindow(ui::BaseWindow* app_window) {
+  DCHECK(app_window);
+  aura::Window* window = app_window->GetNativeWindow();
+  if (window)
+    observed_windows_.Remove(window);
+  if (app_window == last_active_window_)
+    last_active_window_ = nullptr;
+  auto iter = std::find(windows_.begin(), windows_.end(), app_window);
+  if (iter == windows_.end()) {
+    NOTREACHED();
+    return;
   }
-  observed_windows_.Remove(window);
+  OnWindowRemoved(app_window);
+  windows_.erase(iter);
+}
+
+ui::BaseWindow* AppWindowLauncherItemController::GetAppWindow(
+    aura::Window* window) {
+  const auto iter = GetFromNativeWindow(window);
+  if (iter != windows_.end())
+    return *iter;
+  return nullptr;
 }
 
 void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
-  auto iter = GetFromNativeWindow(window);
-  if (iter != windows_.end())
-    last_active_window_ = *iter;
+  ui::BaseWindow* app_window = GetAppWindow(window);
+  if (app_window)
+    last_active_window_ = app_window;
 }
 
 bool AppWindowLauncherItemController::IsOpen() const {

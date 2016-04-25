@@ -153,4 +153,10 @@ void FakeAppInstance::GetTaskInfo(int32_t task_id,
     callback.Run(mojo::String(), mojo::String());
 }
 
+void FakeAppInstance::SetTaskActive(int32_t task_id) {
+}
+
+void FakeAppInstance::CloseTask(int32_t task_id) {
+}
+
 }  // namespace arc

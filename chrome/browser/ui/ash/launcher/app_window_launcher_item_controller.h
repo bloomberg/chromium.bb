@@ -35,10 +35,10 @@ class AppWindowLauncherItemController : public LauncherItemController,
   ~AppWindowLauncherItemController() override;
 
   void AddWindow(ui::BaseWindow* window);
-
-  void RemoveWindowForNativeWindow(aura::Window* window);
+  void RemoveWindow(ui::BaseWindow* window);
 
   void SetActiveWindow(aura::Window* window);
+  ui::BaseWindow* GetAppWindow(aura::Window* window);
 
   const std::string& app_shelf_id() const { return app_shelf_id_; }
 

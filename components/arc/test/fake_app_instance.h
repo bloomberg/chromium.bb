@@ -82,6 +82,8 @@ class FakeAppInstance : public mojom::AppInstance {
   void UninstallPackage(const mojo::String& package_name) override;
   void GetTaskInfo(int32_t task_id,
                    const GetTaskInfoCallback& callback) override;
+  void SetTaskActive(int32_t task_id) override;
+  void CloseTask(int32_t task_id) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);

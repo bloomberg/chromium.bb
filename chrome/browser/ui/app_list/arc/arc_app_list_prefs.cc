@@ -463,6 +463,22 @@ void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
               icon_png_data.To<std::vector<uint8_t>>());
 }
 
+void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
+                                    const mojo::String& package_name,
+                                    const mojo::String& activity) {
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnTaskCreated(task_id, package_name, activity));
+}
+
+void ArcAppListPrefs::OnTaskDestroyed(int32_t task_id) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnTaskDestroyed(task_id));
+}
+
+void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnTaskSetActive(task_id));
+}
+
 void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor,
                                   const std::vector<uint8_t>& content_png) {

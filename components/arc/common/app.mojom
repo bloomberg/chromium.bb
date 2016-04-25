@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -38,21 +38,11 @@ struct ScreenRect {
   int32 bottom;
 };
 
-// Next method ID: 4
+// Next method ID: 7
 interface AppHost {
-  // Receives a list of available ARC apps to Chrome. Members of AppInfo must
-  // contain non-empty string.
-  OnAppListRefreshed@0(array<AppInfo> apps);
-
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
   [MinVersion=1] OnAppAdded@2(AppInfo app);
-
-  // Sends removed ARC package to Chrome. |package_name| must contain non-empty
-  // string. This message is sent when ARC receives package removed
-  // notification. Removing one package can potentially remove more than one
-  // app.
-  [MinVersion=1] OnPackageRemoved@3(string package_name);
 
   // Receives an icon of required |scale_factor| for specific ARC app. The app
   // is defined by |package_name| and |activity|. The icon content cannot be
@@ -61,40 +51,68 @@ interface AppHost {
   // |icon_png_data| is a png-encoded image.
   OnAppIcon@1(string package_name, string activity,
               ScaleFactor scale_factor, array<uint8> icon_png_data);
+
+  // Receives a list of available ARC apps to Chrome. Members of AppInfo must
+  // contain non-empty string.
+  OnAppListRefreshed@0(array<AppInfo> apps);
+
+  // Sends removed ARC package to Chrome. |package_name| must contain non-empty
+  // string. This message is sent when ARC receives package removed
+  // notification. Removing one package can potentially remove more than one
+  // app.
+  [MinVersion=1] OnPackageRemoved@3(string package_name);
+
+  // Sends information about newly created task.
+  [MinVersion=4] OnTaskCreated@4(int32 task_id, string package_name,
+                                 string activity);
+
+  // Notifies that task has been destroyed.
+  [MinVersion=4] OnTaskDestroyed@5(int32 task_id);
+
+  // Notifies that task has been activated.
+  [MinVersion=4] OnTaskSetActive@6(int32 task_id);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
+// Next method ID: 9
 interface AppInstance {
-  Init(AppHost host_ptr);
+  Init@0(AppHost host_ptr);
+
+  // Query if a given resolution can be handled by the application. Returns true
+  // if it can.
+  [MinVersion=1] CanHandleResolution@4(string package_name, string activity,
+                                       ScreenRect dimension) =>
+                                           (bool can_handle);
+
+  // Closes the the given task.
+  [MinVersion=4] CloseTask@8(int32 task_id);
+
+  // Requests information about task.
+  [MinVersion=3] GetTaskInfo@6(int32 task_id) => (string package_name,
+                                                  string activity);
 
   // Sends a request to ARC to launch an ARC app defined by |package_name| and
   // |activity|, which cannot be empty. |dimension_on_screen| can be null to
   // indicate to use the entire screen.
-  LaunchApp(string package_name, string activity,
-            [MinVersion=1] ScreenRect? dimension_on_screen);
+  LaunchApp@1(string package_name, string activity,
+              [MinVersion=1] ScreenRect? dimension_on_screen);
 
   // Sends a request to ARC to refresh a list of ARC apps.
   // OnRefreshAppsList is expected in response to this message. However,
   // response may not be sent if ARC is not ready yet (boot completed event is
   // not received).
-  RefreshAppList();
+  RefreshAppList@2();
 
   // Sends a request to ARC for the ARC app icon of a required scale factor.
   // Scale factor is an enum defined at ui/base/layout.h. App is defined by
   // |package_name| and |activity|, which cannot be empty.
-  RequestAppIcon(string package_name, string activity,
-                 ScaleFactor scale_factor);
+  RequestAppIcon@3(string package_name, string activity,
+                   ScaleFactor scale_factor);
 
-  // Query if a given resolution can be handled by the application. Returns true
-  // if it can.
-  [MinVersion=1] CanHandleResolution(string package_name, string activity,
-                                     ScreenRect dimension) => (bool can_handle);
+  // Activates the given task and move it to foreground.
+  [MinVersion=4] SetTaskActive@7(int32 task_id);
 
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.
-  [MinVersion=2] UninstallPackage(string package_name);
-
-  // Requests information about task.
-  [MinVersion=3] GetTaskInfo(int32 task_id) => (string package_name,
-                                                string activity);
+  [MinVersion=2] UninstallPackage@5(string package_name);
 };

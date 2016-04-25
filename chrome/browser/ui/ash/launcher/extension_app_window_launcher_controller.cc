@@ -169,7 +169,7 @@ void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {
   AppControllerMap::iterator iter2 = app_controller_map_.find(app_shelf_id);
   DCHECK(iter2 != app_controller_map_.end());
   ExtensionAppWindowLauncherItemController* controller = iter2->second;
-  controller->RemoveWindowForNativeWindow(window);
+  controller->RemoveWindow(controller->GetAppWindow(window));
   if (controller->window_count() == 0) {
     // If this is the last window associated with the app shelf id, close the
     // shelf item.
