@@ -183,7 +183,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
       'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
-      'GetTryMastersExecuter', 'itertools',
+      'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)

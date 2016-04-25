@@ -36,12 +36,14 @@ import traceback  # Exposed through the API.
 import types
 import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
+import urlparse
 from warnings import warn
 
 # Local imports.
 import auth
 import fix_encoding
 import gclient_utils
+import gerrit_util
 import owners
 import presubmit_canned_checks
 import rietveld
@@ -1642,6 +1644,8 @@ def main(argv=None):
                     help="A list of checks to skip which appear in "
                     "presubmit_canned_checks. Can be provided multiple times "
                     "to skip multiple canned checks.")
+  parser.add_option("--gerrit_url", help=optparse.SUPPRESS_HELP)
+  parser.add_option("--gerrit_fetch", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_fetch", action='store_true', default=False,
@@ -1664,10 +1668,15 @@ def main(argv=None):
   else:
     logging.basicConfig(level=logging.ERROR)
 
+  if (any((options.rietveld_url, options.rietveld_email_file,
+           options.rietveld_fetch, options.rietveld_private_key_file))
+      and any((options.gerrit_url, options.gerrit_fetch))):
+    parser.error('Options for only codereview --rietveld_* or --gerrit_* '
+                 'allowed')
+
   if options.rietveld_email and options.rietveld_email_file:
     parser.error("Only one of --rietveld_email or --rietveld_email_file "
                  "can be passed to this program.")
-
   if options.rietveld_email_file:
     with open(options.rietveld_email_file, "rb") as f:
       options.rietveld_email = f.read().strip()
@@ -1697,6 +1706,26 @@ def main(argv=None):
       options.description = props['description']
       logging.info('Got author: "%s"', options.author)
       logging.info('Got description: """\n%s\n"""', options.description)
+
+  if options.gerrit_url and options.gerrit_fetch:
+    rietveld_obj = None
+    assert options.issue and options.patchset
+    props = gerrit_util.GetChangeDetail(
+        urlparse.urlparse(options.gerrit_url).netloc, str(options.issue),
+        ['ALL_REVISIONS'])
+    options.author = props['owner']['email']
+    for rev, rev_info in props['revisions'].iteritems():
+      if str(rev_info['_number']) == str(options.patchset):
+        options.description = gerrit_util.GetChangeDescriptionFromGitiles(
+            rev_info['fetch']['http']['url'], rev)
+        break
+    else:
+      print >> sys.stderr, ('Patchset %d was not found in Gerrit issue %d' %
+                            options.patchset, options.issue)
+      return 2
+    logging.info('Got author: "%s"', options.author)
+    logging.info('Got description: """\n%s\n"""', options.description)
+
   try:
     with canned_check_filter(options.skip_canned):
       results = DoPresubmitChecks(
