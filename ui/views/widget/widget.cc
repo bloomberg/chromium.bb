@@ -353,10 +353,12 @@ void Widget::Init(const InitParams& in_params) {
     UpdateWindowTitle();
     non_client_view_->ResetWindowControls();
     SetInitialBounds(params.bounds);
-    if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
+    if (params.show_state == ui::SHOW_STATE_MAXIMIZED) {
       Maximize();
-    else if (params.show_state == ui::SHOW_STATE_MINIMIZED)
+    } else if (params.show_state == ui::SHOW_STATE_MINIMIZED) {
       Minimize();
+      saved_show_state_ = ui::SHOW_STATE_MINIMIZED;
+    }
   } else if (params.delegate) {
     SetContentsView(params.delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(params.bounds);
@@ -606,10 +608,8 @@ void Widget::Show() {
         !IsFullscreen()) {
       native_widget_->ShowMaximizedWithBounds(initial_restored_bounds_);
     } else {
-      ui::WindowShowState show_state =
-          IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN :
-          IsMinimized() ? ui::SHOW_STATE_MINIMIZED : saved_show_state_;
-      native_widget_->ShowWithWindowState(show_state);
+      native_widget_->ShowWithWindowState(
+          IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN : saved_show_state_);
     }
     // |saved_show_state_| only applies the first time the window is shown.
     // If we don't reset the value the window may be shown maximized every time
