@@ -21,6 +21,7 @@ PROPERTIES = {
   'issue': Property(default=None),
   'patchset': Property(default=None),
   'patch_url': Property(default=None),
+  'patch_project': Property(default=None),
   'repository': Property(default=None),
   'event.patchSet.ref': Property(default=None, param_name="gerrit_ref"),
   'rietveld': Property(default=None),

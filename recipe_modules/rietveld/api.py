@@ -11,6 +11,11 @@ class RietveldApi(recipe_api.RecipeApi):
   def calculate_issue_root(self, extra_patch_project_roots=None):
     """Returns path where a patch should be applied to based on "patch_project".
 
+    YOU SHOULD NOT USE THIS METHOD. Put this into gclient's config as
+    patch_projects instead, and with luck you won't need to use
+    calculate_patch_root from gclient api.
+    TODO(tandrii): remove this method completely. See http://crbug.com/605563.
+
     Maps Rietveld's "patch_project" to a path of directories relative to
     api.gclient.c.solutions[0].name which describe where to place the patch.
 

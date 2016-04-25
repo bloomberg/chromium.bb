@@ -18,8 +18,11 @@ def RunSteps(api):
   soln.url = 'svn://svn.chromium.org/chrome/trunk/src'
   soln.revision = api.properties.get('revision')
   api.gclient.c = src_cfg
-  api.gclient.c.revisions = api.properties.get('revisions', {})
+  api.gclient.c.revisions.update(api.properties.get('revisions', {}))
   api.gclient.c.got_revision_mapping['src'] = 'got_cr_revision'
+  api.gclient.c.patch_projects['v8'] = ('src/v8', 'HEAD')
+  api.gclient.c.patch_projects['angle/angle'] = ('src/third_party/angle',
+                                                 'HEAD')
   patch = api.properties.get('patch', True)
   clobber = True if api.properties.get('clobber') else False
   force = True if api.properties.get('force') else False
@@ -31,6 +34,9 @@ def RunSteps(api):
   root_solution_revision = api.properties.get('root_solution_revision')
   suffix = api.properties.get('suffix')
   gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
+  # TODO(tandrii): remove this after transition. http://crbug.com/605563.
+  crbug605563 = ('TODO(TANDRII): REMOVE THIS TRANSITION TO patch_projects'
+                 if api.properties.get('crbug605563') else None)
   api.bot_update.ensure_checkout(force=force,
                                  no_shallow=no_shallow,
                                  patch=patch,
@@ -40,7 +46,8 @@ def RunSteps(api):
                                  clobber=clobber,
                                  root_solution_revision=root_solution_revision,
                                  suffix=suffix,
-                                 gerrit_no_reset=gerrit_no_reset)
+                                 gerrit_no_reset=gerrit_no_reset,
+                                 patch_root=crbug605563)
 
 
 def GenTests(api):
@@ -71,6 +78,15 @@ def GenTests(api):
       issue=12345,
       patchset=654321,
       patch_url='http://src.chromium.org/foo/bar'
+  )
+  yield api.test('tryjob_crbug605563') + api.properties(
+      mastername='tryserver.chromium.linux',
+      buildername='linux_rel',
+      slavename='totallyaslave-c4',
+      issue=12345,
+      patchset=654321,
+      patch_url='http://src.chromium.org/foo/bar',
+      crbug605563=True,
   )
   yield api.test('trychange') + api.properties(
       mastername='tryserver.chromium.linux',
@@ -160,4 +176,12 @@ def GenTests(api):
       patch_url='http://src.chromium.org/foo/bar',
       patch_project='v8',
       revisions={'src/v8': 'abc'}
+  )
+  yield api.test('tryjob_v8_head_by_default') + api.properties.tryserver(
+      patch_project='v8',
+      crbug605563=True,
+  )
+  yield api.test('tryjob_gerrit_angle') + api.properties.tryserver_gerrit(
+      full_project_name='angle/angle',
+      crbug605563=True,
   )

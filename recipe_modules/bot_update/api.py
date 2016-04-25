@@ -85,6 +85,17 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
     root = patch_root
+    if root == 'TODO(TANDRII): REMOVE THIS TRANSITION TO patch_projects':
+      # This special condition is here for initial rollout of this code,
+      # because it's hard to test this change without rolling into build
+      # repository.
+      # After the switch to new code is complete, this special TODOstring will
+      # be removed in favor of "root is None"
+      assert patch_project_roots is None
+      root = self.m.gclient.calculate_patch_root(
+          self.m.properties.get('patch_project'), cfg)
+      # TODO(tandrii): get rid the condition below after transition.
+
     if root is None:
       root = cfg.solutions[0].name
       additional = self.m.rietveld.calculate_issue_root(patch_project_roots)
@@ -127,6 +138,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
           'site_config', '.rietveld_secret_key')
     else:
       email_file = key_file = None
+
+    # Allow patch_project's revision if necessary.
+    # This is important for projects which are checked out as DEPS of the
+    # gclient solution.
+    self.m.gclient.set_patch_project_revision(
+        self.m.properties.get('patch_project'), cfg)
 
     rev_map = cfg.got_revision_mapping.as_jsonish()
 

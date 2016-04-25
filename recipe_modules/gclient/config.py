@@ -63,6 +63,20 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
     parent_got_revision_mapping = Dict(hidden=True),
     delete_unversioned_trees = Single(bool, empty_val=True, required=False),
 
+    # Maps patch_project to (solution/path, revision).
+    #  - solution/path is then used to apply patches as patch root in
+    #    bot_update.
+    #  - if revision is given, it's passed verbatim to bot_update for
+    #    corresponding dependency.
+    # This is essentially a whitelist of which projects inside a solution
+    # can be patched automatically by bot_update based on PATCH_PROJECT
+    # property.
+    # For example, bare chromium solution has this entry in patch_projects
+    #     'angle/angle': ('src/third_party/angle', 'HEAD')
+    # then a patch to Angle project can be applied to a chromium src's
+    # checkout after first updating Angle's repo to its master's HEAD.
+    patch_projects = Dict(value_type=tuple, hidden=True),
+
     # Check out refs/branch-heads.
     # TODO (machenbach): Only implemented for bot_update atm.
     with_branch_heads = Single(
@@ -73,6 +87,8 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
 
     GIT_MODE = Static(bool(GIT_MODE)),
     USE_MIRROR = Static(bool(USE_MIRROR)),
+    # TODO(tandrii): remove PATCH_PROJECT field.
+    # DON'T USE THIS. WILL BE REMOVED.
     PATCH_PROJECT = Static(str(PATCH_PROJECT), hidden=True),
     BUILDSPEC_VERSION= Static(BUILDSPEC_VERSION, hidden=True),
   )
@@ -146,18 +162,10 @@ def chromium_bare(c):
   p['parent_got_v8_revision'] = 'v8_revision'
   p['parent_got_webrtc_revision'] = 'webrtc_revision'
 
-  # Patch project revisions are applied whenever patch_project is set. E.g. if
-  # a v8 stand-alone patch is sent to a chromium trybot, patch_project is v8
-  # and can be used to sync v8 to HEAD instead of the pinned chromium
-  # version.
-  patch_project_revisions = {
-    'v8': ('src/v8', 'HEAD'),
-  }
-
-  patch_revision = patch_project_revisions.get(c.PATCH_PROJECT)
-  # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if patch_revision:  # pragma: no cover
-    c.revisions[patch_revision[0]] = patch_revision[1]
+  p = c.patch_projects
+  p['v8'] = ('src/v8', 'HEAD')
+  p['angle/angle'] = ('src/third_party/angle', None)
+  p['blink'] = ('src/third_party/WebKit', None)
 
 @config_ctx(includes=['chromium_bare'])
 def chromium_empty(c):
@@ -538,6 +546,10 @@ def infra(c):
   soln.url = 'https://chromium.googlesource.com/infra/infra.git'
   c.got_revision_mapping['infra'] = 'got_revision'
 
+  p = c.patch_projects
+  p['luci-py'] = ('infra/luci', 'HEAD')
+  p['recipes-py'] = ('infra/recipes-py', 'HEAD')
+
 @config_ctx(config_vars={'GIT_MODE': True})
 def infra_internal(c):  # pragma: no cover
   soln = c.solutions.add()
@@ -572,6 +584,7 @@ def luci_py(c):
   # luci-py is checked out as part of infra just to have appengine
   # pre-installed, as that's what luci-py PRESUBMIT relies on.
   c.revisions['infra'] = 'origin/master'
+  # TODO(tandrii): make use of c.patch_projects.
   c.revisions['infra/luci'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
@@ -581,6 +594,7 @@ def luci_py(c):
 @config_ctx(includes=['infra'])
 def recipes_py(c):
   c.revisions['infra'] = 'origin/master'
+  # TODO(tandrii): make use of c.patch_projects.
   c.revisions['infra/recipes-py'] = (
       gclient_api.RevisionFallbackChain('origin/master'))
   m = c.got_revision_mapping
@@ -634,6 +648,7 @@ def angle_top_of_tree(c):  # pragma: no cover
 
   Sets up ToT instead of the DEPS-pinned revision for ANGLE.
   """
+  # TODO(tandrii): I think patch_projects in bare_chromium fixed this.
   c.solutions[0].revision = 'HEAD'
   c.revisions['src/third_party/angle'] = 'HEAD'
 

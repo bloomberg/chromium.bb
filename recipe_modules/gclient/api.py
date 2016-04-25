@@ -148,6 +148,7 @@ class GclientApi(recipe_api.RecipeApi):
 
   def sync(self, cfg, with_branch_heads=False, **kwargs):
     revisions = []
+    self.set_patch_project_revision(self.m.properties.get('patch_project'), cfg)
     for i, s in enumerate(cfg.solutions):
       if s.safesync_url:  # prefer safesync_url in gclient mode
         continue
@@ -336,3 +337,42 @@ class GclientApi(recipe_api.RecipeApi):
       args=[self.m.path['slave_build']],
       infra_step=True,
     )
+
+  def calculate_patch_root(self, patch_project, gclient_config=None):
+    """Returns path where a patch should be applied to based patch_project.
+
+    Maps "patch_project" to a path of directories relative to checkout's root,
+    which describe where to place the patch.
+
+    For now, considers only first solution (c.solutions[0]), but in theory can
+    be extended to all of them.
+
+    See patch_projects solution config property.
+
+    Returns:
+      Relative path, including solution's root.
+      If patch_project is not given or not recognized, it'll be just first
+      solution root.
+    """
+    cfg = gclient_config or self.c
+    root, _ = cfg.patch_projects.get(patch_project, ('', ''))
+    if root:
+      # Note, that c.patch_projects contains patch roots as
+      # slash(/)-separated path, which are roots of the respective project repos
+      # and include actual solution name in them.
+      return self.m.path.join(*root.split('/'))
+    # Default case - assume patch is for first solution, as this is what most
+    # projects rely on.
+    return cfg.solutions[0].name
+
+  def set_patch_project_revision(self, patch_project, gclient_config=None):
+    """Updates config revision corresponding to patch_project.
+
+    Useful for bot_update only, as this is the only consumer of gclient's config
+    revision map. This doesn't overwrite the revision if it was already set.
+    """
+    assert patch_project is None or isinstance(patch_project, basestring)
+    cfg = gclient_config or self.c
+    path, revision = cfg.patch_projects.get(patch_project, (None, None))
+    if path and revision and path not in cfg.revisions:
+      cfg.revisions[path] = revision
