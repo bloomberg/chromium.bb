@@ -541,38 +541,6 @@ def SubmitChange(host, change, wait_for_merge=True):
   return ReadHttpJsonResponse(conn, ignore_404=False)
 
 
-def SetCommitMessage(host, change, description):
-  """Updates a commit message."""
-  # First, edit the commit message in a draft.
-  path = 'changes/%s/edit:message' % change
-  body = {'message': description}
-  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
-  try:
-    ReadHttpResponse(conn, ignore_404=False)
-  except GerritError as e:
-    # On success, gerrit returns status 204; anything else is an error.
-    if e.http_status != 204:
-      raise
-  else:
-    raise GerritError(
-        'Unexpectedly received a 200 http status while editing message in '
-        'change %s' % change)
-
-  # And then publish it.
-  path = 'changes/%s/edit:publish' % change
-  conn = CreateHttpConn(host, path, reqtype='POST', body={})
-  try:
-    ReadHttpResponse(conn, ignore_404=False)
-  except GerritError as e:
-    # On success, gerrit returns status 204; anything else is an error.
-    if e.http_status != 204:
-      raise
-  else:
-    raise GerritError(
-        'Unexpectedly received a 200 http status while publishing message '
-        'change in %s' % change)
-
-
 def GetReviewers(host, change):
   """Get information about all reviewers attached to a change."""
   path = 'changes/%s/reviewers' % change

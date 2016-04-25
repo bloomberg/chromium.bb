@@ -2169,8 +2169,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return gerrit_util.GetChangeDescriptionFromGitiles(url, current_rev)
 
   def UpdateDescriptionRemote(self, description):
-    gerrit_util.SetCommitMessage(self._GetGerritHost(), self.GetIssue(),
-                                 description)
+    # TODO(tandrii)
+    raise NotImplementedError()
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
