@@ -201,7 +201,7 @@ if (!is_android) {
 
       if (use_pango || use_cairo) {
         # Needed for chrome_main.cc initialization of libraries.
-        configs += [ "//build/config/linux:pangocairo" ]
+        configs += [ "//build/config/linux/pangocairo" ]
       }
 
       if (use_x11) {

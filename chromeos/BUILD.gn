@@ -58,7 +58,7 @@ component("chromeos") {
 # can be converted to a source set.
 static_library("test_support") {
   testonly = true
-  configs += [ "//build/config/linux:dbus" ]
+  configs += [ "//build/config/linux/dbus" ]
   public_deps = [
     ":chromeos",
     ":cryptohome_proto",
@@ -118,7 +118,7 @@ static_library("test_support") {
 
 static_library("test_support_without_gmock") {
   testonly = true
-  configs += [ "//build/config/linux:dbus" ]
+  configs += [ "//build/config/linux/dbus" ]
   deps = [
     ":chromeos",
     ":cryptohome_proto",
@@ -139,7 +139,7 @@ static_library("test_support_without_gmock") {
 
 test("chromeos_unittests") {
   configs += [
-    "//build/config/linux:dbus",
+    "//build/config/linux/dbus",
     "//third_party/nss:system_nss_no_ssl_config",
   ]
   deps = [

@@ -45,7 +45,7 @@ component("dbus") {
     "//base",
   ]
 
-  public_configs = [ "//build/config/linux:dbus" ]
+  public_configs = [ "//build/config/linux/dbus" ]
 }
 
 proto_library("test_proto") {
@@ -76,7 +76,7 @@ source_set("test_support") {
     "//testing/gmock",
   ]
 
-  configs += [ "//build/config/linux:dbus" ]
+  configs += [ "//build/config/linux/dbus" ]
 }
 
 test("dbus_unittests") {
@@ -109,7 +109,7 @@ test("dbus_unittests") {
     "//third_party/protobuf:protobuf_lite",
   ]
 
-  configs += [ "//build/config/linux:dbus" ]
+  configs += [ "//build/config/linux/dbus" ]
 }
 
 executable("dbus_test_server") {
@@ -127,5 +127,5 @@ executable("dbus_test_server") {
     "//build/config/sanitizers:deps",
   ]
 
-  configs += [ "//build/config/linux:dbus" ]
+  configs += [ "//build/config/linux/dbus" ]
 }

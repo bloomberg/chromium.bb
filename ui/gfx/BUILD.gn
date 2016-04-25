@@ -417,7 +417,7 @@ component("gfx") {
   }
 
   if (use_cairo) {
-    configs += [ "//build/config/linux:pangocairo" ]
+    configs += [ "//build/config/linux/pangocairo" ]
   }
 }
 

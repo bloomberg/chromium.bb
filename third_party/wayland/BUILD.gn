@@ -33,7 +33,7 @@ source_set("wayland_private") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
-    "//build/config/linux:libffi",
+    "//build/config/linux/libffi",
     ":wayland_config",
   ]
 }
@@ -70,7 +70,7 @@ source_set("wayland_server") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
-    "//build/config/linux:libffi",
+    "//build/config/linux/libffi",
   ]
 
   public_configs = [ ":wayland_config" ]
@@ -91,7 +91,7 @@ source_set("wayland_client") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
-    "//build/config/linux:libffi",
+    "//build/config/linux/libffi",
   ]
 
   public_configs = [ ":wayland_config" ]

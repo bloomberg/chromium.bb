@@ -154,7 +154,7 @@ test("device_unittests") {
   }
 
   if ((is_chromeos || is_linux) && use_dbus) {
-    configs += [ "//build/config/linux:dbus" ]
+    configs += [ "//build/config/linux/dbus" ]
 
     sources += [
       "bluetooth/bluez/bluetooth_adapter_profile_bluez_unittest.cc",

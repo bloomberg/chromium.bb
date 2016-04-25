@@ -892,6 +892,24 @@ group("chromium_builder_perf") {
 group("aura_builder") {
 }
 
+if (is_android) {
+  group("optimize_gn_gen") {
+    deps = [
+      # These run expensive scripts in non-default toolchains. Generally, host
+      # toolchain targets are loaded in the later part of the run, and the
+      # result is they push out the end of generation. By preloading these, the
+      # scripts can be parallelized with the rest of the load.
+      "//build/config/linux(//build/toolchain/linux:clang_x64)",
+      "//build/config/posix(//build/toolchain/linux:clang_x64)",
+
+      # Include x86 toolchains as well since V8 uses them for 32-bit snapshot
+      # generation.
+      "//build/config/linux(//build/toolchain/linux:clang_x86)",
+      "//build/config/posix(//build/toolchain/linux:clang_x86)",
+    ]
+  }
+}
+
 # Because of the source assignment filter, many targets end up over-filtering
 # their sources if the output directory contains a platform name. Assert that
 # this doesn't happen. http://crbug.com/548283

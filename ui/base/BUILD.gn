@@ -884,7 +884,7 @@ test("ui_base_unittests") {
   }
 
   if (use_pango) {
-    configs += [ "//build/config/linux:pangocairo" ]
+    configs += [ "//build/config/linux/pangocairo" ]
   }
 
   if (use_x11) {

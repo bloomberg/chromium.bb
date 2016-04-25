@@ -97,7 +97,7 @@ component("accessibility") {
     configs += [
       ":atk",
       ":atk_warnings",
-      "//build/config/linux:gconf",
+      "//build/config/linux/gconf",
       "//build/config/linux:glib",
     ]
   }

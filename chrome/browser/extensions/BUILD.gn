@@ -99,7 +99,7 @@ source_set("extensions") {
                     ".",
                     "//chrome")
     sources -= [ "api/music_manager_private/device_id_linux.cc" ]
-    configs += [ "//build/config/linux:dbus" ]
+    configs += [ "//build/config/linux/dbus" ]
     deps += [
       "//components/chrome_apps",
       "//remoting/host/it2me:common",

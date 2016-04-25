@@ -281,9 +281,9 @@ source_set("browser") {
                     "//content")
 
     configs += [
-      "//build/config/linux:atk",
-      "//build/config/linux:atk_warnings",
-      "//build/config/linux:gconf",
+      "//build/config/linux/atk",
+      "//build/config/linux/atk:warnings",
+      "//build/config/linux/gconf",
       "//build/config/linux:glib",
     ]
   }
@@ -323,7 +323,7 @@ source_set("browser") {
   }
 
   if (use_pango) {
-    configs += [ "//build/config/linux:pangocairo" ]
+    configs += [ "//build/config/linux/pangocairo" ]
   }
 
   if (is_android) {

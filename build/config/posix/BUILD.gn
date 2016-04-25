@@ -6,6 +6,10 @@ import("//build/config/sysroot.gni")
 
 assert(is_posix)
 
+group("posix") {
+  visibility = [ "//:optimize_gn_gen" ]
+}
+
 # This is included by reference in the //build/config/compiler:runtime_library
 # config that is applied to all targets. It is here to separate out the logic
 # that is Posix-only. Please see that target for advice on what should go in

@@ -83,7 +83,7 @@ source_set("browser") {
       sources += nonchromeos_sources
 
       if (is_linux) {
-        configs += [ "//build/config/linux:dbus" ]
+        configs += [ "//build/config/linux/dbus" ]
         deps += [ "//dbus" ]
         linux_sources = rebase_path(
                 extensions_gypi_values.extensions_browser_sources_linux_nonchromeos,

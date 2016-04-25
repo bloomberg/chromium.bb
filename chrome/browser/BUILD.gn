@@ -876,7 +876,7 @@ source_set("browser") {
 
   if (is_linux) {
     if (use_aura) {
-      configs += [ "//build/config/linux:dbus" ]
+      configs += [ "//build/config/linux/dbus" ]
       deps += [
         "//build/linux:fontconfig",
         "//dbus",
@@ -1233,7 +1233,7 @@ source_set("test_support") {
       "chromeos/system/fake_input_device_settings.cc",
       "chromeos/system/fake_input_device_settings.h",
     ]
-    configs += [ "//build/config/linux:dbus" ]
+    configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]
   }
 

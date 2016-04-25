@@ -164,7 +164,7 @@ component("ime") {
   }
 
   if (use_pango) {
-    configs += [ "//build/config/linux:pangocairo" ]
+    configs += [ "//build/config/linux/pangocairo" ]
   } else {
     sources -= [
       "composition_text_util_pango.cc",

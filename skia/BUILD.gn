@@ -19,8 +19,7 @@ skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
 gypi_chromium_skia_defines =
     exec_script("//build/gypi_to_gn.py",
                 [
-                  rebase_path(
-                      "//skia/chromium_skia_defines.gypi"),
+                  rebase_path("//skia/chromium_skia_defines.gypi"),
                   "--replace=<(skia_include_path)=//third_party/skia/include",
                   "--replace=<(skia_src_path)=//third_party/skia/src",
                 ],
@@ -466,7 +465,7 @@ component("skia") {
 
   if (is_linux) {
     if (use_pango) {
-      configs += [ "//build/config/linux:pangocairo" ]
+      configs += [ "//build/config/linux/pangocairo" ]
     }
     deps += [
       "//build/linux:fontconfig",
