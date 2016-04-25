@@ -20,7 +20,7 @@ using shell::BackgroundShell;
 namespace views {
 namespace {
 
-const char kTestName[] = "exe:views_mus_unittests";
+const char kTestName[] = "mojo:test-app";
 
 class DefaultShellClient : public shell::ShellClient {
  public:
@@ -31,11 +31,20 @@ class DefaultShellClient : public shell::ShellClient {
   DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
 };
 
+std::unique_ptr<shell::TestCatalogStore> BuildTestCatalogStore() {
+  std::unique_ptr<base::ListValue> apps(new base::ListValue);
+  apps->Append(shell::BuildPermissiveSerializedAppInfo(kTestName, "test"));
+  return base::WrapUnique(new shell::TestCatalogStore(std::move(apps)));
+}
+
 class PlatformTestHelperMus : public PlatformTestHelper {
  public:
   PlatformTestHelperMus() {
     background_shell_.reset(new BackgroundShell);
-    background_shell_->Init(nullptr);
+    std::unique_ptr<BackgroundShell::InitParams> init_params(
+        new BackgroundShell::InitParams);
+    init_params->catalog_store = BuildTestCatalogStore();
+    background_shell_->Init(std::move(init_params));
     shell_client_.reset(new DefaultShellClient);
     shell_connection_.reset(new shell::ShellConnection(
         shell_client_.get(),

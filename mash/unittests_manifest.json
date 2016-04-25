@@ -1,15 +1,5 @@
 {
-  "manifest_version":  1,
   "name": "exe:mash_unittests",
   "display_name": "Mash Unittests",
-  "capabilities": {
-    "required": {
-      "mojo:desktop_wm": { "interfaces": [ "*" ] },
-      "mojo:quick_launch": { "interfaces": [ "*" ] },
-      "mojo:mus": {
-        "classes": [ "mus:core" ],
-        "interfaces": [ "mus::mojom::WindowServerTest" ]
-      }
-    }
-  }
+  "capabilities": { "*": ["*"] }
 }

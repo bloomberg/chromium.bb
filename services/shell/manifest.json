@@ -4,14 +4,13 @@
   "display_name": "Service Manager",
   "capabilities": {
     "provided": {
-      "shell:user_id": [ ],
-      "shell:client_process": [ ],
-      "shell:instance_name": [ ],
-      "shell:all_users": [ ],
-      "shell:block_wildcard":  [ ]
+      "user_id": [ ],
+      "client_process": [ ],
+      "instance_name": [ ],
+      "all_users":  [ ]
     },
     "required": {
-      "mojo:shell": { "classes": [ "shell:all_users" ] }
+      "mojo:shell": { "classes": [ "all_users" ] }
     }
   }
 }

@@ -4,10 +4,7 @@
   "display_name": "Connect Test Class App",
   "capabilities": {
     "provided": {
-      "class": [ "shell::test::mojom::ClassInterface" ]
-    },
-    "required": {
-      "mojo:shell": { "classes": ["shell:explicit_class"] }
+      "class": ["shell::test::mojom::ClassInterface"]
     }
   }
 }

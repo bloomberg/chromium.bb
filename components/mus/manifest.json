@@ -3,27 +3,9 @@
   "name": "mojo:mus",
   "display_name": "UI Service",
   "capabilities": {
-    "provided": {
-      "mus:core": [
-        "mus::mojom::DisplayManager",
-        "mus::mojom::Gpu",
-        "mus::mojom::WindowTreeFactory"
-      ],
-      "mus:user": [
-        "mus::mojom::UserAccessManager"
-      ],
-      "mus:window_tree_host_factory": [
-        "mus::mojom::WindowTreeHostFactory"
-      ],
-      "mus:gpu": [
-        "mus::mojom::Gpu"
-      ],
-      "mus:window_manager": [
-        "mus::mojom::WindowManagerFactoryService"
-      ]
-    },
     "required": {
-      "mojo:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
+      "*": { "interfaces": [ "*" ] },
+      "mojo:shell": { "classes": [ "all_users" ] }
     }
   }
 }

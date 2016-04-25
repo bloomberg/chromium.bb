@@ -1,11 +1,5 @@
 {
-  "manifest_version":  1,
   "name": "mojo:desktop_wm",
   "display_name": "Window Manager",
-  "capabilities": {
-    "required": {
-      "mojo:mus": { "classes": [ "mus:window_manager", "mus:core" ] },
-      "*":  { "interfaces":  ["*"] }
-    }
-  }
+  "capabilities": { "*": ["*"] }
 }

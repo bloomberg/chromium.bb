@@ -5,7 +5,7 @@
   "capabilities": {
     "required": {
       "*": { "interfaces": [ "*" ] },
-      "mojo:shell": { "classes": ["shell:user_id", "shell:all_users"] }
+      "mojo:shell": { "classes": ["user_id", "all_users"] }
     }
   }
 }

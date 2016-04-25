@@ -1,11 +1,5 @@
 {
-  "manifest_version": 1,
   "name": "mojo:screenlock",
   "display_name": "Screen Lock",
-  "capabilities": {
-    "required": {
-      "*": { "interfaces": [ "*" ] },
-      "mojo:mus": { "classes": [ "mus:core" ] }
-    }
-  }
+  "capabilities": { "*": [ "*" ] }
 }

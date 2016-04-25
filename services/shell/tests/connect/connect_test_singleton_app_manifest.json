@@ -4,7 +4,7 @@
   "display_name": "Connect Test Singleton App",
   "capabilities": {
     "required": {
-      "mojo:shell": { "classes": [ "shell:all_users" ] }
+      "mojo:shell": { "classes": [ "all_users" ] }
     }
   }
 }

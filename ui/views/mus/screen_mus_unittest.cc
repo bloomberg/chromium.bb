@@ -14,7 +14,7 @@
 namespace views {
 namespace {
 
-TEST(ScreenMusTest, DISABLED_ConsistentDisplayInHighDPI) {
+TEST(ScreenMusTest, ConsistentDisplayInHighDPI) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kForceDeviceScaleFactor, "2");

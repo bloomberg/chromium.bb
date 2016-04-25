@@ -125,7 +125,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
   void UpdateEntries() {
     catalog_->GetEntriesProvidingClass(
-        "mash:launchable",
+        "launchable",
         base::Bind(&QuickLaunchUI::OnGotCatalogEntries,
                    base::Unretained(this)));
   }

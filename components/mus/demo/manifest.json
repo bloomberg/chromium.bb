@@ -1,12 +1,6 @@
 {
-  "manifest_version":  1,
   "name": "mojo:mus_demo",
   "display_name": "MUS Demo",
-  "capabilities": {
-    "required": {
-      "*": { "interfaces": [ "*" ] },
-      "mojo:mus": { "classes":  ["mus:window_tree_host_factory"] }
-    }
-  }
+  "capabilities": { "*": ["*"] }
 }
 

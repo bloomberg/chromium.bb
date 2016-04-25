@@ -5,9 +5,6 @@
   "capabilities": {
     "required": {
       "mojo:connect_test_package": { "interfaces": [ "*" ] },
-      "mojo:connect_test_class_app": {
-        "interfaces":  ["*"]
-      },
       "mojo:connect_test_app": {
         "interfaces": [
           "shell::test::mojom::ConnectTestService",
@@ -25,7 +22,7 @@
           "shell::test::mojom::UserIdTest"
         ]
       },
-      "mojo:shell": { "classes": [ "shell:instance_name", "shell:user_id" ] }
+      "mojo:shell": { "classes": [ "instance_name", "user_id" ] }
     }
   }
 }
