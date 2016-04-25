@@ -88,9 +88,8 @@ void ClientConnectionManager::OnAuthenticationMessageSent(
 }
 
 void ClientConnectionManager::OnConnectionError(int error) {
-  // TODO(kmarshall): Replace this with actual reconnection logic.
+  // TODO(kmarshall): implement reconnection logic.
   VLOG(0) << "Connection dropped, error=" << error;
-  Connect();
 }
 
 }  // namespace blimp
