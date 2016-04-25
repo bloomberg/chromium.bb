@@ -71,7 +71,7 @@ public:
     void applyOverhang(LineLayoutRubyRun, LineLayoutItem startLayoutItem, LineLayoutItem endLayoutItem);
     void fitBelowFloats(bool isFirstLine = false);
     void setTrailingWhitespaceWidth(float width) { m_trailingWhitespaceWidth = width; }
-    void snapUncommittedWidth() { m_uncommittedWidth = LayoutUnit(m_uncommittedWidth).toFloat(); }
+    void snapUncommittedWidth() { m_uncommittedWidth = LayoutUnit::fromFloatCeil(m_uncommittedWidth).toFloat(); }
 
     IndentTextOrNot indentText() const { return m_indentText; }
 
