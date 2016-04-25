@@ -87,7 +87,6 @@ static jint GetNativeInstanceCount(JNIEnv* env, const JavaParamRef<jclass>&) {
 }
 
 static jlong GetAwDrawGLFunction(JNIEnv* env, const JavaParamRef<jclass>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return reinterpret_cast<intptr_t>(&DrawGLFunction);
 }
 
