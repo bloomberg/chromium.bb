@@ -420,6 +420,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'nvidia'], bug=483282)
 
     # Linux NVIDIA only.
+    self.Fail('conformance2/glsl3/array-complex-indexing.html',
+        ['linux', 'nvidia'], bug=606498)
     self.Fail('deqp/functional/gles3/fbostatequery.html',
         ['linux', 'nvidia'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderswitch.html',
