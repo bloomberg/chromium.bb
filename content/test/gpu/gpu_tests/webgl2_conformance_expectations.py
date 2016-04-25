@@ -312,9 +312,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
-    # Win / NVidia
+    # This test actually passes from time to time.
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['win', 'nvidia'], bug=606021)
+        ['win'], bug=606021)
 
     # Win / AMD
     # It's unfortunate that this suppression needs to be so broad, but
@@ -322,8 +322,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # it's infeasible to suppress individual failures one by one.
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['win', ('amd', 0x6779)], bug=606021)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
