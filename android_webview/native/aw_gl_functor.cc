@@ -100,7 +100,6 @@ static jlong Create(JNIEnv* env,
 }
 
 bool RegisterAwGLFunctor(JNIEnv* env) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return RegisterNativesImpl(env);
 }
 
