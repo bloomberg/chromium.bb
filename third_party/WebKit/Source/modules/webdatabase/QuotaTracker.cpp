@@ -51,13 +51,13 @@ void QuotaTracker::getDatabaseSizeAndSpaceAvailableToOrigin(
     // Extra scope to unlock prior to potentially calling Platform.
     {
         MutexLocker lockData(m_dataGuard);
-        ASSERT(m_databaseSizes.contains(origin->toString()));
-        HashMap<String, SizeMap>::const_iterator it = m_databaseSizes.find(origin->toString());
+        ASSERT(m_databaseSizes.contains(origin->toRawString()));
+        HashMap<String, SizeMap>::const_iterator it = m_databaseSizes.find(origin->toRawString());
         ASSERT(it->value.contains(databaseName));
         *databaseSize = it->value.get(databaseName);
 
-        if (m_spaceAvailableToOrigins.contains(origin->toString())) {
-            *spaceAvailable = m_spaceAvailableToOrigins.get(origin->toString());
+        if (m_spaceAvailableToOrigins.contains(origin->toRawString())) {
+            *spaceAvailable = m_spaceAvailableToOrigins.get(origin->toRawString());
             return;
         }
     }
@@ -71,20 +71,20 @@ void QuotaTracker::updateDatabaseSize(
     unsigned long long databaseSize)
 {
     MutexLocker lockData(m_dataGuard);
-    HashMap<String, SizeMap>::ValueType* it = m_databaseSizes.add(origin->toString(), SizeMap()).storedValue;
+    HashMap<String, SizeMap>::ValueType* it = m_databaseSizes.add(origin->toRawString(), SizeMap()).storedValue;
     it->value.set(databaseName, databaseSize);
 }
 
 void QuotaTracker::updateSpaceAvailableToOrigin(SecurityOrigin* origin, unsigned long long spaceAvailable)
 {
     MutexLocker lockData(m_dataGuard);
-    m_spaceAvailableToOrigins.set(origin->toString(), spaceAvailable);
+    m_spaceAvailableToOrigins.set(origin->toRawString(), spaceAvailable);
 }
 
 void QuotaTracker::resetSpaceAvailableToOrigin(SecurityOrigin* origin)
 {
     MutexLocker lockData(m_dataGuard);
-    m_spaceAvailableToOrigins.remove(origin->toString());
+    m_spaceAvailableToOrigins.remove(origin->toRawString());
 }
 
 } // namespace blink

@@ -2004,6 +2004,7 @@
       'webaudio/DynamicsCompressorNodeTest.cpp',
       'webaudio/ScriptProcessorNodeTest.cpp',
       'webaudio/StereoPannerNodeTest.cpp',
+      'webdatabase/QuotaTrackerTest.cpp',
       'websockets/DOMWebSocketTest.cpp',
       'websockets/DocumentWebSocketChannelTest.cpp',
     ],
