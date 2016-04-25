@@ -37,6 +37,7 @@ class SnippetsInternalsMessageHandler
 
   void HandleLoaded(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);
+  void HandleDump(const base::ListValue* args);
   void HandleClearDiscarded(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
 

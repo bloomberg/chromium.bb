@@ -6,27 +6,25 @@ cr.define('chrome.SnippetsInternals', function() {
   'use strict';
 
   function initialize() {
-    function submitDownload(event) {
+    $('submit-download').addEventListener('click', function(event) {
       chrome.send('download', [$('hosts-input').value]);
       event.preventDefault();
-    }
+    });
 
-    $('submit-download').addEventListener('click', submitDownload);
-
-    function submitClear(event) {
+    $('submit-clear').addEventListener('click', function(event) {
       chrome.send('clear');
       event.preventDefault();
-    }
+    });
 
-    $('submit-clear').addEventListener('click', submitClear);
+    $('submit-dump').addEventListener('click', function(event) {
+      chrome.send('dump');
+      event.preventDefault();
+    });
 
-    function submitClearDiscarded(event) {
+    $('discarded-snippets-clear').addEventListener('click', function(event) {
       chrome.send('clearDiscarded');
       event.preventDefault();
-    }
-
-    $('discarded-snippets-clear').addEventListener('click',
-                                                   submitClearDiscarded);
+    });
 
     chrome.send('loaded');
   }
@@ -38,7 +36,8 @@ cr.define('chrome.SnippetsInternals', function() {
   function receiveHosts(hosts) {
     displayList(hosts, 'hosts');
 
-    $('hosts-input').value = hosts.list.map(host => host.url).join(' ');
+    $('hosts-input').value = hosts.list.map(
+      function(host) { return host.url;}).join(' ');
   }
 
   function receiveSnippets(snippets) {
@@ -48,6 +47,16 @@ cr.define('chrome.SnippetsInternals', function() {
   function receiveDiscardedSnippets(discardedSnippets) {
     displayList(discardedSnippets, 'discarded-snippets',
                 'discarded-snippet-title');
+  }
+
+  function receiveJson(json) {
+    // Redirect the browser to download data in |json| as a file "snippets.json"
+    // (Setting Content-Disposition: attachment via a data: URL is not possible;
+    // create a link with download attribute and simulate a click, instead.)
+    var link = document.createElement('a');
+    link.download = 'snippets.json';
+    link.href = 'data:,' + json;
+    link.click();
   }
 
   function displayList(object, domId, titleClass) {
@@ -67,16 +76,13 @@ cr.define('chrome.SnippetsInternals', function() {
     if ($(domId + '-empty')) $(domId + '-empty').textContent = text;
     if ($(domId + '-clear')) $(domId + '-clear').style.display = display;
 
-    function trigger(event) {
-      // The id of the snippet is stored to 'snippet-id' attribute of the link.
-      var id = event.currentTarget.getAttribute('snippet-id');
-      $(id).classList.toggle('snippet-hidden');
-      event.preventDefault();
-    }
-
     var links = document.getElementsByClassName(titleClass);
     for (var link of links) {
-      link.addEventListener('click', trigger);
+      link.addEventListener('click', function(event) {
+        var id = event.currentTarget.getAttribute('snippet-id');
+        $(id).classList.toggle('snippet-hidden');
+        event.preventDefault();
+      });
     }
   }
 
@@ -87,6 +93,7 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveHosts: receiveHosts,
     receiveSnippets: receiveSnippets,
     receiveDiscardedSnippets: receiveDiscardedSnippets,
+    receiveJson: receiveJson,
   };
 });
 

@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <set>
-#include <sstream>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -23,7 +23,9 @@
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
 namespace {
@@ -86,6 +88,10 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      "dump", base::Bind(&SnippetsInternalsMessageHandler::HandleDump,
+                         base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "download", base::Bind(&SnippetsInternalsMessageHandler::HandleDownload,
                              base::Unretained(this)));
 
@@ -108,6 +114,19 @@ void SnippetsInternalsMessageHandler::HandleClear(const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
   ntp_snippets_service_->ClearSnippets();
+}
+
+void SnippetsInternalsMessageHandler::HandleDump(const base::ListValue* args) {
+  DCHECK_EQ(0u, args->GetSize());
+
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+
+  std::string json;
+  base::JSONWriter::Write(
+      *pref_service->GetList(ntp_snippets::prefs::kSnippets), &json);
+
+  web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveJson",
+                                   base::StringValue(json));
 }
 
 void SnippetsInternalsMessageHandler::HandleClearDiscarded(

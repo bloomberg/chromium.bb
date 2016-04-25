@@ -95,7 +95,7 @@ class NTPSnippetsService : public KeyedService {
   // a snippet was discarded.
   bool DiscardSnippet(const GURL& url);
 
-  // Returns the lists of snippets previously discarded by the user (that are
+  // Returns the list of snippets previously discarded by the user (that are
   // not expired yet).
   const NTPSnippetStorage& discarded_snippets() const {
     return discarded_snippets_;
