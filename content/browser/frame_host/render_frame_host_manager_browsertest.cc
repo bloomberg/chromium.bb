@@ -2654,9 +2654,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // a.com window.
   NavigateToURL(new_shell, embedded_test_server()->GetURL(
                                "b.com", "/cross-site/a.com/title1.html"));
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() || IsBrowserSideNavigationEnabled()) {
     // In --site-per-process mode, both windows will actually be in the same
     // process.
+    // PlzNavigate: the SiteInstance for the navigation is determined after the
+    // redirect. So both windows will actually be in the same process.
     EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
               new_shell->web_contents()->GetSiteInstance());
   } else {
@@ -2675,7 +2677,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       "  }\n"
       "})())",
       &result));
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() || IsBrowserSideNavigationEnabled()) {
     EXPECT_THAT(result,
                 ::testing::MatchesRegex("http://a.com:\\d+/title1.html"));
   } else {

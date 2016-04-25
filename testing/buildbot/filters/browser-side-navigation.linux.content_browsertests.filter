@@ -1,5 +1,4 @@
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
--RenderFrameHostManagerTest.SameOriginFramesInDifferentProcesses
 -RenderViewImplTest.GetCompositionCharacterBoundsTest
 -RenderViewImplTest.OnNavigationHttpPost
 -ServiceWorkerBrowserTest.FetchPageWithSaveData
