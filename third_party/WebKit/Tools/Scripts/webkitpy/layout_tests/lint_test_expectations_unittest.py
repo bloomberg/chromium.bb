@@ -101,7 +101,8 @@ class LintTest(unittest.TestCase):
         self.assertEqual(res, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
-    def test_lint_test_files(self):
+    # TODO(crbug.com/603753) - reenable this when the ARB is restarted.
+    def disabled_test_lint_test_files(self):
         logging_stream = StringIO.StringIO()
         options = optparse.Values({'platform': 'test-mac-mac10.10'})
         host = MockHost()
