@@ -111,6 +111,8 @@ private:
     void asyncIsochronousTransferOut(ScriptPromiseResolver*, mojo::WTFArray<device::usb::wtf::IsochronousPacketPtr>);
     void asyncReset(ScriptPromiseResolver*, bool success);
 
+    void onConnectionError();
+
     device::usb::wtf::DeviceInfoPtr m_deviceInfo;
     device::usb::wtf::DevicePtr m_device;
     HeapHashSet<Member<ScriptPromiseResolver>> m_deviceRequests;

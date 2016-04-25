@@ -99,16 +99,8 @@ USBDevice::USBDevice(usb::DeviceInfoPtr deviceInfo, usb::DevicePtr device, Execu
     , m_deviceStateChangeInProgress(false)
     , m_configurationIndex(-1)
 {
-    if (m_device) {
-        m_device.set_connection_error_handler([this]() {
-            m_device.reset();
-            m_opened = false;
-            for (ScriptPromiseResolver* resolver : m_deviceRequests) {
-                if (isActive(resolver))
-                    resolver->reject(DOMException::create(NotFoundError, kDeviceUnavailable));
-            }
-        });
-    }
+    if (m_device)
+        m_device.set_connection_error_handler(createBaseCallback(bind(&USBDevice::onConnectionError, WeakPersistentThisPointer<USBDevice>(this))));
     int configurationIndex = findConfigurationIndex(info().active_configuration);
     if (configurationIndex != -1)
         onConfigurationSelected(true /* success */, configurationIndex);
@@ -116,7 +108,8 @@ USBDevice::USBDevice(usb::DeviceInfoPtr deviceInfo, usb::DevicePtr device, Execu
 
 USBDevice::~USBDevice()
 {
-    DCHECK(!m_device);
+    // |m_device| may still be valid but there should be no more outstanding
+    // requests because each holds a persistent handle to this object.
     DCHECK(m_deviceRequests.isEmpty());
 }
 
@@ -795,6 +788,17 @@ void USBDevice::asyncReset(ScriptPromiseResolver* resolver, bool success)
         resolver->resolve();
     else
         resolver->reject(DOMException::create(NetworkError, "Unable to reset the device."));
+}
+
+void USBDevice::onConnectionError()
+{
+    m_device.reset();
+    m_opened = false;
+    for (ScriptPromiseResolver* resolver : m_deviceRequests) {
+        if (isActive(resolver))
+            resolver->reject(DOMException::create(NotFoundError, kDeviceUnavailable));
+    }
+    m_deviceRequests.clear();
 }
 
 } // namespace blink

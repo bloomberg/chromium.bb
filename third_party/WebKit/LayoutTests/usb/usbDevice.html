@@ -35,6 +35,17 @@ usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return navigator.usb.getDevices().then(devices => {
     assert_equals(1, devices.length);
+    let promise = devices[0].open();
+    usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+    return assertRejectsWithNotFoundError(promise)
+        .then(() => runGarbageCollection());
+  });
+}, 'open rejects when device disconnected during call');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
     let device = devices[0];
     assert_false(device.opened);
     return device.open().then(() => {
@@ -43,7 +54,7 @@ usb_test(usb => {
         assert_false(device.opened);
       });
     });
-  });
+  }).then(() => runGarbageCollection());
 }, 'a device can be opened and closed');
 
 usb_test(usb => {

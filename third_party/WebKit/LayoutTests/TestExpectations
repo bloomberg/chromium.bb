@@ -1262,15 +1262,6 @@ crbug.com/605515 svg/batik/filters/feTile.svg                                   
 crbug.com/605515 svg/batik/text/textFeatures.svg                                [ NeedsManualRebaseline ]
 crbug.com/605515 svg/batik/text/smallFonts.svg                                  [ NeedsManualRebaseline ]
 
-crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-properties-after-frame-navigated.html [ Crash ]
-crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed-and-gced.html [ Crash ]
-crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-properties-after-frame-removed.html [ Crash ]
-crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-window-after-frame-navigated.html [ Crash ]
-crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-window-after-frame-removed-and-gced.html [ Crash ]
-crbug.com/605487 [ Win ] fast/dom/Window/property-access-on-cached-window-after-frame-removed.html [ Crash ]
-crbug.com/605487 [ Win ] usb/usb.html [ Crash ]
-crbug.com/605487 [ Win ] usb/usbDevice.html  [ Crash ]
-
 crbug.com/540528 [ Linux ] intersection-observer/remove-element.html [ Leak ]
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 

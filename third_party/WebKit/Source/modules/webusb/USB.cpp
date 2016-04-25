@@ -60,24 +60,18 @@ USB::USB(LocalFrame& frame)
     : ContextLifecycleObserver(frame.document())
 {
     frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_deviceManager));
-    m_deviceManager.set_connection_error_handler([this]() {
-        m_deviceManager.reset();
-        for (ScriptPromiseResolver* resolver : m_deviceManagerRequests) {
-            if (isActive(resolver))
-                resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
-        }
-        m_deviceManagerRequests.clear();
-    });
+    m_deviceManager.set_connection_error_handler(createBaseCallback(bind(&USB::onDeviceManagerConnectionError, WeakPersistentThisPointer<USB>(this))));
     // Set up two sequential calls to GetDeviceChanges to avoid latency.
-    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, this)));
-    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, this)));
+    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, WeakPersistentThisPointer<USB>(this))));
+    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, WeakPersistentThisPointer<USB>(this))));
 }
 
 USB::~USB()
 {
-    DCHECK(!m_deviceManager);
+    // |m_deviceManager| and |m_chooserService| may still be valid but there
+    // should be no more outstanding requests to them because each holds a
+    // persistent handle to this object.
     DCHECK(m_deviceManagerRequests.isEmpty());
-    DCHECK(!m_chooserService);
     DCHECK(m_chooserServiceRequests.isEmpty());
 }
 
@@ -111,14 +105,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
             return promise;
         }
         frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_chooserService));
-        m_chooserService.set_connection_error_handler([this]() {
-            m_chooserService.reset();
-            for (ScriptPromiseResolver* resolver : m_chooserServiceRequests) {
-                if (isActive(resolver))
-                    resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
-            }
-            m_chooserServiceRequests.clear();
-        });
+        m_chooserService.set_connection_error_handler(createBaseCallback(bind(&USB::onChooserServiceConnectionError, WeakPersistentThisPointer<USB>(this))));
     }
 
     String errorMessage;
@@ -188,7 +175,7 @@ void USB::onGetPermission(ScriptPromiseResolver* resolver, usb::DeviceInfoPtr de
 
 void USB::onDeviceChanges(usb::DeviceChangeNotificationPtr notification)
 {
-    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, this)));
+    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, WeakPersistentThisPointer<USB>(this))));
     for (auto& deviceInfo : notification->devices_added.PassStorage()) {
         usb::DevicePtr device;
         m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
@@ -196,6 +183,26 @@ void USB::onDeviceChanges(usb::DeviceChangeNotificationPtr notification)
     }
     for (auto& deviceInfo : notification->devices_removed.PassStorage())
         dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(std::move(deviceInfo), nullptr, getExecutionContext())));
+}
+
+void USB::onDeviceManagerConnectionError()
+{
+    m_deviceManager.reset();
+    for (ScriptPromiseResolver* resolver : m_deviceManagerRequests) {
+        if (isActive(resolver))
+            resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
+    }
+    m_deviceManagerRequests.clear();
+}
+
+void USB::onChooserServiceConnectionError()
+{
+    m_chooserService.reset();
+    for (ScriptPromiseResolver* resolver : m_chooserServiceRequests) {
+        if (isActive(resolver))
+            resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
+    }
+    m_chooserServiceRequests.clear();
 }
 
 DEFINE_TRACE(USB)

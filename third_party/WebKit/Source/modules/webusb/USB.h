@@ -52,6 +52,9 @@ public:
     void onGetPermission(ScriptPromiseResolver*, device::usb::wtf::DeviceInfoPtr);
     void onDeviceChanges(device::usb::wtf::DeviceChangeNotificationPtr);
 
+    void onDeviceManagerConnectionError();
+    void onChooserServiceConnectionError();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

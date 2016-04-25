@@ -24,6 +24,14 @@ function callWithKeyDown(functionCalledOnKeyPress) {
   });
 }
 
+function runGarbageCollection() {
+  // Run gc() as a promise.
+  return new Promise((resolve, reject) => {
+    GCController.collect();
+    setTimeout(resolve, 0);
+  });
+}
+
 function usbMocks(mojo) {
   return define('USB Mocks', [
     'device/usb/public/interfaces/chooser_service.mojom',
