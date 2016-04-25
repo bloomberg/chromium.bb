@@ -316,6 +316,7 @@ template<
     typename MappedTraitsArg = HashTraits<MappedArg>>
 class HeapHashMap : public HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
+    static_assert(WTF::IsWeak<KeyArg>::value || WTF::IsWeak<MappedArg>::value || WTF::NeedsTracing<KeyArg>::value || WTF::NeedsTracing<MappedArg>::value, "For hash maps without traceable elements, use HashMap<> instead of HeapHashMap<>");
 };
 
 template<
@@ -324,6 +325,7 @@ template<
     typename TraitsArg = HashTraits<ValueArg>>
 class HeapHashSet : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
+    static_assert(WTF::IsWeak<ValueArg>::value || WTF::NeedsTracing<ValueArg>::value, "For hash sets without traceable elements, use HashSet<> instead of HeapHashSet<>");
 };
 
 template<
@@ -332,6 +334,7 @@ template<
     typename TraitsArg = HashTraits<ValueArg>>
 class HeapLinkedHashSet : public LinkedHashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
+    static_assert(WTF::IsWeak<ValueArg>::value || WTF::NeedsTracing<ValueArg>::value, "For sets without traceable elements, use LinkedHashSet<> instead of HeapLinkedHashSet<>");
 };
 
 template<
@@ -340,6 +343,7 @@ template<
     typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class HeapListHashSet : public ListHashSet<ValueArg, inlineCapacity, HashArg, HeapListHashSetAllocator<ValueArg, inlineCapacity>> {
     IS_GARBAGE_COLLECTED_TYPE();
+    static_assert(WTF::IsWeak<ValueArg>::value || WTF::NeedsTracing<ValueArg>::value, "For sets without traceable elements, use ListHashSet<> instead of HeapListHashSet<>");
 };
 
 template<
@@ -348,13 +352,17 @@ template<
     typename Traits = HashTraits<Value>>
 class HeapHashCountedSet : public HashCountedSet<Value, HashFunctions, Traits, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
+    static_assert(WTF::IsWeak<Value>::value || WTF::NeedsTracing<Value>::value, "For counted sets without traceable elements, use HashCountedSet<> instead of HeapHashCountedSet<>");
 };
 
 template<typename T, size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
 public:
-    HeapVector() { }
+    HeapVector()
+    {
+        static_assert(WTF::NeedsTracing<T>::value, "For vectors without traceable elements, use Vector<> instead of HeapVector<>");
+    }
 
     explicit HeapVector(size_t size) : Vector<T, inlineCapacity, HeapAllocator>(size)
     {
@@ -375,7 +383,10 @@ template<typename T, size_t inlineCapacity = 0>
 class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
     IS_GARBAGE_COLLECTED_TYPE();
 public:
-    HeapDeque() { }
+    HeapDeque()
+    {
+        static_assert(WTF::NeedsTracing<T>::value, "For vectors without traceable elements, use Deque<> instead of HeapDeque<>");
+    }
 
     explicit HeapDeque(size_t size) : Deque<T, inlineCapacity, HeapAllocator>(size)
     {

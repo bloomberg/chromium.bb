@@ -232,6 +232,11 @@ template<> struct HashTraits<blink::PairWithWeakHandling> : blink::WeakHandlingH
     static bool isDeletedValue(const blink::PairWithWeakHandling& value) { return value.isHashTableDeletedValue(); }
 };
 
+template<>
+struct NeedsTracing<blink::PairWithWeakHandling> {
+    static const bool value = NeedsTracing<blink::StrongWeakPair>::value;
+};
+
 } // namespace WTF
 
 namespace blink {
@@ -4088,20 +4093,9 @@ TEST(HeapTest, EmbeddedInVector)
         preciselyCollectGarbage();
         EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
 
-        // Since VectorObjectNoTrace has no trace method it will
-        // not be traced and hence be collected when doing GC.
-        // We trace items in a collection braced on the item's
-        // having a trace method. This is determined via the
-        // NeedsTracing trait in wtf/TypeTraits.h.
-        PersistentHeapVector<VectorObjectNoTrace> vectorNoTrace;
-        VectorObjectNoTrace n1, n2;
-        vectorNoTrace.append(n1);
-        vectorNoTrace.append(n2);
-        preciselyCollectGarbage();
-        EXPECT_EQ(2, SimpleFinalizedObject::s_destructorCalls);
     }
     preciselyCollectGarbage();
-    EXPECT_EQ(8, SimpleFinalizedObject::s_destructorCalls);
+    EXPECT_EQ(6, SimpleFinalizedObject::s_destructorCalls);
 }
 
 TEST(HeapTest, EmbeddedInDeque)
@@ -4126,21 +4120,9 @@ TEST(HeapTest, EmbeddedInDeque)
 
         preciselyCollectGarbage();
         EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
-
-        // Since VectorObjectNoTrace has no trace method it will
-        // not be traced and hence be collected when doing GC.
-        // We trace items in a collection braced on the item's
-        // having a trace method. This is determined via the
-        // NeedsTracing trait in wtf/TypeTraits.h.
-        PersistentHeapDeque<VectorObjectNoTrace> dequeNoTrace;
-        VectorObjectNoTrace n1, n2;
-        dequeNoTrace.append(n1);
-        dequeNoTrace.append(n2);
-        preciselyCollectGarbage();
-        EXPECT_EQ(2, SimpleFinalizedObject::s_destructorCalls);
     }
     preciselyCollectGarbage();
-    EXPECT_EQ(8, SimpleFinalizedObject::s_destructorCalls);
+    EXPECT_EQ(6, SimpleFinalizedObject::s_destructorCalls);
 }
 
 class InlinedVectorObject {
@@ -4557,26 +4539,12 @@ void destructorsCalledOnClear(bool addLots)
 
 TEST(HeapTest, DestructorsCalled)
 {
-    HeapHashMap<SimpleClassWithDestructor*, OwnPtr<SimpleClassWithDestructor>> map;
+    HeapHashMap<Member<IntWrapper>, OwnPtr<SimpleClassWithDestructor>> map;
     SimpleClassWithDestructor* hasDestructor = new SimpleClassWithDestructor();
-    map.add(hasDestructor, adoptPtr(hasDestructor));
+    map.add(IntWrapper::create(1), adoptPtr(hasDestructor));
     SimpleClassWithDestructor::s_wasDestructed = false;
     map.clear();
     EXPECT_TRUE(SimpleClassWithDestructor::s_wasDestructed);
-
-    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(false);
-    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(false);
-    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(false);
-    destructorsCalledOnClear<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(true);
-    destructorsCalledOnClear<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(true);
-    destructorsCalledOnClear<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(true);
-
-    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(false);
-    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(false);
-    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(false);
-    destructorsCalledOnGC<HeapHashSet<RefPtr<RefCountedWithDestructor>>>(true);
-    destructorsCalledOnGC<HeapListHashSet<RefPtr<RefCountedWithDestructor>>>(true);
-    destructorsCalledOnGC<HeapLinkedHashSet<RefPtr<RefCountedWithDestructor>>>(true);
 }
 
 class MixinA : public GarbageCollectedMixin {
@@ -6130,6 +6098,8 @@ public:
         : m_value(SimpleRefValue::create(i))
     {
     }
+
+    DEFINE_INLINE_TRACE() { }
 
     int value() const { return m_value->value(); }
 

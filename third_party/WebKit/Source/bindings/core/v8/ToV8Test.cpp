@@ -224,58 +224,6 @@ TEST_F(ToV8Test, heapVector)
     TEST_TOV8("hoge,fuga,", v);
 }
 
-TEST_F(ToV8Test, stringHeapVectors)
-{
-    HeapVector<String> stringVector;
-    stringVector.append("foo");
-    stringVector.append("bar");
-    TEST_TOV8("foo,bar", stringVector);
-
-    HeapVector<AtomicString> atomicStringVector;
-    atomicStringVector.append("quux");
-    atomicStringVector.append("bar");
-    TEST_TOV8("quux,bar", atomicStringVector);
-}
-
-TEST_F(ToV8Test, basicTypeHeapVectors)
-{
-    HeapVector<int> intVector;
-    intVector.append(42);
-    intVector.append(23);
-    TEST_TOV8("42,23", intVector);
-
-    HeapVector<long> longVector;
-    longVector.append(31773);
-    longVector.append(404);
-    TEST_TOV8("31773,404", longVector);
-
-    HeapVector<unsigned> unsignedVector;
-    unsignedVector.append(1);
-    unsignedVector.append(2);
-    TEST_TOV8("1,2", unsignedVector);
-
-    HeapVector<unsigned long> unsignedLongVector;
-    unsignedLongVector.append(1001);
-    unsignedLongVector.append(2002);
-    TEST_TOV8("1001,2002", unsignedLongVector);
-
-    HeapVector<float> floatVector;
-    floatVector.append(0.125);
-    floatVector.append(1.);
-    TEST_TOV8("0.125,1", floatVector);
-
-    HeapVector<double> doubleVector;
-    doubleVector.append(2.3);
-    doubleVector.append(4.2);
-    TEST_TOV8("2.3,4.2", doubleVector);
-
-    HeapVector<bool> boolVector;
-    boolVector.append(true);
-    boolVector.append(true);
-    boolVector.append(false);
-    TEST_TOV8("true,true,false", boolVector);
-}
-
 TEST_F(ToV8Test, withScriptState)
 {
     ScriptValue value(m_scope.getScriptState(), v8::Number::New(m_scope.isolate(), 1234.0));
