@@ -1,0 +1,50 @@
+This is a testharness.js-based test.
+PASS CredentialsContainer interface: existence and properties of interface object 
+PASS CredentialsContainer interface object length 
+PASS CredentialsContainer interface object name 
+FAIL CredentialsContainer interface: existence and properties of interface prototype object assert_equals: class string of CredentialsContainer.prototype expected "[object CredentialsContainerPrototype]" but got "[object CredentialsContainer]"
+PASS CredentialsContainer interface: existence and properties of interface prototype object's "constructor" property 
+FAIL CredentialsContainer interface: operation get(CredentialRequestOptions) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+FAIL CredentialsContainer interface: operation store(Credential) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+FAIL CredentialsContainer interface: operation requireUserMediation() assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS CredentialsContainer must be primary interface of navigator.credentials 
+PASS Stringification of navigator.credentials 
+PASS CredentialsContainer interface: navigator.credentials must inherit property "get" with the proper type (0) 
+PASS CredentialsContainer interface: calling get(CredentialRequestOptions) on navigator.credentials with too few arguments must throw TypeError 
+PASS CredentialsContainer interface: navigator.credentials must inherit property "store" with the proper type (1) 
+PASS CredentialsContainer interface: calling store(Credential) on navigator.credentials with too few arguments must throw TypeError 
+PASS CredentialsContainer interface: navigator.credentials must inherit property "requireUserMediation" with the proper type (2) 
+PASS PasswordCredential interface: existence and properties of interface object 
+PASS PasswordCredential interface object length 
+PASS PasswordCredential interface object name 
+FAIL PasswordCredential interface: existence and properties of interface prototype object assert_equals: class string of PasswordCredential.prototype expected "[object PasswordCredentialPrototype]" but got "[object PasswordCredential]"
+PASS PasswordCredential interface: existence and properties of interface prototype object's "constructor" property 
+PASS PasswordCredential interface: attribute idName 
+PASS PasswordCredential interface: attribute passwordName 
+PASS PasswordCredential interface: attribute additionalData 
+PASS PasswordCredential must be primary interface of new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) 
+PASS Stringification of new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) 
+PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "idName" with the proper type (0) 
+PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "passwordName" with the proper type (1) 
+PASS PasswordCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "additionalData" with the proper type (2) 
+PASS SiteBoundCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (0) 
+PASS SiteBoundCredential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (1) 
+PASS Credential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "id" with the proper type (0) 
+PASS Credential interface: new PasswordCredential({ id: "id", password: "pencil", iconURL: "https://example.com/", name: "name" }) must inherit property "type" with the proper type (1) 
+PASS FederatedCredential interface: existence and properties of interface object 
+PASS FederatedCredential interface object length 
+PASS FederatedCredential interface object name 
+FAIL FederatedCredential interface: existence and properties of interface prototype object assert_equals: class string of FederatedCredential.prototype expected "[object FederatedCredentialPrototype]" but got "[object FederatedCredential]"
+PASS FederatedCredential interface: existence and properties of interface prototype object's "constructor" property 
+PASS FederatedCredential interface: attribute provider 
+PASS FederatedCredential interface: attribute protocol 
+PASS FederatedCredential must be primary interface of new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) 
+PASS Stringification of new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) 
+PASS FederatedCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "provider" with the proper type (0) 
+PASS FederatedCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "protocol" with the proper type (1) 
+PASS SiteBoundCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "name" with the proper type (0) 
+PASS SiteBoundCredential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "iconURL" with the proper type (1) 
+PASS Credential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "id" with the proper type (0) 
+PASS Credential interface: new FederatedCredential({ id: "id", provider: "https://example.com", iconURL: "https://example.com/", name: "name" }) must inherit property "type" with the proper type (1) 
+Harness: the test ran to completion.
+

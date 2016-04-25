@@ -36,12 +36,12 @@ FederatedCredential* FederatedCredential::create(const FederatedCredentialData& 
 }
 
 FederatedCredential::FederatedCredential(WebFederatedCredential* webFederatedCredential)
-    : Credential(webFederatedCredential->getPlatformCredential())
+    : SiteBoundCredential(webFederatedCredential->getPlatformCredential())
 {
 }
 
 FederatedCredential::FederatedCredential(const String& id, const KURL& provider, const String& name, const KURL& icon)
-    : Credential(PlatformFederatedCredential::create(id, SecurityOrigin::create(provider), name, icon))
+    : SiteBoundCredential(PlatformFederatedCredential::create(id, SecurityOrigin::create(provider), name, icon))
 {
 }
 

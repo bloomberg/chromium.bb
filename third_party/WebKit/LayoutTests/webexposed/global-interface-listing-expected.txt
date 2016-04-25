@@ -753,9 +753,7 @@ interface CountQueuingStrategy
     method size
 interface Credential
     attribute @@toStringTag
-    getter iconURL
     getter id
-    getter name
     getter type
     method constructor
 interface CredentialsContainer
@@ -1557,7 +1555,7 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
-interface FederatedCredential : Credential
+interface FederatedCredential : SiteBoundCredential
     attribute @@toStringTag
     getter protocol
     getter provider
@@ -4093,7 +4091,7 @@ interface PageTransitionEvent : Event
     attribute @@toStringTag
     getter persisted
     method constructor
-interface PasswordCredential : Credential
+interface PasswordCredential : SiteBoundCredential
     attribute @@toStringTag
     getter additionalData
     getter idName
@@ -5780,6 +5778,11 @@ interface SimpleLength : LengthValue
     getter value
     method constructor
     setter value
+interface SiteBoundCredential : Credential
+    attribute @@toStringTag
+    getter iconURL
+    getter name
+    method constructor
 interface Skew : TransformComponent
     attribute @@toStringTag
     getter ax
