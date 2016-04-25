@@ -348,7 +348,7 @@ int StreamMixerAlsa::SetAlsaPlaybackParams() {
 
   RETURN_ERROR_CODE(PcmHwParamsSetFormat, pcm_, pcm_hw_params_, pcm_format_);
   RETURN_ERROR_CODE(PcmHwParamsSetChannels, pcm_, pcm_hw_params_,
-                    num_output_channels_);
+                    kNumOutputChannels);
 
   // Set output rate, allow resampling with a warning if the device doesn't
   // support the rate natively.
@@ -760,7 +760,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
                       interleaved_.data());
   for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
     observer->OnLoopbackAudio(expected_playback_time, kSampleFormatS32,
-                              output_samples_per_second_, num_output_channels_,
+                              output_samples_per_second_, kNumOutputChannels,
                               interleaved_.data(), interleaved_size);
   }
 
