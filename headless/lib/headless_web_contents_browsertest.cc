@@ -16,38 +16,11 @@ namespace headless {
 
 class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 
-class NavigationObserver : public HeadlessWebContents::Observer {
- public:
-  NavigationObserver(HeadlessWebContentsTest* browser_test)
-      : browser_test_(browser_test), navigation_succeeded_(false) {}
-  ~NavigationObserver() override {}
-
-  void DocumentOnLoadCompletedInMainFrame() override {
-    browser_test_->FinishAsynchronousTest();
-  }
-
-  void DidFinishNavigation(bool success) override {
-    navigation_succeeded_ = success;
-  }
-
-  bool navigation_succeeded() const { return navigation_succeeded_; }
-
- private:
-  HeadlessWebContentsTest* browser_test_;  // Not owned.
-  bool navigation_succeeded_;
-};
-
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
   EXPECT_TRUE(embedded_test_server()->Start());
   HeadlessWebContents* web_contents = browser()->CreateWebContents(
       embedded_test_server()->GetURL("/hello.html"), gfx::Size(800, 600));
-  NavigationObserver observer(this);
-  web_contents->AddObserver(&observer);
-
-  RunAsynchronousTest();
-
-  EXPECT_TRUE(observer.navigation_succeeded());
-  web_contents->RemoveObserver(&observer);
+  EXPECT_TRUE(WaitForLoad(web_contents));
 
   std::vector<HeadlessWebContents*> all_web_contents =
       browser()->GetAllWebContents();
@@ -61,13 +34,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
 
   HeadlessWebContents* web_contents = browser()->CreateWebContents(
       embedded_test_server()->GetURL("/window_open.html"), gfx::Size(800, 600));
-  NavigationObserver observer(this);
-  web_contents->AddObserver(&observer);
-
-  RunAsynchronousTest();
-
-  EXPECT_TRUE(observer.navigation_succeeded());
-  web_contents->RemoveObserver(&observer);
+  EXPECT_TRUE(WaitForLoad(web_contents));
 
   std::vector<HeadlessWebContents*> all_web_contents =
       browser()->GetAllWebContents();

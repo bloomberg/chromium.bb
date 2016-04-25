@@ -39,16 +39,6 @@ class WebContentsObserverAdapter : public content::WebContentsObserver {
     observer_->DevToolsTargetReady();
   }
 
-  void DocumentOnLoadCompletedInMainFrame() override {
-    observer_->DocumentOnLoadCompletedInMainFrame();
-  }
-
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    observer_->DidFinishNavigation(navigation_handle->HasCommitted() &&
-                                   !navigation_handle->IsErrorPage());
-  }
-
  private:
   HeadlessWebContents::Observer* observer_;  // Not owned.
 

@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
@@ -81,7 +82,9 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetHostResolverRules) {
   EXPECT_TRUE(embedded_test_server()->Start());
   HeadlessBrowser::Options::Builder builder;
-  builder.SetHostResolverRules("MAP not-an-actual-domain.tld 127.0.0.1");
+  builder.SetHostResolverRules(
+      base::StringPrintf("MAP not-an-actual-domain.tld 127.0.0.1:%d",
+                         embedded_test_server()->host_port_pair().port()));
   SetBrowserOptions(builder.Build());
 
   // Load a page which doesn't actually exist, but which is turned into a valid

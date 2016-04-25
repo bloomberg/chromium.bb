@@ -14,6 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/public/domains/page.h"
+#include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
@@ -25,6 +26,7 @@ using headless::HeadlessBrowser;
 using headless::HeadlessDevToolsClient;
 using headless::HeadlessWebContents;
 namespace page = headless::page;
+namespace runtime = headless::runtime;
 
 namespace {
 // Address where to listen to incoming DevTools connections.
@@ -32,17 +34,11 @@ const char kDevToolsHttpServerAddress[] = "127.0.0.1";
 }
 
 // A sample application which demonstrates the use of the headless API.
-class HeadlessShell : public HeadlessWebContents::Observer {
+class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
  public:
   HeadlessShell()
       : browser_(nullptr), devtools_client_(HeadlessDevToolsClient::Create()) {}
   ~HeadlessShell() override {}
-
-  void DevToolsTargetReady() override {
-    if (!RemoteDebuggingEnabled())
-      web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
-    // TODO(skyostil): Implement more features to demonstrate the devtools API.
-  }
 
   void OnStart(HeadlessBrowser* browser) {
     browser_ = browser;
@@ -66,18 +62,43 @@ class HeadlessShell : public HeadlessWebContents::Observer {
     web_contents_->AddObserver(this);
   }
 
-  void ShutdownIfNeeded() {
+  void Shutdown() {
+    if (!web_contents_)
+      return;
     if (!RemoteDebuggingEnabled()) {
+      devtools_client_->GetPage()->RemoveObserver(this);
       web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
-      web_contents_->RemoveObserver(this);
-      web_contents_ = nullptr;
-      browser_->Shutdown();
     }
+    web_contents_->RemoveObserver(this);
+    web_contents_ = nullptr;
+    browser_->Shutdown();
   }
 
   // HeadlessWebContents::Observer implementation:
-  void DocumentOnLoadCompletedInMainFrame() override {
-    ShutdownIfNeeded();
+  void DevToolsTargetReady() override {
+    if (RemoteDebuggingEnabled())
+      return;
+    web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    // Check if the document had already finished loading by the time we
+    // attached.
+    devtools_client_->GetRuntime()->Evaluate(
+        "document.readyState",
+        base::Bind(&HeadlessShell::OnReadyState, base::Unretained(this)));
+    // TODO(skyostil): Implement more features to demonstrate the devtools API.
+  }
+
+  void OnReadyState(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string ready_state;
+    if (result->GetResult()->GetValue()->GetAsString(&ready_state) &&
+        ready_state == "complete")
+      Shutdown();
+  }
+
+  // page::Observer implementation:
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    Shutdown();
   }
 
   bool RemoteDebuggingEnabled() const {

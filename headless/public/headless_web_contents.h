@@ -20,12 +20,9 @@ class HEADLESS_EXPORT HeadlessWebContents {
  public:
   virtual ~HeadlessWebContents() {}
 
-  // TODO(skyostil): Replace this with an equivalent client API.
   class Observer {
    public:
     // All the following notifications will be called on browser main thread.
-    virtual void DocumentOnLoadCompletedInMainFrame() {}
-    virtual void DidFinishNavigation(bool success) {}
 
     // Indicates that this HeadlessWebContents instance is now ready to be
     // inspected using a HeadlessDevToolsClient.

@@ -10,30 +10,49 @@
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/url_constants.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
+#include "headless/public/domains/network.h"
+#include "headless/public/domains/page.h"
+#include "headless/public/headless_devtools_client.h"
+#include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 
 namespace headless {
 namespace {
 
-class WaitForNavigationObserver : public HeadlessWebContents::Observer {
+class WaitForLoadObserver : public page::Observer, public network::Observer {
  public:
-  WaitForNavigationObserver(HeadlessBrowserTest* browser_test,
-                            HeadlessWebContents* web_contents)
+  WaitForLoadObserver(HeadlessBrowserTest* browser_test,
+                      HeadlessWebContents* web_contents)
       : browser_test_(browser_test),
         web_contents_(web_contents),
-        navigation_succeeded_(false) {
-    web_contents_->AddObserver(this);
+        devtools_client_(HeadlessDevToolsClient::Create()),
+        navigation_succeeded_(true) {
+    web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetNetwork()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
   }
 
-  ~WaitForNavigationObserver() override { web_contents_->RemoveObserver(this); }
+  ~WaitForLoadObserver() override {
+    devtools_client_->GetNetwork()->RemoveObserver(this);
+    devtools_client_->GetPage()->RemoveObserver(this);
+    web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+  }
 
-  void DocumentOnLoadCompletedInMainFrame() override {
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
     browser_test_->FinishAsynchronousTest();
   }
-  void DidFinishNavigation(bool success) override {
-    navigation_succeeded_ = success;
+
+  void OnResponseReceived(
+      const network::ResponseReceivedParams& params) override {
+    if (params.GetResponse()->GetStatus() != 200 ||
+        params.GetResponse()->GetUrl() == content::kUnreachableWebDataURL) {
+      navigation_succeeded_ = false;
+    }
   }
 
   bool navigation_succeeded() const { return navigation_succeeded_; }
@@ -41,10 +60,11 @@ class WaitForNavigationObserver : public HeadlessWebContents::Observer {
  private:
   HeadlessBrowserTest* browser_test_;  // Not owned.
   HeadlessWebContents* web_contents_;  // Not owned.
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 
   bool navigation_succeeded_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaitForNavigationObserver);
+  DISALLOW_COPY_AND_ASSIGN(WaitForLoadObserver);
 };
 
 }  // namespace
@@ -90,7 +110,7 @@ HeadlessBrowser* HeadlessBrowserTest::browser() const {
 }
 
 bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
-  WaitForNavigationObserver observer(this, web_contents);
+  WaitForLoadObserver observer(this, web_contents);
   RunAsynchronousTest();
   return observer.navigation_succeeded();
 }

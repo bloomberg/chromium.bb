@@ -102,17 +102,18 @@ bool HeadlessDevToolsClientImpl::DispatchMessageReply(
     NOTREACHED() << "Unexpected reply";
     return false;
   }
-  if (!it->second.callback_with_result.is_null()) {
+  Callback callback = std::move(it->second);
+  pending_messages_.erase(it);
+  if (!callback.callback_with_result.is_null()) {
     const base::DictionaryValue* result_dict;
     if (!message_dict.GetDictionary("result", &result_dict)) {
       NOTREACHED() << "Badly formed reply result";
       return false;
     }
-    it->second.callback_with_result.Run(*result_dict);
-  } else if (!it->second.callback.is_null()) {
-    it->second.callback.Run();
+    callback.callback_with_result.Run(*result_dict);
+  } else if (!callback.callback.is_null()) {
+    callback.callback.Run();
   }
-  pending_messages_.erase(it);
   return true;
 }
 
