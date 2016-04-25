@@ -78,7 +78,7 @@ class TestRasterTaskImpl : public TileTask {
   }
   void CompleteOnOriginThread(RasterBufferProvider* provider) override {
     provider->ReleaseBufferForRaster(std::move(raster_buffer_));
-    reply_.Run(!HasFinishedRunning());
+    reply_.Run(!state().IsFinished());
   }
 
  protected:

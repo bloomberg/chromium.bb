@@ -352,17 +352,11 @@ void RasterWorkerPool::RunTaskInCategoryWithLockAcquired(
   // There may be more work available, so wake up another worker thread.
   SignalHasReadyToRunTasksWithLockAcquired();
 
-  // Call WillRun() before releasing |lock_| and running task.
-  task->WillRun();
-
   {
     base::AutoUnlock unlock(lock_);
 
     task->RunOnWorkerThread();
   }
-
-  // This will mark task as finished running.
-  task->DidRun();
 
   work_queue_.CompleteTask(prioritized_task);
 

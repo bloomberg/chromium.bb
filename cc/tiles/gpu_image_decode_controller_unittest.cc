@@ -38,9 +38,13 @@ void ScheduleTask(TileTask* task) {
 }
 
 void RunTask(TileTask* task) {
-  task->WillRun();
+  // TODO(prashant.n): Once ScheduleOnOriginThread() and
+  // CompleteOnOriginThread() functions are removed, modify this function
+  // accordingly. (crbug.com/599863)
+  task->state().DidSchedule();
+  task->state().DidStart();
   task->RunOnWorkerThread();
-  task->DidRun();
+  task->state().DidFinish();
 }
 
 void CompleteTask(TileTask* task) {

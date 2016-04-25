@@ -8,27 +8,63 @@
 
 namespace cc {
 
-Task::Task() : will_run_(false), did_run_(false) {}
+TaskState::TaskState() : value_(Value::NEW) {}
 
-Task::~Task() {
-  DCHECK(!will_run_);
+TaskState::~TaskState() {
+  DCHECK(value_ != Value::RUNNING)
+      << "Running task should never get destroyed.";
+  DCHECK(value_ == Value::NEW || value_ == Value::FINISHED ||
+         value_ == Value::CANCELED)
+      << "Task, if scheduled, should get concluded either in FINISHED or "
+         "CANCELED state.";
 }
 
-void Task::WillRun() {
-  DCHECK(!will_run_);
-  DCHECK(!did_run_);
-  will_run_ = true;
+bool TaskState::IsScheduled() const {
+  return value_ == Value::SCHEDULED;
 }
 
-void Task::DidRun() {
-  DCHECK(will_run_);
-  will_run_ = false;
-  did_run_ = true;
+bool TaskState::IsRunning() const {
+  return value_ == Value::RUNNING;
+}
+bool TaskState::IsFinished() const {
+  return value_ == Value::FINISHED;
+}
+bool TaskState::IsCanceled() const {
+  return value_ == Value::CANCELED;
 }
 
-bool Task::HasFinishedRunning() const {
-  return did_run_;
+void TaskState::Reset() {
+  value_ = Value::NEW;
 }
+
+void TaskState::DidSchedule() {
+  DCHECK(value_ == Value::NEW)
+      << "Task should be in NEW state to get scheduled.";
+  value_ = Value::SCHEDULED;
+}
+
+void TaskState::DidStart() {
+  DCHECK(value_ == Value::SCHEDULED)
+      << "Task should be only in SCHEDULED state to start, that is it should "
+         "not be started or finished.";
+  value_ = Value::RUNNING;
+}
+
+void TaskState::DidFinish() {
+  DCHECK(value_ == Value::RUNNING)
+      << "Task should be running and not finished earlier.";
+  value_ = Value::FINISHED;
+}
+
+void TaskState::DidCancel() {
+  DCHECK(value_ == Value::NEW || value_ == Value::SCHEDULED)
+      << "Task should be scheduled and not running to get canceled.";
+  value_ = Value::CANCELED;
+}
+
+Task::Task() {}
+
+Task::~Task() {}
 
 TaskGraph::TaskGraph() {}
 

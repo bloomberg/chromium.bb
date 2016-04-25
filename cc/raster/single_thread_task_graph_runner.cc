@@ -148,16 +148,10 @@ bool SingleThreadTaskGraphRunner::RunTaskWithLockAcquired() {
   auto prioritized_task = work_queue_.GetNextTaskToRun(category);
   Task* task = prioritized_task.task;
 
-  // Call WillRun() before releasing |lock_| and running task.
-  task->WillRun();
-
   {
     base::AutoUnlock unlock(lock_);
     task->RunOnWorkerThread();
   }
-
-  // This will mark task as finished running.
-  task->DidRun();
 
   work_queue_.CompleteTask(prioritized_task);
 

@@ -136,7 +136,7 @@ class PerfImageDecodeTaskImpl : public TileTask {
   }
 
   void Reset() {
-    did_run_ = false;
+    state().Reset();
     did_complete_ = false;
   }
 
@@ -167,7 +167,7 @@ class PerfRasterTaskImpl : public TileTask {
   }
 
   void Reset() {
-    did_run_ = false;
+    state().Reset();
     did_complete_ = false;
   }
 
@@ -202,19 +202,20 @@ class TileTaskWorkerPoolPerfTestBase {
   }
 
   void CreateRasterTasks(unsigned num_raster_tasks,
-                         const TileTask::Vector& image_decode_tasks,
+                         unsigned num_image_decode_tasks,
                          RasterTaskVector* raster_tasks) {
     const gfx::Size size(1, 1);
 
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
+      TileTask::Vector image_decode_tasks;
+      CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
       std::unique_ptr<ScopedResource> resource(
           ScopedResource::Create(resource_provider_.get()));
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                          RGBA_8888);
 
-      TileTask::Vector dependencies = image_decode_tasks;
       raster_tasks->push_back(
-          new PerfRasterTaskImpl(std::move(resource), &dependencies));
+          new PerfRasterTaskImpl(std::move(resource), &image_decode_tasks));
     }
   }
 
@@ -299,10 +300,8 @@ class TileTaskWorkerPoolPerfTest
   void RunScheduleTasksTest(const std::string& test_name,
                             unsigned num_raster_tasks,
                             unsigned num_image_decode_tasks) {
-    TileTask::Vector image_decode_tasks;
     RasterTaskVector raster_tasks;
-    CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
-    CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
+    CreateRasterTasks(num_raster_tasks, num_image_decode_tasks, &raster_tasks);
 
     // Avoid unnecessary heap allocations by reusing the same graph.
     TaskGraph graph;
@@ -328,11 +327,9 @@ class TileTaskWorkerPoolPerfTest
                                      unsigned num_raster_tasks,
                                      unsigned num_image_decode_tasks) {
     const size_t kNumVersions = 2;
-    TileTask::Vector image_decode_tasks[kNumVersions];
     RasterTaskVector raster_tasks[kNumVersions];
     for (size_t i = 0; i < kNumVersions; ++i) {
-      CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks[i]);
-      CreateRasterTasks(num_raster_tasks, image_decode_tasks[i],
+      CreateRasterTasks(num_raster_tasks, num_image_decode_tasks,
                         &raster_tasks[i]);
     }
 
@@ -361,10 +358,8 @@ class TileTaskWorkerPoolPerfTest
   void RunScheduleAndExecuteTasksTest(const std::string& test_name,
                                       unsigned num_raster_tasks,
                                       unsigned num_image_decode_tasks) {
-    TileTask::Vector image_decode_tasks;
     RasterTaskVector raster_tasks;
-    CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
-    CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
+    CreateRasterTasks(num_raster_tasks, num_image_decode_tasks, &raster_tasks);
 
     // Avoid unnecessary heap allocations by reusing the same graph.
     TaskGraph graph;
@@ -470,10 +465,8 @@ class TileTaskWorkerPoolCommonPerfTest : public TileTaskWorkerPoolPerfTestBase,
   void RunBuildTileTaskGraphTest(const std::string& test_name,
                                  unsigned num_raster_tasks,
                                  unsigned num_image_decode_tasks) {
-    TileTask::Vector image_decode_tasks;
     RasterTaskVector raster_tasks;
-    CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
-    CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
+    CreateRasterTasks(num_raster_tasks, num_image_decode_tasks, &raster_tasks);
 
     // Avoid unnecessary heap allocations by reusing the same graph.
     TaskGraph graph;

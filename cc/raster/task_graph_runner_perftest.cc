@@ -33,7 +33,7 @@ class PerfTaskImpl : public Task {
   // Overridden from Task:
   void RunOnWorkerThread() override {}
 
-  void Reset() { did_run_ = false; }
+  void Reset() { state().Reset(); }
 
  private:
   ~PerfTaskImpl() override {}
@@ -145,11 +145,15 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     size_t count = 0;
     timer_.Reset();
     do {
+      size_t current_version = count % kNumVersions;
       graph.Reset();
-      BuildTaskGraph(top_level_tasks[count % kNumVersions],
-                     tasks[count % kNumVersions],
-                     leaf_tasks[count % kNumVersions],
-                     &graph);
+      // Reset tasks as we are not letting them execute, they get cancelled
+      // when next ScheduleTasks() happens.
+      ResetTasks(&top_level_tasks[current_version]);
+      ResetTasks(&tasks[current_version]);
+      ResetTasks(&leaf_tasks[current_version]);
+      BuildTaskGraph(top_level_tasks[current_version], tasks[current_version],
+                     leaf_tasks[current_version], &graph);
       task_graph_runner_->ScheduleTasks(namespace_token_, &graph);
       CollectCompletedTasks(&completed_tasks);
       completed_tasks.clear();

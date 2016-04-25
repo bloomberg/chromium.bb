@@ -22,7 +22,7 @@ TileTask::TileTask(bool supports_concurrent_execution,
 
 TileTask::~TileTask() {
   DCHECK(!did_schedule_);
-  DCHECK(!did_run_ || did_complete_);
+  DCHECK(!state().IsFinished() || did_complete_);
 }
 
 void TileTask::WillSchedule() {

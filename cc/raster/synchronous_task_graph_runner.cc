@@ -85,9 +85,7 @@ bool SynchronousTaskGraphRunner::RunTask() {
   auto prioritized_task = work_queue_.GetNextTaskToRun(category);
 
   Task* task = prioritized_task.task;
-  task->WillRun();
   task->RunOnWorkerThread();
-  task->DidRun();
 
   work_queue_.CompleteTask(prioritized_task);
 
