@@ -79,6 +79,9 @@ class MEDIA_EXPORT VideoRendererImpl
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
   void SetGpuMemoryBufferVideoForTesting(
       scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
+  size_t frames_queued_for_testing() const {
+    return algorithm_->frames_queued();
+  }
 
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
@@ -154,6 +157,22 @@ class MEDIA_EXPORT VideoRendererImpl
   // Helper method for checking if a frame timestamp plus the frame's expected
   // duration is before |start_timestamp_|.
   bool IsBeforeStartTime(base::TimeDelta timestamp);
+
+  // Attempts to remove frames which are no longer effective for rendering when
+  // |buffering_state_| == BUFFERING_HAVE_NOTHING or |was_background_rendering_|
+  // is true.  If the current media time as provided by |wall_clock_time_cb_| is
+  // null, no frame expiration will be done.
+  //
+  // When background rendering the method will expire all frames before the
+  // current wall clock time since it's expected that there will be long delays
+  // between each Render() call in this state.
+  //
+  // When in the underflow state the method will first attempt to remove expired
+  // frames before the current media time plus duration. If |sink_started_| is
+  // true, nothing more can be done. However, if false, and there are still no
+  // effective frames in the queue, the entire frame queue will be released to
+  // avoid any stalling.
+  void RemoveFramesForUnderflowOrBackgroundRendering();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

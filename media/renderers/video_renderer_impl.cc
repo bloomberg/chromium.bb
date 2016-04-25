@@ -303,6 +303,13 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
       StartSink();
   } else {
     StopSink();
+
+    // Make sure we expire everything we can if we can't read anymore currently,
+    // otherwise playback may hang indefinitely.  Note: There are no effective
+    // frames queued at this point, otherwise FrameReady() would have canceled
+    // the underflow state before reaching this point.
+    if (buffering_state_ == BUFFERING_HAVE_NOTHING)
+      RemoveFramesForUnderflowOrBackgroundRendering();
   }
 }
 
@@ -382,42 +389,13 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
       AddReadyFrame_Locked(frame);
     }
 
-    // Background rendering updates may not be ticking fast enough by itself to
-    // remove expired frames, so give it a boost here by ensuring we don't exit
-    // the decoding cycle too early.
-    //
-    // Similarly, if we've paused for underflow, remove all frames which are
-    // before the current media time.
-    //
-    // If we're paused for prerolling (current time is 0), don't expire any
-    // frames. It's possible that during preroll |have_nothing_and_paused| is
-    // false while |was_background_rendering_| is true. We differentiate this
-    // from actual background rendering by checking if current time is 0.
-    const bool have_nothing = buffering_state_ != BUFFERING_HAVE_ENOUGH;
-    const bool have_nothing_and_paused = have_nothing && !sink_started_;
-    if (was_background_rendering_ ||
-        (have_nothing_and_paused && drop_frames_)) {
-      base::TimeTicks current_time = GetCurrentMediaTimeAsWallClockTime();
-      if (!current_time.is_null()) {
-        if (have_nothing_and_paused) {
-          // Use the current media wall clock time plus the frame duration since
-          // RemoveExpiredFrames() is expecting the end point of an interval (it
-          // will subtract from the given value).
-          frames_dropped_ += algorithm_->RemoveExpiredFrames(
-              current_time + algorithm_->average_frame_duration());
-        } else {
-          // Don't count dropped frames when background rendering.
-          algorithm_->RemoveExpiredFrames(tick_clock_->NowTicks());
-        }
-      }
-    }
+    // Attempt to purge bad frames in case of underflow or backgrounding.
+    RemoveFramesForUnderflowOrBackgroundRendering();
 
-    // Signal buffering state if we've met our conditions for having enough
-    // data.
-    if (have_nothing && HaveEnoughData_Locked()) {
+    // Signal buffering state if we've met our conditions.
+    if (buffering_state_ == BUFFERING_HAVE_NOTHING && HaveEnoughData_Locked()) {
       TransitionToHaveEnough_Locked();
-      if (!sink_started_ &&
-          !rendered_end_of_stream_) {
+      if (!sink_started_ && !rendered_end_of_stream_) {
         start_sink = true;
         render_first_frame_and_stop_ = true;
         posted_maybe_stop_after_first_paint_ = false;
@@ -441,26 +419,27 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
 
 bool VideoRendererImpl::HaveEnoughData_Locked() {
   DCHECK_EQ(state_, kPlaying);
+  lock_.AssertAcquired();
 
-  if (received_end_of_stream_ || !video_frame_stream_->CanReadWithoutStalling())
+  if (received_end_of_stream_)
     return true;
 
   if (HaveReachedBufferingCap())
     return true;
 
-  if (was_background_rendering_ && frames_decoded_) {
+  if (was_background_rendering_ && frames_decoded_)
     return true;
-  }
 
-  if (!low_delay_)
+  if (!low_delay_ && video_frame_stream_->CanReadWithoutStalling())
     return false;
 
-  return algorithm_->frames_queued() > 0;
+  return algorithm_->effective_frames_queued() > 0;
 }
 
 void VideoRendererImpl::TransitionToHaveEnough_Locked() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
+  lock_.AssertAcquired();
 
   buffering_state_ = BUFFERING_HAVE_ENOUGH;
   buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
@@ -637,6 +616,50 @@ base::TimeTicks VideoRendererImpl::GetCurrentMediaTimeAsWallClockTime() {
 
 bool VideoRendererImpl::IsBeforeStartTime(base::TimeDelta timestamp) {
   return timestamp + video_frame_stream_->AverageDuration() < start_timestamp_;
+}
+
+void VideoRendererImpl::RemoveFramesForUnderflowOrBackgroundRendering() {
+  // Nothing to do if we're not underflowing, background rendering, or frame
+  // dropping is disabled (test only).
+  const bool have_nothing = buffering_state_ == BUFFERING_HAVE_NOTHING;
+  if (!was_background_rendering_ && !have_nothing && !drop_frames_)
+    return;
+
+  // If there are no frames to remove, nothing can be done.
+  if (!algorithm_->frames_queued())
+    return;
+
+  // If we're paused for prerolling (current time is 0), don't expire any
+  // frames. It's possible that during preroll |have_nothing| is false while
+  // |was_background_rendering_| is true. We differentiate this from actual
+  // background rendering by checking if current time is 0.
+  const base::TimeTicks current_time = GetCurrentMediaTimeAsWallClockTime();
+  if (current_time.is_null())
+    return;
+
+  // Background rendering updates may not be ticking fast enough to remove
+  // expired frames, so provide a boost here by ensuring we don't exit the
+  // decoding cycle too early. Dropped frames are not counted in this case.
+  if (was_background_rendering_) {
+    algorithm_->RemoveExpiredFrames(tick_clock_->NowTicks());
+    return;
+  }
+
+  // Use the current media wall clock time plus the frame duration since
+  // RemoveExpiredFrames() is expecting the end point of an interval (it will
+  // subtract from the given value). It's important to always call this so
+  // that frame statistics are updated correctly.
+  frames_dropped_ += algorithm_->RemoveExpiredFrames(
+      current_time + algorithm_->average_frame_duration());
+
+  // If we've paused for underflow, and still have no effective frames, clear
+  // the entire queue.  Note: this may cause slight inaccuracies in the number
+  // of dropped frames since the frame may have been rendered before.
+  if (!sink_started_ && !algorithm_->effective_frames_queued()) {
+    frames_dropped_ += algorithm_->frames_queued();
+    algorithm_->Reset(
+        VideoRendererAlgorithm::ResetFlag::kPreserveNextFrameEstimates);
+  }
 }
 
 }  // namespace media
