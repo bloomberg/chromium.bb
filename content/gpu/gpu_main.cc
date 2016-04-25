@@ -438,6 +438,35 @@ void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
       command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
   gpu_info.driver_version =
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
+  gpu::ParseSecondaryGpuDevicesFromCommandLine(command_line, &gpu_info);
+
+  // Set active gpu device.
+  if (command_line.HasSwitch(switches::kGpuActiveVendorID) &&
+      command_line.HasSwitch(switches::kGpuActiveDeviceID)) {
+    uint32_t active_vendor_id = 0;
+    uint32_t active_device_id = 0;
+    success = base::HexStringToUInt(
+        command_line.GetSwitchValueASCII(switches::kGpuActiveVendorID),
+        &active_vendor_id);
+    DCHECK(success);
+    success = base::HexStringToUInt(
+        command_line.GetSwitchValueASCII(switches::kGpuActiveDeviceID),
+        &active_device_id);
+    DCHECK(success);
+    if (gpu_info.gpu.vendor_id == active_vendor_id &&
+        gpu_info.gpu.device_id == active_device_id) {
+      gpu_info.gpu.active = true;
+    } else {
+      for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
+        if (gpu_info.secondary_gpus[i].vendor_id == active_vendor_id &&
+            gpu_info.secondary_gpus[i].device_id == active_device_id) {
+          gpu_info.secondary_gpus[i].active = true;
+          break;
+        }
+      }
+    }
+  }
+
   GetContentClient()->SetGpuInfo(gpu_info);
 }
 

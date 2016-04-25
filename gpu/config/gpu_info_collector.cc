@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -117,8 +119,23 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
 
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
   gpu_info->gl_vendor = GetGLString(GL_VENDOR);
-  gpu_info->gl_extensions = gfx::GetGLExtensionsFromCurrentContext();
   gpu_info->gl_version = GetGLString(GL_VERSION);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kGpuTestingGLVendor)) {
+    gpu_info->gl_vendor =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVendor);
+  }
+  if (command_line->HasSwitch(switches::kGpuTestingGLRenderer)) {
+    gpu_info->gl_renderer =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingGLRenderer);
+  }
+  if (command_line->HasSwitch(switches::kGpuTestingGLVersion)) {
+    gpu_info->gl_version =
+        command_line->GetSwitchValueASCII(switches::kGpuTestingGLVersion);
+  }
+
+  gpu_info->gl_extensions = gfx::GetGLExtensionsFromCurrentContext();
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
   gfx::GLVersionInfo gl_info(gpu_info->gl_version.c_str(),
@@ -214,17 +231,19 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
 
 void IdentifyActiveGPU(GPUInfo* gpu_info) {
   const std::string kNVidiaName = "nvidia";
+  const std::string kNouveauName = "nouveau";
   const std::string kIntelName = "intel";
   const std::string kAMDName = "amd";
   const std::string kATIName = "ati";
-  const std::string kVendorNames[] = {
-      kNVidiaName, kIntelName, kAMDName, kATIName};
+  const std::string kVendorNames[] = {kNVidiaName, kNouveauName, kIntelName,
+                                      kAMDName, kATIName};
 
   const uint32_t kNVidiaID = 0x10de;
   const uint32_t kIntelID = 0x8086;
   const uint32_t kAMDID = 0x1002;
   const uint32_t kATIID = 0x1002;
-  const uint32_t kVendorIDs[] = {kNVidiaID, kIntelID, kAMDID, kATIID};
+  const uint32_t kVendorIDs[] = {kNVidiaID, kNVidiaID, kIntelID, kAMDID,
+                                 kATIID};
 
   DCHECK(gpu_info);
   if (gpu_info->secondary_gpus.size() == 0)

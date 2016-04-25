@@ -9,6 +9,18 @@ namespace switches {
 // Pass a set of GpuDriverBugWorkaroundType ids, seperated by ','.
 const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
 
+// Passes active gpu vendor id from browser process to GPU process.
+const char kGpuActiveVendorID[] = "gpu-active-vendor-id";
+
+// Passes active gpu device id from browser process to GPU process.
+const char kGpuActiveDeviceID[] = "gpu-active-device-id";
+
+// Passes secondary gpu vendor ids from browser process to GPU process.
+const char kGpuSecondaryVendorIDs[] = "gpu-secondary-vendor-ids";
+
+// Passes secondary gpu device ids from browser process to GPU process.
+const char kGpuSecondaryDeviceIDs[] = "gpu-secondary-device-ids";
+
 // Testing switch to not launch the gpu process for full gpu info collection.
 const char kGpuTestingNoCompleteInfoCollection[] =
     "gpu-no-complete-info-collection";
@@ -21,6 +33,12 @@ const char kGpuTestingVendorId[] = "gpu-testing-vendor-id";
 
 // Override gpu device id from the GpuInfoCollector.
 const char kGpuTestingDeviceId[] = "gpu-testing-device-id";
+
+// Override secondary gpu vendor ids from the GpuInfoCollector.
+const char kGpuTestingSecondaryVendorIDs[] = "gpu-testing-secondary-vendor-ids";
+
+// Override secondary gpu device ids from the GpuInfoCollector.
+const char kGpuTestingSecondaryDeviceIDs[] = "gpu-testing-secondary-device-ids";
 
 // Override gl vendor from the GpuInfoCollector.
 const char kGpuTestingGLVendor[] = "gpu-testing-gl-vendor";

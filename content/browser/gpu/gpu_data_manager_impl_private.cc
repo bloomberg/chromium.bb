@@ -544,6 +544,8 @@ void GpuDataManagerImplPrivate::Initialize() {
       gpu_info.gpu.active = true;
       gpu_info.secondary_gpus.clear();
     }
+
+    gpu::ParseSecondaryGpuDevicesFromCommandLine(*command_line, &gpu_info);
   }
 #if defined(ARCH_CPU_X86_FAMILY)
   if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id) {
@@ -742,6 +744,40 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       gpu_info_.driver_vendor);
   command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
       gpu_info_.driver_version);
+
+  gpu::GPUInfo::GPUDevice maybe_active_gpu_device;
+  if (gpu_info_.gpu.active)
+    maybe_active_gpu_device = gpu_info_.gpu;
+
+  std::string vendor_ids_str;
+  std::string device_ids_str;
+  for (const auto& device : gpu_info_.secondary_gpus) {
+    if (!vendor_ids_str.empty())
+      vendor_ids_str += ";";
+    if (!device_ids_str.empty())
+      device_ids_str += ";";
+    vendor_ids_str += base::StringPrintf("0x%04x", device.vendor_id);
+    device_ids_str += base::StringPrintf("0x%04x", device.device_id);
+
+    if (device.active)
+      maybe_active_gpu_device = device;
+  }
+
+  if (!vendor_ids_str.empty() && !device_ids_str.empty()) {
+    command_line->AppendSwitchASCII(switches::kGpuSecondaryVendorIDs,
+                                    vendor_ids_str);
+    command_line->AppendSwitchASCII(switches::kGpuSecondaryDeviceIDs,
+                                    device_ids_str);
+  }
+
+  if (maybe_active_gpu_device.active) {
+    command_line->AppendSwitchASCII(
+        switches::kGpuActiveVendorID,
+        base::StringPrintf("0x%04x", maybe_active_gpu_device.vendor_id));
+    command_line->AppendSwitchASCII(
+        switches::kGpuActiveDeviceID,
+        base::StringPrintf("0x%04x", maybe_active_gpu_device.device_id));
+  }
 }
 
 void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(

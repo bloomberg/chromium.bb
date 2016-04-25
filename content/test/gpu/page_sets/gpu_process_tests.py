@@ -13,6 +13,8 @@ class GpuProcessSharedPageState(gpu_test_base.GpuSharedPageState):
                   '--gpu-testing-os-version',
                   '--gpu-testing-vendor-id',
                   '--gpu-testing-device-id',
+                  '--gpu-testing-secondary-vendor-ids',
+                  '--gpu-testing-secondary-device-ids',
                   '--gpu-testing-gl-vendor',
                   '--gpu-testing-gl-renderer',
                   '--gpu-testing-gl-version']
@@ -29,6 +31,42 @@ class GpuProcessSharedPageState(gpu_test_base.GpuSharedPageState):
         if opt.startswith(gpu_switch):
           old_gpu_switches.append(opt)
     options.difference_update(old_gpu_switches)
+
+
+class IdentifyActiveGpuPageBase(gpu_test_base.PageBase):
+
+  def __init__(self, name=None, page_set=None, shared_page_state_class=None,
+               expectations=None, active_gpu=None, inactive_gpus=None):
+    super(IdentifyActiveGpuPageBase, self).__init__(
+      url='chrome:gpu',
+      name=name,
+      page_set=page_set,
+      shared_page_state_class=shared_page_state_class,
+      expectations=expectations)
+    self.active_gpu = active_gpu
+    self.inactive_gpus = inactive_gpus
+
+  def Validate(self, tab, results):
+    basic_infos = tab.EvaluateJavaScript('browserBridge.gpuInfo.basic_info')
+    active_gpu = []
+    inactive_gpus = []
+    index = 0
+    for info in basic_infos:
+      description = info['description']
+      value = info['value']
+      if description.startswith('GPU%d' % index) and value.startswith('VENDOR'):
+        if value.endswith('*ACTIVE*'):
+          active_gpu.append(value)
+        else:
+          inactive_gpus.append(value)
+        index += 1
+
+    if active_gpu != self.active_gpu:
+      raise page_test.Failure('Active GPU field is wrong %s' % active_gpu)
+
+    if inactive_gpus != self.inactive_gpus:
+      raise page_test.Failure('Inactive GPU field is wrong %s' % inactive_gpus)
+
 
 class GpuProcessTestsPage(gpu_test_base.PageBase):
   def __init__(self, url, name, story_set, expectations):
@@ -205,6 +243,130 @@ class DriverBugWorkaroundsInGpuProcessPage(gpu_test_base.PageBase):
       raise page_test.Failure('%s missing in GPU process workarounds: %s' \
         % (workaround, gpu_list))
 
+
+class IdentifyActiveGpuSharedPageState1(GpuProcessSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(IdentifyActiveGpuSharedPageState1, self).__init__(
+      test, finder_options, story_set)
+    opts = finder_options.browser_options
+
+    opts.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x8086')
+    opts.AppendExtraBrowserArgs('--gpu-testing-device-id=0x040a')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-vendor-ids=0x10de')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-device-ids=0x0de1')
+    opts.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=nouveau')
+
+
+class IdentifyActiveGpuPage1(IdentifyActiveGpuPageBase):
+  def __init__(self, story_set, expectations):
+    active_gpu = ['VENDOR = 0x10de, DEVICE= 0x0de1 *ACTIVE*']
+    inactive_gpus = ['VENDOR = 0x8086, DEVICE= 0x040a']
+
+    super(IdentifyActiveGpuPage1, self).__init__(
+      name='GpuProcess.identify_active_gpu1',
+      page_set=story_set,
+      shared_page_state_class=IdentifyActiveGpuSharedPageState1,
+      expectations=expectations,
+      active_gpu=active_gpu,
+      inactive_gpus=inactive_gpus)
+
+  def Validate(self, tab, results):
+    super(IdentifyActiveGpuPage1, self).Validate(tab, results)
+
+
+class IdentifyActiveGpuSharedPageState2(GpuProcessSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(IdentifyActiveGpuSharedPageState2, self).__init__(
+      test, finder_options, story_set)
+    opts = finder_options.browser_options
+
+    opts.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x8086')
+    opts.AppendExtraBrowserArgs('--gpu-testing-device-id=0x040a')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-vendor-ids=0x10de')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-device-ids=0x0de1')
+    opts.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=Intel')
+
+
+class IdentifyActiveGpuPage2(IdentifyActiveGpuPageBase):
+  def __init__(self, story_set, expectations):
+    active_gpu = ['VENDOR = 0x8086, DEVICE= 0x040a *ACTIVE*']
+    inactive_gpus = ['VENDOR = 0x10de, DEVICE= 0x0de1']
+
+    super(IdentifyActiveGpuPage2, self).__init__(
+      name='GpuProcess.identify_active_gpu2',
+      page_set=story_set,
+      shared_page_state_class=IdentifyActiveGpuSharedPageState2,
+      expectations=expectations,
+      active_gpu=active_gpu,
+      inactive_gpus=inactive_gpus)
+
+  def Validate(self, tab, results):
+    super(IdentifyActiveGpuPage2, self).Validate(tab, results)
+
+
+class IdentifyActiveGpuSharedPageState3(GpuProcessSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(IdentifyActiveGpuSharedPageState3, self).__init__(
+      test, finder_options, story_set)
+    opts = finder_options.browser_options
+
+    opts.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x8086')
+    opts.AppendExtraBrowserArgs('--gpu-testing-device-id=0x040a')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-vendor-ids= \
+                                0x10de;0x1002')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-device-ids= \
+                                0x0de1;0x6779')
+    opts.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=X.Org')
+    opts.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=AMD R600')
+
+
+class IdentifyActiveGpuPage3(IdentifyActiveGpuPageBase):
+  def __init__(self, story_set, expectations):
+    active_gpu = ['VENDOR = 0x1002, DEVICE= 0x6779 *ACTIVE*']
+    inactive_gpus = ['VENDOR = 0x8086, DEVICE= 0x040a', \
+                     'VENDOR = 0x10de, DEVICE= 0x0de1']
+
+    super(IdentifyActiveGpuPage3, self).__init__(
+      name='GpuProcess.identify_active_gpu3',
+      page_set=story_set,
+      shared_page_state_class=IdentifyActiveGpuSharedPageState3,
+      expectations=expectations,
+      active_gpu=active_gpu,
+      inactive_gpus=inactive_gpus)
+
+  def Validate(self, tab, results):
+    super(IdentifyActiveGpuPage3, self).Validate(tab, results)
+
+
+class IdentifyActiveGpuSharedPageState4(GpuProcessSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(IdentifyActiveGpuSharedPageState4, self).__init__(
+      test, finder_options, story_set)
+    opts = finder_options.browser_options
+
+    opts.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x10de')
+    opts.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0de1')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-vendor-ids=')
+    opts.AppendExtraBrowserArgs('--gpu-testing-secondary-device-ids=')
+    opts.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=nouveau')
+
+
+class IdentifyActiveGpuPage4(IdentifyActiveGpuPageBase):
+  def __init__(self, story_set, expectations):
+    active_gpu = ['VENDOR = 0x10de, DEVICE= 0x0de1 *ACTIVE*']
+    inactive_gpus = []
+
+    super(IdentifyActiveGpuPage4, self).__init__(
+      name='GpuProcess.identify_active_gpu4',
+      page_set=story_set,
+      shared_page_state_class=IdentifyActiveGpuSharedPageState4,
+      expectations=expectations,
+      active_gpu=active_gpu,
+      inactive_gpus=inactive_gpus)
+
+  def Validate(self, tab, results):
+    super(IdentifyActiveGpuPage4, self).Validate(tab, results)
+
 class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
@@ -231,6 +393,10 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     self.AddStory(SoftwareGpuProcessPage(self, expectations))
     self.AddStory(SkipGpuProcessPage(self, expectations))
     self.AddStory(DriverBugWorkaroundsInGpuProcessPage(self, expectations))
+    self.AddStory(IdentifyActiveGpuPage1(self, expectations))
+    self.AddStory(IdentifyActiveGpuPage2(self, expectations))
+    self.AddStory(IdentifyActiveGpuPage3(self, expectations))
+    self.AddStory(IdentifyActiveGpuPage4(self, expectations))
 
   @property
   def allow_mixed_story_states(self):
