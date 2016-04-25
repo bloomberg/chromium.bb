@@ -359,7 +359,7 @@ String FileInputType::droppedFileSystemId()
     return m_droppedFileSystemId;
 }
 
-String FileInputType::defaultToolTip() const
+String FileInputType::defaultToolTip(const InputTypeView&) const
 {
     FileList* fileList = m_fileList.get();
     unsigned listSize = fileList->length();

@@ -356,13 +356,13 @@ String InputType::valueMissingText() const
     return locale().queryString(WebLocalizedString::ValidationValueMissing);
 }
 
-std::pair<String, String> InputType::validationMessage() const
+std::pair<String, String> InputType::validationMessage(const InputTypeView& inputTypeView) const
 {
     const String value = element().value();
 
     // The order of the following checks is meaningful. e.g. We'd like to show the
     // badInput message even if the control has other validation errors.
-    if (hasBadInput())
+    if (inputTypeView.hasBadInput())
         return std::make_pair(badInputText(), emptyString());
 
     if (valueMissing(value))
@@ -667,11 +667,11 @@ bool InputType::supportsReadOnly() const
     return false;
 }
 
-String InputType::defaultToolTip() const
+String InputType::defaultToolTip(const InputTypeView& inputTypeView) const
 {
     if (element().form() && element().form()->noValidate())
         return String();
-    return validationMessage().first;
+    return validationMessage(inputTypeView).first;
 }
 
 Decimal InputType::findClosestTickMarkValue(const Decimal&)

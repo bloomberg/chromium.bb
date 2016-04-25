@@ -101,7 +101,7 @@ public:
 
     // Returns a validation message as .first, and title attribute value as
     // .second if patternMismatch.
-    virtual std::pair<String, String> validationMessage() const;
+    std::pair<String, String> validationMessage(const InputTypeView&) const;
     virtual bool supportsValidation() const;
     virtual bool typeMismatchFor(const String&) const;
     // Type check for the current input value. We do nothing for some types
@@ -173,7 +173,7 @@ public:
     virtual int minLength() const;
     virtual bool supportsPlaceholder() const;
     virtual bool supportsReadOnly() const;
-    virtual String defaultToolTip() const;
+    virtual String defaultToolTip(const InputTypeView&) const;
     virtual Decimal findClosestTickMarkValue(const Decimal&);
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
     virtual const QualifiedName& subResourceAttributeName() const;

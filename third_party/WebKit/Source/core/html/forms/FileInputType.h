@@ -73,7 +73,7 @@ private:
     void createShadowSubtree() override;
     void disabledAttributeChanged() override;
     void multipleAttributeChanged() override;
-    String defaultToolTip() const override;
+    String defaultToolTip(const InputTypeView&) const override;
 
     // FileChooserClient implementation.
     void filesChosen(const Vector<FileChooserFileInfo>&) override;
