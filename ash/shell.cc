@@ -856,6 +856,10 @@ Shell::~Shell() {
 void Shell::Init(const ShellInitParams& init_params) {
   in_mus_ = init_params.in_mus;
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  DCHECK(in_mus_) << "linux desktop does not support ash.";
+#endif
+
   wm_globals_.reset(new wm::WmGlobalsAura);
   window_positioner_.reset(new WindowPositioner(wm_globals_.get()));
 
