@@ -177,11 +177,6 @@ void buildFilterOperations(const FilterOperations& operations, CompositorFilterO
     }
 }
 
-sk_sp<SkImageFilter> buildTransform(const AffineTransform& transform, sk_sp<SkImageFilter> input)
-{
-    return SkImageFilter::MakeMatrixFilter(affineTransformToSkMatrix(transform), kHigh_SkFilterQuality, std::move(input));
-}
-
 sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection, sk_sp<SkImageFilter> input)
 {
     sk_sp<SkImageFilter> maskedInput;
