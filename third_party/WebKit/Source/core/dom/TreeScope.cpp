@@ -373,8 +373,10 @@ void TreeScope::adoptIfNeeded(Node& node)
     DCHECK(this);
     DCHECK(!node.isDocumentNode());
     TreeScopeAdopter adopter(node, *this);
-    if (adopter.needsScopeChange())
+    if (adopter.needsScopeChange()) {
+        ScriptForbiddenScope forbidScript;
         adopter.execute();
+    }
 }
 
 Element* TreeScope::retarget(const Element& target) const
