@@ -207,6 +207,7 @@
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />不支持<ph name="SPECIFIED_RESOLUTION" />。分辨率已改为<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">停靠模式</translation>
+<translation id="7580671184200851182">在所有音响设备上播放相同的音频（单声道音频）</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7692480393933218409">正在为已连接的 USB-C 设备充电</translation>

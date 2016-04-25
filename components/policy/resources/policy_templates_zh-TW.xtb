@@ -146,6 +146,18 @@
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
+<translation id="1613574633990410986">允許您指定 <ph name="PRODUCT_NAME" /> 和 ARC 應用程式使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
+
+      如果您決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
+
+      如果您選擇自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
+
+      如需參考具體的設定範例，請造訪以下網址：
+      <ph name="PROXY_HELP_URL" />
+
+      如果您啟用這項設定，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式會忽略所有從命令列指定的 Proxy 相關選項。
+
+      如果不設定這些政策，使用者即可自行選擇 Proxy 設定。</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載紀錄</translation>
 <translation id="1617384279878333801">允許在設定檔管理員中新增使用者</translation>
 <translation id="1655229863189977773">設定磁碟快取大小 (以位元組為單位)</translation>
@@ -213,6 +225,15 @@
 <translation id="1865417998205858223">金鑰權限</translation>
 <translation id="186719019195685253">使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="187819629719252111">允許「<ph name="PRODUCT_NAME" />」顯示檔案選項對話方塊，即可允許本機檔案的存取權。如果您啟用這項設定，使用者就能照常開啟檔案選項對話方塊。如果您停用這項設定，只要使用者執行的動作會開啟檔案選項對話方塊 (例如匯入書籤、上傳檔案、儲存連結等)，螢幕上就會顯示訊息，並假設使用者已按下檔案選項對話方塊上的 [取消]。如果未調整這項設定，使用者就能照常開啟檔案選項對話方塊。</translation>
+<translation id="1879485426724769439">指定裝置所使用的時區。使用者可以為目前的工作階段覆寫指定的時區，但登出後便會自動恢復原本指定的時區。如果設定了無效的值，系統仍會啟用這項政策，並自動套用「GMT」時區設定。如果設定了空白的值，系統會忽略這項政策。
+
+      如果不使用這項政策，系統仍會套用目前採用的時區，但使用者可以變更時區，且變更將永久有效。因此，某位使用者所做的變更將會影響登入畫面和所有其他使用者。
+
+      新裝置的出廠預設時區為「美國/太平洋」時間。
+
+      時區值格式是採用「IANA 時區資料庫」中訂定的時區名稱 (請參閱「https://en.wikipedia.org/wiki/Tz_database」)。基本上，大部分時區均依照「&lt;大陸&gt;/&lt;大城市&gt;」或「&lt;大洋&gt;/&lt;大城市&gt;」的格式定名。
+
+      設定這項政策後，系統將全面停止依裝置位置資訊自動偵測時區，SystemTimezoneAutomaticDetection 政策也會遭到覆寫。</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
 <translation id="193259052151668190">卸離式 USB 裝置許可清單</translation>
 <translation id="1933378685401357864">桌布圖片</translation>
@@ -581,6 +602,24 @@
 <translation id="3072847235228302527">為裝置本機帳戶設定《服務條款》</translation>
 <translation id="3096595567015595053">啟用的外掛程式清單</translation>
 <translation id="3101501961102569744">選擇如何指定 Proxy 伺服器設定</translation>
+<translation id="3125884964575432854">允許您指定 <ph name="PRODUCT_NAME" /> 和 ARC 應用程式使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
+
+          如果您決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
+
+          如果您選擇使用系統 Proxy 設定，系統會忽略其他所有選項。
+
+          如果您選擇自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
+
+          如果您選擇固定的伺服器 Proxy 模式，可進一步指定「Proxy 伺服器位址或網址」和「以逗號分隔的 Proxy 略過規則清單」中的選項。ARC 僅會使用優先程度最高的 HTTP Proxy 伺服器。
+
+          如果您選擇使用 .pac Proxy 指令碼，則必須在「Proxy .pac 檔案網址」中指定指令碼網址。
+
+          如需參考具體的設定範例，請造訪以下網址：
+          <ph name="PROXY_HELP_URL" />
+
+          如果您啟用這項設定，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式會忽略所有從命令列指定的 Proxy 相關選項。
+
+          如果不設定這項政策，使用者即可自行選擇 Proxy 設定。</translation>
 <translation id="3153348162326497318">允許您指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到移除。星號「*」代表排除所有的擴充功能，除非您特別將部分擴充功能列入許可清單。如果未設定這項政策，使用者即可在「<ph name="PRODUCT_NAME" />」中安裝任何擴充功能。</translation>
 <translation id="316778957754360075">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 移除這項設定。如要設定機構代管的擴充功能/應用程式集合，建議您將代管 CRX 封裝檔的網站加入 ExtensionInstallSources 中，並在網頁上提供該封裝檔的直接下載連結。您可以透過 ExtensionInstallForcelist 政策建立該網頁專用的啟動器。</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION" /> 版起</translation>
@@ -649,6 +688,20 @@
 
           如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
+<translation id="3398137877608138703">允許或拒絕擷取視訊。
+
+      如果啟用或未設定 (預設) 這項政策，系統會在需要視訊擷取權限時提示使用者；
+      如果相關網址是在 VideoCaptureAllowedUrls 中設定為允許的網址，
+      則系統會直接授予權限，而不會提示使用者。
+      如果 ARC 應用程式已獲得權限，則可存取
+      攝影機。
+
+      如果停用這項政策，系統一律不會提示使用者，
+      且只有在 VideoCaptureAllowedUrls 中設定為允許的網址才能擷取視訊。
+      ARC 應用程式將無法存取攝影機。
+
+      除了 ARC 應用程式外，這項政策會影響所有類型的視訊輸入裝置，
+      而不僅止於內建攝影機。</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
 
       如果這項政策設為 False，<ph name="PRODUCT_OS_NAME" /> 不會允許開啟訪客工作階段。</translation>
@@ -666,6 +719,8 @@
 <translation id="3478024346823118645">登出後清除使用者資料</translation>
 <translation id="348495353354674884">啟用虛擬鍵盤</translation>
 <translation id="3496296378755072552">密碼管理員</translation>
+<translation id="349667858031092827">不自動偵測時區。</translation>
+<translation id="350443680860256679">設定 ARC</translation>
 <translation id="3504791027627803580">指定用來提供圖片搜尋的搜尋引擎網址。系統將使用 GET 方法傳送搜尋要求。如果設定 DefaultSearchProviderImageURLPostParams 政策，系統就會使用 POST 方法傳送圖片搜尋要求。
 
           這項政策是選擇性的，如果未設定，就不能使用圖片搜尋。
@@ -799,6 +854,22 @@
           如果將這項政策設為 [在工作階段期間保留 Cookie]，系統會在工作階段結束時清除 Cookie。請注意，如果 <ph name="PRODUCT_NAME" /> 是在「背景模式」中執行，工作階段可能不會在最後一個視窗關閉時結束。如需深入瞭解如何設定這項行為，請參閱「BackgroundModeEnabled」政策。
 
           如未設定這項政策，系統會使用「AllowCookies」，使用者之後可以自行變更這項設定。</translation>
+<translation id="4098957623809244159">這項政策已淘汰，請改用 ProxyMode。
+
+          允許您指定 <ph name="PRODUCT_NAME" /> 和 ARC 應用程式使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
+
+          如果您決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
+
+          如果您選擇使用系統 Proxy 設定或自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
+
+          如果您選擇手動 Proxy 設定，可進一步指定「Proxy 伺服器位址或網址」、「Proxy .pac 檔案網址」和「以逗號分隔的 Proxy 略過規則清單」中的選項。
+
+          如需參考具體的設定範例，請造訪以下網址：
+          <ph name="PROXY_HELP_URL" />
+
+          如果您啟用這項設定，<ph name="PRODUCT_NAME" /> 會忽略所有從命令列指定的 Proxy 相關選項。
+
+          如果不設定這項政策，使用者即可自行選擇 Proxy 設定。</translation>
 <translation id="4103289232974211388">經使用者確認後重新導向 SAML IdP</translation>
 <translation id="410478022164847452">指定時間長度，如果系統在 AC 供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後採取動作。
 
@@ -1195,7 +1266,6 @@
       如未設定這項政策，系統會使用預設的設定檔目錄。</translation>
 <translation id="5826047473100157858">指定使用者是否可以在「<ph name="PRODUCT_NAME" />」中以無痕模式開啟網頁。如果選取的是 [啟用] 或未設定政策，網頁能以無痕模式開啟。如果選取的是 [停用]，則網頁可能無法以無痕模式開啟。如果選取的是 [強制]，系統只會以無痕模式開啟網頁。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
-<translation id="5845159892130426052">啟用 ShowModalDialog API (至 2015 年 4 月 30 日停用)</translation>
 <translation id="5862253018042179045">設定互動朗讀協助功能在登入畫面的預設狀態。
 
           如果您將這項政策設為 True，系統將在顯示登入畫面時啟用互動朗讀。
@@ -1225,6 +1295,14 @@
 <translation id="5893553533827140852">啟用這項設定時，系統將透過遠端主機連線以 Proxy 處理 gnubby 驗證要求。
 
           如果停用或不設定這項設定，系統將不會以 Proxy 處理 gnubby 驗證要求。</translation>
+<translation id="5900959132054596599">如果在這裡提供的主機清單有任何 Proxy，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式一律會略過。
+
+          您必須在「選擇如何指定 Proxy 伺服器設定」選取手動 Proxy 設定，這項政策才會生效。
+
+          如果您選取了任何其他 Proxy 政策設定模式，則請勿設定這項政策。
+
+          如需參考更具體的設定範例，請造訪以下網址：
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">允許透過 HTTP 自動更新下載</translation>
 <translation id="5921888683953999946">設定大型游標協助功能在登入畫面的預設狀態。
 
@@ -1366,6 +1444,7 @@
 <translation id="637934607141010488">回報最近登入的裝置使用者清單。
 
       如果這項政策設為 False，則不會回報這些使用者。</translation>
+<translation id="639009029157091157">讓使用者決定。</translation>
 <translation id="6392973646875039351">啟用「<ph name="PRODUCT_NAME" />」的「自動填入」功能，並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。如果您停用這項設定，使用者就無法使用「自動填入」功能。如果您啟用這項設定或未設定任何值，使用者就能掌控「自動填入」功能。這允許使用者設定「自動填入」設定檔，並可自行決定是否要開啟「自動填入」功能。</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
@@ -1705,6 +1784,9 @@
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果您啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
+<translation id="7667184304362487902">指定 <ph name="PRODUCT_NAME" /> 和 ARC 應用程式的 Proxy 設定。
+
+      這項政策尚未開放使用，請勿使用。</translation>
 <translation id="76810863974142048">遠端存取用戶端取得驗證憑證的來源網址。
 
           如果設定這項政策，遠端存取主機會要求驗證用戶端透過這個網址取得驗證憑證，才能建立連線 (必須和 RemoteAccessHostTokenValidationUrl 配合使用)。
@@ -1772,6 +1854,19 @@
 <translation id="7842869978353666042">設定 Google 雲端硬碟選項</translation>
 <translation id="7843525027689416831">指定要在 <ph name="PRODUCT_NAME" /> 啟動時套用的設定。系統僅會在進入登入畫面時套用指定的設定。透過這個政策所指定的設定不會反映在使用者工作階段中。</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME" /> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME" /> 轉譯 HTML 網頁。</translation>
+<translation id="7853178359124471330">設定這項政策後，系統會根據設定值採用下列其中一種方式執行自動偵測時區流程：
+
+      如果設為 TimezoneAutomaticDetectionUsersDecide，使用者可以使用 chrome://settings 中的標準控制項控管自動偵測時區作業。
+
+      如果設為 TimezoneAutomaticDetectionDisabled，系統會停用 chrome://settings 中的自動時區控制項，且一律不自動偵測時區。
+
+      如果設為 TimezoneAutomaticDetectionIPOnly，系統會停用 chrome://settings 中的自動時區控制項，且一律自動偵測時區 (使用僅限 IP 方式偵測位置)。
+
+      如果設為 TimezoneAutomaticDetectionSendWiFiAccessPoints，系統會停用 chrome://settings 中的自動時區控制項，且一律自動偵測時區 (一律將顯示的 WiFi 存取點清單傳送至 Geolocation API 伺服器，讓時區偵測結果更精確)。
+
+      如果未設定這項政策，系統行為與設定 TimezoneAutomaticDetectionUsersDecide 時相同。
+
+      如果設定了 SystemTimezone 政策，則會覆寫這項政策。在這種情況下，系統會全面停止自動偵測時區。</translation>
 <translation id="7882585827992171421">這項政策僅在零售模式下有效。
 
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於您透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
@@ -1808,6 +1903,7 @@
 
           如果未設定這項政策，系統將啟用這項設定。</translation>
 <translation id="8073243368829195">允許使用 Smart Lock</translation>
+<translation id="8074052133552427532">一律使用粗略式時區偵測方式。</translation>
 <translation id="8099880303030573137">在電池供電環境下執行時的閒置延遲時間</translation>
 <translation id="8102913158860568230">預設媒體串流設定</translation>
 <translation id="8104962233214241919">自動為這些網站選取用戶端憑證</translation>
@@ -1914,6 +2010,7 @@
 <translation id="8424255554404582727">設定畫面旋轉預設值 (每次重新啟動皆重新套用)</translation>
 <translation id="8426231401662877819">將畫面以順時針方向旋轉 90 度</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
+<translation id="8458790683633857482">指定要遞交至 ARC 執行階段的一系列政策。政策值必須是有效的 JSON。</translation>
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2023,9 +2120,12 @@
       如果將這項政策設為 False，則任何使用者、應用程式和擴充功能均無法進入全螢幕模式。
 
       在 <ph name="PRODUCT_OS_NAME" /> 以外的所有平台上，如果停用全螢幕模式，就無法使用 Kiosk 模式。</translation>
+<translation id="8795495354632096254">偵測時區時一律將 WiFi 存取點傳送至伺服器。</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>
+<translation id="8818768076343557335">連上網路時一律預測網路動作 (行動網路除外)。
+          (在版本 50 中已不適用，在版本 52 中已遭移除。在 52 以上版本中，如果設定值為 1，系統會視為 0 - 連上網路時一律預測網路動作。)</translation>
 <translation id="8828766846428537606">設定 <ph name="PRODUCT_NAME" /> 中的預設首頁並禁止使用者變更這項設定。如果您選取使用者的首頁做為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果您沒有指定首頁網址，那麼使用者只需將網址設為「chrome://newtab」，就能以新分頁做為首頁。</translation>
 <translation id="8833109046074170275">透過預設的 GAIA 流程進行驗證</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> 會快取應用程式和擴充功能，供單一裝置的多位使用者安裝，以免重複為每位使用者下載。
@@ -2067,6 +2167,13 @@
 
           指定政策值時需以毫秒為單位。該值需小於閒置延遲時間。</translation>
 <translation id="891435090623616439">以 JSON 字串格式編碼，詳情請參閱 <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">如果將這項政策設為 false，<ph name="PRODUCT_OS_NAME" /> 會停用藍牙功能，且使用者無法重新啟用。
+
+      如果將這項政策設為 true 或不予設定，使用者可以視需求啟用或停用藍牙功能。
+
+      設定這項政策後，使用者無法變更或覆寫政策。
+
+      啟用藍牙功能後，必須重新啟動裝置，變更才會生效 (停用藍牙功能時不需重新啟動裝置)。</translation>
 <translation id="8947415621777543415">回報裝置位置</translation>
 <translation id="8951350807133946005">設定磁碟快取目錄</translation>
 <translation id="8955719471735800169">返回頁首</translation>
@@ -2085,6 +2192,7 @@
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>
+<translation id="9088444059179765143">設定自動偵測時區方式</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="9098553063150791878">HTTP 驗證政策</translation>
 <translation id="9104138886225968319">將監控流量訊號傳送到管理伺服器，

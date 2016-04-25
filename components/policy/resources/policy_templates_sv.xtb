@@ -163,6 +163,18 @@
 <translation id="1561424797596341174">Åsidosättningar av policyn för felsökningsversioner av fjärråtkomstvärden</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
+<translation id="1613574633990410986">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-apparna samt förhindra att användare ändrar sina proxyinställningar.
+
+      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+      Om du väljer att proxyservrar ska upptäckas automatiskt ignoreras alla andra alternativ.
+
+      Mer ingående exempel hittar du på:
+      <ph name="PROXY_HELP_URL" />
+
+      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
+
+      Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="1617384279878333801">Gör att en person kan läggas till i profilhanteraren</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
@@ -240,6 +252,15 @@
       Om du inaktiverar inställningen visas ett meddelande varje gång användaren utför en åtgärd som skulle göra att en dialogruta för filval öppnades (som att importera bokmärken, överföra filer, spara länkar osv.) istället och användaren antas ha klickat på Avbryt i dialogrutan för filval.
 
       Om inställningen inte ställs in kan användaren öppna dialogrutor för filval som vanligt.</translation>
+<translation id="1879485426724769439">Anger vilken tidszon som används på enheten. Användare kan åsidosätta den angivna tidszonen för den aktuella sessionen. När användaren loggar ut återgår dock inställningen till den angivna tidszonen. Om en ogiltig tidszon anges är principen fortfarande aktiverad och GMT används istället. Om en tom sträng anges ignoreras principen.
+
+      Om principen inte används är det den tidszon som för närvarande är aktiv som används. Användare kan dock ändra tidszonen och ändringen är permanent. Därför påverkas inloggningsskärmen och alla användare av de ändringar som en enskild användare gör.
+
+      På nya enheter har tidszonen US/Pacific angetts.
+
+      Formatvärdet följer namnen på tidszonerna i databasen IANA Time Zone Database (besök http://sv.wikipedia.org/wiki/Tz_database). Det går att hänvisa till de flesta tidszoner som continent/large_city eller ocean/large_city.
+
+      När du anger principen inaktiveras automatiska tidszoner efter enhetens plats. Principen SystemTimezoneAutomaticDetection åsidosätts också.</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
 <translation id="193259052151668190">Vitlista med frånkopplingsbara USB-enheter</translation>
 <translation id="1933378685401357864">Bakgrundsbild</translation>
@@ -646,6 +667,24 @@
 <translation id="3072847235228302527">Ange användarvillkor för ett lokalt enhetskonto</translation>
 <translation id="3096595567015595053">Lista med aktiverade plugin-program</translation>
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
+<translation id="3125884964575432854">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-appar samt förhindra att användare ändrar sina proxyinställningar.
+
+          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+          Om du väljer att använda datorns proxyinställningar ignoreras alla andra alternativ.
+
+          Om du väljer att proxyservrar ska upptäckas automatiskt ignoreras alla andra alternativ.
+
+          Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar använder bara den HTTP-proxyserver som har högst prioritet.
+
+          Om du väljer att använda ett pac-proxyskript måste du ange webbadressen till skriptet i fältet Webbadress till en pac-proxyfil.
+
+      Mer ingående exempel hittar du på:
+      <ph name="PROXY_HELP_URL" />
+
+      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
+
+      Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3153348162326497318">Policyn gör att du kan ange vilka tillägg användarna INTE får installera. Tillägg som redan finns installerade tas bort om du svartlistar dem.
 
           Om du svartlistar värdet * svartlistas alla tillägg som du inte uttryckligen tillåter på vitlistan.
@@ -722,6 +761,20 @@
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
+<translation id="3398137877608138703">Tillåta eller neka videoinspelning.
+
+      Om detta alternativ är aktiverat eller inte konfigurerat (standard) blir användaren ombedd att bevilja
+      videoinspelningsåtkomst förutom för de webbadresser som har angetts på
+      listan VideoCaptureAllowedUrls. De ges åtkomst automatiskt.
+      ARC-appar har tillgång till kameran om de har beviljats
+      tillstånd.
+
+      När den här principen är inaktiverad blir användaren aldrig tillfrågad och
+      bara de webbadresser som har angetts i VideoCaptureAllowedUrls får spela in video.
+      ARC-appar har inte tillgång till kameran.
+
+      Förutom ARC-appar gäller den här principen alla typer av videoingångar och
+      inte enbart den inbyggda kameran.</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
       Om policyn är inställd på falskt går det inte att starta gästsessioner i <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -739,6 +792,8 @@
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="348495353354674884">Aktivera virtuellt tangentbord</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
+<translation id="349667858031092827">Identifiera aldrig tidszon automatiskt.</translation>
+<translation id="350443680860256679">Konfigurera ARC</translation>
 <translation id="3504791027627803580">Anger webbadressen till sökmotorn som används vid bildsökning. Sökförfrågningar skickas via GET-metoden. Om policyn DefaultSearchProviderImageURLPostParams har angetts kommer POST-metoden att användas vid bildsökningar i stället.
 
           Den här policyn är valfri. Om den inte anges kommer ingen bildsökning att användas.
@@ -888,6 +943,22 @@
           Om principen är inställd på Behåll cookies under hela sessionen kommer cookies att tas bort när sessionen avslutas. Observera att om <ph name="PRODUCT_NAME" /> körs i bakgrundsläge kan det hända att sessionen inte avslutas även om det sista fönstret stängs. Se principen BackgroundModeEnabled för mer information om konfigurering av detta.
 
           Om inget värde anges för principen används AllowCookies och användaren kan ändra inställningen.</translation>
+<translation id="4098957623809244159">Den här principen är utfasad. Använd ProxyMode istället.
+
+          Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och ARC-appar samt förhindra att användare ändrar sina proxyinställningar.
+
+          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+          Om du väljer att använda datorns proxyinställningar eller att proxyservern ska upptäckas automatiskt ignoreras alla andra alternativ.
+
+          Om du väljer manuella proxyinställningar kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass.
+
+          Mer ingående exempel hittar du på:
+          <ph name="PROXY_HELP_URL" />
+
+          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
+
+          Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="4103289232974211388">Omdirigera till SAML IdP när användaren har bekräftat</translation>
 <translation id="410478022164847452">Anger efter hur lång tid utan åtgärd från användaren som inaktivitetsåtgärden vidtas när enheten är ansluten till elnätet.
 
@@ -1341,7 +1412,6 @@
 
       Om tvingat läge är valt kan sidor BARA öppnas i inkognitoläge.</translation>
 <translation id="5836064773277134605">Begränsa UDP-portintervallet som används av värden för fjärråtkomst</translation>
-<translation id="5845159892130426052">Aktivera ShowModalDialog-API till och med 30.04.2015</translation>
 <translation id="5862253018042179045">Ställer in standardtillståndet för hjälpmedelsfunktionen talad feedback på inloggningsskärmen.
 
           Om den här principen är sann är talad feedback aktiverad när inloggningsskärmen visas.
@@ -1372,6 +1442,15 @@
 <translation id="5893553533827140852">Om inställningen är aktiverad kommer gnubby-autentiseringsbegäranden att skickas via proxy via en fjärranslutning.
 
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
+<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här.
+
+          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
+
+          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
+
+          Mer ingående exempel hittar du på:
+
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Tillåt nedladdning av automatiska uppdateringar via HTTP</translation>
 <translation id="5921888683953999946">Ange standardläget för hjälpmedelsfunktionen med en stor markör på inloggningsskärmen.
 
@@ -1521,6 +1600,7 @@
 <translation id="637934607141010488">Rapportera en lista över enhetsanvändare som nyligen har loggat in.
 
       Om principen anges som False kommer användarna inte att redovisas.</translation>
+<translation id="639009029157091157">Låt användarna bestämma.</translation>
 <translation id="6392973646875039351">Policyn aktiverar autofyllfunktionen i <ph name="PRODUCT_NAME" /> och gör att användarna kan fylla i webbformulär automatiskt med uppgifter som sparats tidigare som adress- och kreditkortsuppgifter.
 
       Om du inaktiverar inställningen kan användarna inte använda autofyll.
@@ -1899,6 +1979,9 @@
 
       Om inställningen inaktiveras eller inte är konfigurerad använder <ph name="PRODUCT_NAME" /> antingen den språkversion som användaren anger (om den är konfigurerad), samma språk som datorn eller standardversionen en-US.</translation>
 <translation id="7651739109954974365">Avgör om dataroaming ska vara tillåtet för enheten. Om värdet är sant är dataroaming tillåten. Om policyn inte är konfigurerad eller om värdet är falskt är dataroaming inte tillåten.</translation>
+<translation id="7667184304362487902">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" /> och ARC-appar.
+
+      Använd inte den här principen. Den är inte färdig ännu.</translation>
 <translation id="76810863974142048">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken.
 
           Om den här policyn är inställd kräver fjärråtkomstvärden autentisering av klienter för att de ska kunna erhålla en autentiseringstoken från webbadressen och kunna ansluta. Måste användas i samband med RemoteAccessHostTokenValidationUrl.
@@ -1972,6 +2055,19 @@
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
+<translation id="7853178359124471330">När principen har angetts visas flödet för automatisk tidszon på ett av följande sätt, beroende på värdet på inställningen:
+
+      Om TimezoneAutomaticDetectionUsersDecide har angetts kan användare själva styra om tidszoner ska upptäckas automatiskt med hjälp av de vanliga inställningarna på chrome://settings.
+
+      Om TimezoneAutomaticDetectionDisabled har angetts inaktiveras inställningarna för automatiska tidszoner i chrome://settings. Tidszoner upptäcks aldrig automatiskt.
+
+      Om TimezoneAutomaticDetectionIPOnly har angetts inaktiveras inställningarna för tidszoner i chrome://settings. Tidszoner upptäcks alltid automatiskt. Tidszoner fastställs bara med hjälp av IP-adresser för att fastställa platsen.
+
+      Om TimezoneAutomaticDetectionSendWiFiAccessPoints har angetts inaktiveras inställningarna för tidszoner i chrome://settings. Tidszoner upptäcks alltid automatiskt. Listan över synliga Wi-Fi-åtkomstpunkter skickas alltid till API-servern Geolocation för detaljerad tidszonsangivelse.
+
+      Om principen inte har angetts beter den sig som om TimezoneAutomaticDetectionUsersDecide har angetts.
+
+      Om principen SystemTimezone har angetts åsidosätts den här principen. I sådana fall inaktiveras automatisk tidszonsangivelse helt och hållet.</translation>
 <translation id="7882585827992171421">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
@@ -2014,6 +2110,7 @@
 
           Om policyn inte har angetts aktiveras inställningen.</translation>
 <translation id="8073243368829195">Tillåter att Smart Lock används</translation>
+<translation id="8074052133552427532">Använd alltid ungefärlig tidszonsangivelse.</translation>
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="8102913158860568230">Standardinställning för medieuppspelning</translation>
 <translation id="8104962233214241919">Välj klientcertifikat automatiskt för dessa webbplatser</translation>
@@ -2128,6 +2225,7 @@
 <translation id="8424255554404582727">Ange standardrotation efter omstart för skärmen</translation>
 <translation id="8426231401662877819">Rotera skärmen 90 grader medurs</translation>
 <translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
+<translation id="8458790683633857482">Anger en uppsättning principer som överlämnas till ARC-körning. Värdet måste vara en giltig JSON.</translation>
 <translation id="8465065632133292531">Parametrar för webbadress för Instant som använder POST</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2271,9 +2369,12 @@
       Om policyn är inställd på falskt kan varken användare, appar eller tillägg välja helskärmsläget.
 
       På alla plattformar förutom <ph name="PRODUCT_OS_NAME" /> är kioskläget inte tillgängligt när helskärmsläget är inaktiverat.</translation>
+<translation id="8795495354632096254">Skicka alltid Wi-Fi-åtkomstpunkter till servern medan tidszon fastställs.</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
       Om policyn inte är inställd eller inte är aktiverad rapporteras inte platsen.</translation>
+<translation id="8818768076343557335">Förutsäg nätverksåtgärder på alla nätverk som inte är mobila.
+          (Utfasas efter 50, tas bort efter 52. Om värdet 1 är angivet efter 52 behandlas det som 0 – förutsäg nätverksåtgärder på alla nätverksanslutningar.)</translation>
 <translation id="8828766846428537606">Konfigurerar standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
 
       Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange "chrome://newtab".</translation>
@@ -2317,6 +2418,13 @@
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
 <translation id="891435090623616439">kodad som en JSON-sträng. Mer information finns i <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Om principen är inställd på falskt inaktiveras Bluetooth för <ph name="PRODUCT_OS_NAME" /> och användaren kan inte aktivera det igen.
+
+      Om principen är inställd på sant eller inte inställd alls kan användaren aktivera eller inaktivera Bluetooth när den vill.
+
+      Om principen är inställd kan användaren inte ändra eller åsidosätta den.
+
+      När du har aktiverat Bluetooth måste enheten startas om innan ändringarna tillämpas (du behöver inte starta om enheten när du inaktiverar Bluetooth).</translation>
 <translation id="8947415621777543415">Rapportera enhetsplats</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
@@ -2335,6 +2443,7 @@
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
+<translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
 <translation id="9104138886225968319">Skicka övervakningspulser till hanteringsservern så att denna kan identifiera om enheten är offline.

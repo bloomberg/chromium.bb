@@ -18,6 +18,7 @@
 <translation id="1240668123557180468">आस-पास के ऑब्जेक्ट द्वारा भेजे गए वेब पृष्ठ खोजें. Chrome आपके आस-पास मौजूद ऑब्जेक्ट से संबद्ध वेब पृष्ठ एकत्र करता है, उन्हें अनाम रूप से किसी Google सेवा पर भेजता है ताकि उनमें से आपके लिए सर्वाधिक उपयोगी पृष्ठ खोजे जा सकें, फिर उन्हें प्रदर्शित करता है.
 
 शारीरिक वेब का उपयोग करने के लिए आपके पास ब्लूटूथ और स्थान चालू किया हुआ होना चाहिए.</translation>
+<translation id="1250508505624960884">Chrome बीटा बुकमार्क</translation>
 <translation id="1254090737195733114">डेटा आयात करें?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">रोकें</translation>
@@ -25,7 +26,6 @@
 <translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, संचय साफ़ करें…</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="13410144310025252">उन्हें Chrome में देखें</translation>
-<translation id="1346090444609141578">यहां कोई सहेजा गया पृष्ठ नहीं</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> साइट जोड़ी गई</translation>
 <translation id="1373696734384179344">चयनित सामग्री डाउनलोड करने के लिए मेमोरी अपर्याप्‍त है.</translation>
 <translation id="138361230106469022">नमस्‍ते, <ph name="FULL_NAME" /></translation>
@@ -39,12 +39,13 @@
 <translation id="1445680696957526815">Chrome के घटक एक-दूसरे से असंगत हैं. संभवत: Chrome अपग्रेड हो रहा है, कृपया कुछ ही देर में पुन: प्रयास करें. यदि समस्या बनी रहती है, तो Chrome को अनइंस्टॉल करके और पुन: इंस्टॉल करके देखें.</translation>
 <translation id="1446450296470737166">MIDI डिवाइस के पूर्ण नियंत्रण की अनुमति दें</translation>
 <translation id="145097072038377568">Android सेटिंग में बंद कर दिया गया है</translation>
+<translation id="147006957810816598">आप अपने Google खाते से प्रस्थान नहीं करेंगे.</translation>
 <translation id="1477626028522505441">सर्वर संबधी समस्‍याओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1506061864768559482">खोज इंजन</translation>
 <translation id="1513352483775369820">बुकमार्क और वेब इतिहास</translation>
+<translation id="1549000191223877751">अन्य विंडो में ले जाएं</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1557201757634521564">एन्कोडिंग का स्वत: पता लगाना</translation>
-<translation id="1592483623187843893">बुकमार्क ऑफ़लाइन सहेजा गया</translation>
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त डॉयलॉग बनाने से रोकें</translation>
 <translation id="1641113438599504367">सुरक्षित ब्राउज़िंग</translation>
@@ -52,7 +53,6 @@
 <translation id="1643702317193804718">पृष्‍ठ का <ph name="SOURCE_LANGUAGE" /> में अनुवाद हो रहा है…</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1647391597548383849">अपना कैमरा एक्सेस करें</translation>
-<translation id="1648687357130613845">मेमोरी स्थान</translation>
 <translation id="1657479659644194568">Chrome सेट करें</translation>
 <translation id="169033420419426091">अनुपलब्‍ध SD कार्ड के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1692118695553449118">समन्वयन चालू है</translation>
@@ -64,13 +64,16 @@
 <translation id="1825719650605518411">पहली बार चलाने का अनुभव</translation>
 <translation id="1829244130665387512">पृष्ठ में ढूंढें</translation>
 <translation id="1832521218263067499">सुरक्षा संबंधी घटनाएं</translation>
+<translation id="1842969606798536927">भुगतान करें</translation>
 <translation id="1853692000353488670">नया गुप्त टैब</translation>
 <translation id="189172778771606813">मार्गदर्शक ड्रॉवर बंद करें</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में Chrome के लिए अनुमति चालू करें.</translation>
 <translation id="1943432128510653496">पासवर्ड सहेजें</translation>
 <translation id="1944384637046898011"><ph name="TIME" /> तक का सभी डेटा Google पासवर्ड से एन्‍क्रिप्‍ट करें</translation>
+<translation id="1959930595721737608">निम्न साइट पर JavaScript को अनुमति दें.</translation>
 <translation id="1966710179511230534">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
 <translation id="1974060860693918893">उन्नत</translation>
+<translation id="1984321224716884559">Chrome डेवपलर बुकमार्क</translation>
 <translation id="1984937141057606926">तृतीय-पक्ष को छोड़कर अनुमति है</translation>
 <translation id="1994173015038366702">साइट URL</translation>
 <translation id="2001120796168634316">लिंक किया गया पृष्ठ बाद के लिए सहेजें</translation>
@@ -80,6 +83,7 @@
 <translation id="2079545284768500474">पूर्ववत् करें</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2095887075102408547">इस सुविधा के चालू होने पर, Chrome आपके द्वारा देखे जाने वाले पृष्ठों को डाउनलोड करने से पहले संपीड़ित करने के लिए Google सर्वर का उपयोग करेगा. निजी कनेक्शन (HTTPS) या गुप्त टैब का उपयोग करके एक्सेस किए गए पृष्ठों को Google द्वारा ऑप्‍टिमाइज़ या देखा नहीं जाएगा.</translation>
+<translation id="2096396629993765042">आप अपने Google खाते से प्रस्थान नहीं करेंगे. आपके Google खाते में <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकते हैं.</translation>
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2126426811489709554">Chrome के द्वारा संचालित</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद है</translation>
@@ -105,14 +109,12 @@
 <translation id="2433507940547922241">प्रकटन</translation>
 <translation id="2439248520967274840">आप <ph name="TO_ACCOUNT" /> में प्रवेश कर रहे हैं. आपके कुछ मौजूदा बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग पूर्व में <ph name="FROM_ACCOUNT" /> से समन्वयित की गई थीं. आप अपनी मौजूदा सेटिंग का क्या करना चाहते हैं?</translation>
 <translation id="2440823041667407902">स्‍थान की एक्‍सेस</translation>
-<translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> पृष्‍ठ ऑफ़लाइन सहेजा गया</translation>
 <translation id="2476578072172137802">साइट की सेटिंग</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
 <translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2512222046227390255">स्वत: भरण फ़ॉर्म</translation>
-<translation id="2521102375070725336">बुकमार्क <ph name="FOLDER_NAME" /> में ऑफ़लाइन सहेजा गया</translation>
 <translation id="2526148617758225454">डेटा सर्वर चालू है. उसे सेटिंग में प्रबंधित करें.</translation>
 <translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="2536728043171574184">इस पृष्‍ठ की ऑफ़लाइन कॉपी देख रहे हैं</translation>
@@ -149,7 +151,6 @@
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
-<translation id="306566828762083630">आपके डिवाइस की मेमोरी भर गई है. कृपया जगह बनाने के लिए अन्य मीडिया निकालें.</translation>
 <translation id="307329814453917357">Google अनुवाद का उपयोग करके पृष्ठों का अनुवाद ऑफ़र करें</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
 <translation id="3090193911106258841">ऑडियो और वीडियो इनपुट ऐक्सेस हो रहा है</translation>
@@ -180,7 +181,6 @@
 <translation id="3435896845095436175">सक्षम करें</translation>
 <translation id="3485544713029068372">पासवर्ड के लिए Smart Lock</translation>
 <translation id="3492207499832628349">नया गुप्त टैब</translation>
-<translation id="3501331331116143684">पृष्ठ <ph name="FOLDER_NAME" /> में ऑफ़लाइन सहेजा गया</translation>
 <translation id="3518985090088779359">स्‍वीकार करें और जारी रखें</translation>
 <translation id="3522247891732774234">अपडेट उपलब्ध है. अधिक विकल्प</translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
@@ -188,6 +188,7 @@
 <translation id="360480449234699036">पृष्‍ठ को छोड़े बिना वेबसाइटों पर मौजूद विषयों के बारे में जानें. स्‍पर्श करने के लिए खोजें, Google खोज को एक शब्‍द और उसके आस-पास का संदर्भ भेजता है, जिससे वह परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.
 
 अपने खोज शब्‍द को एडजस्‍ट करने के लिए, चुनने हेतु देर तक दबाएं. अपनी खोज को परिष्‍कृत करने के लिए, फलक को सीधे ऊपर स्‍लाइड करें और खोज बॉक्‍स को स्‍पर्श करें.</translation>
+<translation id="3623048332793834136">Chrome कैनेरी बुकमार्क</translation>
 <translation id="363596933471559332">संग्रहीत क्रेडेंशियल का उपयोग करके वेबसाइटों में अपने आप प्रवेश करें. सुविधा के बंद होने पर, किसी वेबसाइट में प्रवेश करने से पहले आपसे हर बार सत्‍यापन के लिए कहा जाएगा.</translation>
 <translation id="3653742808139624888">अपने सभी डिवाइस पर अपने बुकमार्क प्राप्‍त करने के लिए, Chrome में प्रवेश करें</translation>
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में स्‍थान चालू करें.</translation>
@@ -210,7 +211,6 @@
 <translation id="3988213473815854515">स्‍थान अनुमत है</translation>
 <translation id="3992315671621218278">लिंक सहेजें</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
-<translation id="4035611068038188272">बुकमार्क वर्तमान में <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> का उपयोग कर रहे हैं.</translation>
 <translation id="4042870126885713738">किसी वेब पते का समाधान ना होने या कनेक्शन ना हो सकने पर सुझाव दिखाएं</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">वैधानिक जानकारी</translation>
@@ -220,9 +220,7 @@
 <translation id="4113030288477039509">आपके व्यवस्थापक द्वारा प्रबंधित</translation>
 <translation id="4165986682804962316">साइट सेटिंग</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
-<translation id="4193864812412988973">इस बुकमार्क की ऑफ़लाइन कॉपी देखी जा रही है</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
-<translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> बुकमार्क ऑफ़लाइन सहेजा गया</translation>
 <translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="424864128008805179">Chrome से प्रस्थान करें?</translation>
 <translation id="4254813446494774748">अनुवाद की भाषा:</translation>
@@ -234,7 +232,6 @@
 <translation id="4297410240212242334">टैब और ऐप्स अलग करें</translation>
 <translation id="4307992518367153382">आधारभूत बातें</translation>
 <translation id="4334294535648607276">डाउनलोड पूर्ण.</translation>
-<translation id="4350413759959745971">सहेजे गए पृष्ठ ले जाएं</translation>
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4376501731284077108">अनियंत्रित</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
@@ -243,7 +240,6 @@
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="4457399174246232812">भविष्य के आस-पास स्थित भौतिक वेब पृष्ठ आपकी नोटिफिकेशन सूची में दिखाई देंगे</translation>
 <translation id="4498934959426056365">कुंजी जेनरेशन</translation>
-<translation id="4505554159887937799">ऑफ़लाइन सहेजा गया</translation>
 <translation id="4508440807153586353">आपके एन्क्रिप्ट किए गए डेटा को केवल वही व्यक्ति पढ़ सकता है जिसके पास आपका पासफ़्रेज़ है. Google द्वारा पासफ़्रेज़ भेजा या संग्रहीत नहीं किया जाता. यदि आप अपना पासफ़्रेज़ भूल जाते हैं या यह सेटिंग बदलना चाहते हैं, तो आपको समन्वयन को रीसेट करना होगा. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# दिन पहले}one{# दिन पहले}other{# दिन पहले}}</translation>
 <translation id="4522570452068850558">विवरण</translation>
@@ -255,13 +251,13 @@
 <translation id="4645575059429386691">आपके अभिभावक द्वारा प्रबंधित</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
+<translation id="4668044310199835006">Work Chrome बुकमार्क</translation>
 <translation id="4684427112815847243">सब कुछ समन्‍वयित करें</translation>
 <translation id="4686372254213217147">मूल आकार</translation>
 <translation id="4690286298542128877">टैब, Chrome के अंदर एक टैब स्‍विचर पर चले जाएंगे.</translation>
 <translation id="4698413471314543145">Chrome चलाने के लिए आवश्‍यक जटिल कार्यक्षमता अनुबलब्ध है; या तो आपका Chrome इंस्‍टॉलेशन अपूर्ण है, या वह Android के इस वर्शन के साथ संगत नहीं है.</translation>
 <translation id="4699172675775169585">संचय चित्र और फ़ाइलें</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> में खोलें</translation>
-<translation id="4726963856048758366">मेमोरी साफ़ की गई</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="4738836084190194332">पिछली बार समन्वयित: <ph name="WHEN" /></translation>
 <translation id="4773299976671772492">रोक दिया गया</translation>
@@ -270,11 +266,9 @@
 <translation id="4816465935029283692">डेटा प्रकार</translation>
 <translation id="4827948050554950725">क्रेडिट कार्ड जोड़ें</translation>
 <translation id="4836364883164334657">इस साइट से आपका कनेक्‍शन निजी नहीं है. हो सकता है कि हमलावर <ph name="DOMAIN_NAME" /> से आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराने का प्रयास कर रहे हों.</translation>
-<translation id="4850886885716139402">देखें</translation>
 <translation id="4875622588773761625">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए आपके पासवर्ड को अपडेट करे?</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
-<translation id="4927198283430892231">सहेजे गए पृष्‍ठ वर्तमान में <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> मेमोरी का उपयोग कर रहे हैं.</translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
 <translation id="4970484396410298643">अपने कंप्यूटर पर आपके द्वारा खोले गए टैब सीधे यहां से ऐक्सेस करें.
 
@@ -314,7 +308,6 @@
 <translation id="5302048478445481009">भाषा</translation>
 <translation id="5304593522240415983">यह फ़ील्‍ड खाली नहीं छोड़ी जा सकती</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
-<translation id="5308933389783727448">सहेजे गए पृष्ठ खोजें</translation>
 <translation id="5313967007315987356">साइट जोड़ें</translation>
 <translation id="5317780077021120954">सहेजें</translation>
 <translation id="5324858694974489420">अभिभावकीय सेटिंग</translation>
@@ -326,7 +319,6 @@
 <translation id="5414836363063783498">सत्यापन हो रहा है...</translation>
 <translation id="5423934151118863508">आपके द्वारा सबसे अधिक देखे गए पृष्ठ यहां दिखाई देंगे</translation>
 <translation id="5424715742813396254">सहेजे गए नाम/पासवर्ड या अपवाद को संपादित करना</translation>
-<translation id="5442257541162692417">सहेजा गया पृष्‍ठ संपादित करें</translation>
 <translation id="544291274896356069">इस लिंक के किसी बाहरी ऐप्स में खुले होने पर गुप्त मोड छोड़ा जा रहा है. जारी रखें?</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
 <translation id="5487729733663684359">Chrome अपडेट अब Android के इस वर्शन के लिए समर्थित नहीं हैं.</translation>
@@ -408,13 +400,13 @@
 <translation id="6406506848690869874">समन्वय</translation>
 <translation id="6409731863280057959">पॉप-अप</translation>
 <translation id="641643625718530986">प्रिंट करें…</translation>
-<translation id="6447570251829705777">बुकमार्क ऑफ़लाइन उपलब्ध नहीं है</translation>
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="6448273550210938826">खोज और URL सुझाव</translation>
 <translation id="6458785801851713928">आपके डोमेन के लिए समन्‍वयन उपलब्‍ध नहीं है.</translation>
 <translation id="6464825623202322042">इस डिवाइस पर</translation>
 <translation id="6476911854266661814">“<ph name="VIDEO_TITLE" />” रोका गया</translation>
 <translation id="6482749332252372425">मेमोरी स्‍थान कम होने के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
+<translation id="6541922744811587456">Chrome बुकमार्क</translation>
 <translation id="654446541061731451">बीम के लिए टैब को चुनें</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE" /> का हमेशा अनुवाद करें</translation>
@@ -428,19 +420,15 @@
 <translation id="6656545060687952787">डिवाइस स्‍कैन करने के लिए Chrome को स्‍थान एक्‍सेस की आवश्‍यकता है. <ph name="BEGIN_LINK" />अनुमतियां अपडेट करें<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">आपके द्वारा पता बार में लिखते ही संबंधित क्‍वेरी और लोकप्रिय वेबसाइटें दिखाने के लिए पूर्वानुमान सेवा का उपयोग करें</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
-<translation id="6697251040310467641">पृष्‍ठ ऑफ़लाइन सहेजा गया</translation>
+<translation id="6683720003467092441">निम्न साइट पर पृष्ठभूमि समन्वयन को अनुमति दें.</translation>
 <translation id="6698801883190606802">समन्वयित डेटा प्रबंधित करें</translation>
-<translation id="6699351163704950317">सभी सहेजे गए पृष्‍ठ</translation>
 <translation id="6710213216561001401">पिछला</translation>
-<translation id="6720988912937197322">सहेजा गया पृष्‍ठ ऑफ़लाइन उपलब्‍ध नहीं है</translation>
 <translation id="6738867403308150051">डाउनलोड हो रहे हैं...</translation>
 <translation id="6762156594045689028">यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />समन्वयन रीसेट करें<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome के सुरक्षित ब्राउज़िंग सिस्टम का उपयोग दुर्भावनापूर्ण पृष्ठों का पता लगाने तथा फ़िशिंग, मैलवेयर और हानिकारक डाउनलोड से आपकी सुरक्षा करने के लिए भी किया जाएगा.</translation>
 <translation id="6784675033504223784">“<ph name="SEARCH_TERM" />” खोजें</translation>
 <translation id="6790428901817661496">चलाएं</translation>
-<translation id="6792460226655139786">सहेजे गए पृष्‍ठ</translation>
 <translation id="679325081238418596">अपने बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग अपने सभी डिवाइस पर प्राप्त करें</translation>
-<translation id="6805056253035393346">विज़ि‍ट करें</translation>
 <translation id="6820607729870073286">आपके पास कोई सहेजी गई वेबसाइट सेटिंग नहीं है.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
@@ -493,6 +481,9 @@
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="7475192538862203634">यदि आपको यह बार-बार दिखाई दे रहा हो, तो इन <ph name="BEGIN_LINK" />सुझावों<ph name="END_LINK" /> को आज़माएं.</translation>
 <translation id="748127970106343339">डिवाइस प्रमाणिकता हटाने की पुष्‍टि करें</translation>
+<translation id="7487352416683556407">चयनित डेटा Chrome और आपके समन्वयित डिवाइस से निकाल दिया गया है.
+
+हो सकता है कि आपके Google खाते में अन्य प्रकार के ब्राउज़िंग इतिहास जैसे खोज और <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर अन्य Google सेवाओं की गतिविधि हो.</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> अपडेट किया गया)</translation>
 <translation id="7498271377022651285">कृपया प्रतीक्षा करें...</translation>
 <translation id="7499262814309712782">खाता समन्वयित करें</translation>
@@ -512,16 +503,12 @@
 <translation id="7648422057306047504">Google प्रमाणिकता के साथ पासवर्ड एन्क्रिप्ट करें</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
+<translation id="7682287625158474539">शिपिंग</translation>
 <translation id="7690588279513156836">मूल लोड करें</translation>
 <translation id="771135159654932189">देखें कि आस-पास क्या है</translation>
-<translation id="7735023902678907596">आपके द्वारा अपने सभी गुप्त टैब बंद करने के बाद आपको गुप्त टैब में दिखाई देने वाले पृष्ठ आपके ब्राउज़र के इतिहास, कुकी स्टोर, या खोज इतिहास में नहीं बने रहेंगे. आप जो भी फ़ाइल डाउनलोड करते हैं या जो पृष्ठ सहेजते हैं उन्हें रखा जाएगा.
-
-हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में जाने से आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता या आपके द्वारा देखी जाने वाली वेबसाइटों से आपकी ब्राउज़िंग नहीं छिपती.</translation>
-<translation id="7761240775244195612">पिछले माह उपयोग नहीं की गई <ph name="PAGES_NUMBER" /> ऑफ़लाइन प्रतियों को हटाएं? इससे <ph name="TOTAL_PAGE_SIZE" /> जगह खाली हो जाएगी.</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="7765158879357617694">ले जाएं</translation>
 <translation id="7772032839648071052">पासफ़्रेज़ की दुबारा पूछें</translation>
-<translation id="7784213092572143271">पृष्ठ सहेजा गया</translation>
 <translation id="7788788617745289808">Chrome को कैमरा ऐक्सेस की आवश्यकता है ताकि कैमरे को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="7791543448312431591">जोड़ें</translation>
 <translation id="780301667611848630">जी नहीं, रहने दें </translation>
@@ -538,7 +525,6 @@
 <translation id="8007176423574883786">इस डिवाइस के लिए बंद कर दिया गया है</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8035133914807600019">नया फ़ोल्‍डर…</translation>
-<translation id="8050319187894766337">पृष्‍ठ ऑफ़लाइन सहेजा. मेमोरी भर गई.</translation>
 <translation id="8068648041423924542">प्रमाणपत्र चुनने में असमर्थ.</translation>
 <translation id="8069239273282989646">संपीड़न के बाद</translation>
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
@@ -550,7 +536,6 @@
 <translation id="8106211421800660735">क्रेडिट कार्ड संख्या</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
 <translation id="8137558756159375272">खोजने के लिए स्‍पर्श करें चयनित शब्‍द और वर्तमान पृष्‍ठ को संदर्भ के रूप में Google खोज पर भेजती है. आप उसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बंद कर सकते हैं.</translation>
-<translation id="8146397137182589628">ऑफ़लाइन नहीं सहेजा गया</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="8173098127580644436">प्रारंभ समय</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
@@ -568,10 +553,8 @@
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
 <translation id="8413385045638830869">पहले पूछें (सुझाया गया)</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
-<translation id="8429160401486700187">सहेजे गए पृष्ठ हटाएं</translation>
 <translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8481940801237642152">इस साइट से आपका कनेक्‍शन निजी है, लेकिन नेटवर्क पर मौजूद कोई व्‍यक्‍ति पृष्‍ठ का रूप बदल सकता है.</translation>
-<translation id="8493948351860045254">स्‍थान खाली करें</translation>
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
 <translation id="8514577642972634246">गुप्त मोड में प्रवेश करें</translation>
 <translation id="8518901949365209398">यह साइट कमज़ोर सुरक्षा कॉन्‍फ़िगरेशन (SHA-1 हस्‍ताक्षर) का उपयोग करती है, इसलिए हो सकता है कि आपका कनेक्‍शन निजी ना रहे.</translation>
@@ -591,15 +574,15 @@
 <translation id="8676374126336081632">इनपुट साफ़ करें</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
 <translation id="8699799819461268362">Google सुरक्षित साइट फ़िल्‍टर</translation>
-<translation id="8701537995684343047">ऑफ़लाइन सहेजने के लिए बुकमार्क पर जाएं</translation>
 <translation id="8719023831149562936">वर्तमान टैब को बीम नहीं किया जा सकता</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
-<translation id="8737542153238017984">सहेजा गया पृष्‍ठ ऑफ़लाइन उपलब्‍ध नहीं है. मेमोरी लगभग भर गई है.</translation>
 <translation id="8793430725658173476">url की कॉपी करें</translation>
 <translation id="8798099450830957504">सामान्य</translation>
+<translation id="8812942424849541387">नियंत्रित करें कि यह <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में कैसे काम करता है</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> में प्रवेश किया गया था. <ph name="ACCOUNT_EMAIL_NEW" /> के द्वारा प्रवेश करने से बुकमार्क जैसा समन्‍वयित डेटा खातों के बीच मर्ज किया जाएगा. जानकारी को अलग बनाए रखने के लिए, <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में ब्राउज़िंग डेटा साफ़ करें.</translation>
+<translation id="884264119367021077">शिपिंग पता</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, टैब</translation>
 <translation id="885701979325669005">मेमोरी</translation>
 <translation id="8901170036886848654">कोई बुकमार्क नहीं मिला</translation>
@@ -627,7 +610,6 @@
 <translation id="9133515669113036225">डिवाइस प्रमाणिकता रीसेट करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9141510419986760385">आप समन्वयन खातों को <ph name="FROM_ACCOUNT" /> से <ph name="TO_ACCOUNT" /> में बदल रहे हैं. आप अपने मौजूदा बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग का क्या करना चाहते हैं?</translation>
-<translation id="9151532766011674069">बुकमार्क ऑफ़लाइन सहेजा गया. मेमोरी लगभग भर गई है.</translation>
 <translation id="917685106653909562">आस-पास के शारीरिक वेब पृष्ठ</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>
 <translation id="9192643434065497760">युग्‍मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />डिवाइस सेटिंग<ph name="END_LINK" /> में ब्‍लूटूथ चालू करें.</translation>
@@ -636,7 +618,6 @@
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
-<translation id="954352821720225055">बुकमार्क ऑफ़लाइन उपलब्ध नहीं है. मेमोरी लगभग भर गई है.</translation>
 <translation id="969096075394517431">भाषाएं बदलें</translation>
 <translation id="981121421437150478">ऑफ़लाइन</translation>
 <translation id="983192555821071799">सभी टैब बंद करें</translation>

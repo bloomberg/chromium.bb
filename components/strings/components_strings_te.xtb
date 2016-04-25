@@ -409,7 +409,6 @@
 <translation id="5431657950005405462">మీ ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5435775191620395718">ఈ పరికరం నుండి చరిత్రను చూపుతోంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"లో స్కీమా ప్రామాణీకరణ లోపం: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">సేవ్ చేసిన అన్ని పేజీలను చూపు</translation>
 <translation id="5452270690849572955">ఈ <ph name="HOST_NAME" /> పేజీ కనుగొనబడలేదు</translation>
 <translation id="5455374756549232013">చెల్లని విధాన సమయముద్ర</translation>
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT" />లో <ph name="ACTIVE_MATCH" /></translation>
@@ -512,6 +511,7 @@
 <translation id="6671697161687535275">Chromium నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="6685834062052613830">సైన్ అవుట్ చేసి, సెటప్‌ను పూర్తి చేయండి</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
+<translation id="6710594484020273272">&lt;శోధన పదాన్ని టైప్ చేయండి&gt;</translation>
 <translation id="6711464428925977395">ప్రాక్సీ సర్వర్‌లో ఏదో తప్పు ఉంది లేదా చిరునామా సరైనది కాదు.</translation>
 <translation id="674375294223700098">తెలియని సర్వర్ ప్రమాణపత్రం లోపం.</translation>
 <translation id="6746710319270251222">పలు ప్రత్యేక కంటెంట్-పరిమాణం ముఖ్యశీర్షికలు స్వీకరించబడ్డాయి.  ఇది HTTP ప్రతిస్పందన విభజన దాడులకు వ్యతిరేకంగా రక్షణను అందించడానికి అనుమతించబడలేదు.</translation>
@@ -603,7 +603,6 @@
 <translation id="7658239707568436148">రద్దు చెయ్యి</translation>
 <translation id="7668654391829183341">తెలియని పరికరం</translation>
 <translation id="7674629440242451245">అద్భుతమైన క్రొత్త Chrome లక్షణాల పట్ల ఆసక్తిగా ఉన్నారా? chrome.com/devలో మా డెవలపర్ ఛానెల్‌ను ప్రయత్నించండి.</translation>
-<translation id="769344199378576125">ఆఫ్‌లైన్ బుక్‌మార్క్‌లను చూపు</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" />కి కొనసాగించండి (అసురక్షితం)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">కాష్ నుండి ఈ సైట్‌ను లోడ్ చేయలేకపోయాము</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

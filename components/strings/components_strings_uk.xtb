@@ -409,7 +409,6 @@
 <translation id="5431657950005405462">Файл не знайдено</translation>
 <translation id="5435775191620395718">Показано історію з цього пристрою. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Помилка перевірки схеми за адресою "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">Показати всі збережені сторінки</translation>
 <translation id="5452270690849572955">Сторінку хосту <ph name="HOST_NAME" /> не знайдено</translation>
 <translation id="5455374756549232013">Недійсна мітка часу правила</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> із <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -606,7 +605,6 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7668654391829183341">Невідомий пристрій</translation>
 <translation id="7674629440242451245">Хочете спробувати нові цікаві функції Chrome? Завантажте версію для розробників зі сторінки chrome.com/dev.</translation>
-<translation id="769344199378576125">Показати закладки, збережені офлайн</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Перейти на сайт <ph name="SITE" /> (небезпечно)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Не вдається завантажити цей сайт із кешу</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

@@ -146,6 +146,18 @@
 <translation id="1561424797596341174">La política substitueix les compilacions de depuració de l'amfitrió d'accés remot</translation>
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
+<translation id="1613574633990410986">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> i les aplicacions ARC utilitzen. A més, impedeix que els usuaris canviïn la configuració del servidor.
+
+      Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre a la xarxa directament, la resta d'opcions s'ignoren.
+
+      Si decidiu detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
+
+      Per veure exemples detallats, aneu a:
+      <ph name="PROXY_HELP_URL" />
+
+      Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+      Si deixeu aquestes polítiques sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="1617384279878333801">Permet que s'utilitzi l'opció Afegeix una persona al gestor de perfils</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
@@ -213,6 +225,15 @@
 <translation id="1865417998205858223">Permisos clau</translation>
 <translation id="186719019195685253">Acció que s'ha d'emprendre quan s'està inactiu mentre s'està connectat al CA</translation>
 <translation id="187819629719252111">Permet que <ph name="PRODUCT_NAME" /> mostri diàlegs de selecció de fitxers per permetre l'accés als fitxers locals de l'equip. Si activeu aquest paràmetre, els usuaris podran obrir els diàlegs de selecció de fitxers de la manera habitual. Si el desactiveu, cada vegada que un usuari dugui a terme una acció que provoqui l'obertura d'un diàleg de selecció de fitxers (com ara la importació d'adreces d'interès, la càrrega de fitxers, el desament d'enllaços, etc.), li apareixerà un missatge que serà com si l'usuari fes clic a Cancel·la al diàleg de selecció de fitxers. Si no definiu aquest paràmetre, els usuaris podran obrir diàlegs de selecció de fitxers de la manera habitual.</translation>
+<translation id="1879485426724769439">Especifica la zona horària del dispositiu. Els usuaris poden canviar-la a la sessió en curs, però es torna a restablir en tancar la sessió. Si es proporciona un valor que no és vàlid, la política s'activa de tota manera amb la zona horària GMT. Si es proporciona una cadena buida, la política s'ignora.
+
+      Si no es fa servir aquesta política, es continua utilitzant la zona horària activa en aquell moment, tot i que els usuaris poden canviar-la de manera permanent. Per tant, els canvis que fan els usuaris afecten la pantalla d'inici de sessió i la resta d'usuaris.
+
+      La zona horària predeterminada als dispositius nous és US/Pacific.
+
+      El format del valor es regeix pels noms de les zones horàries que s'indiquen a la base de dades de zones horàries IANA (consulteu https://ca.wikipedia.org/wiki/Tz_database). En concret, la majoria de noms segueixen el format "continent/ciutat_gran" o "oceà/ciutat_gran".
+
+      Si s'estableix aquesta política, es desactiva totalment l'opció de determinar la zona horària de manera automàtica segons la ubicació del dispositiu. També substitueix la política SystemTimezoneAutomaticDetection.</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
 <translation id="193259052151668190">Llista blanca de dispositius USB que es poden separar</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>
@@ -585,6 +606,24 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3072847235228302527">Defineix els Termes i condicions d'un compte local del dispositiu</translation>
 <translation id="3096595567015595053">Llista dels connectors activats</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
+<translation id="3125884964575432854">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> i les aplicacions ARC utilitzen. A més, impedeix que els usuaris canviïn la configuració del servidor.
+
+          Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre a la xarxa directament, la resta d'opcions s'ignoren.
+
+          Si decidiu utilitzar la configuració del servidor intermediari del sistema, la resta d'opcions s'ignoren.
+
+          Si decidiu detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si trieu el mode de servidor intermediari fix, podeu especificar més opcions a Adreça o URL del servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només utilitzen el servidor intermediari HTTP amb la prioritat més alta.
+
+          Si decidiu utilitzar un script de servidor intermediari .pac, heu d'especificar l'URL a l'script que hi ha a URL d'un fitxer .pac d'un servidor intermediari.
+
+          Per veure exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />
+
+          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3153348162326497318">Us permet especificar quines extensions NO poden instal·lar els usuaris. Les extensions ja instal·lades s'eliminaran si apareixen a la llista negra. Un valor de llista negra de "*" significa que totes les extensions apareixen a la llista negra llevat que apareguin explícitament a la llista blanca. Si no s'ha definit aquesta política, l'usuari podrà instal·lar qualsevol extensió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
@@ -654,6 +693,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
+<translation id="3398137877608138703">Permet o rebutja la captura de vídeo.
+
+      Si aquesta política està activada o no està configurada (opció predeterminada), es demana a l'usuari que confirmi l'accés a la captura de vídeo, amb excepció dels URL configurats a la llista VideoCaptureAllowedUrls, als quals es pot accedir sense cap confirmació. Si se'ls ha donat permís, les aplicacions ARC poden accedir a la càmera.
+
+      Quan aquesta política està desactivada, no es demana mai cap confirmació a l'usuari i la captura de vídeo només està disponible als URL configurats a VideoCaptureAllowedUrls. Les aplicacions ARC no poden accedir a la càmera.
+
+      Tret de les aplicacions ARC, aquesta política afecta tots els tipus d'entrada de vídeo, no només la càmera integrada.</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
       Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> no permetrà que s'iniciïn les sessions de convidat.</translation>
@@ -671,6 +717,8 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3478024346823118645">Esborra les dades de l'usuari en tancar la sessió</translation>
 <translation id="348495353354674884">Activa el teclat virtual</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
+<translation id="349667858031092827">No detectis mai la zona horària automàticament.</translation>
+<translation id="350443680860256679">Configura ARC</translation>
 <translation id="3504791027627803580">Especifica l'URL del motor de cerca utilitzat per proporcionar la cerca d'imatges. Les sol·licituds de cerca s'enviaran mitjançant el mètode GET. Si la política DefaultSearchProviderImageURLPostParams està definida, les sol·licituds de cerca d'imatges utilitzaran el mètode POST.
 
           Aquesta política és opcional. Si no es defineix, no s'utilitzarà la cerca d'imatges.
@@ -804,6 +852,22 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta política s'estableix en Conserva les galetes mentre duri la sessió, les galetes s'esborraran quan es tanqui la sessió. Tingueu en compte que, si <ph name="PRODUCT_NAME" /> s'executa en mode de segon pla, és possible que la sessió no es tanqui en tancar l'última finestra. Consulteu la política "BackgroundModeEnabled" per obtenir més informació sobre com es configura aquest comportament.
 
           Si aquesta política no s'estableix, s'utilitzarà "AllowCookies" i l'usuari podrà canviar-la.</translation>
+<translation id="4098957623809244159">Aquesta política està obsoleta; substituïu-la per ProxyMode.
+
+          Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> i les aplicacions ARC utilitzen. A més, impedeix que els usuaris canviïn la configuració del servidor.
+
+          Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre a la xarxa directament, la resta d'opcions s'ignoren.
+
+          Si decidiu detectar automàticament el servidor intermediari o utilitzar-ne la configuració del sistema, la resta d'opcions s'ignoren.
+
+          Si trieu manualment la configuració del servidor intermediari, podeu especificar més opcions a Adreça o URL del servidor intermediari, a URL d'un fitxer .pac d'un servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes.
+
+          Per veure exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />
+
+          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="4103289232974211388">Redirigeix al proveïdor d'identitat SAML després de la confirmació de l'usuari</translation>
 <translation id="410478022164847452">Indica el temps sense activitat per part de l'usuari després del qual es duu a terme l'acció d'inactivitat quan el dispositiu funciona amb alimentació.
 
@@ -1201,7 +1265,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Si no es defineix aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME" />. Si se selecciona l'opció "activat" o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció "desactivat", les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció "forçat", les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
-<translation id="5845159892130426052">Activa l'API de ShowModalDialog fins al 30/04/2015</translation>
 <translation id="5862253018042179045">Estableix l'estat predeterminat de la funció d'accessibilitat de comentaris per veu a la pantalla d'inici de sessió.
 
           Si el valor d'aquesta política s'estableix com a vertader, els comentaris per veu s'activaran quan es mostri la pantalla d'inici de sessió.
@@ -1232,6 +1295,14 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5893553533827140852">Si s'activa aquesta opció de configuració, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari a través d'una connexió d'amfitrió remot.
 
           Si es desactiva o no es configura aquesta opció, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari.</translation>
+<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> i les aplicacions ARC evitaran qualsevol servidor intermediari de la llista d'amfitrions proporcionada.
+
+          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
+
+          Deixeu-la sense establir si heu seleccionat qualsevol altra manera per establir les polítiques del servidor intermediari.
+
+          Per veure exemples més detallats, aneu a:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Permet les baixades d'actualització automàtica mitjançant HTTP</translation>
 <translation id="5921888683953999946">Establiu l'estat predeterminat de la funció d'accessibilitat del cursor gran a la pantalla d'inici de sessió.
 
@@ -1374,6 +1445,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="637934607141010488">Mostra una llista dels usuaris que han iniciat la sessió recentment al dispositiu.
 
       Si la política s'estableix com a falsa, no es proporcionarà informació sobre els usuaris.</translation>
+<translation id="639009029157091157">Deixa decidir els usuaris.</translation>
 <translation id="6392973646875039351">Activa la funció d'emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin formularis web automàticament mitjançant informació emmagatzemada anteriorment, com ara l'adreça o la informació de la targeta de crèdit. Si desactiveu aquest paràmetre, els usuaris no podran accedir a l'emplenament automàtic. Tant si l'activeu com si no hi configureu cap valor, l'usuari podrà controlar l'emplenament automàtic. D'aquesta manera, podrà configurar perfils d'emplenament automàtic i activar o desactivar l'emplenament automàtic segons li convingui.</translation>
 <translation id="6394350458541421998">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_OS_NAME" />. Feu servir la política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Tanca la sessió de l'usuari</translation>
@@ -1717,6 +1789,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
 <translation id="7651739109954974365">Determina si cal activar la itinerància de dades per al dispositiu. Si es defineix a «true» (cert), es permet la itinerància de dades. Si es deixa sense configurar o es defineix a «false» (fals), la itinerància de dades no estarà disponible.</translation>
+<translation id="7667184304362487902">Configura el servidor intermediari per a <ph name="PRODUCT_NAME" /> i per a les aplicacions ARC.
+
+      Aquesta política encara no està llesta; no la feu servir.</translation>
 <translation id="76810863974142048">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació.
 
           Si s'estableix aquesta política, l'amfitrió d'accés remot requerirà que els clients que es vulguin autenticar obtinguin un testimoni d'autenticació d'aquest URL per connectar-se. Cal utilitzar la política juntament amb la política RemoteAccessHostTokenValidationUrl.
@@ -1785,6 +1860,19 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7842869978353666042">Opcions de configuració de Google Drive</translation>
 <translation id="7843525027689416831">Especifica les opcions que s'han d'aplicar a <ph name="PRODUCT_NAME" /> quan s'inicia. Les opcions especificades només s'apliquen a la pantalla d'inici de sessió. Les opcions definides mitjançant aquesta política no es propaguen a les sessions de l'usuari.</translation>
 <translation id="7848840259379156480">Us permet configurar el renderitzador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> estigui instal·lat. De manera predeterminada, la configuració permet que el navegador amfitrió dugui a terme la renderització, però podeu substituir aquesta configuració de manera opcional i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi les pàgines HTML de manera predeterminada.</translation>
+<translation id="7853178359124471330">Quan s'estableix aquesta política, el flux de detecció automàtica de la zona horària segueix una de les condicions següents en funció del valor de l'opció de configuració:
+
+      Si s'estableix en TimezoneAutomaticDetectionUsersDecide, els usuaris poden controlar la detecció automàtica de la zona horària mitjançant els controls habituals de chrome://settings.
+
+      Si s'estableix en TimezoneAutomaticDetectionDisabled, els controls automàtics de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre desactivada.
+
+      Si s'estableix en TimezoneAutomaticDetectionIPOnly, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada i utilitza el mètode de només IP per determinar la ubicació.
+
+      Si s'estableix en TimezoneAutomaticDetectionSendWiFiAccessPoints, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada. La llista de punts d'accés Wi-Fi visibles s'envia sempre al servidor de l'API de geolocalització per detectar exactament la zona horària.
+
+      Si aquesta política no s'estableix, es comporta com si la política TimezoneAutomaticDetectionUsersDecide estigués establerta.
+
+      Si s'estableix la política SystemTimezone, substitueix SystemTimezoneAutomaticDetection i la detecció automàtica de la zona horària està totalment desactivada.</translation>
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
@@ -1822,6 +1910,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si aquesta política no es defineix, l'opció de configuració s'activarà.</translation>
 <translation id="8073243368829195">Permet utilitzar Smart Lock</translation>
+<translation id="8074052133552427532">Utilitza sempre la detecció aproximada de la zona horària.</translation>
 <translation id="8099880303030573137">Retard d'inactivitat quan s'utilitza bateria</translation>
 <translation id="8102913158860568230">Configuració predeterminada de l'activitat multimèdia</translation>
 <translation id="8104962233214241919">Selecciona automàticament certificats de client per a aquest llocs</translation>
@@ -1928,6 +2017,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8424255554404582727">Estableix la rotació predeterminada de la visualització, que es tornarà a aplicar cada cop que es reiniciï el dispositiu</translation>
 <translation id="8426231401662877819">Gira la pantalla 90 graus en el sentit de les agulles del rellotge</translation>
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
+<translation id="8458790683633857482">Especifica un conjunt de polítiques que es transferiran al temps d'execució d'ARC. El valor ha d'estar en format JSON vàlid.</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2056,9 +2146,12 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si la política es configura com a "false", l'usuari, les aplicacions i les extensions no podran utilitzar el mode de pantalla completa.
 
       El mode quiosc no està disponible en cap plataforma, tret de <ph name="PRODUCT_OS_NAME" />, si el mode de pantalla completa es desactiva.</translation>
+<translation id="8795495354632096254">Envia sempre punts d'accés Wi-Fi al servidor mentre es determina la zona horària.</translation>
 <translation id="8818173863808665831">Informeu de la ubicació geogràfica d'un dispositiu.
 
       Si no definiu la política, o bé si la definiu com a falsa, no s'informarà de la ubicació.</translation>
+<translation id="8818768076343557335">Prediu les accions de xarxa en qualsevol xarxa que no sigui de telefonia mòbil.
+          (A 50 està obsoleta i a 52 se suprimeix. Després de 52, si està establert el valor 1, es tracta com a 0; és a dir, prediu les accions de xarxa en qualsevol connexió de xarxa.)</translation>
 <translation id="8828766846428537606">Configura la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i evita que els usuaris la canviïn. La configuració de la pàgina d'inici dels usuaris només es bloqueja completament si seleccioneu que sigui la pàgina de pestanya nova o si l'establiu perquè sigui un URL que trieu. Si no especifiqueu l'URL de la pàgina d'inici, l'usuari podrà establir la pàgina de pestanya nova com a pàgina d'inici si especifica "chrome://newtab".</translation>
 <translation id="8833109046074170275">Autenticació mitjançant el flux predeterminat de GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> desa les aplicacions i les extensions a la memòria cau perquè diversos usuaris d'un mateix dispositiu les puguin instal·lar. Així, s'evita haver-les de baixar per a cada usuari.
@@ -2094,6 +2187,13 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior al retard d'inactivitat.</translation>
 <translation id="891435090623616439">codificat com a cadena JSON; per obtenir informació detallada, consulteu <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> desactiva el Bluetooth i l'usuari no el pot tornar a activar.
+
+      Si aquesta política s'estableix en "true" o es deixa sense establir, l'usuari pot activar o desactivar el Bluetooth com vulgui.
+
+      Si aquesta política s'estableix, l'usuari no la pot canviar ni substituir.
+
+      Després d'activar el Bluetooth, cal reiniciar el dispositiu perquè s'apliquin els canvis (no cal fer-ho en desactivar el Bluetooth).</translation>
 <translation id="8947415621777543415">Informa de la ubicació d'un dispositiu</translation>
 <translation id="8951350807133946005">Defineix el directori de la memòria cau del disc</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
@@ -2112,6 +2212,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
 <translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>
+<translation id="9088444059179765143">Configura el mètode de detecció automàtica de la zona horària</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9104138886225968319">Envia batecs de supervisió al servidor de gestió, de manera que

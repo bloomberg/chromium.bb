@@ -165,7 +165,7 @@
 <translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
 <translation id="1613574633990410986">Membolehkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan apl ARC serta menghalang pengguna daripada menukar tetapan proksi.
 
-      Jika anda memilih untuk tidak akan menggunakan pelayan proksi dan sentiasa menyambung secara terus, semua pilihan akan diabaikan.
+      Jika anda memilih untuk tidak akan menggunakan pelayan proksi dan sentiasa menyambung secara terus, semua pilihan lain akan diabaikan.
 
       Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
 
@@ -252,7 +252,7 @@
       Jika anda melumpuhkan tetapan ini, apabila pengguna melaksanakan tindakan yang akan mengancam dialog pemilihan fail (seperti mengimport penanda halaman, memuat naik fail, menyimpan pautan, dsb.), mesej akan dipaparkan sebagai ganti dan pengguna dianggap telah mengklik Batal pada dialog pemilihan fail.
 
       Jika tetapan ini tidak ditetapkan, penggguna boleh membuka dialog pemilihan fail seperti biasa.</translation>
-<translation id="1879485426724769439">Menentukan zon waktu yang hendak digunakan untuk peranti. Pengguna boleh menolak zon waktu yang ditentukan untuk sesi semasa. Namun, peranti akan ditetapkan semula kepada zon waktu yang ditentukan apabila anda log keluar. Jika nilai yang tidak sah diberikan, dasar ini masih akan diaktifkan menggunakan "GMT" sebagai ganti. Dasar ini akan dibatalkan jika rentetan yang kosong diberikan.
+<translation id="1879485426724769439">Menentukan zon waktu yang hendak digunakan untuk peranti. Pengguna boleh menolak zon waktu yang ditentukan untuk sesi semasa. Namun demikian, peranti akan ditetapkan semula kepada zon waktu yang ditentukan apabila anda log keluar. Jika nilai yang tidak sah diberikan, dasar ini masih akan diaktifkan menggunakan "GMT" sebagai ganti. Dasar ini akan dibatalkan jika rentetan yang kosong diberikan.
 
       Jika dasar ini tidak digunakan, zon waktu yang sedang aktif akan terus digunakan, namun begitu, pengguna boleh menukar zon waktu dan perubahan ini berterusan. Oleh itu, perubahan yang dibuat oleh seorang pengguna memberi kesan kepada skrin log masuk dan semua pengguna lain.
 
@@ -260,7 +260,7 @@
 
       Format nilai mengikut nama zon waktu dalam "Pangkalan Data Zon Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khususnya, kebanyakan zon waktu boleh dirujuk mengikut "continent/large_city" atau "ocean/large_city".
 
-      Zon waktu automatik yang diselesaikan oleh lokasi peranti akan dilumpuhkan sepenuhnya apabila dasar ini ditetapkan. Dasar ini turt mengatasi dasar overrides SystemTimezoneAutomaticDetection.</translation>
+      Zon waktu automatik yang diselesaikan oleh lokasi peranti akan dilumpuhkan sepenuhnya apabila dasar ini ditetapkan. Langkah ini turut mengatasi dasar SystemTimezoneAutomaticDetection.</translation>
 <translation id="1897365952389968758">Benarkan semua tapak untuk menjalankan JavaScript</translation>
 <translation id="193259052151668190">Senarai putih peranti boleh tanggal USB</translation>
 <translation id="1933378685401357864">Imej hias latar</translation>
@@ -666,9 +666,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3101501961102569744">Pilih cara untuk menentukan tetapan pelayan proksi</translation>
 <translation id="3125884964575432854">Membolehkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan apl ARC serta menghalang pengguna daripada menukar tetapan proksi.
 
-          Jika anda memilih untuk tidak akan menggunakan pelayan proksi dan sentiasa menyambung secara terus, semua pilihan akan diabaikan.
+          Jika anda memilih untuk tidak akan menggunakan pelayan proksi dan sentiasa menyambung secara terus, semua pilihan lain akan diabaikan.
 
-          Jika anda memilih untuk menggunakan tetapan proksi sistem, semua pilihan lain diabaikan.
+          Jika anda memilih untuk menggunakan tetapan proksi sistem, semua pilihan lain akan diabaikan.
 
           Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
 
@@ -760,7 +760,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3398137877608138703">Benarkan atau tolak rakaman video.
 
-      Jika didayakan atau tiak dikonfigurasikan (lalai), pengguna akan digesa supaya memberikan
+      Jika didayakan atau tidak dikonfigurasikan (lalai), pengguna akan digesa supaya memberikan
       akses rakaman video kecuali untuk URL yang dikonfigurasi dalam
       senarai VideoCaptureAllowedUrls yang akan diberikan akses tanpa memberi gesaan.
       Apl ARC akan dapat mengakses kamera jika telah diberikan
@@ -944,9 +944,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Membolehkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan apl ARC serta menghalang pengguna daripada menukar tetapan proksi.
 
-          Jika anda memilih untuk tidak akan menggunakan pelayan proksi dan sentiasa menyambung secara terus, semua pilihan akan diabaikan.
+          Jika anda memilih untuk tidak akan menggunakan pelayan proksi dan sentiasa menyambung secara terus, semua pilihan lain akan diabaikan.
 
-          Jika anda memilih untuk menggunakan tetapan proksi sistem atau kesan pelayan proksi secara automatik, semua pilihan lain diabaikan.
+          Jika anda memilih untuk menggunakan tetapan proksi sistem atau mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
 
           Jika anda memilih tetapan proksi manual, anda boleh menentukan pilihan lanjut dalam ''Alamat atau URL pelayan proksi', ''URL ke fail .pac proksi' dan ''Senarai peraturan pintasan proksi yang dipisahkan koma'.
 
@@ -1405,7 +1405,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika 'Dipaksa' dipilih, halaman boleh dibuka HANYA dalam mod Inkognito.</translation>
 <translation id="5836064773277134605">Hadkan julat port UDP yang digunakan oleh hos akses jauh</translation>
-<translation id="5845159892130426052">Dayakan API ShowModalDialog sehingga 2015.04.30</translation>
 <translation id="5862253018042179045">Tetapkan keadaan lalai ciri kebolehcapaian maklum balas pertuturan pada skrin log masuk.
 
           Jika dasar ini ditetapkan kepada benar, maklum balas pertuturan akan didayakan apabila skrin log masuk dipaparkan.
@@ -1971,7 +1970,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7651739109954974365">Menentukan sama ada data perayauan perlu didayakan untuk peranti. Jika ditetapkan kepada benar, perayauan data dibenarkan. Jika dibiarkan tanpa dikonfigurasi atau ditetapkan kepada palsu, perayauan data tidak akan tersedia.</translation>
 <translation id="7667184304362487902">Mengkonfigurasi tetapan proksi untuk <ph name="PRODUCT_NAME" /> dan apl ACR.
 
-      Dasar ini belum sedia untuk digunakan lagi, jangan gunakannya.</translation>
+      Dasar ini belum sedia untuk digunakan lagi, oleh itu jangan gunakannya.</translation>
 <translation id="76810863974142048">URL di mana pelanggan akses jauh harus mendapatkan token pengesahan mereka.
 
           Jika dasar ini ditetapkan, hos akses jauh memerlukan pelanggan yang mengesahkan supaya mendapatkan token pengesahan daripada URL ini agar dapat menyambung.  Hendaklah digunakan bersama dengan RemoteAccessHostTokenValidationUrl.
@@ -2217,7 +2216,7 @@ Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
 <translation id="8424255554404582727">Tetapkan putaran paparan lalai yang digunakan semula pada setiap but semula</translation>
 <translation id="8426231401662877819">Putar skrin 90 darjah mengikut arah jam</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
-<translation id="8458790683633857482">Menentukan set dasar yang akan diserahkan kepada masa jalanan ARC. Nilainya mestilah JSON sah.</translation>
+<translation id="8458790683633857482">Menentukan set dasar yang akan diserahkan kepada waktu jalan ARC. Nilainya mestilah JSON sah.</translation>
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2409,6 +2408,13 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 
           Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada kelewatan melahu.</translation>
 <translation id="891435090623616439">dikodkan sebagai rentetan JSON, untuk mendapatkan butiran lanjut, lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Jika dasar ini ditetapkan kepada salah, <ph name="PRODUCT_OS_NAME" /> akan melumpuhkan Bluetooth dan pengguna tidak akan dapat mendayakannya semula.
+
+      Jika dasar ini ditetapkan kepada benar atau dibiarkan tidak ditetapkan, pengguna akan dapat mendayakan atau melumpuhkan Bluetooth semahunya.
+
+      Jika dasar ini ditetapkan, pengguna tidak boleh mengubah atau membatalkannya.
+
+      Selepas mendayakan Bluetooth, peranti ini mesti dibut semula supaya perubahan dapat diterapkan (tidak perlu but semula peranti apabila melumpuhkan Bluetooth).</translation>
 <translation id="8947415621777543415">Laporkan lokasi peranti</translation>
 <translation id="8951350807133946005">Tetapkan direktori cache cakera</translation>
 <translation id="8955719471735800169">Kembali ke atas</translation>

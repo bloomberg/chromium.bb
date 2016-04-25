@@ -409,7 +409,6 @@
 <translation id="5431657950005405462">Your file was not found</translation>
 <translation id="5435775191620395718">Showing history from this device. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Schema validation error at "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">Show all saved pages</translation>
 <translation id="5452270690849572955">This <ph name="HOST_NAME" /> page can’t be found</translation>
 <translation id="5455374756549232013">Bad policy timestamp</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> of <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -606,7 +605,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7668654391829183341">Unknown device</translation>
 <translation id="7674629440242451245">Interested in cool new Chrome features? Try our dev channel at chrome.com/dev.</translation>
-<translation id="769344199378576125">Show offline bookmarks</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Proceed to <ph name="SITE" /> (unsafe)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

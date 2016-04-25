@@ -407,7 +407,6 @@
 <translation id="5431657950005405462">आपकी फ़ाइल नहीं मिली</translation>
 <translation id="5435775191620395718">इस डिवाइस का इतिहास दिखाया जा रहा है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" पर स्कीमा सत्यापन त्रुटि: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">सभी सहेजे गए पृष्‍ठ दिखाएं</translation>
 <translation id="5452270690849572955">यह <ph name="HOST_NAME" /> पृष्ठ प्राप्त नहीं किया जा सकता</translation>
 <translation id="5455374756549232013">खराब नीति टाइमस्टैम्प</translation>
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT" /> में से <ph name="ACTIVE_MATCH" /></translation>
@@ -511,6 +510,7 @@
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6685834062052613830">प्रस्थान करें और सेटअप पूरा करें</translation>
 <translation id="6710213216561001401">पिछला</translation>
+<translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्वर के साथ कुछ गलत है या पता गलत है.</translation>
 <translation id="674375294223700098">अज्ञात सर्वर प्रमाणपत्र त्रुटि.</translation>
 <translation id="6746710319270251222">भिन्‍न सामग्री-लंबाई वाले एकाधिक शीर्षलेख प्राप्त हुए.  HTTP प्रतिसाद
@@ -601,7 +601,6 @@
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7668654391829183341">अज्ञात डिवाइस</translation>
 <translation id="7674629440242451245">शानदार नई Chrome सुविधाओं में रूचि है? तो chrome.com/dev पर हमारा डेव चैनल आज़माएं.</translation>
-<translation id="769344199378576125">ऑफ़लाइन बुकमार्क दिखाएं</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> में आगे बढ़ें (असुरक्षित)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">इस साइट को संचय से लोड नहीं किया जा सकता</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

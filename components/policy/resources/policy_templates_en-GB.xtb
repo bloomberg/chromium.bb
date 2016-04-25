@@ -1408,7 +1408,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If 'Forced' is selected, pages may be opened ONLY in Incognito mode.</translation>
 <translation id="5836064773277134605">Restrict the UDP port range used by the remote access host</translation>
-<translation id="5845159892130426052">Enable ShowModalDialog API until 2015.04.30</translation>
 <translation id="5862253018042179045">Set the default state of the spoken feedback accessibility feature on the login screen.
 
           If this policy is set to true, spoken feedback will be enabled when the login screen is shown.
@@ -2394,6 +2393,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="891435090623616439">encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Bluetooth and the user cannot enable it back.
+
+      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as he/she wishes.
+
+      If this policy is set, the user cannot change or override it.
+
+      After enabling Bluetooth, the device must be rebooted for the changes to take effect (no need to reboot the device when disabling Bluetooth).</translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="8955719471735800169">Back to top</translation>

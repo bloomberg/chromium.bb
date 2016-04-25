@@ -360,7 +360,7 @@
 <translation id="4816492930507672669">பக்கத்தில் பொருத்து</translation>
 <translation id="4841640898320458950">பாதுகாப்பற்ற போர்ட் தடுக்கப்பட்டது.</translation>
 <translation id="4850886885716139402">காட்சி</translation>
-<translation id="4880827082731008257">தேடல் வரலாறு</translation>
+<translation id="4880827082731008257">வரலாற்றில் தேடு</translation>
 <translation id="4923417429809017348">ஒரு அறியப்படாத மொழியிலிருந்து <ph name="LANGUAGE_LANGUAGE" /> -க்கு இந்தப் பக்கம் மொழிபெயர்க்கப்பட்டுள்ளது</translation>
 <translation id="4926049483395192435">கட்டாயம் குறிப்பிட வேண்டும்.</translation>
 <translation id="4930497775425430760">முதல் முறை நீங்கள் பார்வையிடும் புதிய தளங்களை உங்கள் பெற்றோர் அனுமதிக்க வேண்டும் என்பதால் இந்தச் செய்தியைப் பார்க்கிறீர்கள்.</translation>
@@ -403,7 +403,6 @@
 <translation id="5431657950005405462">உங்கள் கோப்பு இல்லை</translation>
 <translation id="5435775191620395718">இந்தச் சாதனத்திலிருந்து வரலாற்றைக் காட்டுகிறது. <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" திட்டமுறை சரிபார்ப்புப் பிழை: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">அனைத்து சேமிக்கப்பட்ட பக்கங்களையும் காட்டு</translation>
 <translation id="5452270690849572955">இந்த <ph name="HOST_NAME" /> பக்கத்தைக் கண்டறிய முடியவில்லை</translation>
 <translation id="5455374756549232013">தவறான கொள்கை நேரமுத்திரை</translation>
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT" /> இல் <ph name="ACTIVE_MATCH" /></translation>
@@ -505,6 +504,7 @@
 <translation id="6671697161687535275">Chromium இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
 <translation id="6685834062052613830">வெளியேறி, அமைப்பை முடிக்கவும்</translation>
 <translation id="6710213216561001401">முந்தையது</translation>
+<translation id="6710594484020273272">&lt;தேடல் வார்த்தையை உள்ளிடுக&gt;</translation>
 <translation id="6711464428925977395">ப்ராக்ஸி சர்வரில் ஏதோ தவறு உள்ளது அல்லது முகவரி தவறாக உள்ளது.</translation>
 <translation id="674375294223700098">தெரியாத சேவையகச் சான்றிதழ் பிழை.</translation>
 <translation id="6746710319270251222">ஒன்றுக்கு மேற்பட்ட தனித்தனி உள்ளடக்க நீளத் தலைப்புகள் பெறப்பட்டன. HTTP பதிலளிப்பு பிரிப்புத் தாக்குதல்களுக்கு எதிரான பாதுகாப்பை வழங்க இதற்கு அனுமதியில்லை.</translation>
@@ -596,7 +596,6 @@
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7668654391829183341">அறியப்படாத சாதனம்</translation>
 <translation id="7674629440242451245">புதிய Chrome அம்சங்களில் ஆர்வமாக உள்ளீர்களா? chrome.com/dev இல் எங்களுடைய dev சேனலை முயற்சிக்கவும்.</translation>
-<translation id="769344199378576125">ஆஃப்லைன் புத்தகக்குறிகளைக் காட்டு</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> (பாதுகாப்பற்ற தளம்) க்குச் செல்லவும்<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">தற்காலிகச் சேமிப்பிலிருந்து இந்தத் தளத்தை ஏற்ற முடியவில்லை</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

@@ -668,7 +668,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak zvolíte možnosť automatického zisťovania proxy servera, budú všetky ostatné možnosti ignorované.
 
-          Ak zvolíte režim pevne daného servera proxy, môžete zvoliť ďalšie možnosti v častiach „Adresa (alebo webová adresa) servera proxy“ a „Zoznam pravidiel vynechania servera proxy oddelených čiarkami“. Aplikácie ARC budú používať iba proxy server HTTP s najvyššou prioritou.
+          Ak zvolíte režim pevne daného proxy servera, môžete zvoliť ďalšie možnosti v častiach „Adresa alebo webová adresa servera proxy“ a „Zoznam pravidiel vynechania servera proxy oddelených čiarkami“. Aplikácie ARC budú používať iba proxy server HTTP s najvyššou prioritou.
 
           Ak sa rozhodnete použiť skript .pac proxy servera, je potrebné zadať v časti „Webová adresa súboru .pac proxy servera“ webovú adresu.
 
@@ -768,7 +768,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Aplikácie ARC nebudú môcť k fotoaparátu pristupovať.
 
       Toto pravidlo má vplyv na všetky typy vstupov videa,
-      nie len na vstavanú kameru.</translation>
+      nielen na vstavanú kameru.</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
       Ak je toto pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME" /> nepovolí spustenie relácií hosťa.</translation>
@@ -938,7 +938,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak sa rozhodnete používať systémové nastavenia proxy servera alebo proxy server zisťovať automaticky, budú všetky ostatné možnosti ignorované.
 
-          Ak zvolíte možnosť ručného nastavenia proxy servera, môžete zvoliť ďalšie možnosti v častiach „Adresa (alebo webová adresa) proxy servera“, „Webová adresa súboru .pac proxy servera“ a „Zoznam pravidiel vynechania proxy servera oddelených čiarkami“.
+          Ak zvolíte možnosť ručného nastavenia proxy servera, môžete zvoliť ďalšie možnosti v častiach „Adresa alebo webová adresa proxy servera“, „Webová adresa súboru .pac proxy servera“ a „Zoznam pravidiel vynechania proxy servera oddelených čiarkami“.
 
           Podrobné príklady nájdete na adrese:
           <ph name="PROXY_HELP_URL" />
@@ -1398,7 +1398,6 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
       Ak vyberiete možnosť „Vynútené“, stránky bude možné otvoriť LEN v režime Inkognito.</translation>
 <translation id="5836064773277134605">Obmedzí rozsah portov UDP používaných hostiteľom vzdialeného prístupu</translation>
-<translation id="5845159892130426052">Povoliť rozhranie ShowModalDialog API do verzie 2015.04.30</translation>
 <translation id="5862253018042179045">Nastaví predvolený stav hlasovej odozvy (funkcia na uľahčenie prístupu) na prihlasovacej obrazovke.
 
           Ak je toto pravidlo nastavené na hodnotu true, pri zobrazení prihlasovacej obrazovky sa povolí hlasová odozva.
@@ -2046,7 +2045,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
       Ak je toto pravidlo nenastavené, bude sa považovať hodnota TimezoneAutomaticDetectionUsersDecide za nastavenú.
 
-      Ak je nastavené pravidlo SystemTimezone, toto pravidlo prepíše. V tomto prípade bude automatické zisťovanie časového pásma úplne zakázané.</translation>
+      Ak je nastavené pravidlo SystemTimezone, toto pravidlo sa prepíše. V tomto prípade bude automatické zisťovanie časového pásma úplne zakázané.</translation>
 <translation id="7882585827992171421">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Určuje identifikátor rozšírenia, ktoré sa má použiť ako šetrič obrazovky na prihlasovacej obrazovke. Rozšírenie musí byť súčasťou balíka AppPack, ktorý bol pre túto doménu nakonfigurovaný v rámci pravidla DeviceAppPack.</translation>
@@ -2379,6 +2378,13 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie ako oneskorenie režimu nečinnosti.</translation>
 <translation id="891435090623616439">kódované ako reťazec JSON, podrobnosti nájdete na adrese <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Ak je toto pravidlo nastavené na možnosť False, <ph name="PRODUCT_OS_NAME" /> vypne Bluetooth a používateľ ho nebude môcť znova zapnúť.
+
+      Ak je toto pravidlo nastavené na možnosť True alebo je ponechané nenastavené, používateľ bude môcť Bluetooth zapnúť či vypnúť podľa potreby.
+
+      Keď je toto pravidlo nastavené, používateľ ho nemôže zmeniť ani prepísať.
+
+      Na to, aby sa po povolení rozhrania Bluetooth uplatnili zmeny, je potrebné zariadenie reštartovať (pri zakázaní rozhrania Bluetooth sa reštart zariadenia nevyžaduje).</translation>
 <translation id="8947415621777543415">Nahlasovať polohu zariadenia</translation>
 <translation id="8951350807133946005">Nastaviť adresár diskovej vyrovnávacej pamäte</translation>
 <translation id="8955719471735800169">Späť na začiatok</translation>

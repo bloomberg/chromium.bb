@@ -207,6 +207,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7510334386202674593">Ctrl+Maj+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Mode Dock</translation>
+<translation id="7580671184200851182">Lire le même contenu audio sur toutes les enceintes (son mono)</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>

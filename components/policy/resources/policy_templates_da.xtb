@@ -146,6 +146,18 @@
 <translation id="1561424797596341174">Tilsidesættelser af politik for fejlretningsbuilds på hosten til fjernadgang</translation>
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
+<translation id="1613574633990410986">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og ARC-apps, og forhindrer brugerne i at ændre proxyindstillingerne.
+
+      Hvis du vælger aldrig at bruge en proxyserver og altid oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
+
+      Få flere detaljerede eksempler på:
+      <ph name="PROXY_HELP_URL" />
+
+      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
+
+      Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
 <translation id="1617384279878333801">Aktivér funktionen Tilføj person i profiladministratoren</translation>
 <translation id="1655229863189977773">Angiv diskcache i bytes</translation>
@@ -213,6 +225,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="1865417998205858223">Vigtige tilladelser</translation>
 <translation id="186719019195685253">Den handling, der igangsættes ved inaktiv forsinkelse på fast strømforsyning</translation>
 <translation id="187819629719252111">Giver adgang til lokale filer på maskinen ved at lade <ph name="PRODUCT_NAME" /> vise dialogbokse om filvalg. Hvis du aktiverer denne indstilling, kan brugerne åbne dialogbokse om filvalg som normalt. Hvis du deaktiverer denne indstilling, vises der en meddelelse i stedet for en dialogboks om filvalg, hver gang brugeren foretager en handling, der ville have frembragt en dialogboks om filvalg (såsom at importere bogmærker, uploade filer, gemme links osv.), og det antages, at brugeren har trykket på Annuller i dialogboksen om filvalg. Hvis denne indstilling ikke angives, kan brugerne åbne dialogbokse om filvalg som normalt.</translation>
+<translation id="1879485426724769439">Angiver den tidszone, der skal gælde for enheden. Brugerne kan tilsidesætte den angivne tidszone for den aktuelle session. Når der logges ud, indstilles den dog igen til den angivne tidszone. Hvis der angives en ugyldig værdi, aktiveres politikken i stedet ved hjælp af "GMT". Hvis der angives en tom streng, ignoreres politikken.
+
+      Hvis denne politik ikke anvendes, benyttes den aktive tidszone. Hvis brugerne skifter tidszone er ændringen dog vedvarende. En ændring, der foretages af én bruger, påvirker således loginskærmen og alle andre brugere.
+
+      Nye enheder er som udgangspunkt angivet med tidszonen "Pacific Standard Time".
+
+      Formatet for værdierne følger navnene på tidszonerne i "IANA Time Zone Database" (se "http://en.wikipedia.org/wiki/List_of_tz_database_time"). De fleste tidszoner kan betegnes som "continent/large_city" eller "ocean/large_city".
+
+      Hvis du angiver denne politik, deaktiveres automatisk opdatering af tidszone på baggrund af enhedens placering fuldstændigt. Politikken SystemTimezoneAutomaticDetection tilsidesættes også.</translation>
 <translation id="1897365952389968758">Tillad, at alle websites kører JavaScript</translation>
 <translation id="193259052151668190">Hvidliste over USB-enheder, der kan frigøres</translation>
 <translation id="1933378685401357864">Baggrundsbillede</translation>
@@ -584,6 +605,23 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3072847235228302527">Konfigurer servicevilkårene for en enhedslokal konto</translation>
 <translation id="3096595567015595053">Liste over aktiverede plugins</translation>
 <translation id="3101501961102569744">Vælg, hvordan du vil angive indstillinger for proxyserveren</translation>
+<translation id="3125884964575432854">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og ARC-apps, og forhindrer brugerne i at ændre proxyindstillingerne.
+
+      Hvis du vælger aldrig at bruge en proxyserver og altid oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger at bruge automatisk registrering af proxyserveren, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger tilstanden for en fast proxyserver, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren" og "Kommasepareret liste over regler for omgåelse af proxy". ARC-apps bruger kun den HTTP-proxyserver, der har højest prioritet. 
+
+      Hvis du vælger at bruge et proxyscript af typen .pac, skal du angive webadressen til scriptet i "Webadresse til en proxyfil af typen .pac".
+
+      Få flere detaljerede eksempler på:
+      <ph name="PROXY_HELP_URL" />
+      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
+
+      Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3153348162326497318">Giver dig mulighed for at angive, hvilke udvidelser brugerne IKKE kan installere. Udvidelser, der allerede er installeret, fjernes, hvis de bliver sortlistet.
 
           Sortlisteværdien "*" betyder, at alle udvidelser er sortlistet, medmindre de er tydeligt angivet på hvidlisten.
@@ -656,6 +694,20 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
+<translation id="3398137877608138703">Tillad eller afvis videooptagelse.
+
+      Hvis denne er aktiveret eller ikke er konfigureret (standard), bliver
+      brugeren bedt om at give tilladelse til videooptagelse, medmindre der er tale
+      om webadresser, der er konfigureret på listen VideoCaptureAllowedUrls, som
+      automatisk tillades. ARC-apps kan få adgang til kameraet, hvis de har
+      fået adgang til det.
+
+      Når denne politik er deaktiveret, bliver brugeren aldrig bedt om at tillade
+      den, og videooptagelse er kun muligt for webadresser, der er konfigureret i
+      VideoCaptureAllowedUrls. ARC-apps kan ikke få adgang til kameraet.
+
+      Uden for ARC-apps påvirker denne politik alle typer videoinput og ikke
+      kun det indbyggede kamera.</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
       Hvis denne politik er angivet til falsk, vil <ph name="PRODUCT_OS_NAME" /> ikke tillade, at der startes gæstesessioner.</translation>
@@ -673,6 +725,8 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3478024346823118645">Slet alle brugerdata, når der logges ud</translation>
 <translation id="348495353354674884">Aktivér virtuelt tastatur</translation>
 <translation id="3496296378755072552">Adgangskodemanager</translation>
+<translation id="349667858031092827">Registrer aldrig tidszone automatisk.</translation>
+<translation id="350443680860256679">Konfigurer ARC</translation>
 <translation id="3504791027627803580">Angiver webadressen på den søgemaskine, der bruges til billedsøgning. Søgeanmodninger sendes ved hjælp af GET-metoden. Hvis politikken DefaultSearchProviderImageURLPostParams er angivet, vil anmodninger om billedsøgning anvende POST-metoden i stedet.
 
           Denne politik er valgfri. Hvis den ikke er angivet, anvendes der ikke nogen billedsøgning.
@@ -810,6 +864,22 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne politik er angivet til "Behold cookies under sessionen", så ryddes cookies, når sessionen afsluttes. Bemærk, at sessionen muligvis ikke afsluttes, når det sidste vindue lukkes, hvis <ph name="PRODUCT_NAME" /> kører i "baggrundstilstand". Se politikken "BackgroundModeEnabled" for at få flere oplysninger om konfiguration af denne adfærd.
 
           Hvis denne politik ikke angives, anvendes "AllowCookies", og brugeren kan ændre dette.</translation>
+<translation id="4098957623809244159">Denne politik er udfaset. Brug ProxyMode i stedet.
+
+      Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og ARC-apps, og forhindrer brugerne i at ændre proxyindstillingerne.
+
+      Hvis du vælger aldrig at bruge en proxyserver og altid oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger at bruge systemets proxyindstillinger eller registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger manuelle proxyindstillinger, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy".
+
+      Få flere detaljerede eksempler på:
+      <ph name="PROXY_HELP_URL" />
+
+      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
+
+      Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="4103289232974211388">Omdiriger til SAML IdP efter brugerbekræftelse</translation>
 <translation id="410478022164847452">Angiver den tid uden brugerinput, der udløser inaktivitetshandlingen, når strømforsyningen er tilsluttet.
 
@@ -1213,7 +1283,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis denne indstilling ikke angives, anvendes standardprofilmappen.</translation>
 <translation id="5826047473100157858">Angiver, om brugeren kan åbne sider i inkognitotilstand i <ph name="PRODUCT_NAME" />. Hvis "Aktiveret" er valgt, eller hvis politikken ikke angives, kan siderne åbnes i inkognitotilstand. Hvis "Deaktiveret" er valgt, kan sider ikke åbnes i inkognitotilstand. Hvis "Tvunget" er valgt, kan siderne kun åbnes i inkognitotilstand.</translation>
 <translation id="5836064773277134605">Begræns rækkevidden for den UDP-port, der bruges af hosten for fjernadgang</translation>
-<translation id="5845159892130426052">Aktivér ShowModalDialog API v2015.04.30</translation>
 <translation id="5862253018042179045">Angiv standardtilstanden for hjælpefunktionen Talefeedback på loginskærmen.
 
           Hvis denne politik angives som sand, aktiveres talefeedback, når loginskærmen vises.
@@ -1244,6 +1313,14 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5893553533827140852">Hvis denne indstilling er aktiveret, oprettes der en proxyforbindelse for anmodninger om gnubby-godkendelse på tværs af en fjernhostforbindelse.
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, oprettes der ingen proxyforbindelse for anmodninger om gnubby-godkendelse.</translation>
+<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> og ARC-apps omgår alle proxyservere for den liste over hosts, der vises her.
+
+          Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan indstillinger for proxyservere skal angives".
+
+          Denne politik bør ikke angives, hvis du har valgt en anden tilstand til angivelse af proxypolitikker.
+
+          Få flere detaljerede eksempler på:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Tillad download af automatiske opdateringer via HTTP</translation>
 <translation id="5921888683953999946">Indstil standardtilstanden for hjælpefunktionen med den store markør på loginskærmen.
 
@@ -1380,6 +1457,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="637934607141010488">Rapportér liste over enhedsbrugere, der har logget ind for nylig.
 
       Hvis politikken er indstillet til Falsk, vil brugerne ikke blive rapporteret.</translation>
+<translation id="639009029157091157">Lad brugerne vælge.</translation>
 <translation id="6392973646875039351">Aktiverer funktionen AutoFyld i <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med oplysninger, der er gemt tidligere, såsom oplysninger om adresser og kreditkort. Hvis du deaktiverer denne indstilling, er AutoFyld ikke tilgængelig for brugerne. Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver AutoFyld under brugerens kontrol. Dette giver brugerne mulighed for at konfigurere AutoFyld-profiler og for at aktivere og deaktivere AutoFyld efter eget valg.</translation>
 <translation id="6394350458541421998">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_OS_NAME" /> version 29. Du kan i stedet bruge politikken PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Log brugeren ud</translation>
@@ -1723,6 +1801,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME" /> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges "en-US" i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME" /> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden "en-US".</translation>
 <translation id="7651739109954974365">Bestemmer, om dataroaming skal aktiveres for enheden. Hvis den er indstillet til sand, tillades dataroaming. Hvis den ikke er konfigureret eller er angivet til falsk, vil dataroaming ikke være tilgængelig.</translation>
+<translation id="7667184304362487902">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" /> og ARC-apps.
+
+      Denne politik er ikke klar til brug endnu. Undlad at bruge den.</translation>
 <translation id="76810863974142048">Webadresse, hvor klienter med fjernadgang skal hente deres godkendelsestoken.
 
           Hvis denne politik er indstillet, kræver hosten for fjernadgang, at klienter, der ønsker godkendelse, skal hente et godkendelsestoken på denne webadresse for at oprette forbindelse. Skal bruges i forbindelse med RemoteAccessHostTokenValidationUrl.
@@ -1793,6 +1874,19 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7842869978353666042">Konfigurer indstillinger for Google Drev</translation>
 <translation id="7843525027689416831">Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes kun på loginskærmen. Markeringer, der angives via denne politik, oveføres ikke til brugersessioner.</translation>
 <translation id="7848840259379156480">Giver dig mulighed for at konfigurere din standardgengivelse af HTML, når <ph name="PRODUCT_FRAME_NAME" /> er installeret. Standardindstillingen er, at værtsbrowseren foretager gengivelsen, men du har mulighed for at tilsidesætte denne og få <ph name="PRODUCT_FRAME_NAME" /> til at gengive HTML-sider som standard.</translation>
+<translation id="7853178359124471330">Når denne politik er angivet, foregår automatisk registrering af tidszone på en af følgende måder afhængigt af indstillingens værdi:
+
+      Hvis den er angivet til TimezoneAutomaticDetectionUsersDecide, kan brugerne automatisk kontrollere registrering af tidszone ved hjælp af normale kontrolelementer i chrome://indstillinger.
+
+      Hvis den er angivet til TimeZoneAutomaticDetectionDisabled, er automatiske kontrolelementer for tidszone i chrome://indstillinger deaktiveret. Automatisk registrering af tidszone er altid slået fra.
+
+      Hvis den er angivet til TimezoneAutomaticDetectionIPOnly, er kontrolelementer for tidszone i chrome://indstillinger deaktiveret. Automatisk registrering af tidszone er altid slået til. Registrering af tidszone anvender metoden Kun IP til at opdatere placeringen.
+
+      Hvis den er angivet til TimezoneAutomaticDetectionSendWiFiAccessPoints, er kontrolelementer for tidszone i chrome://indstillinger deaktiveret. Automatisk registrering af tidszone er altid slået til. Listen over synlige Wi-Fi-adgangspunkter sendes altid til Geolocation API-server til detaljeret registrering af tidszone.
+
+      Hvis politikken ikke er angivet, opfører den sig, som hvis TimezoneAutomaticDetectionUsersDecide er angivet.
+
+      Hvis politikken SystemTimezone er angivet, tilsidesætter den denne politik, og automatisk registrering af tidszone deaktiveres fuldstændigt.</translation>
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
@@ -1830,6 +1924,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis denne politik ikke er angivet, aktiveres denne indstilling.</translation>
 <translation id="8073243368829195">Tillader brug af Smart Lock</translation>
+<translation id="8074052133552427532">Brug altid grov registrering af tidszone.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse, når batteriet bruges</translation>
 <translation id="8102913158860568230">Standardindstilling for mediestrøm</translation>
 <translation id="8104962233214241919">Vælg automatisk klientcertifikater til disse websites</translation>
@@ -1936,6 +2031,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8424255554404582727">Angiv en standardrotation for visningen, som genanvendes ved hver genstart</translation>
 <translation id="8426231401662877819">Roter skærmen 90 grader med uret</translation>
 <translation id="8451988835943702790">Brug siden Ny fane som startside</translation>
+<translation id="8458790683633857482">Angiver en række politikker, der overgives til ARC-kørselstiden. Værdien skal være en gyldig JSON.</translation>
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2064,9 +2160,12 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik er angivet til Falsk, kan hverken brugeren eller nogen apps eller udvidelser anvende fuldskærmstilstand.
 
       På alle platforme med undtagelse af <ph name="PRODUCT_OS_NAME" /> er terminaltilstand utilgængelig, når fuldskærmstilstand er deaktiveret.</translation>
+<translation id="8795495354632096254">Send altid Wi-Fi-adgangspunkter til serveren under opdatering af tidszone.</translation>
 <translation id="8818173863808665831">Rapportér enhedens geografiske placering.
 
       Hvis politikken ikke er angivet eller angivet til falsk, rapporteres placeringen ikke.</translation>
+<translation id="8818768076343557335">Forudse netværkshandlinger på alle andre netværk end mobilnetværk.
+          (Udfaset i 50, fjernet i 52. Efter 52 behandles værdi 1, hvis denne er angivet, som 0. Forudse netværkshandlinger på enhver netværksforbindelse).</translation>
 <translation id="8828766846428537606">Konfigurerer standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre den. Brugerens startsideindstillinger låses kun helt, hvis du enten vælger, at startsiden skal være siden Ny fane eller indstiller den til at være en webadresse og angiver en webadresse for startsiden. Hvis du ikke angiver webadressen for startsiden, kan brugeren stadig angive siden Ny fane som startside ved at angive "chrome://newtab".</translation>
 <translation id="8833109046074170275">Godkendelse via standardprocessen for GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> cachelagrer apps og udvidelser til installation af flere brugere på den samme enhed for at undgå at downloade dem for hver bruger én gang til.
@@ -2106,6 +2205,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end inaktivitetsforsinkelsen.</translation>
 <translation id="891435090623616439">kodet som en JSON-streng. Få flere oplysninger på <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Hvis denne politik angives som falsk, deaktiverer <ph name="PRODUCT_OS_NAME" /> Bluetooth, og brugeren kan ikke aktivere det igen.
+
+      Hvis denne politik er angivet som sand eller ikke angives, kan brugeren aktivere og deaktivere Bluetooth efter forgodtbefindende.
+
+      Hvis denne politik er angivet, kan brugeren ikke ændre eller tilsidesætte den.
+
+      Efter aktivering af Bluetooth skal enheden genstartes, før ændringerne kan træde i kraft (det er ikke nødvendigt at genstarte enheden, når Bluetooth deaktiveres).</translation>
 <translation id="8947415621777543415">Rapportér enhedens placering</translation>
 <translation id="8951350807133946005">Angiv mappen for diskens cache</translation>
 <translation id="8955719471735800169">Tilbage til toppen</translation>
@@ -2124,6 +2230,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
 <translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>
+<translation id="9088444059179765143">Konfigurer metoden for automatisk registrering af tidszone.</translation>
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9098553063150791878">Politikker for HTTP-godkendelse</translation>
 <translation id="9104138886225968319">Send overvågningsimpulser til administrationsserveren, så

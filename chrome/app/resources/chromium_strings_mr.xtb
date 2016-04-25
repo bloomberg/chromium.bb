@@ -120,7 +120,7 @@
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टीम अद्यतने स्थापित करेपर्यंत प्रतीक्षा करा.</translation>
 <translation id="5563479599352954471">एका स्पर्शाने शोधा</translation>
 <translation id="5620765574781326016">पृष्ठ न सोडता वेबसाइटवरील विषयांबद्दल जाणून घ्या.</translation>
-<translation id="5634636535844844681">Chromium साठी Windows 7 किंवा त्यानंतरची आवृत्ती आवश्यक आहे.</translation>
+<translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />रीस्टार्ट<ph name="END_BUTTON" /> करणे आवश्यक)</translation>
 <translation id="5796460469508169315">Chromium जवळजवळ सज्ज आहे</translation>
@@ -208,6 +208,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium लेखक. सर्व हक्क राखीव.</translation>
 <translation id="8621669128220841554">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="8628626585870903697">Chromium कार्य करण्यासाठी मुद्रण पूर्वावलोकनास आवश्यक असलेले PDF viewer समाविष्ट करीत नाही.</translation>
+<translation id="8667808506758191620">आपले <ph name="DEVICE_TYPE" /> अद्ययावत आहे.</translation>
 <translation id="8697124171261953979">आपण Chromium प्रारंभ करता किंवा विविधोपयोगी क्षेत्रातून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="8704119203788522458">हे आपले Chromium आहे</translation>
 <translation id="872034308864968620">Chromium पार्श्वभूमीवर चालू द्या</translation>

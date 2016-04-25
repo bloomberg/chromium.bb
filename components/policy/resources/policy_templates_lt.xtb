@@ -163,6 +163,18 @@
 <translation id="1561424797596341174">Nuotolinės prieigos prieglobos derinimo versijų politikos pakeitimai</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
+<translation id="1613574633990410986">Leidžia nurodyti „<ph name="PRODUCT_NAME" />“ ir ARC programų naudojamą tarpinį serverį ir neleidžia naudotojams keisti tarpinio serverio nustatymų.
+
+      Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
+
+      Jei pasirinksite automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
+
+      Jei reikia išsamių pavyzdžių, apsilankykite adresu
+      <ph name="PROXY_HELP_URL" />
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
+
+      Jei šios politikos nuostatos nebus nustatytos, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="1617384279878333801">Asmens pridėjimo profilių tvarkymo priemonėje įgalinimas</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
@@ -236,6 +248,15 @@
       Jei šio nustatymo neleisite, kaskart naudotojui atlikus veiksmą, iškviečiantį failų pasirinkimo dialogo langą (pvz., norint importuoti žymes, įkelti failus, išsaugoti nuorodas ir kt.), bus pateiktas pranešimas. Be to, programa veiks lyg naudotojas būtų spustelėjęs „Atšaukti“ failų pasirinkimo dialogo lange.
 
       Nenustačius šio nustatymo, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.</translation>
+<translation id="1879485426724769439">Nurodoma įrenginyje naudojama laiko juosta. Vykstant šiai sesijai naudotojai gali nepaisyti nurodytos laiko juostos. Tačiau jiems atsijungus vėl nustatoma nurodyta laiko juosta. Jei pateikta netinkama vertė, politika vis tiek suaktyvinama naudojant „GMT“. Jei paliekama tuščia eilutė, politikos nepaisoma.
+
+      Jei ši politika nenaudojama, ir toliau bus naudojama dabartinė laiko juosta, bet naudotojai galės ją pakeisti ir šis pakeitimas bus ilgalaikis. Taigi, vieno naudotojo atliktas pakeitimas paveiks prisijungimo ekraną ir visus kitus naudotojus.
+
+      Naujuose įrenginiuose nustatyta laiko juosta „JAV / Ramiojo vandenyno“.
+
+      Vertės formatas atitinka laiko juostų pavadinimus, nurodytus „IANA laiko juostų duomenų bazėje“ (žr. adresu https://en.wikipedia.org/wiki/Tz_database (anglų k.). Konkrečiau kalbant, daugelio laiko juostų pavadinimus galima sukurti naudojant formatą „žemynas / didelis_miestas“ arba „vandenynas / didelis_miestas“.
+
+      Nustačius šią politiką visiškai išjungiama automatinio laiko juostos nustatymo pagal įrenginio vietovę funkcija. Be to, nepaisoma politikos „SystemTimezoneAutomaticDetection“.</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
 <translation id="193259052151668190">Atjungiamų USB įrenginių baltasis sąrašas</translation>
 <translation id="1933378685401357864">Ekrano fono vaizdas</translation>
@@ -642,6 +663,24 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3072847235228302527">Nustatyti vietinės įrenginio paskyros paslaugų teikimo sąlygas</translation>
 <translation id="3096595567015595053">Įgalintų papildinių sąrašas</translation>
 <translation id="3101501961102569744">Pasirinkti, kaip nurodyti tarpinio serverio nustatymus</translation>
+<translation id="3125884964575432854">Leidžiama nurodyti „<ph name="PRODUCT_NAME" />“ ir ARC programų naudojamą tarpinį serverį ir naudotojams neleidžiama keisti tarpinio serverio nustatymų.
+
+          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
+
+          Jei pasirinksite naudoti sistemos tarpinio serverio nustatymus, bus nepaisoma visų kitų parinkčių.
+
+          Jei pasirinksite automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
+
+          Jei pasirinksite naudoti fiksuoto tarpinio serverio režimą, galėsite nurodyti kitas parinktis skiltyse „Tarpinio serverio adresas ar URL“ ir „Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas“. ARC programos HTTP tarpinį serverį naudos tik tuo atveju, jei jam bus nustatytas didžiausias pirmumas.
+
+          Jei pasirinksite naudoti .pac tarpinio serverio scenarijų, turėsite nurodyti scenarijaus URL skiltyje „Tarpinio serverio .pac failo URL“.
+
+          Jei reikia išsamių pavyzdžių, apsilankykite adresu
+          <ph name="PROXY_HELP_URL" />
+
+          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
+
+          Jei ši politika nebus nustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3153348162326497318">Leidžiama nurodyti, kurių plėtinių naudotojas (-a) NEGALI įdiegti. Jau įdiegti plėtiniai bus pašalinti, jei jie įtraukti į juodąjį sąrašą.
 
           Juodojo sąrašo vertė „*“ reiškia, kad visi plėtiniai įtraukti į juodąjį sąrašą, nebent jie išskirtinai pateikti baltajame sąraše.
@@ -718,6 +757,20 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
+<translation id="3398137877608138703">Vaizdo įrašų fiksavimo leidimas arba draudimas.
+
+      Jei ši politika įgalinta arba nesukonfigūruota (numatytasis nustatymas),
+      naudotojas bus paragintas pasinaudoti vaizdo įrašų fiksavimo prieiga, išskyrus
+      URL, sukonfigūruotus sąraše „VideoCaptureAllowedUrls“, kurį jie galės pasiekti be paraginimo.
+      ARC programos galės pasiekti fotoaparatą, jei joms buvo suteiktas
+      leidimas.
+
+      Kai ši politika išjungta, naudotojas niekada nebus raginamas ir vaizdo įrašo
+      fiksavimas bus pasiekiamas tik URL, sukonfigūruotiems „VideoCaptureAllowedUrls“.
+      ARC programos negalės pasiekti fotoaparato.
+
+      Be ARC programų ši politika turi įtakos visų tipų vaizdo įrašų įvestims, ne tik
+      įdiegtam fotoaparatui.</translation>
 <translation id="3417418267404583991">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ įgalinami svečių prisijungimai. Svečių prisijungimai – tai anoniminės naudotojų sesijos ir nereikalaujama slaptažodžio.
 
       Jei ši politika nustatyta į „false“ (netiesa), „<ph name="PRODUCT_OS_NAME" />“ neleidžiama pradėti svečio sesijų.</translation>
@@ -735,6 +788,8 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3478024346823118645">Ištrinti naudotojo duomenis atsijungiant</translation>
 <translation id="348495353354674884">Įgalinti virtualiąją klaviatūrą</translation>
 <translation id="3496296378755072552">Slaptažodžių tvarkytuvė</translation>
+<translation id="349667858031092827">Niekada automatiškai neaptikti laiko juostos.</translation>
+<translation id="350443680860256679">ARC konfigūravimas</translation>
 <translation id="3504791027627803580">Nurodomas paieškos variklio URL, naudojamas vaizdų paieškai teikti. Paieškos užklausos bus siunčiamos naudojant GET metodą. Jei nustatyta politika „DefaultSearchProviderImageURLPostParams“, vaizdų paieškos užklausoms naudojamas POST metodas.
 
           Ši politika pasirenkama. Jei nenustatyta, nenaudojama jokia vaizdų paieška.
@@ -884,6 +939,22 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei ši politika nustatyta į „Palikti slapukus, kol sesija aktyvi“, tada slapukai bus išvalyti uždarius sesiją. Atminkite, kad jei „<ph name="PRODUCT_NAME" />“ veikia foninio atkūrimo režimu, sesijos negalima uždaryti, kai uždaromas paskutinis langas. Daugiau informacijos apie šio veikimo konfigūravimą galite gauti peržiūrėję politiką „BackgroundModeEnabled“.
 
           Jei ši politika nenustatyta, bus naudojama parinktis „AllowCookies“ ir naudotojas galės ją pakeisti.</translation>
+<translation id="4098957623809244159">Ši politika nebenaudojama, vietoje jos naudokite „ProxyMode“.
+
+          Leidžiama nustatyti „<ph name="PRODUCT_NAME" />“ ir ARC programų naudojamą tarpinį serverį ir naudotojams neleidžiama keisti tarpinio serverio nustatymų.
+
+          Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesiogiai, bus nepaisoma visų kitų parinkčių.
+
+         Jei pasirinksite naudoti sistemos tarpinį serverį arba automatiškai aptikti tarpinį serverį, bus nepaisoma visų kitų parinkčių.
+
+          Jei pasirinksite neautomatinius tarpinio serverio nustatymus, kitas parinktis galėsite nurodyti skiltyse „Tarpinio serverio adresas ar URL“, „Tarpinio serverio .pac failo URL“ ir „Kableliais atskirtų tarpinio serverio apėjimo taisyklių sąrašas“.
+
+          Jei reikia išsamių pavyzdžių, apsilankykite adresu
+          <ph name="PROXY_HELP_URL" />
+
+          Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.
+
+          Jei ši politika bus nenustatyta, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="4103289232974211388">Patvirtinus naudotoją peradresuoti į „SAML IdP“</translation>
 <translation id="410478022164847452">Nurodoma laiko trukmė be naudotojo įvesties, po kurios neveikos veiksmai atliekami, kai naudojama kintamosios srovės energija.
 
@@ -1336,7 +1407,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei pasirinkta „Priverstinai“, puslapius galima atidaryti TIK inkognito režimu.</translation>
 <translation id="5836064773277134605">Apriboti UDP prievado diapazoną, naudojamą nuotolinės prieigos prieglobos</translation>
-<translation id="5845159892130426052">Įgalinti „ShowModalDialog“ API iki 2015-04-30</translation>
 <translation id="5862253018042179045">Nustatyti numatytąją žodinių atsiliepimų būklę prisijungimo ekrane.
 
           Jei ši politika nustatyta, žodiniai atsiliepimai bus įgalinti, kai bus rodomas prisijungimo ekranas.
@@ -1367,6 +1437,14 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5893553533827140852">Jei šis nustatymas įgalintas, „Gnubby“ autentifikavimo užklausos bus perduotos įgaliotajam serveriui nuotolinės prieglobos ryšiu.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
+<translation id="5900959132054596599">„<ph name="PRODUCT_NAME" />“ ir ARC programos apeis bet kokį tarpinį serverį iš čia pateikto prieglobų sąrašo.
+
+          Ši politika galioja tik tuo atveju, jei pasirinkote neautomatinius tarpinio serverio nustatymus skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“.
+
+          Jei pasirinkote kokį nors kitą tarpinio serverio politikos nustatymo režimą, šios politikos neturėtumėte nustatyti.
+
+          Jei reikia išsamesnių pavyzdžių, apsilankykite adresu
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Leisti automatinio naujinio atsisiuntimus naudojant HTTP</translation>
 <translation id="5921888683953999946">Nustatyti numatytąją didelio žymeklio pasiekiamumo funkciją prisijungimo ekrane.
 
@@ -1515,6 +1593,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="637934607141010488">Pateikti neseniai prisijungusių įrenginio naudotojų sąrašą.
 
       Jei politika nustatyta kaip „False“, naudotojų informacija nebus pateikta.</translation>
+<translation id="639009029157091157">Leisti spręsti naudotojams.</translation>
 <translation id="6392973646875039351">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai pildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., adresą arba kredito kortelės informaciją.
 
       Jei šio nustatymo neleisite, naudotojai negalės naudoti automatinio pildymo funkcijos.
@@ -1894,6 +1973,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei šio nustatymo neleisite arba nekonfigūruosite, „<ph name="PRODUCT_NAME" />“ naudos naudotojo nurodytą pageidaujamą lokalę (jei ji sukonfigūruota), sistemos lokalę arba atsarginę lokalę „en-US“.</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
+<translation id="7667184304362487902">Sukonfigūruojami „<ph name="PRODUCT_NAME" />“ ir ARC programų tarpinio serverio nustatymai.
+
+      Ši politika dar neparengta naudoti, nenaudokite jos.</translation>
 <translation id="76810863974142048">URL, kur nuotolinės prieigos klientai turėtų gauti autentifikavimo prieigos raktą.
 
           Nustačius šią politiką, nuotolinės prieigos prieglobai reikės autentifikuoti klientus, kad gautų autentifikavimo prieigos raktą iš šio URL, kad galėtų prisijungti. Reikia naudoti su „RemoteAccessHostTokenValidationUrl“.
@@ -1967,6 +2049,19 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7843525027689416831">Nurodomos žymos, kurios turėtų būti pritaikytos, kai paleidžiama „<ph name="PRODUCT_NAME" />“. Nurodytos žymos pritaikomos tik prisijungimo ekrane. Naudojant šią politiką išsiųstos žymos nepertraukia naudotojų sesijų.</translation>
 <translation id="7848840259379156480">Įdiegus „<ph name="PRODUCT_FRAME_NAME" />“ leidžiama sukonfigūruoti numatytąjį HTML teikėją.
       Pagal numatytuosius nustatymus teikti leidžiama prieglobos naršyklei, bet jūs savo nuožiūra šios nuostatos galite nepaisyti ir nustatyti, kad pagal numatytuosius nustatymus „<ph name="PRODUCT_FRAME_NAME" />“ pateiktų HTML puslapius.</translation>
+<translation id="7853178359124471330">Kai ši politika nustatyta, automatinio laiko aptikimas bus vykdomas vienu iš toliau nurodytų būdų, atsižvelgiant į nustatymo vertę.
+
+      Jei būtų nustatyta į „TimezoneAutomaticDetectionUsersDecide“, naudotojai galėtų valdyti automatinį laiko juostos aptikimą naudodami įprastus valdiklius nuėję į chrome://settings.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionDisabled“, automatiniai laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus išjungtas.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionIPOnly“, laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus įjungtas. Laiko juostos aptikimo funkcija nustatydama vietovę naudos tik IP pagrįstą metodą.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionSendWiFiAccessPoints“, laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus įjungtas. Matomų „Wi-Fi“ prieigos taškų sąrašas visada bus siunčiamas į geografinės vietovės nustatymo API serverį, kad būtų nustatyta tiksli laiko juosta.
+
+      Jei ši politika nenustatyta, aptikimas veiks taip, tarsi būtų nustatyta „TimezoneAutomaticDetectionUsersDecide“.
+
+      Jei nustatyta politika „SystemTimezone“, ji nepaiso šios politikos. Tokiu atveju automatinis laiko juostos aptikimas visiškai išjungiamas.</translation>
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
@@ -2009,6 +2104,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika nenustatyta, nustatymas bus įgalintas.</translation>
 <translation id="8073243368829195">Leidžiama naudoti „Smart Lock“</translation>
+<translation id="8074052133552427532">Visada leisti aptikti laiko juostą.</translation>
 <translation id="8099880303030573137">Neveikos delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="8102913158860568230">Numatytasis medijos srautinio perdavimo nustatymas</translation>
 <translation id="8104962233214241919">Automatiškai pasirinkti šių svetainių kliento sertifikatus</translation>
@@ -2123,6 +2219,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8424255554404582727">Nustatyti numatytąjį ekrano sukimo nustatymą, kuris bus iš naujo pritaikomas kiekvieną kartą paleidus iš naujo</translation>
 <translation id="8426231401662877819">Sukti ekraną pagal laikrodžio rodyklę 90 laipsnių kampu</translation>
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
+<translation id="8458790683633857482">Nurodomos politikos nuostatos, kurios bus perduotos vykdant ARC. Vertė turi būti galiojantis JSON.</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
@@ -2264,9 +2361,12 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
       Jei ši politika negalioja, nei naudotojas, nei programos ar plėtiniai negali įjungti viso ekrano režimo.
 
       Visose platformose, išskyrus „<ph name="PRODUCT_OS_NAME" />“, viešojo terminalo režimas nepasiekiamas, kai išjungtas viso ekrano režimas.</translation>
+<translation id="8795495354632096254">Visada siųsti „Wi-Fi“ prieigos taškus serveriui nustatant laiko juostą.</translation>
 <translation id="8818173863808665831">Pranešti geografinę šio įrenginio vietą.
 
       Jei ši politika nenustatyta ar nustatyta „Ne“, nebus pranešta apie vietą.</translation>
+<translation id="8818768076343557335">Numatyti tinklo veiksmus bet kuriame ne mobiliojo ryšio tinkle.
+          (Nebenaudojama nuo 50 versijos, pašalinta 52 versijoje. Po 52 versijos, jei nustatyta 1 vertė, ji bus laikoma 0 – numatyti tinklo veiksmus bet kurio ryšio tinkle.)</translation>
 <translation id="8828766846428537606">Konfigūruojamas numatytasis pagrindinis „<ph name="PRODUCT_NAME" />“ puslapis, kurio keisti naudotojams neleidžiama.
 
       Naudotojo pagrindinio puslapio nustatymai bus visiškai užrakinti tik tada, jei kaip pagrindinį puslapį pasirinksite naujo skirtuko puslapį arba nustatysite, kad į jį būtų įkeltas URL, ir nurodysite pagrindinio puslapio URL. Jei pagrindinio puslapio URL nenurodysite, naudotojui ir toliau bus leidžiama kaip pagrindinį puslapį nustatyti naujo skirtuko puslapį nurodant „chrome://newtab“.</translation>
@@ -2310,6 +2410,13 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 
           Politikos vertė turėtų būti nurodoma milisekundėmis. Vertės sumažinamos, kad neviršytų neveikos delsos laiko.</translation>
 <translation id="891435090623616439">koduojama JSON eilute, daugiau informacijos pateikiama apsilankius adresu <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Jei ši politika bus nustatyta į „false“, „<ph name="PRODUCT_OS_NAME" />“ išjungs „Bluetooth“ ir naudotojas negalės jo vėl įjungti.
+
+      Jei ši politika bus nustatyta į „true“ arba nenustatyta, naudotojas galės pasirinkti įjungti arba išjungti „Bluetooth“.
+
+      Jei ši politika nustatyta, naudotojas negali jos pakeisti ar nepaisyti.
+
+      Įgalinus „Bluetooth“ įrenginį reikia paleisti iš naujo, kad pakeitimai įsigaliotų (išjungus „Bluetooth“ įrenginio nereikia paleisti iš naujo).</translation>
 <translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
 <translation id="8951350807133946005">Nustatyti disko talpyklos katalogą</translation>
 <translation id="8955719471735800169">Į pradžią</translation>
@@ -2328,6 +2435,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
 <translation id="9088433379343318874">Įgalinti prižiūrimo naudotojo turinio teikėją</translation>
+<translation id="9088444059179765143">Automatinio laiko juostos aptikimo metodo konfigūravimas</translation>
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
 <translation id="9104138886225968319">Siunčiami stebėjimo kontroliniai signalai į valdymo serverį, kad serveryje būtų galima

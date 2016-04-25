@@ -26,7 +26,6 @@
 <translation id="1291207594882862231">Удалить файлы cookie и данные сайтов, очистить историю и кеш…</translation>
 <translation id="129553762522093515">Недавно закрытые</translation>
 <translation id="13410144310025252">Открыть в Chrome</translation>
-<translation id="1346090444609141578">Сохраненных страниц нет</translation>
 <translation id="1369915414381695676">Добавлен сайт <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Недостаточно памяти для скачивания выбранного контента.</translation>
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
@@ -47,7 +46,6 @@
 <translation id="1549000191223877751">Перейти к другому окну</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1557201757634521564">Определять кодировку</translation>
-<translation id="1592483623187843893">Закладка доступна в офлайн-режиме</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="1641113438599504367">Безопасный просмотр</translation>
@@ -55,7 +53,6 @@
 <translation id="1643702317193804718">Выполняется перевод на <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1647391597548383849">Доступ к камере</translation>
-<translation id="1648687357130613845">Пространство для хранения</translation>
 <translation id="1657479659644194568">Настройка Chrome</translation>
 <translation id="169033420419426091">Не удалось скачать файл <ph name="FILE_NAME" />, так как отсутствует SD-карта.</translation>
 <translation id="1692118695553449118">Синхронизация включена</translation>
@@ -67,12 +64,13 @@
 <translation id="1825719650605518411">Первый запуск</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
 <translation id="1832521218263067499">Случаи нарушения безопасности</translation>
+<translation id="1842969606798536927">Оплатить</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="189172778771606813">Закрыть панель навигации</translation>
 <translation id="194341124344773587">Разрешение для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
-<translation id="1959930595721737608">Разрешить JavaScript на следующих сайтах.</translation>
+<translation id="1959930595721737608">Разрешить JavaScript на указанных сайтах.</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984321224716884559">Закладки Chrome для разработчиков</translation>
@@ -111,14 +109,12 @@
 <translation id="2433507940547922241">Внешний вид</translation>
 <translation id="2439248520967274840">Вы входите в аккаунт <ph name="TO_ACCOUNT" />. Обратите внимание, что некоторые закладки, пароли, история и другие настройки уже синхронизированы с аккаунтом <ph name="FROM_ACCOUNT" />. Что нужно сделать с этими данными?</translation>
 <translation id="2440823041667407902">Данные о местоположении</translation>
-<translation id="2470327855284432041">Страница размером <ph name="PAGE_SIZE_STRING" /> сохранена в офлайн-доступе</translation>
 <translation id="2476578072172137802">Настройки сайта</translation>
 <translation id="2482878487686419369">Оповещения</translation>
 <translation id="2496180316473517155">История просмотров</translation>
 <translation id="2498359688066513246">Справка/отзыв</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2512222046227390255">Автозаполнение форм</translation>
-<translation id="2521102375070725336">Закладка сохранена в папке <ph name="FOLDER_NAME" /></translation>
 <translation id="2526148617758225454">Экономия трафика включена. Управление доступно в настройках.</translation>
 <translation id="2532336938189706096">Веб-версия</translation>
 <translation id="2536728043171574184">Офлайн-копия страницы</translation>
@@ -155,7 +151,6 @@
 <translation id="3029704984691124060">Кодовые фразы не совпадают</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
-<translation id="306566828762083630">Память устройства переполнена. Чтобы освободить место, удалите фото, видео или музыку.</translation>
 <translation id="307329814453917357">Предлагать переводить страницы с помощью Google Переводчика</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="3090193911106258841">Доступ к аудио- и видеовходу</translation>
@@ -186,7 +181,6 @@
 <translation id="3435896845095436175">Включить</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
-<translation id="3501331331116143684">Страница сохранена в папке <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Продолжить</translation>
 <translation id="3522247891732774234">Доступно обновление. Другие параметры…</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -217,7 +211,6 @@
 <translation id="3988213473815854515">Доступ к геоданным разрешен</translation>
 <translation id="3992315671621218278">Сохранить ссылку</translation>
 <translation id="4002066346123236978">Название</translation>
-<translation id="4035611068038188272">Сохраненные закладки занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
@@ -227,9 +220,7 @@
 <translation id="4113030288477039509">Управляется администратором</translation>
 <translation id="4165986682804962316">Настройки сайта</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
-<translation id="4193864812412988973">Офлайн-копия закладки</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
-<translation id="4198229475320555619">Размер сохраненной закладки: <ph name="PAGE_SIZE_STRING" /></translation>
 <translation id="423410644998903704">Предоставьте браузеру Chrome разрешения, чтобы продолжить работу на этом сайте.</translation>
 <translation id="424864128008805179">Выйти из Chrome?</translation>
 <translation id="4254813446494774748">Перевести на:</translation>
@@ -241,7 +232,6 @@
 <translation id="4297410240212242334">Вкладки внутри Chrome</translation>
 <translation id="4307992518367153382">Основные</translation>
 <translation id="4334294535648607276">Скачивание завершено.</translation>
-<translation id="4350413759959745971">Переместить страницы</translation>
 <translation id="4351244548802238354">Закрыть</translation>
 <translation id="4376501731284077108">Не контролируется</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -250,7 +240,6 @@
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4457399174246232812">Страницы из Интернета вокруг нас будут показываться в списке оповещений.</translation>
 <translation id="4498934959426056365">Создание ключей</translation>
-<translation id="4505554159887937799">В офлайн-доступе</translation>
 <translation id="4508440807153586353">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется сбросить параметры синхронизации. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
 <translation id="4522570452068850558">Подробнее</translation>
@@ -269,7 +258,6 @@
 <translation id="4698413471314543145">Отсутствует функция, необходимая для работы Chrome. Возможно, установка не была завершена или вы используете несовместимую версию Android.</translation>
 <translation id="4699172675775169585">Изображения и другие файлы, сохраненные в кеше</translation>
 <translation id="4720023427747327413">Открыть в <ph name="PRODUCT_NAME" /></translation>
-<translation id="4726963856048758366">Данные удалены</translation>
 <translation id="473775607612524610">Обновление</translation>
 <translation id="4738836084190194332">Последняя синхронизация: <ph name="WHEN" /></translation>
 <translation id="4773299976671772492">Остановлено</translation>
@@ -278,11 +266,9 @@
 <translation id="4816465935029283692">Типы данных</translation>
 <translation id="4827948050554950725">Добавить кредитную карту</translation>
 <translation id="4836364883164334657">Подключение не защищено. Злоумышленники могут похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
-<translation id="4927198283430892231">Сохраненные страницы занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="4970484396410298643">Просматривайте одни и те же вкладки на компьютере и мобильном устройстве.
 
@@ -322,7 +308,6 @@
 <translation id="5302048478445481009">Язык</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
 <translation id="5308380583665731573">Подключение</translation>
-<translation id="5308933389783727448">Искать по сохраненным страницам</translation>
 <translation id="5313967007315987356">Добавить сайт</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5324858694974489420">Родительские настройки</translation>
@@ -334,7 +319,6 @@
 <translation id="5414836363063783498">Проверка…</translation>
 <translation id="5423934151118863508">Здесь появятся страницы, которые вы чаще всего просматриваете.</translation>
 <translation id="5424715742813396254">Изменение имени, пароля или исключения</translation>
-<translation id="5442257541162692417">Редактировать страницу</translation>
 <translation id="544291274896356069">Эта ссылка откроется во внешнем приложении, и вы выйдете из режима инкогнито. Продолжить?</translation>
 <translation id="5487521232677179737">Удалить данные</translation>
 <translation id="5487729733663684359">Невозможно обновить Chrome в текущей версии Android.</translation>
@@ -416,7 +400,6 @@
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="6409731863280057959">Всплывающие окна</translation>
 <translation id="641643625718530986">Печать</translation>
-<translation id="6447570251829705777">Закладка не доступна в офлайн-режиме</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
 <translation id="6458785801851713928">В вашем домене синхронизация отключена</translation>
@@ -437,20 +420,15 @@
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
-<translation id="6683720003467092441">Разрешить фоновую синхронизацию на следующих сайтах:</translation>
-<translation id="6697251040310467641">Сохранено в офлайн-доступе</translation>
+<translation id="6683720003467092441">Разрешить фоновую синхронизацию на этом сайте.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
-<translation id="6699351163704950317">Все сохраненные страницы</translation>
 <translation id="6710213216561001401">Назад</translation>
-<translation id="6720988912937197322">Страница недоступна в офлайн-режиме</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
 <translation id="6762156594045689028">Чтобы изменить эту настройку, <ph name="BEGIN_LINK" />сбросьте параметры синхронизации<ph name="END_LINK" />.</translation>
 <translation id="6770414673596662518">Функция "Безопасный просмотр" также позволяет обнаружить подозрительные страницы и защитить устройство от фишинга и вредоносного ПО.</translation>
 <translation id="6784675033504223784">Искать "<ph name="SEARCH_TERM" />"</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
-<translation id="6792460226655139786">Сохраненные страницы</translation>
 <translation id="679325081238418596">Вы сможете работать с одними и теми же закладками, историей, паролями и другими настройками на любом устройстве</translation>
-<translation id="6805056253035393346">Открыть</translation>
 <translation id="6820607729870073286">Нет сохраненных настроек сайтов.</translation>
 <translation id="6820686453637990663">Код CVC</translation>
 <translation id="6831043979455480757">Перевести</translation>
@@ -525,16 +503,12 @@
 <translation id="7648422057306047504">Шифровать пароли с помощью учетных данных аккаунта Google</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
+<translation id="7682287625158474539">Адрес доставки</translation>
 <translation id="7690588279513156836">Полная версия</translation>
 <translation id="771135159654932189">Узнать, что поблизости</translation>
-<translation id="7735023902678907596">Страницы, открытые в этом окне, не сохранятся в истории браузера или поиска. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы закроете все вкладки инкогнито. Скачанные вами файлы и добавленные закладки будут сохранены.
-
-В режиме инкогнито ваши действия видны системному администратору и интернет-провайдеру, а также доступны сайтам, которые вы посещаете.</translation>
-<translation id="7761240775244195612">У вас есть сохраненные страницы (<ph name="PAGES_NUMBER" />), которые вы ни разу не открывали в прошлом месяце. Они занимают <ph name="TOTAL_PAGE_SIZE" />. Удалить их?</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
-<translation id="7784213092572143271">Страница сохранена</translation>
 <translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
@@ -551,7 +525,6 @@
 <translation id="8007176423574883786">Отключено для этого устройства</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8035133914807600019">Создать папку…</translation>
-<translation id="8050319187894766337">Сохранено. Свободное место заканчивается.</translation>
 <translation id="8068648041423924542">Невозможно выбрать сертификат.</translation>
 <translation id="8069239273282989646">После сжатия</translation>
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
@@ -563,7 +536,6 @@
 <translation id="8106211421800660735">Номер карты</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
-<translation id="8146397137182589628">Не сохранено в офлайн-доступе</translation>
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8173098127580644436">все время</translation>
 <translation id="8200772114523450471">Возобновить</translation>
@@ -581,10 +553,8 @@
 <translation id="8413126021676339697">Показать всю историю</translation>
 <translation id="8413385045638830869">Всегда спрашивать (рекомендуется)</translation>
 <translation id="8428213095426709021">Настройки</translation>
-<translation id="8429160401486700187">Удалить страницы</translation>
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>
-<translation id="8493948351860045254">Освободить место</translation>
 <translation id="8497726226069778601">Здесь появятся часто посещаемые страницы</translation>
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="8518901949365209398">Этот сайт шифрует соединение с помощью подписей SHA-1. Поскольку это не самый надежный способ, ваши данные могут быть перехвачены.</translation>
@@ -604,16 +574,15 @@
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8699799819461268362">Безопасный поиск</translation>
-<translation id="8701537995684343047">Посетите сайт, чтобы сохранить закладку в офлайн-режиме</translation>
 <translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8730621377337864115">Готово</translation>
-<translation id="8737542153238017984">Страница недоступна в офлайн-режиме: свободное пространство заканчивается.</translation>
 <translation id="8793430725658173476">Копировать URL</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
 <translation id="8812942424849541387">Изменить эти параметры можно в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8829678271838353305">Был выполнен вход в аккаунт <ph name="ACCOUNT_EMAIL_LAST" />. Если вы войдете в аккаунт <ph name="ACCOUNT_EMAIL_NEW" />, синхронизируемые данные (например, закладки) будут объединены. Чтобы этого не произошло, <ph name="BEGIN_LINK" />удалите данные о работе в браузере<ph name="END_LINK" />.</translation>
+<translation id="884264119367021077">Адрес доставки</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="8901170036886848654">Ничего не найдено</translation>
@@ -641,7 +610,6 @@
 <translation id="9133515669113036225">Сбросить учетные данные</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="9141510419986760385">Вы переключаетесь с синхронизируемого аккаунта <ph name="FROM_ACCOUNT" /> на <ph name="TO_ACCOUNT" />. Что нужно сделать с текущими закладками, паролями, историей и другими настройками?</translation>
-<translation id="9151532766011674069">Закладка сохранена в офлайн-режиме, но свободное место заканчивается.</translation>
 <translation id="917685106653909562">Веб-страницы из Интернета вокруг нас</translation>
 <translation id="9187199695613236444">Адаптировано для мобильных устройств</translation>
 <translation id="9192643434065497760">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" />.</translation>
@@ -650,7 +618,6 @@
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
-<translation id="954352821720225055">Закладка не сохранена в офлайн-режиме: недостаточно свободного места.</translation>
 <translation id="969096075394517431">Изменить языки</translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>

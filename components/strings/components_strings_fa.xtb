@@ -291,7 +291,7 @@
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3858027520442213535">به‌روزرسانی تاریخ و زمان</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
-<translation id="3885155851504623709">بخش</translation>
+<translation id="3885155851504623709">استان</translation>
 <translation id="3901925938762663762">کارت منقضی شده است</translation>
 <translation id="3903912596042358459">انجام این درخواست توسط سرور رد شد.</translation>
 <translation id="3930850196944737149">دستگاه شما آفلاین است.</translation>
@@ -409,7 +409,6 @@
 <translation id="5431657950005405462">فایل شما پیدا نشد</translation>
 <translation id="5435775191620395718">در حال نمایش سابقه از این دستگاه. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">خطای تأیید طرح در «<ph name="ERROR_PATH" />»:‏ <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">نمایش همه صفحه‌های ذخیره شده</translation>
 <translation id="5452270690849572955">صفحه <ph name="HOST_NAME" /> پیدا نمی‌شود</translation>
 <translation id="5455374756549232013">مهر زمان خط‌مشی نادرست است</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> از <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -513,6 +512,7 @@
 <translation id="6671697161687535275">‏پیشنهاد فرم از Chromium پاک شود؟</translation>
 <translation id="6685834062052613830">خروج از سیستم و تکمیل راه‌اندازی</translation>
 <translation id="6710213216561001401">قبلی</translation>
+<translation id="6710594484020273272">&lt;عبارت جستجو را تایپ کنید&gt;</translation>
 <translation id="6711464428925977395">مشکلی در سرور پروکسی وجود دارد یا این آدرس درست نیست.</translation>
 <translation id="674375294223700098">خطای ناشناخته گواهی سرور.</translation>
 <translation id="6746710319270251222">‏چند عنوان متمایز طول محتوا دریافت شد.  برای محافظت در مقابل حملات
@@ -605,7 +605,6 @@
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7668654391829183341">دستگاه ناشناس</translation>
 <translation id="7674629440242451245">‏علاقه‌مند به قابلیت‌های جدید و جالب Chrome هستید؟ کانال برنامه‌نویسان ما را در chrome.com/dev امتحان کنید.</translation>
-<translation id="769344199378576125">نمایش نشانک‌های آفلاین</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ادامه به <ph name="SITE" /> (غیرایمن)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

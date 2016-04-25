@@ -146,6 +146,18 @@
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
+<translation id="1613574633990410986">Omogućuje vam da odredite proxy poslužitelj kojim se koriste <ph name="PRODUCT_NAME" /> i ARC aplikacije, a korisnicima onemogućuje promjenu postavki proxyja.
+
+      Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
+
+      Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
+
+      Detaljne primjere možete pronaći ovdje:
+      <ph name="PROXY_HELP_URL" />
+
+      Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
+
+      Ako se ta pravila ne postave, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="1617384279878333801">Omogućivanje dodavanja osobe u upravitelju profila</translation>
 <translation id="1655229863189977773">Postavite veličinu predmemorije diska u bajtovima</translation>
@@ -213,6 +225,15 @@
 <translation id="1865417998205858223">Glavna dopuštenja</translation>
 <translation id="186719019195685253">Radnja koja se poduzima kada se dosegne odgoda zbog neaktivnosti dok je računalo priključeno na struju</translation>
 <translation id="187819629719252111">Omogućuje pristup lokalnim datotekama na računalu tako da dopušta proizvodu <ph name="PRODUCT_NAME" /> prikaz dijaloških okvira za odabir datoteka. Ako omogućite ovu postavku, korisnici mogu otvarati dijaloške okvire za odabir datoteka kao i obično. Ako onemogućite ovu postavku, svaki put kad korisnik napravi neku radnju koja bi dovela do otvaranja dijaloškog okvira za odabir datoteka (poput uvoza knjižnih oznaka, prijenosa datoteka, spremanja veza itd.) umjesto dijaloškog okvira prikazat će se poruka, a za korisnika će se pretpostaviti da je kliknuo "Odustani" u dijaloškom okviru za odabir datoteka. Ako ova postavka nije postavljena, korisnici mogu otvarati dijaloške okvire za odabir datoteka kao i obično.</translation>
+<translation id="1879485426724769439">Određuje vremensku zonu koja će se upotrebljavati za uređaj. Korisnici mogu nadjačati navedenu vremensku zonu za trenutačnu sesiju, no ona će se nakon odjave vratiti na navedenu vremensku zonu. Ako se navede nevažeća vrijednost, pravilo se i dalje aktivira oznakom "GMT". Ako se navede prazan niz, pravilo se zanemaruje.
+
+      Ako se to pravilo ne upotrebljava, i dalje će se upotrebljavati trenutačno aktivna vremenska zona, no korisnici će je moći trajno promijeniti. Zato promjena koju izvrši jedan korisnik utječe na zaslon za prijavu i sve druge korisnike.
+
+      Na novim je uređajima početno postavljena vremenska zona "SAD/Pacifik".
+
+      Format vrijednosti slijedi nazive vremenskih zona navedenih u bazi podataka vremenskih zona organizacije IANA (pogledajte "https://en.wikipedia.org/wiki/Tz_database"). To konkretno znači da se većina vremenskih zona navodi kao "kontinent/veliki_grad" ili "ocean/veliki_grad".
+
+      Postavljanjem tog pravila potpuno se onemogućuje automatsko određivanje vremenske zone prema lokaciji uređaja, a nadjačava se i pravilo SystemTimezoneAutomaticDetection.</translation>
 <translation id="1897365952389968758">Dopusti svim web-lokacijama izvođenje JavaScripta</translation>
 <translation id="193259052151668190">Popis dopuštenih odvojivih USB uređaja</translation>
 <translation id="1933378685401357864">Pozadinska slika</translation>
@@ -584,6 +605,24 @@
 <translation id="3072847235228302527">Postavi Uvjete pružanja usluge za lokalni račun na uređaju</translation>
 <translation id="3096595567015595053">Popis omogućenih dodataka</translation>
 <translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
+<translation id="3125884964575432854">Omogućuje vam da odredite proxy poslužitelj kojim se koriste <ph name="PRODUCT_NAME" /> i ARC aplikacije, a korisnicima onemogućuje promjenu postavki proxyja.
+
+          Ako odaberete da se proxy poslužitelj nikada ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
+
+          Ako odaberete upotrebu sistemskih postavki proxyja, sve se ostale opcije zanemaruju.
+
+          Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
+
+          Ako odaberete način fiksnog proxy poslužitelja, možete odrediti dodatne opcije pod stavkama "Adresa ili URL proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj najvišeg prioriteta.
+
+          Ako odaberete upotrebu .pac skripte proxy poslužitelja, morate navesti URL prema skripti u odjeljku "URL prema .pac datoteci proxy poslužitelja".
+
+          Detaljne primjere možete pronaći ovdje:
+          <ph name="PROXY_HELP_URL" />
+
+          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
+
+          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3153348162326497318">Omogućuje da odredite koja proširenja korisnici NE mogu instalirati. Proširenja koja su već instalirana bit će uklonjena ako se nalaze na popisu zabranjenih proširenja. Vrijednost popisa zabranjenih proširenja "*" znači da nije dopušteno nijedno proširenje, osim ako nisu izričito navedena na popisu dopuštenih. Ako pravilo nije postavljeno, korisnik može instalirati bilo koje proširenje u <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION" /></translation>
@@ -648,6 +687,19 @@
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
+<translation id="3398137877608138703">Omogućuje ili onemogućuje snimanje videozapisa.
+
+      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), od korisnika će se
+      tražiti pristup za snimanje videozapisa osim za URL-ove konfigurirane na popisu
+      VideoCaptureAllowedUrls kojima će se pristup odobravati bez postavljanja upita.
+      ARC aplikacije moći će pristupati kameri ako dobiju dopuštenje.
+
+      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i snimanje
+      će biti dostupno samo URL-ovima na popisu VideoCaptureAllowedUrls.
+      ARC aplikacije neće imati pristup kameri.
+
+      Pored ARC aplikacija to pravilo utječe na sve vrste videoulaza, a
+      ne samo na ugrađenu kameru.</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
       Ako je to pravilo postavljeno na "lažno", sustav <ph name="PRODUCT_OS_NAME" /> neće dopustiti pokretanje gostujućih sesija.</translation>
@@ -665,6 +717,8 @@
 <translation id="3478024346823118645">Izbriši korisničke podatke nakon odjave</translation>
 <translation id="348495353354674884">Omogućavanje virtualne tipkovnice</translation>
 <translation id="3496296378755072552">Upravitelj zaporki</translation>
+<translation id="349667858031092827">Nikad automatski ne otkrivaj vremensku zonu.</translation>
+<translation id="350443680860256679">Konfiguriraj ARC</translation>
 <translation id="3504791027627803580">Određuje URL tražilice koja se upotrebljava za pretraživanje slika. Zahtjevi za pretraživanje slat će se pomoću GET metode. Ako je postavljeno pravilo "DefaultSearchProviderImageURLPostParams", zahtjevi za pretraživanje slika umjesto toga upotrebljavat će POST metodu.
 
           To je pravilo izborno. Ako nije postavljeno, neće se upotrijebiti nijedna slika.
@@ -798,6 +852,22 @@
          Ako se pravilo postavi na "Zadrži kolačiće za vrijeme trajanja sesije", kolačići će se izbrisati po završetku sesije. Ako se <ph name="PRODUCT_NAME" /> izvodi u pozadini, sesija se možda neće završiti dok se ne zatvori posljednji prozor. Više informacija o konfiguriranju tog ponašanja potražite u pravilu "BackgroundModeEnabled".
 
           Ako se to pravilo ne postavi, koristit će se pravilo "AllowCookies" i korisnik će ga moći promijeniti.</translation>
+<translation id="4098957623809244159">To je pravilo zastarjelo, a umjesto njega upotrijebite ProxyMode.
+
+          Omogućuje vam da odredite proxy poslužitelj kojim se koriste <ph name="PRODUCT_NAME" /> i ARC aplikacije, a korisnicima onemogućuje promjenu postavki proxyja.
+
+          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
+
+          Ako odaberete upotrebu sistemskih postavki proxyja ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
+
+          Ako odaberete ručne postavke proxy poslužitelja, dodatne opcije možete navesti pod stavkama "Adresa ili URL proxy poslužitelja, "URL prema .pac datoteci proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima".
+
+          Detaljne primjere možete pronaći ovdje:
+          <ph name="PROXY_HELP_URL" />
+
+          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom.
+
+          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxy poslužitelja.</translation>
 <translation id="4103289232974211388">Preusmjeri na SAML IdP nakon korisnikove potvrde</translation>
 <translation id="410478022164847452">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se izvršila radnja neaktivnosti tijekom napajanja izmjeničnom strujom.
 
@@ -1198,7 +1268,6 @@
       Ako se ta postavka ne postavi, upotrebljavat će se zadani direktorij profila.</translation>
 <translation id="5826047473100157858">Određuje može li korisnik otvarati stranice u anonimnom načinu u proizvodu <ph name="PRODUCT_NAME" />. Ako je odabrano "Enabled" (omogućeno) ili pravilo nije postavljeno, stranice se mogu otvarati u anonimnom načinu. Ako je odabrano "Disabled" (onemogućeno), stranice se ne mogu otvarati u anonimnom načinu. Ako je odabrano "Forced" (prisilno), stranice se mogu otvarati SAMO u anonimnom načinu.</translation>
 <translation id="5836064773277134605">Ograniči raspon UDP priključaka koji upotrebljava host za daljinski pristup</translation>
-<translation id="5845159892130426052">Omogući ShowModalDialog API putem 2015.04.30</translation>
 <translation id="5862253018042179045">Postavi zadano stanje značajke pristupačnosti izgovaranja povratnih informacija na zaslonu za prijavu.
 
           Ako se to pravilo postavi na točno, izgovaranje povratnih informacija bit će omogućeno dok se prikazuje zaslon za prijavu.
@@ -1229,6 +1298,14 @@
 <translation id="5893553533827140852">Ako je ta postavka omogućena, zahtjevi autentifikacije "gnubby" proslijedit će se putem proxyja vezom udaljenog hosta.
 
           Ako je ta postavka onemogućena ili nije konfigurirana, zahtjevi autentifikacije "gnubby" neće se prosljeđivati putem proxyja.</translation>
+<translation id="5900959132054596599"><ph name="PRODUCT_NAME" /> i ARC aplikacije zaobilazit će sve proxy poslužitelje na ovdje navedenom popisu hostova.
+
+          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
+
+          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
+
+          Detaljne primjere možete pronaći ovdje:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="5921713479449475707">Dopusti preuzimanja automatskog ažuriranja putem HTTP-a</translation>
 <translation id="5921888683953999946">Postavi zadano stanje značajke pristupačnosti velikog pokazivača na zaslonu za prijavu.
 
@@ -1369,6 +1446,7 @@
 <translation id="637934607141010488">Generira popis korisnika uređaja koji su se nedavno prijavili.
 
       Ako se pravilo postavi na neistinito, izvješća o korisnicima neće se generirati.</translation>
+<translation id="639009029157091157">Odlučuju korisnici.</translation>
 <translation id="6392973646875039351">Omogućuje značajku Automatsko popunjavanje proizvoda <ph name="PRODUCT_NAME" /> i omogućuje korisnicima automatsko ispunjavanje web-obrazaca pomoću ranije pohranjenih informacija, kao što su adresa ili podaci o kreditnoj kartici. Ako onemogućite ovu postavku, Automatsko popunjavanje neće biti dostupno korisnicima. Ako omogućite ovu postavku i ne konfigurirate vrijednost, Automatsko popunjavanje ostat će pod nadzorom korisnika. To će im omogućiti konfiguriranje profila Automatskog popunjavanja te uključivanje ili isključivanje Automatskog popunjavanja po vlastitom nahođenju.</translation>
 <translation id="6394350458541421998">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_OS_NAME" />. Umjesto toga upotrijebite pravilo PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Odjavi korisnika</translation>
@@ -1707,6 +1785,9 @@
 <translation id="7632724434767231364">Naziv GSSAPI biblioteke</translation>
 <translation id="7635471475589566552">Konfigurira oznaku zemlje/jezika aplikacije u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene oznaku zemlje/jezika. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> upotrebljavat će navedenu oznaku zemlje/jezika. Ako konfigurirana oznaka zemlje/jezika nije podržana, upotrebljavat će se "en-US". Ako je ova postavka onemogućena ili nije postavljena, <ph name="PRODUCT_NAME" /> upotrebljavat će oznaku zemlje/jezika koju odredi korisnik (ako je konfigurirana), oznaku zemlje/jezika sustava ili standardnu oznaku zemlje/jezika "en-US".</translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
+<translation id="7667184304362487902">Konfigurira postavke proxyja za <ph name="PRODUCT_NAME" /> i ARC aplikacije.
+
+      To pravilo još nije spremno za upotrebu, tako da ga nemojte upotrebljavati.</translation>
 <translation id="76810863974142048">URL na kojem klijenti daljinskog pristupa trebaju dobiti autentifikacijsku oznaku.
 
           Ako se to pravilo postavi, host daljinskog pristupa zahtijevat će od klijenata koji se autentificiraju pribavljanje autentifikacijske oznake s tog URL-a da bi se povezali. Pravilo se mora upotrebljavati zajedno s pravilom RemoteAccessHostTokenValidationUrl.
@@ -1775,6 +1856,19 @@
 <translation id="7842869978353666042">Konfiguracija opcije Google diska</translation>
 <translation id="7843525027689416831">Određuje oznake koje se trebaju primijeniti na <ph name="PRODUCT_NAME" /> prilikom pokretanja. Navedene oznake primjenjuju se samo na zaslonu za prijavu. Oznake postavljene ovim pravilom ne primjenjuju se na korisničke sesije.</translation>
 <translation id="7848840259379156480">Omogućuje konfiguriranje zadanog alata za prikazivanje HTML-a kad je <ph name="PRODUCT_FRAME_NAME" /> instaliran. Zadana postavka je dopuštanje pregledniku hosta da obavi prikazivanje, no ovu postavku možete zaobići i kao zadano postaviti <ph name="PRODUCT_FRAME_NAME" /> da prikazuje HTML stranice.</translation>
+<translation id="7853178359124471330">Kada je to pravilo postavljeno, automatsko otkrivanje vremenske zone odvijat će se na jedan od sljedećih način ovisno o vrijednosti postavke:
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionUsersDecide, korisnici će moći upravljati automatskim otkrivanjem vremenske zone uobičajenim kontrolama na stranici chrome://settings.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionDisabled, kontrole automatskog otkrivanja vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek isključeno.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionIPOnly, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Otkrivanje vremenske zone utvrđivat će lokaciju samo na temelju IP adrese.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionSendWiFiAccessPoints, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Popis vidljivih Wi-Fi pristupnih točaka uvijek će se slati poslužitelju API-ja Geolocation radi preciznog otkrivanja vremenske zone.
+
+      Ako se to pravilo ne postavi, ponašat će se kao da je postavljeno pravio TimezoneAutomaticDetectionUsersDecide.
+
+      Postavljanje pravila SystemTimezone nadjačava ovo pravilo. U tom je slučaju automatsko otkrivanje vremenske zone potpuno onemogućeno.</translation>
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
@@ -1812,6 +1906,7 @@
 
           Ako se pravilo ne postavi, postavka će biti omogućena.</translation>
 <translation id="8073243368829195">Omogućivanje upotrebe Smart Locka</translation>
+<translation id="8074052133552427532">Uvijek upotrebljavaj približno otkrivanje vremenske zone.</translation>
 <translation id="8099880303030573137">Odgoda neaktivnosti za vrijeme baterijskog napajanja</translation>
 <translation id="8102913158860568230">Zadana postavka za medijski stream</translation>
 <translation id="8104962233214241919">Automatski odabir certifikata klijenta za ove web-lokacije</translation>
@@ -1917,6 +2012,7 @@
 <translation id="8424255554404582727">Postavi zadano zakretanje zaslona koje će se primjenjivati nakon svakog ponovnog pokretanja</translation>
 <translation id="8426231401662877819">Zakreni zaslon u smjeru kazaljke na satu 90 stupnjeva</translation>
 <translation id="8451988835943702790">Upotrijebi web-stranicu nove kartice kao početnu stranicu</translation>
+<translation id="8458790683633857482">Određuje skup pravila koja će se prenijeti na vrijeme izvođenja ARC-a. Vrijednost mora biti važeći JSON.</translation>
 <translation id="8465065632133292531">Parametri za URL usluge Instant koji upotrebljava POST</translation>
 <translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2036,9 +2132,12 @@
       Ako je ovo pravilo postavljeno na neistinito, nijedan korisnik, aplikacija ili proširenje ne mogu pristupiti načinu rada preko cijelog zaslona.
 
       Na svim platformama osim <ph name="PRODUCT_OS_NAME" /> način kioska nije dostupan kad je onemogućen način rada preko cijelog zaslona.</translation>
+<translation id="8795495354632096254">Uvijek šalji Wi-Fi pristupne točke poslužitelju prilikom utvrđivanja vremenske zone.</translation>
 <translation id="8818173863808665831">Prijavljuje geografsku lokaciju uređaja.
 
       Ako se to pravilo ne postavi ili ako se postavi na lažno, lokacija se neće prijavljivati.</translation>
+<translation id="8818768076343557335">Predviđaj mrežne radnje na svim mrežama osim mobilnim.
+          (Zastarjelo u verziji 50, uklonjeno u verziji 52. Ako se u verzijama nakon 52. postavi vrijednost 1, njome će se postupati kao da je 0 – predviđanje mrežnih radnji na svim mrežnim vezama.)</translation>
 <translation id="8828766846428537606">Konfigurirajte zadanu početnu stranicu u proizvodu <ph name="PRODUCT_NAME" /> i spriječite korisnike da je promijene.
 
       Korisničke postavke početne stranice bit će potpuno zaključane ako odaberete početnu stranicu kao web-stranicu nove kartice ili je postavite kao URL i navedete URL početne stranice.
@@ -2084,6 +2183,13 @@
 
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti.</translation>
 <translation id="891435090623616439">kodirano kao JSON niz, pojedinosti potražite na stranici <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Ako se to pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> onemogućit će Bluetooth i korisnik ga neće moći omogućiti.
+
+      Ako se to pravilo postavi na True ili se ne postavi, korisnik će moći omogućiti ili onemogućiti Bluetooth prema želji.
+
+      Ako se to pravilo postavi, korisnik ga ne može promijeniti niti nadjačati.
+
+      Nakon omogućivanja Bluetootha uređaj se mora ponovo pokrenuti da bi promjene postale aktivne (uređaj se ne mora ponovo pokrenuti kada se Bluetooth onemogući).</translation>
 <translation id="8947415621777543415">Prijava lokacije uređaja</translation>
 <translation id="8951350807133946005">Postavi direktorij predmemorije na disku</translation>
 <translation id="8955719471735800169">Natrag na vrh</translation>
@@ -2102,6 +2208,7 @@
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>
 <translation id="9088433379343318874">Omogući davatelja sadržaja nadziranog korisnika</translation>
+<translation id="9088444059179765143">Konfiguriraj način automatskog otkrivanja vremenske zone</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
 <translation id="9104138886225968319">Šalje praćenje mrežnog prometa poslužitelju za upravljanje kako bi

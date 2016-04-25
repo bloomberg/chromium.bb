@@ -409,7 +409,6 @@
 <translation id="5431657950005405462">Файлът ви не бе намерен</translation>
 <translation id="5435775191620395718">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">Показване на всички запазени страници</translation>
 <translation id="5452270690849572955">Тази страница на <ph name="HOST_NAME" /> не може да бъде намерена</translation>
 <translation id="5455374756549232013">Невалидно клеймо за дата и час на правилото</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> от <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -513,6 +512,7 @@
 <translation id="6671697161687535275">Предложението за формуляри да се премахне ли от Chromium?</translation>
 <translation id="6685834062052613830">Излизане от профила и завършване на настройването</translation>
 <translation id="6710213216561001401">Предишна</translation>
+<translation id="6710594484020273272">&lt;Въведете дума за търсене&gt;</translation>
 <translation id="6711464428925977395">Нещо не е наред с прокси сървъра или адресът е неправилен.</translation>
 <translation id="674375294223700098">Неизвестна грешка в сертификата на сървъра.</translation>
 <translation id="6746710319270251222">Получени са няколко различни заглавки „Content-Length“. Това не е разрешено,
@@ -605,7 +605,6 @@
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7668654391829183341">Неизвестно устройство</translation>
 <translation id="7674629440242451245">Търсите интересни нови функции на Chrome? Изпробвайте канала за програмисти на адрес chrome.com/dev.</translation>
-<translation id="769344199378576125">Показване на офлайн отметките</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Продължаване към <ph name="SITE" /> (опасно)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Този сайт не може да се зареди от кеш паметта</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

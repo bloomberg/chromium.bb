@@ -409,7 +409,6 @@
 <translation id="5431657950005405462">找不到您的檔案</translation>
 <translation id="5435775191620395718">目前顯示這個裝置的歷史紀錄。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」發生架構驗證錯誤：<ph name="ERROR" /></translation>
-<translation id="5447330194051379405">顯示所有儲存的網頁</translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 網頁</translation>
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> 個，共 <ph name="TOTAL_MATCHCOUNT" /> 個</translation>
@@ -513,6 +512,7 @@
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6685834062052613830">請登出並完成設定程序</translation>
 <translation id="6710213216561001401">返回</translation>
+<translation id="6710594484020273272">&lt;輸入搜尋字詞&gt;</translation>
 <translation id="6711464428925977395">Proxy 伺服器發生錯誤，或是位址不正確。</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
 <translation id="6746710319270251222">系統收到多個不同的 Content-Length 標頭。為了免於受到 HTTP 回應分割攻擊，
@@ -605,7 +605,6 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7668654391829183341">不明的裝置</translation>
 <translation id="7674629440242451245">想搶先試用酷炫的 Chrome 新功能嗎？請前往 chrome.com/dev 安裝開發人員版。</translation>
-<translation id="769344199378576125">顯示離線書籤</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />繼續前往 <ph name="SITE" /> 網站 (不安全)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">無法從快取載入這個網站</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

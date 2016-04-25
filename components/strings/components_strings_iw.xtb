@@ -415,7 +415,6 @@ Del</translation>
 <translation id="5431657950005405462">הקובץ לא נמצא</translation>
 <translation id="5435775191620395718">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">שגיאת אימות סכימה ב-"<ph name="ERROR_PATH" />"‏: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">הצג את כל הדפים השמורים</translation>
 <translation id="5452270690849572955">לא ניתן למצוא את הדף של <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">חותמת הזמן של המדיניות שגויה</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> מתוך <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -613,7 +612,6 @@ Del</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
-<translation id="769344199378576125">הצג סימניות לא מקוונות</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /> (לא בטוח)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">לא ניתן לטעון את האתר הזה מהקובץ השמור</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

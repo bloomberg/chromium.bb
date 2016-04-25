@@ -93,7 +93,7 @@
 <translation id="2086961585857038472">کلمه بعدی</translation>
 <translation id="2089387485033699258">fa</translation>
 <translation id="2091933974477985526">قسمت نوشتاری قابل ویرایش قبلی</translation>
-<translation id="2100350898815792233">همه علائم نگارشی</translation>
+<translation id="2100350898815792233">همه علائم سجاوندی</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">کلید دسترسی: <ph name="KEY" /></translation>
 <translation id="2155457205053847599">با انتخاب گزینه‌ای از فهرست زیر، جدول بریل ۶ نقطه‌ای فعلی را تغییر دهید.</translation>
@@ -476,7 +476,7 @@
 <translation id="5728409797179002635">جدولی یافت نشد.</translation>
 <translation id="5748623122140342504">عنوان قبلی سطح ۵</translation>
 <translation id="5750633686117194034">‏کلید تغییردهنده‌ای فشار داده نشده است؛ لطفاً یک یا چند کلید تغییردهنده را فشار دهید و نگهدارید؛ پس از انجام این کار انگشتان خود را بردارید تا صدای تنظیم کلیدها را بشنوید. برای خروج روی Tab بزنید.</translation>
-<translation id="5788275253279308023">برگه پنجره ناشناس <ph name="TITLE" /></translation>
+<translation id="5788275253279308023">پنجره ناشناس برگه <ph name="TITLE" /></translation>
 <translation id="5806206155699461681">‏بهبود تجربه سایت‌هایی خاص (مانند جستجوی Google).</translation>
 <translation id="5819072574982403430">مورد درختی</translation>
 <translation id="5826479389509458994">ردیف <ph name="ROW" /> ستون <ph name="COL" /></translation>
@@ -591,7 +591,7 @@
 <translation id="7241683698754534149">باز کردن شرح طولانی در یک برگه جدید</translation>
 <translation id="7248671827512403053">برنامه کاربردی</translation>
 <translation id="725969808843520477">دکمه رادیویی بعدی</translation>
-<translation id="7269119382257320590">فاقد علائم نگارشی</translation>
+<translation id="7269119382257320590">بدون علائم سجاوندی</translation>
 <translation id="7273174640290488576">خالی</translation>
 <translation id="7285387653379749618">جدول‌ها</translation>
 <translation id="7289186959554153431">عنوان ۳</translation>
@@ -644,7 +644,7 @@
 <translation id="7819187121850078213">برگه <ph name="TITLE" /> پنجره</translation>
 <translation id="7828956995407538686">اکتبر</translation>
 <translation id="7839679365527550018">کلمه قبلی</translation>
-<translation id="7851816175263618915">برخی از علائم نگارشی</translation>
+<translation id="7851816175263618915">برخی از علائم سجاوندی</translation>
 <translation id="7870596830398826354">‏درخت ML ریاضی</translation>
 <translation id="78826985582142166">sldr</translation>
 <translation id="7894517696028036636">‏روشن و خاموش کردن ChromeVox کلاسیک.</translation>
@@ -726,7 +726,7 @@
 <translation id="8864099967139188018">عنوان سطح ۶ بعدی وجود ندارد.</translation>
 <translation id="8882002077197914455">عنوان ردیف</translation>
 <translation id="8896347895970027998">‏ChromeVox را فعال یا غیرفعال کنید.</translation>
-<translation id="8898516272131543774">بازگویی علائم نگارشی حلقه</translation>
+<translation id="8898516272131543774">بازگویی علائم سجاوندی حلقه</translation>
 <translation id="8900148057318340779">کلید پیشوند</translation>
 <translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">عنوان‌های خالی</translation>

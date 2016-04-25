@@ -408,7 +408,6 @@
 <translation id="5431657950005405462">Файл не найден</translation>
 <translation id="5435775191620395718">Показана история только с этого устройства. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">Ошибка проверки схемы, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">Показать сохраненные страницы</translation>
 <translation id="5452270690849572955">Страница <ph name="HOST_NAME" /> не найдена</translation>
 <translation id="5455374756549232013">Неверная временная метка политики</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> из <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -605,7 +604,6 @@
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7668654391829183341">Неизвестное устройство</translation>
 <translation id="7674629440242451245">Хотите быть в курсе новинок Chrome? Выберите канал обновления для разработчиков на странице "chrome.com/dev".</translation>
-<translation id="769344199378576125">Показать сохраненные закладки</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Перейти на сайт <ph name="SITE" /> (небезопасно)<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">Не удалось загрузить сайт из кеша</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>

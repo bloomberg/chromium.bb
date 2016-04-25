@@ -408,7 +408,6 @@
 <translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
 <translation id="5435775191620395718">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
-<translation id="5447330194051379405">すべての保存ページを表示</translation>
 <translation id="5452270690849572955">この <ph name="HOST_NAME" /> ページが見つかりません</translation>
 <translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
@@ -512,6 +511,7 @@
 <translation id="6671697161687535275">Chromium から候補を削除してもよろしいですか？</translation>
 <translation id="6685834062052613830">ログアウトして設定を完了してください</translation>
 <translation id="6710213216561001401">前へ</translation>
+<translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6746710319270251222">複数の異なる Content-Length ヘッダーを受信しました。これは、HTTP レスポンス
@@ -603,7 +603,6 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7668654391829183341">不明なデバイス</translation>
 <translation id="7674629440242451245">Chrome の新しい機能に関心をお持ちでしたら、chrome.com/dev から Dev チャンネルをお試しください。</translation>
-<translation id="769344199378576125">オフライン ブックマークを表示</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> にアクセスする（安全ではありません）<ph name="END_LINK" /></translation>
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
 <translation id="7733391738235763478">（<ph name="NUMBER_VISITS" />）</translation>

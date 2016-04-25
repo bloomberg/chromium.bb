@@ -144,7 +144,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="1608755754295374538">URLs que terão acesso a dispositivos de captura de áudio sem solicitação</translation>
 <translation id="1613574633990410986">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e por apps ARC e impede que os usuários alterem as configurações de proxy.
 
-      Se você optar por nunca usar um servidor proxy e sempre conectar-se diretamente, todas as outras opções serão ignoradas.
+      Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
 
       Se você optar pela detecção automática do servidor proxy, todas as outras opções serão ignoradas.
 
@@ -153,7 +153,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas ao proxy especificadas na linha de comando.
 
-      Se estas políticas não forem definidas, aos usuários poderão escolher as  próprias configurações de proxy.</translation>
+      Se estas políticas não forem definidas, os usuários poderão escolher as próprias configurações de proxy.</translation>
 <translation id="1617235075406854669">Ativar exclusão do histórico do navegador e de downloads</translation>
 <translation id="1617384279878333801">Ativar a adição de pessoa no gerenciador de perfil</translation>
 <translation id="1655229863189977773">Define o tamanho do cache de disco em bytes</translation>
@@ -591,7 +591,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3101501961102569744">Escolher o modo de especificar as configurações do servidor proxy</translation>
 <translation id="3125884964575432854">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e por apps ARC e impede que os usuários alterem as configurações de proxy.
 
-          Se você optar por nunca usar um servidor proxy e sempre conectar-se diretamente, todas as outras opções serão ignoradas.
+          Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
 
           Se você optar por usar as configurações de proxy do sistema, todas as outras opções serão ignoradas.
 
@@ -1243,7 +1243,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se a política não for definida, será usado o diretório padrão do perfil.</translation>
 <translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no Modo de navegação anônima em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no Modo de navegação anônima. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no Modo de navegação anônima. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no Modo de navegação anônima.</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
-<translation id="5845159892130426052">Ativar a API ShowModalDialog por 2015.04.30</translation>
 <translation id="5862253018042179045">Definir o estado padrão do recurso de acessibilidade do feedback falado na tela de login.
 
           Se esta política for definida como "verdadeira", o feedback falado será ativado quando a tela de login for exibida.
@@ -1765,7 +1764,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7651739109954974365">Determina se o roaming de dados deve ser ativado para o dispositivo. Se configurado para true, o roaming de dados será permitido. Se não for configurado ou for configurado como false, o roaming de dados não estará disponível.</translation>
 <translation id="7667184304362487902">Define as configurações de proxy para o <ph name="PRODUCT_NAME" /> e apps ARC.
 
-      Esta política ainda não está pronta para uso,. Não a utilize.</translation>
+      Esta política ainda não está pronta para uso. Não a utilize.</translation>
 <translation id="76810863974142048">URL no qual os clientes de acesso remoto devem conseguir o token de autenticação.
 
         Quando esta política é definida, o host de acesso remoto precisa de clientes autenticados para conseguir um token de autenticação desse URL para conectar-se. Deve ser usada juntamente com RemoteAccessHostTokenValidationUrl.
@@ -2154,6 +2153,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem inferiores ao intervalo de inatividade.</translation>
 <translation id="891435090623616439">codificado como um string JSON, para ver mais detalhes consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
+<translation id="8929359433203547810">Se esta política for definida como false, o <ph name="PRODUCT_OS_NAME" /> desativará o Bluetooth, e o usuário não poderá habilitá-lo novamente.
+
+      Se esta política for definida como true ou não for definida, o usuário conseguirá ativar ou desativar o Bluetooth conforme desejar.
+
+      Se esta política for definida, o usuário não poderá alterá-la ou modificá-la.
+
+      Após a ativação do Bluetooth, o dispositivo deve ser reinicializado para que as alterações entrem em vigor (não há necessidade de reinicializar o dispositivo ao desativar o Bluetooth).</translation>
 <translation id="8947415621777543415">Informar a localização do dispositivo</translation>
 <translation id="8951350807133946005">Definir o diretório de cache de disco</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>

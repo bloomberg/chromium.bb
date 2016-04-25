@@ -109,7 +109,6 @@
 <translation id="1155759005174418845">Catalan</translation>
 <translation id="1156185823432343624">Volume: Muted</translation>
 <translation id="1156689104822061371">Keyboard Layout:</translation>
-<translation id="1158054703003659942">Enabled as bookmarks</translation>
 <translation id="1160536908808547677">When zoomed in, fixed-position elements and scaled scrollbars attach to this viewport.</translation>
 <translation id="1161575384898972166">Please sign in to <ph name="TOKEN_NAME" /> to export the client certificate.</translation>
 <translation id="1162223735669141505"><ph name="BEGIN_LINK" />Native Client plugin<ph name="END_LINK" /> needs to be enabled to use this feature.</translation>
@@ -143,6 +142,7 @@
 <translation id="1196789802623400962">Enable/Disable gesture editing option in the settings page for the virtual keyboard.</translation>
 <translation id="1196849605089373692">Specifies quality setting for images captured if scaling down.</translation>
 <translation id="1197199342062592414">Let’s get started</translation>
+<translation id="119738088725604856">Screenshot window</translation>
 <translation id="1197979282329025000">An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME" />. This printer could not be registered with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Let's get started</translation>
 <translation id="1199232041627643649">Hold <ph name="KEY_EQUIVALENT" /> to Quit.</translation>
@@ -344,6 +344,7 @@
 <translation id="1493263392339817010">Customise fonts...</translation>
 <translation id="1493492096534259649">This language cannot be used for spell checking</translation>
 <translation id="1493892686965953381">Waiting for <ph name="LOAD_STATE_PARAMETER" />...</translation>
+<translation id="1493974697212162251"><ph name="ORIGIN" /> wants to connect to:</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> other available devices.</translation>
 <translation id="1497296278783728207">Seccomp-BPF sandbox supports TSYNC</translation>
 <translation id="1497522201463361063">Unable to rename "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
@@ -645,7 +646,6 @@
 <translation id="1918141783557917887">&amp;Smaller</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="1921986354447415460">Turkish-F keyboard</translation>
-<translation id="1926741348654461781">Enable offline pages</translation>
 <translation id="192810479200670759">Explicitly force the UI to left-to-right or right-to-left mode, overriding the default direction of the UI language.</translation>
 <translation id="1929546189971853037">Read your browsing history on all your signed-in devices</translation>
 <translation id="1931134289871235022">Slovak</translation>
@@ -907,7 +907,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2307462900900812319">Configure network</translation>
 <translation id="230927227160767054">This page wants to install a service handler.</translation>
 <translation id="2312980885338881851">Oops! Looks like you have no existing supervised users to import. Please create one or more from another device then you can import them here.</translation>
-<translation id="2314244639364647639">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device but will not clear synced items from other devices.}other{This will permanently delete at least $1 items from this device but will not clear synced items from other devices.}}</translation>
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="2317031807364506312">CANCEL</translation>
 <translation id="2318143611928805047">Paper size</translation>
@@ -1378,7 +1377,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2938225289965773019">Open <ph name="PROTOCOL" /> links</translation>
 <translation id="2938685643439809023">Mongolian</translation>
 <translation id="2941112035454246133">Low</translation>
-<translation id="2941479658084239256">Enable storing pages locally for offline use.</translation>
 <translation id="2942290791863759244">German NEO 2 keyboard</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2946119680249604491">Add connection</translation>
@@ -2546,7 +2544,6 @@ Press any key to continue exploring.</translation>
 <translation id="4641539339823703554">Chrome was unable to set the system time. Please check the time below and correct it if needed.</translation>
 <translation id="4641635164232599739"><ph name="FILE_NAME" /> is not commonly downloaded and could be dangerous.</translation>
 <translation id="4643612240819915418">&amp;Open Video in New Tab</translation>
-<translation id="4644809172724549836">User Agent Intervention for WebFonts loading.</translation>
 <translation id="4645676300727003670">&amp;Keep</translation>
 <translation id="4647090755847581616">&amp;Close Tab</translation>
 <translation id="4647697156028544508">Please enter the PIN for "<ph name="DEVICE_NAME" />":</translation>
@@ -2664,7 +2661,6 @@ Press any key to continue exploring.</translation>
 <translation id="4821086771593057290">Your password has changed. Please try again with your new password.</translation>
 <translation id="4821935166599369261">&amp;Profiling Enabled</translation>
 <translation id="4823484602432206655">Read and change user and device settings</translation>
-<translation id="4824134809768200475">Over a million apps and games now available on your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="4824518112777153488">Support for hover capable touchscreens</translation>
 <translation id="4830573902900904548">Your <ph name="DEVICE_TYPE" /> is unable to connect to the Internet using <ph name="NETWORK_NAME" />. Please choose another network. <ph name="LEARN_MORE_LINK_START" />Find out more<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4830663122372455572">The identity of <ph name="ORGANIZATION" /> at <ph name="LOCALITY" /> has been verified by <ph name="ISSUER" />. Valid Certificate Transparency information was supplied by the server.</translation>
@@ -2813,7 +2809,6 @@ Press any key to continue exploring.</translation>
 <translation id="5043851552150732346">1 directory selected</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5048179823246820836">Nordic</translation>
-<translation id="5048294425697652159">Enable Quirks Client for display calibration.</translation>
 <translation id="5053604404986157245">The randomly generated TPM password is not available. This is normal after a Powerwash.</translation>
 <translation id="5053803681436838483">New delivery address...</translation>
 <translation id="5055309315264875868">Show a link in the password manager settings page to manage your synced passwords online.</translation>
@@ -2966,7 +2961,6 @@ Press any key to continue exploring.</translation>
 <translation id="5265562206369321422">Offline for more than a week</translation>
 <translation id="5266113311903163739">Certification Authority Import Error</translation>
 <translation id="5268606875983318825">PPAPI (out-of-process)</translation>
-<translation id="526926484727016706">Causes all iframes to be denied all permissions by default. Allowing particular permissions for an iframe may involve listing the names of these permissions as values of new iframe attributes.</translation>
 <translation id="5269977353971873915">Print Failed</translation>
 <translation id="5271247532544265821">Toggle Simplified/Traditional Chinese mode</translation>
 <translation id="5271549068863921519">Save password</translation>
@@ -3031,6 +3025,7 @@ Press any key to continue exploring.</translation>
 <translation id="5350480486488078311">NaCl Socket API.</translation>
 <translation id="5350965906220856151">Uh-oh!</translation>
 <translation id="5352033265844765294">Time Stamping</translation>
+<translation id="5353252989841766347">Export Passwords From Chrome</translation>
 <translation id="5354208417767217618">Identity consistency between browser and cookie jar</translation>
 <translation id="5355097969896547230">Find again</translation>
 <translation id="5355351445385646029">Press Space to select the candidate</translation>
@@ -3236,7 +3231,6 @@ Press any key to continue exploring.</translation>
 <translation id="5627259319513858869">Enables the use of experimental canvas features which are still in development.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
 <translation id="5630163645818715367">Material design in the browser's top Chrome</translation>
-<translation id="5633060877636360447">This will permanently delete at least <ph name="TOTAL_COUNT" /> items from this device but will not clear synced items from other devices.</translation>
 <translation id="5636996382092289526">To use <ph name="NETWORK_ID" /> you may first need to <ph name="LINK_START" />visit the network's sign-in page<ph name="LINK_END" />, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.</translation>
 <translation id="5637357908912398026">Force-saving of passwords</translation>
 <translation id="5637380810526272785">Input Method</translation>
@@ -3359,7 +3353,6 @@ Press any key to continue exploring.</translation>
 <translation id="5819442873484330149">Hangul 3 Set (Final)</translation>
 <translation id="5819484510464120153">Create application &amp;shortcuts...</translation>
 <translation id="5822838715583768518">Launch Application</translation>
-<translation id="5824480603702411398">Enabled as saved pages</translation>
 <translation id="5826507051599432481">Common Name (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">You have chosen to open certain file types automatically after downloading.</translation>
@@ -3408,7 +3401,6 @@ Press any key to continue exploring.</translation>
 <translation id="5869741316553135824">Enables a new option to upload credit cards to Google Payments for sync to all Chrome devices.</translation>
 <translation id="5870086504539785141">Close accessibility menu</translation>
 <translation id="5874045675243596003">Enforce strict (hard fail if we can't get hashes)</translation>
-<translation id="5875858680971105888">Oops! The supervised user couldn't be imported. Please check your network connection and try again later.</translation>
 <translation id="5880247576487732437">Token Present</translation>
 <translation id="5884474295213649357">This tab is connected to a USB device.</translation>
 <translation id="5885324376209859881">Manage media settings...</translation>
@@ -3580,6 +3572,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6163522313638838258">Expand all...</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6166185671393271715">Import Passwords To Chrome</translation>
 <translation id="6171550060231646388">Simulated hardware 'OK Google' features</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="6178664161104547336">Select a certificate</translation>
@@ -3621,7 +3614,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6231148928368101651">Panels</translation>
 <translation id="6231881193380278751">Add a QueryParam in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Battery</translation>
-<translation id="6236512433562156050">Enable User Agent Intervention for WebFonts loading.</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -3632,7 +3624,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6251889282623539337"><ph name="DOMAIN" /> Terms of Service</translation>
 <translation id="6251924700383757765">Privacy policy</translation>
 <translation id="6253586523465486793">Forces pull-to-refresh trigger non-validating reload (while it usually means regular, cache-validating reload when the flag is disabled).</translation>
-<translation id="6254182355913122230">Swapped memory</translation>
 <translation id="6254503684448816922">Key Compromise</translation>
 <translation id="6259104249628300056">Discover devices on your local network</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
@@ -3958,7 +3949,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6769712124046837540">Adding printer...</translation>
 <translation id="6771503742377376720">Is a Certification Authority</translation>
 <translation id="6773575010135450071">More actions...</translation>
-<translation id="6775029867846481468">{NUM_ITEMS,plural, =1{This will permanently delete $1 item from this device but will not clear synced items from other devices.}other{This will permanently delete $1 items from this device but will not clear synced items from other devices.}}</translation>
 <translation id="6780439250949340171">manage other settings</translation>
 <translation id="6780476430578694241">App Launcher</translation>
 <translation id="6786747875388722282">Extensions</translation>
@@ -4748,6 +4738,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7959074893852789871">The file contained multiple certificates, some of which were not imported:</translation>
 <translation id="7959874006162866942">Are you sure that you want to install <ph name="PLUGIN_NAME" />? You should only install plug-ins that you trust.</translation>
 <translation id="7961015016161918242">Never</translation>
+<translation id="7964089325405904043">Password import and export</translation>
 <translation id="7965010376480416255">Shared Memory</translation>
 <translation id="7966241909927244760">C&amp;opy Image Address</translation>
 <translation id="7967437925638594022">Extensions &amp; Apps</translation>
@@ -4762,7 +4753,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7977551819349545646">Updating Chromebox...</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7979036127916589816">Sync Error</translation>
-<translation id="7980024752931677009">This will permanently delete your browsing data from this device but will not clear synced items from other devices.</translation>
 <translation id="7980084013673500153">Asset ID: <ph name="ASSET_ID" /></translation>
 <translation id="7982083145464587921">Please restart your device to fix this error.</translation>
 <translation id="7982789257301363584">Network</translation>
@@ -4992,6 +4982,7 @@ Calculating remaining time</translation>
 <translation id="8284279544186306258">all <ph name="WEBSITE_1" /> sites</translation>
 <translation id="8286227656784970313">Use system dictionary</translation>
 <translation id="8286817579635702504">Enables several security features that will likely break one or more pages that you visit on a daily basis. Strict mixed content checking, for example. And locking powerful features to secure contexts. This flag will probably annoy you.</translation>
+<translation id="8288342810474863437">Import and Export functionality in password settings.</translation>
 <translation id="8297012244086013755">Hangul 3 Set (No Shift)</translation>
 <translation id="8298115750975731693">The Wi-Fi that you are using (<ph name="WIFI_NAME" />) may require you to visit <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8299269255470343364">Japanese</translation>
@@ -5151,7 +5142,6 @@ Calculating time until full</translation>
 <translation id="8548973727659841685">Character</translation>
 <translation id="855081842937141170">Pin tab</translation>
 <translation id="8551388862522347954">Licences</translation>
-<translation id="8551406349318936106">Oops! Looks like there's a problem with your credentials. Please make sure that you're signed in properly and try again.</translation>
 <translation id="8551494947769799688">Latvian</translation>
 <translation id="855705891482654011">Load unpacked extensions</translation>
 <translation id="855773602626431402">An unsandboxed plug-in was prevented from running on this page.</translation>
@@ -5177,7 +5167,6 @@ Calculating time until full</translation>
 <translation id="8584280235376696778">&amp;Open video in new tab</translation>
 <translation id="8589311641140863898">Experimental Extension APIs</translation>
 <translation id="8590375307970699841">Set up automatic updates</translation>
-<translation id="8592071947729879125">Restrict iframe permissions.</translation>
 <translation id="8592125506633137593">Top document isolation</translation>
 <translation id="8594787581355215556">Signed in as <ph name="USER_EMAIL_ADDRESS" />. Manage your synced data on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="8596540852772265699">Customised Files</translation>
@@ -5367,7 +5356,6 @@ Calculating time until full</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Shift-key mode switch</translation>
 <translation id="8852742364582744935">The following apps and extensions were added:</translation>
-<translation id="8853611566624224021">Enable retrieval of ICC display files from Quirks Server for display colour calibration.</translation>
 <translation id="885381502874625531">Belarusian keyboard</translation>
 <translation id="8856844195561710094">Failed to stop Bluetooth device discovery.</translation>
 <translation id="885701979325669005">Storage</translation>
@@ -5475,7 +5463,6 @@ Calculating time until full</translation>
 <translation id="9009369504041480176">Uploading (<ph name="PROGRESS_PERCENT" />%)...</translation>
 <translation id="9011178328451474963">Last tab</translation>
 <translation id="9013284500811652791"><ph name="UWS_NAME" />, <ph name="UWS_NAME" /> and one more</translation>
-<translation id="9013587737291179248">Oops! The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.</translation>
 <translation id="901440679911238150">Your account details are out of date. <ph name="BEGIN_LINK" />Sign in again<ph name="END_LINK" />.</translation>
 <translation id="9014987600015527693">Show another phone</translation>
 <translation id="9015601075560428829">Speech input</translation>
