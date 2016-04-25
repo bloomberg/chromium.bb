@@ -231,4 +231,60 @@ TEST_F(OriginTrialContextTest, EnabledNonSecureRegisteredOriginWithoutErrorMessa
     EXPECT_EQ(0, tokenValidator()->callCount());
 }
 
+TEST_F(OriginTrialContextTest, ParseHeaderValue)
+{
+    std::unique_ptr<Vector<String>> tokens;
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(" foo\t "));
+    ASSERT_EQ(1u, tokens->size());
+    EXPECT_EQ("foo", (*tokens)[0]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(" \" bar \" "));
+    ASSERT_EQ(1u, tokens->size());
+    EXPECT_EQ(" bar ", (*tokens)[0]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(" foo, bar"));
+    ASSERT_EQ(2u, tokens->size());
+    EXPECT_EQ("foo", (*tokens)[0]);
+    EXPECT_EQ("bar", (*tokens)[1]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(",foo, ,bar,,'  ', ''"));
+    ASSERT_EQ(3u, tokens->size());
+    EXPECT_EQ("foo", (*tokens)[0]);
+    EXPECT_EQ("bar", (*tokens)[1]);
+    EXPECT_EQ("  ", (*tokens)[2]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue("  \"abc\"  , 'def',g"));
+    ASSERT_EQ(3u, tokens->size());
+    EXPECT_EQ("abc", (*tokens)[0]);
+    EXPECT_EQ("def", (*tokens)[1]);
+    EXPECT_EQ("g", (*tokens)[2]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(" \"a\\b\\\"c'd\", 'e\\f\\'g' "));
+    ASSERT_EQ(2u, tokens->size());
+    EXPECT_EQ("ab\"c'd", (*tokens)[0]);
+    EXPECT_EQ("ef'g", (*tokens)[1]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue("\"ab,c\" , 'd,e'"));
+    ASSERT_EQ(2u, tokens->size());
+    EXPECT_EQ("ab,c", (*tokens)[0]);
+    EXPECT_EQ("d,e", (*tokens)[1]);
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue("  "));
+    EXPECT_EQ(0u, tokens->size());
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(""));
+    EXPECT_EQ(0u, tokens->size());
+
+    ASSERT_TRUE(tokens = OriginTrialContext::parseHeaderValue(" ,, \"\" "));
+    EXPECT_EQ(0u, tokens->size());
+}
+
+TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated)
+{
+    EXPECT_FALSE(OriginTrialContext::parseHeaderValue("foo bar"));
+    EXPECT_FALSE(OriginTrialContext::parseHeaderValue("\"foo\" 'bar'"));
+    EXPECT_FALSE(OriginTrialContext::parseHeaderValue("foo 'bar'"));
+    EXPECT_FALSE(OriginTrialContext::parseHeaderValue("\"foo\" bar"));
+}
+
 } // namespace blink

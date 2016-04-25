@@ -74,6 +74,7 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/FrameTree.h"
@@ -490,6 +491,8 @@ void FrameLoader::didBeginDocument()
             if (!headerContentLanguage.isEmpty())
                 m_frame->document()->setContentLanguage(AtomicString(headerContentLanguage));
         }
+
+        OriginTrialContext::addTokensFromHeader(m_frame->document(), m_documentLoader->response().httpHeaderField(HTTPNames::Origin_Trial));
     }
 
     client()->didCreateNewDocument();

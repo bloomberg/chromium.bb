@@ -10,6 +10,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTrialTokenValidator.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -23,6 +24,54 @@ String getDisabledMessage(const String& featureName)
 String getInvalidTokenMessage(const String& featureName)
 {
     return "The provided token(s) are not valid for the '" + featureName + "' feature.";
+}
+
+bool isWhitespace(UChar chr)
+{
+    return (chr == ' ') || (chr == '\t');
+}
+
+bool skipWhiteSpace(const String& str, unsigned& pos)
+{
+    unsigned len = str.length();
+    while (pos < len && isWhitespace(str[pos]))
+        ++pos;
+    return pos < len;
+}
+
+// Extracts a quoted or unquoted token from an HTTP header. If the token was a
+// quoted string, this also removes the quotes and unescapes any escaped
+// characters. Also skips all whitespace before and after the token.
+String extractTokenOrQuotedString(const String& headerValue, unsigned& pos)
+{
+    unsigned len = headerValue.length();
+    String result;
+    if (!skipWhiteSpace(headerValue, pos))
+        return String();
+
+    if (headerValue[pos] == '\'' || headerValue[pos] == '"') {
+        StringBuilder out;
+        // Quoted string, append characters until matching quote is found,
+        // unescaping as we go.
+        UChar quote = headerValue[pos++];
+        while (pos < len && headerValue[pos] != quote) {
+            if (headerValue[pos] == '\\')
+                pos++;
+            if (pos < len)
+                out.append(headerValue[pos++]);
+        }
+        if (pos < len)
+            pos++;
+        result = out.toString();
+    } else {
+        // Unquoted token. Consume all characters until whitespace or comma.
+        int startPos = pos;
+        while (pos < len && !isWhitespace(headerValue[pos]) && headerValue[pos] != ',')
+            pos++;
+        result = headerValue.substring(startPos, pos - startPos);
+    }
+    skipWhiteSpace(headerValue, pos);
+    return result;
 }
 
 } // namespace
@@ -48,9 +97,41 @@ OriginTrialContext* OriginTrialContext::from(ExecutionContext* host)
     return originTrials;
 }
 
+// static
+std::unique_ptr<Vector<String>> OriginTrialContext::parseHeaderValue(const String& headerValue)
+{
+    std::unique_ptr<Vector<String>> tokens(new Vector<String>);
+    unsigned pos = 0;
+    unsigned len = headerValue.length();
+    while (pos < len) {
+        String token = extractTokenOrQuotedString(headerValue, pos);
+        if (!token.isEmpty())
+            tokens->append(token);
+        // Make sure tokens are comma-separated.
+        if (pos < len && headerValue[pos++] != ',')
+            return nullptr;
+    }
+    return tokens;
+}
+
+// static
+void OriginTrialContext::addTokensFromHeader(ExecutionContext* host, const String& headerValue)
+{
+    if (headerValue.isEmpty())
+        return;
+    std::unique_ptr<Vector<String>> tokens(parseHeaderValue(headerValue));
+    if (!tokens)
+        return;
+    OriginTrialContext* context = from(host);
+    for (const String& token : *tokens) {
+        context->addToken(token);
+    }
+}
+
 void OriginTrialContext::addToken(const String& token)
 {
-    m_tokens.append(token);
+    if (!token.isEmpty())
+        m_tokens.append(token);
 }
 
 bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)

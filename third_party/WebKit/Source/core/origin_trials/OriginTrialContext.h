@@ -39,6 +39,14 @@ public:
     static const char* supplementName();
     static OriginTrialContext* from(ExecutionContext*);
 
+    // Parses an Origin-Trial header as specified in
+    // https://jpchase.github.io/OriginTrials/#header into individual tokens.
+    // Returns null if the header value was malformed and could not be parsed.
+    // If the header does not contain any tokens, this returns an empty vector.
+    static std::unique_ptr<Vector<String>> parseHeaderValue(const String& headerValue);
+
+    static void addTokensFromHeader(ExecutionContext*, const String& headerValue);
+
     void addToken(const String& token);
 
     // Returns true if the feature should be considered enabled for the current
