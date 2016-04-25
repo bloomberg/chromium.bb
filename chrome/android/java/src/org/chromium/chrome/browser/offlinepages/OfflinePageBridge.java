@@ -424,16 +424,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Marks that an offline page related to a specified bookmark has been accessed.
-     *
-     * @param offlineId offline ID for which the offline copy will be deleted.
-     */
-    private void markPageAccessed(long offlineId) {
-        assert mIsNativeOfflinePageModelLoaded;
-        nativeMarkPageAccessed(mNativeOfflinePageBridge, offlineId);
-    }
-
-    /**
      * Deletes an offline page related to a specified bookmark.
      *
      * @param clientId Client ID for which the offline copy will be deleted.
@@ -510,12 +500,10 @@ public class OfflinePageBridge {
      * @param onlineUrl Online URL, which might have offline copy.
      * @return URL pointing to the offline copy or <code>null</code> if none exists.
      */
-    public String getOfflineUrlForOnlineUrl(String onlineUrl) {
+    public boolean offlinePageExists(String onlineUrl) {
         assert mIsNativeOfflinePageModelLoaded;
         OfflinePageItem item = nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl);
-        if (item == null) return null;
-
-        return item.getOfflineUrl();
+        return item != null;
     }
 
     private DeletePageCallback wrapCallbackWithHistogramReporting(
@@ -638,14 +626,11 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, String offlineUrl);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
-    private native void nativeMarkPageAccessed(long nativeOfflinePageBridge, long offlineId);
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, DeletePageCallback callback, long[] offlineIds);
     private native void nativeGetPagesToCleanUp(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
-    private native String nativeGetOfflineUrlForOnlineUrl(
-            long nativeOfflinePageBridge, String onlineUrl);
     private native void nativeRecordStorageHistograms(long nativeOfflinePageBridge,
             long totalSpaceInBytes, long freeSpaceInBytes, boolean reportingAfterDelete);
 }

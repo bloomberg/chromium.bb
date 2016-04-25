@@ -203,7 +203,7 @@ TEST_F(OfflinePageUtilsTest, GetOnlineURLForOfflineURL) {
                                profile(), offline_url_page_1()));
   EXPECT_EQ(kTestPage2Url, OfflinePageUtils::GetOnlineURLForOfflineURL(
                                profile(), offline_url_page_2()));
-  EXPECT_EQ(GURL::EmptyGURL(), OfflinePageUtils::GetOfflineURLForOnlineURL(
+  EXPECT_EQ(GURL::EmptyGURL(), OfflinePageUtils::GetOnlineURLForOfflineURL(
                                    profile(), offline_url_missing()));
 }
 

@@ -87,10 +87,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jstring>& j_client_id_namespace,
       const base::android::JavaParamRef<jstring>& j_client_id);
 
-  void MarkPageAccessed(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        jlong offline_id);
-
   void DeletePages(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -100,11 +96,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void CheckMetadataConsistency(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-
-  base::android::ScopedJavaLocalRef<jstring> GetOfflineUrlForOnlineUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_online_url);
 
   void RecordStorageHistograms(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,

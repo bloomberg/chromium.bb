@@ -295,12 +295,6 @@ void OfflinePageBridge::SavePage(
       base::Bind(&SavePageCallback, j_callback_ref, url));
 }
 
-void OfflinePageBridge::MarkPageAccessed(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj,
-                                         jlong offline_id) {
-  offline_page_model_->MarkPageAccessed(offline_id);
-}
-
 void OfflinePageBridge::DeletePages(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -323,18 +317,6 @@ void OfflinePageBridge::CheckMetadataConsistency(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   offline_page_model_->CheckForExternalFileDeletion();
-}
-
-ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflineUrlForOnlineUrl(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_online_url) {
-  GURL online_url(ConvertJavaStringToUTF8(env, j_online_url));
-  GURL offline_url =
-      OfflinePageUtils::GetOfflineURLForOnlineURL(browser_context_, online_url);
-  if (!offline_url.is_valid())
-    return ScopedJavaLocalRef<jstring>();
-  return ConvertUTF8ToJavaString(env, offline_url.spec());
 }
 
 void OfflinePageBridge::RecordStorageHistograms(

@@ -118,7 +118,6 @@ public class NewTabPage
     private String mOnLogoClickUrl;
     private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
-    private OfflinePageBridge mOfflinePageBridge;
     private SnippetsBridge mSnippetsBridge;
 
     // The timestamp at which the constructor was called.
@@ -352,15 +351,15 @@ public class NewTabPage
                     return true;
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
-                            PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                            mTab, false);
+                    mTabModelSelector.openNewTab(
+                            new LoadUrlParams(item.getUrl(), PageTransition.AUTO_BOOKMARK),
+                            TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, false);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
-                            PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_FOREGROUND,
-                            mTab, true);
+                    mTabModelSelector.openNewTab(
+                            new LoadUrlParams(item.getUrl(), PageTransition.AUTO_BOOKMARK),
+                            TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
                     return true;
                 case ID_REMOVE:
                     mMostVisitedSites.addBlacklistedUrl(item.getUrl());
@@ -459,10 +458,7 @@ public class NewTabPage
         public boolean isOfflineAvailable(String pageUrl) {
             if (mIsDestroyed || !isNtpOfflinePagesEnabled()) return false;
             if (isLocalUrl(pageUrl)) return true;
-            if (mOfflinePageBridge == null) {
-                mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
-            }
-            return mOfflinePageBridge.getOfflineUrlForOnlineUrl(pageUrl) != null;
+            return OfflinePageBridge.getForProfile(mProfile).offlinePageExists(pageUrl);
         }
 
         @Override
@@ -749,9 +745,6 @@ public class NewTabPage
         assert getView().getParent() == null : "Destroy called before removed from window";
         if (mIsVisible) recordNTPInteractionTime();
 
-        if (mOfflinePageBridge != null) {
-            mOfflinePageBridge = null;
-        }
         if (mFaviconHelper != null) {
             mFaviconHelper.destroy();
             mFaviconHelper = null;

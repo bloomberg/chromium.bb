@@ -155,13 +155,15 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @SmallTest
-    public void testGetOfflineUrlForOnlineUrl() throws Exception {
+    public void testOfflinePageExists() throws Exception {
         loadUrl(mTestPage);
+        assertFalse("We should not say a page exists for one we haven't saved.",
+                mOfflinePageBridge.offlinePageExists(mTestPage));
         savePage(SavePageResult.SUCCESS, mTestPage);
-        OfflinePageItem offlinePage = getPageByClientId(BOOKMARK_ID);
-        assertEquals("We should get the same offline URL, when querying using online URL",
-                offlinePage.getOfflineUrl(),
-                mOfflinePageBridge.getOfflineUrlForOnlineUrl(offlinePage.getUrl()));
+        assertTrue("We should say a page exists for one we just saved.",
+                mOfflinePageBridge.offlinePageExists(mTestPage));
+        assertFalse("We should not say a page exists for one we haven't saved.",
+                mOfflinePageBridge.offlinePageExists(mTestPage + "?foo=bar"));
     }
 
     @CommandLineFlags.Add("disable-features=OfflinePagesBackgroundLoading")
