@@ -30,7 +30,7 @@ MergeSessionNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!merge_session_throttling_utils::ShouldDelayUrl(
           navigation_handle()->GetURL()) ||
-      !merge_session_throttling_utils::ShouldDelayRequest(
+      !merge_session_throttling_utils::ShouldDelayRequestForWebContents(
           navigation_handle()->GetWebContents())) {
     return content::NavigationThrottle::PROCEED;
   }

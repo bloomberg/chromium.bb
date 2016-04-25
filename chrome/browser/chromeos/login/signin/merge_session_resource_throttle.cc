@@ -26,7 +26,8 @@ void DelayXHRLoadOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* web_contents = web_contents_getter.Run();
   if (web_contents &&
-      merge_session_throttling_utils::ShouldDelayRequest(web_contents)) {
+      merge_session_throttling_utils::ShouldDelayRequestForWebContents(
+          web_contents)) {
     DVLOG(1) << "Creating XHR waiter for " << url.spec();
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
