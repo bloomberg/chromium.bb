@@ -193,10 +193,6 @@ class ToolbarActionsModel
   // number of visible icons will be reset to what it was before highlighting.
   void StopHighlighting();
 
-  // Returns true if the toolbar model is running with the redesign and is
-  // showing new icons as a result.
-  bool RedesignIsShowingNewIcons() const;
-
  private:
   // Callback when actions are ready.
   void OnReady();

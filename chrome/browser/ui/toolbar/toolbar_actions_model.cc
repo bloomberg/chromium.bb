@@ -798,20 +798,6 @@ void ToolbarActionsModel::StopHighlighting() {
   }
 }
 
-bool ToolbarActionsModel::RedesignIsShowingNewIcons() const {
-  for (const ToolbarItem& action : toolbar_items_) {
-    if (action.type == EXTENSION_ACTION) {
-      // Without the redesign, we only show extensions with browser actions.
-      // Any extension without a browser action is an indication that we're
-      // showing something new.
-      if (!GetExtensionById(action.id)->manifest()->HasKey(
-              extensions::manifest_keys::kBrowserAction))
-        return true;
-    }
-  }
-  return false;
-}
-
 const extensions::Extension* ToolbarActionsModel::GetExtensionById(
     const std::string& id) const {
   return extension_registry_->enabled_extensions().GetByID(id);
