@@ -35,6 +35,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -55,6 +56,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
+#include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
@@ -201,6 +203,30 @@ void WebEmbeddedWorkerImpl::dispatchDevToolsMessage(int sessionId, const WebStri
     WebDevToolsAgent* devtoolsAgent = m_mainFrame->devToolsAgent();
     if (devtoolsAgent)
         devtoolsAgent->dispatchOnInspectorBackend(sessionId, message);
+}
+
+void WebEmbeddedWorkerImpl::addMessageToConsole(const WebConsoleMessage& message)
+{
+    MessageLevel webCoreMessageLevel;
+    switch (message.level) {
+    case WebConsoleMessage::LevelDebug:
+        webCoreMessageLevel = DebugMessageLevel;
+        break;
+    case WebConsoleMessage::LevelLog:
+        webCoreMessageLevel = LogMessageLevel;
+        break;
+    case WebConsoleMessage::LevelWarning:
+        webCoreMessageLevel = WarningMessageLevel;
+        break;
+    case WebConsoleMessage::LevelError:
+        webCoreMessageLevel = ErrorMessageLevel;
+        break;
+    default:
+        NOTREACHED();
+        return;
+    }
+
+    m_mainFrame->frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, message.url, message.lineNumber, message.columnNumber));
 }
 
 void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)

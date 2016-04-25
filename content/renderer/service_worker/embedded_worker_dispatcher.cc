@@ -21,6 +21,7 @@
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
 
@@ -56,6 +57,8 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StopWorker, OnStopWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_ResumeAfterDownload,
                         OnResumeAfterDownload)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_AddMessageToConsole,
+                        OnAddMessageToConsole)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -131,6 +134,33 @@ void EmbeddedWorkerDispatcher::OnResumeAfterDownload(int embedded_worker_id) {
     return;
   }
   wrapper->worker()->resumeAfterDownload();
+}
+
+void EmbeddedWorkerDispatcher::OnAddMessageToConsole(
+    int embedded_worker_id,
+    ConsoleMessageLevel level,
+    const std::string& message) {
+  WorkerWrapper* wrapper = workers_.Lookup(embedded_worker_id);
+  if (!wrapper)
+    return;
+  blink::WebConsoleMessage::Level target_level =
+      blink::WebConsoleMessage::LevelLog;
+  switch (level) {
+    case CONSOLE_MESSAGE_LEVEL_DEBUG:
+      target_level = blink::WebConsoleMessage::LevelDebug;
+      break;
+    case CONSOLE_MESSAGE_LEVEL_LOG:
+      target_level = blink::WebConsoleMessage::LevelLog;
+      break;
+    case CONSOLE_MESSAGE_LEVEL_WARNING:
+      target_level = blink::WebConsoleMessage::LevelWarning;
+      break;
+    case CONSOLE_MESSAGE_LEVEL_ERROR:
+      target_level = blink::WebConsoleMessage::LevelError;
+      break;
+  }
+  wrapper->worker()->addMessageToConsole(blink::WebConsoleMessage(
+      target_level, blink::WebString::fromUTF8(message)));
 }
 
 }  // namespace content

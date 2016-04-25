@@ -9,6 +9,7 @@
 #include <string>
 
 #include "content/common/service_worker/embedded_worker_settings.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/common/web_preferences.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -61,6 +62,12 @@ IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_ResumeAfterDownload,
 // Browser -> Renderer message to stop (terminate) the embedded worker.
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StopWorker,
                      int /* embedded_worker_id */)
+
+// Browser -> Renderer message to add message to the devtools console.
+IPC_MESSAGE_CONTROL3(EmbeddedWorkerMsg_AddMessageToConsole,
+                     int /* embedded_worker_id */,
+                     content::ConsoleMessageLevel /* level */,
+                     std::string /* message */)
 
 // Renderer -> Browser message to indicate that the worker is ready for
 // inspection.

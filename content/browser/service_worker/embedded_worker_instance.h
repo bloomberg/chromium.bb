@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/public/common/console_message_level.h"
 #include "url/gurl.h"
 
 // Windows headers will redefine SendMessage.
@@ -179,6 +180,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Called when the net::URLRequestJob to load the service worker script
   // created. Not called for import scripts.
   void OnURLJobCreatedForMainScript();
+
+  // Add message to the devtools console.
+  void AddMessageToConsole(ConsoleMessageLevel level,
+                           const std::string& message);
 
   static std::string StatusToString(Status status);
   static std::string StartingPhaseToString(StartingPhase phase);

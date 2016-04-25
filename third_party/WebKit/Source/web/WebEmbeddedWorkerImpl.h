@@ -67,6 +67,7 @@ public:
     void reattachDevTools(const WebString& hostId, int sessionId, const WebString& savedState) override;
     void detachDevTools() override;
     void dispatchDevToolsMessage(int sessionId, const WebString&) override;
+    void addMessageToConsole(const WebConsoleMessage&) override;
 
     void postMessageToPageInspector(const WTF::String&);
 

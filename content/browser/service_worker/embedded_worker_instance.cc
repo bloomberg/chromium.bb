@@ -810,6 +810,14 @@ base::TimeDelta EmbeddedWorkerInstance::UpdateStepTime() {
   return duration;
 }
 
+void EmbeddedWorkerInstance::AddMessageToConsole(ConsoleMessageLevel level,
+                                                 const std::string& message) {
+  if (status_ != RUNNING && status_ != STARTING)
+    return;
+  registry_->Send(process_id(), new EmbeddedWorkerMsg_AddMessageToConsole(
+                                    embedded_worker_id_, level, message));
+}
+
 // static
 std::string EmbeddedWorkerInstance::StatusToString(Status status) {
   switch (status) {

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 
 struct EmbeddedWorkerMsg_StartWorker_Params;
@@ -35,6 +36,9 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
   void OnStartWorker(const EmbeddedWorkerMsg_StartWorker_Params& params);
   void OnStopWorker(int embedded_worker_id);
   void OnResumeAfterDownload(int embedded_worker_id);
+  void OnAddMessageToConsole(int embedded_worker_id,
+                             ConsoleMessageLevel level,
+                             const std::string& message);
 
   IDMap<WorkerWrapper, IDMapOwnPointer> workers_;
   std::map<int /* embedded_worker_id */, base::TimeTicks> stop_worker_times_;

@@ -435,17 +435,8 @@ void ServiceWorkerWriteToCacheJob::NotifyStartErrorHelper(
     const net::URLRequestStatus& status,
     const std::string& status_message) {
   DCHECK(!status.is_io_pending());
-
-  net::Error error = NotifyFinishedCaching(status, status_message);
-  // The special case mentioned in NotifyFinishedCaching about script being
-  // identical does not apply here, since the entire body needs to be read
-  // before this is relevant.
-  DCHECK_EQ(status.error(), error);
-
-  net::URLRequestStatus reported_status = status;
-  std::string reported_status_message = status_message;
-
-  NotifyStartError(reported_status);
+  NotifyFinishedCaching(status, status_message);
+  NotifyStartError(status);
 }
 
 net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
@@ -454,6 +445,15 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
   net::Error result = static_cast<net::Error>(status.error());
   if (did_notify_finished_)
     return result;
+
+  if (status.status() != net::URLRequestStatus::SUCCESS) {
+    // AddMessageToConsole must be called before this job notifies that an error
+    // occurred because the worker stops soon after receiving the error
+    // response.
+    version_->embedded_worker()->AddMessageToConsole(
+        CONSOLE_MESSAGE_LEVEL_ERROR,
+        status_message.empty() ? kFetchScriptError : status_message);
+  }
 
   int size = -1;
   if (status.is_success())
