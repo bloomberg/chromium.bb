@@ -97,7 +97,7 @@ def main():
   subprocess.check_call(['python',
                          os.path.join(BORINGSSL_SRC_PATH, 'util',
                                       'generate_build_files.py'),
-                         'gyp'],
+                         'gn', 'gyp'],
                         cwd=BORINGSSL_PATH)
 
   # Commit everything.

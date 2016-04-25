@@ -37,6 +37,7 @@ WHITELISTED_LICENSES = [
     'Apache (v2.0) BSD (2 clause)',
     'Apache (v2.0) BSD-like',
     'Apache (v2.0) GPL (v2)',
+    'Apache (v2.0) ISC',
     'Apache (v2.0)',
     'Apple MIT',  # https://fedoraproject.org/wiki/Licensing/Apple_MIT_License
     'BSD (2 clause) ISC',
