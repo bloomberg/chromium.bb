@@ -15,5 +15,5 @@ public interface SelectPopup {
     /**
      * Hides the popup.
      */
-    public void hide();
+    public void hide(boolean sendsCancelMessage);
 }

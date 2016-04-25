@@ -39,7 +39,7 @@ public class SelectPopupDropdown implements SelectPopup {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 notifySelection(new int[] {position});
-                hide();
+                hide(false);
             }
         });
         if (selected.length > 0) {
@@ -81,8 +81,13 @@ public class SelectPopupDropdown implements SelectPopup {
     }
 
     @Override
-    public void hide() {
-        mDropdownPopupWindow.dismiss();
-        notifySelection(null);
+    public void hide(boolean sendsCancelMessage) {
+        if (sendsCancelMessage) {
+            mDropdownPopupWindow.dismiss();
+            notifySelection(null);
+        } else {
+            mSelectionNotified = true;
+            mDropdownPopupWindow.dismiss();
+        }
     }
 }

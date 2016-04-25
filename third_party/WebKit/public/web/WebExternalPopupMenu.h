@@ -38,6 +38,8 @@ struct WebRect;
 class WebExternalPopupMenu {
 public:
     virtual void show(const WebRect& bounds) = 0;
+    // Close the popup menu widget. This function should not call
+    // WebExternalPopupMenuClient functions.
     virtual void close() = 0;
 };
 

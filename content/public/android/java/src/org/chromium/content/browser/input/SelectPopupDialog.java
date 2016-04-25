@@ -144,8 +144,13 @@ public class SelectPopupDialog implements SelectPopup {
     }
 
     @Override
-    public void hide() {
-        mListBoxPopup.cancel();
-        notifySelection(null);
+    public void hide(boolean sendsCancelMessage) {
+        if (sendsCancelMessage) {
+            mListBoxPopup.cancel();
+            notifySelection(null);
+        } else {
+            mSelectionNotified = true;
+            mListBoxPopup.cancel();
+        }
     }
 }

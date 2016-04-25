@@ -1476,7 +1476,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private void hidePopups() {
         hideSelectActionMode();
         hidePastePopup();
-        hideSelectPopup();
+        hideSelectPopupWithCancelMesage();
         mPopupZoomer.hide(false);
         if (mUnselectAllOnActionModeDismiss) dismissTextHandles();
     }
@@ -2551,7 +2551,18 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     @CalledByNative
     private void hideSelectPopup() {
-        if (mSelectPopup != null) mSelectPopup.hide();
+        if (mSelectPopup == null) return;
+        mSelectPopup.hide(false);
+        mSelectPopup = null;
+        mNativeSelectPopupSourceFrame = 0;
+    }
+
+    /**
+     * Called when the <select> popup needs to be hidden. This calls
+     * nativeSelectPopupMenuItems() with null indices.
+     */
+    private void hideSelectPopupWithCancelMesage() {
+        if (mSelectPopup != null) mSelectPopup.hide(true);
     }
 
     /**
