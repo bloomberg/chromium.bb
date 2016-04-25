@@ -21,6 +21,7 @@
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
+#include "content/child/web_url_loader_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "media/base/media.h"
@@ -30,6 +31,8 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebTaskRunner.h"
+#include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
@@ -185,8 +188,12 @@ blink::WebMimeRegistry* TestBlinkWebUnitTestSupport::mimeRegistry() {
 }
 
 blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
-  return url_loader_factory_->createURLLoader(
-      BlinkPlatformImpl::createURLLoader());
+  blink::WebThread* currentThread = Platform::current()->currentThread();
+  // This loader should be used only for process-local resources such as
+  // data URLs.
+  blink::WebURLLoader* default_loader = new WebURLLoaderImpl(
+      nullptr, base::WrapUnique(currentThread->getWebTaskRunner()->clone()));
+  return url_loader_factory_->createURLLoader(default_loader);
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::userAgent() {

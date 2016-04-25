@@ -85,7 +85,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   size_t maxDecodedImageBytes() override;
   uint32_t getUniqueIdForProcess() override;
-  blink::WebURLLoader* createURLLoader() override;
   blink::WebSocketHandle* createWebSocketHandle() override;
   blink::WebString userAgent() override;
   blink::WebData parseDataURL(const blink::WebURL& url,

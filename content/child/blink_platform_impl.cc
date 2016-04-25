@@ -418,15 +418,6 @@ void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
 BlinkPlatformImpl::~BlinkPlatformImpl() {
 }
 
-WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  ChildThreadImpl* child_thread = ChildThreadImpl::current();
-  // There may be no child thread in RenderViewTests.  These tests can still use
-  // data URLs to bypass the ResourceDispatcher.
-  return new WebURLLoaderImpl(
-      child_thread ? child_thread->resource_dispatcher() : NULL,
-      base::WrapUnique(currentThread()->getWebTaskRunner()->clone()));
-}
-
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
   return new WebSocketBridge;
 }
