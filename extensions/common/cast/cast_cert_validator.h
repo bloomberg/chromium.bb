@@ -86,6 +86,16 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki);
 
+// Exposed only for testing, not for use in production code.
+//
+// Injects trusted root certificates into the CastTrustStore.
+// |data| must remain valid and not be mutated throughout the lifetime of
+// the program.
+// Warning: Using this function concurrently with VerifyDeviceCert()
+//          is not thread safe.
+bool AddTrustAnchorForTest(const uint8_t* data,
+                           size_t length) WARN_UNUSED_RESULT;
+
 }  // namespace cast_crypto
 }  // namespace api
 }  // namespace extensions

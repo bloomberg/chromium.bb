@@ -292,6 +292,11 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
       new CertVerificationContextImpl(net::der::Input(spki), "CommonName"));
 }
 
+bool AddTrustAnchorForTest(const uint8_t* data, size_t length) {
+  return CastTrustStore::Get().AddTrustedCertificateWithoutCopying(data,
+                                                                   length);
+}
+
 }  // namespace cast_crypto
 }  // namespace api
 }  // namespace extensions
