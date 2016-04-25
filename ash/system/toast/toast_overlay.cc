@@ -31,8 +31,8 @@ namespace ash {
 
 namespace {
 
-// Horizontal offset of the overlay from the bottom of the screen.
-const int kVerticalOffset = 5;
+// Offset of the overlay from the edge of the work area.
+const int kOffset = 5;
 
 // Font style used for modifier key labels.
 const ui::ResourceBundle::FontStyle kTextFontStyle =
@@ -45,6 +45,13 @@ const int kSlideAnimationDurationMs = 100;
 const SkColor kButtonBackgroundColor = SkColorSetARGB(0xFF, 0x32, 0x32, 0x32);
 const SkColor kButtonTextColor = SkColorSetARGB(0xFF, 0x7B, 0xAA, 0xF7);
 
+// These values are in DIP.
+const int kToastHorizontalSpacing = 16;
+const int kToastVerticalSpacing = 16;
+const int kToastChildSpacing = 32;
+const int kToastMaximumWidth = 568;
+const int kToastMinimumWidth = 288;
+
 }  // anonymous namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,7 +61,13 @@ class ToastOverlayLabel : public views::Label {
   explicit ToastOverlayLabel(const std::string& label);
   ~ToastOverlayLabel() override;
 
+  void SetMaximumWidth(int width);
+
  private:
+  int maximum_width_ = 0;
+
+  gfx::Size GetPreferredSize() const override;
+
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayLabel);
 };
 
@@ -66,12 +79,26 @@ ToastOverlayLabel::ToastOverlayLabel(const std::string& label) {
   SetFontList(rb->GetFontList(kTextFontStyle));
   SetAutoColorReadabilityEnabled(false);
   SetFocusable(false);
+  SetMultiLine(true);
   SetEnabledColor(SK_ColorWHITE);
   SetDisabledColor(SK_ColorWHITE);
   SetSubpixelRenderingEnabled(false);
 }
 
 ToastOverlayLabel::~ToastOverlayLabel() {}
+
+void ToastOverlayLabel::SetMaximumWidth(int width) {
+  maximum_width_ = width;
+}
+
+gfx::Size ToastOverlayLabel::GetPreferredSize() const {
+  gfx::Size original_size = Label::GetPreferredSize();
+
+  if (maximum_width_ != 0 && maximum_width_ < original_size.width())
+    return gfx::Size(maximum_width_, GetHeightForWidth(maximum_width_));
+  else
+    return original_size;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  ToastOverlayButton
@@ -116,6 +143,9 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
   ToastOverlay* overlay_;       // weak
   ToastOverlayButton* button_;  // weak
 
+  gfx::Size GetMaximumSize() const override;
+  gfx::Size GetMinimumSize() const override;
+
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayView);
@@ -127,25 +157,20 @@ ToastOverlayView::ToastOverlayView(ToastOverlay* overlay,
       button_(new ToastOverlayButton(
           this,
           l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON))) {
-  const gfx::Font& font =
-      ui::ResourceBundle::GetSharedInstance().GetFont(kTextFontStyle);
-  int font_size = font.GetFontSize();
-
-  // Text should have a margin of 0.5 times the font size on each side, so
-  // the spacing between two labels will be the same as the font size.
-  int horizontal_spacing = font_size * 2;
-  int vertical_spacing = font_size;
-  int child_spacing = font_size * 4;
-
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        horizontal_spacing, vertical_spacing,
-                                        child_spacing));
-
   ToastOverlayLabel* label = new ToastOverlayLabel(text);
+  label->SetMaximumWidth(GetMaximumSize().width() -
+                         button_->GetPreferredSize().width() -
+                         kToastHorizontalSpacing * 2 - kToastChildSpacing);
   AddChildView(label);
-  label->SetVisible(true);
 
   AddChildView(button_);
+
+  auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                     kToastHorizontalSpacing,
+                                     kToastVerticalSpacing, kToastChildSpacing);
+  SetLayoutManager(layout);
+  layout->SetFlexForView(label, 1);
+  layout->SetFlexForView(button_, 0);
 }
 
 ToastOverlayView::~ToastOverlayView() {}
@@ -156,6 +181,18 @@ void ToastOverlayView::OnPaint(gfx::Canvas* canvas) {
   paint.setColor(kButtonBackgroundColor);
   canvas->DrawRoundRect(GetLocalBounds(), 2, paint);
   views::View::OnPaint(canvas);
+}
+
+gfx::Size ToastOverlayView::GetMinimumSize() const {
+  return gfx::Size(kToastMinimumWidth, 0);
+}
+
+gfx::Size ToastOverlayView::GetMaximumSize() const {
+  ShelfLayoutManager* shelf_layout_manager =
+      Shelf::ForPrimaryDisplay()->shelf_layout_manager();
+  gfx::Rect work_area_bounds = shelf_layout_manager->user_work_area_bounds();
+
+  return gfx::Size(kToastMaximumWidth, work_area_bounds.height() - kOffset * 2);
 }
 
 void ToastOverlayView::ButtonPressed(views::Button* sender,
@@ -224,10 +261,9 @@ void ToastOverlay::Show(bool visible) {
 gfx::Rect ToastOverlay::CalculateOverlayBounds() {
   ShelfLayoutManager* shelf_layout_manager =
       Shelf::ForPrimaryDisplay()->shelf_layout_manager();
-  gfx::Rect work_area_bounds = shelf_layout_manager->user_work_area_bounds();
 
   gfx::Rect bounds = shelf_layout_manager->user_work_area_bounds();
-  int target_y = bounds.bottom() - widget_size_.height() - kVerticalOffset;
+  int target_y = bounds.bottom() - widget_size_.height() - kOffset;
   bounds.ClampToCenteredSize(widget_size_);
   bounds.set_y(target_y);
   return bounds;
