@@ -14,7 +14,7 @@ createImageBitmap(srcCanvas).then(consumeImageBitmap)
 function consumeImageBitmap(image) {
     var dstCanvas = document.getElementById('dstCanvas');
     var dstCtx = dstCanvas.getContext('bitmaprenderer', { alpha: true });
-    dstCtx.transferImageBitmap(image);
+    dstCtx.transferFromImageBitmap(image);
     if (window.testRunner) {
         testRunner.notifyDone();
     }

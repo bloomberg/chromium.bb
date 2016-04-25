@@ -28,7 +28,7 @@ public:
     };
 
     // Script API
-    void transferImageBitmap(ImageBitmap*);
+    void transferFromImageBitmap(ImageBitmap*);
 
     // CanvasRenderingContext implementation
     ContextType getContextType() const override { return CanvasRenderingContext::ContextImageBitmap; }

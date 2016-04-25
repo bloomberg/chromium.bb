@@ -25,7 +25,7 @@ void ImageBitmapRenderingContext::setCanvasGetContextResult(RenderingContext& re
     result.setImageBitmapRenderingContext(this);
 }
 
-void ImageBitmapRenderingContext::transferImageBitmap(ImageBitmap* imageBitmap)
+void ImageBitmapRenderingContext::transferFromImageBitmap(ImageBitmap* imageBitmap)
 {
     m_image = imageBitmap->bitmapImage();
     if (!m_image)

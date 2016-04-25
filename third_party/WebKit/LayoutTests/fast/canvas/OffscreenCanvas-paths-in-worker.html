@@ -42,7 +42,7 @@ var blob = new Blob([document.getElementById('myWorker').textContent]);
 var worker = new Worker(URL.createObjectURL(blob));
 worker.addEventListener('message', msg => {
   var outputCtx = document.getElementById('output').getContext('bitmaprenderer');
-  outputCtx.transferImageBitmap(msg.data);
+  outputCtx.transferFromImageBitmap(msg.data);
   if (window.testRunner) {
     testRunner.notifyDone();
   }

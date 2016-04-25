@@ -36,11 +36,11 @@ var blob = new Blob([document.getElementById('myWorker').textContent]);
 var worker = new Worker(URL.createObjectURL(blob));
 worker.addEventListener('message', msg => {
   var outputCtx1 = document.getElementById('output1').getContext('bitmaprenderer');
-  outputCtx1.transferImageBitmap(msg.data.i1);
+  outputCtx1.transferFromImageBitmap(msg.data.i1);
   var outputCtx2 = document.getElementById('output2').getContext('bitmaprenderer');
-  outputCtx2.transferImageBitmap(msg.data.i2);
+  outputCtx2.transferFromImageBitmap(msg.data.i2);
   var outputCtx3 = document.getElementById('output3').getContext('bitmaprenderer');
-  outputCtx3.transferImageBitmap(msg.data.i3);
+  outputCtx3.transferFromImageBitmap(msg.data.i3);
 
   if (window.testRunner) {
     testRunner.notifyDone();
