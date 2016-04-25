@@ -15,8 +15,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -191,10 +192,9 @@ void SigninSupervisedUserImportHandler::SendExistingSupervisedUsers(
     Profile* profile,
     const base::DictionaryValue* dict) {
   DCHECK(dict);
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
   std::vector<ProfileAttributesEntry*> entries =
-      cache.GetAllProfilesAttributes();
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetAllProfilesAttributes();
 
   // Collect the ids of local supervised user profiles.
   std::set<std::string> supervised_user_ids;

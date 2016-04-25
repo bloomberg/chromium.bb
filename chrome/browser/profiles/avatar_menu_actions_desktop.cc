@@ -4,25 +4,11 @@
 
 #include "chrome/browser/profiles/avatar_menu_actions_desktop.h"
 
-#include "base/compiler_specific.h"
-#include "base/strings/string_number_conversions.h"
-#include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/site_instance.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "net/base/url_util.h"
 
 AvatarMenuActionsDesktop::AvatarMenuActionsDesktop() {
 }
