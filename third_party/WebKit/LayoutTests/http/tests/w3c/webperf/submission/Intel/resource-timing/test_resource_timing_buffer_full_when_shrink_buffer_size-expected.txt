@@ -1,8 +1,0 @@
-Description
-
-This test validates the functionality of onresourcetimingbufferfull in resource timing.
-
-This is a testharness.js-based test.
-PASS onresourcetimingbufferfull should be invoked once the buffer is shrunk to size which is less than or equal to current entry number! 
-Harness: the test ran to completion.
-
