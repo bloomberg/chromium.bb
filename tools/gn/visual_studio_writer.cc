@@ -189,6 +189,14 @@ VisualStudioWriter::SolutionProject::SolutionProject(
 
 VisualStudioWriter::SolutionProject::~SolutionProject() = default;
 
+VisualStudioWriter::SourceFileCompileTypePair::SourceFileCompileTypePair(
+    const SourceFile* _file,
+    const char* _compile_type)
+    : file(_file), compile_type(_compile_type) {}
+
+VisualStudioWriter::SourceFileCompileTypePair::~SourceFileCompileTypePair() =
+    default;
+
 VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings,
                                        const char* config_platform,
                                        Version version)
@@ -321,8 +329,9 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
       project_config_platform));
 
   std::stringstream vcxproj_string_out;
+  SourceFileCompileTypePairs source_types;
   if (!WriteProjectFileContents(vcxproj_string_out, *projects_.back(), target,
-                                err)) {
+                                &source_types, err)) {
     projects_.pop_back();
     return false;
   }
@@ -335,7 +344,7 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
 
   base::FilePath filters_path = UTF8ToFilePath(vcxproj_path_str + ".filters");
   std::stringstream filters_string_out;
-  WriteFiltersFileContents(filters_string_out, target);
+  WriteFiltersFileContents(filters_string_out, target, source_types);
   return WriteFileIfChanged(filters_path, filters_string_out.str(), err);
 }
 
@@ -343,6 +352,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
     std::ostream& out,
     const SolutionProject& solution_project,
     const Target* target,
+    SourceFileCompileTypePairs* source_types,
     Err* err) {
   PathOutput path_output(GetTargetOutputDir(target),
                          build_settings_->root_path_utf8(),
@@ -481,13 +491,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
       cl_compile->SubElement("MinimalRebuild")->Text("false");
       if (!options.optimization.empty())
         cl_compile->SubElement("Optimization")->Text(options.optimization);
-      if (target->config_values().has_precompiled_headers()) {
-        cl_compile->SubElement("PrecompiledHeader")->Text("Use");
-        cl_compile->SubElement("PrecompiledHeaderFile")
-            ->Text(target->config_values().precompiled_header());
-      } else {
-        cl_compile->SubElement("PrecompiledHeader")->Text("NotUsing");
-      }
+      cl_compile->SubElement("PrecompiledHeader")->Text("NotUsing");
       {
         std::unique_ptr<XmlElementWriter> preprocessor_definitions =
             cl_compile->SubElement("PreprocessorDefinitions");
@@ -512,22 +516,25 @@ bool VisualStudioWriter::WriteProjectFileContents(
 
   {
     std::unique_ptr<XmlElementWriter> group = project.SubElement("ItemGroup");
-    if (!target->config_values().precompiled_source().is_null()) {
-      group
-          ->SubElement(
-              "ClCompile", "Include",
-              SourceFileWriter(path_output,
-                               target->config_values().precompiled_source()))
-          ->SubElement("PrecompiledHeader")
-          ->Text("Create");
-    }
+    std::vector<OutputFile> tool_outputs;  // Prevent reallocation in loop.
 
     for (const SourceFile& file : target->sources()) {
-      SourceFileType type = GetSourceFileType(file);
-      if (type == SOURCE_H || type == SOURCE_CPP || type == SOURCE_C) {
-        group->SubElement(type == SOURCE_H ? "ClInclude" : "ClCompile",
-                          "Include", SourceFileWriter(path_output, file));
+      const char* compile_type;
+      Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
+      if (target->GetOutputFilesForSource(file, &tool_type, &tool_outputs)) {
+        compile_type = "CustomBuild";
+        std::unique_ptr<XmlElementWriter> build = group->SubElement(
+            compile_type, "Include", SourceFileWriter(path_output, file));
+        build->SubElement("Command")->Text("call ninja.exe -C $(OutDir) " +
+                                           tool_outputs[0].value());
+        build->SubElement("Outputs")->Text("$(OutDir)" +
+                                           tool_outputs[0].value());
+      } else {
+        compile_type = "None";
+        group->SubElement(compile_type, "Include",
+                          SourceFileWriter(path_output, file));
       }
+      source_types->push_back(SourceFileCompileTypePair(&file, compile_type));
     }
   }
 
@@ -562,8 +569,10 @@ bool VisualStudioWriter::WriteProjectFileContents(
   return true;
 }
 
-void VisualStudioWriter::WriteFiltersFileContents(std::ostream& out,
-                                                  const Target* target) {
+void VisualStudioWriter::WriteFiltersFileContents(
+    std::ostream& out,
+    const Target* target,
+    const SourceFileCompileTypePairs& source_types) {
   out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl;
   XmlElementWriter project(
       out, "Project",
@@ -589,35 +598,31 @@ void VisualStudioWriter::WriteFiltersFileContents(std::ostream& out,
 
     std::set<std::string> processed_filters;
 
-    for (const SourceFile& file : target->sources()) {
-      SourceFileType type = GetSourceFileType(file);
-      if (type == SOURCE_H || type == SOURCE_CPP || type == SOURCE_C) {
-        std::unique_ptr<XmlElementWriter> cl_item = files_group.SubElement(
-            type == SOURCE_H ? "ClInclude" : "ClCompile", "Include",
-            SourceFileWriter(file_path_output, file));
+    for (const auto& file_and_type : source_types) {
+      std::unique_ptr<XmlElementWriter> cl_item = files_group.SubElement(
+          file_and_type.compile_type, "Include",
+          SourceFileWriter(file_path_output, *file_and_type.file));
 
-        std::ostringstream target_relative_out;
-        filter_path_output.WriteFile(target_relative_out, file);
-        std::string target_relative_path = target_relative_out.str();
-        ConvertPathToSystem(&target_relative_path);
-        base::StringPiece filter_path = FindParentDir(&target_relative_path);
+      std::ostringstream target_relative_out;
+      filter_path_output.WriteFile(target_relative_out, *file_and_type.file);
+      std::string target_relative_path = target_relative_out.str();
+      ConvertPathToSystem(&target_relative_path);
+      base::StringPiece filter_path = FindParentDir(&target_relative_path);
 
-        if (!filter_path.empty()) {
-          std::string filter_path_str = filter_path.as_string();
-          while (processed_filters.find(filter_path_str) ==
-                 processed_filters.end()) {
-            auto it = processed_filters.insert(filter_path_str).first;
-            filters_group
-                ->SubElement("Filter",
-                             XmlAttributes("Include", filter_path_str))
-                ->SubElement("UniqueIdentifier")
-                ->Text(MakeGuid(filter_path_str, kGuidSeedFilter));
-            filter_path_str = FindParentDir(&(*it)).as_string();
-            if (filter_path_str.empty())
-              break;
-          }
-          cl_item->SubElement("Filter")->Text(filter_path);
+      if (!filter_path.empty()) {
+        std::string filter_path_str = filter_path.as_string();
+        while (processed_filters.find(filter_path_str) ==
+               processed_filters.end()) {
+          auto it = processed_filters.insert(filter_path_str).first;
+          filters_group
+              ->SubElement("Filter", XmlAttributes("Include", filter_path_str))
+              ->SubElement("UniqueIdentifier")
+              ->Text(MakeGuid(filter_path_str, kGuidSeedFilter));
+          filter_path_str = FindParentDir(&(*it)).as_string();
+          if (filter_path_str.empty())
+            break;
         }
+        cl_item->SubElement("Filter")->Text(filter_path);
       }
     }
   }

@@ -21,6 +21,7 @@ class FilePath;
 class Builder;
 class BuildSettings;
 class Err;
+class SourceFile;
 class Target;
 
 class VisualStudioWriter {
@@ -78,8 +79,19 @@ class VisualStudioWriter {
     std::string config_platform;
   };
 
+  struct SourceFileCompileTypePair {
+    SourceFileCompileTypePair(const SourceFile* file, const char* compile_type);
+    ~SourceFileCompileTypePair();
+
+    // Source file.
+    const SourceFile* file;
+    // Compile type string.
+    const char* compile_type;
+  };
+
   using SolutionProjects = std::vector<std::unique_ptr<SolutionProject>>;
   using SolutionFolders = std::vector<std::unique_ptr<SolutionEntry>>;
+  using SourceFileCompileTypePairs = std::vector<SourceFileCompileTypePair>;
 
   VisualStudioWriter(const BuildSettings* build_settings,
                      const char* config_platform,
@@ -90,8 +102,11 @@ class VisualStudioWriter {
   bool WriteProjectFileContents(std::ostream& out,
                                 const SolutionProject& solution_project,
                                 const Target* target,
+                                SourceFileCompileTypePairs* source_types,
                                 Err* err);
-  void WriteFiltersFileContents(std::ostream& out, const Target* target);
+  void WriteFiltersFileContents(std::ostream& out,
+                                const Target* target,
+                                const SourceFileCompileTypePairs& source_types);
   bool WriteSolutionFile(const std::string& sln_name, Err* err);
   void WriteSolutionFileContents(std::ostream& out,
                                  const base::FilePath& solution_dir_path);
