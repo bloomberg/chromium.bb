@@ -29,10 +29,8 @@ def install(release_arg):
              ' --apk=ChromiumNetTestSupport.apk')
 
 
-def test(release_arg, extra_options):
-  return run('build/android/test_runner.py instrumentation '+ \
-             release_arg + ' --test-apk=CronetTestInstrumentation' + \
-             ' --fast-local-dev',
+def test(out_dir, extra_options):
+  return run(out_dir + '/bin/run_cronet_test_instrumentation_apk ' + \
              extra_options)
 
 def test_ios(out_dir, extra_options):
@@ -116,10 +114,10 @@ def main():
     if (options.command=='proguard'):
       return run ('ninja -C ' + out_dir + ' cronet_sample_proguard_apk')
     if (options.command=='test'):
-      return install(release_arg) or test(release_arg, extra_options)
+      return install(release_arg) or test(out_dir, extra_options)
     if (options.command=='build-test'):
       return build(out_dir, test_target) or install(release_arg) or \
-          test(release_arg, extra_options)
+          test(out_dir, extra_options)
     if (options.command=='stack'):
       return stack(out_dir)
     if (options.command=='debug'):
