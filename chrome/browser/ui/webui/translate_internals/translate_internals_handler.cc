@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -22,6 +23,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -60,6 +62,10 @@ void TranslateInternalsHandler::RegisterMessages() {
       &TranslateInternalsHandler::OnRemovePrefItem, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestInfo", base::Bind(
       &TranslateInternalsHandler::OnRequestInfo, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "overrideCountry",
+      base::Bind(&TranslateInternalsHandler::OnOverrideCountry,
+                 base::Unretained(this)));
 }
 
 void TranslateInternalsHandler::Observe(
@@ -169,9 +175,22 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
   SendPrefsToJs();
 }
 
+void TranslateInternalsHandler::OnOverrideCountry(const base::ListValue* args) {
+  std::string country;
+  if (args->GetString(0, &country)) {
+    variations::VariationsService* variations_service =
+        g_browser_process->variations_service();
+    if (variations_service) {
+      SendCountryToJs(
+          variations_service->OverrideStoredPermanentCountry(country));
+    }
+  }
+}
+
 void TranslateInternalsHandler::OnRequestInfo(const base::ListValue* /*args*/) {
   SendPrefsToJs();
   SendSupportedLanguagesToJs();
+  SendCountryToJs(false);
 }
 
 void TranslateInternalsHandler::SendMessageToJs(const std::string& message,
@@ -231,4 +250,19 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   dict.Set("last_updated",
            new base::FundamentalValue(last_updated.ToJsTime()));
   SendMessageToJs("supportedLanguagesUpdated", dict);
+}
+
+void TranslateInternalsHandler::SendCountryToJs(bool was_updated) {
+  std::string country;
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (variations_service)
+    country = variations_service->GetStoredPermanentCountry();
+
+  base::DictionaryValue dict;
+  if (!country.empty()) {
+    dict.Set("country", new base::StringValue(country));
+    dict.Set("update", new base::FundamentalValue(was_updated));
+  }
+  SendMessageToJs("countryUpdated", dict);
 }

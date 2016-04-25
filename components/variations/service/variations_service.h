@@ -21,6 +21,7 @@
 #include "components/variations/variations_request_scheduler.h"
 #include "components/variations/variations_seed_simulator.h"
 #include "components/variations/variations_seed_store.h"
+#include "components/version_info/version_info.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -121,6 +122,12 @@ class VariationsService
   // in the format of lowercase ISO 3166-1 alpha-2. Example: us, br, in
   std::string GetStoredPermanentCountry();
 
+  // Forces an override of the stored permanent country. Returns true
+  // if the variable has been updated. Return false if the override country is
+  // the same as the stored variable, or if the update failed for any other
+  // reason.
+  bool OverrideStoredPermanentCountry(const std::string& override_country);
+
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
 
@@ -218,6 +225,10 @@ class VariationsService
   // |seed| will contain the loaded data and true is returned. Set as virtual
   // so that it can be overridden by tests.
   virtual bool LoadSeed(VariationsSeed* seed);
+
+  // Sets the stored permanent country pref for this client.
+  void StorePermanentCountry(const base::Version& version,
+                             const std::string& country);
 
   // Checks if prerequisites for fetching the Variations seed are met, and if
   // so, performs the actual fetch using |DoActualFetch|.

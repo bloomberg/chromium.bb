@@ -31,7 +31,6 @@
 #include "components/variations/variations_seed_simulator.h"
 #include "components/variations/variations_switches.h"
 #include "components/variations/variations_url_constants.h"
-#include "components/version_info/version_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -842,12 +841,17 @@ std::string VariationsService::LoadPermanentConsistencyCountry(
   }
 
   // Otherwise, update the pref with the current Chrome version and country.
+  StorePermanentCountry(version, latest_country);
+  return latest_country;
+}
+
+void VariationsService::StorePermanentCountry(const base::Version& version,
+                                              const std::string& country) {
   base::ListValue new_list_value;
   new_list_value.AppendString(version.GetString());
-  new_list_value.AppendString(latest_country);
+  new_list_value.AppendString(country);
   local_state_->Set(prefs::kVariationsPermanentConsistencyCountry,
                     new_list_value);
-  return latest_country;
 }
 
 std::string VariationsService::GetStoredPermanentCountry() {
@@ -860,6 +864,28 @@ std::string VariationsService::GetStoredPermanentCountry() {
   }
 
   return stored_country;
+}
+
+bool VariationsService::OverrideStoredPermanentCountry(
+    const std::string& country_override) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (country_override.empty())
+    return false;
+
+  const base::ListValue* list_value =
+      local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
+
+  std::string stored_country;
+  const bool got_stored_country =
+      list_value->GetSize() == 2 && list_value->GetString(1, &stored_country);
+
+  if (got_stored_country && stored_country == country_override)
+    return false;
+
+  base::Version version(version_info::GetVersionNumber());
+  StorePermanentCountry(version, country_override);
+  return true;
 }
 
 }  // namespace variations

@@ -728,4 +728,64 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
   }
 }
 
+TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
+  const std::string kTestVersion = version_info::GetVersionNumber();
+  const std::string kPrefCa = version_info::GetVersionNumber() + ",ca";
+  const std::string kPrefUs = version_info::GetVersionNumber() + ",us";
+
+  struct {
+    // Comma separated list, empty string if the pref isn't set initially.
+    const std::string pref_value_before;
+    const std::string country_code_override;
+    // Comma separated list.
+    const std::string expected_pref_value_after;
+    // Is the pref expected to be updated or not.
+    const bool has_updated;
+  } test_cases[] = {
+      {kPrefUs, "ca", kPrefCa, true},
+      {kPrefUs, "us", kPrefUs, false},
+      {kPrefUs, "", kPrefUs, false},
+      {"", "ca", kPrefCa, true},
+      {"", "", "", false},
+      {"19.0.0.0,us", "ca", kPrefCa, true},
+      {"19.0.0.0,us", "us", "19.0.0.0,us", false},
+  };
+
+  for (const auto& test : test_cases) {
+    TestingPrefServiceSimple prefs;
+    VariationsService::RegisterPrefs(prefs.registry());
+    TestVariationsService service(
+        make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+        &prefs);
+
+    if (!test.pref_value_before.empty()) {
+      base::ListValue list_value;
+      for (const std::string& component :
+           base::SplitString(test.pref_value_before, ",", base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_ALL)) {
+        list_value.AppendString(component);
+      }
+      prefs.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
+    }
+
+    variations::VariationsSeed seed(CreateTestSeed());
+
+    EXPECT_EQ(test.has_updated, service.OverrideStoredPermanentCountry(
+                                    test.country_code_override))
+        << test.pref_value_before << ", " << test.country_code_override;
+
+    base::ListValue expected_list_value;
+    for (const std::string& component :
+         base::SplitString(test.expected_pref_value_after, ",",
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      expected_list_value.AppendString(component);
+    }
+    const base::ListValue* pref_value =
+        prefs.GetList(prefs::kVariationsPermanentConsistencyCountry);
+    EXPECT_EQ(ListValueToString(expected_list_value),
+              ListValueToString(*pref_value))
+        << test.pref_value_before << ", " << test.country_code_override;
+  }
+}
+
 }  // namespace variations

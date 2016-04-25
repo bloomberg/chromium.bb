@@ -61,6 +61,10 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   // when UI requests to remove an item in the preference.
   void OnRemovePrefItem(const base::ListValue* args);
 
+  // Handles the Javascript message 'overrideCountry'. This message is sent
+  // when UI requests to override the stored country.
+  void OnOverrideCountry(const base::ListValue* country);
+
   // Handles the Javascript message 'requestInfo'. This message is sent
   // when UI needs to show information concerned with the translation.
   // For now, this returns only prefs to Javascript.
@@ -75,6 +79,10 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
 
   // Sends the languages currently supported by the server to JavaScript.
   void SendSupportedLanguagesToJs();
+
+  // Sends the stored permanent country to Javascript.
+  // |was_updated| tells Javascript if the country has been updated or not.
+  void SendCountryToJs(bool was_updated);
 
   // Subscription for translate events coming from the translate language list.
   std::unique_ptr<

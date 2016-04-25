@@ -253,7 +253,56 @@
     }
 
     /**
-     * Addes '0's to |number| as a string. |width| is length of the string
+     * Handles the message of 'countryUpdated' from the browser.
+     *
+     * @param {Object} details the object containing the country
+     *     information.
+     */
+    function onCountryUpdated(details) {
+      var p;
+      p = $('country-override');
+
+      p.innerHTML = '';
+
+      if ('country' in details) {
+        var country = details['country'];
+
+        var h2 = $('override-variations-country');
+        h2.title = (
+            'Changing this value will override the permanent country stored ' +
+            'by variations. Normally, this value gets automatically updated ' +
+            'with a new value received from the variations server when ' +
+            'Chrome is updated.');
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.value = country;
+
+        var button = document.createElement('button');
+        button.textContent = 'update';
+        button.addEventListener('click', function() {
+          chrome.send('overrideCountry', [input.value]);
+        }, false);
+        p.appendChild(input);
+        p.appendChild(document.createElement('br'));
+        p.appendChild(button);
+
+        if ('update' in details && details['update']) {
+          var div1 = document.createElement('div');
+          div1.textContent = 'Permanent stored country updated.';
+          var div2 = document.createElement('div');
+          div2.textContent = ('You will need to restart your browser ' +
+              'for the changes to take effect.');
+          p.appendChild(div1);
+          p.appendChild(div2);
+        }
+      } else {
+        p.textContent = 'Could not load country info from Variations.';
+      }
+    }
+
+    /**
+     * Adds '0's to |number| as a string. |width| is length of the string
      * including '0's.
      *
      * @param {string} number The number to be converted into a string.
@@ -404,6 +453,9 @@
           break;
         case 'supportedLanguagesUpdated':
           onSupportedLanguagesUpdated(details);
+          break;
+        case 'countryUpdated':
+          onCountryUpdated(details);
           break;
         case 'translateErrorDetailsAdded':
           onTranslateErrorDetailsAdded(details);
