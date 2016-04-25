@@ -170,7 +170,26 @@ void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
           switches::kEnableHeapProfiling))
     return;
 
-  AllocationContextTracker::SetCaptureEnabled(true);
+  std::string profiling_mode = CommandLine::ForCurrentProcess()
+      ->GetSwitchValueASCII(switches::kEnableHeapProfiling);
+  if (profiling_mode == "") {
+    AllocationContextTracker::SetCaptureMode(
+        AllocationContextTracker::CaptureMode::PSEUDO_STACK);
+  }
+  else if (profiling_mode == switches::kEnableHeapProfilingModeNative) {
+#if ENABLE_NATIVE_ALLOCATION_TRACES
+    AllocationContextTracker::SetCaptureMode(
+        AllocationContextTracker::CaptureMode::NATIVE_STACK);
+#else
+    CHECK(false) << "'" << profiling_mode << "' mode for "
+                 << switches::kEnableHeapProfiling << " flag is not supported "
+                 << "for this platform / build type.";
+#endif
+  } else {
+    CHECK(false) << "Invalid mode '" << profiling_mode << "' for "
+               << switches::kEnableHeapProfiling << " flag.";
+  }
+
   for (auto mdp : dump_providers_)
     mdp->dump_provider->OnHeapProfilingEnabled(true);
   heap_profiling_enabled_ = true;
