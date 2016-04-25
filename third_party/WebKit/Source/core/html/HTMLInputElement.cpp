@@ -125,7 +125,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     // to destroy them when the |type| attribute gets set by the parser to
     // something else than 'text'.
     , m_inputType(createdByParser ? nullptr : InputType::createText(*this))
-    , m_inputTypeView(m_inputType)
+    , m_inputTypeView(m_inputType ? m_inputType->createView() : nullptr)
 {
     setHasCustomStyleCallbacks();
 }

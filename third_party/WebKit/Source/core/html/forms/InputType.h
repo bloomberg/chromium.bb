@@ -37,7 +37,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/forms/ColorChooserClient.h"
-#include "core/html/forms/InputTypeView.h"
 #include "core/html/forms/StepRange.h"
 
 namespace blink {
@@ -47,22 +46,22 @@ class DragData;
 class ExceptionState;
 class FileList;
 class FormData;
+class InputTypeView;
 
 // An InputType object represents the type-specific part of an HTMLInputElement.
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
 // FIXME: InputType should not inherit InputTypeView. It's conceptually wrong.
-class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType>, public InputTypeView {
+class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
     WTF_MAKE_NONCOPYABLE(InputType);
-    USING_GARBAGE_COLLECTED_MIXIN(InputType);
 public:
     static InputType* create(HTMLInputElement&, const AtomicString&);
     static InputType* createText(HTMLInputElement&);
     static const AtomicString& normalizeTypeName(const AtomicString&);
-    ~InputType() override;
+    virtual ~InputType();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual InputTypeView* createView();
+    virtual InputTypeView* createView() = 0;
     virtual const AtomicString& formControlType() const = 0;
 
     // Type query functions
@@ -209,7 +208,8 @@ public:
     virtual ColorChooserClient* colorChooserClient();
 
 protected:
-    InputType(HTMLInputElement& element) : InputTypeView(element) { }
+    InputType(HTMLInputElement& element) : m_element(element) { }
+    HTMLInputElement& element() const { return *m_element; }
     ChromeClient* chromeClient() const;
     Locale& locale() const;
     Decimal parseToNumberOrNaN(const String&) const;
@@ -224,6 +224,8 @@ protected:
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
     void applyStep(const Decimal&, int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
+
+    Member<HTMLInputElement> m_element;
 };
 
 } // namespace blink

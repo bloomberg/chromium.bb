@@ -47,6 +47,17 @@ InputType* HiddenInputType::create(HTMLInputElement& element)
     return new HiddenInputType(element);
 }
 
+DEFINE_TRACE(HiddenInputType)
+{
+    InputTypeView::trace(visitor);
+    InputType::trace(visitor);
+}
+
+InputTypeView* HiddenInputType::createView()
+{
+    return this;
+}
+
 const AtomicString& HiddenInputType::formControlType() const
 {
     return InputTypeNames::hidden;

@@ -32,14 +32,21 @@
 #define BaseCheckableInputType_h
 
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/InputTypeView.h"
 
 namespace blink {
 
 // Base of checkbox and radio types.
-class BaseCheckableInputType : public InputType {
+class BaseCheckableInputType : public InputType, public InputTypeView {
+    USING_GARBAGE_COLLECTED_MIXIN(BaseCheckableInputType);
+public:
+    DECLARE_VIRTUAL_TRACE();
+    using InputType::element;
+
 protected:
     BaseCheckableInputType(HTMLInputElement& element)
         : InputType(element)
+        , InputTypeView(element)
         , m_isInClickHandler(false)
     {
     }
@@ -48,6 +55,7 @@ protected:
     bool m_isInClickHandler;
 
 private:
+    InputTypeView* createView() override;
     FormControlState saveFormControlState() const final;
     void restoreFormControlState(const FormControlState&) final;
     void appendToFormData(FormData&) const final;

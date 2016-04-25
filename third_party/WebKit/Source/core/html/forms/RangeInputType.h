@@ -32,18 +32,24 @@
 #define RangeInputType_h
 
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/InputTypeView.h"
 
 namespace blink {
 
 class ExceptionState;
 class SliderThumbElement;
 
-class RangeInputType final : public InputType {
+class RangeInputType final : public InputType, public InputTypeView {
+    USING_GARBAGE_COLLECTED_MIXIN(RangeInputType);
+
 public:
     static InputType* create(HTMLInputElement&);
+    DECLARE_VIRTUAL_TRACE();
+    using InputType::element;
 
 private:
     RangeInputType(HTMLInputElement&);
+    InputTypeView* createView() override;
     void countUsage() override;
     const AtomicString& formControlType() const override;
     double valueAsDouble() const override;

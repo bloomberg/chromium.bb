@@ -94,7 +94,7 @@ void BaseClickableWithKeyInputType::handleKeyupEvent(KeyboardEvent* event)
 
 void BaseClickableWithKeyInputType::accessKeyAction(bool sendMouseEvents)
 {
-    InputType::accessKeyAction(sendMouseEvents);
+    InputTypeView::accessKeyAction(sendMouseEvents);
     accessKeyAction(element(), sendMouseEvents);
 }
 

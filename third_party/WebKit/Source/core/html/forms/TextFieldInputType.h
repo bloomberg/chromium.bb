@@ -32,6 +32,7 @@
 #define TextFieldInputType_h
 
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/InputTypeView.h"
 #include "core/html/shadow/SpinButtonElement.h"
 
 namespace blink {
@@ -40,10 +41,14 @@ class FormDataList;
 
 // The class represents types of which UI contain text fields.
 // It supports not only the types for BaseTextInputType but also type=number.
-class TextFieldInputType : public InputType, protected SpinButtonElement::SpinButtonOwner {
+class TextFieldInputType
+    : public InputType
+    , public InputTypeView
+    , protected SpinButtonElement::SpinButtonOwner {
     USING_GARBAGE_COLLECTED_MIXIN(TextFieldInputType);
 public:
-    DEFINE_INLINE_VIRTUAL_TRACE() { InputType::trace(visitor); }
+    DECLARE_VIRTUAL_TRACE();
+    using InputType::element;
 
 protected:
     TextFieldInputType(HTMLInputElement&);
@@ -76,6 +81,7 @@ protected:
     Element* containerElement() const;
 
 private:
+    InputTypeView* createView() override;
     bool shouldShowFocusRingOnMouseFocus() const final;
     bool isTextField() const final;
     bool valueMissing(const String&) const override;

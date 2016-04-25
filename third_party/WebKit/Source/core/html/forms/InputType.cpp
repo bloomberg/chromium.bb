@@ -141,12 +141,7 @@ InputType::~InputType()
 
 DEFINE_TRACE(InputType)
 {
-    InputTypeView::trace(visitor);
-}
-
-InputTypeView* InputType::createView()
-{
-    return this;
+    visitor->trace(m_element);
 }
 
 bool InputType::isTextField() const

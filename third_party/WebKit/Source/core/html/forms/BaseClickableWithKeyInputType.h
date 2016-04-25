@@ -33,21 +33,31 @@
 
 #include "core/CoreExport.h"
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/InputTypeView.h"
 
 namespace blink {
 
 // Base of input types that dispatches a simulated click on space/return key.
-class CORE_EXPORT BaseClickableWithKeyInputType : public InputType {
+class CORE_EXPORT BaseClickableWithKeyInputType : public InputType, public InputTypeView {
+    USING_GARBAGE_COLLECTED_MIXIN(BaseClickableWithKeyInputType);
 public:
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        InputTypeView::trace(visitor);
+        InputType::trace(visitor);
+    }
+    using InputType::element;
+
     static void handleKeydownEvent(HTMLInputElement&, KeyboardEvent*);
     static void handleKeypressEvent(HTMLInputElement&, KeyboardEvent*);
     static void handleKeyupEvent(InputTypeView&, KeyboardEvent*);
     static void accessKeyAction(HTMLInputElement&, bool sendMouseEvents);
 
 protected:
-    BaseClickableWithKeyInputType(HTMLInputElement& element) : InputType(element) { }
+    BaseClickableWithKeyInputType(HTMLInputElement& element) : InputType(element), InputTypeView(element) { }
 
 private:
+    InputTypeView* createView() override { return this; }
     void handleKeydownEvent(KeyboardEvent*) override;
     void handleKeypressEvent(KeyboardEvent*) override;
     void handleKeyupEvent(KeyboardEvent*) override;

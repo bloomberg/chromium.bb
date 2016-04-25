@@ -32,15 +32,20 @@
 #define HiddenInputType_h
 
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/InputTypeView.h"
 
 namespace blink {
 
-class HiddenInputType final : public InputType {
+class HiddenInputType final : public InputType, private InputTypeView {
+    USING_GARBAGE_COLLECTED_MIXIN(HiddenInputType);
 public:
     static InputType* create(HTMLInputElement&);
+    DECLARE_VIRTUAL_TRACE();
+    using InputType::element;
 
 private:
-    HiddenInputType(HTMLInputElement& element) : InputType(element) { }
+    HiddenInputType(HTMLInputElement& element) : InputType(element), InputTypeView(element) { }
+    InputTypeView* createView() override;
     const AtomicString& formControlType() const override;
     FormControlState saveFormControlState() const override;
     void restoreFormControlState(const FormControlState&) override;

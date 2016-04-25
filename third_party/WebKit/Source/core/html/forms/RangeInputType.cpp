@@ -81,8 +81,20 @@ InputType* RangeInputType::create(HTMLInputElement& element)
 
 RangeInputType::RangeInputType(HTMLInputElement& element)
     : InputType(element)
+    , InputTypeView(element)
     , m_tickMarkValuesDirty(true)
 {
+}
+
+DEFINE_TRACE(RangeInputType)
+{
+    InputTypeView::trace(visitor);
+    InputType::trace(visitor);
+}
+
+InputTypeView* RangeInputType::createView()
+{
+    return this;
 }
 
 void RangeInputType::countUsage()
@@ -270,7 +282,7 @@ String RangeInputType::serialize(const Decimal& value) const
 // FIXME: Could share this with BaseClickableWithKeyInputType and BaseCheckableInputType if we had a common base class.
 void RangeInputType::accessKeyAction(bool sendMouseEvents)
 {
-    InputType::accessKeyAction(sendMouseEvents);
+    InputTypeView::accessKeyAction(sendMouseEvents);
 
     element().dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
 }
