@@ -28,6 +28,7 @@ source_set("blimp_client") {
 
   public_deps = [
     "//components/safe_json",
+    "//components/url_formatter",
     "//ui/events",
   ]
 

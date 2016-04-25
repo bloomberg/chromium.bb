@@ -134,7 +134,7 @@ TEST_F(NavigationFeatureTest, PartialDelegateFieldsCalled) {
 }
 
 TEST_F(NavigationFeatureTest, TestNavigateToUrlMessage) {
-  std::string text = "text";
+  std::string text = "http://google.com/";
 
   EXPECT_CALL(*out_processor_,
               MockableProcessMessage(EqualsNavigateToUrlText(1, text), _))

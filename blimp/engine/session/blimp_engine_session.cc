@@ -342,7 +342,8 @@ void BlimpEngineSession::HandleResize(float device_pixel_ratio,
 void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
   TRACE_EVENT1("blimp", "BlimpEngineSession::LoadUrl", "URL", url.spec());
   DVLOG(1) << "Load URL " << url << " in tab " << target_tab_id;
-  if (url.is_empty()) {
+  if (!url.is_valid()) {
+    VLOG(1) << "Dropping invalid URL " << url;
     return;
   }
 
