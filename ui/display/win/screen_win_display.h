@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace display {
@@ -15,18 +15,18 @@ namespace win {
 
 class DisplayInfo;
 
-// A display used by gfx::ScreenWin.
+// A display used by display::ScreenWin.
 // It holds a display and additional parameters used for DPI calculations.
 class ScreenWinDisplay final {
  public:
   ScreenWinDisplay();
   explicit ScreenWinDisplay(const DisplayInfo& display_info);
 
-  const gfx::Display& display() const { return display_; }
+  const Display& display() const { return display_; }
   const gfx::Rect& pixel_bounds() const { return pixel_bounds_; }
 
  private:
-  gfx::Display display_;
+  Display display_;
   gfx::Rect pixel_bounds_;
 };
 

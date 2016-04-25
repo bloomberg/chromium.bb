@@ -18,12 +18,12 @@
 #include "ui/display/chromeos/display_snapshot_virtual.h"
 #include "ui/display/chromeos/display_util.h"
 #include "ui/display/chromeos/update_display_configuration_task.h"
+#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/util/display_util.h"
-#include "ui/gfx/display.h"
 
 namespace ui {
 
@@ -1120,7 +1120,7 @@ void DisplayConfigurator::NotifyPowerStateObservers() {
 int64_t DisplayConfigurator::AddVirtualDisplay(gfx::Size display_size) {
   if (last_virtual_display_id_ == 0xff) {
     LOG(WARNING) << "Exceeded virtual display id limit";
-    return gfx::Display::kInvalidDisplayID;
+    return display::Display::kInvalidDisplayID;
   }
 
   DisplaySnapshotVirtual* virtual_snapshot =

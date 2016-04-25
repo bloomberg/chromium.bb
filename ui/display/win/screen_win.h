@@ -12,9 +12,9 @@
 
 #include "base/macros.h"
 #include "ui/display/display_export.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {
@@ -30,7 +30,7 @@ namespace win {
 class DisplayInfo;
 class ScreenWinDisplay;
 
-class DISPLAY_EXPORT ScreenWin : public gfx::Screen {
+class DISPLAY_EXPORT ScreenWin : public display::Screen {
  public:
   ScreenWin();
   ~ScreenWin() override;
@@ -96,18 +96,21 @@ class DISPLAY_EXPORT ScreenWin : public gfx::Screen {
   virtual gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
 
  protected:
-  // gfx::Screen:
+  // display::Screen:
   gfx::Point GetCursorScreenPoint() override;
   gfx::NativeWindow GetWindowUnderCursor() override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   int GetNumDisplays() const override;
-  std::vector<gfx::Display> GetAllDisplays() const override;
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView window) const override;
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override;
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
-  gfx::Display GetPrimaryDisplay() const override;
-  void AddObserver(gfx::DisplayObserver* observer) override;
-  void RemoveObserver(gfx::DisplayObserver* observer) override;
+  std::vector<display::Display> GetAllDisplays() const override;
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeView window) const override;
+  display::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const override;
+  display::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const override;
+  display::Display GetPrimaryDisplay() const override;
+  void AddObserver(display::DisplayObserver* observer) override;
+  void RemoveObserver(display::DisplayObserver* observer) override;
 
   void UpdateFromDisplayInfos(const std::vector<DisplayInfo>& display_infos);
 

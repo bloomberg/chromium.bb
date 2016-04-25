@@ -55,6 +55,7 @@
         '../aura/aura.gyp:aura',
         '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
+        '../display/display.gyp:display',
         '../events/events.gyp:events',
         '../events/events.gyp:gesture_detection',
         '../gfx/gfx.gyp:gfx',

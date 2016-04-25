@@ -6,6 +6,7 @@ include_rules = [
   "+third_party/cros_system_api",
   "+ui/aura",
   "+ui/base",
+  "+ui/display",
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",

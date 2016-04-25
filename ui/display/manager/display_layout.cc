@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace display {
@@ -49,14 +49,14 @@ gfx::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
 // DisplayPlacement
 
 DisplayPlacement::DisplayPlacement()
-    : display_id(gfx::Display::kInvalidDisplayID),
-      parent_display_id(gfx::Display::kInvalidDisplayID),
+    : display_id(display::Display::kInvalidDisplayID),
+      parent_display_id(display::Display::kInvalidDisplayID),
       position(DisplayPlacement::RIGHT),
       offset(0) {}
 
 DisplayPlacement::DisplayPlacement(Position pos, int offset)
-    : display_id(gfx::Display::kInvalidDisplayID),
-      parent_display_id(gfx::Display::kInvalidDisplayID),
+    : display_id(display::Display::kInvalidDisplayID),
+      parent_display_id(display::Display::kInvalidDisplayID),
       position(pos),
       offset(offset) {
   DCHECK_LE(TOP, position);
@@ -97,9 +97,9 @@ DisplayPlacement& DisplayPlacement::Swap() {
 
 std::string DisplayPlacement::ToString() const {
   std::stringstream s;
-  if (display_id != gfx::Display::kInvalidDisplayID)
+  if (display_id != display::Display::kInvalidDisplayID)
     s << "id=" << display_id << ", ";
-  if (parent_display_id != gfx::Display::kInvalidDisplayID)
+  if (parent_display_id != display::Display::kInvalidDisplayID)
     s << "parent=" << parent_display_id << ", ";
   s << PositionToString(position) << ", ";
   s << offset;
@@ -155,7 +155,7 @@ bool DisplayPlacement::StringToPosition(const base::StringPiece& string,
 DisplayLayout::DisplayLayout()
     : mirrored(false),
       default_unified(true),
-      primary_id(gfx::Display::kInvalidDisplayID) {}
+      primary_id(display::Display::kInvalidDisplayID) {}
 
 DisplayLayout::~DisplayLayout() {}
 
@@ -202,11 +202,11 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
       LOG(ERROR) << "PlacementList must be sorted by display_id";
       return false;
     }
-    if (placement.display_id == gfx::Display::kInvalidDisplayID) {
+    if (placement.display_id == display::Display::kInvalidDisplayID) {
       LOG(ERROR) << "display_id is not initialized";
       return false;
     }
-    if (placement.parent_display_id == gfx::Display::kInvalidDisplayID) {
+    if (placement.parent_display_id == display::Display::kInvalidDisplayID) {
       LOG(ERROR) << "display_parent_id is not initialized";
       return false;
     }

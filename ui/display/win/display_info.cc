@@ -7,9 +7,10 @@
 #include "base/hash.h"
 #include "base/strings/utf_string_conversions.h"
 
+namespace display {
 namespace {
 
-gfx::Display::Rotation GetRotationForDevice(const wchar_t* device_name) {
+Display::Rotation GetRotationForDevice(const wchar_t* device_name) {
   DEVMODE mode;
   ::ZeroMemory(&mode, sizeof(mode));
   mode.dmSize = sizeof(mode);
@@ -17,23 +18,22 @@ gfx::Display::Rotation GetRotationForDevice(const wchar_t* device_name) {
   if (::EnumDisplaySettings(device_name, ENUM_CURRENT_SETTINGS, &mode)) {
     switch (mode.dmDisplayOrientation) {
     case DMDO_DEFAULT:
-      return gfx::Display::ROTATE_0;
+      return Display::ROTATE_0;
     case DMDO_90:
-      return gfx::Display::ROTATE_90;
+      return Display::ROTATE_90;
     case DMDO_180:
-      return gfx::Display::ROTATE_180;
+      return Display::ROTATE_180;
     case DMDO_270:
-      return gfx::Display::ROTATE_270;
+      return Display::ROTATE_270;
     default:
       NOTREACHED();
     }
   }
-  return gfx::Display::ROTATE_0;
+  return Display::ROTATE_0;
 }
 
 }  // namespace
 
-namespace display {
 namespace win {
 
 DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
@@ -44,7 +44,7 @@ DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
 
 DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
                          float device_scale_factor,
-                         gfx::Display::Rotation rotation)
+                         Display::Rotation rotation)
     : id_(DeviceIdFromDeviceName(monitor_info.szDevice)),
       rotation_(rotation),
       screen_rect_(monitor_info.rcMonitor),

@@ -8,8 +8,8 @@
 #include <windows.h>
 #include <stdint.h>
 
+#include "ui/display/display.h"
 #include "ui/display/display_export.h"
-#include "ui/gfx/display.h"
 
 namespace display {
 namespace win {
@@ -20,19 +20,19 @@ class DISPLAY_EXPORT DisplayInfo final {
   DisplayInfo(const MONITORINFOEX& monitor_info, float device_scale_factor);
   DisplayInfo(const MONITORINFOEX& monitor_info,
               float device_scale_factor,
-              gfx::Display::Rotation rotation);
+              display::Display::Rotation rotation);
 
   static int64_t DeviceIdFromDeviceName(const wchar_t* device_name);
 
   int64_t id() const { return id_; }
-  gfx::Display::Rotation rotation() const { return rotation_; }
+  display::Display::Rotation rotation() const { return rotation_; }
   const gfx::Rect& screen_rect() const { return screen_rect_; }
   const gfx::Rect& screen_work_rect() const { return screen_work_rect_; }
   float device_scale_factor() const { return device_scale_factor_; }
 
  private:
   int64_t id_;
-  gfx::Display::Rotation rotation_;
+  display::Display::Rotation rotation_;
   gfx::Rect screen_rect_;
   gfx::Rect screen_work_rect_;
   float device_scale_factor_;

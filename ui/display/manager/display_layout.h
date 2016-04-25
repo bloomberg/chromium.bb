@@ -25,6 +25,7 @@ class Display;
 }
 
 namespace display {
+using Display = gfx::Display;
 
 // An identifier used to manage display layout in DisplayManager /
 // DisplayLayoutStore.

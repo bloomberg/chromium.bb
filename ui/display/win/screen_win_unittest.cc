@@ -16,12 +16,12 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win_display.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/test/display_util.h"
 
 namespace display {
@@ -128,8 +128,8 @@ class TestScreenWin : public ScreenWin {
   DISALLOW_COPY_AND_ASSIGN(TestScreenWin);
 };
 
-gfx::Screen* GetScreen() {
-  return gfx::Screen::GetScreen();
+Screen* GetScreen() {
+  return Screen::GetScreen();
 }
 
 // Allows tests to specify the screen and associated state.
@@ -147,9 +147,7 @@ class TestScreenWinManager : public TestScreenWinInitializer {
  public:
   TestScreenWinManager() = default;
 
-  ~TestScreenWinManager() {
-    gfx::Screen::SetScreenInstance(nullptr);
-  }
+  ~TestScreenWinManager() { Screen::SetScreenInstance(nullptr); }
 
   void AddMonitor(const gfx::Rect& pixel_bounds,
                   const gfx::Rect& pixel_work,
@@ -159,9 +157,8 @@ class TestScreenWinManager : public TestScreenWinInitializer {
                                                    pixel_work,
                                                    device_name);
     monitor_infos_.push_back(monitor_info);
-    display_infos_.push_back(DisplayInfo(monitor_info,
-                                         device_scale_factor,
-                                         gfx::Display::ROTATE_0));
+    display_infos_.push_back(DisplayInfo(monitor_info, device_scale_factor,
+                                         Display::ROTATE_0));
   }
 
   HWND CreateFakeHwnd(const gfx::Rect& bounds) override {
@@ -175,7 +172,7 @@ class TestScreenWinManager : public TestScreenWinInitializer {
     screen_win_.reset(new TestScreenWin(display_infos_,
                                         monitor_infos_,
                                         hwnd_map_));
-    gfx::Screen::SetScreenInstance(screen_win_.get());
+    Screen::SetScreenInstance(screen_win_.get());
   }
 
   ScreenWin* GetScreenWin() {
@@ -198,7 +195,7 @@ class ScreenWinTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    display::win::SetDefaultDeviceScaleFactor(1.0);
+    SetDefaultDeviceScaleFactor(1.0);
     screen_win_initializer_.reset(new TestScreenWinManager());
     SetUpScreen(screen_win_initializer_.get());
     screen_win_initializer_->InitializeScreenWin();
@@ -206,7 +203,7 @@ class ScreenWinTest : public testing::Test {
 
   void TearDown() override {
     screen_win_initializer_.reset();
-    display::win::SetDefaultDeviceScaleFactor(1.0);
+    SetDefaultDeviceScaleFactor(1.0);
     testing::Test::TearDown();
   }
 
@@ -247,7 +244,7 @@ class ScreenWinTestSingleDisplay1x : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(1u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1200), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1100), displays[0].work_area());
@@ -258,36 +255,36 @@ TEST_F(ScreenWinTestSingleDisplay1x, GetNumDisplays) {
 }
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetDisplayNearestWindowPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(screen->GetPrimaryDisplay(),
             screen->GetDisplayNearestWindow(nullptr));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
   EXPECT_EQ(screen->GetAllDisplays()[0],
             screen->GetDisplayNearestWindow(native_window));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(250, 952)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(1919, 1199)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
   EXPECT_EQ(display,
             screen->GetDisplayMatching(gfx::Rect(1819, 1099, 100, 100)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1x, GetPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
 }
 
@@ -297,7 +294,7 @@ class ScreenWinTestSingleDisplay1_25x : public ScreenWinTest {
   ScreenWinTestSingleDisplay1_25x() = default;
 
   void SetUpScreen(TestScreenWinInitializer* initializer) override {
-    display::win::SetDefaultDeviceScaleFactor(1.25);
+    SetDefaultDeviceScaleFactor(1.25);
     // Add Monitor of Scale Factor 1.0 since display::GetDPIScale performs the
     // clamping and not ScreenWin.
     initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
@@ -318,7 +315,7 @@ class ScreenWinTestSingleDisplay1_25x : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(1u, displays.size());
   // On Windows, scale factors of 1.25 or lower are clamped to 1.0.
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1200), displays[0].bounds());
@@ -326,29 +323,29 @@ TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplays) {
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
   EXPECT_EQ(screen->GetAllDisplays()[0],
             screen->GetDisplayNearestWindow(native_window));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(250, 952)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(1919, 1199)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_25x, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
   EXPECT_EQ(display,
             screen->GetDisplayMatching(gfx::Rect(1819, 1099, 100, 100)));
 }
 TEST_F(ScreenWinTestSingleDisplay1_25x, GetPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
 }
 
@@ -358,7 +355,7 @@ class ScreenWinTestSingleDisplay1_5x : public ScreenWinTest {
   ScreenWinTestSingleDisplay1_5x() = default;
 
   void SetUpScreen(TestScreenWinInitializer* initializer) override {
-    display::win::SetDefaultDeviceScaleFactor(1.5);
+    SetDefaultDeviceScaleFactor(1.5);
     initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
                             gfx::Rect(0, 0, 1920, 1100),
                             L"primary",
@@ -377,36 +374,36 @@ class ScreenWinTestSingleDisplay1_5x : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(1u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 1280, 800), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 1280, 734), displays[0].work_area());
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
   EXPECT_EQ(screen->GetAllDisplays()[0],
             screen->GetDisplayNearestWindow(native_window));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(250, 524)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(1279, 733)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_5x, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
   EXPECT_EQ(display,
             screen->GetDisplayMatching(gfx::Rect(1819, 1099, 100, 100)));
 }
 TEST_F(ScreenWinTestSingleDisplay1_5x, GetPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
 }
 
@@ -417,7 +414,7 @@ class ScreenWinTestSingleDisplay2x : public ScreenWinTest {
   ScreenWinTestSingleDisplay2x() = default;
 
   void SetUpScreen(TestScreenWinInitializer* initializer) override {
-    display::win::SetDefaultDeviceScaleFactor(2.0);
+    SetDefaultDeviceScaleFactor(2.0);
     initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
                             gfx::Rect(0, 0, 1920, 1100),
                             L"primary",
@@ -436,30 +433,30 @@ class ScreenWinTestSingleDisplay2x : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestSingleDisplay2x, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(1u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 600), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 550), displays[0].work_area());
 }
 
 TEST_F(ScreenWinTestSingleDisplay2x, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   gfx::NativeWindow native_window = GetNativeWindowFromHWND(GetFakeHwnd());
   EXPECT_EQ(screen->GetAllDisplays()[0],
             screen->GetDisplayNearestWindow(native_window));
 }
 
 TEST_F(ScreenWinTestSingleDisplay2x, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(125, 476)));
   EXPECT_EQ(display, screen->GetDisplayNearestPoint(gfx::Point(959, 599)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay2x, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display display = screen->GetAllDisplays()[0];
+  Screen* screen = GetScreen();
+  Display display = screen->GetAllDisplays()[0];
   EXPECT_EQ(display, screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
   EXPECT_EQ(display,
             screen->GetDisplayMatching(gfx::Rect(1819, 1099, 100, 100)));
@@ -500,7 +497,7 @@ class ScreenWinTestTwoDisplays1x : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(2u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1200), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 1920, 1100), displays[0].work_area());
@@ -513,15 +510,15 @@ TEST_F(ScreenWinTestTwoDisplays1x, GetNumDisplays) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayNearestWindowPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(screen->GetPrimaryDisplay(),
             screen->GetDisplayNearestWindow(nullptr));
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   gfx::NativeWindow left_window = GetNativeWindowFromHWND(GetLeftFakeHwnd());
   EXPECT_EQ(left_display, screen->GetDisplayNearestWindow(left_window));
@@ -531,9 +528,9 @@ TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayNearestWindow) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   EXPECT_EQ(left_display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(left_display, screen->GetDisplayNearestPoint(gfx::Point(250, 952)));
@@ -548,9 +545,9 @@ TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayNearestPoint) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   EXPECT_EQ(left_display,
             screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
@@ -564,8 +561,8 @@ TEST_F(ScreenWinTestTwoDisplays1x, GetDisplayMatching) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x, GetPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display primary = screen->GetPrimaryDisplay();
+  Screen* screen = GetScreen();
+  Display primary = screen->GetPrimaryDisplay();
   EXPECT_EQ(gfx::Point(0, 0), primary.bounds().origin());
 }
 
@@ -575,7 +572,7 @@ class ScreenWinTestTwoDisplays2x : public ScreenWinTest {
   ScreenWinTestTwoDisplays2x() = default;
 
   void SetUpScreen(TestScreenWinInitializer* initializer) override {
-    display::win::SetDefaultDeviceScaleFactor(2.0);
+    SetDefaultDeviceScaleFactor(2.0);
     initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
                             gfx::Rect(0, 0, 1920, 1100),
                             L"primary",
@@ -605,7 +602,7 @@ class ScreenWinTestTwoDisplays2x : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(2u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 600), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 960, 550), displays[0].work_area());
@@ -614,15 +611,15 @@ TEST_F(ScreenWinTestTwoDisplays2x, GetDisplays) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayNearestWindowPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(screen->GetPrimaryDisplay(),
             screen->GetDisplayNearestWindow(nullptr));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   gfx::NativeWindow left_window = GetNativeWindowFromHWND(GetLeftFakeHwnd());
   EXPECT_EQ(left_display, screen->GetDisplayNearestWindow(left_window));
@@ -632,9 +629,9 @@ TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayNearestWindow) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   EXPECT_EQ(left_display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(left_display, screen->GetDisplayNearestPoint(gfx::Point(125, 476)));
@@ -649,9 +646,9 @@ TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayNearestPoint) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   EXPECT_EQ(left_display,
             screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
@@ -665,8 +662,8 @@ TEST_F(ScreenWinTestTwoDisplays2x, GetDisplayMatching) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, GetPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display primary = screen->GetPrimaryDisplay();
+  Screen* screen = GetScreen();
+  Display primary = screen->GetPrimaryDisplay();
   EXPECT_EQ(gfx::Point(0, 0), primary.bounds().origin());
 }
 
@@ -678,7 +675,7 @@ class ScreenWinTestTwoDisplays2x1xVirtualized : public ScreenWinTest {
   ScreenWinTestTwoDisplays2x1xVirtualized() = default;
 
   void SetUpScreen(TestScreenWinInitializer* initializer) override {
-    display::win::SetDefaultDeviceScaleFactor(2.0);
+    SetDefaultDeviceScaleFactor(2.0);
     initializer->AddMonitor(gfx::Rect(0, 0, 3200, 1600),
                             gfx::Rect(0, 0, 3200, 1500),
                             L"primary",
@@ -708,7 +705,7 @@ class ScreenWinTestTwoDisplays2x1xVirtualized : public ScreenWinTest {
 };
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplays) {
-  std::vector<gfx::Display> displays = GetScreen()->GetAllDisplays();
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
   ASSERT_EQ(2u, displays.size());
   EXPECT_EQ(gfx::Rect(0, 0, 1600, 800), displays[0].bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 1600, 750), displays[0].work_area());
@@ -722,15 +719,15 @@ TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetNumDisplays) {
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized,
        GetDisplayNearestWindowPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
+  Screen* screen = GetScreen();
   EXPECT_EQ(screen->GetPrimaryDisplay(),
             screen->GetDisplayNearestWindow(nullptr));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplayNearestWindow) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   gfx::NativeWindow left_window = GetNativeWindowFromHWND(GetLeftFakeHwnd());
   EXPECT_EQ(left_display, screen->GetDisplayNearestWindow(left_window));
@@ -740,9 +737,9 @@ TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplayNearestWindow) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplayNearestPoint) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   EXPECT_EQ(left_display, screen->GetDisplayNearestPoint(gfx::Point(0, 0)));
   EXPECT_EQ(left_display, screen->GetDisplayNearestPoint(gfx::Point(125, 476)));
@@ -757,9 +754,9 @@ TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplayNearestPoint) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplayMatching) {
-  gfx::Screen* screen = GetScreen();
-  const gfx::Display left_display = screen->GetAllDisplays()[0];
-  const gfx::Display right_display = screen->GetAllDisplays()[1];
+  Screen* screen = GetScreen();
+  const Display left_display = screen->GetAllDisplays()[0];
+  const Display right_display = screen->GetAllDisplays()[1];
 
   EXPECT_EQ(left_display,
             screen->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
@@ -773,8 +770,8 @@ TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetDisplayMatching) {
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetPrimaryDisplay) {
-  gfx::Screen* screen = GetScreen();
-  gfx::Display primary = screen->GetPrimaryDisplay();
+  Screen* screen = GetScreen();
+  Display primary = screen->GetPrimaryDisplay();
   EXPECT_EQ(gfx::Point(0, 0), primary.bounds().origin());
 }
 

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
@@ -35,7 +35,7 @@ class ModeIndicatorFrameView : public views::BubbleFrameView {
  private:
   // views::BubbleFrameView overrides:
   gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const override {
-    return gfx::Screen::GetScreen()
+    return display::Screen::GetScreen()
         ->GetDisplayNearestPoint(rect.CenterPoint())
         .bounds();
   }

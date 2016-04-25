@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "ui/display/display.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win_display.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
@@ -32,9 +32,9 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
   return screen_win_displays;
 }
 
-std::vector<gfx::Display> ScreenWinDisplaysToDisplays(
+std::vector<display::Display> ScreenWinDisplaysToDisplays(
     const std::vector<ScreenWinDisplay>& screen_win_displays) {
-  std::vector<gfx::Display> displays;
+  std::vector<display::Display> displays;
   for (const auto& screen_win_display : screen_win_displays)
     displays.push_back(screen_win_display.display());
 
@@ -177,11 +177,12 @@ int ScreenWin::GetNumDisplays() const {
   return static_cast<int>(screen_win_displays_.size());
 }
 
-std::vector<gfx::Display> ScreenWin::GetAllDisplays() const {
+std::vector<display::Display> ScreenWin::GetAllDisplays() const {
   return ScreenWinDisplaysToDisplays(screen_win_displays_);
 }
 
-gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
+display::Display ScreenWin::GetDisplayNearestWindow(
+    gfx::NativeView window) const {
   HWND window_hwnd = GetHWNDFromNativeView(window);
   if (!window_hwnd) {
     // When |window| isn't rooted to a display, we should just return the
@@ -194,28 +195,29 @@ gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
   return screen_win_display.display();
 }
 
-gfx::Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
+Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
   gfx::Point screen_point(DIPToScreenPoint(point));
   ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayNearestScreenPoint(screen_point);
   return screen_win_display.display();
 }
 
-gfx::Display ScreenWin::GetDisplayMatching(const gfx::Rect& match_rect) const {
+display::Display ScreenWin::GetDisplayMatching(
+    const gfx::Rect& match_rect) const {
   ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayNearestScreenRect(match_rect);
   return screen_win_display.display();
 }
 
-gfx::Display ScreenWin::GetPrimaryDisplay() const {
+display::Display ScreenWin::GetPrimaryDisplay() const {
   return GetPrimaryScreenWinDisplay().display();
 }
 
-void ScreenWin::AddObserver(gfx::DisplayObserver* observer) {
+void ScreenWin::AddObserver(display::DisplayObserver* observer) {
   change_notifier_.AddObserver(observer);
 }
 
-void ScreenWin::RemoveObserver(gfx::DisplayObserver* observer) {
+void ScreenWin::RemoveObserver(display::DisplayObserver* observer) {
   change_notifier_.RemoveObserver(observer);
 }
 
@@ -261,7 +263,7 @@ void ScreenWin::OnWndProc(HWND hwnd,
   if (message != WM_DISPLAYCHANGE)
     return;
 
-  std::vector<gfx::Display> old_displays = GetAllDisplays();
+  std::vector<display::Display> old_displays = GetAllDisplays();
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   change_notifier_.NotifyDisplaysChanged(old_displays, GetAllDisplays());
 }
@@ -286,7 +288,7 @@ ScreenWinDisplay ScreenWin::GetPrimaryScreenWinDisplay() const {
   MONITORINFOEX monitor_info = MonitorInfoFromWindow(nullptr,
                                                      MONITOR_DEFAULTTOPRIMARY);
   ScreenWinDisplay screen_win_display = GetScreenWinDisplay(monitor_info);
-  gfx::Display display = screen_win_display.display();
+  display::Display display = screen_win_display.display();
   // The Windows primary monitor is defined to have an origin of (0, 0).
   DCHECK_EQ(0, display.bounds().origin().x());
   DCHECK_EQ(0, display.bounds().origin().y());

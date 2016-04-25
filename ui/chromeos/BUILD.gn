@@ -56,6 +56,7 @@ component("ui_chromeos") {
     "//ui/base/ime",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
+    "//ui/display",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/gfx",
