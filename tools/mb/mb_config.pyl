@@ -1049,7 +1049,7 @@
     # that the GYP_DEFINES (or GN args) are set by the `cros chrome-sdk`
     # wrapper and need to be looked at specially.
     'cros_chrome_sdk_gyp': [
-      'gyp', 'error',
+      'gyp', 'cros_chrome_sdk',
     ],
 
     # The 'findit' config is used by the *_variable_* bots, which run
@@ -1930,6 +1930,17 @@
       'gyp_defines': ('disable_file_support=1 disable_ftp_support=1 '
                       'enable_websockets=0 use_platform_icu_alternatives=1 '
                       'disable_brotli_filter=1'),
+    },
+
+    'cros_chrome_sdk': {
+      # This is used so that the cros chrome_sdk (simplechrome) builders
+      # can manage the list of GYP_DEFINES and gn args in their .ebuild
+      # files and just pass through the desired arguments, hence not
+      # really using MB. If a bot uses this mixin, we expect that
+      # both GYP_DEFINES and GN_ARGS are set in the environment,
+      # and that GYP_DEFINES has chromeos=1 and GN_ARGS has
+      # target_os="chromeos" in it.
+      'cros_passthrough': True,
     },
 
     'crosscompile': {
