@@ -483,6 +483,17 @@ def GetChangeDetail(host, change, o_params=None):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
+def GetChangeDescriptionFromGitiles(url, revision):
+  """Query Gitiles for actual commit message for a given url and ref.
+
+  url must be obtained from call to GetChangeDetail for a specific
+  revision (patchset) under 'fetch' key.
+  """
+  parsed = urlparse.urlparse(url)
+  path = '%s/+/%s?format=json' % (parsed.path, revision)
+  return ReadHttpJsonResponse(CreateHttpConn(parsed.netloc, path))['message']
+
+
 def GetChangeCurrentRevision(host, change):
   """Get information about the latest revision for a given change."""
   return QueryChanges(host, {}, change, o_params=('CURRENT_REVISION',))
