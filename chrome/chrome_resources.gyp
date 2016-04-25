@@ -222,6 +222,9 @@
             }
           ],
         }],
+        ['OS != "android" and OS != "ios"', {
+          'dependencies': [ 'make_file_types_protobuf' ]
+        }],
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
@@ -291,6 +294,45 @@
           },
           'includes': [ 'chrome_grit_action.gypi' ],
         },
+      ],
+    },
+
+    {
+      # GN version: //chrome/browser/resources/safe_browsing:make_file_types_protobuf
+      # Convert the ascii proto file to a binary resource.
+      'target_name': 'make_file_types_protobuf',
+      'type': 'none',
+      'hard_dependency': 1,
+      'dependencies': [
+        'chrome.gyp:safe_browsing_proto',
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:py_proto',
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_file_types_protobuf',
+          'variables' : {
+            'script_file':'browser/resources/safe_browsing/gen_file_type_proto.py',
+            'asciipb_file' : 'browser/resources/safe_browsing/download_file_types.asciipb',
+            'output_file' : '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/safe_browsing/download_file_types.pb',
+          },
+          'inputs': [
+            '<(script_file)',
+            '<(asciipb_file)',
+          ],
+          'outputs': [
+            '<(output_file)',
+          ],
+          'action': [
+            'python',
+            '<(script_file)',
+            '-w',
+            '-i', '<(asciipb_file)',
+            '-o', '<(output_file)',
+            '-p', '<(PRODUCT_DIR)/pyproto',
+            '-p', '<(PRODUCT_DIR)/pyproto/chrome/common/safe_browsing',
+          ],
+          'message': 'Generating download_file_types.pb.',
+        }
       ],
     },
     {

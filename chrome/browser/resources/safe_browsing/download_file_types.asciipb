@@ -1,0 +1,44 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# See README.md before editing this file.
+#
+# Placeholder for list of file extensions that the download manager
+# knows about.
+# TODO(nparker): Populate this with full list.
+version_id: 1
+sampled_ping_probability: 0.0
+default_file_type {
+  uma_value: 19
+  platform_settings {
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+    ping_setting: SAMPLED_PING
+  }
+}
+#
+# File types:
+#
+file_types {
+  extension: "exe"
+  uma_value: 777
+  platform_settings {
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+    ping_setting: FULL_PING
+  }
+}
+file_types {
+  extension: "zip"
+  uma_value: 888
+  is_archive: true
+  platform_settings {
+    danger_level: NOT_DANGEROUS
+    auto_open_hint: ALLOW_AUTO_OPEN
+    ping_setting: SAMPLED_PING
+  }
+}
+# file_types {...}
+# file_types {...}
+# file_types {...}

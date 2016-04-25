@@ -1,0 +1,43 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Generate the binary proto form of "file_types" from the ascii proto.
+action("make_file_types_protobuf") {
+  script = "gen_file_type_proto.py"
+
+  # The output goes in $target_gen_dir since that's where
+  # chrome/browser/browser_resources.grd will look for it.
+
+  input_filename = "download_file_types.asciipb"
+  output_filename = "$target_gen_dir/download_file_types.pb"
+  python_path_root = "$root_build_dir/pyproto"
+  python_path_safe_browsing = "$python_path_root/chrome/common/safe_browsing"
+
+  inputs = [
+    script,
+    input_filename,
+  ]
+
+  # This script requires the generated python proto code
+  deps = [
+    "//chrome/common/safe_browsing:proto",
+    "//third_party/protobuf:py_proto",
+  ]
+
+  outputs = [
+    output_filename,
+  ]
+
+  args = [
+    "-w",
+    "-i",
+    rebase_path(input_filename, root_build_dir),
+    "-o",
+    rebase_path(output_filename, root_build_dir),
+    "-p",
+    rebase_path(python_path_root, root_build_dir),
+    "-p",
+    rebase_path(python_path_safe_browsing, root_build_dir),
+  ]
+}
