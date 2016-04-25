@@ -22,10 +22,6 @@ TopControls::TopControls(const FrameHost& frameHost)
 {
 }
 
-TopControls::~TopControls()
-{
-}
-
 DEFINE_TRACE(TopControls)
 {
     visitor->trace(m_frameHost);

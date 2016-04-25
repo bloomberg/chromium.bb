@@ -33,6 +33,8 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageScaleConstraints.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"

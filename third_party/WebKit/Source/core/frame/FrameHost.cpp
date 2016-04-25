@@ -32,6 +32,8 @@
 
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PageScaleConstraints.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/TopControls.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
@@ -165,7 +167,7 @@ void FrameHost::setDefaultPageScaleLimits(float minScale, float maxScale)
     rootView->setNeedsLayout();
 }
 
-void FrameHost::setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints)
+void FrameHost::setUserAgentPageScaleConstraints(const PageScaleConstraints& newConstraints)
 {
     if (newConstraints == pageScaleConstraintsSet().userAgentConstraints())
         return;

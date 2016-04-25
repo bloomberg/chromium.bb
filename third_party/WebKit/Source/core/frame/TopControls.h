@@ -19,14 +19,13 @@ class FloatSize;
 // duplicating cc::TopControlsManager behaviour.  Top controls' self-animation
 // to completion is still handled by compositor and kicks in when scrolling is
 // complete (i.e, upon ScrollEnd or FlingEnd).
-class CORE_EXPORT TopControls final : public GarbageCollectedFinalized<TopControls> {
+class CORE_EXPORT TopControls final : public GarbageCollected<TopControls> {
 public:
     static TopControls* create(const FrameHost& host)
     {
         return new TopControls(host);
     }
 
-    ~TopControls();
     DECLARE_TRACE();
 
     // The amount that the viewport was shrunk by to accommodate the top

@@ -32,14 +32,12 @@
 #define FrameHost_h
 
 #include "core/CoreExport.h"
-#include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/TopControls.h"
-#include "core/frame/VisualViewport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 
@@ -48,10 +46,13 @@ class ConsoleMessageStorage;
 class Deprecation;
 class EventHandlerRegistry;
 class Page;
+struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class Settings;
+class TopControls;
 class UseCounter;
 class Visitor;
+class VisualViewport;
 
 // FrameHost is the set of global data shared between multiple frames
 // and is provided by the embedder to each frame when created.
@@ -102,7 +103,7 @@ public:
     int subframeCount() const;
 
     void setDefaultPageScaleLimits(float minScale, float maxScale);
-    void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
+    void setUserAgentPageScaleConstraints(const PageScaleConstraints& newConstraints);
 
 private:
     explicit FrameHost(Page&);

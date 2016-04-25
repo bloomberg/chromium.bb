@@ -56,6 +56,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/TopControls.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLCanvasElement.h"
