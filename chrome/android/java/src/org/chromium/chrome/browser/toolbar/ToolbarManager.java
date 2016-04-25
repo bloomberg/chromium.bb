@@ -272,6 +272,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
             @Override
             public void didCloseTab(int tabId, boolean incognito) {
+                mLocationBar.setTitleToPageTitle();
                 updateTabCount();
                 refreshSelectedTab();
             }
