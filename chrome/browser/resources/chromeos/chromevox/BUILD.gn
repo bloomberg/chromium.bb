@@ -332,11 +332,9 @@ test("chromevox_tests") {
     "//content/test:browsertest_base",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-  if (cld_version == 0 || cld_version == 2) {
     # Because the browser_tests use translate, they need CLD data.
-    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
-  }
+    "//third_party/cld_2:cld2_platform_impl"
+  ]
 }
 
 action("chromevox_test_messages_js") {

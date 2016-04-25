@@ -93,16 +93,13 @@ source_set("test_support") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/cld_2:cld2_static",
   ]
 
   public_deps = [
     "//content/public/browser",
     "//extensions/common/api/cast_channel:cast_channel_proto",
   ]
-
-  if (cld_version == 2) {
-    deps += [ "//third_party/cld_2:cld2_static" ]
-  }
 }
 
 # GYP version: //extensions/extensions.gyp:extensions_shell_and_test_pak

@@ -120,11 +120,6 @@ declare_args() {
 
 # Additional dependent variables -----------------------------------------------
 
-# Set the version of CLD.
-#   1: (DEPRECATED! See http://crbug.com/528305 for info) Use only CLD1.
-#   2: Use only CLD2.
-cld_version = 2
-
 # Enable the spell checker.
 enable_spellcheck = !is_ios
 

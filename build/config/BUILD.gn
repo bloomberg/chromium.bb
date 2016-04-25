@@ -51,7 +51,6 @@ config("feature_flags") {
   # TODO(brettw) this probably needs to be parameterized.
   defines = [
     "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
-    "CLD_VERSION=$cld_version",
   ]
   if (enable_mdns) {
     defines += [ "ENABLE_MDNS=1" ]

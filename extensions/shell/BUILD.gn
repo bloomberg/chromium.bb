@@ -57,6 +57,7 @@ source_set("app_shell_lib") {
     "//mojo/edk/system",
     "//skia",
     "//third_party/WebKit/public:blink",
+    "//third_party/cld_2:cld2_platform_impl",
     "//ui/base",
     "//ui/base/ime",
     "//v8",
@@ -108,10 +109,6 @@ source_set("app_shell_lib") {
         "//components/nacl/loader:nacl_helper",
       ]
     }
-  }
-
-  if (cld_version == 2) {
-    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
   }
 }
 

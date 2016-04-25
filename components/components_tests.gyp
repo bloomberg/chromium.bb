@@ -1042,6 +1042,7 @@
         '../sync/sync.gyp:test_support_sync_api',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/cld_2/cld_2.gyp:cld2_static',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
@@ -1211,11 +1212,6 @@
             'components.gyp:browser_watcher',
             'components.gyp:browser_watcher_client',
           ]
-        }],
-        [ 'cld_version==2', {
-          'dependencies': [
-            # Unit tests should always use statically-linked CLD data.
-            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_static', ],
         }],
         ['OS != "ios"', {
           'sources': [

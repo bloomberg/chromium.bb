@@ -37,15 +37,10 @@
           'utility',
           '../content/content.gyp:content_gpu',
           '../content/content.gyp:content_ppapi_plugin',
+          '../third_party/cld_2/cld_2.gyp:cld2_platform_impl',
           '../third_party/WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources',
         ],
         'conditions': [
-          [ 'cld_version==0 or cld_version==2', {
-            'chromium_child_dependencies': [
-              # Use whatever CLD2 data access mode that the application
-              # embedder is using.
-              '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
-          }],
           ['enable_plugins==1 and disable_nacl==0', {
             'chromium_child_dependencies': [
               '<(DEPTH)/components/nacl/renderer/plugin/plugin.gyp:nacl_trusted_plugin',

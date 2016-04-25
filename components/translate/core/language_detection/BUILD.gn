@@ -14,15 +14,8 @@ source_set("language_detection") {
     "//base",
     "//components/translate/core/common",
     "//url",
+    "//third_party/cld_2:cld2_platform_impl",
   ]
-
-  if (cld_version == 1) {
-    deps += [ "//third_party/cld" ]
-  } else if (cld_version == 2) {
-    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
-  } else {
-    assert(false, "Need a CLD version")
-  }
 }
 
 source_set("unit_tests") {

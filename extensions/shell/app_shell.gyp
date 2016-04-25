@@ -49,6 +49,7 @@
         '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl',
         '<(DEPTH)/ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
@@ -65,10 +66,6 @@
         '<@(app_shell_lib_sources)',
       ],
       'conditions': [
-        [ 'cld_version==2', {
-              'dependencies': [
-                '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
-        }],
         ['use_aura==1', {
           'dependencies': [
             '<(DEPTH)/ui/wm/wm.gyp:wm',

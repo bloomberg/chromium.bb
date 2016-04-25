@@ -350,6 +350,7 @@ if (!is_android) {
       "//sync",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/cld_2:cld2_platform_impl",
       "//third_party/hunspell",
       "//third_party/icu",
       "//third_party/libpng",
@@ -514,12 +515,6 @@ if (!is_android) {
                 ".",
                 "//chrome")
       }
-    }
-
-    if (cld_version == 2) {
-      # Interactive tests should use whatever CLD2 data access mode that the
-      # application embedder is using.
-      deps += [ "//third_party/cld_2:cld2_platform_impl" ]
     }
 
     if (use_x11) {
@@ -932,6 +927,7 @@ if (!is_android) {
       "//testing/gtest",
       "//testing/perf",
       "//third_party/cacheinvalidation",
+      "//third_party/cld_2:cld2_platform_impl",
       "//third_party/icu",
       "//third_party/leveldatabase",
       "//third_party/libaddressinput",
@@ -968,11 +964,6 @@ if (!is_android) {
     #       ['incremental_chrome_dll==1', {
     #         'UseLibraryDependencyInputs': "true",
     # }
-
-    if (cld_version == 2) {
-      # Because the browser_tests use translate, they need CLD data.
-      deps += [ "//third_party/cld_2:cld2_platform_impl" ]
-    }
 
     if (!enable_one_click_signin) {
       sources -= [ "../browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc" ]
@@ -1419,6 +1410,9 @@ if (!is_android) {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/WebKit/public:blink",
+      # Language detection is irrelevant to sync, so it can depend on any
+      # implementation for CLD2. Dynamic is smaller, so go with dynamic.
+      "//third_party/cld_2:cld2_dynamic",
       "//third_party/icu",
       "//third_party/leveldatabase",
     ]
@@ -1427,11 +1421,6 @@ if (!is_android) {
       "//third_party/mesa:osmesa",
     ]
 
-    if (cld_version == 2) {
-      # Language detection is irrelevant to sync, so it can depend on any
-      # implementation for CLD2. Dynamic is smaller, so go with dynamic.
-      deps += [ "//third_party/cld_2:cld2_dynamic" ]
-    }
     if (is_mac) {
       # Dictionary sync is disabled on Mac.
       sources -= [
@@ -1495,13 +1484,10 @@ if (!is_android) {
       "//sync",
       "//testing/gmock",
       "//testing/gtest",
-    ]
-
-    if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any
       # implementation for CLD2. Dynamic is smaller, so go with dynamic.
-      deps += [ "//third_party/cld_2:cld2_dynamic" ]
-    }
+      "//third_party/cld_2:cld2_dynamic",
+    ]
 
     if (is_mac) {
       # Dictionary sync is disabled on Mac.
@@ -1649,6 +1635,9 @@ test("unit_tests") {
     "//google_apis",
     "//skia",
     "//third_party/cacheinvalidation",
+    # Unit tests should be independent of the CLD2 access mechanism, just use
+    # static for simplicity.
+    "//third_party/cld_2:cld2_static",
     "//third_party/icu",
     "//third_party/libxml",
     "//ui/base:test_support",
@@ -1956,11 +1945,6 @@ test("unit_tests") {
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
   }
-  if (cld_version == 2) {
-    # Unit tests should be independent of the CLD2 access mechanism, just use
-    # static for simplicity.
-    deps += [ "//third_party/cld_2:cld2_static" ]
-  }
   if (is_desktop_linux && current_cpu == "x64") {
     # Only add this test for 64 bit builds because otherwise we need the 32
     # bit library on 64 bit systems when running this test.
@@ -2149,11 +2133,6 @@ test("unit_tests") {
   if (safe_browsing_mode == 1 && enable_extensions) {
     sources += [ "../browser/extensions/blacklist_unittest.cc" ]
   }
-  if (cld_version == 1) {
-    sources += [ "//third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc" ]
-    defines += [ "CLD_WINDOWS" ]
-    deps += [ "//third_party/cld" ]
-  }
   if (enable_app_list) {
     sources += rebase_path(
             chrome_tests_unit_gypi_values.chrome_unit_tests_app_list_sources,
@@ -2202,13 +2181,9 @@ if (is_win || is_mac || is_linux) {
       "//chrome/child",
       "//components/crash/core/common",
       "//components/flags_ui:switches",
+      "//third_party/cld_2:cld2_platform_impl",
       "//third_party/kasko:kasko_features",
     ]
-    if (cld_version == 2) {
-      # Use whatever CLD2 data access mode that the
-      # application embedder is using.
-      deps += [ "//third_party/cld_2:cld2_platform_impl" ]
-    }
   }
 }
 
@@ -2237,6 +2212,7 @@ if (is_win || (is_linux && !is_chromeos)) {
       "//testing/gmock",
       "//testing/gtest",
       "//testing/perf",
+      "//third_party/cld_2:cld2_platform_impl"
     ]
 
     if (is_win) {
@@ -2254,12 +2230,6 @@ if (is_win || (is_linux && !is_chromeos)) {
     }
     if (!is_mac) {
       sources -= [ "perf/mach_ports_performancetest.cc" ]
-    }
-
-    if (cld_version == 2) {
-      # Use whatever CLD2 data access mode that the
-      # application embedder is using.
-      deps += [ "//third_party/cld_2:cld2_platform_impl" ]
     }
   }
 }

@@ -305,6 +305,7 @@ if (is_mac || is_win) {
       ":browser_dependencies",
       "//build/config/sanitizers:deps",
       "//chrome/common:features",
+      "//third_party/cld_2",
     ]
     if (is_win) {
       output_name = "chrome"
@@ -348,10 +349,6 @@ if (is_mac || is_win) {
         ":child_dependencies",
         "//content/public/app:both",
       ]
-    }
-
-    if (cld_version == 2) {
-      deps += [ "//third_party/cld_2" ]
     }
 
     if (is_mac) {
@@ -492,6 +489,7 @@ group("child_dependencies") {
   public_deps = [
     "//chrome/common",
     "//sync",
+    "//third_party/cld_2:cld2_platform_impl",
   ]
   if (!is_ios) {
     public_deps += [
@@ -503,9 +501,6 @@ group("child_dependencies") {
       "//content/public/child",
       "//third_party/WebKit/public:blink_devtools_frontend_resources",
     ]
-  }
-  if (cld_version == 2) {
-    public_deps += [ "//third_party/cld_2:cld2_platform_impl" ]
   }
 
   if (enable_nacl) {

@@ -99,18 +99,14 @@
       'type': 'none',
       'dependencies': [
         '../../chrome/chrome.gyp:chrome_android_core',
+        # TODO(yfriedman): move this DEP to chrome_android_core to be shared  
+        # between internal/external.
+         '../../third_party/cld_2/cld_2.gyp:cld2_dynamic',
       ],
       'include_dirs': [
         '../..',
       ],
       'conditions': [
-        # TODO(yfriedman): move this DEP to chrome_android_core to be shared
-        # between internal/external.
-        ['cld_version==2', {
-          'dependencies': [
-            '../../third_party/cld_2/cld_2.gyp:cld2_dynamic',
-          ],
-        }],
         # conditions for order_text_section
         # Cygprofile methods need to be linked into the instrumented build.
         ['order_profiling!=0', {

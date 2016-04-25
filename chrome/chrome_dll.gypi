@@ -124,6 +124,7 @@
             'chrome_features.gyp:chrome_common_features',
             'policy_path_parser',
             '../content/content.gyp:content_app_browser',
+            '../third_party/cld_2/cld_2.gyp:cld_2',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -269,16 +270,6 @@
             ['chrome_multiple_dll==0 and enable_plugins==1', {
               'dependencies': [
                 '../pdf/pdf.gyp:pdf',
-              ],
-            }],
-            ['cld_version==1', {
-              'dependencies': [
-                '<(DEPTH)/third_party/cld/cld.gyp:cld',
-              ],
-            }],
-            ['cld_version==2', {
-              'dependencies': [
-                '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
               ],
             }],
             ['OS=="mac" and component!="shared_library"', {

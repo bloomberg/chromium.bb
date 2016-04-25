@@ -110,16 +110,11 @@
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_base',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         'chromevox_test_deps_js',
       ],
       'conditions': [
-        [ 'cld_version==0 or cld_version==2', {
-          'dependencies': [
-            # Interactive tests should use whatever CLD2 data access mode that
-            # the application embedder is using.
-            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
-        }],
         ['disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
             '<(DEPTH)/components/nacl.gyp:nacl_helper',

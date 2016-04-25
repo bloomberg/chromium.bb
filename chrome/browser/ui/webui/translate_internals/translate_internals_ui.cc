@@ -62,17 +62,10 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
 
   std::string cld_version = "";
   std::string cld_data_source = "";
-  // The version strings are hardcoded here to avoid linking with the CLD
+  // The version string is hardcoded here to avoid linking with the CLD
   // library, see http://crbug.com/297777.
-#if CLD_VERSION==1
-  cld_version = "1.6";
-  cld_data_source = "static"; // CLD1.x does not support dynamic data loading
-#elif CLD_VERSION==2
   cld_version = "2";
   cld_data_source = translate::CldDataSource::Get()->GetName();
-#else
-  NOTREACHED();
-#endif
   source->AddString("cld-version", cld_version);
   source->AddString("cld-data-source", cld_data_source);
 
