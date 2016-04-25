@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_USER_MANAGER_USER_IMAGE_USER_IMAGE_H_
 #define COMPONENTS_USER_MANAGER_USER_IMAGE_USER_IMAGE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/user_manager/user_manager_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -27,12 +27,13 @@ class USER_MANAGER_EXPORT UserImage {
 
   // Encodes the given bitmap to bytes representation for WebUI. Returns null
   // on failure.
-  static scoped_ptr<Bytes> Encode(const SkBitmap& bitmap);
+  static std::unique_ptr<Bytes> Encode(const SkBitmap& bitmap);
 
   // Creates a new instance from a given still frame and tries to encode it
   // to bytes representation for WebUI. Always returns a non-null result.
   // TODO(ivankr): remove eventually.
-  static scoped_ptr<UserImage> CreateAndEncode(const gfx::ImageSkia& image);
+  static std::unique_ptr<UserImage> CreateAndEncode(
+      const gfx::ImageSkia& image);
 
   // Create instance with an empty still frame and no bytes
   // representation for WebUI.

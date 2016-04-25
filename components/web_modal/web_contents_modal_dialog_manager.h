@@ -6,9 +6,9 @@
 #define COMPONENTS_WEB_MODAL_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -41,7 +41,7 @@ class WebContentsModalDialogManager
   // bubble clients.
   void ShowDialogWithManager(
       gfx::NativeWindow dialog,
-      scoped_ptr<SingleWebContentsDialogManager> manager);
+      std::unique_ptr<SingleWebContentsDialogManager> manager);
 
   // Returns true if any dialogs are active and not closed.
   bool IsDialogActive() const;
@@ -77,11 +77,11 @@ class WebContentsModalDialogManager
 
   struct DialogState {
     DialogState(gfx::NativeWindow dialog,
-                scoped_ptr<SingleWebContentsDialogManager> manager);
+                std::unique_ptr<SingleWebContentsDialogManager> manager);
     ~DialogState();
 
     gfx::NativeWindow dialog;
-    scoped_ptr<SingleWebContentsDialogManager> manager;
+    std::unique_ptr<SingleWebContentsDialogManager> manager;
   };
 
   typedef std::deque<DialogState*> WebContentsModalDialogList;

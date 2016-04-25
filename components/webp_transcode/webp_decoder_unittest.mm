@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/ios/ios_util.h"
@@ -120,9 +122,9 @@ class WebpDecoderTest : public testing::Test {
   bool CheckCompressedImagesEqual(NSData* data_1,
                                   NSData* data_2,
                                   WebpDecoder::DecodedImageFormat format) {
-    scoped_ptr<std::vector<uint8_t>> uncompressed_1(
+    std::unique_ptr<std::vector<uint8_t>> uncompressed_1(
         DecompressData(data_1, format));
-    scoped_ptr<std::vector<uint8_t>> uncompressed_2(
+    std::unique_ptr<std::vector<uint8_t>> uncompressed_2(
         DecompressData(data_2, format));
     if (uncompressed_1->size() != uncompressed_2->size()) {
       DLOG(ERROR) << "Image sizes don't match";

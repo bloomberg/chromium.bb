@@ -32,7 +32,7 @@ void ZoomEventManager::OnZoomLevelChanged(
   zoom_level_changed_callbacks_.Notify(change);
 }
 
-scoped_ptr<content::HostZoomMap::Subscription>
+std::unique_ptr<content::HostZoomMap::Subscription>
 ZoomEventManager::AddZoomLevelChangedCallback(
     const content::HostZoomMap::ZoomLevelChangedCallback& callback) {
   return zoom_level_changed_callbacks_.Add(callback);

@@ -742,8 +742,8 @@ URLMatcherConditionSet::URLMatcherConditionSet(
 URLMatcherConditionSet::URLMatcherConditionSet(
     ID id,
     const Conditions& conditions,
-    scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
-    scoped_ptr<URLMatcherPortFilter> port_filter)
+    std::unique_ptr<URLMatcherSchemeFilter> scheme_filter,
+    std::unique_ptr<URLMatcherPortFilter> port_filter)
     : id_(id),
       conditions_(conditions),
       scheme_filter_(std::move(scheme_filter)),
@@ -753,8 +753,8 @@ URLMatcherConditionSet::URLMatcherConditionSet(
     ID id,
     const Conditions& conditions,
     const QueryConditions& query_conditions,
-    scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
-    scoped_ptr<URLMatcherPortFilter> port_filter)
+    std::unique_ptr<URLMatcherSchemeFilter> scheme_filter,
+    std::unique_ptr<URLMatcherPortFilter> port_filter)
     : id_(id),
       conditions_(conditions),
       query_conditions_(query_conditions),

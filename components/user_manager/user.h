@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_USER_MANAGER_USER_H_
 #define COMPONENTS_USER_MANAGER_USER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -205,14 +205,14 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Setters are private so only UserManager can call them.
   void SetAccountLocale(const std::string& resolved_account_locale);
 
-  void SetImage(scoped_ptr<UserImage> user_image, int image_index);
+  void SetImage(std::unique_ptr<UserImage> user_image, int image_index);
 
   void SetImageURL(const GURL& image_url);
 
   // Sets a stub image until the next |SetImage| call. |image_index| may be
   // one of |USER_IMAGE_EXTERNAL| or |USER_IMAGE_PROFILE|.
   // If |is_loading| is |true|, that means user image is being loaded from file.
-  void SetStubImage(scoped_ptr<UserImage> stub_user_image,
+  void SetStubImage(std::unique_ptr<UserImage> stub_user_image,
                     int image_index,
                     bool is_loading);
 
@@ -264,7 +264,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
   bool using_saml_ = false;
-  scoped_ptr<UserImage> user_image_;
+  std::unique_ptr<UserImage> user_image_;
   OAuthTokenStatus oauth_token_status_ = OAUTH_TOKEN_STATUS_UNKNOWN;
   bool force_online_signin_ = false;
 
@@ -272,7 +272,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // (Or failed to download, but at least one download attempt finished).
   // An empty string indicates error in data load, or in
   // translation of Account locale to chromeos locale.
-  scoped_ptr<std::string> account_locale_;
+  std::unique_ptr<std::string> account_locale_;
 
   // Used to identify homedir mount point.
   std::string username_hash_;

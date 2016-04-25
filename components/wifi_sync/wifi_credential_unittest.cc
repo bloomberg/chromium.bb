@@ -4,6 +4,8 @@
 
 #include "components/wifi_sync/wifi_credential.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/values.h"
 #include "components/onc/onc_constants.h"
@@ -23,11 +25,8 @@ const char kPassphrase8021X[] = "fake-8021X-passphrase";
 WifiCredential MakeCredential(const std::string& ssid,
                               WifiSecurityClass security_class,
                               const std::string& passphrase) {
-  scoped_ptr<WifiCredential> credential =
-      WifiCredential::Create(
-          WifiCredential::MakeSsidBytesForTest(ssid),
-          security_class,
-          passphrase);
+  std::unique_ptr<WifiCredential> credential = WifiCredential::Create(
+      WifiCredential::MakeSsidBytesForTest(ssid), security_class, passphrase);
   CHECK(credential);
   return *credential;
 }
@@ -63,27 +62,22 @@ std::string GetPassphrase(const base::DictionaryValue& onc_properties) {
 }  // namespace
 
 TEST(WifiCredentialTest, CreateWithSecurityClassInvalid) {
-  scoped_ptr<WifiCredential> credential =
-      WifiCredential::Create(
-          WifiCredential::MakeSsidBytesForTest(kSsid),
-          SECURITY_CLASS_INVALID,
-          "");
+  std::unique_ptr<WifiCredential> credential = WifiCredential::Create(
+      WifiCredential::MakeSsidBytesForTest(kSsid), SECURITY_CLASS_INVALID, "");
   EXPECT_FALSE(credential);
 }
 
 TEST(WifiCredentialTest, CreateWithPassphraseNonUtf8) {
-  scoped_ptr<WifiCredential> credential =
-      WifiCredential::Create(
-          WifiCredential::MakeSsidBytesForTest(kSsid),
-          SECURITY_CLASS_WEP,
-          kPassphraseWepNonUtf8);
+  std::unique_ptr<WifiCredential> credential =
+      WifiCredential::Create(WifiCredential::MakeSsidBytesForTest(kSsid),
+                             SECURITY_CLASS_WEP, kPassphraseWepNonUtf8);
   EXPECT_FALSE(credential);
 }
 
 TEST(WifiCredentialTest, ToOncPropertiesSecurityNone) {
   const WifiCredential credential(
       MakeCredential(kSsid, SECURITY_CLASS_NONE, ""));
-  scoped_ptr<base::DictionaryValue> onc_properties =
+  std::unique_ptr<base::DictionaryValue> onc_properties =
       credential.ToOncProperties();
   ASSERT_TRUE(onc_properties);
   EXPECT_TRUE(TypeIsWifi(*onc_properties));
@@ -94,7 +88,7 @@ TEST(WifiCredentialTest, ToOncPropertiesSecurityNone) {
 TEST(WifiCredentialTest, ToOncPropertiesSecurityWep) {
   const WifiCredential credential(
       MakeCredential(kSsid, SECURITY_CLASS_WEP, kPassphraseWep));
-  scoped_ptr<base::DictionaryValue> onc_properties =
+  std::unique_ptr<base::DictionaryValue> onc_properties =
       credential.ToOncProperties();
   ASSERT_TRUE(onc_properties);
   EXPECT_TRUE(TypeIsWifi(*onc_properties));
@@ -106,7 +100,7 @@ TEST(WifiCredentialTest, ToOncPropertiesSecurityWep) {
 TEST(WifiCredentialTest, ToOncPropertiesSecurityPsk) {
   const WifiCredential credential(
       MakeCredential(kSsid, SECURITY_CLASS_PSK, kPassphrasePsk));
-  scoped_ptr<base::DictionaryValue> onc_properties =
+  std::unique_ptr<base::DictionaryValue> onc_properties =
       credential.ToOncProperties();
   ASSERT_TRUE(onc_properties);
   EXPECT_TRUE(TypeIsWifi(*onc_properties));
@@ -118,7 +112,7 @@ TEST(WifiCredentialTest, ToOncPropertiesSecurityPsk) {
 TEST(WifiCredentialTest, ToOncPropertiesSecurity8021X) {
   const WifiCredential credential(
       MakeCredential(kSsid, SECURITY_CLASS_802_1X, kPassphrase8021X));
-  scoped_ptr<base::DictionaryValue> onc_properties =
+  std::unique_ptr<base::DictionaryValue> onc_properties =
       credential.ToOncProperties();
   ASSERT_TRUE(onc_properties);
   EXPECT_TRUE(TypeIsWifi(*onc_properties));
@@ -132,7 +126,7 @@ TEST(WifiCredentialTest, ToOncPropertiesSecurity8021X) {
 TEST(WifiCredentialTest, ToOncPropertiesSsidNonUtf8) {
   const WifiCredential credential(
       MakeCredential(kSsidNonUtf8, SECURITY_CLASS_NONE, ""));
-  scoped_ptr<base::DictionaryValue> onc_properties =
+  std::unique_ptr<base::DictionaryValue> onc_properties =
       credential.ToOncProperties();
   EXPECT_FALSE(onc_properties);
 }

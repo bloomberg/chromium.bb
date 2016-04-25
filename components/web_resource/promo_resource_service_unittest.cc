@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -328,7 +329,7 @@ class NotificationPromoTest : public testing::Test {
   base::MessageLoop loop_;
   NotificationPromo notification_promo_;
   bool received_notification_;
-  scoped_ptr<base::DictionaryValue> test_json_;
+  std::unique_ptr<base::DictionaryValue> test_json_;
 
   NotificationPromo::PromoType promo_type_;
   std::string promo_text_;

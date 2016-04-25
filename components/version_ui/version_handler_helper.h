@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VERSION_UI_VERSION_HANDLER_HELPER_H_
 #define COMPONENTS_VERSION_UI_VERSION_HANDLER_HELPER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace base {
 class Value;
@@ -14,7 +14,7 @@ class Value;
 namespace version_ui {
 
 // Returns the list of variations to be displayed on the chrome:://version page.
-scoped_ptr<base::Value> GetVariationsList();
+std::unique_ptr<base::Value> GetVariationsList();
 
 }  // namespace version_ui
 

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/wifi_sync/wifi_security_class.h"
 
 namespace base {
@@ -40,7 +40,7 @@ class WifiCredential final {  // final because the class is copyable
   // and |passphrase|. No assumptions are made about the input
   // encoding of |ssid|. |passphrase|, however, must be valid
   // UTF-8. Returns NULL if the parameters are invalid.
-  static scoped_ptr<WifiCredential> Create(
+  static std::unique_ptr<WifiCredential> Create(
       const SsidBytes& ssid,
       WifiSecurityClass security_class,
       const std::string& passphrase);
@@ -56,7 +56,7 @@ class WifiCredential final {  // final because the class is copyable
   // to limitations in ONC, this operation fails if ssid() is not
   // valid UTF-8. In case of failure, returns a scoped_ptr with value
   // nullptr.
-  scoped_ptr<base::DictionaryValue> ToOncProperties() const;
+  std::unique_ptr<base::DictionaryValue> ToOncProperties() const;
 
   // Returns a string representation of the credential, for debugging
   // purposes. The string will not include the credential's passphrase.

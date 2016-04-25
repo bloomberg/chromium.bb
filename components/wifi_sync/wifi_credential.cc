@@ -6,6 +6,7 @@
 
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -19,7 +20,7 @@ WifiCredential::~WifiCredential() {
 }
 
 // static
-scoped_ptr<WifiCredential> WifiCredential::Create(
+std::unique_ptr<WifiCredential> WifiCredential::Create(
     const SsidBytes& ssid,
     WifiSecurityClass security_class,
     const std::string& passphrase) {
@@ -33,10 +34,10 @@ scoped_ptr<WifiCredential> WifiCredential::Create(
     return nullptr;
   }
 
-  return make_scoped_ptr(new WifiCredential(ssid, security_class, passphrase));
+  return base::WrapUnique(new WifiCredential(ssid, security_class, passphrase));
 }
 
-scoped_ptr<base::DictionaryValue> WifiCredential::ToOncProperties() const {
+std::unique_ptr<base::DictionaryValue> WifiCredential::ToOncProperties() const {
   const std::string ssid_utf8(ssid().begin(), ssid().end());
   // TODO(quiche): Remove this test, once ONC suports non-UTF-8 SSIDs.
   // crbug.com/432546.
@@ -49,10 +50,10 @@ scoped_ptr<base::DictionaryValue> WifiCredential::ToOncProperties() const {
   if (!WifiSecurityClassToOncSecurityString(security_class(), &onc_security)) {
     NOTREACHED() << "Failed to convert SecurityClass with value "
                  << security_class();
-    return make_scoped_ptr(new base::DictionaryValue());
+    return base::WrapUnique(new base::DictionaryValue());
   }
 
-  scoped_ptr<base::DictionaryValue> onc_properties(
+  std::unique_ptr<base::DictionaryValue> onc_properties(
       new base::DictionaryValue());
   onc_properties->Set(onc::toplevel_config::kType,
                       new base::StringValue(onc::network_type::kWiFi));

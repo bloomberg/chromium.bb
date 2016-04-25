@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_USER_PREFS_TRACKED_INTERCEPTABLE_PREF_FILTER_H_
 #define COMPONENTS_USER_PREFS_TRACKED_INTERCEPTABLE_PREF_FILTER_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/prefs/pref_filter.h"

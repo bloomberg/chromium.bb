@@ -64,11 +64,11 @@ void WebDataRequest::OnComplete() {
   manager_= NULL;
 }
 
-void WebDataRequest::SetResult(scoped_ptr<WDTypedResult> r) {
+void WebDataRequest::SetResult(std::unique_ptr<WDTypedResult> r) {
   result_ = std::move(r);
 }
 
-scoped_ptr<WDTypedResult> WebDataRequest::GetResult(){
+std::unique_ptr<WDTypedResult> WebDataRequest::GetResult() {
   return std::move(result_);
 }
 
@@ -113,7 +113,7 @@ void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
 }
 
 void WebDataRequestManager::RequestCompleted(
-    scoped_ptr<WebDataRequest> request) {
+    std::unique_ptr<WebDataRequest> request) {
   base::MessageLoop* loop = request->GetMessageLoop();
   loop->task_runner()->PostTask(
       FROM_HERE, base::Bind(&WebDataRequestManager::RequestCompletedOnThread,
@@ -121,7 +121,7 @@ void WebDataRequestManager::RequestCompleted(
 }
 
 void WebDataRequestManager::RequestCompletedOnThread(
-    scoped_ptr<WebDataRequest> request) {
+    std::unique_ptr<WebDataRequest> request) {
   if (request->IsCancelled())
     return;
 
@@ -154,7 +154,7 @@ void WebDataRequestManager::RequestCompletedOnThread(
     WebDataServiceConsumer* consumer = request->GetConsumer();
     request->OnComplete();
     if (consumer) {
-      scoped_ptr<WDTypedResult> r = request->GetResult();
+      std::unique_ptr<WDTypedResult> r = request->GetResult();
       consumer->OnWebDataServiceRequestDone(request->GetHandle(), r.get());
     }
   }

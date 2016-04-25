@@ -6,11 +6,11 @@
 #define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/wifi_sync/wifi_config_delegate.h"
 #include "components/wifi_sync/wifi_credential.h"
@@ -38,15 +38,15 @@ class WifiCredentialSyncableService
   // be propagated to Chrome Sync using the |sync_processor| provided
   // in the call to MergeDataAndStartSyncing.
   explicit WifiCredentialSyncableService(
-      scoped_ptr<WifiConfigDelegate> network_config_delegate);
+      std::unique_ptr<WifiConfigDelegate> network_config_delegate);
   ~WifiCredentialSyncableService() override;
 
   // syncer::SyncableService implementation.
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -75,11 +75,11 @@ class WifiCredentialSyncableService
   static const syncer::ModelType kModelType;
 
   // The object we use to change local network configuration.
-  const scoped_ptr<WifiConfigDelegate> network_config_delegate_;
+  const std::unique_ptr<WifiConfigDelegate> network_config_delegate_;
 
   // Our SyncChangeProcessor instance. Used to push changes into
   // Chrome Sync.
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // The networks and passphrases that are already known by Chrome
   // Sync. All synced networks must be included in this map, even if

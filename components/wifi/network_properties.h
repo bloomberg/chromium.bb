@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/wifi/wifi_export.h"
 
@@ -52,7 +52,7 @@ struct WIFI_EXPORT NetworkProperties {
   Frequency frequency;
   FrequencySet frequency_set;
 
-  scoped_ptr<base::DictionaryValue> ToValue(bool network_list) const;
+  std::unique_ptr<base::DictionaryValue> ToValue(bool network_list) const;
   // Updates only properties set in |value|.
   bool UpdateFromValue(const base::DictionaryValue& value);
   static std::string MacAddressAsString(const uint8_t mac_as_int[6]);

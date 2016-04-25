@@ -4,8 +4,9 @@
 
 #include "components/web_resource/eula_accepted_notifier.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -46,7 +47,7 @@ class EulaAcceptedNotifierTest : public testing::Test,
 
  private:
   TestingPrefServiceSimple local_state_;
-  scoped_ptr<EulaAcceptedNotifier> notifier_;
+  std::unique_ptr<EulaAcceptedNotifier> notifier_;
   bool eula_accepted_called_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaAcceptedNotifierTest);

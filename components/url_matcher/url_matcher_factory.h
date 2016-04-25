@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_URL_MATCHER_URL_MATCHER_FACTORY_H_
 #define COMPONENTS_URL_MATCHER_URL_MATCHER_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -49,11 +50,13 @@ class URL_MATCHER_EXPORT URLMatcherFactory {
       const base::Value* value,
       std::string* error);
 
-  static scoped_ptr<URLMatcherSchemeFilter> CreateURLMatcherScheme(
-      const base::Value* value, std::string* error);
+  static std::unique_ptr<URLMatcherSchemeFilter> CreateURLMatcherScheme(
+      const base::Value* value,
+      std::string* error);
 
-  static scoped_ptr<URLMatcherPortFilter> CreateURLMatcherPorts(
-      const base::Value* value, std::string* error);
+  static std::unique_ptr<URLMatcherPortFilter> CreateURLMatcherPorts(
+      const base::Value* value,
+      std::string* error);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(URLMatcherFactory);
 };

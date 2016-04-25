@@ -65,10 +65,11 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
 
   // bookmarks::BookmarkUndoDelegate:
   void SetUndoProvider(bookmarks::BookmarkUndoProvider* undo_provider) override;
-  void OnBookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                             const bookmarks::BookmarkNode* parent,
-                             int index,
-                             scoped_ptr<bookmarks::BookmarkNode> node) override;
+  void OnBookmarkNodeRemoved(
+      bookmarks::BookmarkModel* model,
+      const bookmarks::BookmarkNode* parent,
+      int index,
+      std::unique_ptr<bookmarks::BookmarkNode> node) override;
 
   bookmarks::BookmarkModel* model_;
   bookmarks::BookmarkUndoProvider* undo_provider_;

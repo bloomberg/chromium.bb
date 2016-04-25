@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -39,7 +39,7 @@ class WebResourceService
       public ResourceRequestAllowedNotifier::Observer {
  public:
   // Callbacks for JSON parsing.
-  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
   using ParseJSONCallback = base::Callback<
       void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
@@ -84,7 +84,7 @@ class WebResourceService
   void EndFetch();
 
   // Callbacks from the JSON parser.
-  void OnUnpackFinished(scoped_ptr<base::Value> value);
+  void OnUnpackFinished(std::unique_ptr<base::Value> value);
   void OnUnpackError(const std::string& error_message);
 
   // Implements ResourceRequestAllowedNotifier::Observer.
@@ -95,7 +95,7 @@ class WebResourceService
   ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
 
   // The tool that fetches the url data from the server.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // True if we are currently fetching or unpacking data. If we are asked to
   // start a fetch when we are still fetching resource data, schedule another

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/wifi_sync/wifi_config_delegate.h"
@@ -89,14 +89,14 @@ KeyedService* WifiCredentialSyncableServiceFactory::BuildServiceInstanceFor(
 }
 
 #if defined(OS_CHROMEOS)
-scoped_ptr<WifiConfigDelegate>
+std::unique_ptr<WifiConfigDelegate>
 WifiCredentialSyncableServiceFactory::BuildWifiConfigDelegateChromeOs(
     content::BrowserContext* context) const {
   // Note: NetworkHandler is a singleton that is managed by
   // ChromeBrowserMainPartsChromeos, and destroyed after all
   // KeyedService instances are destroyed.
   chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
-  return make_scoped_ptr(new WifiConfigDelegateChromeOs(
+  return base::WrapUnique(new WifiConfigDelegateChromeOs(
       GetUserHash(context, !ignore_login_state_for_test_),
       network_handler->managed_network_configuration_handler()));
 }

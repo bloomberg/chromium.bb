@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
@@ -76,13 +77,13 @@ WebDataServiceWrapper::WebDataServiceWrapper(
 
   // All tables objects that participate in managing the database must
   // be added here.
-  web_database_->AddTable(make_scoped_ptr(new autofill::AutofillTable));
-  web_database_->AddTable(make_scoped_ptr(new KeywordTable));
+  web_database_->AddTable(base::WrapUnique(new autofill::AutofillTable));
+  web_database_->AddTable(base::WrapUnique(new KeywordTable));
   // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
   // access, but for now, we still create it on all platforms since it deletes
   // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  web_database_->AddTable(make_scoped_ptr(new LoginsTable));
-  web_database_->AddTable(make_scoped_ptr(new TokenServiceTable));
+  web_database_->AddTable(base::WrapUnique(new LoginsTable));
+  web_database_->AddTable(base::WrapUnique(new TokenServiceTable));
   web_database_->LoadDatabase();
 
   autofill_web_data_ = new autofill::AutofillWebDataService(

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -57,7 +58,7 @@ class PromoResourceService : public WebResourceService {
 
   // Registers a callback called when the state of a web resource has been
   // changed. A resource may have been added, removed, or altered.
-  scoped_ptr<StateChangedSubscription> RegisterStateChangedCallback(
+  std::unique_ptr<StateChangedSubscription> RegisterStateChangedCallback(
       const base::Closure& closure);
 
  private:

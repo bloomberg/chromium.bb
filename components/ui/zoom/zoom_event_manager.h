@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
 #define COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
@@ -41,7 +42,8 @@ class ZoomEventManager : public base::SupportsUserData::Data {
   // Add and remove zoom level changed callbacks.
   // TODO(wjmaclean): Convert this callback mechanism to use
   // ZoomEventManagerObserver instead.
-  scoped_ptr<content::HostZoomMap::Subscription> AddZoomLevelChangedCallback(
+  std::unique_ptr<content::HostZoomMap::Subscription>
+  AddZoomLevelChangedCallback(
       const content::HostZoomMap::ZoomLevelChangedCallback& callback);
 
   // Called by ZoomLevelDelegates when changes are made to the default zoom

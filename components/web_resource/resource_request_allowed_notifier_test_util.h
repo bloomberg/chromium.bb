@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 #define COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 
 class PrefService;
@@ -30,7 +31,7 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   // A version of |Init()| that accepts a custom EulaAcceptedNotifier.
   void InitWithEulaAcceptNotifier(
       Observer* observer,
-      scoped_ptr<EulaAcceptedNotifier> eula_notifier);
+      std::unique_ptr<EulaAcceptedNotifier> eula_notifier);
 
   // Makes ResourceRequestsAllowed return |allowed| when it is called.
   void SetRequestsAllowedOverride(bool allowed);
@@ -44,7 +45,7 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
   EulaAcceptedNotifier* CreateEulaNotifier() override;
 
  private:
-  scoped_ptr<EulaAcceptedNotifier> test_eula_notifier_;
+  std::unique_ptr<EulaAcceptedNotifier> test_eula_notifier_;
   bool override_requests_allowed_;
   bool requests_allowed_;
 

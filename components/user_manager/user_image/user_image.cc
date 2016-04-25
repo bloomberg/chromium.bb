@@ -4,6 +4,7 @@
 
 #include "components/user_manager/user_image/user_image.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -18,11 +19,11 @@ const int kDefaultEncodingQuality = 90;
 }  // namespace
 
 // static
-scoped_ptr<UserImage::Bytes> UserImage::Encode(const SkBitmap& bitmap) {
+std::unique_ptr<UserImage::Bytes> UserImage::Encode(const SkBitmap& bitmap) {
   TRACE_EVENT2("oobe", "UserImage::Encode",
                "width", bitmap.width(), "height", bitmap.height());
   SkAutoLockPixels lock_bitmap(bitmap);
-  scoped_ptr<Bytes> output(new Bytes);
+  std::unique_ptr<Bytes> output(new Bytes);
   if (gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
           gfx::JPEGCodec::FORMAT_SkBitmap,
@@ -37,18 +38,19 @@ scoped_ptr<UserImage::Bytes> UserImage::Encode(const SkBitmap& bitmap) {
 }
 
 // static
-scoped_ptr<UserImage> UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
+std::unique_ptr<UserImage> UserImage::CreateAndEncode(
+    const gfx::ImageSkia& image) {
   if (image.isNull())
-    return make_scoped_ptr(new UserImage);
+    return base::WrapUnique(new UserImage);
 
-  scoped_ptr<Bytes> image_bytes = Encode(*image.bitmap());
+  std::unique_ptr<Bytes> image_bytes = Encode(*image.bitmap());
   if (image_bytes) {
     // TODO(crbug.com/593251): Remove the data copy via |image_bytes|.
-    scoped_ptr<UserImage> result(new UserImage(image, *image_bytes));
+    std::unique_ptr<UserImage> result(new UserImage(image, *image_bytes));
     result->MarkAsSafe();
     return result;
   }
-  return make_scoped_ptr(new UserImage(image));
+  return base::WrapUnique(new UserImage(image));
 }
 
 UserImage::UserImage()

@@ -238,7 +238,7 @@ void User::SetAccountLocale(const std::string& resolved_account_locale) {
   account_locale_.reset(new std::string(resolved_account_locale));
 }
 
-void User::SetImage(scoped_ptr<UserImage> user_image, int image_index) {
+void User::SetImage(std::unique_ptr<UserImage> user_image, int image_index) {
   user_image_ = std::move(user_image);
   image_index_ = image_index;
   image_is_stub_ = false;
@@ -250,7 +250,7 @@ void User::SetImageURL(const GURL& image_url) {
   user_image_->set_url(image_url);
 }
 
-void User::SetStubImage(scoped_ptr<UserImage> stub_user_image,
+void User::SetStubImage(std::unique_ptr<UserImage> stub_user_image,
                         int image_index,
                         bool is_loading) {
   user_image_ = std::move(stub_user_image);

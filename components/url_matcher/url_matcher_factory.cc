@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"
@@ -109,8 +110,8 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
     const base::DictionaryValue* url_filter_dict,
     URLMatcherConditionSet::ID id,
     std::string* error) {
-  scoped_ptr<URLMatcherSchemeFilter> url_matcher_schema_filter;
-  scoped_ptr<URLMatcherPortFilter> url_matcher_port_filter;
+  std::unique_ptr<URLMatcherSchemeFilter> url_matcher_schema_filter;
+  std::unique_ptr<URLMatcherPortFilter> url_matcher_port_filter;
   URLMatcherConditionSet::Conditions url_matcher_conditions;
 
   for (base::DictionaryValue::Iterator iter(*url_filter_dict);
@@ -218,34 +219,33 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
 }
 
 // static
-scoped_ptr<URLMatcherSchemeFilter> URLMatcherFactory::CreateURLMatcherScheme(
-    const base::Value* value,
-    std::string* error) {
+std::unique_ptr<URLMatcherSchemeFilter>
+URLMatcherFactory::CreateURLMatcherScheme(const base::Value* value,
+                                          std::string* error) {
   std::vector<std::string> schemas;
   if (!helpers::GetAsStringVector(value, &schemas)) {
     *error = base::StringPrintf(kVectorOfStringsExpected, keys::kSchemesKey);
-    return scoped_ptr<URLMatcherSchemeFilter>();
+    return nullptr;
   }
   for (std::vector<std::string>::const_iterator it = schemas.begin();
        it != schemas.end(); ++it) {
     if (ContainsUpperCase(*it)) {
       *error = base::StringPrintf(kLowerCaseExpected, "Scheme");
-      return scoped_ptr<URLMatcherSchemeFilter>();
+      return nullptr;
     }
   }
-  return scoped_ptr<URLMatcherSchemeFilter>(
-      new URLMatcherSchemeFilter(schemas));
+  return base::WrapUnique(new URLMatcherSchemeFilter(schemas));
 }
 
 // static
-scoped_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
+std::unique_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
     const base::Value* value,
     std::string* error) {
   std::vector<URLMatcherPortFilter::Range> ranges;
   const base::ListValue* value_list = NULL;
   if (!value->GetAsList(&value_list)) {
     *error = kInvalidPortRanges;
-    return scoped_ptr<URLMatcherPortFilter>();
+    return nullptr;
   }
 
   for (base::ListValue::const_iterator i = value_list->begin();
@@ -261,16 +261,16 @@ scoped_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
           !range->GetInteger(0, &from) ||
           !range->GetInteger(1, &to)) {
         *error = kInvalidPortRanges;
-        return scoped_ptr<URLMatcherPortFilter>();
+        return nullptr;
       }
       ranges.push_back(URLMatcherPortFilter::CreateRange(from, to));
     } else {
       *error = kInvalidPortRanges;
-      return scoped_ptr<URLMatcherPortFilter>();
+      return nullptr;
     }
   }
 
-  return scoped_ptr<URLMatcherPortFilter>(new URLMatcherPortFilter(ranges));
+  return base::WrapUnique(new URLMatcherPortFilter(ranges));
 }
 
 }  // namespace url_matcher

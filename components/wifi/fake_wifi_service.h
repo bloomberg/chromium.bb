@@ -34,10 +34,10 @@ class FakeWiFiService : public WiFiService {
                 base::DictionaryValue* properties,
                 std::string* error) override;
   void SetProperties(const std::string& network_guid,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      std::string* error) override;
   void CreateNetwork(bool shared,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      std::string* network_guid,
                      std::string* error) override;
   void GetVisibleNetworks(const std::string& network_type,

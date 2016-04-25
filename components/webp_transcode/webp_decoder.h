@@ -8,9 +8,10 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/libwebp/webp/decode.h"
 
 @class NSData;
@@ -66,7 +67,7 @@ class WebpDecoder : public base::RefCountedThreadSafe<WebpDecoder> {
   scoped_refptr<WebpDecoder::Delegate> delegate_;
   WebPDecoderConfig config_;
   WebpDecoder::State state_;
-  scoped_ptr<WebPIDecoder, WebPIDecoderDeleter> incremental_decoder_;
+  std::unique_ptr<WebPIDecoder, WebPIDecoderDeleter> incremental_decoder_;
   base::scoped_nsobject<NSData> output_buffer_;
   base::scoped_nsobject<NSMutableData> features_;
   int has_alpha_;

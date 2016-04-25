@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/json/json_reader.h"
@@ -37,7 +38,7 @@ class PromoResourceServiceMobileNtpTest : public testing::Test {
  protected:
   TestingPrefServiceSimple local_state_;
   // |promo_resource_service_| must be created after |local_state_|.
-  scoped_ptr<PromoResourceService> promo_resource_service_;
+  std::unique_ptr<PromoResourceService> promo_resource_service_;
   base::MessageLoop loop_;
 };
 
@@ -54,7 +55,7 @@ class NotificationPromoMobileNtpTest {
             const std::string& promo_action_type,
             const std::string& promo_action_arg0,
             const std::string& promo_action_arg1) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
     ASSERT_TRUE(value);
     base::DictionaryValue* dict = NULL;
     value.release()->GetAsDictionary(&dict);
@@ -125,7 +126,7 @@ class NotificationPromoMobileNtpTest {
   PrefService* local_state_;
   NotificationPromoMobileNtp mobile_promo_;
   bool received_notification_;
-  scoped_ptr<base::DictionaryValue> test_json_;
+  std::unique_ptr<base::DictionaryValue> test_json_;
 
   std::string promo_text_;
   std::string promo_text_long_;

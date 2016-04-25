@@ -24,9 +24,9 @@ NetworkProperties::NetworkProperties(const NetworkProperties& other) = default;
 NetworkProperties::~NetworkProperties() {
 }
 
-scoped_ptr<base::DictionaryValue> NetworkProperties::ToValue(
+std::unique_ptr<base::DictionaryValue> NetworkProperties::ToValue(
     bool network_list) const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   value->SetString(onc::network_config::kGUID, guid);
   value->SetString(onc::network_config::kName, name);
@@ -37,7 +37,7 @@ scoped_ptr<base::DictionaryValue> NetworkProperties::ToValue(
   // For now, assume all WiFi services are connectable.
   value->SetBoolean(onc::network_config::kConnectable, true);
 
-  scoped_ptr<base::DictionaryValue> wifi(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> wifi(new base::DictionaryValue());
   wifi->SetString(onc::wifi::kSecurity, security);
   wifi->SetInteger(onc::wifi::kSignalStrength, signal_strength);
 
@@ -45,7 +45,7 @@ scoped_ptr<base::DictionaryValue> NetworkProperties::ToValue(
   if (!network_list) {
     if (frequency != kFrequencyUnknown)
       wifi->SetInteger(onc::wifi::kFrequency, frequency);
-    scoped_ptr<base::ListValue> frequency_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> frequency_list(new base::ListValue());
     for (FrequencySet::const_iterator it = this->frequency_set.begin();
          it != this->frequency_set.end();
          ++it) {

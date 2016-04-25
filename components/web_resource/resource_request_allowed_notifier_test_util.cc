@@ -17,7 +17,7 @@ TestRequestAllowedNotifier::~TestRequestAllowedNotifier() {
 
 void TestRequestAllowedNotifier::InitWithEulaAcceptNotifier(
     Observer* observer,
-    scoped_ptr<EulaAcceptedNotifier> eula_notifier) {
+    std::unique_ptr<EulaAcceptedNotifier> eula_notifier) {
   test_eula_notifier_.swap(eula_notifier);
   Init(observer);
 }

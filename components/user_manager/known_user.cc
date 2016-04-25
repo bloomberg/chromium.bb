@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -133,7 +134,7 @@ void UpdatePrefs(const AccountId& account_id,
       }
     }
   }
-  scoped_ptr<base::DictionaryValue> new_value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> new_value(new base::DictionaryValue());
   new_value->MergeDictionary(&values);
   UpdateIdentity(account_id, *new_value);
   update->Append(new_value.release());

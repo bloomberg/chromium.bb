@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 #include "components/web_resource/resource_request_allowed_notifier_test_util.h"
@@ -79,7 +80,7 @@ class ResourceRequestAllowedNotifierTest
         eula_notifier_(new TestEulaAcceptedNotifier),
         was_notified_(false) {
     resource_request_allowed_notifier_.InitWithEulaAcceptNotifier(
-        this, scoped_ptr<EulaAcceptedNotifier>(eula_notifier_));
+        this, base::WrapUnique(eula_notifier_));
   }
   ~ResourceRequestAllowedNotifierTest() override {}
 

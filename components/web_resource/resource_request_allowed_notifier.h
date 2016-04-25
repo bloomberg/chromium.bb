@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 #define COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 #include "net/base/network_change_notifier.h"
 
@@ -117,7 +118,7 @@ class ResourceRequestAllowedNotifier
   bool waiting_for_user_to_accept_eula_;
 
   // Platform-specific notifier of EULA acceptance, or null if not needed.
-  scoped_ptr<EulaAcceptedNotifier> eula_notifier_;
+  std::unique_ptr<EulaAcceptedNotifier> eula_notifier_;
 
   // Observing service interested in request permissions.
   Observer* observer_;

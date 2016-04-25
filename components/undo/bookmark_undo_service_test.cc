@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -30,8 +32,8 @@ class BookmarkUndoServiceTest : public testing::Test {
   BookmarkUndoService* GetUndoService();
 
  private:
-  scoped_ptr<bookmarks::BookmarkModel> bookmark_model_;
-  scoped_ptr<BookmarkUndoService> bookmark_undo_service_;
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  std::unique_ptr<BookmarkUndoService> bookmark_undo_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkUndoServiceTest);
 };

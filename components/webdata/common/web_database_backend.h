@@ -5,13 +5,14 @@
 #ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "components/webdata/common/web_database_service.h"
@@ -47,7 +48,7 @@ class WEBDATA_EXPORT WebDatabaseBackend
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread);
 
   // Must call only before InitDatabaseWithCallback.
-  void AddTable(scoped_ptr<WebDatabaseTable> table);
+  void AddTable(std::unique_ptr<WebDatabaseTable> table);
 
   // Initializes the database and notifies caller via callback when complete.
   // Callback is called synchronously.
@@ -67,13 +68,13 @@ class WEBDATA_EXPORT WebDatabaseBackend
   // asyncronous callback is required to notify the client of |request|'s
   // completion.
   void DBWriteTaskWrapper(const WebDatabaseService::WriteTask& task,
-                          scoped_ptr<WebDataRequest> request);
+                          std::unique_ptr<WebDataRequest> request);
   void DBReadTaskWrapper(const WebDatabaseService::ReadTask& task,
-                         scoped_ptr<WebDataRequest> request);
+                         std::unique_ptr<WebDataRequest> request);
 
   // Task runners to run database tasks.
   void ExecuteWriteTask(const WebDatabaseService::WriteTask& task);
-  scoped_ptr<WDTypedResult> ExecuteReadTask(
+  std::unique_ptr<WDTypedResult> ExecuteReadTask(
       const WebDatabaseService::ReadTask& task);
 
   const scoped_refptr<WebDataRequestManager>& request_manager() {
@@ -105,7 +106,7 @@ class WEBDATA_EXPORT WebDatabaseBackend
   // easier unit testing of WebDatabase.
   ScopedVector<WebDatabaseTable> tables_;
 
-  scoped_ptr<WebDatabase> db_;
+  std::unique_ptr<WebDatabase> db_;
 
   // Keeps track of all pending requests made to the db.
   scoped_refptr<WebDataRequestManager> request_manager_;
@@ -119,7 +120,7 @@ class WEBDATA_EXPORT WebDatabaseBackend
   bool init_complete_;
 
   // Delegate. See the class definition above for more information.
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseBackend);
 };

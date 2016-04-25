@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_H_
 #define COMPONENTS_WEB_RESOURCE_NOTIFICATION_PROMO_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -110,7 +110,7 @@ class NotificationPromo {
   PromoType promo_type_;
   std::string promo_text_;
 
-  scoped_ptr<const base::DictionaryValue> promo_payload_;
+  std::unique_ptr<const base::DictionaryValue> promo_payload_;
 
   double start_;
   double end_;

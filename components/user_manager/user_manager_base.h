@@ -6,12 +6,12 @@
 #define COMPONENTS_USER_MANAGER_USER_MANAGER_BASE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -328,7 +328,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Updates user account after locale was resolved.
   void DoUpdateAccountLocale(const AccountId& account_id,
-                             scoped_ptr<std::string> resolved_locale);
+                             std::unique_ptr<std::string> resolved_locale);
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_ = STAGE_NOT_LOADED;

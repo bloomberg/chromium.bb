@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
 #define COMPONENTS_WIFI_SYNC_WIFI_CREDENTIAL_SYNCABLE_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -56,7 +57,7 @@ class WifiCredentialSyncableServiceFactory
   // Returns a scoped pointer to a WifiConfigDelegate, which can be
   // used to configure the ChromeOS Wi-Fi settings associated with
   // |context|.
-  scoped_ptr<WifiConfigDelegate> BuildWifiConfigDelegateChromeOs(
+  std::unique_ptr<WifiConfigDelegate> BuildWifiConfigDelegateChromeOs(
       content::BrowserContext* context) const;
 #endif
 

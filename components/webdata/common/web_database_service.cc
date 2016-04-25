@@ -57,7 +57,7 @@ WebDatabaseService::WebDatabaseService(
 WebDatabaseService::~WebDatabaseService() {
 }
 
-void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
+void WebDatabaseService::AddTable(std::unique_ptr<WebDatabaseTable> table) {
   if (!web_db_backend_.get()) {
     web_db_backend_ = new WebDatabaseBackend(
         path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()), db_thread_);
@@ -95,7 +95,7 @@ void WebDatabaseService::ScheduleDBTask(
     const tracked_objects::Location& from_here,
     const WriteTask& task) {
   DCHECK(web_db_backend_.get());
-  scoped_ptr<WebDataRequest> request(
+  std::unique_ptr<WebDataRequest> request(
       new WebDataRequest(NULL, web_db_backend_->request_manager().get()));
   db_thread_->PostTask(
       from_here, Bind(&WebDatabaseBackend::DBWriteTaskWrapper, web_db_backend_,
@@ -108,7 +108,7 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
   DCHECK(web_db_backend_.get());
-  scoped_ptr<WebDataRequest> request(
+  std::unique_ptr<WebDataRequest> request(
       new WebDataRequest(consumer, web_db_backend_->request_manager().get()));
   WebDataServiceBase::Handle handle = request->GetHandle();
   db_thread_->PostTask(

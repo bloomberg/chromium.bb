@@ -6,11 +6,11 @@
 #define COMPONENTS_URL_MATCHER_REGEX_SET_MATCHER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/url_matcher/string_pattern.h"
 #include "components/url_matcher/substring_set_matcher.h"
 #include "components/url_matcher/url_matcher_export.h"
@@ -70,8 +70,8 @@ class URL_MATCHER_EXPORT RegexSetMatcher {
   // to regex StringPattern::IDs.
   RE2IDMap re2_id_map_;
 
-  scoped_ptr<re2::FilteredRE2> filtered_re2_;
-  scoped_ptr<SubstringSetMatcher> substring_matcher_;
+  std::unique_ptr<re2::FilteredRE2> filtered_re2_;
+  std::unique_ptr<SubstringSetMatcher> substring_matcher_;
 
   // The substring patterns from FilteredRE2, which are used in
   // |substring_matcher_| but whose lifetime is managed here.

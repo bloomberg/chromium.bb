@@ -10,6 +10,7 @@
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATA_REQUEST_MANAGER_H__
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -59,11 +60,11 @@ class WebDataRequest {
   void OnComplete();
 
   // The result is owned by the request.
-  void SetResult(scoped_ptr<WDTypedResult> r);
+  void SetResult(std::unique_ptr<WDTypedResult> r);
 
   // Transfers ownership pof result to caller. Should only be called once per
   // result.
-  scoped_ptr<WDTypedResult> GetResult();
+  std::unique_ptr<WDTypedResult> GetResult();
 
  private:
   // Used to notify manager if request is cancelled. Uses a raw ptr instead of
@@ -84,7 +85,7 @@ class WebDataRequest {
   // The originator of the service request.
   WebDataServiceConsumer* consumer_;
 
-  scoped_ptr<WDTypedResult> result_;
+  std::unique_ptr<WDTypedResult> result_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
 };
@@ -106,7 +107,7 @@ class WebDataRequestManager
   void CancelRequest(WebDataServiceBase::Handle h);
 
   // Invoked by the WebDataService when |request| has been completed.
-  void RequestCompleted(scoped_ptr<WebDataRequest> request);
+  void RequestCompleted(std::unique_ptr<WebDataRequest> request);
 
   // Register the request as a pending request.
   void RegisterRequest(WebDataRequest* request);
@@ -121,7 +122,7 @@ class WebDataRequestManager
 
   // This will notify the consumer in whatever thread was used to create this
   // request.
-  void RequestCompletedOnThread(scoped_ptr<WebDataRequest> request);
+  void RequestCompletedOnThread(std::unique_ptr<WebDataRequest> request);
 
   // A lock to protect pending requests and next request handle.
   base::Lock pending_lock_;

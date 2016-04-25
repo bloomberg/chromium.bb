@@ -493,7 +493,7 @@ void WallpaperManagerBase::SaveCustomWallpaper(
     const WallpaperFilesId& wallpaper_files_id,
     const base::FilePath& original_path,
     WallpaperLayout layout,
-    scoped_ptr<gfx::ImageSkia> image) {
+    std::unique_ptr<gfx::ImageSkia> image) {
   base::DeleteFile(GetCustomWallpaperDir(kOriginalWallpaperSubDir)
                        .Append(wallpaper_files_id.id()),
                    true /* recursive */);
@@ -910,8 +910,8 @@ base::TimeDelta WallpaperManagerBase::GetWallpaperLoadDelay() const {
 
 void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
     const GURL& wallpaper_url,
-    scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-    scoped_ptr<user_manager::UserImage> wallpaper) {
+    std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
+    std::unique_ptr<user_manager::UserImage> wallpaper) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If decoded wallpaper is empty, we have probably failed to decode the file.
@@ -923,11 +923,11 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
   wallpaper->image().EnsureRepsForSupportedScales();
   // TODO(crbug.com/593251): DeepCopy() may be unnecessary as this function
   // owns |wallpaper| as scoped_ptr whereas it used to be a const reference.
-  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper->image().DeepCopy());
+  std::unique_ptr<gfx::ImageSkia> deep_copy(wallpaper->image().DeepCopy());
 
-  scoped_ptr<bool> success(new bool(false));
-  scoped_ptr<gfx::ImageSkia> small_wallpaper_image(new gfx::ImageSkia);
-  scoped_ptr<gfx::ImageSkia> large_wallpaper_image(new gfx::ImageSkia);
+  std::unique_ptr<bool> success(new bool(false));
+  std::unique_ptr<gfx::ImageSkia> small_wallpaper_image(new gfx::ImageSkia);
+  std::unique_ptr<gfx::ImageSkia> large_wallpaper_image(new gfx::ImageSkia);
 
   // TODO(bshe): This may break if Bytes becomes RefCountedMemory.
   base::Closure resize_closure = base::Bind(
@@ -950,7 +950,7 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
 }
 
 void WallpaperManagerBase::ResizeCustomizedDefaultWallpaper(
-    scoped_ptr<gfx::ImageSkia> image,
+    std::unique_ptr<gfx::ImageSkia> image,
     const CustomizedWallpaperRescaledFiles* rescaled_files,
     bool* success,
     gfx::ImageSkia* small_wallpaper_image,
@@ -980,7 +980,7 @@ void WallpaperManagerBase::SetCustomizedDefaultWallpaper(
     return;
   }
   std::string downloaded_file_name = downloaded_file.BaseName().value();
-  scoped_ptr<CustomizedWallpaperRescaledFiles> rescaled_files(
+  std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files(
       new CustomizedWallpaperRescaledFiles(
           downloaded_file, resized_directory.Append(downloaded_file_name +
                                                     kSmallWallpaperSuffix),

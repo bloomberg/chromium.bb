@@ -4,6 +4,8 @@
 
 #include "components/wifi_sync/network_state_helper_chromeos.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -33,11 +35,10 @@ WifiCredential::CredentialSet GetWifiCredentialsForShillProfile(
     // TODO(quiche): Fill in the actual passphrase via an asynchronous
     // call to a chromeos::NetworkConfigurationHandler instance's
     // GetProperties method.
-    scoped_ptr<WifiCredential> credential =
-        WifiCredential::Create(
-            network->raw_ssid(),
-            WifiSecurityClassFromShillSecurity(network->security_class()),
-            ""  /* empty passphrase */);
+    std::unique_ptr<WifiCredential> credential = WifiCredential::Create(
+        network->raw_ssid(),
+        WifiSecurityClassFromShillSecurity(network->security_class()),
+        "" /* empty passphrase */);
     if (!credential)
       LOG(ERROR) << "Failed to create credential";
     else

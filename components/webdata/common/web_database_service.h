@@ -9,13 +9,14 @@
 #ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -49,7 +50,7 @@ class WebDataServiceConsumer;
 class WEBDATA_EXPORT WebDatabaseService
     : public base::RefCountedDeleteOnMessageLoop<WebDatabaseService> {
  public:
-  typedef base::Callback<scoped_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
+  typedef base::Callback<std::unique_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
 
   // Types for managing DB loading callbacks.
@@ -65,7 +66,7 @@ class WEBDATA_EXPORT WebDatabaseService
   // Adds |table| as a WebDatabaseTable that will participate in
   // managing the database, transferring ownership. All calls to this
   // method must be made before |LoadDatabase| is called.
-  virtual void AddTable(scoped_ptr<WebDatabaseTable> table);
+  virtual void AddTable(std::unique_ptr<WebDatabaseTable> table);
 
   // Initializes the web database service.
   virtual void LoadDatabase();

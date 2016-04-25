@@ -5,6 +5,8 @@
 #include "components/variations/service/variations_service.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -12,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -77,9 +80,9 @@ class TestVariationsServiceClient : public VariationsServiceClient {
 class TestVariationsService : public VariationsService {
  public:
   TestVariationsService(
-      scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier,
+      std::unique_ptr<web_resource::TestRequestAllowedNotifier> test_notifier,
       PrefService* local_state)
-      : VariationsService(make_scoped_ptr(new TestVariationsServiceClient()),
+      : VariationsService(base::WrapUnique(new TestVariationsServiceClient()),
                           std::move(test_notifier),
                           local_state,
                           NULL,
@@ -266,7 +269,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
 
   // Setup base::FeatureList.
   base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList()));
+  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
 
   // Create a local base::FieldTrialList, to hold the field trials created in
   // this test.
@@ -274,7 +277,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
 
   // Create a variations service.
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.SetCreateTrialsFromSeedCalledForTesting(false);
 
@@ -297,7 +300,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
 
   // Setup base::FeatureList.
   base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList()));
+  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
 
   // Create a local base::FieldTrialList, to hold the field trials created in
   // this test.
@@ -305,7 +308,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {
 
   // Create a variations service
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.SetCreateTrialsFromSeedCalledForTesting(false);
 
@@ -328,7 +331,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromOutdatedSeed) {
 
   // Setup base::FeatureList.
   base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList()));
+  base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList()));
 
   // Create a local base::FieldTrialList, to hold the field trials created in
   // this test.
@@ -336,7 +339,7 @@ TEST_F(VariationsServiceTest, CreateTrialsFromOutdatedSeed) {
 
   // Create a variations service.
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.SetCreateTrialsFromSeedCalledForTesting(false);
 
@@ -359,12 +362,12 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
   std::string value;
-  scoped_ptr<TestVariationsServiceClient> client =
-      make_scoped_ptr(new TestVariationsServiceClient());
+  std::unique_ptr<TestVariationsServiceClient> client =
+      base::WrapUnique(new TestVariationsServiceClient());
   TestVariationsServiceClient* raw_client = client.get();
   VariationsService service(
       std::move(client),
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs, NULL, UIStringOverrider());
   GURL url = service.GetVariationsServerURL(&prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
@@ -399,7 +402,7 @@ TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   const GURL url = service.GetVariationsServerURL(&prefs, std::string());
 
@@ -414,8 +417,8 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
-  scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs));
+  std::unique_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs));
   web_resource::TestRequestAllowedNotifier* raw_notifier = test_notifier.get();
   TestVariationsService test_service(std::move(test_notifier), &prefs);
 
@@ -434,8 +437,8 @@ TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
 
   // Pass ownership to TestVariationsService, but keep a weak pointer to
   // manipulate it for this test.
-  scoped_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs));
+  std::unique_ptr<web_resource::TestRequestAllowedNotifier> test_notifier =
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs));
   web_resource::TestRequestAllowedNotifier* raw_notifier = test_notifier.get();
   TestVariationsService test_service(std::move(test_notifier), &prefs);
 
@@ -449,7 +452,7 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.set_intercepts_fetch(false);
 
@@ -478,7 +481,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.set_intercepts_fetch(false);
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
@@ -500,7 +503,7 @@ TEST_F(VariationsServiceTest, RequestGzipCompressedSeed) {
   net::TestURLFetcherFactory factory;
 
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.set_intercepts_fetch(false);
   service.DoActualFetch();
@@ -536,7 +539,7 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     TestVariationsService service(
-        make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+        base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
         &prefs);
     service.set_intercepts_fetch(false);
     service.DoActualFetch();
@@ -560,7 +563,7 @@ TEST_F(VariationsServiceTest, CountryHeader) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   TestVariationsService service(
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs);
   service.set_intercepts_fetch(false);
 
@@ -583,8 +586,8 @@ TEST_F(VariationsServiceTest, Observer) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
   VariationsService service(
-      make_scoped_ptr(new TestVariationsServiceClient()),
-      make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+      base::WrapUnique(new TestVariationsServiceClient()),
+      base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
       &prefs, NULL, UIStringOverrider());
 
   struct {
@@ -683,8 +686,8 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     TestingPrefServiceSimple prefs;
     VariationsService::RegisterPrefs(prefs.registry());
     VariationsService service(
-        make_scoped_ptr(new TestVariationsServiceClient()),
-        make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+        base::WrapUnique(new TestVariationsServiceClient()),
+        base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
         &prefs, NULL, UIStringOverrider());
 
     if (test.pref_value_before) {
@@ -755,7 +758,7 @@ TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
     TestingPrefServiceSimple prefs;
     VariationsService::RegisterPrefs(prefs.registry());
     TestVariationsService service(
-        make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
+        base::WrapUnique(new web_resource::TestRequestAllowedNotifier(&prefs)),
         &prefs);
 
     if (!test.pref_value_before.empty()) {

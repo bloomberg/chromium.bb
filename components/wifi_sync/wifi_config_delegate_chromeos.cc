@@ -4,9 +4,10 @@
 
 #include "components/wifi_sync/wifi_config_delegate_chromeos.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "components/wifi_sync/wifi_credential.h"
@@ -18,7 +19,7 @@ namespace {
 void OnCreateConfigurationFailed(
     const WifiCredential& wifi_credential,
     const std::string& config_handler_error_message,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   LOG(ERROR) << "Create configuration failed";
   // TODO(quiche): check if there is a matching network already. If
   // so, try to configure it with |wifi_credential|.
@@ -40,7 +41,7 @@ WifiConfigDelegateChromeOs::~WifiConfigDelegateChromeOs() {
 
 void WifiConfigDelegateChromeOs::AddToLocalNetworks(
     const WifiCredential& network_credential) {
-  scoped_ptr<base::DictionaryValue> onc_properties(
+  std::unique_ptr<base::DictionaryValue> onc_properties(
       network_credential.ToOncProperties());
   // TODO(quiche): Replace with DCHECK, once ONC supports non-UTF-8 SSIDs.
   // crbug.com/432546

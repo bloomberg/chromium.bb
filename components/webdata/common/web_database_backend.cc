@@ -27,7 +27,7 @@ WebDatabaseBackend::WebDatabaseBackend(
       delegate_(delegate) {
 }
 
-void WebDatabaseBackend::AddTable(scoped_ptr<WebDatabaseTable> table) {
+void WebDatabaseBackend::AddTable(std::unique_ptr<WebDatabaseTable> table) {
   DCHECK(!db_.get());
   tables_.push_back(table.release());
 }
@@ -72,7 +72,7 @@ void WebDatabaseBackend::ShutdownDatabase() {
 
 void WebDatabaseBackend::DBWriteTaskWrapper(
     const WebDatabaseService::WriteTask& task,
-    scoped_ptr<WebDataRequest> request) {
+    std::unique_ptr<WebDataRequest> request) {
   if (request->IsCancelled())
     return;
 
@@ -92,7 +92,7 @@ void WebDatabaseBackend::ExecuteWriteTask(
 
 void WebDatabaseBackend::DBReadTaskWrapper(
     const WebDatabaseService::ReadTask& task,
-    scoped_ptr<WebDataRequest> request) {
+    std::unique_ptr<WebDataRequest> request) {
   if (request->IsCancelled())
     return;
 
@@ -100,13 +100,13 @@ void WebDatabaseBackend::DBReadTaskWrapper(
   request_manager_->RequestCompleted(std::move(request));
 }
 
-scoped_ptr<WDTypedResult> WebDatabaseBackend::ExecuteReadTask(
+std::unique_ptr<WDTypedResult> WebDatabaseBackend::ExecuteReadTask(
     const WebDatabaseService::ReadTask& task) {
   LoadDatabaseIfNecessary();
   if (db_ && init_status_ == sql::INIT_OK) {
     return task.Run(db_.get());
   }
-  return scoped_ptr<WDTypedResult>();
+  return nullptr;
 }
 
 WebDatabaseBackend::~WebDatabaseBackend() {

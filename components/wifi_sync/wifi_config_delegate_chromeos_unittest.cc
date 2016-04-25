@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -150,11 +153,8 @@ class WifiConfigDelegateChromeOsTest : public testing::Test {
   WifiCredential MakeCredential(const std::string& ssid,
                                 WifiSecurityClass security_class,
                                 const std::string& passphrase) {
-    scoped_ptr<WifiCredential> credential =
-        WifiCredential::Create(
-            WifiCredential::MakeSsidBytesForTest(ssid),
-            security_class,
-            passphrase);
+    std::unique_ptr<WifiCredential> credential = WifiCredential::Create(
+        WifiCredential::MakeSsidBytesForTest(ssid), security_class, passphrase);
     CHECK(credential);
     return *credential;
   }
@@ -185,9 +185,9 @@ class WifiConfigDelegateChromeOsTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<WifiConfigDelegateChromeOs> config_delegate_;
-  scoped_ptr<FakeManagedNetworkConfigurationHandler>
-    fake_managed_network_configuration_handler_;
+  std::unique_ptr<WifiConfigDelegateChromeOs> config_delegate_;
+  std::unique_ptr<FakeManagedNetworkConfigurationHandler>
+      fake_managed_network_configuration_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigDelegateChromeOsTest);
 };
@@ -224,7 +224,7 @@ TEST_F(WifiConfigDelegateChromeOsTest,
   if (!create_configuration_error_callback().is_null()) {
     create_configuration_error_callback().Run(
         "Config.CreateConfiguration Failed",
-        make_scoped_ptr(new base::DictionaryValue()));
+        base::WrapUnique(new base::DictionaryValue()));
   }
 }
 

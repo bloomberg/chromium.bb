@@ -198,11 +198,11 @@ class WiFiServiceImpl : public WiFiService {
                 std::string* error) override;
 
   void SetProperties(const std::string& network_guid,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      std::string* error) override;
 
   void CreateNetwork(bool shared,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      std::string* network_guid,
                      std::string* error) override;
 
@@ -384,7 +384,7 @@ class WiFiServiceImpl : public WiFiService {
   // given |frequency|.
   DWORD GetDesiredBssList(DOT11_SSID& ssid,
                           Frequency frequency,
-                          scoped_ptr<DOT11_BSSID_LIST>* desired_list);
+                          std::unique_ptr<DOT11_BSSID_LIST>* desired_list);
 
   // Normalizes |frequency_in_mhz| into one of |Frequency| values.
   Frequency GetNormalizedFrequency(int frequency_in_mhz) const;
@@ -467,7 +467,7 @@ class WiFiServiceImpl : public WiFiService {
   // Observer to get notified when network list has changed (scan complete).
   NetworkGuidListCallback network_list_changed_observer_;
   // Saved value of network location wizard show value.
-  scoped_ptr<DWORD> saved_nw_category_wizard_;
+  std::unique_ptr<DWORD> saved_nw_category_wizard_;
   // Task runner to post events on UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> event_task_runner_;
   // Task runner for worker tasks.
@@ -562,7 +562,7 @@ void WiFiServiceImpl::GetState(const std::string& network_guid,
 
 void WiFiServiceImpl::SetProperties(
     const std::string& network_guid,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     std::string* error) {
   // Temporary preserve WiFi properties (desired frequency, wifi password) to
   // use in StartConnect.
@@ -587,7 +587,7 @@ void WiFiServiceImpl::SetProperties(
 
 void WiFiServiceImpl::CreateNetwork(
     bool shared,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     std::string* network_guid,
     std::string* error) {
   DWORD error_code = EnsureInitialized();
@@ -625,7 +625,8 @@ void WiFiServiceImpl::CreateNetwork(
   }
 
   if (tkip_profile_xml != profile_xml) {
-    scoped_ptr<base::DictionaryValue> tkip_profile(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> tkip_profile(
+        new base::DictionaryValue());
     tkip_profile->SetString(kProfileXmlKey, tkip_profile_xml);
     tkip_profile->SetBoolean(kProfileSharedKey, shared);
     created_profiles_.SetWithoutPathExpansion(network_properties.guid,
@@ -653,7 +654,7 @@ void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
       for (NetworkList::const_iterator it = networks.begin();
            it != networks.end();
            ++it) {
-        scoped_ptr<base::DictionaryValue> network(
+        std::unique_ptr<base::DictionaryValue> network(
             it->ToValue(!include_details));
         network_list->Append(network.release());
       }
@@ -1150,7 +1151,7 @@ DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
   ULONG buffer_length = 0;
   DWORD error = ::GetInterfaceInfo(NULL, &buffer_length);
   if (error == ERROR_INSUFFICIENT_BUFFER) {
-    scoped_ptr<unsigned char[]> buffer(new unsigned char[buffer_length]);
+    std::unique_ptr<unsigned char[]> buffer(new unsigned char[buffer_length]);
     IP_INTERFACE_INFO* interface_info =
         reinterpret_cast<IP_INTERFACE_INFO*>(buffer.get());
     error = GetInterfaceInfo(interface_info, &buffer_length);
@@ -1535,7 +1536,7 @@ Frequency WiFiServiceImpl::GetFrequencyToConnect(
 DWORD WiFiServiceImpl::GetDesiredBssList(
     DOT11_SSID& ssid,
     Frequency frequency,
-    scoped_ptr<DOT11_BSSID_LIST>* desired_list) {
+    std::unique_ptr<DOT11_BSSID_LIST>* desired_list) {
   if (client_ == NULL) {
     NOTREACHED();
     return ERROR_NOINTERFACE;
@@ -1588,7 +1589,7 @@ DWORD WiFiServiceImpl::GetDesiredBssList(
     // If any matching BSS were found, prepare the header.
     if (best_quality > 0) {
       const WLAN_BSS_ENTRY& bss_entry(bss_list->wlanBssEntries[best_index]);
-      scoped_ptr<DOT11_BSSID_LIST> selected_list(new DOT11_BSSID_LIST);
+      std::unique_ptr<DOT11_BSSID_LIST> selected_list(new DOT11_BSSID_LIST);
 
       selected_list->Header.Revision = DOT11_BSSID_LIST_REVISION_1;
       selected_list->Header.Size = sizeof(DOT11_BSSID_LIST);
@@ -1630,7 +1631,7 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
 
   DWORD error = ERROR_SUCCESS;
   DOT11_SSID ssid = SSIDFromGUID(network_guid);
-  scoped_ptr<DOT11_BSSID_LIST> desired_bss_list;
+  std::unique_ptr<DOT11_BSSID_LIST> desired_bss_list;
   error = GetDesiredBssList(ssid, frequency, &desired_bss_list);
   if (error == ERROR_SUCCESS) {
     if (HaveProfile(network_guid)) {
@@ -1647,7 +1648,8 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
     } else {
       // If network is available, but is not open security, then it cannot be
       // connected without profile, so return 'access denied' error.
-      scoped_ptr<base::DictionaryValue> properties (new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> properties(
+          new base::DictionaryValue);
       const base::DictionaryValue* wifi;
       std::string wifi_security;
       std::string error_string;

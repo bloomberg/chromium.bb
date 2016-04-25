@@ -110,7 +110,7 @@ PromoResourceService::PromoResourceService(
 
 PromoResourceService::~PromoResourceService() {}
 
-scoped_ptr<PromoResourceService::StateChangedSubscription>
+std::unique_ptr<PromoResourceService::StateChangedSubscription>
 PromoResourceService::RegisterStateChangedCallback(
     const base::Closure& closure) {
   return callback_list_.Add(closure);

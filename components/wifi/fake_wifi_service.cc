@@ -4,6 +4,8 @@
 
 #include "components/wifi/fake_wifi_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "components/onc/onc_constants.h"
@@ -82,7 +84,7 @@ void FakeWiFiService::GetState(const std::string& network_guid,
 
 void FakeWiFiService::SetProperties(
     const std::string& network_guid,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     std::string* error) {
   NetworkList::iterator network_properties = FindNetwork(network_guid);
   if (network_properties == networks_.end() ||
@@ -93,7 +95,7 @@ void FakeWiFiService::SetProperties(
 
 void FakeWiFiService::CreateNetwork(
     bool shared,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     std::string* network_guid,
     std::string* error) {
   NetworkProperties network_properties;
@@ -114,7 +116,8 @@ void FakeWiFiService::GetVisibleNetworks(const std::string& network_type,
        ++it) {
     if (network_type.empty() || network_type == onc::network_type::kAllTypes ||
         it->type == network_type) {
-      scoped_ptr<base::DictionaryValue> network(it->ToValue(!include_details));
+      std::unique_ptr<base::DictionaryValue> network(
+          it->ToValue(!include_details));
       network_list->Append(network.release());
     }
   }

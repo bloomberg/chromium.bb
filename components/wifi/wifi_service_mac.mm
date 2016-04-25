@@ -47,11 +47,11 @@ class WiFiServiceMac : public WiFiService {
                 std::string* error) override;
 
   void SetProperties(const std::string& network_guid,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      std::string* error) override;
 
   void CreateNetwork(bool shared,
-                     scoped_ptr<base::DictionaryValue> properties,
+                     std::unique_ptr<base::DictionaryValue> properties,
                      std::string* network_guid,
                      std::string* error) override;
 
@@ -192,7 +192,7 @@ void WiFiServiceMac::GetProperties(const std::string& network_guid,
   }
 
   it->connection_state = GetNetworkConnectionState(network_guid);
-  scoped_ptr<base::DictionaryValue> network(it->ToValue(false));
+  std::unique_ptr<base::DictionaryValue> network(it->ToValue(false));
   properties->Swap(network.get());
   DVLOG(1) << *properties;
 }
@@ -212,7 +212,7 @@ void WiFiServiceMac::GetState(const std::string& network_guid,
 
 void WiFiServiceMac::SetProperties(
     const std::string& network_guid,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     std::string* error) {
   base::DictionaryValue* existing_properties;
   // If the network properties already exist, don't override previously set
@@ -228,7 +228,7 @@ void WiFiServiceMac::SetProperties(
 
 void WiFiServiceMac::CreateNetwork(
     bool shared,
-    scoped_ptr<base::DictionaryValue> properties,
+    std::unique_ptr<base::DictionaryValue> properties,
     std::string* network_guid,
     std::string* error) {
   NetworkProperties network_properties;
@@ -262,7 +262,8 @@ void WiFiServiceMac::GetVisibleNetworks(const std::string& network_type,
   for (NetworkList::const_iterator it = networks_.begin();
        it != networks_.end();
        ++it) {
-    scoped_ptr<base::DictionaryValue> network(it->ToValue(!include_details));
+    std::unique_ptr<base::DictionaryValue> network(
+        it->ToValue(!include_details));
     network_list->Append(network.release());
   }
 }

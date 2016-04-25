@@ -107,7 +107,7 @@ const syncer::ModelType WifiCredentialSyncableService::kModelType =
     syncer::WIFI_CREDENTIALS;
 
 WifiCredentialSyncableService::WifiCredentialSyncableService(
-    scoped_ptr<WifiConfigDelegate> network_config_delegate)
+    std::unique_ptr<WifiConfigDelegate> network_config_delegate)
     : network_config_delegate_(std::move(network_config_delegate)) {
   DCHECK(network_config_delegate_);
 }
@@ -118,8 +118,8 @@ WifiCredentialSyncableService::~WifiCredentialSyncableService() {
 syncer::SyncMergeResult WifiCredentialSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> /* error_handler */) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> /* error_handler */) {
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
   DCHECK_EQ(kModelType, type);
@@ -165,7 +165,7 @@ syncer::SyncError WifiCredentialSyncableService::ProcessSyncChanges(
       continue;
     }
 
-    scoped_ptr<WifiCredential> credential;
+    std::unique_ptr<WifiCredential> credential;
     switch (sync_change.change_type()) {
       case syncer::SyncChange::ACTION_ADD:
         credential = WifiCredential::Create(raw_credential.ssid,

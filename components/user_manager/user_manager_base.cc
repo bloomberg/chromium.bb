@@ -1018,7 +1018,7 @@ void UserManagerBase::SendGaiaUserLoginMetrics(const AccountId& account_id) {
 
 void UserManagerBase::UpdateUserAccountLocale(const AccountId& account_id,
                                               const std::string& locale) {
-  scoped_ptr<std::string> resolved_locale(new std::string());
+  std::unique_ptr<std::string> resolved_locale(new std::string());
   if (!locale.empty() && locale != GetApplicationLocale()) {
     // base::Passed will nullptr out |resolved_locale|, so cache the underlying
     // ptr.
@@ -1036,7 +1036,7 @@ void UserManagerBase::UpdateUserAccountLocale(const AccountId& account_id,
 
 void UserManagerBase::DoUpdateAccountLocale(
     const AccountId& account_id,
-    scoped_ptr<std::string> resolved_locale) {
+    std::unique_ptr<std::string> resolved_locale) {
   User* user = FindUserAndModify(account_id);
   if (user && resolved_locale)
     user->SetAccountLocale(*resolved_locale);

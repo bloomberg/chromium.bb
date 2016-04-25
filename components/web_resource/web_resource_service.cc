@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -67,7 +68,7 @@ WebResourceService::~WebResourceService() {
 
 void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the URLFetcher when this function exits.
-  scoped_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
+  std::unique_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
 
   if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
     std::string data;
@@ -78,7 +79,7 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
     // (on Android in particular) we short-cut the full parsing in the case of
     // trivially "empty" JSONs.
     if (data.empty() || data == "{}") {
-      OnUnpackFinished(make_scoped_ptr(new base::DictionaryValue()));
+      OnUnpackFinished(base::WrapUnique(new base::DictionaryValue()));
     } else {
       parse_json_callback_.Run(data,
                                base::Bind(&WebResourceService::OnUnpackFinished,
@@ -141,7 +142,7 @@ void WebResourceService::EndFetch() {
   in_fetch_ = false;
 }
 
-void WebResourceService::OnUnpackFinished(scoped_ptr<base::Value> value) {
+void WebResourceService::OnUnpackFinished(std::unique_ptr<base::Value> value) {
   if (!value) {
     // Page information not properly read, or corrupted.
     OnUnpackError(kInvalidDataTypeError);

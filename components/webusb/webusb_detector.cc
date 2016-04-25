@@ -4,7 +4,6 @@
 
 #include "components/webusb/webusb_detector.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "components/webusb/webusb_browser_client.h"
 #include "device/core/device_client.h"
 #include "device/usb/usb_device.h"

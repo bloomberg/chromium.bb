@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/wallpaper/wallpaper_resizer.h"
+
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "components/wallpaper/wallpaper_resizer.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -65,7 +67,7 @@ class WallpaperResizerTest : public testing::Test,
   gfx::ImageSkia Resize(const gfx::ImageSkia& image,
                         const gfx::Size& target_size,
                         WallpaperLayout layout) {
-    scoped_ptr<WallpaperResizer> resizer;
+    std::unique_ptr<WallpaperResizer> resizer;
     resizer.reset(
         new WallpaperResizer(image, target_size, layout, worker_pool()));
     resizer->AddObserver(this);

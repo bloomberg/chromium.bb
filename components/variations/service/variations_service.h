@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
 #define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/observer_list.h"
@@ -140,16 +140,16 @@ class VariationsService
   // Factory method for creating a VariationsService. Does not take ownership of
   // |state_manager|. Caller should ensure that |state_manager| is valid for the
   // lifetime of this class.
-  static scoped_ptr<VariationsService> Create(
-      scoped_ptr<VariationsServiceClient> client,
+  static std::unique_ptr<VariationsService> Create(
+      std::unique_ptr<VariationsServiceClient> client,
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
       const char* disable_network_switch,
       const UIStringOverrider& ui_string_overrider);
 
   // Factory method for creating a VariationsService in a testing context.
-  static scoped_ptr<VariationsService> CreateForTesting(
-      scoped_ptr<VariationsServiceClient> client,
+  static std::unique_ptr<VariationsService> CreateForTesting(
+      std::unique_ptr<VariationsServiceClient> client,
       PrefService* local_state);
 
   // Set the PrefService responsible for getting policy-related preferences,
@@ -183,8 +183,8 @@ class VariationsService
   // should ensure that |state_manager| is valid for the lifetime of this class.
   // Use the |Create| factory method to create a VariationsService.
   VariationsService(
-      scoped_ptr<VariationsServiceClient> client,
-      scoped_ptr<web_resource::ResourceRequestAllowedNotifier> notifier,
+      std::unique_ptr<VariationsServiceClient> client,
+      std::unique_ptr<web_resource::ResourceRequestAllowedNotifier> notifier,
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
       const UIStringOverrider& ui_string_overrider);
@@ -246,8 +246,9 @@ class VariationsService
 
   // Performs a variations seed simulation with the given |seed| and |version|
   // and logs the simulation results as histograms.
-  void PerformSimulationWithVersion(scoped_ptr<variations::VariationsSeed> seed,
-                                    const base::Version& version);
+  void PerformSimulationWithVersion(
+      std::unique_ptr<variations::VariationsSeed> seed,
+      const base::Version& version);
 
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();
@@ -261,7 +262,7 @@ class VariationsService
       const base::Version& version,
       const std::string& latest_country);
 
-  scoped_ptr<VariationsServiceClient> client_;
+  std::unique_ptr<VariationsServiceClient> client_;
   UIStringOverrider ui_string_overrider_;
 
   // The pref service used to store persist the variations seed.
@@ -280,11 +281,11 @@ class VariationsService
   // Contains the scheduler instance that handles timing for requests to the
   // server. Initially NULL and instantiated when the initial fetch is
   // requested.
-  scoped_ptr<VariationsRequestScheduler> request_scheduler_;
+  std::unique_ptr<VariationsRequestScheduler> request_scheduler_;
 
   // Contains the current seed request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete|.
-  scoped_ptr<net::URLFetcher> pending_seed_request_;
+  std::unique_ptr<net::URLFetcher> pending_seed_request_;
 
   // The value of the "restrict" URL param to the variations server that has
   // been specified via |SetRestrictMode|. If empty, the URL param will be set
@@ -308,7 +309,7 @@ class VariationsService
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
-  scoped_ptr<web_resource::ResourceRequestAllowedNotifier>
+  std::unique_ptr<web_resource::ResourceRequestAllowedNotifier>
       resource_request_allowed_notifier_;
 
   // The start time of the last seed request. This is used to measure the

@@ -36,7 +36,7 @@ void WebContentsModalDialogManager::SetDelegate(
 }
 
 void WebContentsModalDialogManager::ShowModalDialog(gfx::NativeWindow dialog) {
-  scoped_ptr<SingleWebContentsDialogManager> mgr(
+  std::unique_ptr<SingleWebContentsDialogManager> mgr(
       CreateNativeWebModalManager(dialog, this));
   ShowDialogWithManager(dialog, std::move(mgr));
 }
@@ -44,7 +44,7 @@ void WebContentsModalDialogManager::ShowModalDialog(gfx::NativeWindow dialog) {
 // TODO(gbillock): Maybe "ShowBubbleWithManager"?
 void WebContentsModalDialogManager::ShowDialogWithManager(
     gfx::NativeWindow dialog,
-    scoped_ptr<SingleWebContentsDialogManager> manager) {
+    std::unique_ptr<SingleWebContentsDialogManager> manager) {
   if (delegate_)
     manager->HostChanged(delegate_->GetWebContentsModalDialogHost());
   child_dialogs_.push_back(new DialogState(dialog, std::move(manager)));
@@ -78,7 +78,7 @@ void WebContentsModalDialogManager::WillClose(gfx::NativeWindow dialog) {
     return;
 
   bool removed_topmost_dialog = dlg == child_dialogs_.begin();
-  scoped_ptr<DialogState> deleter(*dlg);
+  std::unique_ptr<DialogState> deleter(*dlg);
   child_dialogs_.erase(dlg);
   if (!child_dialogs_.empty() && removed_topmost_dialog &&
       !closing_all_dialogs_) {
@@ -97,10 +97,8 @@ WebContentsModalDialogManager::WebContentsModalDialogManager(
 
 WebContentsModalDialogManager::DialogState::DialogState(
     gfx::NativeWindow dialog,
-    scoped_ptr<SingleWebContentsDialogManager> mgr)
-    : dialog(dialog),
-      manager(mgr.release()) {
-}
+    std::unique_ptr<SingleWebContentsDialogManager> mgr)
+    : dialog(dialog), manager(mgr.release()) {}
 
 WebContentsModalDialogManager::DialogState::~DialogState() {}
 

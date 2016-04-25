@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -245,7 +246,7 @@ class VisitedLinkTest : public testing::Test {
   base::FilePath history_dir_;
   base::FilePath visited_file_;
 
-  scoped_ptr<VisitedLinkMaster> master_;
+  std::unique_ptr<VisitedLinkMaster> master_;
   TestVisitedLinkDelegate delegate_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
@@ -688,7 +689,7 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
   VisitedLinkRenderProcessHostFactory vc_rph_factory_;
 
   TestVisitedLinkDelegate delegate_;
-  scoped_ptr<VisitedLinkMaster> master_;
+  std::unique_ptr<VisitedLinkMaster> master_;
 };
 
 TEST_F(VisitedLinkEventsTest, Coalescence) {
@@ -864,7 +865,7 @@ class VisitedLinkCompletelyResetEventTest : public VisitedLinkEventsTest {
   void CreateVisitedLinkFile(content::BrowserContext* browser_context) {
     base::FilePath visited_file =
         browser_context->GetPath().Append(FILE_PATH_LITERAL("Visited Links"));
-    scoped_ptr<VisitedLinkMaster> master(
+    std::unique_ptr<VisitedLinkMaster> master(
         new VisitedLinkMaster(new TrackingVisitedLinkEventListener(),
                               &delegate_, true, true, visited_file, 0));
     master->Init();

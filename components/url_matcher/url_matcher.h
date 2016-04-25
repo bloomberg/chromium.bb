@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/url_matcher/regex_set_matcher.h"
 #include "components/url_matcher/substring_set_matcher.h"
 #include "components/url_matcher/url_matcher_export.h"
@@ -325,9 +325,10 @@ class URL_MATCHER_EXPORT URLMatcherConditionSet
   // Matches if all conditions in |conditions|, |scheme_filter| and
   // |port_filter| are fulfilled. |scheme_filter| and |port_filter| may be NULL,
   // in which case, no restrictions are imposed on the scheme/port of a URL.
-  URLMatcherConditionSet(ID id, const Conditions& conditions,
-                         scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
-                         scoped_ptr<URLMatcherPortFilter> port_filter);
+  URLMatcherConditionSet(ID id,
+                         const Conditions& conditions,
+                         std::unique_ptr<URLMatcherSchemeFilter> scheme_filter,
+                         std::unique_ptr<URLMatcherPortFilter> port_filter);
 
   // Matches if all conditions in |conditions|, |query_conditions|,
   // |scheme_filter| and |port_filter| are fulfilled. |scheme_filter| and
@@ -336,8 +337,8 @@ class URL_MATCHER_EXPORT URLMatcherConditionSet
   URLMatcherConditionSet(ID id,
                          const Conditions& conditions,
                          const QueryConditions& query_conditions,
-                         scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
-                         scoped_ptr<URLMatcherPortFilter> port_filter);
+                         std::unique_ptr<URLMatcherSchemeFilter> scheme_filter,
+                         std::unique_ptr<URLMatcherPortFilter> port_filter);
 
   ID id() const { return id_; }
   const Conditions& conditions() const { return conditions_; }
@@ -356,8 +357,8 @@ class URL_MATCHER_EXPORT URLMatcherConditionSet
   ID id_;
   Conditions conditions_;
   QueryConditions query_conditions_;
-  scoped_ptr<URLMatcherSchemeFilter> scheme_filter_;
-  scoped_ptr<URLMatcherPortFilter> port_filter_;
+  std::unique_ptr<URLMatcherSchemeFilter> scheme_filter_;
+  std::unique_ptr<URLMatcherPortFilter> port_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionSet);
 };

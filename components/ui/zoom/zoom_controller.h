@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
 #define COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -180,7 +181,7 @@ class ZoomController : public content::WebContentsObserver,
   // Current zoom level.
   double zoom_level_;
 
-  scoped_ptr<ZoomChangedEventData> event_data_;
+  std::unique_ptr<ZoomChangedEventData> event_data_;
 
   // Keeps track of the extension (if any) that initiated the last zoom change
   // that took effect.
@@ -193,7 +194,7 @@ class ZoomController : public content::WebContentsObserver,
   // Keep track of the HostZoomMap we're currently subscribed to.
   content::HostZoomMap* host_zoom_map_;
 
-  scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  std::unique_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };
