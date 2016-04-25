@@ -56,7 +56,6 @@ private:
     const String16 m_frameId;
     bool m_reported;
     OwnPtr<InjectedScript> m_injectedScript;
-    // TODO(kozyatinskiy): make this reference weak
     v8::Global<v8::Object> m_console;
 };
 

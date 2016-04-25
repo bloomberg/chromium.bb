@@ -15,8 +15,13 @@ namespace blink {
 
 void InspectedContext::weakCallback(const v8::WeakCallbackInfo<InspectedContext>& data)
 {
-    data.GetParameter()->m_context.Reset();
-    data.GetParameter()->m_debugger->discardInspectedContext(data.GetParameter()->m_contextGroupId, data.GetParameter()->m_contextId);
+    InspectedContext* context = data.GetParameter();
+    if (!context->m_context.IsEmpty()) {
+        context->m_context.Reset();
+        data.SetSecondPassCallback(&InspectedContext::weakCallback);
+    } else {
+        context->m_debugger->discardInspectedContext(context->m_contextGroupId, context->m_contextId);
+    }
 }
 
 void InspectedContext::consoleWeakCallback(const v8::WeakCallbackInfo<InspectedContext>& data)
@@ -45,7 +50,7 @@ InspectedContext::InspectedContext(V8DebuggerImpl* debugger, const V8ContextInfo
     if (!global->Set(info.context, toV8StringInternalized(isolate, "console"), console).FromMaybe(false))
         return;
     m_console.Reset(isolate, console);
-    m_console.SetWeak(this, &InspectedContext::consoleWeakCallback, v8::WeakCallbackType::kFinalizer);
+    m_console.SetWeak(this, &InspectedContext::consoleWeakCallback, v8::WeakCallbackType::kParameter);
 }
 
 InspectedContext::~InspectedContext()
