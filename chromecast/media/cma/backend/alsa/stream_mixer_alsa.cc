@@ -112,12 +112,10 @@ int64_t TimespecToMicroseconds(struct timespec time) {
          time.tv_nsec / 1000;
 }
 
-bool GetSwitchValueAsNonNegativeInt(const std::string& switch_name,
-                                    int default_value,
-                                    int* value) {
+bool GetSwitchValueAsInt(const std::string& switch_name,
+                         int default_value,
+                         int* value) {
   DCHECK(value);
-  DCHECK_GE(default_value, 0) << "--" << switch_name
-                              << " must have a non-negative default value";
   *value = default_value;
   if (!base::CommandLine::InitializedForCurrentProcess()) {
     LOG(WARNING) << "No CommandLine for current process.";
@@ -134,11 +132,25 @@ bool GetSwitchValueAsNonNegativeInt(const std::string& switch_name,
     LOG(DFATAL) << "--" << switch_name << " only accepts integers as arguments";
     return false;
   }
-  if (arg_value < 0) {
+  *value = arg_value;
+  return true;
+}
+
+bool GetSwitchValueAsNonNegativeInt(const std::string& switch_name,
+                                    int default_value,
+                                    int* value) {
+  DCHECK_GE(default_value, 0) << "--" << switch_name
+                              << " must have a non-negative default value";
+  DCHECK(value);
+
+  if (!GetSwitchValueAsInt(switch_name, default_value, value))
+    return false;
+
+  if (*value < 0) {
     LOG(DFATAL) << "--" << switch_name << " must have a non-negative value";
+    *value = default_value;
     return false;
   }
-  *value = arg_value;
   return true;
 }
 
@@ -265,8 +277,8 @@ void StreamMixerAlsa::DefineAlsaParameters() {
                                   switches::kAcceptResourceProvider, false)
                                   ? 0
                                   : kDefaultCheckCloseTimeoutMs;
-  GetSwitchValueAsNonNegativeInt(switches::kAlsaCheckCloseTimeout,
-                                 default_close_timeout, &check_close_timeout_);
+  GetSwitchValueAsInt(switches::kAlsaCheckCloseTimeout, default_close_timeout,
+                      &check_close_timeout_);
 }
 
 unsigned int StreamMixerAlsa::DetermineOutputRate(unsigned int requested_rate) {
@@ -653,9 +665,12 @@ void StreamMixerAlsa::DeleteInputQueueInternal(InputQueue* input) {
   }
 
   if (inputs_.empty()) {
-    check_close_timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(check_close_timeout_),
-        base::Bind(&StreamMixerAlsa::CheckClose, base::Unretained(this)));
+    // Never close if timeout is negative
+    if (check_close_timeout_ >= 0) {
+      check_close_timer_->Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(check_close_timeout_),
+          base::Bind(&StreamMixerAlsa::CheckClose, base::Unretained(this)));
+    }
   }
 }
 
