@@ -86,8 +86,8 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
 void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WebAddressSpace creationAddressSpace, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback)
 {
     DCHECK(responseCallback || finishedCallback);
-    m_responseCallback = responseCallback;
-    m_finishedCallback = finishedCallback;
+    m_responseCallback = std::move(responseCallback);
+    m_finishedCallback = std::move(finishedCallback);
     m_url = url;
 
     ResourceRequest request(createResourceRequest(creationAddressSpace));

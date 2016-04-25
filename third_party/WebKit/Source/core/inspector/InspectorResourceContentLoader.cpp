@@ -155,7 +155,7 @@ void InspectorResourceContentLoader::ensureResourcesContentLoaded(int clientId, 
 {
     if (!m_started)
         start();
-    m_callbacks.add(clientId, Callbacks()).storedValue->value.append(callback);
+    m_callbacks.add(clientId, Callbacks()).storedValue->value.append(std::move(callback));
     checkDone();
 }
 

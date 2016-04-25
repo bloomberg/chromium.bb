@@ -126,7 +126,7 @@ PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<E
         DCHECK(isCurrentThread());
         InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
     }
-    return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented);
+    return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), passed(std::move(task)), isInstrumented);
 }
 
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
@@ -166,7 +166,7 @@ void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
         return;
 
     m_started = true;
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), passed(std::move(startupData))));
 }
 
 PlatformThreadId WorkerThread::platformThreadId()
@@ -207,7 +207,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
 
         // Optimize for memory usage instead of latency for the worker isolate.
         isolate()->IsolateInBackgroundNotification();
-        m_workerGlobalScope = createWorkerGlobalScope(startupData);
+        m_workerGlobalScope = createWorkerGlobalScope(std::move(startupData));
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
         // Notify proxy that a new WorkerGlobalScope has been created and started.
@@ -375,7 +375,7 @@ bool WorkerThread::isCurrentThread()
 
 void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    workerBackingThread().backingThread().postTask(location, createWorkerThreadTask(task, true));
+    workerBackingThread().backingThread().postTask(location, createWorkerThreadTask(std::move(task), true));
 }
 
 void WorkerThread::runDebuggerTaskDontWait()
@@ -392,7 +392,7 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
         if (m_shutdown)
             return;
     }
-    m_inspectorTaskRunner->appendTask(threadSafeBind(&WorkerThread::runDebuggerTask, AllowCrossThreadAccess(this), task));
+    m_inspectorTaskRunner->appendTask(threadSafeBind(&WorkerThread::runDebuggerTask, AllowCrossThreadAccess(this), passed(std::move(task))));
     {
         MutexLocker lock(m_threadStateMutex);
         if (isolate())

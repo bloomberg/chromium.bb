@@ -63,7 +63,7 @@ class PolygonShape final : public Shape {
 public:
     PolygonShape(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule)
         : Shape()
-        , m_polygon(vertices, fillRule)
+        , m_polygon(std::move(vertices), fillRule)
     {
     }
 

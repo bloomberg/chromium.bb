@@ -154,7 +154,7 @@ CrossOriginPreflightResultCache& CrossOriginPreflightResultCache::shared()
 void CrossOriginPreflightResultCache::appendEntry(const String& origin, const KURL& url, PassOwnPtr<CrossOriginPreflightResultCacheItem> preflightResult)
 {
     ASSERT(isMainThread());
-    m_preflightHashMap.set(std::make_pair(origin, url), preflightResult);
+    m_preflightHashMap.set(std::make_pair(origin, url), std::move(preflightResult));
 }
 
 bool CrossOriginPreflightResultCache::canSkipPreflight(const String& origin, const KURL& url, StoredCredentials includeCredentials, const String& method, const HTTPHeaderMap& requestHeaders)

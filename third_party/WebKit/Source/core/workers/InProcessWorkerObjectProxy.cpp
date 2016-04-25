@@ -48,12 +48,12 @@ PassOwnPtr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(InProc
 
 void InProcessWorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, channels));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, passed(std::move(channels))));
 }
 
 void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask> task)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, task);
+    getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)

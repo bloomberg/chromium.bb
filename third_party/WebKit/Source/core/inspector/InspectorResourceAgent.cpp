@@ -132,8 +132,8 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 public:
     InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassOwnPtr<GetResponseBodyCallback> callback)
         : m_blob(blob)
-        , m_decoder(decoder)
-        , m_callback(callback)
+        , m_decoder(std::move(decoder))
+        , m_callback(std::move(callback))
     {
         m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
     }
@@ -939,13 +939,13 @@ void InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassOw
     BlobDataHandle* blob = resourceData->downloadedFileBlob();
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, resourceData->frameId());
     Document* document = frame->document();
-    InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), callback);
+    InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), std::move(callback));
     client->start(document);
 }
 
 void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassOwnPtr<GetResponseBodyCallback> passCallback)
 {
-    OwnPtr<GetResponseBodyCallback> callback = passCallback;
+    OwnPtr<GetResponseBodyCallback> callback = std::move(passCallback);
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     if (!resourceData) {
         callback->sendFailure("No resource with given identifier found");

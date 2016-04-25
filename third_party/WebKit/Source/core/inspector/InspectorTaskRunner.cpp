@@ -32,7 +32,7 @@ InspectorTaskRunner::~InspectorTaskRunner()
 void InspectorTaskRunner::appendTask(PassOwnPtr<Task> task)
 {
     MutexLocker lock(m_mutex);
-    m_queue.append(task);
+    m_queue.append(std::move(task));
     m_condition.signal();
 }
 

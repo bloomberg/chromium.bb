@@ -32,7 +32,7 @@ PassOwnPtr<protocol::DictionaryValue> createAnchor(const String& type, const Str
     OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setString("type", type);
     object->setString("propertyName", propertyName);
-    object->setObject("propertyValue", valueDescription);
+    object->setObject("propertyValue", std::move(valueDescription));
     return object.release();
 }
 
@@ -418,7 +418,7 @@ void LayoutEditor::evaluateInOverlay(const String& method, PassOwnPtr<protocol::
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
     OwnPtr<protocol::ListValue> command = protocol::ListValue::create();
     command->pushValue(protocol::StringValue::create(method));
-    command->pushValue(argument);
+    command->pushValue(std::move(argument));
     m_scriptController->executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 

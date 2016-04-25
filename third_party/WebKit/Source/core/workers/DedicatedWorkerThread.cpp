@@ -56,7 +56,7 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 
 WorkerGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    return DedicatedWorkerGlobalScope::create(this, startupData, m_timeOrigin);
+    return DedicatedWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
 }
 
 void DedicatedWorkerThread::postInitialize()

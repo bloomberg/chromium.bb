@@ -576,7 +576,7 @@ void DocumentThreadableLoader::responseReceived(Resource* resource, const Resour
     if (handle)
         m_isUsingDataConsumerHandle = true;
 
-    handleResponse(resource->identifier(), response, handle);
+    handleResponse(resource->identifier(), response, std::move(handle));
     // |this| may be dead here.
 }
 
@@ -646,7 +646,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
             return;
         }
         m_fallbackRequestForServiceWorker = ResourceRequest();
-        m_client->didReceiveResponse(identifier, response, handle);
+        m_client->didReceiveResponse(identifier, response, std::move(handle));
         return;
     }
 
@@ -675,7 +675,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         }
     }
 
-    m_client->didReceiveResponse(identifier, response, handle);
+    m_client->didReceiveResponse(identifier, response, std::move(handle));
 }
 
 void DocumentThreadableLoader::setSerializedCachedMetadata(Resource*, const char* data, size_t size)

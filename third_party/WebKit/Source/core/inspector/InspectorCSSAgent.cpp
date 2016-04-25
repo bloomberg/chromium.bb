@@ -667,7 +667,7 @@ void InspectorCSSAgent::enable(ErrorString* errorString, PassOwnPtr<EnableCallba
         return;
     }
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
-    m_resourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorCSSAgent::resourceContentLoaded, this, prpCallback));
+    m_resourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorCSSAgent::resourceContentLoaded, this, passed(std::move(prpCallback))));
 }
 
 void InspectorCSSAgent::resourceContentLoaded(PassOwnPtr<EnableCallback> callback)
@@ -1217,7 +1217,7 @@ void InspectorCSSAgent::setStyleTexts(ErrorString* errorString, PassOwnPtr<proto
 {
     FrontendOperationScope scope;
     HeapVector<Member<StyleSheetAction>> actions;
-    if (!multipleStyleTextsActions(errorString, edits, &actions))
+    if (!multipleStyleTextsActions(errorString, std::move(edits), &actions))
         return;
 
     TrackExceptionState exceptionState;
@@ -1349,7 +1349,7 @@ void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, P
     if (!element)
         return;
 
-    unsigned forcedPseudoState = computePseudoClassMask(forcedPseudoClasses);
+    unsigned forcedPseudoState = computePseudoClassMask(std::move(forcedPseudoClasses));
     NodeIdToForcedPseudoState::iterator it = m_nodeIdToForcedPseudoState.find(nodeId);
     unsigned currentForcedPseudoState = it == m_nodeIdToForcedPseudoState.end() ? 0 : it->value;
     bool needStyleRecalc = forcedPseudoState != currentForcedPseudoState;

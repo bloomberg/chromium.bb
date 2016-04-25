@@ -1148,7 +1148,7 @@ void InspectorDOMAgent::highlightRect(ErrorString*, int x, int y, int width, int
 void InspectorDOMAgent::highlightQuad(ErrorString* errorString, PassOwnPtr<protocol::Array<double>> quadArray, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor)
 {
     OwnPtr<FloatQuad> quad = adoptPtr(new FloatQuad());
-    if (!parseQuad(quadArray, quad.get())) {
+    if (!parseQuad(std::move(quadArray), quad.get())) {
         *errorString = "Invalid Quad format";
         return;
     }
@@ -1161,7 +1161,7 @@ void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const May
     highlightConfig->content = parseColor(color.fromMaybe(nullptr));
     highlightConfig->contentOutline = parseColor(outlineColor.fromMaybe(nullptr));
     if (m_client)
-        m_client->highlightQuad(quad, *highlightConfig);
+        m_client->highlightQuad(std::move(quad), *highlightConfig);
 }
 
 Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String& objectId)
@@ -1197,7 +1197,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<proto
     if (!node)
         return;
 
-    OwnPtr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
+    OwnPtr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, std::move(highlightInspectorObject));
     if (!highlightConfig)
         return;
 

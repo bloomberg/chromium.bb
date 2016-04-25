@@ -88,7 +88,7 @@ public:
         ResourceResponse response(responseData.get());
 
         if (m_client)
-            m_client->didReceiveResponse(identifier, response, handle);
+            m_client->didReceiveResponse(identifier, response, std::move(handle));
     }
 
     void didReceiveData(PassOwnPtr<Vector<char>> data)
@@ -141,7 +141,7 @@ public:
 
     void didReceiveResourceTiming(PassOwnPtr<CrossThreadResourceTimingInfoData> timingData)
     {
-        OwnPtr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(timingData));
+        OwnPtr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(std::move(timingData)));
 
         if (m_resourceTimingClient)
             m_resourceTimingClient->didReceiveResourceTiming(*info);

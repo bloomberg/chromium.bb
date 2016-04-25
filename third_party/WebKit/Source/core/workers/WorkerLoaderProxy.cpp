@@ -31,7 +31,7 @@ void WorkerLoaderProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
     if (!m_loaderProxyProvider)
         return;
 
-    m_loaderProxyProvider->postTaskToLoader(task);
+    m_loaderProxyProvider->postTaskToLoader(std::move(task));
 }
 
 bool WorkerLoaderProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
@@ -40,7 +40,7 @@ bool WorkerLoaderProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextT
     if (!m_loaderProxyProvider)
         return false;
 
-    return m_loaderProxyProvider->postTaskToWorkerGlobalScope(task);
+    return m_loaderProxyProvider->postTaskToWorkerGlobalScope(std::move(task));
 }
 
 } // namespace blink

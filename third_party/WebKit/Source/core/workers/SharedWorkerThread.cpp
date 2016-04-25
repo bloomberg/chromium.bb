@@ -54,7 +54,7 @@ SharedWorkerThread::~SharedWorkerThread()
 
 WorkerGlobalScope* SharedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    return SharedWorkerGlobalScope::create(m_name, this, startupData);
+    return SharedWorkerGlobalScope::create(m_name, this, std::move(startupData));
 }
 
 } // namespace blink

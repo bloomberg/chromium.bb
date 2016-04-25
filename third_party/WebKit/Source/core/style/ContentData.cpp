@@ -43,7 +43,7 @@ ContentData* ContentData::create(const String& text)
 
 ContentData* ContentData::create(PassOwnPtr<CounterContent> counter)
 {
-    return new CounterContentData(counter);
+    return new CounterContentData(std::move(counter));
 }
 
 ContentData* ContentData::create(QuoteType quote)

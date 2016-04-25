@@ -94,7 +94,7 @@ void MainThreadDebugger::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> clie
 {
     ASSERT(!m_clientMessageLoop);
     ASSERT(clientMessageLoop);
-    m_clientMessageLoop = clientMessageLoop;
+    m_clientMessageLoop = std::move(clientMessageLoop);
 }
 
 void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* frame, SecurityOrigin* origin)
@@ -131,7 +131,7 @@ void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunne
 {
     MutexLocker locker(creationMutex());
     if (s_instance) {
-        s_instance->m_taskRunner->appendTask(task);
+        s_instance->m_taskRunner->appendTask(std::move(task));
         s_instance->m_taskRunner->interruptAndRunAllTasksDontWait(s_instance->m_isolate);
     }
 }

@@ -505,9 +505,9 @@ void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassOwnPtr<protocol::
     if (!eventData)
         return;
     if (synchronous)
-        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::EventListener, eventData);
+        m_debuggerAgent->breakProgram(protocol::Debugger::Paused::ReasonEnum::EventListener, std::move(eventData));
     else
-        m_debuggerAgent->schedulePauseOnNextStatement(protocol::Debugger::Paused::ReasonEnum::EventListener, eventData);
+        m_debuggerAgent->schedulePauseOnNextStatement(protocol::Debugger::Paused::ReasonEnum::EventListener, std::move(eventData));
 }
 
 PassOwnPtr<protocol::DictionaryValue> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const String* targetName)

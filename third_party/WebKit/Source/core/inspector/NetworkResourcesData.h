@@ -115,7 +115,7 @@ public:
         void setTextEncodingName(const String& textEncodingName) { m_textEncodingName = textEncodingName; }
 
         TextResourceDecoder* decoder() const { return m_decoder.get(); }
-        void setDecoder(PassOwnPtr<TextResourceDecoder> decoder) { m_decoder = decoder; }
+        void setDecoder(PassOwnPtr<TextResourceDecoder> decoder) { m_decoder = std::move(decoder); }
 
         PassRefPtr<SharedBuffer> buffer() const { return m_buffer; }
         void setBuffer(PassRefPtr<SharedBuffer> buffer) { m_buffer = buffer; }

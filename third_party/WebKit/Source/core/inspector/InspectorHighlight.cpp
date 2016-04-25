@@ -256,7 +256,7 @@ void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColo
 void InspectorHighlight::appendPath(PassOwnPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name)
 {
     OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
-    object->setValue("path", path);
+    object->setValue("path", std::move(path));
     object->setString("fillColor", fillColor.serialized());
     if (outlineColor != Color::transparent)
         object->setString("outlineColor", outlineColor.serialized());

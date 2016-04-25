@@ -96,7 +96,7 @@ private:
         m_scrollTranslation = translation;
     }
     void setScrollbarPaintOffset(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_scrollbarPaintOffset = paintOffset; }
-    void setLocalBorderBoxProperties(PassOwnPtr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = properties; }
+    void setLocalBorderBoxProperties(PassOwnPtr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = std::move(properties); }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;

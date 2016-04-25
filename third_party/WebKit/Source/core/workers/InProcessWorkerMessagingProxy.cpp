@@ -59,7 +59,7 @@ void processExceptionOnWorkerGlobalScope(int exceptionId, bool handled, Executio
 void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, InProcessWorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-    MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, channels);
+    MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, std::move(channels));
     globalScope->dispatchEvent(MessageEvent::create(ports, message));
     workerObjectProxy->confirmMessageFromWorkerObject(V8GCController::hasPendingActivity(globalScope->thread()->isolate(), scriptContext));
 }
@@ -121,7 +121,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<Seriali
     if (!m_workerObject || m_askedToTerminate)
         return;
 
-    MessagePortArray* ports = MessagePort::entanglePorts(*m_executionContext.get(), channels);
+    MessagePortArray* ports = MessagePort::entanglePorts(*m_executionContext.get(), std::move(channels));
     m_workerObject->dispatchEvent(MessageEvent::create(ports, message));
 }
 
@@ -130,7 +130,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<Se
     if (m_askedToTerminate)
         return;
 
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, channels, AllowCrossThreadAccess(&workerObjectProxy()));
+    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, passed(std::move(channels)), AllowCrossThreadAccess(&workerObjectProxy()));
     if (m_workerThread) {
         ++m_unconfirmedMessageCount;
         m_workerThread->postTask(BLINK_FROM_HERE, task.release());
@@ -145,7 +145,7 @@ bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<Execu
         return false;
 
     DCHECK(m_workerThread);
-    m_workerThread->postTask(BLINK_FROM_HERE, task);
+    m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
     return true;
 }
 
@@ -153,7 +153,7 @@ void InProcessWorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContext
 {
     // FIXME: In case of nested workers, this should go directly to the root Document context.
     DCHECK(m_executionContext->isDocument());
-    m_executionContext->postTask(BLINK_FROM_HERE, task);
+    m_executionContext->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)

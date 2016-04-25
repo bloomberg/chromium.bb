@@ -59,7 +59,7 @@ DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(con
 void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, PassOwnPtr<DocumentResourceReference> documentResourceReference)
 {
     ASSERT(!documentResourceReferences().contains(filterOperation));
-    documentResourceReferences().add(filterOperation, documentResourceReference);
+    documentResourceReferences().add(filterOperation, std::move(documentResourceReference));
 }
 
 Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)

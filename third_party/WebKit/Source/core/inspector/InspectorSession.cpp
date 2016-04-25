@@ -101,7 +101,7 @@ void InspectorSession::sendProtocolNotification(PassOwnPtr<protocol::DictionaryV
     if (m_autoFlush)
         m_client->sendProtocolMessage(m_sessionId, 0, message->toJSONString(), String());
     else
-        m_notificationQueue.append(message);
+        m_notificationQueue.append(std::move(message));
 }
 
 void InspectorSession::flush()

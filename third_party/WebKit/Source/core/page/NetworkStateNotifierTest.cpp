@@ -82,7 +82,7 @@ public:
 
     void setNotificationCallback(PassOwnPtr<SameThreadClosure> closure)
     {
-        m_closure = closure;
+        m_closure = std::move(closure);
     }
 
 private:

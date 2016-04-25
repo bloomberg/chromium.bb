@@ -12,7 +12,7 @@
 namespace blink {
 
 StylePath::StylePath(PassOwnPtr<SVGPathByteStream> pathByteStream)
-    : m_byteStream(pathByteStream)
+    : m_byteStream(std::move(pathByteStream))
     , m_pathLength(std::numeric_limits<float>::quiet_NaN())
 {
     ASSERT(m_byteStream);
@@ -24,7 +24,7 @@ StylePath::~StylePath()
 
 PassRefPtr<StylePath> StylePath::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
 {
-    return adoptRef(new StylePath(pathByteStream));
+    return adoptRef(new StylePath(std::move(pathByteStream)));
 }
 
 StylePath* StylePath::emptyPath()

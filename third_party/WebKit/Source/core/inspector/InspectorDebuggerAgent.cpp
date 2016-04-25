@@ -98,7 +98,7 @@ void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, PassOwnPtr<
     protocol::Debugger::BreakpointId* outBreakpointId,
     OwnPtr<protocol::Debugger::Location>* outActualLocation)
 {
-    m_v8DebuggerAgent->setBreakpoint(errorString, inLocation, inCondition, outBreakpointId, outActualLocation);
+    m_v8DebuggerAgent->setBreakpoint(errorString, std::move(inLocation), inCondition, outBreakpointId, std::move(outActualLocation));
 }
 
 void InspectorDebuggerAgent::removeBreakpoint(ErrorString* errorString,
@@ -111,7 +111,7 @@ void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString,
     PassOwnPtr<protocol::Debugger::Location> inLocation,
     const Maybe<bool>& inInterstatementLocation)
 {
-    m_v8DebuggerAgent->continueToLocation(errorString, inLocation, inInterstatementLocation);
+    m_v8DebuggerAgent->continueToLocation(errorString, std::move(inLocation), inInterstatementLocation);
 }
 
 void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
@@ -228,7 +228,7 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inSc
     PassOwnPtr<protocol::Runtime::CallArgument> inNewValue,
     const String16& inCallFrameId)
 {
-    m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId);
+    m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, std::move(inNewValue), inCallFrameId);
 }
 
 void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,
@@ -254,7 +254,7 @@ void InspectorDebuggerAgent::setBlackboxedRanges(
     const String16& inScriptId,
     PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
 {
-    m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, inPositions);
+    m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, std::move(inPositions));
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)

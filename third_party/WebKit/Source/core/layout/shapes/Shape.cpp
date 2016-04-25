@@ -70,7 +70,7 @@ static PassOwnPtr<Shape> createEllipseShape(const FloatPoint& center, const Floa
 
 static PassOwnPtr<Shape> createPolygonShape(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule)
 {
-    return adoptPtr(new PolygonShape(vertices, fillRule));
+    return adoptPtr(new PolygonShape(std::move(vertices), fillRule));
 }
 
 static inline FloatRect physicalRectToLogical(const FloatRect& rect, float logicalBoxHeight, WritingMode writingMode)

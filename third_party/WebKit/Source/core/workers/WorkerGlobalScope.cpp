@@ -87,7 +87,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
-        getSecurityOrigin()->transferPrivilegesFrom(starterOriginPrivilageData);
+        getSecurityOrigin()->transferPrivilegesFrom(std::move(starterOriginPrivilageData));
 
     if (m_workerClients)
         m_workerClients->reattachThread();
@@ -172,7 +172,7 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
 
 void WorkerGlobalScope::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    thread()->postTask(location, task);
+    thread()->postTask(location, std::move(task));
 }
 
 void WorkerGlobalScope::clearScript()

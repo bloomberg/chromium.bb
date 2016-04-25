@@ -46,12 +46,12 @@ ScrollState* ScrollState::create(ScrollStateInit init)
 
 ScrollState* ScrollState::create(PassOwnPtr<ScrollStateData> data)
 {
-    ScrollState* scrollState = new ScrollState(data);
+    ScrollState* scrollState = new ScrollState(std::move(data));
     return scrollState;
 }
 
 ScrollState::ScrollState(PassOwnPtr<ScrollStateData> data)
-    : m_data(data)
+    : m_data(std::move(data))
 {
 }
 
