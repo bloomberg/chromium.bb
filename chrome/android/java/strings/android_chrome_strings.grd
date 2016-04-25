@@ -1930,6 +1930,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARK_PAGE_SAVED_FOLDER" desc="Message shown after user adds a new bookmark. Also specifies in which folder the bookmark was added. [CHAR-LIMIT=32]">
         Bookmarked to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>
       </message>
+      <message name="IDS_BOOKMARK_PAGE_FAILED" desc="Message shown when the user tries to add a bookmark but the browser fails to save it.">
+        Failed to add bookmark.
+      </message>
       <message name="IDS_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the bookmarks UI [CHAR-LIMIT=24]">
         All bookmarks
       </message>

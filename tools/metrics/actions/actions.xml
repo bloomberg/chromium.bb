@@ -3258,19 +3258,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="EnhancedBookmarks.EditAfterCreateButtonClicked">
-  <owner>kkimlabs@chromium.org</owner>
+<action name="EnhancedBookmarks.AddingFailed">
   <owner>ianwen@chromium.org</owner>
-  <owner>fgorski@chromium.org</owner>
+  <description>
+    Action indicating that bookmark model failed to add a bookmark.
+  </description>
+</action>
+
+<action name="EnhancedBookmarks.EditAfterCreateButtonClicked">
+  <owner>ianwen@chromium.org</owner>
   <description>
     User clicked the Edit button on a snackbar after a bookmark was created.
   </description>
 </action>
 
 <action name="EnhancedBookmarks.EditAfterCreateButtonNotClicked">
-  <owner>kkimlabs@chromium.org</owner>
   <owner>ianwen@chromium.org</owner>
-  <owner>fgorski@chromium.org</owner>
   <description>
     User ignored the Edit button on a snackbar after a bookmark was created.
   </description>

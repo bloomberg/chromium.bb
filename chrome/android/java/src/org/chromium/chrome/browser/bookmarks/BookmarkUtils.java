@@ -68,11 +68,21 @@ public class BookmarkUtils {
         }
 
         String url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(tab.getUrl());
-        BookmarkId bookmarkId = bookmarkModel.addBookmark(
-                parent, bookmarkModel.getChildCount(parent), tab.getTitle(), url);
+        BookmarkId bookmarkId = bookmarkModel.addBookmark(parent,
+                bookmarkModel.getChildCount(parent), tab.getTitle(), url);
 
-        if (bookmarkId != null) {
-            Snackbar snackbar;
+        Snackbar snackbar = null;
+        if (bookmarkId == null) {
+            snackbar = Snackbar.make(activity.getString(R.string.bookmark_page_failed),
+                    new SnackbarController() {
+                        @Override
+                        public void onDismissNoAction(Object actionData) { }
+
+                        @Override
+                        public void onAction(Object actionData) { }
+                    }, Snackbar.TYPE_NOTIFICATION).setSingleLine(false);
+            RecordUserAction.record("EnhancedBookmarks.AddingFailed");
+        } else {
             String folderName = bookmarkModel.getBookmarkTitle(
                     bookmarkModel.getBookmarkById(bookmarkId).getParentId());
             SnackbarController snackbarController =
@@ -82,14 +92,12 @@ public class BookmarkUtils {
                         snackbarController, Snackbar.TYPE_ACTION);
             } else {
                 snackbar = Snackbar.make(folderName, snackbarController, Snackbar.TYPE_ACTION)
-                                   .setTemplateText(
-                                           activity.getString(R.string.bookmark_page_saved_folder));
+                        .setTemplateText(activity.getString(R.string.bookmark_page_saved_folder));
             }
-            snackbar = snackbar.setSingleLine(false).setAction(
+            snackbar.setSingleLine(false).setAction(
                     activity.getString(R.string.bookmark_item_edit), null);
-
-            snackbarManager.showSnackbar(snackbar);
         }
+        snackbarManager.showSnackbar(snackbar);
 
         bookmarkModel.destroy();
         return bookmarkId;
@@ -119,11 +127,9 @@ public class BookmarkUtils {
     private static SnackbarController createSnackbarControllerForEditButton(
             final Activity activity, final BookmarkId bookmarkId) {
         return new SnackbarController() {
-
             @Override
             public void onDismissNoAction(Object actionData) {
                 RecordUserAction.record("EnhancedBookmarks.EditAfterCreateButtonNotClicked");
-                // This method will be called only if the snackbar is dismissed by timeout.
             }
 
             @Override
