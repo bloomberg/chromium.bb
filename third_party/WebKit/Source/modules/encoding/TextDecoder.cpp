@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/encoding/Encoding.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/TextEncodingRegistry.h"

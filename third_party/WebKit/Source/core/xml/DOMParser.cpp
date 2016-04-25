@@ -19,7 +19,6 @@
 #include "core/xml/DOMParser.h"
 
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

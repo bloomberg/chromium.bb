@@ -34,7 +34,6 @@
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/Text.h"
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"

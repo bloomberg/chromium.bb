@@ -11,7 +11,6 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/UseCounter.h"
 #include "core/streams/ReadableStreamController.h"

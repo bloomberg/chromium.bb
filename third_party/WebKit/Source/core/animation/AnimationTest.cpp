@@ -36,7 +36,6 @@
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/weborigin/KURL.h"

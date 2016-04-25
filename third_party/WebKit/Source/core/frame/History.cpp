@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

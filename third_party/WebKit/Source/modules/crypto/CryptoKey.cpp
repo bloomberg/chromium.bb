@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "bindings/core/v8/V8Uint8Array.h"
-#include "core/dom/ExceptionCode.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"

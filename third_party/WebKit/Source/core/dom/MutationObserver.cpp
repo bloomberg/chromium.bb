@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Microtask.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationObserverRegistration.h"

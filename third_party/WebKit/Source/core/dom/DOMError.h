@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
