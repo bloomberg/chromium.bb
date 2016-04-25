@@ -1,6 +1,6 @@
 Name: woff2
 URL: https://github.com/google/woff2
-Version: 4e698b8c6c5e070d53c340db9ddf160e21070ede
+Version: 2bc6acf6dfa2f6dd2f8da63b4fe2e27851e45e11
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -13,7 +13,3 @@ Local Modifications:
 
 - BUILD.gn: Added.
 - woff2.gyp: Added.
-- src/port.h: Include <assert.h>.
-- src/woff2_dec.cc: Msan error fix.
-
-Changes under src/ will be fixed in the upstream repository soon.

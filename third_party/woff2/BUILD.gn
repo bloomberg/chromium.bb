@@ -2,12 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("woff2_warnings") {
-  if (!is_win || is_clang) {
-    cflags = [ "-Wno-unused-function" ]
-  }
-}
-
 source_set("woff2_dec") {
   sources = [
     "src/buffer.h",
@@ -27,7 +21,6 @@ source_set("woff2_dec") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":woff2_warnings" ]
 
   deps = [
     "//third_party/brotli",

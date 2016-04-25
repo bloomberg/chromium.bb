@@ -33,11 +33,6 @@
       'msvs_disabled_warnings': [
         4267,
       ],
-      'variables': {
-        'clang_warning_flags': [
-          '-Wno-unused-function',
-        ],
-      },
     },
   ],
 }
