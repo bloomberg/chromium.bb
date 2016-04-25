@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/resource_mapper.h"
@@ -18,19 +19,24 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/PersonalDataManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace autofill {
@@ -192,6 +198,74 @@ void PopulateNativeCreditCardFromJava(
       ConvertJavaStringToUTF16(Java_CreditCard_getYear(env, jcard)));
 }
 
+// Self-deleting requester of full card details, including full PAN and the CVC
+// number.
+class FullCardRequester : public payments::FullCardRequest::Delegate,
+                          public base::SupportsWeakPtr<FullCardRequester> {
+ public:
+  FullCardRequester() {}
+
+  void GetFullCard(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& jweb_contents,
+                   const base::android::JavaParamRef<jobject>& jdelegate,
+                   CreditCard* card) {
+    jdelegate_.Reset(env, jdelegate);
+
+    if (!card) {
+      OnFullCardError();
+      return;
+    }
+
+    content::WebContents* contents =
+        content::WebContents::FromJavaWebContents(jweb_contents);
+    if (!contents) {
+      OnFullCardError();
+      return;
+    }
+
+    ContentAutofillDriverFactory* factory =
+        ContentAutofillDriverFactory::FromWebContents(contents);
+    if (!factory) {
+      OnFullCardError();
+      return;
+    }
+
+    ContentAutofillDriver* driver =
+        factory->DriverForFrame(contents->GetMainFrame());
+    if (!driver) {
+      OnFullCardError();
+      return;
+    }
+
+    driver->autofill_manager()->GetOrCreateFullCardRequest()->GetFullCard(
+        *card, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST, AsWeakPtr());
+  }
+
+ private:
+  virtual ~FullCardRequester() {}
+
+  // payments::FullCardRequest::Delegate:
+  void OnFullCardDetails(const CreditCard& card,
+                         const base::string16& cvc) override {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_FullCardRequestDelegate_onFullCardDetails(
+        env, jdelegate_.obj(), CreateJavaCreditCardFromNative(env, card).obj(),
+        base::android::ConvertUTF16ToJavaString(env, cvc).obj());
+    delete this;
+  }
+
+  // payments::FullCardRequest::Delegate:
+  void OnFullCardError() override {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_FullCardRequestDelegate_onFullCardError(env, jdelegate_.obj());
+    delete this;
+  }
+
+  ScopedJavaGlobalRef<jobject> jdelegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
+};
+
 }  // namespace
 
 PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env,
@@ -329,6 +403,19 @@ void PersonalDataManagerAndroid::ClearUnmaskedCache(
     const JavaParamRef<jstring>& guid) {
   personal_data_manager_->ResetFullServerCard(
       ConvertJavaStringToUTF8(env, guid));
+}
+
+void PersonalDataManagerAndroid::GetFullCardForPaymentRequest(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jstring>& jguid,
+    const JavaParamRef<jobject>& jdelegate) {
+  // Self-deleting object.
+  (new FullCardRequester())
+      ->GetFullCard(env, jweb_contents, jdelegate,
+                    personal_data_manager_->GetCreditCardByGUID(
+                        ConvertJavaStringToUTF8(env, jguid)));
 }
 
 void PersonalDataManagerAndroid::OnPersonalDataChanged() {

@@ -97,6 +97,14 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid);
 
+  // Gets the card CVC and unmasks the card (if it's masked).
+  void GetFullCardForPaymentRequest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      const base::android::JavaParamRef<jstring>& jguid,
+      const base::android::JavaParamRef<jobject>& jdelegate);
+
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;
 

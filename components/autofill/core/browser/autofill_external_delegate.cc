@@ -249,7 +249,8 @@ void AutofillExternalDelegate::OnCreditCardScanned(
     int expiration_year) {
   manager_->FillCreditCardForm(
       query_id_, query_form_, query_field_,
-      CreditCard(card_number, expiration_month, expiration_year));
+      CreditCard(card_number, expiration_month, expiration_year),
+      base::string16());
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,

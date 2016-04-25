@@ -176,6 +176,8 @@
         'autofill/core/browser/name_field.h',
         'autofill/core/browser/password_generator.cc',
         'autofill/core/browser/password_generator.h',
+        'autofill/core/browser/payments/full_card_request.cc',
+        'autofill/core/browser/payments/full_card_request.h',
         'autofill/core/browser/payments/payments_client.cc',
         'autofill/core/browser/payments/payments_client.h',
         'autofill/core/browser/payments/payments_request.h',

@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
@@ -67,8 +68,8 @@ struct FormFieldData;
 // Manages saving and restoring the user's personal information entered into web
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillDownloadManager::Observer,
-                        public CardUnmaskDelegate,
-                        public payments::PaymentsClientDelegate {
+                        public payments::PaymentsClientDelegate,
+                        public payments::FullCardRequest::Delegate {
  public:
   enum AutofillDownloadManagerState {
     ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
@@ -102,7 +103,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   virtual void FillCreditCardForm(int query_id,
                                   const FormData& form,
                                   const FormFieldData& field,
-                                  const CreditCard& credit_card);
+                                  const CreditCard& credit_card,
+                                  const base::string16& cvc);
   void DidShowSuggestions(bool is_new_popup,
                           const FormData& form,
                           const FormFieldData& field);
@@ -140,6 +142,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   AutofillDownloadManager* download_manager() {
     return download_manager_.get();
   }
+
+  payments::FullCardRequest* GetOrCreateFullCardRequest();
 
   const std::string& app_locale() const { return app_locale_; }
 
@@ -267,10 +271,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       std::string response,
       const std::vector<std::string>& form_signatures) override;
 
-  // CardUnmaskDelegate:
-  void OnUnmaskResponse(const UnmaskResponse& response) override;
-  void OnUnmaskPromptClosed() override;
-
   // payments::PaymentsClientDelegate:
   IdentityProvider* GetIdentityProvider() override;
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
@@ -280,6 +280,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message) override;
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result) override;
+
+  // FullCardRequest::Delegate:
+  void OnFullCardDetails(const CreditCard& card,
+                         const base::string16& cvc) override;
+  void OnFullCardError() override;
 
   // Saves risk data in |unmasking_risk_data_| and calls UnmaskCard if the user
   // has accepted the prompt.
@@ -337,7 +342,8 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                                   const FormData& form,
                                   const FormFieldData& field,
                                   const AutofillDataModel& data_model,
-                                  bool is_credit_card);
+                                  bool is_credit_card,
+                                  const base::string16& cvc);
 
   // Creates a FormStructure using the FormData received from the renderer. Will
   // return an empty scoped_ptr if the data should not be processed for upload
@@ -495,14 +501,16 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // A copy of the currently interacted form data.
   std::unique_ptr<FormData> pending_form_data_;
 
-  // Collected information about a pending unmask request, and data about the
-  // form.
-  payments::PaymentsClient::UnmaskRequestDetails unmask_request_;
+  // Responsible for getting the full card details, including the PAN and the
+  // CVC.
+  std::unique_ptr<payments::FullCardRequest> full_card_request_;
+
+  // Collected information about the autofill form where unmasked card will be
+  // filled.
   int unmasking_query_id_;
   FormData unmasking_form_;
   FormFieldData unmasking_field_;
-  // Time when we requested the last real pan.
-  base::Time real_pan_request_timestamp_;
+  CreditCard masked_card_;
 
   // Collected information about a pending upload request.
   payments::PaymentsClient::UploadRequestDetails upload_request_;

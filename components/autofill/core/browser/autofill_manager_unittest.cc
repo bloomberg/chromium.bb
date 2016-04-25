@@ -933,6 +933,12 @@ class AutofillManagerTest : public testing::Test {
 #endif  // defined(OS_IOS)
   }
 
+  // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.
+  CardUnmaskDelegate* full_card_unmask_delegate() {
+    DCHECK(autofill_manager_->full_card_request_);
+    return (CardUnmaskDelegate*)autofill_manager_->full_card_request_.get();
+  }
+
  protected:
   base::MessageLoop message_loop_;
   MockAutofillClient autofill_client_;
@@ -4148,10 +4154,10 @@ TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
       form.fields[i].value = ASCIIToUTF16("2017");
   }
 
-  AutofillManager::UnmaskResponse response;
+  CardUnmaskDelegate::UnmaskResponse response;
   response.should_store_pan = false;
   response.cvc = ASCIIToUTF16("123");
-  autofill_manager_->OnUnmaskResponse(response);
+  full_card_unmask_delegate()->OnUnmaskResponse(response);
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
   autofill_manager_->OnFormSubmitted(form);
@@ -4162,21 +4168,14 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
   CreditCard card;
   PrepareForRealPanResponse(&form, &card);
 
-  AutofillManager::UnmaskResponse response;
+  CardUnmaskDelegate::UnmaskResponse response;
   response.should_store_pan = false;
   response.cvc = ASCIIToUTF16("123");
   response.exp_month = ASCIIToUTF16("02");
   response.exp_year = ASCIIToUTF16("2018");
-  autofill_manager_->OnUnmaskResponse(response);
+  full_card_unmask_delegate()->OnUnmaskResponse(response);
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
-
-  EXPECT_EQ(ASCIIToUTF16("02"),
-            autofill_manager_->unmask_request_.card.GetRawInfo(
-                CREDIT_CARD_EXP_MONTH));
-  EXPECT_EQ(ASCIIToUTF16("2018"),
-            autofill_manager_->unmask_request_.card.GetRawInfo(
-                CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 TEST_F(AutofillManagerTest, UploadCreditCard) {

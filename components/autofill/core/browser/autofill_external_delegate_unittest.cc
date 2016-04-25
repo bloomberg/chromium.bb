@@ -98,11 +98,12 @@ class MockAutofillManager : public AutofillManager {
                     const FormFieldData& field,
                     int unique_id));
 
-  MOCK_METHOD4(FillCreditCardForm,
+  MOCK_METHOD5(FillCreditCardForm,
                void(int query_id,
                     const FormData& form,
                     const FormFieldData& field,
-                    const CreditCard& credit_card));
+                    const CreditCard& credit_card,
+                    const base::string16& cvc));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
@@ -573,7 +574,8 @@ TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
   EXPECT_CALL(*autofill_manager_,
               FillCreditCardForm(
                   _, _, _, CreditCardMatches(card_number, expiration_month,
-                                             expiration_year)));
+                                             expiration_year),
+                  base::string16()));
   external_delegate_->OnCreditCardScanned(card_number, expiration_month,
                                           expiration_year);
 }
