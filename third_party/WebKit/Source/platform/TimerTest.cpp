@@ -11,6 +11,7 @@
 #include "public/platform/WebViewScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/RefCounted.h"
 #include <queue>
 
 using testing::ElementsAre;

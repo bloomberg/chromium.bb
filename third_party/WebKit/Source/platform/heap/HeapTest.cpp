@@ -978,11 +978,22 @@ private:
 
 int LargeHeapObject::s_destructorCalls = 0;
 
-class RefCountedAndGarbageCollected : public RefCountedGarbageCollected<RefCountedAndGarbageCollected> {
+// This test class served a more important role while Blink
+// was transitioned over to using Oilpan. That required classes
+// that were hybrid, both ref-counted and on the Oilpan heap
+// (the RefCountedGarbageCollected<> class providing just that.)
+//
+// There's no current need for having a ref-counted veneer on
+// top of a GCed class, but we preserve it here to exercise the
+// implementation technique that it used -- keeping an internal
+// "keep alive" persistent reference that is set & cleared across
+// ref-counting operations.
+//
+class RefCountedAndGarbageCollected : public GarbageCollectedFinalized<RefCountedAndGarbageCollected> {
 public:
     static RefCountedAndGarbageCollected* create()
     {
-        return new RefCountedAndGarbageCollected();
+        return new RefCountedAndGarbageCollected;
     }
 
     ~RefCountedAndGarbageCollected()
@@ -990,10 +1001,21 @@ public:
         ++s_destructorCalls;
     }
 
-    // These are here with their default implementations so you can break in
-    // them in the debugger.
-    void ref() { RefCountedGarbageCollected<RefCountedAndGarbageCollected>::ref(); }
-    void deref() { RefCountedGarbageCollected<RefCountedAndGarbageCollected>::deref(); }
+    void ref()
+    {
+        if (UNLIKELY(!m_refCount)) {
+            ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<Address>(this)));
+            m_keepAlive = this;
+        }
+        ++m_refCount;
+    }
+
+    void deref()
+    {
+        ASSERT(m_refCount > 0);
+        if (!--m_refCount)
+            m_keepAlive.clear();
+    }
 
     DEFINE_INLINE_TRACE() { }
 
@@ -1001,22 +1023,42 @@ public:
 
 private:
     RefCountedAndGarbageCollected()
+        : m_refCount(0)
     {
     }
+
+    int m_refCount;
+    SelfKeepAlive<RefCountedAndGarbageCollected> m_keepAlive;
 };
 
 int RefCountedAndGarbageCollected::s_destructorCalls = 0;
 
-class RefCountedAndGarbageCollected2 : public HeapTestOtherSuperClass, public RefCountedGarbageCollected<RefCountedAndGarbageCollected2> {
+class RefCountedAndGarbageCollected2 : public HeapTestOtherSuperClass, public GarbageCollectedFinalized<RefCountedAndGarbageCollected2> {
 public:
     static RefCountedAndGarbageCollected2* create()
     {
-        return new RefCountedAndGarbageCollected2();
+        return new RefCountedAndGarbageCollected2;
     }
 
     ~RefCountedAndGarbageCollected2()
     {
         ++s_destructorCalls;
+    }
+
+    void ref()
+    {
+        if (UNLIKELY(!m_refCount)) {
+            ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<Address>(this)));
+            m_keepAlive = this;
+        }
+        ++m_refCount;
+    }
+
+    void deref()
+    {
+        ASSERT(m_refCount > 0);
+        if (!--m_refCount)
+            m_keepAlive.clear();
     }
 
     DEFINE_INLINE_TRACE() { }
@@ -1025,8 +1067,12 @@ public:
 
 private:
     RefCountedAndGarbageCollected2()
+        : m_refCount(0)
     {
     }
+
+    int m_refCount;
+    SelfKeepAlive<RefCountedAndGarbageCollected2> m_keepAlive;
 };
 
 int RefCountedAndGarbageCollected2::s_destructorCalls = 0;
@@ -1486,31 +1532,6 @@ private:
 
 int SubClass::s_aliveCount = 0;
 
-class TransitionRefCounted : public RefCountedGarbageCollected<TransitionRefCounted> {
-public:
-    static TransitionRefCounted* create()
-    {
-        return new TransitionRefCounted;
-    }
-
-    ~TransitionRefCounted()
-    {
-        --s_aliveCount;
-    }
-
-    DEFINE_INLINE_TRACE() { }
-
-    static int s_aliveCount;
-
-private:
-    TransitionRefCounted()
-    {
-        ++s_aliveCount;
-    }
-};
-
-int TransitionRefCounted::s_aliveCount = 0;
-
 class Mixin : public GarbageCollectedMixin {
 public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -1693,13 +1714,14 @@ private:
 TEST(HeapTest, Transition)
 {
     {
-        Persistent<TransitionRefCounted> refCounted = TransitionRefCounted::create();
-        EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
+        RefCountedAndGarbageCollected::s_destructorCalls = 0;
+        Persistent<RefCountedAndGarbageCollected> refCounted = RefCountedAndGarbageCollected::create();
         preciselyCollectGarbage();
-        EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
     }
     preciselyCollectGarbage();
-    EXPECT_EQ(0, TransitionRefCounted::s_aliveCount);
+    EXPECT_EQ(1, RefCountedAndGarbageCollected::s_destructorCalls);
+    RefCountedAndGarbageCollected::s_destructorCalls = 0;
 
     Persistent<PointsBack> pointsBack1 = PointsBack::create();
     Persistent<PointsBack> pointsBack2 = PointsBack::create();
@@ -1711,7 +1733,7 @@ TEST(HeapTest, Transition)
     EXPECT_EQ(1, SubData::s_aliveCount);
 
     preciselyCollectGarbage();
-    EXPECT_EQ(0, TransitionRefCounted::s_aliveCount);
+    EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
     EXPECT_EQ(2, PointsBack::s_aliveCount);
     EXPECT_EQ(2, SuperClass::s_aliveCount);
     EXPECT_EQ(1, SubClass::s_aliveCount);

@@ -6,7 +6,10 @@
 #define RejectedPromises_h
 
 #include "core/fetch/AccessControlStatus.h"
-#include "platform/heap/Handle.h"
+#include "wtf/Deque.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace v8 {
 class PromiseRejectMessage;

@@ -43,7 +43,6 @@
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/Locker.h"
-#include "wtf/RefCounted.h"
 #include "wtf/TypeTraits.h"
 
 #if defined(LEAK_SANITIZER)

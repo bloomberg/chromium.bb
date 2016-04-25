@@ -273,86 +273,6 @@ protected:
     template<typename U, bool> friend struct FinalizerTraitImpl;
 };
 
-// Base class for objects that are in the Blink garbage-collected heap
-// and are still reference counted.
-//
-// This class should be used sparingly and only to gradually move
-// objects from being reference counted to being managed by the blink
-// garbage collector.
-//
-// While the current reference counting keeps one of these objects
-// alive it will have a Persistent handle to itself allocated so we
-// will not reclaim the memory.  When the reference count reaches 0 the
-// persistent handle will be deleted.  When the garbage collector
-// determines that there are no other references to the object it will
-// be reclaimed and the destructor of the reclaimed object will be
-// called at that time.
-template<typename T>
-class RefCountedGarbageCollected : public GarbageCollectedFinalized<T> {
-    WTF_MAKE_NONCOPYABLE(RefCountedGarbageCollected);
-
-public:
-    RefCountedGarbageCollected()
-        : m_refCount(0)
-    {
-    }
-
-    // Implement method to increase reference count for use with RefPtrs.
-    //
-    // In contrast to the normal WTF::RefCounted, the reference count can reach
-    // 0 and increase again.  This happens in the following scenario:
-    //
-    // (1) The reference count becomes 0, but members, persistents, or
-    //     on-stack pointers keep references to the object.
-    //
-    // (2) The pointer is assigned to a RefPtr again and the reference
-    //     count becomes 1.
-    //
-    // In this case, we have to resurrect m_keepAlive.
-    void ref()
-    {
-        if (UNLIKELY(!m_refCount)) {
-            ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<Address>(this)));
-            makeKeepAlive();
-        }
-        ++m_refCount;
-    }
-
-    // Implement method to decrease reference count for use with RefPtrs.
-    //
-    // In contrast to the normal WTF::RefCounted implementation, the
-    // object itself is not deleted when the reference count reaches
-    // 0.  Instead, the keep-alive persistent handle is deallocated so
-    // that the object can be reclaimed when the garbage collector
-    // determines that there are no other references to the object.
-    void deref()
-    {
-        ASSERT(m_refCount > 0);
-        if (!--m_refCount) {
-            delete m_keepAlive;
-            m_keepAlive = 0;
-        }
-    }
-
-    bool hasOneRef()
-    {
-        return m_refCount == 1;
-    }
-
-protected:
-    ~RefCountedGarbageCollected() { }
-
-private:
-    void makeKeepAlive()
-    {
-        ASSERT(!m_keepAlive);
-        m_keepAlive = new Persistent<T>(static_cast<T*>(this));
-    }
-
-    int m_refCount;
-    Persistent<T>* m_keepAlive;
-};
-
 template<typename T, bool = WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type, GarbageCollected>::value> class NeedsAdjustAndMark;
 
 template<typename T>
@@ -389,10 +309,6 @@ public:
 } // namespace blink
 
 namespace WTF {
-
-// Adoption is not needed nor wanted for RefCountedGarbageCollected<>-derived types.
-template<typename T>
-PassRefPtr<T> adoptRef(blink::RefCountedGarbageCollected<T>*) = delete;
 
 } // namespace WTF
 

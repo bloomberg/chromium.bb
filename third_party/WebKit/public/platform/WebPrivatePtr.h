@@ -66,18 +66,14 @@ enum class WebPrivatePtrStrength {
 enum LifetimeManagementType {
     RefCountedLifetime,
     GarbageCollectedLifetime,
-    RefCountedGarbageCollectedLifetime
 };
 
 template<typename T>
 struct LifetimeOf {
 private:
     static const bool isGarbageCollected = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value || IsGarbageCollectedMixin<T>::value;
-    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
 public:
-    static const LifetimeManagementType value =
-        !isGarbageCollected ? RefCountedLifetime :
-        isRefCountedGarbageCollected ? RefCountedGarbageCollectedLifetime : GarbageCollectedLifetime;
+    static const LifetimeManagementType value = !isGarbageCollected ? RefCountedLifetime : GarbageCollectedLifetime;
 };
 
 template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak, LifetimeManagementType lifetime>
@@ -170,14 +166,6 @@ public:
 
 private:
     typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction, strongOrWeak>::Type* m_handle;
-};
-
-template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
-class PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, RefCountedGarbageCollectedLifetime> : public PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime> {
-public:
-    void assign(T* val) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(val); }
-
-    void assign(const PtrStorageImpl& other) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(other.get()); }
 };
 
 template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
