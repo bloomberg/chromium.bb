@@ -87,6 +87,16 @@ uint32_t MakeLockStates(const pp::InputEvent& event) {
 protocol::KeyEvent MakeKeyEvent(const pp::KeyboardInputEvent& pp_key_event) {
   protocol::KeyEvent key_event;
   std::string dom_code = pp_key_event.GetCode().AsString();
+  // Chrome M52 changed the string representation of the left and right OS
+  // keys, which means that if the client plugin is compiled against a
+  // different version of the mapping table, the lookup will fail. The long-
+  // term solution is to use JavaScript input events, but for now just check
+  // explicitly for the old names and convert them to the new ones.
+  if (dom_code == "OSLeft") {
+    dom_code = "MetaLeft";
+  } else if (dom_code == "OSRight") {
+    dom_code = "MetaRight";
+  }
   key_event.set_usb_keycode(ui::KeycodeConverter::CodeToUsbKeycode(dom_code));
   key_event.set_pressed(pp_key_event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
   key_event.set_lock_states(MakeLockStates(pp_key_event));
