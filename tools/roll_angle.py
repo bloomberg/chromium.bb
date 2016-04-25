@@ -102,7 +102,7 @@ def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs, tbr):
   def GetBugString(bugs):
     bug_str = 'BUG='
     for bug in bugs:
-      bug_str += str(bug) + ','
+      bug_str += bug + ','
     return bug_str.rstrip(',')
 
   if angle_current.git_commit != angle_new.git_commit:
@@ -219,6 +219,7 @@ class AutoRoller(object):
         ['git','log',
             '%s..%s' % (angle_current.git_commit, angle_new.git_commit)],
         working_dir=working_dir).split('\n')
+    ignored_projects = set(['angleproject'])
     bugs = set()
     for line in lines:
       line = line.strip()
@@ -226,12 +227,13 @@ class AutoRoller(object):
       if line.startswith(bug_prefix):
         bugs_strings = line[len(bug_prefix):].split(',')
         for bug_string in bugs_strings:
-          try:
-            bugs.add(int(bug_string))
-          except:
-            # skip this, it may be a project specific bug such as
-            # "angleproject:X" or an ill-formed BUG= message
-            pass
+          ignore_bug = False
+          for ignored_project in ignored_projects:
+            if bug_string.startswith(ignored_project + ':'):
+              ignore_bug = True
+              break
+          if not ignore_bug:
+            bugs.add(bug_string)
     return bugs
 
   def _UpdateReadmeFile(self, readme_path, new_revision):
