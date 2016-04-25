@@ -238,7 +238,7 @@ ios_framework_bundle("earl_grey") {
     "//third_party/google_toolbox_for_mac",
   ]
   public_deps = [
-    "//ios/third_party/ochamcrest",
+    "//ios/third_party/ochamcrest:ochamcrest+link",
   ]
 
   libs = [

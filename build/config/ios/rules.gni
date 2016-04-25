@@ -222,6 +222,13 @@ template("bundle_data_xib") {
 
 # Template to package a shared library into an iOS framework bundle.
 #
+# This template provides two targets to control whether the framework is
+# merely built when targets depend on it, or whether it is linked as well:
+# "$target_name" and "$target_name+link".
+#
+# See the //build/config/mac/rules.gni:framework_bundle for a discussion
+# and examples.
+#
 # Arguments
 #
 #     output_name:
@@ -332,6 +339,18 @@ template("ios_framework_bundle") {
     }
   }
 
+  _framework_public_config = _target_name + "_ios_public_config"
+  config(_framework_public_config) {
+    visibility = [ ":$_framework_public_config" ]
+    if (defined(_public_headers)) {
+      common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_out_dir) ]
+      cflags_objc = common_flags
+      cflags_objcc = common_flags
+    }
+
+    # The link settings are inherited from the framework_bundle config.
+  }
+
   framework_bundle(_framework_target) {
     forward_variables_from(invoker,
                            "*",
@@ -342,8 +361,16 @@ template("ios_framework_bundle") {
                            ])
     output_name = _output_name
 
+    if (!defined(public_configs)) {
+      public_configs = []
+    }
+    public_configs += [ ":$_framework_public_config" ]
+
     if (defined(_public_headers)) {
-      visibility = [ ":$_target_name" ]
+      visibility = [
+        ":$_target_name",
+        ":$_target_name+link",
+      ]
       configs += [ ":$_headers_map_config" ]
 
       if (!defined(deps)) {
@@ -351,7 +378,10 @@ template("ios_framework_bundle") {
       }
       deps += [ ":$_framework_headers_target" ]
     } else {
-      forward_variables_from(invoker, [ "visibility" ])
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+        visibility += [ ":$_target_name+link" ]
+      }
     }
   }
 
@@ -360,12 +390,27 @@ template("ios_framework_bundle") {
       forward_variables_from(invoker,
                              [
                                "testonly",
-                               "visibility",
                                "public_configs",
                              ])
 
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+        visibility += [ ":$_target_name+link" ]
+      }
+
       public_deps = [
         ":$_framework_target",
+      ]
+    }
+
+    group(_target_name + "+link") {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                             ])
+      public_deps = [
+        ":$_framework_target+link",
       ]
     }
   }
