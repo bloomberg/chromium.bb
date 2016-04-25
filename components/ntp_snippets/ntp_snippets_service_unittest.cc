@@ -156,7 +156,7 @@ class NTPSnippetsServiceTest : public testing::Test {
   NTPSnippetsService* service() { return service_.get(); }
 
   void LoadFromJSONString(const std::string& json) {
-    service_->OnSnippetsDownloaded(json);
+    service_->OnSnippetsDownloaded(json, std::string());
   }
 
   void SetExpectJsonParseSuccess(bool expect_success) {

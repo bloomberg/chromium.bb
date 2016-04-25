@@ -122,6 +122,8 @@ void SnippetsInternalsMessageHandler::HandleDownload(
     const base::ListValue* args) {
   DCHECK_EQ(1u, args->GetSize());
 
+  SendString("hosts-status", std::string());
+
   std::string hosts_string;
   args->GetString(0, &hosts_string);
 
@@ -160,6 +162,10 @@ void SnippetsInternalsMessageHandler::SendSnippets() {
   result.Set("list", std::move(snippets_list));
   web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveSnippets",
                                    result);
+
+  const std::string& status = ntp_snippets_service_->last_status();
+  if (!status.empty())
+    SendString("hosts-status", "Finished: " + status);
 }
 
 void SnippetsInternalsMessageHandler::SendDiscardedSnippets() {

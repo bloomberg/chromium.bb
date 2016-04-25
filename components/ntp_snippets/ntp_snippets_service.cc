@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -42,6 +43,11 @@ const int kWifiFetchingHourMin = 6;
 const int kWifiFetchingHourMax = 22;
 
 const int kDefaultExpiryTimeMins = 24 * 60;
+
+const char kStatusMessageEmptyHosts[] = "Cannot fetch for empty hosts list.";
+const char kStatusMessageEmptyList[] = "Invalid / empty list.";
+const char kStatusMessageJsonErrorFormat[] = "Received invalid JSON (error %s)";
+const char kStatusMessageOK[] = "OK";
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
                                     int default_value_seconds) {
@@ -232,8 +238,12 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
     snippets_fetcher_->FetchSnippets(std::set<std::string>());
     return;
   }
-  if (!hosts.empty())
+  if (!hosts.empty()) {
     snippets_fetcher_->FetchSnippets(hosts);
+  } else {
+    last_fetch_status_ = kStatusMessageEmptyHosts;
+    LoadingSnippetsFinished();
+  }
 }
 
 void NTPSnippetsService::RescheduleFetching() {
@@ -324,23 +334,42 @@ void NTPSnippetsService::OnSuggestionsChanged(
 }
 
 void NTPSnippetsService::OnSnippetsDownloaded(
-    const std::string& snippets_json) {
-  parse_json_callback_.Run(
-      snippets_json, base::Bind(&NTPSnippetsService::OnJsonParsed,
-                                weak_ptr_factory_.GetWeakPtr(), snippets_json),
-      base::Bind(&NTPSnippetsService::OnJsonError,
-                 weak_ptr_factory_.GetWeakPtr(), snippets_json));
+    const std::string& snippets_json, const std::string& status) {
+
+  if (!snippets_json.empty()) {
+    DCHECK(status.empty());
+
+    parse_json_callback_.Run(
+        snippets_json,
+        base::Bind(&NTPSnippetsService::OnJsonParsed,
+                   weak_ptr_factory_.GetWeakPtr(), snippets_json),
+        base::Bind(&NTPSnippetsService::OnJsonError,
+                   weak_ptr_factory_.GetWeakPtr(), snippets_json));
+  } else {
+    last_fetch_status_ = status;
+    LoadingSnippetsFinished();
+  }
 }
 
 void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
                                       scoped_ptr<base::Value> parsed) {
-  LOG_IF(WARNING, !LoadFromValue(*parsed)) << "Received invalid snippets: "
-                                           << snippets_json;
+  if (!LoadFromValue(*parsed)) {
+    LOG(WARNING) << "Received invalid snippets: " << snippets_json;
+    last_fetch_status_ = kStatusMessageEmptyList;
+  } else {
+    last_fetch_status_ = kStatusMessageOK;
+  }
+
+  LoadingSnippetsFinished();
 }
 
 void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
                                      const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error << "): " << snippets_json;
+  last_fetch_status_ = base::StringPrintf(kStatusMessageJsonErrorFormat,
+                                          error.c_str());
+
+  LoadingSnippetsFinished();
 }
 
 bool NTPSnippetsService::LoadFromValue(const base::Value& value) {
@@ -385,16 +414,14 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
                    std::make_move_iterator(new_snippets.begin()),
                    std::make_move_iterator(new_snippets.end()));
 
-  // Immediately remove any already-expired snippets. This will also notify our
-  // observers and schedule the expiry timer.
-  RemoveExpiredSnippets();
-
   return true;
 }
 
 void NTPSnippetsService::LoadSnippetsFromPrefs() {
   bool success = LoadFromListValue(*pref_service_->GetList(prefs::kSnippets));
   DCHECK(success) << "Failed to parse snippets from prefs";
+
+  LoadingSnippetsFinished();
 }
 
 void NTPSnippetsService::StoreSnippetsToPrefs() {
@@ -434,7 +461,8 @@ void NTPSnippetsService::StoreSnippetHostsToPrefs(
   pref_service_->Set(prefs::kSnippetHosts, list);
 }
 
-void NTPSnippetsService::RemoveExpiredSnippets() {
+void NTPSnippetsService::LoadingSnippetsFinished() {
+  // Remove expired snippets.
   base::Time expiry = base::Time::Now();
 
   snippets_.erase(
@@ -471,7 +499,7 @@ void NTPSnippetsService::RemoveExpiredSnippets() {
   }
   DCHECK_GT(next_expiry, expiry);
   expiry_timer_.Start(FROM_HERE, next_expiry - expiry,
-                      base::Bind(&NTPSnippetsService::RemoveExpiredSnippets,
+                      base::Bind(&NTPSnippetsService::LoadingSnippetsFinished,
                                  base::Unretained(this)));
 }
 

@@ -79,6 +79,11 @@ class NTPSnippetsService : public KeyedService {
   // suggestions from the suggestion service) and adds them to the current ones.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
 
+  // Returns the last status message from the snippets fetcher.
+  const std::string& last_status() const {
+    return last_fetch_status_;
+  }
+
   // (Re)schedules the periodic fetching of snippets. This is necessary because
   // the schedule depends on the time of day
   void RescheduleFetching();
@@ -123,7 +128,8 @@ class NTPSnippetsService : public KeyedService {
   friend class NTPSnippetsServiceTest;
 
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
-  void OnSnippetsDownloaded(const std::string& snippets_json);
+  void OnSnippetsDownloaded(const std::string& snippets_json,
+                            const std::string& status);
 
   void OnJsonParsed(const std::string& snippets_json,
                     scoped_ptr<base::Value> parsed);
@@ -148,7 +154,7 @@ class NTPSnippetsService : public KeyedService {
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
-  void RemoveExpiredSnippets();
+  void LoadingSnippetsFinished();
 
   bool enabled_;
 
@@ -188,6 +194,8 @@ class NTPSnippetsService : public KeyedService {
   // The subscription to the snippets fetcher.
   scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
       snippets_fetcher_subscription_;
+
+  std::string last_fetch_status_;
 
   // Timer that calls us back when the next snippet expires.
   base::OneShotTimer expiry_timer_;

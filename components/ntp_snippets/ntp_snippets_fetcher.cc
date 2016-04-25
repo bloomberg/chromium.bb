@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -23,6 +24,11 @@ using net::HttpRequestHeaders;
 using net::URLRequestStatus;
 
 namespace ntp_snippets {
+
+namespace {
+
+const char kStatusMessageURLRequestErrorFormat[] = "URLRequestStatus error %d";
+const char kStatusMessageHTTPErrorFormat[] = "HTTP error %d";
 
 const char kContentSnippetsServerFormat[] =
     "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
@@ -60,6 +66,8 @@ const char kHostRestrictFormat[] =
     "        \"type\": \"HOST_RESTRICT\","
     "        \"value\": \"%s\""
     "      }";
+
+}  // namespace
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
@@ -110,25 +118,27 @@ void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts) {
 void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
+  std::string message;
   const URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
-    DLOG(WARNING) << "URLRequestStatus error " << status.error()
-                  << " while trying to download " << source->GetURL().spec();
-    return;
-  }
-
-  int response_code = source->GetResponseCode();
-  if (response_code != net::HTTP_OK) {
-    DLOG(WARNING) << "HTTP error " << response_code
-                  << " while trying to download " << source->GetURL().spec();
-    return;
+    message = base::StringPrintf(kStatusMessageURLRequestErrorFormat,
+                                 status.error());
+  } else if (source->GetResponseCode() != net::HTTP_OK) {
+    message = base::StringPrintf(kStatusMessageHTTPErrorFormat,
+                                 source->GetResponseCode());
   }
 
   std::string response;
-  bool stores_result_to_string = source->GetResponseAsString(&response);
-  DCHECK(stores_result_to_string);
+  if (!message.empty()) {
+    DLOG(WARNING) << message << " while trying to download "
+                  << source->GetURL().spec();
 
-  callback_list_.Notify(response);
+  } else {
+    bool stores_result_to_string = source->GetResponseAsString(&response);
+    DCHECK(stores_result_to_string);
+  }
+
+  callback_list_.Notify(response, message);
 }
 
 }  // namespace ntp_snippets

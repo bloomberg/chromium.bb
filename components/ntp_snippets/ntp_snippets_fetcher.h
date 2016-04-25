@@ -21,9 +21,13 @@ namespace ntp_snippets {
 // Fetches snippet data for the NTP from the server
 class NTPSnippetsFetcher : public net::URLFetcherDelegate {
  public:
-  using SnippetsAvailableCallback = base::Callback<void(const std::string&)>;
+  // If problems occur (explained in |status_message|), |snippets_json| is
+  // empty; otherwise, |status_message| is empty.
+  using SnippetsAvailableCallback =
+      base::Callback<void(const std::string& snippets_json,
+                          const std::string& status_message)>;
   using SnippetsAvailableCallbackList =
-      base::CallbackList<void(const std::string&)>;
+      base::CallbackList<void(const std::string&, const std::string&)>;
 
   NTPSnippetsFetcher(
       scoped_refptr<base::SequencedTaskRunner> file_task_runner,
