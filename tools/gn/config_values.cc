@@ -24,6 +24,7 @@ ConfigValues::~ConfigValues() {
 
 void ConfigValues::AppendValues(const ConfigValues& append) {
   VectorAppend(&asmflags_,     append.asmflags_);
+  VectorAppend(&arflags_,      append.arflags_);
   VectorAppend(&cflags_,       append.cflags_);
   VectorAppend(&cflags_c_,     append.cflags_c_);
   VectorAppend(&cflags_cc_,    append.cflags_cc_);
