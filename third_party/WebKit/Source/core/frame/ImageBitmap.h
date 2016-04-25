@@ -61,6 +61,7 @@ public:
     bool wouldTaintOrigin(SecurityOrigin*) const override { return !m_image->originClean(); }
     void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
     FloatSize elementSize(const FloatSize&) const override;
+    bool isImageBitmap() const override { return true; }
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override { return size(); }

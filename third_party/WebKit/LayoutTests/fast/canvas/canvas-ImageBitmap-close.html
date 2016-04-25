@@ -10,6 +10,7 @@ var imgHeight = 10;
 var imgWidth = 10;
 var imageData = new ImageData(10, 10);
 var bitmap;
+var ctx;
 createImageBitmap(imageData).then(imageBitmap => {
     bitmap = imageBitmap;
     shouldBe("bitmap.width", "imgWidth");
@@ -24,6 +25,12 @@ createImageBitmap(imageData).then(imageBitmap => {
     bitmap.close();
     shouldBe("bitmap.width", "0");
     shouldBe("bitmap.height", "0");
+
+    var canvas = document.createElement("canvas");
+    canvas.width = imgWidth;
+    canvas.height = imgHeight;
+    ctx = canvas.getContext("2d");
+    shouldThrow("ctx.drawImage(bitmap, 0, 0)");
 
     // Try to apply structured clone to an already closed bitmap
     try {

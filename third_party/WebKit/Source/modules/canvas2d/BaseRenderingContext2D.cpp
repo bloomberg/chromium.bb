@@ -839,7 +839,7 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
     dstRect->move(offset);
 }
 
-static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUnion& value)
+static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUnion& value, ExceptionState& exceptionState)
 {
     if (value.isHTMLImageElement())
         return value.getAsHTMLImageElement();
@@ -847,15 +847,22 @@ static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUn
         return value.getAsHTMLVideoElement();
     if (value.isHTMLCanvasElement())
         return value.getAsHTMLCanvasElement();
-    if (value.isImageBitmap())
+    if (value.isImageBitmap()) {
+        if (static_cast<ImageBitmap*>(value.getAsImageBitmap())->isNeutered()) {
+            exceptionState.throwDOMException(InvalidStateError, String::format("The image source is neutered"));
+            return nullptr;
+        }
         return value.getAsImageBitmap();
+    }
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
 void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource, double x, double y, ExceptionState& exceptionState)
 {
-    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
+    if (!imageSourceInternal)
+        return;
     FloatSize defaultObjectSize(width(), height());
     FloatSize sourceRectSize = imageSourceInternal->elementSize(defaultObjectSize);
     FloatSize destRectSize = imageSourceInternal->defaultDestinationSize(defaultObjectSize);
@@ -865,7 +872,9 @@ void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource
 void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource,
     double x, double y, double width, double height, ExceptionState& exceptionState)
 {
-    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
+    if (!imageSourceInternal)
+        return;
     FloatSize defaultObjectSize(this->width(), this->height());
     FloatSize sourceRectSize = imageSourceInternal->elementSize(defaultObjectSize);
     drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
@@ -875,7 +884,9 @@ void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource
     double sx, double sy, double sw, double sh,
     double dx, double dy, double dw, double dh, ExceptionState& exceptionState)
 {
-    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
+    if (!imageSourceInternal)
+        return;
     drawImage(imageSourceInternal, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
 }
 
@@ -1085,7 +1096,9 @@ CanvasPattern* BaseRenderingContext2D::createPattern(const CanvasImageSourceUnio
         return nullptr;
 
     SourceImageStatus status;
-    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource, exceptionState);
+    if (!imageSourceInternal)
+        return nullptr;
     FloatSize defaultObjectSize(width(), height());
     RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCreatePattern, defaultObjectSize);
 
