@@ -5,9 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
-import android.graphics.PointF;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -22,7 +20,7 @@ import android.view.inputmethod.InputConnection;
  */
 public class NewTabPageRecyclerView extends RecyclerView {
     private GestureDetector mGestureDetector;
-    private LinearLayoutManagerWithSmoothScroller mLayoutManager;
+    private LinearLayoutManager mLayoutManager;
 
     /**
      * Constructor needed to inflate from XML.
@@ -39,7 +37,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
                         return retVal;
                     }
                 });
-        mLayoutManager = new LinearLayoutManagerWithSmoothScroller(getContext());
+        mLayoutManager = new LinearLayoutManager(getContext());
         setLayoutManager(mLayoutManager);
     }
 
@@ -75,33 +73,5 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // Fixes landscape transitions when unfocusing the URL bar: crbug.com/288546
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
         return super.onCreateInputConnection(outAttrs);
-    }
-
-    private static class LinearLayoutManagerWithSmoothScroller extends LinearLayoutManager {
-        private final Context mContext;
-
-        public LinearLayoutManagerWithSmoothScroller(Context context) {
-            super(context);
-            mContext = context;
-        }
-
-        @Override
-        public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state,
-                                           int position) {
-            LinearSmoothScroller scroller = new LinearSmoothScroller(mContext) {
-                @Override
-                public PointF computeScrollVectorForPosition(int targetPosition) {
-                    return LinearLayoutManagerWithSmoothScroller.this
-                            .computeScrollVectorForPosition(targetPosition);
-                }
-
-                @Override
-                protected int getVerticalSnapPreference() {
-                    return SNAP_TO_START;
-                }
-            };
-            scroller.setTargetPosition(position);
-            startSmoothScroll(scroller);
-        }
     }
 }
