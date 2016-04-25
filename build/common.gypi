@@ -3575,15 +3575,6 @@
             ],
           },
         }],
-        [ 'OS=="ios"', {
-          'Archive': {
-            'inherit_from': ['Common_Base', 'x86_Base', 'Release_Base'],
-            'xcode_settings': {
-              'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',     # -fvisibility=hidden
-              'STRIP_INSTALLED_PRODUCT': 'YES',
-            },
-          },
-        }],
         [ 'OS=="win"', {
           # TODO(bradnelson): add a gyp mechanism to make this more graceful.
           'Debug_x64': {
@@ -5041,6 +5032,7 @@
           # GCC_INLINES_ARE_PRIVATE_EXTERN maps to -fvisibility-inlines-hidden
           'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',
           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
+          'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
           'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
@@ -5128,20 +5120,6 @@
                 ],
               }],
             ],
-          }],
-          ['OS=="mac"', {
-            'xcode_settings': {
-              'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',    # -fvisibility=hidden
-            },
-          }],
-          ['OS=="ios"', {
-            'xcode_settings': {
-              # XCTests inject a dynamic library into the application. If
-              # fvisibility is set to hidden, then some symbols needed by
-              # XCTests are not available. This setting is enabled for the
-              # Archive configuration.
-              'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
-            },
           }],
         ],
         'target_conditions': [
@@ -5447,7 +5425,7 @@
               'Release_Base': {
                 'xcode_settings': {
                   'DEPLOYMENT_POSTPROCESSING': 'YES',
-                  'STRIP_INSTALLED_PRODUCT': 'NO',
+                  'STRIP_INSTALLED_PRODUCT': 'YES',
                   'conditions': [
                     ['buildtype=="Official"', {
                       'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
