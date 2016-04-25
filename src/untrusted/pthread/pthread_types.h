@@ -33,7 +33,6 @@ typedef struct entry {
 
 typedef enum {
   THREAD_STACK_MEMORY = 0,
-  TLS_AND_TDB_MEMORY,
   MAX_MEMORY_TYPE
 } nc_thread_memory_block_type_t;
 
@@ -45,14 +44,14 @@ typedef struct nc_thread_descriptor {
   int joinable;
   int join_waiting;
   nc_thread_memory_block_t *stack_node;
-  nc_thread_memory_block_t *tls_node;
+  void *tls_allocation;  /* Used for free()ing the TLS+TDB allocation. */
   void *(*start_func)(void *thread_arg);
   void *state;
   /*
    * irt_thread_data is used when libpthread is linked into the IRT.
    * It is used for free()ing the thread block.
-   * TODO(mseaborn): This plays a similar role to tls_node; the two
-   * could be unified in future.
+   * TODO(mseaborn): This plays a similar role to tls_allocation; the
+   * two could be unified in future.
    */
   void *irt_thread_data;
   struct __nc_basic_thread_data *basic_data;
