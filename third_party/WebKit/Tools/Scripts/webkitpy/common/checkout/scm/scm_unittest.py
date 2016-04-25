@@ -196,6 +196,17 @@ class GitTest(SCMTestBase):
         patch = scm.create_patch()
         self.assertNotRegexpMatches(patch, r'Subversion Revision:')
 
+    def test_patches_have_filenames_with_prefixes(self):
+        self._write_text_file('test_file_commit1', 'contents')
+        self._run(['git', 'add', 'test_file_commit1'])
+        scm = self.tracking_scm
+        scm.commit_locally_with_message('message')
+
+        # Even if diff.noprefix is enabled, create_patch() produces diffs with prefixes.
+        self._run(['git', 'config', 'diff.noprefix', 'true'])
+        patch = scm.create_patch()
+        self.assertRegexpMatches(patch, r'^diff --git a/test_file_commit1 b/test_file_commit1')
+
     def test_exists(self):
         scm = self.untracking_scm
         self._shared_test_exists(scm, scm.commit_locally_with_message)
