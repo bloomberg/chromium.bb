@@ -40,6 +40,8 @@ void FindRequestManager::Find(int request_id,
     // text.
     DCHECK_GE(current_session_id_, 0);
     DCHECK_EQ(request.search_text, current_request_.search_text);
+
+    current_request_ = request;
   } else {
     // This is an initial find operation.
     Reset(request);

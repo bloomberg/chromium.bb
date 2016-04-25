@@ -33,6 +33,7 @@ FindTabHelper::FindTabHelper(WebContents* web_contents)
       find_ui_active_(false),
       find_op_aborted_(false),
       current_find_request_id_(find_request_id_counter_++),
+      current_find_session_id_(current_find_request_id_),
       last_search_case_sensitive_(false),
       last_search_result_() {
 }
@@ -79,6 +80,8 @@ void FindTabHelper::StartFinding(base::string16 search_string,
                    !find_op_aborted_;
 
   current_find_request_id_ = find_request_id_counter_++;
+  if (!find_next)
+    current_find_session_id_ = current_find_request_id_;
 
   if (!search_string.empty())
     find_text_ = search_string;
@@ -157,10 +160,9 @@ void FindTabHelper::HandleFindReply(int request_id,
                                     int active_match_ordinal,
                                     bool final_update) {
   // Ignore responses for requests that have been aborted.
-  // Ignore responses for requests other than the one we have most recently
-  // issued. That way we won't act on stale results when the user has
-  // already typed in another query.
-  if (!find_op_aborted_ && request_id == current_find_request_id_) {
+  // Ignore responses for requests from previous sessions. That way we won't act
+  // on stale results when the user has already typed in another query.
+  if (!find_op_aborted_ && request_id >= current_find_session_id_) {
     if (number_of_matches == -1)
       number_of_matches = last_search_result_.number_of_matches();
     if (active_match_ordinal == -1)

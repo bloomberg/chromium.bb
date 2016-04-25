@@ -109,8 +109,12 @@ class FindTabHelper : public content::WebContentsObserver,
   // inactive matches can be repainted.
   bool find_op_aborted_;
 
-  // This variable keeps track of what the most recent request id is.
+  // This variable keeps track of what the most recent request ID is.
   int current_find_request_id_;
+
+  // This variable keeps track of the ID of the first find request in the
+  // current session, which also uniquely identifies the session.
+  int current_find_session_id_;
 
   // The current string we are/just finished searching for. This is used to
   // figure out if this is a Find or a FindNext operation (FindNext should not

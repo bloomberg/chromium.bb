@@ -22,6 +22,7 @@ FindHelper::FindHelper(WebContents* web_contents)
       async_find_started_(false),
       find_request_id_counter_(0),
       current_request_id_(0),
+      current_session_id_(0),
       last_match_count_(-1),
       last_active_ordinal_(-1) {
 }
@@ -56,7 +57,7 @@ void FindHelper::HandleFindReply(int request_id,
                                  int match_count,
                                  int active_ordinal,
                                  bool finished) {
-  if (!async_find_started_ || request_id != current_request_id_)
+  if (!async_find_started_ || request_id < current_session_id_)
     return;
 
   NotifyResults(active_ordinal, match_count, finished);
@@ -99,6 +100,7 @@ bool FindHelper::MaybeHandleEmptySearch(const base::string16& search_string) {
 
 void FindHelper::StartNewSession(const base::string16& search_string) {
   current_request_id_ = find_request_id_counter_++;
+  current_session_id_ = current_request_id_;
   last_search_string_ = search_string;
   last_match_count_ = -1;
   last_active_ordinal_ = -1;
