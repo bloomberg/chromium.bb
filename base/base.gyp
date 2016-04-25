@@ -555,6 +555,8 @@
         'task_scheduler/sequence_sort_key_unittest.cc',
         'task_scheduler/sequence_unittest.cc',
         'task_scheduler/task_tracker_unittest.cc',
+        'task_scheduler/test_task_factory.cc',
+        'task_scheduler/test_task_factory.h',
         'task_scheduler/test_utils.h',
         'task_scheduler/utils_unittest.cc',
         'template_util_unittest.cc',
