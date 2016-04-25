@@ -33,7 +33,7 @@ public class ChromeBackgroundService extends GcmTaskService {
     @Override
     @VisibleForTesting
     public int onRunTask(final TaskParams params) {
-        Log.i(TAG, "Woken up at " + new java.util.Date().toString());
+        Log.i(TAG, "[" + params.getTag() + "] Woken up at " + new java.util.Date().toString());
         final Context context = this;
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
