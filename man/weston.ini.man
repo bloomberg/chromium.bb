@@ -389,15 +389,20 @@ be one of the following 8 strings:
 .RE
 .TP 7
 .BI "scale=" factor
-An integer, 1 by default, typically configured as 2 when needed, denoting
-the scale factor of the output. Applications that support it render at the
-appropriate scale. For other applications, weston will scale their output
-by this factor.
+The scaling multiplier applied to the entire output, in support of high
+resolution ("HiDPI" or "retina") displays, that roughly corresponds to the
+pixel ratio of the display's physical resolution to the logical resolution.
+Applications that do not support high resolution displays typically appear tiny
+and unreadable. Weston will scale the output of such applications by this
+multiplier, to make them readable. Applications that do support their own output
+scaling can draw their content in high resolution, in which case they avoid
+compositor scaling. Weston will not scale the output of such applications, and
+they are not affected by this multiplier.
 .RE
 .RS
 .PP
-Use a value of 2 for outputs with high resolution. Such displays are often
-called "HiDPI" or "retina" displays.
+An integer, 1 by default, typically configured as 2 or higher when needed,
+denoting the scaling multiplier for the output.
 .RE
 .TP 7
 .BI "seat=" name
