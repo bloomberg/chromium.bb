@@ -515,8 +515,15 @@ class WindowDestroyer : public content::WebContentsObserver {
 // Test to ensure that while iterating through all listeners in
 // RenderProcessHost and invalidating them, we remove them properly and don't
 // access already freed objects. See http://crbug.com/255524.
+// Crashes on Win/Linux only.  http://crbug.com/606485.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_CloseAllTabsDuringProcessDied \
+  DISABLED_CloseAllTabsDuringProcessDied
+#else
+#define MAYBE_CloseAllTabsDuringProcessDied CloseAllTabsDuringProcessDied
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
-                       CloseAllTabsDuringProcessDied) {
+                       MAYBE_CloseAllTabsDuringProcessDied) {
   GURL url(chrome::kChromeUIOmniboxURL);
 
   ui_test_utils::NavigateToURL(browser(), url);
