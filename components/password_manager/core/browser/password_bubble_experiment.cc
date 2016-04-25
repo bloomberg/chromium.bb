@@ -93,8 +93,8 @@ void RecordAutoSignInPromptFirstRunExperienceWasShown(PrefService* prefs) {
 }
 
 void TurnOffAutoSignin(PrefService* prefs) {
-  prefs->SetBoolean(
-      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, true);
+  prefs->SetBoolean(password_manager::prefs::kCredentialsEnableAutosignin,
+                    false);
 }
 
 }  // namespace password_bubble_experiment

@@ -49,3 +49,33 @@ TEST_F(AutoSigninFirstRunDialogAndroidTest,
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));
 }
+
+TEST_F(AutoSigninFirstRunDialogAndroidTest,
+       CheckResetOfPrefAfterFirstRunMessageWasShownOnTurnOkClicked) {
+  prefs()->SetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+  prefs()->SetBoolean(password_manager::prefs::kCredentialsEnableAutosignin,
+                      true);
+  std::unique_ptr<AutoSigninFirstRunDialogAndroid> dialog(CreateDialog());
+  dialog->OnOkClicked(base::android::AttachCurrentThread(), nullptr);
+  dialog.reset();
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin));
+}
+
+TEST_F(AutoSigninFirstRunDialogAndroidTest,
+       CheckResetOfPrefAfterFirstRunMessageWasShownOnTurnOffClicked) {
+  prefs()->SetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+  prefs()->SetBoolean(password_manager::prefs::kCredentialsEnableAutosignin,
+                      true);
+  std::unique_ptr<AutoSigninFirstRunDialogAndroid> dialog(CreateDialog());
+  dialog->OnTurnOffClicked(base::android::AttachCurrentThread(), nullptr);
+  dialog.reset();
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));
+  EXPECT_FALSE(prefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin));
+}
