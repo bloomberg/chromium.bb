@@ -2098,18 +2098,17 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorRemote) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_ignore_invalid_error_code, false);
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
       ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
                                     GetRequestHeaders("GET", "https", "/")));
-  // Peer sending an invalid stream frame with a invalid stream error causes
-  // this end to raise error and close connection.
-  mock_quic_data.AddRead(ConstructRstPacket(1, false, kClientDataStreamId1,
-                                            QUIC_STREAM_LAST_ERROR));
-  std::string quic_error_details = "Invalid rst stream error code.";
+  // Peer sending data from an non-existing stream causes this end to raise
+  // error and close connection.
+  mock_quic_data.AddRead(
+      ConstructRstPacket(1, false, 99, QUIC_STREAM_LAST_ERROR));
+  std::string quic_error_details = "Data for nonexistent stream";
   mock_quic_data.AddWrite(ConstructAckAndConnectionClosePacket(
-      2, QuicTime::Delta::Infinite(), 0, 1, QUIC_INVALID_RST_STREAM_DATA,
+      2, QuicTime::Delta::Infinite(), 0, 1, QUIC_INVALID_STREAM_ID,
       quic_error_details));
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -2147,7 +2146,7 @@ TEST_P(QuicNetworkTransactionTest,
   EXPECT_EQ(QUIC_NO_ERROR, details.quic_connection_error);
 
   trans->PopulateNetErrorDetails(&details);
-  EXPECT_EQ(QUIC_INVALID_RST_STREAM_DATA, details.quic_connection_error);
+  EXPECT_EQ(QUIC_INVALID_STREAM_ID, details.quic_connection_error);
 }
 
 TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
