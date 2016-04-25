@@ -54,6 +54,7 @@ class ShellConnection : public mojom::ShellClient {
   ~ShellConnection() override;
 
   Connector* connector() { return connector_.get(); }
+  const Identity& identity() { return identity_; }
 
   // TODO(rockot): Remove this. http://crbug.com/594852.
   void set_initialize_handler(const base::Closure& callback);
@@ -66,37 +67,38 @@ class ShellConnection : public mojom::ShellClient {
     connection_lost_closure_ = closure;
   }
 
-private:
- // mojom::ShellClient:
- void Initialize(mojom::IdentityPtr identity,
-                 uint32_t id,
-                 const InitializeCallback& callback) override;
- void AcceptConnection(mojom::IdentityPtr source,
-                       uint32_t source_id,
-                       mojom::InterfaceProviderRequest remote_interfaces,
-                       mojom::InterfaceProviderPtr local_interfaces,
-                       mojom::CapabilityRequestPtr allowed_capabilities,
-                       const mojo::String& name) override;
+ private:
+  // mojom::ShellClient:
+  void Initialize(mojom::IdentityPtr identity,
+                  uint32_t id,
+                  const InitializeCallback& callback) override;
+  void AcceptConnection(mojom::IdentityPtr source,
+                        uint32_t source_id,
+                        mojom::InterfaceProviderRequest remote_interfaces,
+                        mojom::InterfaceProviderPtr local_interfaces,
+                        mojom::CapabilityRequestPtr allowed_capabilities,
+                        const mojo::String& name) override;
 
- void OnConnectionError();
+  void OnConnectionError();
 
- // A callback called when Initialize() is run.
- base::Closure initialize_handler_;
+  // A callback called when Initialize() is run.
+  base::Closure initialize_handler_;
 
- // We track the lifetime of incoming connection registries as it more
- // convenient for the client.
- ScopedVector<Connection> incoming_connections_;
+  // We track the lifetime of incoming connection registries as it more
+  // convenient for the client.
+  ScopedVector<Connection> incoming_connections_;
 
- // A pending Connector request which will eventually be passed to the shell.
- mojom::ConnectorRequest pending_connector_request_;
+  // A pending Connector request which will eventually be passed to the shell.
+  mojom::ConnectorRequest pending_connector_request_;
 
- shell::ShellClient* client_;
- mojo::Binding<mojom::ShellClient> binding_;
- std::unique_ptr<Connector> connector_;
+  shell::ShellClient* client_;
+  mojo::Binding<mojom::ShellClient> binding_;
+  std::unique_ptr<Connector> connector_;
+  shell::Identity identity_;
 
- base::Closure connection_lost_closure_;
+  base::Closure connection_lost_closure_;
 
- DISALLOW_COPY_AND_ASSIGN(ShellConnection);
+  DISALLOW_COPY_AND_ASSIGN(ShellConnection);
 };
 
 }  // namespace shell

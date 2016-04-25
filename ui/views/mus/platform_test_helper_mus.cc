@@ -59,7 +59,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     // one.
     shell::Connector* connector = shell_connection_->connector();
     connector->Connect("mojo:desktop_wm");
-    WindowManagerConnection::Create(connector);
+    WindowManagerConnection::Create(connector, shell_connection_->identity());
 
     // On X we need to reset the ContextFactory before every NativeWidgetMus
     // is created.

@@ -290,7 +290,7 @@ void TaskViewer::Initialize(shell::Connector* connector,
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(connector);
+  views::WindowManagerConnection::Create(connector, identity);
 }
 
 bool TaskViewer::AcceptConnection(shell::Connection* connection) {

@@ -74,14 +74,14 @@ void ChromeMashShelfController::Init() {
   // Create a test shortcut item to a fake application.
   mash::shelf::mojom::ShelfItemPtr item(mash::shelf::mojom::ShelfItem::New());
   std::string item_id("mojo:fake_app");
-  item->id = item_id;
-  item->title = "Fake Mojo App (test pinned shelf item)";
+  item->app_id = item_id;
+  item->app_title = "Fake Mojo App (test pinned shelf item)";
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Image& image = rb.GetImageNamed(IDR_PRODUCT_LOGO_32);
   item->image = skia::mojom::Bitmap::From(*image.ToSkBitmap());
   std::unique_ptr<ChromeShelfItemDelegate> delegate(
       new ChromeShelfItemDelegate());
-  shelf_controller_->AddItem(std::move(item),
+  shelf_controller_->PinItem(std::move(item),
                              delegate->CreateInterfacePtrInfoAndBind(
                                  shelf_controller_.associated_group()));
   app_id_to_item_delegate_.insert(std::make_pair(item_id, std::move(delegate)));

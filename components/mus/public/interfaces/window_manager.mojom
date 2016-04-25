@@ -40,6 +40,8 @@ interface WindowManager {
   const string kWindowType_Property = "prop:window-type";
   // The window's title. Type: mojom::String
   const string kWindowTitle_Property = "prop:window-title";
+  // The application ID (eg. 'mojo:foo'). Type: mojom::String
+  const string kAppID_Property = "prop:app-id";
 
   // When the WindowManager completes a request it must call back to
   // WindowManagerClient::WmResponse().

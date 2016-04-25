@@ -7,9 +7,6 @@
 
 #include <stdint.h>
 
-// This header should be included by code that defines WindowProperties. It
-// should not be included by code that only gets and sets WindowProperties.
-//
 // To define a new WindowProperty:
 //
 //  #include "components/mus/public/cpp/window_property.h"

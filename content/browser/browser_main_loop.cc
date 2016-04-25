@@ -1188,9 +1188,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
     }
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-    if (MojoShellConnection::Get()) {
+    MojoShellConnection* mojo_shell_connection = MojoShellConnection::Get();
+    if (mojo_shell_connection) {
       views::WindowManagerConnection::Create(
-          MojoShellConnection::Get()->GetConnector());
+          mojo_shell_connection->GetConnector(),
+          mojo_shell_connection->GetIdentity());
     }
 #endif
   }

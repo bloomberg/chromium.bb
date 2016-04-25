@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace shell {
@@ -56,6 +57,8 @@ class CONTENT_EXPORT MojoShellConnection {
                      bool is_external);
 
   virtual shell::Connector* GetConnector() = 0;
+
+  virtual const shell::Identity& GetIdentity() const = 0;
 
   // Indicates whether the shell connection is to an external shell (true) or
   // a shell embedded in the browser process (false).

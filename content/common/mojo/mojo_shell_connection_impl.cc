@@ -130,6 +130,11 @@ shell::Connector* MojoShellConnectionImpl::GetConnector() {
   return shell_connection_->connector();
 }
 
+const shell::Identity& MojoShellConnectionImpl::GetIdentity() const {
+  DCHECK(shell_connection_);
+  return shell_connection_->identity();
+}
+
 bool MojoShellConnectionImpl::UsingExternalShell() const {
   return external_;
 }

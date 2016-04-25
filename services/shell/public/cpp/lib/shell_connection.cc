@@ -49,6 +49,7 @@ void ShellConnection::SetAppTestConnectorForTesting(
 void ShellConnection::Initialize(mojom::IdentityPtr identity,
                                  uint32_t id,
                                  const InitializeCallback& callback) {
+  identity_ = identity.To<Identity>();
   if (!initialize_handler_.is_null())
     initialize_handler_.Run();
 
@@ -57,7 +58,7 @@ void ShellConnection::Initialize(mojom::IdentityPtr identity,
   DCHECK(binding_.is_bound());
   binding_.set_connection_error_handler([this] { OnConnectionError(); });
 
-  client_->Initialize(connector_.get(), identity.To<Identity>(), id);
+  client_->Initialize(connector_.get(), identity_, id);
 }
 
 void ShellConnection::AcceptConnection(

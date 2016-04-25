@@ -16,8 +16,8 @@ interface ShelfController {
   SetAlignment(Alignment alignment);
   SetAutoHideBehavior(AutoHideBehavior auto_hide);
 
-  AddItem(ShelfItem item, associated ShelfItemDelegate delegate);
-  RemoveItem(string id);
+  PinItem(ShelfItem item, associated ShelfItemDelegate delegate);
+  UnpinItem(string app_id);
 };
 
 // ShelfObserver is notified on shelf changes; used to persist profile settings.
@@ -55,11 +55,11 @@ struct ContextMenuItem {
 
 // ShelfItem contains the basic fields needed to pin shortcut items.
 struct ShelfItem {
-  // An id, used to correlate windows and shortcuts (eg. 'exe:chrome').
-  string id;
+  // An app id, used to correlate windows and shortcuts (eg. 'mojo:foo').
+  string app_id;
 
-  // A title, used for tooltips, etc. (eg. 'Chrome').
-  string title;
+  // A app title, used for tooltips, etc. (eg. 'Foo Application').
+  string app_title;
 
   // An icon image Bitmap, shown on the shelf.
   skia.mojom.Bitmap image;

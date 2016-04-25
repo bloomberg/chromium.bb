@@ -36,11 +36,13 @@ class Login;
 class UI : public views::WidgetDelegateView,
            public views::ButtonListener {
  public:
-  static void Show(shell::Connector* connector, Login* login) {
+  static void Show(shell::Connector* connector,
+                   const shell::Identity& identity,
+                   Login* login) {
     UI* ui = new UI(login, connector);
     ui->StartWindowManager();
 
-    views::WindowManagerConnection::Create(connector);
+    views::WindowManagerConnection::Create(connector, identity);
 
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(
@@ -149,6 +151,7 @@ class Login : public shell::ShellClient,
                   const shell::Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
+    identity_ = identity;
     tracing_.Initialize(connector, identity.name());
 
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
@@ -168,16 +171,13 @@ class Login : public shell::ShellClient,
   }
 
   // mojom::Login:
-  void ShowLoginUI() override {
-    UI::Show(connector_, this);
-  }
-  void SwitchUser() override {
-    UI::Show(connector_, this);
-  }
+  void ShowLoginUI() override { UI::Show(connector_, identity_, this); }
+  void SwitchUser() override { UI::Show(connector_, identity_, this); }
 
   void StartWindowManager();
 
   shell::Connector* connector_;
+  shell::Identity identity_;
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;

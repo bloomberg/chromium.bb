@@ -8,6 +8,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
+#include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -31,9 +34,10 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 }  // namespace
 
 // static
-void WindowManagerConnection::Create(shell::Connector* connector) {
+void WindowManagerConnection::Create(shell::Connector* connector,
+                                     const shell::Identity& identity) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(connector));
+  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(connector, identity));
 }
 
 // static
@@ -65,12 +69,18 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
     internal::NativeWidgetDelegate* delegate) {
   std::map<std::string, std::vector<uint8_t>> properties = props;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
+  properties[mus::mojom::WindowManager::kAppID_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(identity_.name());
   return new NativeWidgetMus(delegate, connector_, NewWindow(properties),
                              mus::mojom::SurfaceType::DEFAULT);
 }
 
-WindowManagerConnection::WindowManagerConnection(shell::Connector* connector)
-    : connector_(connector), window_tree_connection_(nullptr) {
+WindowManagerConnection::WindowManagerConnection(
+    shell::Connector* connector,
+    const shell::Identity& identity)
+    : connector_(connector),
+      identity_(identity),
+      window_tree_connection_(nullptr) {
   window_tree_connection_.reset(
       mus::WindowTreeConnection::Create(this, connector_));
 

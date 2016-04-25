@@ -149,5 +149,18 @@ mojo::Array<uint8_t> GetWindowAppIcon(const mus::Window* window) {
   return mojo::Array<uint8_t>();
 }
 
+void SetAppID(mus::Window* window, const base::string16& app_id) {
+  window->SetSharedProperty<base::string16>(
+      mus::mojom::WindowManager::kAppID_Property, app_id);
+}
+
+base::string16 GetAppID(const mus::Window* window) {
+  if (!window->HasSharedProperty(mus::mojom::WindowManager::kAppID_Property))
+    return base::string16();
+
+  return window->GetSharedProperty<base::string16>(
+      mus::mojom::WindowManager::kAppID_Property);
+}
+
 }  // namespace wm
 }  // namespace mash

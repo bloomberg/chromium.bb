@@ -193,10 +193,11 @@ class AshInit {
 
   aura::Window* root() { return ash::Shell::GetPrimaryRootWindow(); }
 
-  void Initialize(::shell::Connector* connector) {
+  void Initialize(::shell::Connector* connector,
+                  const ::shell::Identity& identity) {
     InitializeResourceBundle(connector);
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-    views::WindowManagerConnection::Create(connector);
+    views::WindowManagerConnection::Create(connector, identity);
 
     gfx::Screen* screen = gfx::Screen::GetScreen();
     DCHECK(screen);
@@ -306,7 +307,7 @@ void SysUIApplication::Initialize(::shell::Connector* connector,
                                   const ::shell::Identity& identity,
                                   uint32_t id) {
   ash_init_.reset(new AshInit());
-  ash_init_->Initialize(connector);
+  ash_init_->Initialize(connector, identity);
 }
 
 bool SysUIApplication::AcceptConnection(::shell::Connection* connection) {

@@ -55,6 +55,9 @@ base::string16 GetWindowTitle(const mus::Window* window);
 
 mojo::Array<uint8_t> GetWindowAppIcon(const mus::Window* window);
 
+void SetAppID(mus::Window* window, const base::string16& app_id);
+base::string16 GetAppID(const mus::Window* window);
+
 }  // namespace wm
 }  // namespace mash
 

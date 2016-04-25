@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
+#include "services/shell/public/cpp/identity.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -38,7 +39,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(mus::WindowTreeDelegate),
       public ScreenMusDelegate {
  public:
-  static void Create(shell::Connector* connector);
+  static void Create(shell::Connector* connector,
+                     const shell::Identity& identity);
   static WindowManagerConnection* Get();
   static bool Exists();
 
@@ -56,7 +58,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
       internal::NativeWidgetDelegate* delegate);
 
  private:
-  explicit WindowManagerConnection(shell::Connector* connector);
+  WindowManagerConnection(shell::Connector* connector,
+                          const shell::Identity& identity);
   ~WindowManagerConnection() override;
 
   // mus::WindowTreeDelegate:
@@ -67,6 +70,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   void OnWindowManagerFrameValuesChanged() override;
 
   shell::Connector* connector_;
+  shell::Identity identity_;
   std::unique_ptr<ScreenMus> screen_;
   std::unique_ptr<mus::WindowTreeConnection> window_tree_connection_;
 

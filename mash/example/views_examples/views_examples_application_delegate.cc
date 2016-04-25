@@ -22,7 +22,7 @@ void ViewsExamplesApplicationDelegate::Initialize(
     uint32_t id) {
   tracing_.Initialize(connector, identity.name());
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(connector);
+  views::WindowManagerConnection::Create(connector, identity);
 }
 
 bool ViewsExamplesApplicationDelegate::AcceptConnection(

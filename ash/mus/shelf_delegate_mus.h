@@ -46,10 +46,10 @@ class ShelfDelegateMus : public ShelfDelegate,
   void SetAlignment(mash::shelf::mojom::Alignment alignment) override;
   void SetAutoHideBehavior(
       mash::shelf::mojom::AutoHideBehavior auto_hide) override;
-  void AddItem(
+  void PinItem(
       mash::shelf::mojom::ShelfItemPtr item,
       mash::shelf::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override;
-  void RemoveItem(const mojo::String& id) override;
+  void UnpinItem(const mojo::String& app_id) override;
 
   // mash::wm::mojom::UserWindowObserver:
   void OnUserWindowObserverAdded(

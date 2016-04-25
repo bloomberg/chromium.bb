@@ -5,10 +5,11 @@
 module mash.wm.mojom;
 
 struct UserWindow {
-  uint32 window_id;
-  string window_title;
-  bool window_has_focus;
-  array<uint8> window_app_icon;  // Serialized SkBitmap.
+  uint32 window_id;  // The local window id, defined by UserWindowController.
+  string window_title;  // The window title.
+  bool window_has_focus;  // A flag; true if the window is currently focused.
+  array<uint8> window_app_icon;  // A serialized SkBitmap.
+  string window_app_id;  // The window application ID (ie. 'mojo:foo').
 };
 
 // An observer of user windows within mojom::Container::USER_WINDOWS.
@@ -21,7 +22,7 @@ interface UserWindowObserver {
   OnUserWindowRemoved(uint32 window_id);
 
   OnUserWindowTitleChanged(uint32 window_id, string window_title);
-  
+
   // |app_icon| is a serialized SkBitmap.
   OnUserWindowAppIconChanged(uint32 window_id, array<uint8> app_icon);
 
