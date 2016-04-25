@@ -1338,8 +1338,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
-  with_branch_heads = (buildspec or BRANCH_HEADS_REFSPEC in refs)
-  gclient_output = gclient_sync(with_branch_heads, shallow)
+  gclient_output = gclient_sync(buildspec or BRANCH_HEADS_REFSPEC in refs,
+                                shallow)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -1366,7 +1366,6 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                          apply_issue_key_file, blacklist=already_patched)
   elif gerrit_ref:
     apply_gerrit_ref(gerrit_repo, gerrit_ref, patch_root, gerrit_reset)
-    gclient_sync(with_branch_heads, shallow)
 
   # Reset the deps_file point in the solutions so that hooks get run properly.
   for sln in solutions:
