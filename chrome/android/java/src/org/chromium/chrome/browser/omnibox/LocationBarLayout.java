@@ -1969,14 +1969,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mQueryInTheOmnibox = true;
             }
         }
-        String path = null;
-        if (!showingQuery) {
-            Pair<String, String> urlText = splitPathFromUrlDisplayText(displayText);
-            displayText = urlText.first;
-            path = urlText.second;
-        }
 
-        if (setUrlBarText(displayText, path, url)) {
+        if (setUrlBarText(displayText, null, url)) {
             mUrlBar.deEmphasizeUrl();
             emphasizeUrl();
         }
