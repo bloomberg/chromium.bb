@@ -88,7 +88,7 @@ def main():
   gyp_defines = 'GYP_DEFINES="OS=' + target_os + ' enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
       'enable_errorprone=1 use_platform_icu_alternatives=1 ' + \
-      'disable_brotli_filter=1 use_openssl=1"'
+      'disable_brotli_filter=1"'
   gn_args = 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
       'use_errorprone_java_compiler=true use_platform_icu_alternatives=true '+ \

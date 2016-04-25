@@ -68,8 +68,7 @@ def main():
   gyp_defines = 'GYP_DEFINES="OS=ios enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
       'enable_errorprone=1 use_platform_icu_alternatives=1 ' + \
-      'disable_brotli_filter=1 use_openssl=1 ' + \
-      'target_subarch=both"'
+      'disable_brotli_filter=1 target_subarch=both"'
   if not options.skip_gyp:
     run (gyp_defines + ' gclient runhooks')
 
