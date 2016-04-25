@@ -305,9 +305,4 @@ void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableRenderingPipelineThrottling(bool enable)
-{
-    RuntimeEnabledFeatures::setRenderingPipelineThrottlingEnabled(enable);
-}
-
 } // namespace blink

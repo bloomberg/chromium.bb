@@ -164,7 +164,7 @@ PushSubscriptionRestrictions status=experimental
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 RemotePlayback status=experimental
-RenderingPipelineThrottling status=experimental
+RenderingPipelineThrottling status=stable
 RequestIdleCallback status=stable
 RequestAutocomplete status=test
 ResponseConstructedWithReadableStream status=experimental

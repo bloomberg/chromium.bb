@@ -265,14 +265,6 @@
             "group_name": "DoNotShow"
         }
     ],
-    "RenderingPipelineThrottling": [
-        {
-            "enable_features": [
-                "RenderingPipelineThrottling"
-            ],
-            "group_name": "Enabled"
-        }
-    ],
     "ReportCertificateErrors": [
         {
             "group_name": "ShowAndPossiblySend",
