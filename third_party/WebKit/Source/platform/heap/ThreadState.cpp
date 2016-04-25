@@ -73,7 +73,7 @@ uintptr_t ThreadState::s_mainThreadStackStart = 0;
 uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 
-ThreadState::ThreadState(bool perThreadHeapEnabled)
+ThreadState::ThreadState()
     : m_thread(currentThread())
     , m_persistentRegion(adoptPtr(new PersistentRegion()))
 #if OS(WIN) && COMPILER(MSVC)
@@ -90,7 +90,6 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     , m_accumulatedSweepingTime(0)
     , m_vectorBackingArenaIndex(BlinkGC::Vector1ArenaIndex)
     , m_currentArenaAges(0)
-    , m_perThreadHeapEnabled(perThreadHeapEnabled)
     , m_isTerminating(false)
     , m_gcMixinMarker(nullptr)
     , m_shouldFlushHeapDoesNotContainCache(false)
@@ -111,12 +110,7 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
-    // TODO(keishi) Remove when per thread heap is ready.
-    CHECK(!m_perThreadHeapEnabled);
-
-    if (m_perThreadHeapEnabled) {
-        m_heap = new ThreadHeap();
-    } else if (isMainThread()) {
+    if (isMainThread()) {
         s_mainThreadStackStart = reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
         size_t underestimatedStackSize = StackFrameDepth::getUnderestimatedStackSize();
         if (underestimatedStackSize > sizeof(void*))
@@ -195,13 +189,13 @@ void ThreadState::attachMainThread()
 {
     RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
     s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
-    new (s_mainThreadStateStorage) ThreadState(false);
+    new (s_mainThreadStateStorage) ThreadState();
 }
 
-void ThreadState::attachCurrentThread(bool perThreadHeapEnabled)
+void ThreadState::attachCurrentThread()
 {
     RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
-    new ThreadState(perThreadHeapEnabled);
+    new ThreadState();
 }
 
 void ThreadState::cleanupPages()

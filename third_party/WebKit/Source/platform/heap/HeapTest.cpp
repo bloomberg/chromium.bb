@@ -525,7 +525,7 @@ protected:
     void runThread() override
     {
         OwnPtr<GlobalIntWrapperPersistent> longLivingPersistent;
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
 
         longLivingPersistent = createGlobalPersistent(0x2a2a2a2a);
         int gcCount = 0;
@@ -584,7 +584,7 @@ public:
 private:
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
 
         int gcCount = 0;
         while (!done()) {
@@ -678,7 +678,7 @@ protected:
 
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
 
         PersistentChain::create(100);
 
@@ -4720,7 +4720,7 @@ public:
 private:
     static void sleeperMainFunc()
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
         s_sleeperRunning = true;
 
         // Simulate a long running op that is not entering a safepoint.
@@ -5405,7 +5405,7 @@ private:
     {
         MutexLocker locker(workerThreadMutex());
 
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
 
         {
             // Create a worker object that is not kept alive except the
@@ -5526,7 +5526,7 @@ private:
     {
         MutexLocker locker(workerThreadMutex());
 
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
 
         {
             Persistent<WeakCollectionType> collection = allocateCollection();
@@ -5687,7 +5687,7 @@ private:
     static void workerThreadMain()
     {
         MutexLocker locker(workerThreadMutex());
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
 
         DestructorLockingObject* dlo = DestructorLockingObject::create();
         ASSERT_UNUSED(dlo, dlo);
@@ -6376,7 +6376,7 @@ void workerThreadMainForCrossThreadWeakPersistentTest(DestructorLockingObject** 
 {
     // Step 2: Create an object and store the pointer.
     MutexLocker locker(workerThreadMutex());
-    ThreadState::attachCurrentThread(false);
+    ThreadState::attachCurrentThread();
     *object = DestructorLockingObject::create();
     wakeMainThread();
     parkWorkerThread();
@@ -6500,7 +6500,7 @@ public:
 private:
     void runThread() override
     {
-        ThreadState::attachCurrentThread(false);
+        ThreadState::attachCurrentThread();
         EXPECT_EQ(42, threadSpecificIntWrapper().value());
         ThreadState::detachCurrentThread();
         atomicDecrement(&m_threadsToFinish);

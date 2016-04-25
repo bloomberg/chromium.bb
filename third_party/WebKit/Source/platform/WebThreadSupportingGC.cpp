@@ -10,19 +10,18 @@
 
 namespace blink {
 
-PassOwnPtr<WebThreadSupportingGC> WebThreadSupportingGC::create(const char* name, bool perThreadHeapEnabled)
+PassOwnPtr<WebThreadSupportingGC> WebThreadSupportingGC::create(const char* name)
 {
-    return adoptPtr(new WebThreadSupportingGC(name, nullptr, perThreadHeapEnabled));
+    return adoptPtr(new WebThreadSupportingGC(name, nullptr));
 }
 
-PassOwnPtr<WebThreadSupportingGC> WebThreadSupportingGC::createForThread(WebThread* thread, bool perThreadHeapEnabled)
+PassOwnPtr<WebThreadSupportingGC> WebThreadSupportingGC::createForThread(WebThread* thread)
 {
-    return adoptPtr(new WebThreadSupportingGC(nullptr, thread, perThreadHeapEnabled));
+    return adoptPtr(new WebThreadSupportingGC(nullptr, thread));
 }
 
-WebThreadSupportingGC::WebThreadSupportingGC(const char* name, WebThread* thread, bool perThreadHeapEnabled)
+WebThreadSupportingGC::WebThreadSupportingGC(const char* name, WebThread* thread)
     : m_thread(thread)
-    , m_perThreadHeapEnabled(perThreadHeapEnabled)
 {
 #if ENABLE(ASSERT)
     ASSERT(!name || !thread);
@@ -48,7 +47,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
 
 void WebThreadSupportingGC::initialize()
 {
-    ThreadState::attachCurrentThread(m_perThreadHeapEnabled);
+    ThreadState::attachCurrentThread();
     m_gcTaskRunner = adoptPtr(new GCTaskRunner(m_thread));
 }
 
