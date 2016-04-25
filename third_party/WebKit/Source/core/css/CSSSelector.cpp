@@ -756,7 +756,7 @@ void CSSSelector::setArgument(const AtomicString& value)
 void CSSSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
 {
     createRareData();
-    m_data.m_rareData->m_selectorList = selectorList;
+    m_data.m_rareData->m_selectorList = std::move(selectorList);
 }
 
 static bool validateSubSelector(const CSSSelector* selector)

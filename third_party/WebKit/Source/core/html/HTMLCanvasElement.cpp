@@ -202,7 +202,7 @@ void HTMLCanvasElement::registerRenderingContextFactory(PassOwnPtr<CanvasRenderi
     CanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
     ASSERT(type < CanvasRenderingContext::ContextTypeCount);
     ASSERT(!renderingContextFactories()[type]);
-    renderingContextFactories()[type] = renderingContextFactory;
+    renderingContextFactories()[type] = std::move(renderingContextFactory);
 }
 
 CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const String& type, const CanvasContextCreationAttributes& attributes)
@@ -799,7 +799,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     int msaaSampleCount = 0;
     OwnPtr<ImageBufferSurface> surface;
     if (externalSurface) {
-        surface = externalSurface;
+        surface = std::move(externalSurface);
     } else {
         surface = createImageBufferSurface(size(), &msaaSampleCount);
     }
@@ -904,7 +904,7 @@ void HTMLCanvasElement::createImageBufferUsingSurfaceForTesting(PassOwnPtr<Image
     discardImageBuffer();
     setWidth(surface->size().width());
     setHeight(surface->size().height());
-    createImageBufferInternal(surface);
+    createImageBufferInternal(std::move(surface));
 }
 
 void HTMLCanvasElement::ensureUnacceleratedImageBuffer()

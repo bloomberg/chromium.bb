@@ -16,9 +16,9 @@ struct PairwiseInterpolationValue {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
     PairwiseInterpolationValue(PassOwnPtr<InterpolableValue> startInterpolableValue, PassOwnPtr<InterpolableValue> endInterpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-        : startInterpolableValue(startInterpolableValue)
-        , endInterpolableValue(endInterpolableValue)
-        , nonInterpolableValue(nonInterpolableValue)
+        : startInterpolableValue(std::move(startInterpolableValue))
+        , endInterpolableValue(std::move(endInterpolableValue))
+        , nonInterpolableValue(std::move(nonInterpolableValue))
     { }
 
     PairwiseInterpolationValue(std::nullptr_t) { }

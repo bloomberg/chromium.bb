@@ -56,7 +56,7 @@ void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, Pa
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
         &MainThreadTaskRunner::perform,
         CrossThreadWeakPersistentThisPointer<MainThreadTaskRunner>(this),
-        task,
+        passed(std::move(task)),
         isInspectorTask));
 }
 
@@ -64,18 +64,18 @@ void MainThreadTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr
 {
     if (!task->taskNameForInstrumentation().isEmpty())
         InspectorInstrumentation::asyncTaskScheduled(m_context, task->taskNameForInstrumentation(), task.get());
-    postTaskInternal(location, task, false);
+    postTaskInternal(location, std::move(task), false);
 }
 
 void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    postTaskInternal(location, task, true);
+    postTaskInternal(location, std::move(task), true);
 }
 
 void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
 {
     if (!isInspectorTask && (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty())) {
-        m_pendingTasks.append(task);
+        m_pendingTasks.append(std::move(task));
         return;
     }
 

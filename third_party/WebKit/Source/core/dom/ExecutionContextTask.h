@@ -116,9 +116,9 @@ private:
 // When posting tasks across threads, use |createCrossThreadTask|.
 template<typename FunctionType, typename... P>
 PassOwnPtr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function, const P&... parameters)
+    FunctionType function, P&&... parameters)
 {
-    return internal::CallClosureTask<WTF::SameThreadAffinity>::create(bind(function, parameters...));
+    return internal::CallClosureTask<WTF::SameThreadAffinity>::create(bind(function, std::forward<P>(parameters)...));
 }
 
 } // namespace blink

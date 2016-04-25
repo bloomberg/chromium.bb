@@ -93,7 +93,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     , m_origin(origin)
     , m_lastEventId(lastEventId)
     , m_source(source)
-    , m_channels(channels)
+    , m_channels(std::move(channels))
     , m_suborigin(suborigin)
 {
     if (m_dataAsSerializedScriptValue)

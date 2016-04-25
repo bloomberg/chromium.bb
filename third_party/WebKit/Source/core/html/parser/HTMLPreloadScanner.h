@@ -156,7 +156,7 @@ class CORE_EXPORT HTMLPreloadScanner {
 public:
     static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
     {
-        return adoptPtr(new HTMLPreloadScanner(options, documentURL, documentParameters, mediaValuesCachedData));
+        return adoptPtr(new HTMLPreloadScanner(options, documentURL, std::move(documentParameters), mediaValuesCachedData));
     }
 
 

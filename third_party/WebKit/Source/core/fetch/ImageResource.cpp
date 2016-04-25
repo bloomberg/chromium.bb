@@ -410,7 +410,7 @@ void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPt
     // If there's no boundary, just handle the request normally.
     if (response.isMultipart() && !response.multipartBoundary().isEmpty())
         m_multipartParser = new MultipartImageResourceParser(response, response.multipartBoundary(), this);
-    Resource::responseReceived(response, handle);
+    Resource::responseReceived(response, std::move(handle));
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
         m_devicePixelRatioHeaderValue = m_response.httpHeaderField(HTTPNames::Content_DPR).toFloat(&m_hasDevicePixelRatioHeaderValue);
         if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {

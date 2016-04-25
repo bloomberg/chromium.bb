@@ -82,7 +82,7 @@ static void checkThatXSSInfosAreSafeToSendToAnotherThread(const XSSInfoStream& i
 
 void BackgroundHTMLParser::start(PassRefPtr<WeakReference<BackgroundHTMLParser>> reference, PassOwnPtr<Configuration> config, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> cachedDocumentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData, PassOwnPtr<WebTaskRunner> loadingTaskRunner)
 {
-    new BackgroundHTMLParser(reference, config, documentURL, cachedDocumentParameters, mediaValuesCachedData, loadingTaskRunner);
+    new BackgroundHTMLParser(reference, std::move(config), documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData, std::move(loadingTaskRunner));
     // Caller must free by calling stop().
 }
 
@@ -103,9 +103,9 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_pendingTokens(adoptPtr(new CompactHTMLTokenStream))
     , m_pendingTokenLimit(config->pendingTokenLimit)
     , m_xssAuditor(config->xssAuditor.release())
-    , m_preloadScanner(adoptPtr(new TokenPreloadScanner(documentURL, cachedDocumentParameters, mediaValuesCachedData)))
+    , m_preloadScanner(adoptPtr(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData)))
     , m_decoder(config->decoder.release())
-    , m_loadingTaskRunner(loadingTaskRunner)
+    , m_loadingTaskRunner(std::move(loadingTaskRunner))
     , m_parsedChunkQueue(config->parsedChunkQueue.release())
     , m_startingScript(false)
 {
@@ -140,7 +140,7 @@ void BackgroundHTMLParser::appendDecodedBytes(const String& input)
 void BackgroundHTMLParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
     ASSERT(decoder);
-    m_decoder = decoder;
+    m_decoder = std::move(decoder);
 }
 
 void BackgroundHTMLParser::flush()

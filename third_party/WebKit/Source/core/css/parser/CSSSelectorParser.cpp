@@ -753,7 +753,7 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector)
 {
-    compoundSelector->appendTagHistory(CSSSelector::SubSelector, simpleSelector);
+    compoundSelector->appendTagHistory(CSSSelector::SubSelector, std::move(simpleSelector));
     return compoundSelector;
 }
 
@@ -785,7 +785,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::splitCompoundAtImplicitShadowCr
         return compoundSelector;
 
     OwnPtr<CSSParserSelector> secondCompound = splitAfter->releaseTagHistory();
-    secondCompound->appendTagHistory(secondCompound->pseudoType() == CSSSelector::PseudoSlotted ? CSSSelector::ShadowSlot : CSSSelector::ShadowPseudo, compoundSelector);
+    secondCompound->appendTagHistory(secondCompound->pseudoType() == CSSSelector::PseudoSlotted ? CSSSelector::ShadowSlot : CSSSelector::ShadowPseudo, std::move(compoundSelector));
     return secondCompound.release();
 }
 

@@ -16,7 +16,7 @@ CSSPathValue* CSSPathValue::create(PassRefPtr<StylePath> stylePath)
 
 CSSPathValue* CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
 {
-    return CSSPathValue::create(StylePath::create(pathByteStream));
+    return CSSPathValue::create(StylePath::create(std::move(pathByteStream)));
 }
 
 CSSPathValue::CSSPathValue(PassRefPtr<StylePath> stylePath)

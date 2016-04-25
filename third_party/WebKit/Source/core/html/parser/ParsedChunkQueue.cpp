@@ -19,7 +19,7 @@ bool ParsedChunkQueue::enqueue(PassOwnPtr<HTMLDocumentParser::ParsedChunk> chunk
     MutexLocker locker(m_mutex);
 
     bool wasEmpty = m_pendingChunks.isEmpty();
-    m_pendingChunks.append(chunk);
+    m_pendingChunks.append(std::move(chunk));
     return wasEmpty;
 }
 

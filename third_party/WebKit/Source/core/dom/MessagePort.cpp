@@ -156,7 +156,7 @@ void MessagePort::entangle(PassOwnPtr<WebMessagePortChannel> remote)
     DCHECK(!m_entangledChannel);
     DCHECK(getExecutionContext());
 
-    m_entangledChannel = remote;
+    m_entangledChannel = std::move(remote);
     m_entangledChannel->setClient(this);
 }
 

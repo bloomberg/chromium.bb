@@ -66,7 +66,7 @@ bool ContextFeatures::mutationEventsEnabled(Document* document)
 
 void provideContextFeaturesTo(Page& page, PassOwnPtr<ContextFeaturesClient> client)
 {
-    Supplement<Page>::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
+    Supplement<Page>::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(std::move(client)));
 }
 
 void provideContextFeaturesToDocumentFrom(Document& document, Page& page)

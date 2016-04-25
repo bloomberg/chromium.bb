@@ -312,7 +312,7 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
     m_selfSource = new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard);
 }
 
-const PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
+PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
 {
     OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>);
     for (const auto& policy : m_policies) {

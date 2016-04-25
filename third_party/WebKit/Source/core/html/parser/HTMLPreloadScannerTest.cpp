@@ -80,7 +80,7 @@ public:
 protected:
     void preload(PassOwnPtr<PreloadRequest> preloadRequest, const NetworkHintsInterface&) override
     {
-        m_preloadRequest = preloadRequest;
+        m_preloadRequest = std::move(preloadRequest);
     }
 
 private:

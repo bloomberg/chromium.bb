@@ -47,7 +47,7 @@ void DecodedDataDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decod
     // transferred away by takeDecoder(), we need to make sure it's recreated
     // next time data is appended.
     m_needsDecoder = !decoder;
-    m_decoder = decoder;
+    m_decoder = std::move(decoder);
 }
 
 TextResourceDecoder* DecodedDataDocumentParser::decoder()

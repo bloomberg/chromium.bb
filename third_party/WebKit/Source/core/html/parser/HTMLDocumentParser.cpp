@@ -374,7 +374,7 @@ void HTMLDocumentParser::validateSpeculations(PassOwnPtr<ParsedChunk> chunk)
         // This call should have been made immediately after runScriptsForPausedTreeBuilder
         // which may have started a network load and left us waiting.
         ASSERT(!m_lastChunkBeforeScript);
-        m_lastChunkBeforeScript = chunk;
+        m_lastChunkBeforeScript = std::move(chunk);
         return;
     }
 
@@ -401,7 +401,7 @@ void HTMLDocumentParser::validateSpeculations(PassOwnPtr<ParsedChunk> chunk)
         return;
     }
 
-    discardSpeculationsAndResumeFrom(chunk, token.release(), tokenizer.release());
+    discardSpeculationsAndResumeFrom(std::move(chunk), token.release(), tokenizer.release());
 }
 
 void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk> lastChunkBeforeScript, PassOwnPtr<HTMLToken> token, PassOwnPtr<HTMLTokenizer> tokenizer)
@@ -411,8 +411,8 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
 
     OwnPtr<BackgroundHTMLParser::Checkpoint> checkpoint = adoptPtr(new BackgroundHTMLParser::Checkpoint);
     checkpoint->parser = m_weakFactory.createWeakPtr();
-    checkpoint->token = token;
-    checkpoint->tokenizer = tokenizer;
+    checkpoint->token = std::move(token);
+    checkpoint->tokenizer = std::move(tokenizer);
     checkpoint->treeBuilderState = HTMLTreeBuilderSimulator::stateFor(m_treeBuilder.get());
     checkpoint->inputCheckpoint = lastChunkBeforeScript->inputCheckpoint;
     checkpoint->preloadScannerCheckpoint = lastChunkBeforeScript->preloadScannerCheckpoint;
@@ -420,7 +420,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
     m_input.current().clear(); // FIXME: This should be passed in instead of cleared.
 
     ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, AllowCrossThreadAccess(m_backgroundParser), checkpoint.release()));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, AllowCrossThreadAccess(m_backgroundParser), passed(checkpoint.release())));
 }
 
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
@@ -438,7 +438,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     ASSERT(!m_token);
     ASSERT(!m_lastChunkBeforeScript);
 
-    OwnPtr<ParsedChunk> chunk(popChunk);
+    OwnPtr<ParsedChunk> chunk(std::move(popChunk));
     OwnPtr<CompactHTMLTokenStream> tokens = chunk->tokens.release();
     size_t elementTokenCount = 0;
 
@@ -754,11 +754,11 @@ void HTMLDocumentParser::startBackgroundParser()
     HTMLParserThread::shared()->postTask(threadSafeBind(
         &BackgroundHTMLParser::start,
         reference.release(),
-        config.release(),
+        passed(config.release()),
         document()->url(),
-        CachedDocumentParameters::create(document()),
+        passed(CachedDocumentParameters::create(document())),
         MediaValuesCached::MediaValuesCachedData(*document()),
-        adoptPtr(m_loadingTaskRunner->clone())));
+        passed(adoptPtr(m_loadingTaskRunner->clone()))));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()
@@ -1040,7 +1040,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, AllowCrossThreadAccess(m_backgroundParser), buffer.release()));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, AllowCrossThreadAccess(m_backgroundParser), passed(buffer.release())));
         return;
     }
 
@@ -1073,10 +1073,10 @@ void HTMLDocumentParser::flush()
 void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
     ASSERT(decoder);
-    DecodedDataDocumentParser::setDecoder(decoder);
+    DecodedDataDocumentParser::setDecoder(std::move(decoder));
 
     if (m_haveBackgroundParser)
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, AllowCrossThreadAccess(m_backgroundParser), takeDecoder()));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, AllowCrossThreadAccess(m_backgroundParser), passed(takeDecoder())));
 }
 
 void HTMLDocumentParser::pumpPreloadQueue()

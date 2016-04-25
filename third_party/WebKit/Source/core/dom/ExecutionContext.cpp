@@ -98,7 +98,7 @@ void ExecutionContext::stopActiveDOMObjects()
 
 void ExecutionContext::postSuspendableTask(PassOwnPtr<SuspendableTask> task)
 {
-    m_suspendedTasks.append(task);
+    m_suspendedTasks.append(std::move(task));
     if (!m_activeDOMObjectsAreSuspended)
         postTask(BLINK_FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, this));
 }

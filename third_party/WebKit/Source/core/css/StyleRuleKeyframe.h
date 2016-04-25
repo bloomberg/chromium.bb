@@ -16,7 +16,7 @@ class StyleRuleKeyframe final : public StyleRuleBase {
 public:
     static StyleRuleKeyframe* create(PassOwnPtr<Vector<double>> keys, StylePropertySet* properties)
     {
-        return new StyleRuleKeyframe(keys, properties);
+        return new StyleRuleKeyframe(std::move(keys), properties);
     }
 
     // Exposed to JavaScript.

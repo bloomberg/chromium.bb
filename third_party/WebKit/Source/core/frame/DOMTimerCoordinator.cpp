@@ -13,7 +13,7 @@ namespace blink {
 DOMTimerCoordinator::DOMTimerCoordinator(PassOwnPtr<WebTaskRunner> timerTaskRunner)
     : m_circularSequentialID(0)
     , m_timerNestingLevel(0)
-    , m_timerTaskRunner(timerTaskRunner)
+    , m_timerTaskRunner(std::move(timerTaskRunner))
 {
 }
 
@@ -62,7 +62,7 @@ int DOMTimerCoordinator::nextID()
 
 void DOMTimerCoordinator::setTimerTaskRunner(PassOwnPtr<WebTaskRunner> timerTaskRunner)
 {
-    m_timerTaskRunner = timerTaskRunner;
+    m_timerTaskRunner = std::move(timerTaskRunner);
 }
 
 } // namespace blink

@@ -478,7 +478,7 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<Cac
     , m_isAppCacheEnabled(false)
     , m_isCSPEnabled(false)
     , m_templateCount(0)
-    , m_documentParameters(documentParameters)
+    , m_documentParameters(std::move(documentParameters))
     , m_mediaValues(MediaValuesCached::create(mediaValuesCachedData))
     , m_didRewind(false)
 {
@@ -754,7 +754,7 @@ void TokenPreloadScanner::updatePredictedBaseURL(const Token& token)
 }
 
 HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
-    : m_scanner(documentURL, documentParameters, mediaValuesCachedData)
+    : m_scanner(documentURL, std::move(documentParameters), mediaValuesCachedData)
     , m_tokenizer(HTMLTokenizer::create(options))
 {
 }

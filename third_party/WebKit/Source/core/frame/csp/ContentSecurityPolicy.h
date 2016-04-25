@@ -143,7 +143,7 @@ public:
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
-    const PassOwnPtr<Vector<CSPHeaderAndType>> headers() const;
+    PassOwnPtr<Vector<CSPHeaderAndType>> headers() const;
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;

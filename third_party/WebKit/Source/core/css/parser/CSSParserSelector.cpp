@@ -57,7 +57,7 @@ void CSSParserSelector::adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& s
 
 void CSSParserSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList)
 {
-    m_selector->setSelectorList(selectorList);
+    m_selector->setSelectorList(std::move(selectorList));
 }
 
 bool CSSParserSelector::isSimple() const
@@ -86,7 +86,7 @@ void CSSParserSelector::appendTagHistory(CSSSelector::RelationType relation, Pas
     while (end->tagHistory())
         end = end->tagHistory();
     end->setRelation(relation);
-    end->setTagHistory(selector);
+    end->setTagHistory(std::move(selector));
 }
 
 PassOwnPtr<CSSParserSelector> CSSParserSelector::releaseTagHistory()

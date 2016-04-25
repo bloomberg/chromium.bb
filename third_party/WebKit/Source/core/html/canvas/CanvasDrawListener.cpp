@@ -23,9 +23,9 @@ void CanvasDrawListener::requestFrame()
     m_frameCaptureRequested = true;
 }
 
-CanvasDrawListener::CanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler> handler)
+CanvasDrawListener::CanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler> handler)
     : m_frameCaptureRequested(true)
-    , m_handler(handler)
+    , m_handler(std::move(handler))
 {
 }
 

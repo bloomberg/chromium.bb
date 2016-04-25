@@ -91,7 +91,7 @@ private:
 
     MatrixTransformComponent(PassOwnPtr<const TransformationMatrix> matrix, TransformComponentType fromType)
         : TransformComponent()
-        , m_matrix(matrix)
+        , m_matrix(std::move(matrix))
         , m_is2D(is2DComponentType(fromType))
     { }
 

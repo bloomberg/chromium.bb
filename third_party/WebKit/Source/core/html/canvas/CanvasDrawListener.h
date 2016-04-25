@@ -21,7 +21,7 @@ public:
     void requestFrame();
 
 protected:
-    explicit CanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>);
+    explicit CanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler>);
 
     bool m_frameCaptureRequested;
     OwnPtr<WebCanvasCaptureHandler> m_handler;

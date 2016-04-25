@@ -3939,7 +3939,7 @@ const OriginAccessEntry& Document::accessEntryFromURL()
 void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
 {
     DCHECK(!eventFactories().contains(eventFactory.get()));
-    eventFactories().add(eventFactory);
+    eventFactories().add(std::move(eventFactory));
 }
 
 Event* Document::createEvent(ExecutionContext* executionContext, const String& eventType, ExceptionState& exceptionState)
@@ -4554,7 +4554,7 @@ void Document::popCurrentScript()
 
 void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 {
-    m_transformSource = source;
+    m_transformSource = std::move(source);
 }
 
 String Document::designMode() const
@@ -5143,12 +5143,12 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
 void Document::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postTask(location, task);
+    m_taskRunner->postTask(location, std::move(task));
 }
 
 void Document::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postInspectorTask(location, task);
+    m_taskRunner->postInspectorTask(location, std::move(task));
 }
 
 void Document::tasksWereSuspended()
