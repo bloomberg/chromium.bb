@@ -3,7 +3,7 @@
 Oilpan is a garbage collection system for Blink objects.
 This document explains the design of the GC.
 If you're just interested in how to use Oilpan,
-see (BlinkGCAPIReference)[BlinkGCAPIReference.md].
+see [BlinkGCAPIReference](BlinkGCAPIReference.md).
 
 [TOC]
 
