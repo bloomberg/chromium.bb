@@ -6,7 +6,8 @@ import copy
 import json
 import unittest
 
-from request_track import (TimeBetween, Request, RequestTrack, Timing)
+from request_track import (TimeBetween, Request, CachingPolicy, RequestTrack,
+                           Timing)
 
 
 class TimeBetweenTestCase(unittest.TestCase):
@@ -72,6 +73,133 @@ class RequestTestCase(unittest.TestCase):
     self.assertEquals('Bar', r.GetHTTPResponseHeader('Foo'))
     r.response_headers = {'foo': 'Bar', 'Baz': 'Foo'}
     self.assertEquals('Bar', r.GetHTTPResponseHeader('Foo'))
+
+
+class CachingPolicyTestCase(unittest.TestCase):
+  _REQUEST = {
+      'encoded_data_length': 14726,
+      'request_id': '2291.1',
+      'response_headers': {
+          'Age': '866',
+          'Content-Length': '14187',
+          'Date': 'Fri, 22 Apr 2016 08:56:19 -0200',
+          'Vary': 'Accept-Encoding',
+      },
+      'timestamp': 5535648.730768,
+      'timing': {
+          'connect_end': 34.0510001406074,
+          'connect_start': 21.6859998181462,
+          'dns_end': 21.6859998181462,
+          'dns_start': 0,
+          'loading_finished': 58.76399949193001,
+          'receive_headers_end': 47.0650000497699,
+          'request_time': 5535648.73264,
+          'send_end': 34.6099995076656,
+          'send_start': 34.2979999259114
+      },
+      'url': 'http://www.example.com/',
+      'status': 200,
+      'wall_time': 1461322579.59422}
+
+  def testHasValidators(self):
+    r = self._MakeRequest()
+    self.assertFalse(CachingPolicy(r).HasValidators())
+    r.response_headers['Last-Modified'] = 'Yesterday all my troubles'
+    self.assertTrue(CachingPolicy(r).HasValidators())
+    r = self._MakeRequest()
+    r.response_headers['ETAG'] = 'ABC'
+    self.assertTrue(CachingPolicy(r).HasValidators())
+
+  def testIsCacheable(self):
+    r = self._MakeRequest()
+    self.assertTrue(CachingPolicy(r).IsCacheable())
+    r.response_headers['Cache-Control'] = 'Whatever,no-store'
+    self.assertFalse(CachingPolicy(r).IsCacheable())
+
+  def testPolicyNoStore(self):
+    r = self._MakeRequest()
+    r.response_headers['Cache-Control'] = 'Whatever,no-store'
+    self.assertEqual(CachingPolicy.FETCH, CachingPolicy(r).PolicyAtDate(0))
+
+  def testPolicyMaxAge(self):
+    r = self._MakeRequest()
+    r.response_headers['Cache-Control'] = 'whatever,max-age=1000,whatever'
+    self.assertEqual(
+        CachingPolicy.VALIDATION_NONE,
+        CachingPolicy(r).PolicyAtDate(r.wall_time))
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 10000))
+    # Take current age into account.
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 500))
+    # Max-Age before Expires.
+    r.response_headers['Expires'] = 'Thu, 21 Apr 2016 00:00:00 -0200'
+    self.assertEqual(
+        CachingPolicy.VALIDATION_NONE,
+        CachingPolicy(r).PolicyAtDate(r.wall_time))
+    # Max-Age < age
+    r.response_headers['Cache-Control'] = 'whatever,max-age=100,whatever'
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 2))
+
+  def testPolicyExpires(self):
+    r = self._MakeRequest()
+    # Already expired
+    r.response_headers['Expires'] = 'Thu, 21 Apr 2016 00:00:00 -0200'
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time))
+    r.response_headers['Expires'] = 'Thu, 25 Apr 2016 00:00:00 -0200'
+    self.assertEqual(
+        CachingPolicy.VALIDATION_NONE,\
+        CachingPolicy(r).PolicyAtDate(r.wall_time))
+    self.assertEqual(
+        CachingPolicy.VALIDATION_NONE,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 86400))
+    self.assertEqual(CachingPolicy.VALIDATION_SYNC,
+                     CachingPolicy(r).PolicyAtDate(r.wall_time + 86400 * 5))
+
+  def testStaleWhileRevalidate(self):
+    r = self._MakeRequest()
+    r.response_headers['Cache-Control'] = (
+        'whatever,max-age=100,stale-while-revalidate=2000')
+    self.assertEqual(
+        CachingPolicy.VALIDATION_ASYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 200))
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 2000))
+    # must-revalidate overrides stale-while-revalidate.
+    r.response_headers['Cache-Control'] += ',must-revalidate'
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 200))
+
+  def test301NeverExpires(self):
+    r = self._MakeRequest()
+    r.status = 301
+    self.assertEqual(
+        CachingPolicy.VALIDATION_NONE,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 2000))
+
+  def testLastModifiedHeuristic(self):
+    r = self._MakeRequest()
+    # 8 hours ago.
+    r.response_headers['Last-Modified'] = 'Fri, 22 Apr 2016 00:56:19 -0200'
+    del r.response_headers['Age']
+    self.assertEqual(
+        CachingPolicy.VALIDATION_NONE,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 60))
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 3600))
+
+  @classmethod
+  def _MakeRequest(cls):
+    return Request.FromJsonDict(copy.deepcopy(cls._REQUEST))
 
 
 class RequestTrackTestCase(unittest.TestCase):
