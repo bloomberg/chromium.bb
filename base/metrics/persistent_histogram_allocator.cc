@@ -660,7 +660,7 @@ void GlobalHistogramAllocator::Set(
   g_allocator = allocator.release();
   size_t existing = StatisticsRecorder::GetHistogramCount();
 
-  DLOG_IF(WARNING, existing)
+  DVLOG_IF(1, existing)
       << existing << " histograms were created before persistence was enabled.";
 }
 
