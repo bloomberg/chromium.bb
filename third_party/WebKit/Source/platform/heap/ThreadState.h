@@ -503,15 +503,14 @@ public:
     size_t threadStackSize();
 #endif
 
-    // Registers a closure that will be called while the thread is shutting down
-    // (i.e. ThreadState::isTerminating will be true), in order to allow for any
-    // persistent handles that should be cleared.
-    void registerThreadShutdownHook(PassOwnPtr<SameThreadClosure>);
+    void freePersistentNode(PersistentNode*);
 
-#if defined(LEAK_SANITIZER)
-    void registerStaticPersistentNode(PersistentNode*);
+    using PersistentClearCallback = void(*)(void*);
+
+    void registerStaticPersistentNode(PersistentNode*, PersistentClearCallback);
     void releaseStaticPersistentNodes();
 
+#if defined(LEAK_SANITIZER)
     void enterStaticReferenceRegistrationDisabledScope();
     void leaveStaticReferenceRegistrationDisabledScope();
 #endif
@@ -656,19 +655,17 @@ private:
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);
 
-    // Invoked while the thread is terminating. Intended to be used to free
-    // persistent pointers into the thread's heap.
-    Vector<OwnPtr<SameThreadClosure>> m_threadShutdownHooks;
-
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;
 #endif
 
-#if defined(LEAK_SANITIZER)
     // PersistentNodes that are stored in static references;
-    // references we have to clear before initiating LSan's leak detection.
-    HashSet<PersistentNode*> m_staticPersistents;
+    // references that either have to be cleared upon the thread
+    // detaching from Oilpan and shutting down or references we
+    // have to clear before initiating LSan's leak detection.
+    HashMap<PersistentNode*, PersistentClearCallback> m_staticPersistents;
 
+#if defined(LEAK_SANITIZER)
     // Count that controls scoped disabling of persistent registration.
     size_t m_disabledStaticPersistentsRegistration;
 #endif

@@ -38,8 +38,8 @@ CSSValuePool& cssValuePool()
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<CSSValuePool>>, threadSpecificPool, new ThreadSpecific<Persistent<CSSValuePool>>());
     Persistent<CSSValuePool>& poolHandle = *threadSpecificPool;
     if (!poolHandle) {
-        poolHandle = new CSSValuePool();
-        poolHandle.clearOnThreadShutdown();
+        poolHandle = new CSSValuePool;
+        poolHandle.registerAsStaticReference();
     }
     return *poolHandle;
 }

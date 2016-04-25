@@ -139,6 +139,7 @@ public:
         ASSERT(!node->isUnused());
         return node;
     }
+
     void freePersistentNode(PersistentNode* persistentNode)
     {
         ASSERT(m_persistentCount > 0);
@@ -153,6 +154,8 @@ public:
 
     using ShouldTraceCallback = bool (*)(Visitor*, PersistentNode*);
     void tracePersistentNodes(Visitor*, ShouldTraceCallback = PersistentRegion::shouldTracePersistentNode);
+
+    void releasePersistentNode(PersistentNode*, ThreadState::PersistentClearCallback);
     int numberOfPersistents();
 
 private:

@@ -181,17 +181,23 @@ public:
         return *this;
     }
 
-#if defined(LEAK_SANITIZER)
+    // Register the persistent node as a 'static reference',
+    // belonging to the current thread and a persistent that must
+    // be cleared when the ThreadState itself is cleared out and
+    // destructed.
+    //
+    // Static singletons arrange for this to happen, either to ensure
+    // clean LSan leak reports or to register a thread-local persistent
+    // needing to be cleared out before the thread is terminated.
     PersistentBase* registerAsStaticReference()
     {
         if (m_persistentNode) {
             ASSERT(ThreadState::current());
-            ThreadState::current()->registerStaticPersistentNode(m_persistentNode);
+            ThreadState::current()->registerStaticPersistentNode(m_persistentNode, nullptr);
             LEAK_SANITIZER_IGNORE_OBJECT(this);
         }
         return this;
     }
-#endif
 
 protected:
     T* atomicGet() { return reinterpret_cast<T*>(acquireLoad(reinterpret_cast<void* volatile*>(&m_raw))); }
@@ -246,7 +252,7 @@ private:
             ASSERT(state->checkThread());
             // Persistent handle must be created and destructed in the same thread.
             ASSERT(m_state == state);
-            state->getPersistentRegion()->freePersistentNode(m_persistentNode);
+            state->freePersistentNode(m_persistentNode);
         }
         m_persistentNode = nullptr;
     }
@@ -328,33 +334,6 @@ public:
     {
         Parent::operator=(other);
         return *this;
-    }
-
-    // Requests that the thread state clear this handle when the thread shuts
-    // down. This is intended for use with ThreadSpecific<Persistent<T>>.
-    // It's important that the Persistent<T> exist until then, because this
-    // takes a raw pointer to that handle.
-    //
-    // Example:
-    //   Foo& sharedFoo()
-    //   {
-    //        DEFINE_THREAD_SAFE_STATIC_LOCAL(
-    //            ThreadSpecific<Persistent<Foo>>, threadSpecificFoo,
-    //            new ThreadSpecific<Persistent<Foo>>);
-    //        Persistent<Foo>& fooHandle = *threadSpecificFoo;
-    //        if (!fooHandle) {
-    //            fooHandle = new Foo;
-    //            fooHandle.clearOnThreadShutdown();
-    //        }
-    //        return *fooHandle;
-    //   }
-    void clearOnThreadShutdown()
-    {
-        void (*closure)(Persistent<T>*) = [](Persistent<T>* handle)
-        {
-            *handle = nullptr;
-        };
-        ThreadState::current()->registerThreadShutdownHook(WTF::bind(closure, this));
     }
 };
 
@@ -554,19 +533,25 @@ public:
         visitor->trace(*static_cast<Collection*>(this));
     }
 
-#if defined(LEAK_SANITIZER)
+    // See PersistentBase::registerAsStaticReference() comment.
     PersistentHeapCollectionBase* registerAsStaticReference()
     {
         if (m_persistentNode) {
             ASSERT(ThreadState::current());
-            ThreadState::current()->registerStaticPersistentNode(m_persistentNode);
+            ThreadState::current()->registerStaticPersistentNode(m_persistentNode, &PersistentHeapCollectionBase<Collection>::clearPersistentNode);
             LEAK_SANITIZER_IGNORE_OBJECT(this);
         }
         return this;
     }
-#endif
 
 private:
+
+    // Used when the registered PersistentNode of this object is
+    // released during ThreadState shutdown, clearing the association.
+    static void clearPersistentNode(void *self)
+    {
+        (reinterpret_cast<PersistentHeapCollectionBase<Collection>*>(self))->uninitialize();
+    }
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
@@ -582,11 +567,14 @@ private:
 
     void uninitialize()
     {
+        if (!m_persistentNode)
+            return;
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
         // Persistent handle must be created and destructed in the same thread.
         ASSERT(m_state == state);
-        state->getPersistentRegion()->freePersistentNode(m_persistentNode);
+        state->freePersistentNode(m_persistentNode);
+        m_persistentNode = nullptr;
     }
 
     PersistentNode* m_persistentNode;

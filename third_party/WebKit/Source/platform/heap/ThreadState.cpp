@@ -226,7 +226,7 @@ void ThreadState::runTerminationGC()
     // pointers into the heap owned by this thread.
     m_isTerminating = true;
 
-    ThreadState::callThreadShutdownHooks();
+    releaseStaticPersistentNodes();
 
     // Set the terminate flag on all heap pages of this thread. This is used to
     // ensure we don't trace pages on other threads that are not part of the
@@ -261,15 +261,17 @@ void ThreadState::cleanupMainThread()
 {
     ASSERT(isMainThread());
 
+    releaseStaticPersistentNodes();
+
 #if defined(LEAK_SANITIZER)
-    // If LSan is about to perform leak detection, release all the registered
-    // static Persistent<> root references to global caches that Blink keeps,
-    // followed by GCs to clear out all they referred to.
+    // If LSan is about to perform leak detection, after having released all
+    // the registered static Persistent<> root references to global caches
+    // that Blink keeps, follow up with a round of GCs to clear out all
+    // what they referred to.
     //
     // This is not needed for caches over non-Oilpan objects, as they're
     // not scanned by LSan due to being held in non-global storage
     // ("static" references inside functions/methods.)
-    releaseStaticPersistentNodes();
     ThreadHeap::collectAllGarbage();
 #endif
 
@@ -294,15 +296,6 @@ void ThreadState::detachMainThread()
 
     state->heap().detach(state);
     state->~ThreadState();
-}
-
-void ThreadState::callThreadShutdownHooks()
-{
-    // Invoke the cleanup hooks. This gives an opportunity to release any
-    // persistent handles that may exist, e.g. in thread-specific static
-    // locals.
-    for (const OwnPtr<SameThreadClosure>& hook : m_threadShutdownHooks)
-        (*hook)();
 }
 
 void ThreadState::detachCurrentThread()
@@ -1322,31 +1315,40 @@ void ThreadState::addInterruptor(PassOwnPtr<BlinkGCInterruptor> interruptor)
     }
 }
 
-void ThreadState::registerThreadShutdownHook(PassOwnPtr<SameThreadClosure> hook)
+void ThreadState::registerStaticPersistentNode(PersistentNode* node, PersistentClearCallback callback)
 {
-    ASSERT(checkThread());
-    ASSERT(!isTerminating());
-    m_threadShutdownHooks.append(hook);
-}
-
 #if defined(LEAK_SANITIZER)
-void ThreadState::registerStaticPersistentNode(PersistentNode* node)
-{
     if (m_disabledStaticPersistentsRegistration)
         return;
+#endif
 
     ASSERT(!m_staticPersistents.contains(node));
-    m_staticPersistents.add(node);
+    m_staticPersistents.add(node, callback);
 }
 
 void ThreadState::releaseStaticPersistentNodes()
 {
-    for (PersistentNode* node : m_staticPersistents)
-        getPersistentRegion()->freePersistentNode(node);
+    HashMap<PersistentNode*, ThreadState::PersistentClearCallback> staticPersistents;
+    staticPersistents.swap(m_staticPersistents);
 
-    m_staticPersistents.clear();
+    PersistentRegion* persistentRegion = getPersistentRegion();
+    for (const auto& it : staticPersistents)
+        persistentRegion->releasePersistentNode(it.key, it.value);
 }
 
+void ThreadState::freePersistentNode(PersistentNode* persistentNode)
+{
+    PersistentRegion* persistentRegion = getPersistentRegion();
+    persistentRegion->freePersistentNode(persistentNode);
+    // Do not allow static persistents to be freed before
+    // they're all released in releaseStaticPersistentNodes().
+    //
+    // There's no fundamental reason why this couldn't be supported,
+    // but no known use for it.
+    ASSERT(!m_staticPersistents.contains(persistentNode));
+}
+
+#if defined(LEAK_SANITIZER)
 void ThreadState::enterStaticReferenceRegistrationDisabledScope()
 {
     m_disabledStaticPersistentsRegistration++;

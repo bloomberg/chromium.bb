@@ -57,7 +57,6 @@ int runHelper(base::TestSuite* testSuite)
     // Collect garbage (including threadspecific persistent handles) in order
     // to release mock objects referred from v8 or Oilpan heap. Otherwise false
     // mock leaks will be reported.
-    blink::ThreadState::current()->callThreadShutdownHooks();
     blink::V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
 
     content::TearDownBlinkTestEnvironment();

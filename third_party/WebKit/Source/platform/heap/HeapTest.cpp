@@ -6514,7 +6514,7 @@ private:
         Persistent<IntWrapper>& handle = *intWrapper;
         if (!handle) {
             handle = new IntWrapper(42);
-            handle.clearOnThreadShutdown();
+            handle.registerAsStaticReference();
         }
         return *handle;
     }
