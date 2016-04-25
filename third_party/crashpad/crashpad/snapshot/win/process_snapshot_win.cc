@@ -73,8 +73,9 @@ bool ProcessSnapshotWin::Initialize(
 
   GetCrashpadOptionsInternal(&options_);
 
-  InitializeThreads(options_.gather_indirectly_referenced_memory ==
-                    TriState::kEnabled);
+  InitializeThreads(
+      options_.gather_indirectly_referenced_memory == TriState::kEnabled,
+      options_.indirectly_referenced_memory_cap);
 
   for (const MEMORY_BASIC_INFORMATION64& mbi :
        process_reader_.GetProcessInfo().MemoryInfo()) {
@@ -107,7 +108,8 @@ bool ProcessSnapshotWin::InitializeException(
   exception_.reset(new internal::ExceptionSnapshotWin());
   if (!exception_->Initialize(&process_reader_,
                               exception_information.thread_id,
-                              exception_information.exception_pointers)) {
+                              exception_information.exception_pointers,
+                              threads_)) {
     exception_.reset();
     return false;
   }
@@ -231,15 +233,20 @@ std::vector<const MemorySnapshot*> ProcessSnapshotWin::ExtraMemory() const {
 }
 
 void ProcessSnapshotWin::InitializeThreads(
-    bool gather_indirectly_referenced_memory) {
+    bool gather_indirectly_referenced_memory,
+    uint32_t indirectly_referenced_memory_cap) {
   const std::vector<ProcessReaderWin::Thread>& process_reader_threads =
       process_reader_.Threads();
   for (const ProcessReaderWin::Thread& process_reader_thread :
        process_reader_threads) {
     auto thread = base::WrapUnique(new internal::ThreadSnapshotWin());
+    uint32_t* budget_remaining_pointer = nullptr;
+    uint32_t budget_remaining = indirectly_referenced_memory_cap;
+    if (gather_indirectly_referenced_memory)
+      budget_remaining_pointer = &budget_remaining;
     if (thread->Initialize(&process_reader_,
                            process_reader_thread,
-                           gather_indirectly_referenced_memory)) {
+                           budget_remaining_pointer)) {
       threads_.push_back(thread.release());
     }
   }
@@ -323,6 +330,8 @@ void ProcessSnapshotWin::GetCrashpadOptionsInternal(
     if (local_options.gather_indirectly_referenced_memory == TriState::kUnset) {
       local_options.gather_indirectly_referenced_memory =
           module_options.gather_indirectly_referenced_memory;
+      local_options.indirectly_referenced_memory_cap =
+          module_options.indirectly_referenced_memory_cap;
     }
 
     // If non-default values have been found for all options, the loop can end

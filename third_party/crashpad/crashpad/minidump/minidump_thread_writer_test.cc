@@ -221,9 +221,11 @@ TEST(MinidumpThreadWriter, OneThread_AMD64_Stack) {
       new TestMinidumpMemoryWriter(kMemoryBase, kMemorySize, kMemoryValue));
   thread_writer->SetStack(std::move(memory_writer));
 
-  MSVC_SUPPRESS_WARNING(4316);  // Object allocated on heap may not be aligned.
+  // Object allocated on heap may not be aligned.
+  MSVC_PUSH_DISABLE_WARNING(4316);
   auto context_amd64_writer =
       base::WrapUnique(new MinidumpContextAMD64Writer());
+  MSVC_POP_WARNING();  // C4316.
   InitializeMinidumpContextAMD64(context_amd64_writer->context(), kSeed);
   thread_writer->SetContext(std::move(context_amd64_writer));
 

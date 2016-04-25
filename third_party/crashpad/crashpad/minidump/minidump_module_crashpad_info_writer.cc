@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_module_crashpad_info_writer.h"
+
 #include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "minidump/minidump_module_crashpad_info_writer.h"
 #include "minidump/minidump_simple_string_dictionary_writer.h"
 #include "snapshot/module_snapshot.h"
 #include "util/file/file_writer.h"

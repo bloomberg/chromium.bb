@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: c307f94f19cb7983ee585e9569875f1981fecde6
+Revision: 00d458adaf3868999eeab5341fce5bedb81d17a1
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -35,7 +35,4 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-- Move bit_cast from base/macros.h to its own header.
-- Replace base/template_util.h with C++11 type_traits.
-- Add std::is_same into compat/non_cxx11_lib/type_traits.
-- Use std::unique_ptr instead of scoped_ptr.
+None.

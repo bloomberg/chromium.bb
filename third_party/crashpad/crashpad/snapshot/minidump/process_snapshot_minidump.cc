@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "snapshot/minidump/process_snapshot_minidump.h"
+
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "snapshot/minidump/minidump_simple_string_dictionary_reader.h"
-#include "snapshot/minidump/process_snapshot_minidump.h"
 #include "util/file/file_io.h"
 
 namespace crashpad {

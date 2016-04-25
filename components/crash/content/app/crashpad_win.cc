@@ -84,9 +84,10 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     bool is_per_user_install =
         crash_reporter_client->GetIsPerUserInstall(exe_file);
     if (crash_reporter_client->GetShouldDumpLargerDumps(is_per_user_install)) {
+      const uint32_t kIndirectMemoryLimit = 4 * 1024 * 1024;
       crashpad::CrashpadInfo::GetCrashpadInfo()
           ->set_gather_indirectly_referenced_memory(
-              crashpad::TriState::kEnabled);
+              crashpad::TriState::kEnabled, kIndirectMemoryLimit);
     }
 
     // If the handler is embedded in the binary (e.g. chrome, setup), we

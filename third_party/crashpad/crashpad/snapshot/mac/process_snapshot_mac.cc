@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "snapshot/mac/process_snapshot_mac.h"
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "snapshot/mac/process_snapshot_mac.h"
 #include "util/misc/tri_state.h"
 
 namespace crashpad {
@@ -107,6 +108,8 @@ void ProcessSnapshotMac::GetCrashpadOptions(
     if (local_options.gather_indirectly_referenced_memory == TriState::kUnset) {
       local_options.gather_indirectly_referenced_memory =
           module_options.gather_indirectly_referenced_memory;
+      local_options.indirectly_referenced_memory_cap =
+          module_options.indirectly_referenced_memory_cap;
     }
 
     // If non-default values have been found for all options, the loop can end

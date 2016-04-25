@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_unloaded_module_writer.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "gtest/gtest.h"

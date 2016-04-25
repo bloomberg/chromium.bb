@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "minidump/minidump_unloaded_module_writer.h"
+
 #include <limits>
 
 #include "base/memory/ptr_util.h"
-#include "minidump/minidump_unloaded_module_writer.h"
 #include "minidump/minidump_writer_util.h"
 #include "util/file/file_writer.h"
 #include "util/numeric/in_range_cast.h"
