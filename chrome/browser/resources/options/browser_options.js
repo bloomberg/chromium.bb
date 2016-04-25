@@ -2386,13 +2386,13 @@ cr.define('options', function() {
     };
 
     /**
-     * Hides Android Apps settings when they are not available.
+     * Shows Android Apps settings when they are available.
      * (Chrome OS only).
      */
-    BrowserOptions.hideAndroidAppsSection = function() {
+    BrowserOptions.showAndroidAppsSection = function() {
       var section = $('android-apps-section');
       if (section)
-        section.hidden = true;
+        section.hidden = false;
     };
   }
 
