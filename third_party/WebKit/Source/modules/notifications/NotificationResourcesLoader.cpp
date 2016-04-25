@@ -29,7 +29,7 @@ SkBitmap scaleDownIfNeeded(const SkBitmap& image, int maxSizePx)
 } // namespace
 
 NotificationResourcesLoader::NotificationResourcesLoader(PassOwnPtr<CompletionCallback> completionCallback)
-    : m_started(false), m_completionCallback(completionCallback), m_pendingRequestCount(0)
+    : m_started(false), m_completionCallback(std::move(completionCallback)), m_pendingRequestCount(0)
 {
     ThreadState::current()->registerPreFinalizer(this);
     DCHECK(m_completionCallback);
@@ -84,7 +84,7 @@ void NotificationResourcesLoader::loadImage(ExecutionContext* executionContext, 
 
     NotificationImageLoader* imageLoader = new NotificationImageLoader();
     m_imageLoaders.append(imageLoader);
-    imageLoader->start(executionContext, url, imageCallback);
+    imageLoader->start(executionContext, url, std::move(imageCallback));
 }
 
 void NotificationResourcesLoader::didLoadIcon(const SkBitmap& image)

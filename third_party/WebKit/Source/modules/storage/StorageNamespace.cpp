@@ -34,7 +34,7 @@
 namespace blink {
 
 StorageNamespace::StorageNamespace(PassOwnPtr<WebStorageNamespace> webStorageNamespace)
-    : m_webStorageNamespace(webStorageNamespace)
+    : m_webStorageNamespace(std::move(webStorageNamespace))
 {
 }
 

@@ -101,7 +101,7 @@ void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<OffscreenCanvas
     OffscreenCanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
     ASSERT(type < OffscreenCanvasRenderingContext::ContextTypeCount);
     ASSERT(!renderingContextFactories()[type]);
-    renderingContextFactories()[type] = renderingContextFactory;
+    renderingContextFactories()[type] = std::move(renderingContextFactory);
 }
 
 DEFINE_TRACE(OffscreenCanvas)

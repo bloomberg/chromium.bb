@@ -30,7 +30,7 @@ void NotificationImageLoader::start(ExecutionContext* executionContext, const KU
 {
     DCHECK(!m_stopped);
 
-    m_imageCallback = imageCallback;
+    m_imageCallback = std::move(imageCallback);
 
     // TODO(mvanouwerkerk): Add a timeout mechanism: crbug.com/579137.
     ThreadableLoaderOptions threadableLoaderOptions;

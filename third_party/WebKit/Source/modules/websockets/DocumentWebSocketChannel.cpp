@@ -233,7 +233,7 @@ void DocumentWebSocketChannel::sendTextAsCharVector(PassOwnPtr<Vector<char>> dat
     // FIXME: Change the inspector API to show the entire message instead
     // of individual frames.
     InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeText, true, data->data(), data->size());
-    m_messages.append(new Message(data, MessageTypeTextAsCharVector));
+    m_messages.append(new Message(std::move(data), MessageTypeTextAsCharVector));
     processSendQueue();
 }
 
@@ -243,7 +243,7 @@ void DocumentWebSocketChannel::sendBinaryAsCharVector(PassOwnPtr<Vector<char>> d
     // FIXME: Change the inspector API to show the entire message instead
     // of individual frames.
     InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, data->data(), data->size());
-    m_messages.append(new Message(data, MessageTypeBinaryAsCharVector));
+    m_messages.append(new Message(std::move(data), MessageTypeBinaryAsCharVector));
     processSendQueue();
 }
 
@@ -300,7 +300,7 @@ DocumentWebSocketChannel::Message::Message(DOMArrayBuffer* arrayBuffer)
 
 DocumentWebSocketChannel::Message::Message(PassOwnPtr<Vector<char>> vectorData, MessageType type)
     : type(type)
-    , vectorData(vectorData)
+    , vectorData(std::move(vectorData))
 {
     ASSERT(type == MessageTypeTextAsCharVector || type == MessageTypeBinaryAsCharVector);
 }

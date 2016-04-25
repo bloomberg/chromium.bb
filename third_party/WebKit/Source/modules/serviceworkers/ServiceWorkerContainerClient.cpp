@@ -15,11 +15,11 @@ namespace blink {
 
 ServiceWorkerContainerClient* ServiceWorkerContainerClient::create(PassOwnPtr<WebServiceWorkerProvider> provider)
 {
-    return new ServiceWorkerContainerClient(provider);
+    return new ServiceWorkerContainerClient(std::move(provider));
 }
 
 ServiceWorkerContainerClient::ServiceWorkerContainerClient(PassOwnPtr<WebServiceWorkerProvider> provider)
-    : m_provider(provider)
+    : m_provider(std::move(provider))
 {
 }
 
@@ -53,7 +53,7 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContex
 
 void provideServiceWorkerContainerClientToWorker(WorkerClients* clients, PassOwnPtr<WebServiceWorkerProvider> provider)
 {
-    clients->provideSupplement(ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(provider));
+    clients->provideSupplement(ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(std::move(provider)));
 }
 
 } // namespace blink

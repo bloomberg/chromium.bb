@@ -69,7 +69,7 @@ void WebGL2RenderingContext::Factory::onError(HTMLCanvasElement* canvas, const S
 }
 
 WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGL2RenderingContextBase(passedCanvas, contextProvider, requestedAttributes)
+    : WebGL2RenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
 {
 }
 

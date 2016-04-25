@@ -54,7 +54,7 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
     DCHECK(handler);
-    RTCDataChannel* channel = new RTCDataChannel(context, handler);
+    RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
     channel->suspendIfNeeded();
 
     return channel;
@@ -76,7 +76,7 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConn
 RTCDataChannel::RTCDataChannel(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
-    , m_handler(handler)
+    , m_handler(std::move(handler))
     , m_readyState(ReadyStateConnecting)
     , m_binaryType(BinaryTypeArrayBuffer)
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)

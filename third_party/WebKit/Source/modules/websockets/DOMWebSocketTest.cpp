@@ -50,8 +50,16 @@ public:
     MOCK_METHOD1(send, void(const CString&));
     MOCK_METHOD3(send, void(const DOMArrayBuffer&, unsigned, unsigned));
     MOCK_METHOD1(send, void(PassRefPtr<BlobDataHandle>));
-    MOCK_METHOD1(sendTextAsCharVector, void(PassOwnPtr<Vector<char>>));
-    MOCK_METHOD1(sendBinaryAsCharVector, void(PassOwnPtr<Vector<char>>));
+    MOCK_METHOD1(sendTextAsCharVectorMock, void(Vector<char>*));
+    void sendTextAsCharVector(PassOwnPtr<Vector<char>> vector)
+    {
+        sendTextAsCharVectorMock(vector.get());
+    }
+    MOCK_METHOD1(sendBinaryAsCharVectorMock, void(Vector<char>*));
+    void sendBinaryAsCharVector(PassOwnPtr<Vector<char>> vector)
+    {
+        sendBinaryAsCharVectorMock(vector.get());
+    }
     MOCK_CONST_METHOD0(bufferedAmount, unsigned());
     MOCK_METHOD2(close, void(int, const String&));
     MOCK_METHOD4(fail, void(const String&, MessageLevel, const String&, unsigned));

@@ -78,7 +78,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::create(ServiceWorkerThread* 
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
-    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOriginPrivilegeData, workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, std::move(starterOriginPrivilegeData), workerClients)
     , m_didEvaluateScript(false)
     , m_hadErrorInTopLevelEventHandler(false)
     , m_eventNestingLevel(0)

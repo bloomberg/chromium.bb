@@ -34,7 +34,7 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, Me
     : AudioHandler(NodeTypeMediaStreamAudioSource, node, node.context()->sampleRate())
     , m_mediaStream(mediaStream)
     , m_audioTrack(audioTrack)
-    , m_audioSourceProvider(audioSourceProvider)
+    , m_audioSourceProvider(std::move(audioSourceProvider))
     , m_sourceNumberOfChannels(0)
 {
     // Default to stereo. This could change depending on the format of the
@@ -46,7 +46,7 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, Me
 
 PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
-    return adoptRef(new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, audioSourceProvider));
+    return adoptRef(new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
 
 MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler()
@@ -111,12 +111,12 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(context)
 {
-    setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, audioSourceProvider));
+    setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
 
 MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
-    return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider);
+    return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, std::move(audioSourceProvider));
 }
 
 DEFINE_TRACE(MediaStreamAudioSourceNode)

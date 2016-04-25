@@ -110,7 +110,7 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, OwnPtr<protocol::Array<protocol::Array<String>>>* items)
 {
     LocalFrame* frame;
-    StorageArea* storageArea = findStorageArea(errorString, storageId, frame);
+    StorageArea* storageArea = findStorageArea(errorString, std::move(storageId), frame);
     if (!storageArea)
         return;
 
@@ -142,7 +142,7 @@ static String toErrorString(ExceptionState& exceptionState)
 void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, const String& key, const String& value)
 {
     LocalFrame* frame;
-    StorageArea* storageArea = findStorageArea(0, storageId, frame);
+    StorageArea* storageArea = findStorageArea(0, std::move(storageId), frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -156,7 +156,7 @@ void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, PassO
 void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, const String& key)
 {
     LocalFrame* frame;
-    StorageArea* storageArea = findStorageArea(0, storageId, frame);
+    StorageArea* storageArea = findStorageArea(0, std::move(storageId), frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;

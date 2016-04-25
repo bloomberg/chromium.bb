@@ -114,7 +114,7 @@ String ServiceWorker::state() const
 
 ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    return getOrCreate(executionContext, handle);
+    return getOrCreate(executionContext, std::move(handle));
 }
 
 bool ServiceWorker::hasPendingActivity() const
@@ -140,7 +140,7 @@ ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, Pa
         return existingWorker;
     }
 
-    ServiceWorker* newWorker = new ServiceWorker(executionContext, handle);
+    ServiceWorker* newWorker = new ServiceWorker(executionContext, std::move(handle));
     newWorker->suspendIfNeeded();
     return newWorker;
 }
@@ -148,7 +148,7 @@ ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, Pa
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker::Handle> handle)
     : AbstractWorker(executionContext)
     , ActiveScriptWrappable(this)
-    , m_handle(handle)
+    , m_handle(std::move(handle))
     , m_wasStopped(false)
 {
     ASSERT(m_handle);

@@ -61,7 +61,7 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track,
     , m_track(track)
     , m_duration(defaultToneDurationMs)
     , m_interToneGap(defaultInterToneGapMs)
-    , m_handler(handler)
+    , m_handler(std::move(handler))
     , m_stopped(false)
     , m_scheduledEventTimer(this, &RTCDTMFSender::scheduledEventTimerFired)
 {

@@ -836,7 +836,7 @@ void Database::runTransaction(
         ASSERT(callback == originalErrorCallback);
         if (callback) {
             OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
-            getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback, callback, error.release()));
+            getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback, callback, passed(error.release())));
         }
     }
 }

@@ -6,8 +6,8 @@
 
 namespace blink {
 
-TimedCanvasDrawListener::TimedCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>& handler, double frameRate)
-    : CanvasDrawListener(handler)
+TimedCanvasDrawListener::TimedCanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+    : CanvasDrawListener(std::move(handler))
     , m_frameInterval(1 / frameRate)
     , m_requestFrameTimer(this, &TimedCanvasDrawListener::requestFrameTimerFired)
 {
@@ -16,9 +16,9 @@ TimedCanvasDrawListener::TimedCanvasDrawListener(const PassOwnPtr<WebCanvasCaptu
 TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
 
 // static
-TimedCanvasDrawListener* TimedCanvasDrawListener::create(const PassOwnPtr<WebCanvasCaptureHandler>& handler, double frameRate)
+TimedCanvasDrawListener* TimedCanvasDrawListener::create(PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
 {
-    TimedCanvasDrawListener* listener = new TimedCanvasDrawListener(handler, frameRate);
+    TimedCanvasDrawListener* listener = new TimedCanvasDrawListener(std::move(handler), frameRate);
     listener->m_requestFrameTimer.startRepeating(listener->m_frameInterval, BLINK_FROM_HERE);
     return listener;
 }

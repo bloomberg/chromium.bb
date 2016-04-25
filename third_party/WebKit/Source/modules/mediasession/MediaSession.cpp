@@ -18,7 +18,7 @@
 namespace blink {
 
 MediaSession::MediaSession(PassOwnPtr<WebMediaSession> webMediaSession)
-    : m_webMediaSession(webMediaSession)
+    : m_webMediaSession(std::move(webMediaSession))
 {
     ASSERT(m_webMediaSession);
 }

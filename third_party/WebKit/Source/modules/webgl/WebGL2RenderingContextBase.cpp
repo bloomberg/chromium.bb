@@ -116,7 +116,7 @@ const GLenum kCompressedTextureFormatsETC2EAC[] = {
 };
 
 WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedCanvas, contextProvider, requestedAttributes)
+    : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
 {
     m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
     m_supportedInternalFormatsStorage.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));

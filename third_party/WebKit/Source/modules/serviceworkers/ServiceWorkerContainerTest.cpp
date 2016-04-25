@@ -164,7 +164,7 @@ protected:
 
     void provide(PassOwnPtr<WebServiceWorkerProvider> provider)
     {
-        Supplement<Document>::provideTo(m_page->document(), ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(provider));
+        Supplement<Document>::provideTo(m_page->document(), ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(std::move(provider)));
     }
 
     void setPageURL(const String& url)

@@ -33,7 +33,7 @@ const char* SpeechRecognitionController::supplementName()
 }
 
 SpeechRecognitionController::SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient> client)
-    : m_client(client)
+    : m_client(std::move(client))
 {
 }
 
@@ -44,12 +44,12 @@ SpeechRecognitionController::~SpeechRecognitionController()
 
 SpeechRecognitionController* SpeechRecognitionController::create(PassOwnPtr<SpeechRecognitionClient> client)
 {
-    return new SpeechRecognitionController(client);
+    return new SpeechRecognitionController(std::move(client));
 }
 
 void provideSpeechRecognitionTo(Page& page, PassOwnPtr<SpeechRecognitionClient> client)
 {
-    SpeechRecognitionController::provideTo(page, SpeechRecognitionController::supplementName(), SpeechRecognitionController::create(client));
+    SpeechRecognitionController::provideTo(page, SpeechRecognitionController::supplementName(), SpeechRecognitionController::create(std::move(client)));
 }
 
 } // namespace blink

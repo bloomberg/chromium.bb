@@ -186,7 +186,7 @@ PresentationConnection* PresentationConnection::take(ScriptPromiseResolver* reso
     if (!controller)
         return nullptr;
 
-    return take(controller, client, request);
+    return take(controller, std::move(client), request);
 }
 
 // static

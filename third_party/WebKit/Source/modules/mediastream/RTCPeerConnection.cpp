@@ -361,7 +361,7 @@ RTCPeerConnection::EventWrapper::EventWrapper(
     Event* event,
     PassOwnPtr<BoolFunction> function)
     : m_event(event)
-    , m_setupFunction(function)
+    , m_setupFunction(std::move(function))
 {
 }
 
@@ -1186,7 +1186,7 @@ void RTCPeerConnection::scheduleDispatchEvent(Event* event)
 void RTCPeerConnection::scheduleDispatchEvent(Event* event,
     PassOwnPtr<BoolFunction> setupFunction)
 {
-    m_scheduledEvents.append(new EventWrapper(event, setupFunction));
+    m_scheduledEvents.append(new EventWrapper(event, std::move(setupFunction)));
 
     m_dispatchScheduledEventRunner->runAsync();
 }

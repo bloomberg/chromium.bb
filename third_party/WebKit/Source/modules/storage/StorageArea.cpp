@@ -48,12 +48,12 @@ namespace blink {
 
 StorageArea* StorageArea::create(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
 {
-    return new StorageArea(storageArea, storageType);
+    return new StorageArea(std::move(storageArea), storageType);
 }
 
 StorageArea::StorageArea(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
     : LocalFrameLifecycleObserver(nullptr)
-    , m_storageArea(storageArea)
+    , m_storageArea(std::move(storageArea))
     , m_storageType(storageType)
     , m_canAccessStorageCachedResult(false)
 {

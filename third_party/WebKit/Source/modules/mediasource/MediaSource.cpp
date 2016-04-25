@@ -290,7 +290,7 @@ void MediaSource::setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource> webMediaSo
     ASSERT(webMediaSource);
     ASSERT(!m_webMediaSource);
     ASSERT(m_attachedElement);
-    m_webMediaSource = webMediaSource;
+    m_webMediaSource = std::move(webMediaSource);
     setReadyState(openKeyword());
 }
 

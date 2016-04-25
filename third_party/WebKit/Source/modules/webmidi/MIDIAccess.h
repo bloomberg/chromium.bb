@@ -56,7 +56,7 @@ class MIDIAccess final : public EventTargetWithInlineData, public ActiveScriptWr
 public:
     static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {
-        MIDIAccess* access = new MIDIAccess(accessor, sysexEnabled, ports, executionContext);
+        MIDIAccess* access = new MIDIAccess(std::move(accessor), sysexEnabled, ports, executionContext);
         access->suspendIfNeeded();
         return access;
     }

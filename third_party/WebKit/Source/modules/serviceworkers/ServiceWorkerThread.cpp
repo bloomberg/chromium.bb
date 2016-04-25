@@ -53,7 +53,7 @@ ServiceWorkerThread::~ServiceWorkerThread()
 
 WorkerGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    return ServiceWorkerGlobalScope::create(this, startupData);
+    return ServiceWorkerGlobalScope::create(this, std::move(startupData));
 }
 
 } // namespace blink

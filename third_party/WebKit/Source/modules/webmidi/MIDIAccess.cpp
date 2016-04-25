@@ -50,7 +50,7 @@ using PortState = MIDIAccessor::MIDIPortState;
 MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
-    , m_accessor(accessor)
+    , m_accessor(std::move(accessor))
     , m_sysexEnabled(sysexEnabled)
     , m_hasPendingActivity(false)
 {

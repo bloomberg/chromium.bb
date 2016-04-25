@@ -62,7 +62,7 @@ namespace {
 
 class ExecuteSQLCallbackWrapper : public RefCounted<ExecuteSQLCallbackWrapper> {
 public:
-    static PassRefPtr<ExecuteSQLCallbackWrapper> create(PassOwnPtr<ExecuteSQLCallback> callback) { return adoptRef(new ExecuteSQLCallbackWrapper(callback)); }
+    static PassRefPtr<ExecuteSQLCallbackWrapper> create(PassOwnPtr<ExecuteSQLCallback> callback) { return adoptRef(new ExecuteSQLCallbackWrapper(std::move(callback))); }
     ~ExecuteSQLCallbackWrapper() { }
     ExecuteSQLCallback* get() { return m_callback.get(); }
 
@@ -75,7 +75,7 @@ public:
     }
 
 private:
-    explicit ExecuteSQLCallbackWrapper(PassOwnPtr<ExecuteSQLCallback> callback) : m_callback(callback) { }
+    explicit ExecuteSQLCallbackWrapper(PassOwnPtr<ExecuteSQLCallback> callback) : m_callback(std::move(callback)) { }
     OwnPtr<ExecuteSQLCallback> m_callback;
 };
 
@@ -307,7 +307,7 @@ void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const Str
 
 void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, PassOwnPtr<ExecuteSQLCallback> prpRequestCallback)
 {
-    OwnPtr<ExecuteSQLCallback> requestCallback = prpRequestCallback;
+    OwnPtr<ExecuteSQLCallback> requestCallback = std::move(prpRequestCallback);
 
     if (!m_enabled) {
         requestCallback->sendFailure("Database agent is not enabled");

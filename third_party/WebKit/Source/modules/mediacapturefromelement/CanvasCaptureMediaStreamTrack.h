@@ -17,8 +17,8 @@ class WebCanvasCaptureHandler;
 class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, const PassOwnPtr<WebCanvasCaptureHandler>);
-    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, const PassOwnPtr<WebCanvasCaptureHandler>, double frameRate);
+    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>);
+    static CanvasCaptureMediaStreamTrack* create(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>, double frameRate);
 
     HTMLCanvasElement* canvas() const;
     void requestFrame();
@@ -29,8 +29,8 @@ public:
 
 private:
     CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack&, MediaStreamComponent*);
-    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, const PassOwnPtr<WebCanvasCaptureHandler>);
-    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, const PassOwnPtr<WebCanvasCaptureHandler>, double frameRate);
+    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>);
+    CanvasCaptureMediaStreamTrack(MediaStreamComponent*, HTMLCanvasElement*, PassOwnPtr<WebCanvasCaptureHandler>, double frameRate);
 
     Member<HTMLCanvasElement> m_canvasElement;
     Member<CanvasDrawListener> m_drawListener;

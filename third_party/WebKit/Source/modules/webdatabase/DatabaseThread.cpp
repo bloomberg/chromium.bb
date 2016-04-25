@@ -169,7 +169,7 @@ void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
     }
 #endif
     // WebThread takes ownership of the task.
-    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseTask::run, task));
+    m_thread->postTask(BLINK_FROM_HERE, threadSafeBind(&DatabaseTask::run, std::move(task)));
 }
 
 } // namespace blink

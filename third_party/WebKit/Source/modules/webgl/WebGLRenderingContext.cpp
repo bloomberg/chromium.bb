@@ -99,7 +99,7 @@ void WebGLRenderingContext::Factory::onError(HTMLCanvasElement* canvas, const St
 }
 
 WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedCanvas, contextProvider, requestedAttributes)
+    : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
 {
 }
 

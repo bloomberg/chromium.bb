@@ -32,7 +32,7 @@ namespace blink {
 
 AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
     : AudioHandler(nodeType, node, sampleRate)
-    , m_processor(processor)
+    , m_processor(std::move(processor))
 {
     addInput();
     addOutput(1);
@@ -40,7 +40,7 @@ AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioN
 
 PassRefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::create(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
 {
-    return adoptRef(new AudioBasicProcessorHandler(nodeType, node, sampleRate, processor));
+    return adoptRef(new AudioBasicProcessorHandler(nodeType, node, sampleRate, std::move(processor)));
 }
 
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler()

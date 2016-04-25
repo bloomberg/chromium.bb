@@ -59,7 +59,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionConte
         return existingRegistration;
     }
 
-    ServiceWorkerRegistration* newRegistration = new ServiceWorkerRegistration(executionContext, handle);
+    ServiceWorkerRegistration* newRegistration = new ServiceWorkerRegistration(executionContext, std::move(handle));
     newRegistration->suspendIfNeeded();
     return newRegistration;
 }
@@ -100,7 +100,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
 ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
-    , m_handle(handle)
+    , m_handle(std::move(handle))
     , m_provider(nullptr)
     , m_stopped(false)
 {

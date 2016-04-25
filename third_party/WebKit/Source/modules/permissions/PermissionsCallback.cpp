@@ -10,9 +10,9 @@
 namespace blink {
 
 PermissionsCallback::PermissionsCallback(ScriptPromiseResolver* resolver, PassOwnPtr<Vector<WebPermissionType>> internalPermissions, PassOwnPtr<Vector<int>> callerIndexToInternalIndex)
-    : m_resolver(resolver),
-    m_internalPermissions(internalPermissions),
-    m_callerIndexToInternalIndex(callerIndexToInternalIndex)
+    : m_resolver(resolver)
+    , m_internalPermissions(std::move(internalPermissions))
+    , m_callerIndexToInternalIndex(std::move(callerIndexToInternalIndex))
 {
     ASSERT(m_resolver);
 }

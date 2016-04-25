@@ -14,12 +14,12 @@ namespace blink {
 class AutoCanvasDrawListener final : public GarbageCollectedFinalized<AutoCanvasDrawListener>, public CanvasDrawListener {
     USING_GARBAGE_COLLECTED_MIXIN(AutoCanvasDrawListener);
 public:
-    static AutoCanvasDrawListener* create(const PassOwnPtr<WebCanvasCaptureHandler>&);
+    static AutoCanvasDrawListener* create(PassOwnPtr<WebCanvasCaptureHandler>);
     ~AutoCanvasDrawListener() {}
 
     DEFINE_INLINE_TRACE() {}
 private:
-    AutoCanvasDrawListener(const PassOwnPtr<WebCanvasCaptureHandler>&);
+    AutoCanvasDrawListener(PassOwnPtr<WebCanvasCaptureHandler>);
 };
 
 } // namespace blink
