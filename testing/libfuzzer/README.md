@@ -30,6 +30,8 @@ your fuzzer and submit it to ClusterFuzz.
 ways to improve it.
 * [ClusterFuzz Integration] describes integration between ClusterFuzz and 
 libFuzzer.
+* [Reproducing] contains information on how to reproduce bugs reported by
+  ClusterFuzz.
 * [Reference] contains detailed references for different integration parts.
 
 
@@ -45,6 +47,7 @@ libFuzzer.
 [Getting Started Guide]: getting_started.md
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
 [ClusterFuzz Integration]: clusterfuzz.md
+[Reproducing]: reproducing.md
 [Reference]: reference.md
 [ClusterFuzz Bugs]: https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label:Stability-LibFuzzer%20label:ClusterFuzz&sort=-modified&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified
 [Pdfium Bugs]: https://bugs.chromium.org/p/pdfium/issues/list?can=1&q=libfuzzer&colspec=ID+Type+Status+Priority+Milestone+Owner+Summary&cells=tiles
