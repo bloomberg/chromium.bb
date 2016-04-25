@@ -6226,16 +6226,14 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        host_impl->sync_tree(),
-        [this](LayerImpl* layer) {
+        host_impl->sync_tree(), [this](LayerImpl* layer) {
           const std::vector<int>& list =
               layer->IsAffectedByPageScale()
                   ? this->affected_by_page_scale_
                   : this->not_affected_by_page_scale_;
           EXPECT_TRUE(std::find(list.begin(), list.end(), layer->id()) !=
                       list.end());
-        },
-        CallFunctionLayerType::ALL_LAYERS);
+        });
 
     EndTest();
   }

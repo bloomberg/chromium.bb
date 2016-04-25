@@ -160,8 +160,7 @@ void DebugRectHistory::SaveScreenSpaceRects(
 void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
       tree_impl,
-      [this](LayerImpl* layer) { SaveTouchEventHandlerRectsCallback(layer); },
-      CallFunctionLayerType::ALL_LAYERS);
+      [this](LayerImpl* layer) { SaveTouchEventHandlerRectsCallback(layer); });
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
@@ -200,8 +199,7 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* root_layer) {
 void DebugRectHistory::SaveScrollEventHandlerRects(LayerTreeImpl* tree_impl) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
       tree_impl,
-      [this](LayerImpl* layer) { SaveScrollEventHandlerRectsCallback(layer); },
-      CallFunctionLayerType::ALL_LAYERS);
+      [this](LayerImpl* layer) { SaveScrollEventHandlerRectsCallback(layer); });
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
@@ -217,8 +215,7 @@ void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
 void DebugRectHistory::SaveNonFastScrollableRects(LayerTreeImpl* tree_impl) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
       tree_impl,
-      [this](LayerImpl* layer) { SaveNonFastScrollableRectsCallback(layer); },
-      CallFunctionLayerType::ALL_LAYERS);
+      [this](LayerImpl* layer) { SaveNonFastScrollableRectsCallback(layer); });
 }
 
 void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {

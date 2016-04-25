@@ -36,13 +36,6 @@ class Layer;
 class SwapPromise;
 class PropertyTrees;
 
-enum CallFunctionLayerType : uint32_t {
-  BASIC_LAYER = 0,
-  MASK_LAYER = 1,
-  REPLICA_LAYER = 2,
-  ALL_LAYERS = MASK_LAYER | REPLICA_LAYER
-};
-
 class CC_EXPORT LayerTreeHostCommon {
  public:
   struct CC_EXPORT CalcDrawPropsMainInputsForTesting {
@@ -138,13 +131,11 @@ class CC_EXPORT LayerTreeHostCommon {
 
   template <typename Function>
   static void CallFunctionForEveryLayer(LayerTreeHost* layer,
-                                        const Function& function,
-                                        const CallFunctionLayerType& type);
+                                        const Function& function);
 
   template <typename Function>
   static void CallFunctionForEveryLayer(LayerTreeImpl* layer,
-                                        const Function& function,
-                                        const CallFunctionLayerType& type);
+                                        const Function& function);
 
   struct CC_EXPORT ScrollUpdateInfo {
     int layer_id;
@@ -178,51 +169,30 @@ struct CC_EXPORT ScrollAndScaleSet {
 };
 
 template <typename LayerType, typename Function>
-static void CallFunctionForLayer(LayerType* layer,
-                                 const Function& function,
-                                 const CallFunctionLayerType& type) {
+static void CallFunctionForLayer(LayerType* layer, const Function& function) {
   function(layer);
 
-  LayerType* mask_layer = layer->mask_layer();
-  if ((type & CallFunctionLayerType::MASK_LAYER) && mask_layer)
+  if (LayerType* mask_layer = layer->mask_layer())
     function(mask_layer);
-  LayerType* replica_layer = layer->replica_layer();
-  if ((type & CallFunctionLayerType::REPLICA_LAYER) && replica_layer) {
+  if (LayerType* replica_layer = layer->replica_layer()) {
     function(replica_layer);
-    mask_layer = replica_layer->mask_layer();
-    if ((type & CallFunctionLayerType::MASK_LAYER) && mask_layer)
+    if (LayerType* mask_layer = replica_layer->mask_layer())
       function(mask_layer);
   }
 }
 
 template <typename Function>
-static void CallFunctionForEveryLayerInternal(
-    Layer* layer,
-    const Function& function,
-    const CallFunctionLayerType& type) {
-  CallFunctionForLayer(layer, function, type);
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    CallFunctionForEveryLayerInternal(layer->children()[i].get(), function,
-                                      type);
-  }
+void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
+                                                    const Function& function) {
+  for (auto* layer : *host)
+    CallFunctionForLayer(layer, function);
 }
 
 template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(
-    LayerTreeHost* host,
-    const Function& function,
-    const CallFunctionLayerType& type) {
-  CallFunctionForEveryLayerInternal(host->root_layer(), function, type);
-}
-
-template <typename Function>
-void LayerTreeHostCommon::CallFunctionForEveryLayer(
-    LayerTreeImpl* host_impl,
-    const Function& function,
-    const CallFunctionLayerType& type) {
+void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* host_impl,
+                                                    const Function& function) {
   for (auto* layer : *host_impl)
-    CallFunctionForLayer(layer, function, type);
+    CallFunctionForLayer(layer, function);
 }
 
 CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer);

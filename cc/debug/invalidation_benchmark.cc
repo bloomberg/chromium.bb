@@ -65,8 +65,7 @@ InvalidationBenchmark::~InvalidationBenchmark() {
 
 void InvalidationBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      host, [this](Layer* layer) { layer->RunMicroBenchmark(this); },
-      CallFunctionLayerType::ALL_LAYERS);
+      host, [this](Layer* layer) { layer->RunMicroBenchmark(this); });
 }
 
 void InvalidationBenchmark::RunOnLayer(PictureLayer* layer) {

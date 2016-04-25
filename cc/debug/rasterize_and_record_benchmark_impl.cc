@@ -126,12 +126,10 @@ RasterizeAndRecordBenchmarkImpl::~RasterizeAndRecordBenchmarkImpl() {}
 void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
     LayerTreeHostImpl* host) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(
-      host->active_tree(),
-      [this](LayerImpl* layer) {
+      host->active_tree(), [this](LayerImpl* layer) {
         rasterize_results_.total_layers++;
         layer->RunMicroBenchmark(this);
-      },
-      CallFunctionLayerType::ALL_LAYERS);
+      });
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetDouble("rasterize_time_ms",

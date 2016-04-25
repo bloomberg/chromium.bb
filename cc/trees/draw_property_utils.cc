@@ -426,32 +426,29 @@ void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                const TransformTree& transform_tree,
                                const EffectTree& effect_tree,
                                LayerList* update_layer_list) {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      layer_tree_host,
-      [&](Layer* layer) {
-        bool layer_is_drawn =
-            effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
+  for (auto* layer : *layer_tree_host) {
+    bool layer_is_drawn =
+        effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
 
-        if (!IsRootLayer(layer) &&
-            LayerShouldBeSkipped(layer, layer_is_drawn, transform_tree,
-                                 effect_tree))
-          return;
+    if (!IsRootLayer(layer) &&
+        LayerShouldBeSkipped(layer, layer_is_drawn, transform_tree,
+                             effect_tree))
+      continue;
 
-        if (LayerNeedsUpdate(layer, layer_is_drawn, transform_tree)) {
-          update_layer_list->push_back(layer);
-        }
+    if (LayerNeedsUpdate(layer, layer_is_drawn, transform_tree)) {
+      update_layer_list->push_back(layer);
+    }
 
-        // Append mask layers to the update layer list. They don't have valid
-        // visible rects, so need to get added after the above calculation.
-        // Replica layers don't need to be updated.
-        if (Layer* mask_layer = layer->mask_layer())
-          update_layer_list->push_back(mask_layer);
-        if (Layer* replica_layer = layer->replica_layer()) {
-          if (Layer* mask_layer = replica_layer->mask_layer())
-            update_layer_list->push_back(mask_layer);
-        }
-      },
-      CallFunctionLayerType::BASIC_LAYER);
+    // Append mask layers to the update layer list. They don't have valid
+    // visible rects, so need to get added after the above calculation.
+    // Replica layers don't need to be updated.
+    if (Layer* mask_layer = layer->mask_layer())
+      update_layer_list->push_back(mask_layer);
+    if (Layer* replica_layer = layer->replica_layer()) {
+      if (Layer* mask_layer = replica_layer->mask_layer())
+        update_layer_list->push_back(mask_layer);
+    }
+  }
 }
 
 static void ResetIfHasNanCoordinate(gfx::RectF* rect) {

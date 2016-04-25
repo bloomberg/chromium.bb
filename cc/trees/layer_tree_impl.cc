@@ -106,16 +106,14 @@ void LayerTreeImpl::Shutdown() {
 void LayerTreeImpl::ReleaseResources() {
   if (root_layer_) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->ReleaseResources(); },
-        CallFunctionLayerType::ALL_LAYERS);
+        this, [](LayerImpl* layer) { layer->ReleaseResources(); });
   }
 }
 
 void LayerTreeImpl::RecreateResources() {
   if (root_layer_) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->RecreateResources(); },
-        CallFunctionLayerType::ALL_LAYERS);
+        this, [](LayerImpl* layer) { layer->RecreateResources(); });
   }
 }
 
@@ -555,12 +553,9 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   // frame to a newly-committed property tree.
   if (!root_layer())
     return;
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      this,
-      [](LayerImpl* layer) {
-        layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
-      },
-      CallFunctionLayerType::ALL_LAYERS);
+  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
+    layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
+  });
 }
 
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
@@ -1073,8 +1068,7 @@ void LayerTreeImpl::DidBecomeActive() {
 
   if (root_layer()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        this, [](LayerImpl* layer) { layer->DidBecomeActive(); },
-        CallFunctionLayerType::ALL_LAYERS);
+        this, [](LayerImpl* layer) { layer->DidBecomeActive(); });
   }
 
   for (const auto& swap_promise : swap_promise_list_)
