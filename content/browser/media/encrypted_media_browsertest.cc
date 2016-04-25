@@ -191,13 +191,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
   TestConfigChange();
 }
 
-// Playback of this video on Android w/ Spitzer enabled causes glitches. See
-// http://crbug.com/598963.
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
   TestFrameSizeChange();
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer,
