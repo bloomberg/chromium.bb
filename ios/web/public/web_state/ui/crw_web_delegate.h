@@ -65,9 +65,6 @@ typedef void (^SSLErrorCallback)(BOOL);
 // |URL| is launched in an external app.
 - (BOOL)openExternalURL:(const GURL&)URL linkClicked:(BOOL)linkClicked;
 
-// Asked the delegate to present an error to the user because the
-// CRWWebController cannot verify the URL of the current page.
-- (void)presentSpoofingError;
 // This method is invoked whenever the system believes the URL is about to
 // change, or immediately after any unexpected change of the URL, prior to
 // updating the navigation manager's pending entry.

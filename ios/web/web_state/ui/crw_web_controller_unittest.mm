@@ -461,8 +461,10 @@ TEST_F(CRWWebControllerTest, SslCertErrorDeprecatedApi) {
                         web::kNSErrorPeerCertificateChainKey : chain,
                       }];
 
-  WKWebView* webView = static_cast<WKWebView*>(
-      [webController_ containerView].webViewContentView.webView);
+  CRWWebControllerContainerView* containerView =
+      static_cast<CRWWebControllerContainerView*>([webController_ view]);
+  WKWebView* webView =
+      static_cast<WKWebView*>(containerView.webViewContentView.webView);
   base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
   [static_cast<id<WKNavigationDelegate>>(webController_.get())
                             webView:webView
@@ -507,8 +509,10 @@ TEST_F(CRWWebControllerTest, SslCertError) {
                         web::kNSErrorPeerCertificateChainKey : chain,
                         web::kNSErrorFailingURLKey : net::NSURLWithGURL(url),
                       }];
-  WKWebView* webView = static_cast<WKWebView*>(
-      [webController_ containerView].webViewContentView.webView);
+  CRWWebControllerContainerView* containerView =
+      static_cast<CRWWebControllerContainerView*>([webController_ view]);
+  WKWebView* webView =
+      static_cast<WKWebView*>(containerView.webViewContentView.webView);
   base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
   [static_cast<id<WKNavigationDelegate>>(webController_.get())
                             webView:webView
