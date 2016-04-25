@@ -34,14 +34,14 @@ using ScopedX509_EXTENSIONS =
 
 // The wire form of the OID 1.3.6.1.4.1.11129.2.4.2. See Section 3.3 of
 // RFC6962.
-const uint8_t kEmbeddedSCTOid[] = {0x2B, 0x06, 0x01, 0x04, 0x01, 0xD6, 0x79,
-                                   0x02, 0x04, 0x02};
+const uint8_t kEmbeddedSCTOid[] = {0x2B, 0x06, 0x01, 0x04, 0x01,
+                                   0xD6, 0x79, 0x02, 0x04, 0x02};
 
 // The wire form of the OID 1.3.6.1.4.1.11129.2.4.5 - OCSP SingleExtension for
 // X.509v3 Certificate Transparency Signed Certificate Timestamp List, see
 // Section 3.3 of RFC6962.
-const uint8_t kOCSPExtensionOid[] = {0x2B, 0x06, 0x01, 0x04, 0x01, 0xD6, 0x79,
-                                     0x02, 0x04, 0x05};
+const uint8_t kOCSPExtensionOid[] = {0x2B, 0x06, 0x01, 0x04, 0x01,
+                                     0xD6, 0x79, 0x02, 0x04, 0x05};
 
 bool StringEqualToCBS(const std::string& value1, const CBS* value2) {
   if (CBS_len(value2) != value1.size())
@@ -80,9 +80,9 @@ bool GetSCTListFromX509_EXTENSIONS(const X509_EXTENSIONS* x509_exts,
         return false;
       }
       if (out_sct_list) {
-        *out_sct_list = std::string(
-            reinterpret_cast<const char*>(CBS_data(&sct_list)),
-            CBS_len(&sct_list));
+        *out_sct_list =
+            std::string(reinterpret_cast<const char*>(CBS_data(&sct_list)),
+                        CBS_len(&sct_list));
       }
       return true;
     }
@@ -122,8 +122,8 @@ bool FindMatchingSingleResponse(CBS* responses,
   // necessary.
   // TODO(ekasper): only compute the hashes on demand.
   std::string issuer_key_sha256_hash = crypto::SHA256HashString(issuer_spk);
-  std::string issuer_key_sha1_hash = base::SHA1HashString(
-      issuer_spk.as_string());
+  std::string issuer_key_sha1_hash =
+      base::SHA1HashString(issuer_spk.as_string());
 
   while (CBS_len(responses) > 0) {
     CBS single_response, cert_id;
@@ -177,9 +177,9 @@ bool ExtractEmbeddedSCTList(X509Certificate::OSCertHandle cert,
   X509_EXTENSIONS* x509_exts = x509->cert_info->extensions;
   if (!x509_exts)
     return false;
-  return GetSCTListFromX509_EXTENSIONS(
-      x509->cert_info->extensions, kEmbeddedSCTOid, sizeof(kEmbeddedSCTOid),
-      sct_list);
+  return GetSCTListFromX509_EXTENSIONS(x509->cert_info->extensions,
+                                       kEmbeddedSCTOid, sizeof(kEmbeddedSCTOid),
+                                       sct_list);
 }
 
 bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
@@ -212,8 +212,8 @@ bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
   for (size_t i = 0; i < sk_X509_EXTENSION_num(leaf_copy_exts); i++) {
     X509_EXTENSION* ext = sk_X509_EXTENSION_value(leaf_copy_exts, i);
     if (static_cast<size_t>(ext->object->length) == sizeof(kEmbeddedSCTOid) &&
-        memcmp(ext->object->data,
-               kEmbeddedSCTOid, sizeof(kEmbeddedSCTOid)) == 0) {
+        memcmp(ext->object->data, kEmbeddedSCTOid, sizeof(kEmbeddedSCTOid)) ==
+            0) {
       X509_EXTENSION_free(sk_X509_EXTENSION_delete(leaf_copy_exts, i));
       X509_CINF_set_modified(leaf_copy->cert_info);
       break;
@@ -240,8 +240,7 @@ bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
   // Fill in the LogEntry.
   result->type = ct::LogEntry::LOG_ENTRY_TYPE_PRECERT;
   result->tbs_certificate.swap(to_be_signed);
-  crypto::SHA256HashString(issuer_key,
-                           result->issuer_key_hash.data,
+  crypto::SHA256HashString(issuer_key, result->issuer_key_hash.data,
                            sizeof(result->issuer_key_hash.data));
 
   return true;
@@ -268,16 +267,14 @@ bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
   // in the extensions field of the SingleResponse which matches the input
   // certificate.
   CBS cbs;
-  CBS_init(&cbs,
-           reinterpret_cast<const uint8_t*>(ocsp_response.data()),
+  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(ocsp_response.data()),
            ocsp_response.size());
 
   // Parse down to the ResponseBytes. The ResponseBytes is optional, but if it's
   // missing, this can't include an SCT list.
   CBS sequence, response_status, tagged_response_bytes, response_bytes;
   CBS response_type, response;
-  if (!CBS_get_asn1(&cbs, &sequence, CBS_ASN1_SEQUENCE) ||
-      CBS_len(&cbs) != 0 ||
+  if (!CBS_get_asn1(&cbs, &sequence, CBS_ASN1_SEQUENCE) || CBS_len(&cbs) != 0 ||
       !CBS_get_asn1(&sequence, &response_status, CBS_ASN1_ENUMERATED) ||
       !CBS_get_asn1(&sequence, &tagged_response_bytes,
                     CBS_ASN1_CONTEXT_SPECIFIC | CBS_ASN1_CONSTRUCTED | 0) ||
@@ -303,8 +300,7 @@ bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
   }
 
   // Skip the optional version.
-  const int kVersionTag =
-      CBS_ASN1_CONTEXT_SPECIFIC | CBS_ASN1_CONSTRUCTED | 0;
+  const int kVersionTag = CBS_ASN1_CONTEXT_SPECIFIC | CBS_ASN1_CONSTRUCTED | 0;
   if (CBS_len(&response_data) > 0 &&
       CBS_data(&response_data)[0] == kVersionTag &&
       !CBS_get_asn1(&response_data, NULL /* version */, kVersionTag)) {
@@ -312,10 +308,10 @@ bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
   }
 
   // Extract the list of SingleResponses.
-  if (!CBS_get_any_asn1_element(&response_data,
-                                NULL /* responderID */, NULL, NULL) ||
-      !CBS_get_any_asn1_element(&response_data,
-                                NULL /* producedAt */, NULL, NULL) ||
+  if (!CBS_get_any_asn1_element(&response_data, NULL /* responderID */, NULL,
+                                NULL) ||
+      !CBS_get_any_asn1_element(&response_data, NULL /* producedAt */, NULL,
+                                NULL) ||
       !CBS_get_asn1(&response_data, &responses, CBS_ASN1_SEQUENCE)) {
     return false;
   }
@@ -327,10 +323,10 @@ bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
   }
 
   // Skip the certStatus and thisUpdate fields.
-  if (!CBS_get_any_asn1_element(&single_response,
-                                NULL /* certStatus */, NULL, NULL) ||
-      !CBS_get_any_asn1_element(&single_response,
-                                NULL /* thisUpdate */, NULL, NULL)) {
+  if (!CBS_get_any_asn1_element(&single_response, NULL /* certStatus */, NULL,
+                                NULL) ||
+      !CBS_get_any_asn1_element(&single_response, NULL /* thisUpdate */, NULL,
+                                NULL)) {
     return false;
   }
 
@@ -355,8 +351,8 @@ bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
   if (!x509_exts || ptr != CBS_data(&extensions) + CBS_len(&extensions))
     return false;
 
-  return GetSCTListFromX509_EXTENSIONS(
-      x509_exts.get(), kOCSPExtensionOid, sizeof(kOCSPExtensionOid), sct_list);
+  return GetSCTListFromX509_EXTENSIONS(x509_exts.get(), kOCSPExtensionOid,
+                                       sizeof(kOCSPExtensionOid), sct_list);
 }
 
 }  // namespace ct

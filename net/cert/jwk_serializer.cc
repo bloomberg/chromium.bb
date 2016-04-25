@@ -53,8 +53,8 @@ bool ConvertEcKeyToJwk(EVP_PKEY* pkey,
 
   crypto::ScopedBIGNUM x(BN_new());
   crypto::ScopedBIGNUM y(BN_new());
-  if (!EC_POINT_get_affine_coordinates_GFp(ec_group, ec_point,
-                                           x.get(), y.get(), NULL)) {
+  if (!EC_POINT_get_affine_coordinates_GFp(ec_group, ec_point, x.get(), y.get(),
+                                           NULL)) {
     return false;
   }
 
@@ -88,9 +88,8 @@ bool ConvertEcKeyToJwk(EVP_PKEY* pkey,
 
 }  // namespace
 
-bool ConvertSpkiFromDerToJwk(
-    const base::StringPiece& spki_der,
-    base::DictionaryValue* public_key_jwk) {
+bool ConvertSpkiFromDerToJwk(const base::StringPiece& spki_der,
+                             base::DictionaryValue* public_key_jwk) {
   public_key_jwk->Clear();
 
   crypto::EnsureOpenSSLInit();

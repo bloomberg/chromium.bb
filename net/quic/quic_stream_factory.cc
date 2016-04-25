@@ -675,7 +675,7 @@ QuicStreamFactory::QuicStreamFactory(
     crypto_config_.SetChannelIDSource(
         new ChannelIDSourceChromium(channel_id_service));
   }
-  if (enable_token_binding && channel_id_service && IsTokenBindingSupported())
+  if (enable_token_binding && channel_id_service)
     crypto_config_.tb_key_params.push_back(kP256);
   crypto::EnsureOpenSSLInit();
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();

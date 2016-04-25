@@ -33,10 +33,6 @@ bool BuildTokenBindingID(crypto::ECPrivateKey* key, CBB* out) {
 
 }  // namespace
 
-bool IsTokenBindingSupported() {
-  return true;
-}
-
 bool SignTokenBindingEkm(base::StringPiece ekm,
                          crypto::ECPrivateKey* key,
                          std::vector<uint8_t>* out) {
