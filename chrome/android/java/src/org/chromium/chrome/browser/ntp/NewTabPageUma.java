@@ -60,9 +60,11 @@ public class NewTabPageUma {
     // The number of possible NTP impression types
     private static final int NUM_NTP_IMPRESSION = 2;
 
-    /** Possible interactions with the snippets. */
+    /** Possible interactions with the snippets.
+     * Do not remove or change existing values other than NUM_SNIPPETS_ACTIONS. */
     @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED,
-            SNIPPETS_ACTION_DISMISSED})
+             SNIPPETS_ACTION_DISMISSED_OBSOLETE, SNIPPETS_ACTION_DISMISSED_VISITED,
+             SNIPPETS_ACTION_DISMISSED_UNVISITED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SnippetsAction {}
     /** Snippets are enabled and are being shown to the user. */
@@ -71,10 +73,14 @@ public class NewTabPageUma {
     public static final int SNIPPETS_ACTION_SCROLLED = 1;
     /** A snippet has been clicked. */
     public static final int SNIPPETS_ACTION_CLICKED = 2;
-    /** A snippet has been swiped away. */
-    public static final int SNIPPETS_ACTION_DISMISSED = 3;
+    /** A snippet has been dismissed, made obsolete by the next two actions. */
+    public static final int SNIPPETS_ACTION_DISMISSED_OBSOLETE = 3;
+    /** A snippet has been swiped away, it had been viewed by the user (on this device). */
+    public static final int SNIPPETS_ACTION_DISMISSED_VISITED = 4;
+    /** A snippet has been swiped away, it had not been viewed by the user (on this device). */
+    public static final int SNIPPETS_ACTION_DISMISSED_UNVISITED = 5;
     /** The number of possible actions. */
-    private static final int NUM_SNIPPETS_ACTIONS = 4;
+    private static final int NUM_SNIPPETS_ACTIONS = 6;
 
     /**
      * Records an action taken by the user on the NTP.

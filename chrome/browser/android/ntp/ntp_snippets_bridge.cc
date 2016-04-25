@@ -10,10 +10,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "jni/SnippetsBridge_jni.h"
@@ -22,6 +24,22 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaLongArray;
+
+namespace {
+
+void SnippetVisitedHistoryRequestCallback(
+      base::android::ScopedJavaGlobalRef<jobject> callback,
+      bool success,
+      const history::URLRow& row,
+      const history::VisitVector& visitVector) {
+  bool visited = success && row.visit_count() != 0;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SnippetsBridge_runCallback(env, callback.obj(),
+                                  static_cast<jboolean>(visited));
+}
+
+} // namespace
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
@@ -49,6 +67,9 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
     : snippet_service_observer_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   ntp_snippets_service_ = NTPSnippetsServiceFactory::GetForProfile(profile);
+  history_service_ =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
   snippet_service_observer_.Add(ntp_snippets_service_);
 }
 
@@ -70,6 +91,19 @@ void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
                                        const JavaParamRef<jstring>& url) {
   ntp_snippets_service_->DiscardSnippet(
       GURL(ConvertJavaStringToUTF8(env, url)));
+}
+
+void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       const JavaParamRef<jobject>& jcallback,
+                                       const JavaParamRef<jstring>& jurl) {
+  base::android::ScopedJavaGlobalRef<jobject> callback(jcallback);
+
+  history_service_->QueryURL(
+      GURL(ConvertJavaStringToUTF8(env, jurl)),
+      false,
+      base::Bind(&SnippetVisitedHistoryRequestCallback, callback),
+      &tracker_);
 }
 
 void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {

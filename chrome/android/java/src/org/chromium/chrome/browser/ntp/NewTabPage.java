@@ -22,6 +22,7 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -532,7 +533,16 @@ public class NewTabPage
         @Override
         public void onSnippetDismissed(SnippetArticle dismissedSnippet) {
             if (mIsDestroyed) return;
-            NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_DISMISSED);
+
+            mSnippetsBridge.getSnippedVisited(dismissedSnippet, new Callback<Boolean>() {
+                @Override
+                public void onResult(Boolean result) {
+                    NewTabPageUma.recordSnippetAction(result
+                            ? NewTabPageUma.SNIPPETS_ACTION_DISMISSED_VISITED
+                            : NewTabPageUma.SNIPPETS_ACTION_DISMISSED_UNVISITED);
+                }
+            });
+
             mSnippetsBridge.discardSnippet(dismissedSnippet);
         }
     };

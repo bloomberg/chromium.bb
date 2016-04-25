@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -73,6 +74,22 @@ public class SnippetsBridge {
     }
 
     /**
+     * Checks whether a snippet has been visited by querying the history for the snippet's URL.
+     */
+    public void getSnippedVisited(SnippetArticle snippet, Callback<Boolean> callback) {
+        assert mNativeSnippetsBridge != 0;
+        nativeSnippetVisited(mNativeSnippetsBridge, callback, snippet.mUrl);
+    }
+
+    /**
+     * {@link Callback#onResult} is not annotated with CalledByNative, so we must use this wrapper.
+     */
+    @CalledByNative
+    private static void runCallback(Callback<Boolean> callback, boolean result) {
+        callback.onResult(result);
+    }
+
+    /**
      * Sets the recipient for the fetched snippets.
      *
      * An observer needs to be set before the native code attempts to transmit snippets them to
@@ -110,4 +127,6 @@ public class SnippetsBridge {
     private static native void nativeRescheduleFetching();
     private native void nativeDiscardSnippet(long nativeNTPSnippetsBridge, String snippetUrl);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
+    private static native void nativeSnippetVisited(long nativeNTPSnippetsBridge,
+            Callback<Boolean> callback, String url);
 }

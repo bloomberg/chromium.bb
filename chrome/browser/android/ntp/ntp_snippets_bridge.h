@@ -9,6 +9,8 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/scoped_observer.h"
+#include "base/task/cancelable_task_tracker.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
 // The C++ counterpart to SnippetsBridge.java. Enables Java code to access
@@ -28,6 +30,12 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
                       const base::android::JavaParamRef<jobject>& obj,
                       const base::android::JavaParamRef<jstring>& url);
 
+  // Checks if the URL has been visited.
+  void SnippetVisited(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jobject>& callback,
+                      const base::android::JavaParamRef<jstring>& jurl);
+
   static bool Register(JNIEnv* env);
 
  private:
@@ -38,6 +46,8 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   void NTPSnippetsServiceShutdown() override;
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
+  history::HistoryService* history_service_;
+  base::CancelableTaskTracker tracker_;
 
   // Used to notify the Java side when new snippets have been fetched.
   base::android::ScopedJavaGlobalRef<jobject> observer_;
