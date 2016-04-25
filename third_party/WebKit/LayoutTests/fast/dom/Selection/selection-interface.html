@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<link rel="help" href="https://w3c.github.io/selection-api/#idl-def-Selection">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    function assert_enumerable(p, isReadOnly) {
+        assert_true(p in Selection.prototype);
+        assert_true(Selection.prototype.propertyIsEnumerable(p));
+        if (isReadOnly)
+            assert_equals(Object.getOwnPropertyDescriptor(Selection.prototype, p).set, undefined);
+    }
+
+    assert_true('Selection' in self);
+
+    var readOnly = true;
+
+    // Verify spec interface coverage (only.)
+
+    assert_enumerable('anchorNode', readOnly);
+    assert_enumerable('anchorOffset', readOnly);
+    assert_enumerable('focusNode', readOnly);
+    assert_enumerable('focusOffset', readOnly);
+    assert_enumerable('isCollapsed', readOnly);
+    assert_enumerable('rangeCount', readOnly);
+    assert_enumerable('type', readOnly);
+
+    assert_enumerable('getRangeAt');
+    assert_enumerable('addRange');
+    // Not implemented: crbug.com/391673
+    //assert_enumerable('removeRange');
+    assert_enumerable('removeAllRanges');
+    assert_enumerable('empty');
+    assert_enumerable('collapse');
+    assert_enumerable('setPosition');
+    assert_enumerable('collapseToStart');
+    assert_enumerable('collapseToEnd');
+    assert_enumerable('extend');
+    assert_enumerable('setBaseAndExtent');
+    assert_enumerable('selectAllChildren');
+    assert_enumerable('deleteFromDocument');
+    assert_enumerable('containsNode');
+    assert_enumerable('toString');
+}, 'Selection interface');
+</script>

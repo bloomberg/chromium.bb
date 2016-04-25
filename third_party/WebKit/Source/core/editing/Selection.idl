@@ -58,10 +58,7 @@
     [MeasureAs=SelectionSelectAllChildren, RaisesException] void selectAllChildren(Node node);
     [MeasureAs=SelectionDeleteDromDocument, CustomElementCallbacks] void deleteFromDocument();
     [MeasureAs=SelectionContainsNode] boolean containsNode(Node node, optional boolean allowPartialContainment = false);
-    // TODO(philipj): The spec does not use [NotEnumerable]. See also:
-    // https://codereview.chromium.org/345983004/
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26179
-    [MeasureAs=SelectionDOMString, NotEnumerable] stringifier DOMString();
+    [MeasureAs=SelectionDOMString] stringifier;
 
     // Non-standard APIs
 
