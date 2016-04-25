@@ -360,9 +360,9 @@ void VpxEncoder::ConfigureEncoderOnEncodingThread(const gfx::Size& size) {
   DCHECK_EQ(240u, codec_config_.g_h);
   DCHECK_EQ(256u, codec_config_.rc_target_bitrate);
   // Use the selected bitrate or adjust default bit rate to account for the
-  // actual size.
+  // actual size.  Note: |rc_target_bitrate| units are kbit per second.
   if (bits_per_second_ > 0) {
-    codec_config_.rc_target_bitrate = bits_per_second_;
+    codec_config_.rc_target_bitrate = bits_per_second_ / 1000;
   } else {
     codec_config_.rc_target_bitrate = size.GetArea() *
                                       codec_config_.rc_target_bitrate /
