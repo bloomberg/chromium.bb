@@ -37,6 +37,8 @@ api::passwords_private::PasswordUiEntry CreateEntry(size_t num) {
   std::stringstream ss;
   ss << "http://test" << num << ".com";
   entry.login_pair.origin_url = ss.str();
+  ss << "/login";
+  entry.link_url = ss.str();
   ss.clear();
   ss << "testName" << num;
   entry.login_pair.username = ss.str();
@@ -44,10 +46,14 @@ api::passwords_private::PasswordUiEntry CreateEntry(size_t num) {
   return entry;
 }
 
-std::string CreateException(size_t num) {
+api::passwords_private::ExceptionPair CreateException(size_t num) {
+  api::passwords_private::ExceptionPair exception;
   std::stringstream ss;
   ss << "http://exception" << num << ".com";
-  return ss.str();
+  exception.exception_url = ss.str();
+  ss << "/login";
+  exception.link_url = ss.str();
+  return exception;
 }
 
 // A test PasswordsPrivateDelegate implementation which uses mock data.
@@ -84,7 +90,8 @@ class TestDelegate : public PasswordsPrivateDelegate {
       router->OnPasswordExceptionsListChanged(current_exceptions_);
   }
 
-  const std::vector<std::string>* GetPasswordExceptionsList() const override {
+  const std::vector<api::passwords_private::ExceptionPair>*
+  GetPasswordExceptionsList() const override {
     return &current_exceptions_;
   }
 
@@ -129,7 +136,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
   std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
-  std::vector<std::string> current_exceptions_;
+  std::vector<api::passwords_private::ExceptionPair> current_exceptions_;
   Profile* profile_;
 };
 

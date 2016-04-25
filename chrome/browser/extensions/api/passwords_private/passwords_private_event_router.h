@@ -33,7 +33,7 @@ class PasswordsPrivateEventRouter : public KeyedService {
   // Notifies listeners of updated exceptions.
   // |exceptions| The new list of password exceptions.
   void OnPasswordExceptionsListChanged(
-      const std::vector<std::string>& exceptions);
+      const std::vector<api::passwords_private::ExceptionPair>& exceptions);
 
   // Notifies listeners after fetching a plain-text password.
   // |origin_url| The origin which the password is saved for.

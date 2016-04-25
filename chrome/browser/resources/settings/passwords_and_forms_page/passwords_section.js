@@ -11,6 +11,9 @@
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.PasswordUiEntry}}} */
 var PasswordUiEntryEvent;
 
+/** @typedef {!{model: !{item: !chrome.passwordsPrivate.ExceptionPair}}} */
+var ExceptionPairEntryEvent;
+
 (function() {
 'use strict';
 
@@ -37,7 +40,7 @@ Polymer({
 
     /**
      * An array of sites to display.
-     * @type {!Array<!string>}
+     * @type {!Array<!chrome.passwordsPrivate.ExceptionPair>}
      */
     passwordExceptions: {
       type: Array,
@@ -91,11 +94,11 @@ Polymer({
 
   /**
    * Fires an event that should delete the password exception.
-   * @param {!{model: !{item: !string}}} e The polymer event.
+   * @param {!ExceptionPairEntryEvent} e The polymer event.
    * @private
    */
   onRemoveExceptionButtonTap_: function(e) {
-    this.fire('remove-password-exception', e.model.item);
+    this.fire('remove-password-exception', e.model.item.exceptionUrl);
   },
 
   /**

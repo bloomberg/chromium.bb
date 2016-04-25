@@ -43,7 +43,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   const std::vector<api::passwords_private::PasswordUiEntry>*
   GetSavedPasswordsList() const override;
   void SendPasswordExceptionsList() override;
-  const std::vector<std::string>* GetPasswordExceptionsList() const override;
+  const std::vector<api::passwords_private::ExceptionPair>*
+  GetPasswordExceptionsList() const override;
   void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) override;
   void RemovePasswordException(const std::string& exception_url) override;
@@ -98,7 +99,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
   std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
-  std::vector<std::string> current_exceptions_;
+  std::vector<api::passwords_private::ExceptionPair> current_exceptions_;
 
   // Whether SetPasswordList and SetPasswordExceptionList have been called, and
   // whether this class has been initialized, meaning both have been called.

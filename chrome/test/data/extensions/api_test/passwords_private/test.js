@@ -41,7 +41,7 @@ var availableTests = [
       if (numCalls == 1) {
         numPasswordExceptions = passwordExceptionsList.length;
         chrome.passwordsPrivate.removePasswordException(
-            passwordExceptionsList[0]);
+            passwordExceptionsList[0].exceptionUrl);
       } else if (numCalls == 2) {
         chrome.test.assertEq(
             passwordExceptionsList.length, numPasswordExceptions - 1);
@@ -70,6 +70,15 @@ var availableTests = [
   function getSavedPasswordList() {
     var callback = function(list) {
       chrome.test.assertTrue(!!list);
+      chrome.test.assertTrue(list.length > 0);
+
+      for (var i = 0; i < list.length; ++i) {
+        var entry = list[i];
+        chrome.test.assertTrue(!!entry.loginPair);
+        chrome.test.assertTrue(!!entry.loginPair.originUrl);
+        chrome.test.assertTrue(!!entry.linkUrl);
+      }
+
       // Ensure that the callback is invoked.
       chrome.test.succeed();
     };
@@ -80,6 +89,14 @@ var availableTests = [
   function getPasswordExceptionList() {
     var callback = function(list) {
       chrome.test.assertTrue(!!list);
+      chrome.test.assertTrue(list.length > 0);
+
+      for (var i = 0; i < list.length; ++i) {
+        var exception = list[i];
+        chrome.test.assertTrue(!!exception.exceptionUrl);
+        chrome.test.assertTrue(!!exception.linkUrl);
+      }
+
       // Ensure that the callback is invoked.
       chrome.test.succeed();
     };

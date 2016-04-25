@@ -19,6 +19,9 @@ PasswordManager.PasswordUiEntry;
 /** @typedef {chrome.passwordsPrivate.LoginPair} */
 PasswordManager.LoginPair;
 
+/** @typedef {chrome.passwordsPrivate.ExceptionPair} */
+PasswordManager.ExceptionPair;
+
 /** @typedef {chrome.passwordsPrivate.PlaintextPasswordEventParameters} */
 PasswordManager.PlaintextPasswordEvent;
 
@@ -38,7 +41,7 @@ PasswordManager.prototype = {
 
   /**
    * Request the list of password exceptions and observe future changes.
-   * @param {function(!Array<!string>):void} callback
+   * @param {function(!Array<!PasswordManager.ExceptionPair>):void} callback
    */
   setExceptionListChangedCallback: assertNotReached,
 
@@ -147,7 +150,7 @@ Polymer({
 
     /**
      * An array of sites to display.
-     * @type {!Array<!string>}
+     * @type {!Array<!PasswordManager.ExceptionPair>}
      */
     passwordExceptions: {
       type: Array,

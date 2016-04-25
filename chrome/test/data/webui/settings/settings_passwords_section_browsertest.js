@@ -46,7 +46,21 @@ SettingsPasswordSectionBrowserTest.prototype = {
   createPasswordItem_: function(url, username, passwordLength) {
     return {
       loginPair: {originUrl: url, username: username},
+      linkUrl: 'http://' + url + '/login',
       numCharactersInPassword: passwordLength
+    };
+  },
+
+  /**
+   * Creates a single item for the list of password exceptions.
+   * @param {string} url
+   * @return {chrome.passwordsPrivate.ExceptionPair}
+   * @private
+   */
+  createExceptionItem_: function(url) {
+    return {
+      exceptionUrl: url,
+      linkUrl: 'http://' + url + '/login',
     };
   },
 
@@ -54,7 +68,8 @@ SettingsPasswordSectionBrowserTest.prototype = {
    * Helper method that validates a that elements in the password list match
    * the expected data.
    * @param {!Array<!Element>} nodes The nodes that will be checked.
-   * @param {!Array<!Object>} passwordList The expected data.
+   * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList The
+   *     expected data.
    * @private
    */
   validatePasswordList: function(nodes, passwordList) {
@@ -64,6 +79,8 @@ SettingsPasswordSectionBrowserTest.prototype = {
       var passwordInfo = passwordList[index];
       assertEquals(passwordInfo.loginPair.originUrl,
                    node.querySelector('#originUrl').textContent);
+      assertEquals(passwordInfo.linkUrl,
+                   node.querySelector('#originUrl').href);
       assertEquals(passwordInfo.loginPair.username,
                    node.querySelector('#username').textContent);
       assertEquals(passwordInfo.numCharactersInPassword,
@@ -75,7 +92,8 @@ SettingsPasswordSectionBrowserTest.prototype = {
    * Helper method that validates a that elements in the exception list match
    * the expected data.
    * @param {!Array<!Element>} nodes The nodes that will be checked.
-   * @param {!Array<!Object>} exceptionList The expected data.
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList The
+   *     expected data.
    * @private
    */
   validateExceptionList_: function(nodes, exceptionList) {
@@ -83,7 +101,10 @@ SettingsPasswordSectionBrowserTest.prototype = {
     for (var index = 0; index < exceptionList.length; ++index) {
       var node = nodes[index];
       var exception = exceptionList[index];
-      assertEquals(exception, node.querySelector('#exception').textContent);
+      assertEquals(exception.exceptionUrl,
+                   node.querySelector('#exception').textContent);
+      assertEquals(exception.linkUrl,
+                   node.querySelector('#exception').href);
     }
   },
 
@@ -102,7 +123,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
   /**
    * Helper method used to create a password section for the given lists.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
-   * @param {!Array<!string>} exceptionList
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
    * @return {!Object}
    * @private
    */
@@ -138,6 +159,19 @@ SettingsPasswordSectionBrowserTest.prototype = {
   listContainsUrl(passwordList, url) {
     for (var i = 0; i < passwordList.length; ++i) {
       if (passwordList[i].loginPair.originUrl == url)
+        return true;
+    }
+    return false;
+  },
+
+  /**
+   * Helper method used to test for a url in a list of passwords.
+   * @param {!Array<!chrome.passwordsPrivate.ExceptionPair>} exceptionList
+   * @param {!string} url The URL that is being searched for.
+   */
+  exceptionsListContainsUrl(exceptionList, url) {
+    for (var i = 0; i < exceptionList.length; ++i) {
+      if (exceptionList[i].exceptionUrl == url)
         return true;
     }
     return false;
@@ -261,12 +295,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     test('verifyPasswordExceptions', function() {
       var exceptionList = [
-        'docs.google.com',
-        'mail.com',
-        'google.com',
-        'inbox.google.com',
-        'maps.google.com',
-        'plus.google.com',
+        self.createExceptionItem_('docs.google.com'),
+        self.createExceptionItem_('mail.com'),
+        self.createExceptionItem_('google.com'),
+        self.createExceptionItem_('inbox.google.com'),
+        self.createExceptionItem_('maps.google.com'),
+        self.createExceptionItem_('plus.google.com'),
       ];
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
@@ -284,12 +318,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // Test verifies that removing an exception will update the elements.
     test('verifyPasswordExceptionRemove', function() {
       var exceptionList = [
-        'docs.google.com',
-        'mail.com',
-        'google.com',
-        'inbox.google.com',
-        'maps.google.com',
-        'plus.google.com',
+        self.createExceptionItem_('docs.google.com'),
+        self.createExceptionItem_('mail.com'),
+        self.createExceptionItem_('google.com'),
+        self.createExceptionItem_('inbox.google.com'),
+        self.createExceptionItem_('maps.google.com'),
+        self.createExceptionItem_('plus.google.com'),
       ];
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
@@ -300,8 +334,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       // Simulate 'mail.com' being removed from the list.
       passwordsSection.splice('passwordExceptions', 1, 1);
-      assertEquals(-1, passwordsSection.passwordExceptions.indexOf('mail.com'));
-      assertEquals(-1, exceptionList.indexOf('mail.com'));
+      assertFalse(self.exceptionsListContainsUrl(
+            passwordsSection.passwordExceptions, 'mail.com'));
+      assertFalse(self.exceptionsListContainsUrl(exceptionList, 'mail.com'));
       self.flushPasswordSection_(passwordsSection);
 
       self.validateExceptionList_(
@@ -313,12 +348,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // event. Does not actually remove any exceptions.
     test('verifyPasswordExceptionRemoveButton', function(done) {
       var exceptionList = [
-        'docs.google.com',
-        'mail.com',
-        'google.com',
-        'inbox.google.com',
-        'maps.google.com',
-        'plus.google.com',
+        self.createExceptionItem_('docs.google.com'),
+        self.createExceptionItem_('mail.com'),
+        self.createExceptionItem_('google.com'),
+        self.createExceptionItem_('inbox.google.com'),
+        self.createExceptionItem_('maps.google.com'),
+        self.createExceptionItem_('plus.google.com'),
       ];
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
@@ -340,7 +375,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
                                         function(event) {
         // Verify that the event matches the expected value.
         assertTrue(index < exceptionList.length);
-        assertEquals(exceptionList[index], event.detail);
+        assertEquals(exceptionList[index].exceptionUrl, event.detail);
 
         if (++index < exceptionList.length)
           clickRemoveButton();  // Click 'remove' on all passwords, one by one.

@@ -38,6 +38,15 @@ chrome.passwordsPrivate.PasswordUiEntry;
 
 /**
  * @typedef {{
+ *   exceptionUrl: string,
+ *   linkUrl: string
+ * }}
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#type-ExceptionPair
+ */
+chrome.passwordsPrivate.ExceptionPair;
+
+/**
+ * @typedef {{
  *   loginPair: !chrome.passwordsPrivate.LoginPair,
  *   plaintextPassword: string
  * }}
@@ -85,8 +94,8 @@ chrome.passwordsPrivate.getSavedPasswordList = function(callback) {};
 
 /**
  * Returns the list of password exceptions.
- * @param {function(!Array<string>):void} callback Called with the list of
- *     password exceptions.
+ * @param {function(!Array<!chrome.passwordsPrivate.ExceptionPair>):void}
+ *     callback Called with the list of password exceptions.
  * @see https://developer.chrome.com/extensions/passwordsPrivate#method-getPasswordExceptionList
  */
 chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};

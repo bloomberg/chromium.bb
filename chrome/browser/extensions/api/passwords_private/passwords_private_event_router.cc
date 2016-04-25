@@ -49,7 +49,7 @@ void PasswordsPrivateEventRouter::SendSavedPasswordListToListeners() {
 }
 
 void PasswordsPrivateEventRouter::OnPasswordExceptionsListChanged(
-      const std::vector<std::string>& exceptions) {
+    const std::vector<api::passwords_private::ExceptionPair>& exceptions) {
   cached_password_exception_parameters_ =
       api::passwords_private::OnPasswordExceptionsListChanged::Create(
           exceptions);
