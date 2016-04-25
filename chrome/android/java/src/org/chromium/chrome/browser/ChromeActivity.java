@@ -133,6 +133,7 @@ import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -171,6 +172,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     /** Delay in ms after first page load finishes before we initiate deferred startup actions. */
     private static final int DEFERRED_STARTUP_DELAY_MS = 1000;
+
+    private static final int RECORD_MULTI_WINDOW_SCREEN_WIDTH_DELAY_MS = 5000;
 
     /**
      * Timeout in ms for reading PartnerBrowserCustomizations provider.
@@ -219,6 +222,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
+
+    private int mScreenWidthDp;
+    private Runnable mRecordMultiWindowModeScreenWidthRunnable;
 
     private AssistStatusHandler mAssistStatusHandler;
 
@@ -572,6 +578,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
         }
         mCompositorViewHolder.resetFlags();
+
+        // postDeferredStartupIfNeeded() is called in TabModelSelectorTabObsever#onLoadStopped(),
+        // #onPageLoadFinished() and #onCrash(). If we are not actively loading a tab (e.g.
+        // in Android N multi-instance, which is created by re-parenting an existing tab),
+        // ensure onDeferredStartup() gets called by calling postDeferredStartupIfNeeded() here.
+        if (!getActivityTab().isLoading()) {
+            postDeferredStartupIfNeeded();
+        }
     }
 
     @Override
@@ -712,6 +726,21 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
         }
         recordKeyboardLocaleUma();
+
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode(this)) {
+            onDeferredStartupForMultiWindowMode();
+        }
+    }
+
+    /**
+     * Actions that may be run at some point after startup for Android N multi-window mode. Should
+     * be called from #onDeferredStartup() if the activity is in multi-window mode.
+     */
+    protected void onDeferredStartupForMultiWindowMode() {
+        // If the Activity was launched in multi-window mode, record a user action and the screen
+        // width.
+        recordMultiWindowModeChangedUserAction(true);
+        recordMultiWindowModeScreenWidth();
     }
 
     @Override
@@ -742,6 +771,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // been re-started after closing due to the last tab being closed when homepage is enabled.
         // See crbug.com/541546.
         checkAccessibility();
+
+        mScreenWidthDp = getResources().getConfiguration().screenWidthDp;
     }
 
     @Override
@@ -1297,6 +1328,31 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onConfigurationChanged(Configuration newConfig) {
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onConfigurationChanged(newConfig);
+
+        if (newConfig.screenWidthDp != mScreenWidthDp) {
+            mScreenWidthDp = newConfig.screenWidthDp;
+            final Activity activity = this;
+
+            if (mRecordMultiWindowModeScreenWidthRunnable != null) {
+                mHandler.removeCallbacks(mRecordMultiWindowModeScreenWidthRunnable);
+            }
+
+            // When exiting Android N multi-window mode, onConfigurationChanged() gets called before
+            // isInMultiWindowMode() returns false. Delay to avoid recording width when exiting
+            // multi-window mode. This also ensures that we don't record intermediate widths seen
+            // only for a brief period of time.
+            mRecordMultiWindowModeScreenWidthRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mRecordMultiWindowModeScreenWidthRunnable = null;
+                    if (MultiWindowUtils.getInstance().isInMultiWindowMode(activity)) {
+                        recordMultiWindowModeScreenWidth();
+                    }
+                }
+            };
+            mHandler.postDelayed(mRecordMultiWindowModeScreenWidthRunnable,
+                    RECORD_MULTI_WINDOW_SCREEN_WIDTH_DELAY_MS);
+        }
     }
 
     /**
@@ -1305,6 +1361,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @param isInMultiWindowMode True if the activity is in multi-window mode.
      */
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        recordMultiWindowModeChangedUserAction(isInMultiWindowMode);
+
         if (!isInMultiWindowMode
                 && ApplicationStatus.getStateForActivity(this) == ActivityState.RESUMED) {
             // Start a new UMA session when exiting multi-window mode if the activity is currently
@@ -1315,6 +1373,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             markSessionResume();
             FeatureUtilities.setIsInMultiWindowMode(
                     MultiWindowUtils.getInstance().isInMultiWindowMode(this));
+        }
+    }
+
+    /**
+     * Records user actions associated with entering and exiting Android N multi-window mode
+     * @param isInMultiWindowMode True if the activity is in multi-window mode.
+     */
+    protected void recordMultiWindowModeChangedUserAction(boolean isInMultiWindowMode) {
+        if (isInMultiWindowMode) {
+            RecordUserAction.record("Android.MultiWindowMode.Enter");
+        } else {
+            RecordUserAction.record("Android.MultiWindowMode.Exit");
         }
     }
 
@@ -1701,5 +1771,23 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private void setLowEndTheme() {
         if (getThemeId() == R.style.MainTheme_LowEnd) setTheme(R.style.MainTheme_LowEnd);
+    }
+
+    /**
+     * Records UMA histograms for the current screen width. Should only be called when the activity
+     * is in Android N multi-window mode.
+     */
+    protected void recordMultiWindowModeScreenWidth() {
+        if (!DeviceFormFactor.isTablet(this)) return;
+
+        RecordHistogram.recordBooleanHistogram(
+                "Android.MultiWindowMode.IsTabletScreenWidthBelow600",
+                mScreenWidthDp < DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP);
+
+        if (mScreenWidthDp < DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
+            RecordHistogram.recordLinearCountHistogram(
+                    "Android.MultiWindowMode.TabletScreenWidth", mScreenWidthDp, 1,
+                    DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP, 50);
+        }
     }
 }

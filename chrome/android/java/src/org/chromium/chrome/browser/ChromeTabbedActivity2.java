@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.base.metrics.RecordUserAction;
+
 /**
  * A subclass of ChromeTabbedActivity, used in Android N multi-window mode.
  *
@@ -15,4 +17,21 @@ package org.chromium.chrome.browser;
  * named activities makes it possible to bring either existing activity to the foreground on the
  * desired side of the screen when firing an intent.
  */
-public class ChromeTabbedActivity2 extends ChromeTabbedActivity {}
+public class ChromeTabbedActivity2 extends ChromeTabbedActivity {
+    @Override
+    protected void onDeferredStartupForMultiWindowMode() {
+        RecordUserAction.record("Android.MultiWindowMode.MultiInstance.Enter");
+        recordMultiWindowModeScreenWidth();
+    }
+
+    @Override
+    protected void recordMultiWindowModeChangedUserAction(boolean isInMultiWindowMode) {
+        // Record separate user actions for entering/exiting multi-window mode to avoid recording
+        // the same action twice when two instances are running.
+        if (isInMultiWindowMode) {
+            RecordUserAction.record("Android.MultiWindowMode.Enter-SecondInstance");
+        } else {
+            RecordUserAction.record("Android.MultiWindowMode.Exit-SecondInstance");
+        }
+    }
+}

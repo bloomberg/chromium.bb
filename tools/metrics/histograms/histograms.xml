@@ -386,6 +386,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.MultiWindowMode.IsTabletScreenWidthBelow600"
+    enum="Boolean">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records whether the screen width is below 600dp when the activity is in
+    Android N multi-window mode. True if the screen width is less than 600dp and
+    false if is greater than or equal to 600dp.
+  </summary>
+</histogram>
+
+<histogram name="Android.MultiWindowMode.TabletScreenWidth" units="dp">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records the screen width in dp when the activity is in Android N
+    multi-window mode and the width is below 600dp.
+  </summary>
+</histogram>
+
 <histogram name="Android.NTP.Impression" enum="NTPImpressionType">
   <owner>finkm@chromium.org</owner>
   <summary>
