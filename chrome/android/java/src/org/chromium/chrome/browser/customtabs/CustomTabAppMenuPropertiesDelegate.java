@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.HashMap;
@@ -48,6 +49,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
         mMenuEntries = menuEntries;
         mShowShare = showShare;
         mShowBookmark = showBookmark;
+
         mDefaultBrowserFetcher = new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -83,9 +85,13 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             mReloadMenuItem.setIcon(R.drawable.btn_reload_stop);
             loadingStateChanged(currentTab.isLoading());
 
-            MenuItem shareItem = menu.findItem(R.id.share_menu_id);
+            MenuItem shareItem = menu.findItem(R.id.share_row_menu_id);
             shareItem.setVisible(mShowShare);
             shareItem.setEnabled(mShowShare);
+            if (mShowShare) {
+                ShareHelper.configureDirectShareMenuItem(
+                        mActivity, menu.findItem(R.id.direct_share_menu_id));
+            }
 
             if (mShowBookmark) {
                 MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
