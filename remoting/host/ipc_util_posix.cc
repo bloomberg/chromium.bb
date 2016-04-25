@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -45,10 +46,14 @@ bool CreateConnectedIpcChannel(
 
   // Wrap the pipe into an IPC channel.
   base::FileDescriptor fd(pipe_fds[0], false);
-  IPC::ChannelHandle handle(socket_name, fd);
-  *server_out = IPC::ChannelProxy::Create(IPC::ChannelHandle(socket_name, fd),
-                                          IPC::Channel::MODE_SERVER, listener,
-                                          io_task_runner.get());
+  server_out->reset(new IPC::ChannelProxy(listener, io_task_runner));
+  if (IPC::AttachmentBroker::GetGlobal()) {
+    IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
+        server_out->get(), io_task_runner);
+  }
+  (*server_out)
+      ->Init(IPC::ChannelHandle(socket_name, fd), IPC::Channel::MODE_SERVER,
+             true);
 
   *client_out = base::File(pipe_fds[1]);
   return true;

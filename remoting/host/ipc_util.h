@@ -34,6 +34,7 @@ namespace remoting {
 // on the caller's thread while using |io_task_runner| to send and receive
 // messages in the background. The client end is returned as a pipe handle
 // (inheritable on Windows).
+// The channel is registered with the global AttachmentBroker.
 bool CreateConnectedIpcChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     IPC::Listener* listener,

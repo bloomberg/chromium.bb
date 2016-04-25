@@ -13,6 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
+#include "ipc/attachment_broker.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -215,6 +216,10 @@ void DesktopSessionAgent::OnChannelError() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Make sure the channel is closed.
+  if (IPC::AttachmentBroker::GetGlobal()) {
+    IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+        network_channel_.get());
+  }
   network_channel_.reset();
   desktop_pipe_.Close();
 
@@ -413,6 +418,10 @@ void DesktopSessionAgent::Stop() {
   delegate_.reset();
 
   // Make sure the channel is closed.
+  if (IPC::AttachmentBroker::GetGlobal()) {
+    IPC::AttachmentBroker::GetGlobal()->DeregisterCommunicationChannel(
+        network_channel_.get());
+  }
   network_channel_.reset();
 
   if (started_) {

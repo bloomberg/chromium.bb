@@ -52,5 +52,13 @@ bool Channel::IsSendThreadSafe() const {
   return false;
 }
 
+void Channel::OnSetAttachmentBrokerEndpoint() {
+  CHECK(!did_start_connect_);
+}
+
+void Channel::WillConnect() {
+  did_start_connect_ = true;
+}
+
 }  // namespace IPC
 

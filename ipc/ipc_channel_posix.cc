@@ -341,6 +341,8 @@ bool ChannelPosix::CreatePipe(
 }
 
 bool ChannelPosix::Connect() {
+  WillConnect();
+
   if (!server_listen_pipe_.is_valid() && !pipe_.is_valid()) {
     DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;

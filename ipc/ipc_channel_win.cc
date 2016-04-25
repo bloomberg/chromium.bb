@@ -392,6 +392,8 @@ bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,
 }
 
 bool ChannelWin::Connect() {
+  WillConnect();
+
   DLOG_IF(WARNING, thread_check_.get()) << "Connect called more than once";
 
   if (!thread_check_.get())

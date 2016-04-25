@@ -105,6 +105,10 @@ class IPCTestBase : public base::MultiProcessTest {
 
   IPC::Channel* channel() { return channel_.get(); }
   IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
+  void set_channel_proxy(std::unique_ptr<IPC::ChannelProxy> proxy) {
+    DCHECK(!channel_proxy_);
+    channel_proxy_.swap(proxy);
+  }
 
   const base::Process& client_process() const { return client_process_; }
   scoped_refptr<base::SequencedTaskRunner> task_runner();

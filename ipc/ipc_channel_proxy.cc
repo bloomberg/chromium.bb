@@ -490,6 +490,7 @@ base::ProcessId ChannelProxy::GetPeerPID() const {
 }
 
 void ChannelProxy::OnSetAttachmentBrokerEndpoint() {
+  CHECK(!did_init_);
   context()->set_attachment_broker_endpoint(is_attachment_broker_endpoint());
 }
 

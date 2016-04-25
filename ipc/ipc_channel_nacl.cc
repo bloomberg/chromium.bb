@@ -155,6 +155,8 @@ base::ProcessId ChannelNacl::GetSelfPID() const {
 }
 
 bool ChannelNacl::Connect() {
+  WillConnect();
+
   if (pipe_ == -1) {
     DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;

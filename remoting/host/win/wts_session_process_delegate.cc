@@ -382,9 +382,12 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   }
 
   // Wrap the pipe into an IPC channel.
-  std::unique_ptr<IPC::ChannelProxy> channel(IPC::ChannelProxy::Create(
-      IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER, this,
-      io_task_runner_));
+  std::unique_ptr<IPC::ChannelProxy> channel(
+      new IPC::ChannelProxy(this, io_task_runner_));
+  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
+      channel.get(), io_task_runner_);
+  channel->Init(IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER,
+                true);
 
   // Pass the name of the IPC channel to use.
   command_line.AppendSwitchNative(kDaemonPipeSwitchName,
@@ -423,9 +426,6 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
 
   channel_ = std::move(channel);
   pipe_ = std::move(pipe);
-
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get(), io_task_runner_);
 
   // Report success if the worker process is lauched directly. Otherwise, PID of
   // the client connected to the pipe will be used later. See

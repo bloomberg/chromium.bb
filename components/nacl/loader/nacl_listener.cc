@@ -225,10 +225,10 @@ void NaClListener::Listen() {
                                       &shutdown_event_);
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
-  channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
   IPC::AttachmentBroker* global = IPC::AttachmentBroker::GetGlobal();
   if (global && !global->IsPrivilegedBroker())
     global->RegisterBrokerCommunicationChannel(channel_.get());
+  channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
   main_loop_ = base::MessageLoop::current();
   main_loop_->Run();
 }

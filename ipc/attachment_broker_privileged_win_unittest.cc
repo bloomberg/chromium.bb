@@ -265,11 +265,21 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   }
 
   void CommonSetUp() {
+    PreConnectSetUp();
+    PostConnectSetUp();
+  }
+
+  // All of setup before the channel is connected.
+  void PreConnectSetUp() {
     if (!broker_.get())
       set_broker(new IPC::AttachmentBrokerUnprivilegedWin);
     broker_->AddObserver(&observer_, task_runner());
     CreateChannel(&proxy_listener_);
     broker_->RegisterBrokerCommunicationChannel(channel());
+  }
+
+  // All of setup including the connection and everything after.
+  void PostConnectSetUp() {
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
 
@@ -390,10 +400,12 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, SendHandleToSelf) {
   Init("SendHandleToSelf");
 
   set_broker(new MockBroker);
-  CommonSetUp();
+
+  PreConnectSetUp();
   // Technically, the channel is an endpoint, but we need the proxy listener to
   // receive the messages so that it can quit the message loop.
   channel()->SetAttachmentBrokerEndpoint(false);
+  PostConnectSetUp();
   get_proxy_listener()->set_listener(get_broker());
 
   HANDLE h = CreateTempFile();

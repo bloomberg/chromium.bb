@@ -472,10 +472,10 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  ConnectChannel(options.use_mojo_channel, options.in_process_ipc_token);
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
+  ConnectChannel(options.use_mojo_channel, options.in_process_ipc_token);
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =

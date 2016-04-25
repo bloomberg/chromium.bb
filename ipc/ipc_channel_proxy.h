@@ -97,6 +97,11 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
+  // Constructs a ChannelProxy without initializing it.
+  ChannelProxy(
+      Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+
   ~ChannelProxy() override;
 
   // Initializes the channel proxy. Only call this once to initialize a channel
@@ -159,9 +164,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   // to the internal state.
   ChannelProxy(Context* context);
 
-  ChannelProxy(
-      Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,

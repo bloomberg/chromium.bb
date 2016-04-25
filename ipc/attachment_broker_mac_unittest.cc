@@ -423,6 +423,12 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
 
   // Setup shared between tests.
   void CommonSetUp(const char* name) {
+    PreConnectSetUp(name);
+    PostConnectSetUp();
+  }
+
+  // All of setup before the channel is connected.
+  void PreConnectSetUp(const char* name) {
     Init(name);
     MachPreForkSetUp();
 
@@ -432,6 +438,10 @@ class IPCAttachmentBrokerMacTest : public IPCTestBase {
     broker_->AddObserver(&observer_, task_runner());
     CreateChannel(&proxy_listener_);
     broker_->RegisterBrokerCommunicationChannel(channel());
+  }
+
+  // All of setup including the connection and everything after.
+  void PostConnectSetUp() {
     ASSERT_TRUE(ConnectChannel());
     ASSERT_TRUE(StartClient());
 
@@ -871,11 +881,11 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendPosixFDAndMachPort) {
 // process sending an attachment to another unprivileged process.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelf) {
   SetBroker(new MockBroker);
-  CommonSetUp("SendSharedMemoryHandleToSelf");
-
+  PreConnectSetUp("SendSharedMemoryHandleToSelf");
   // Technically, the channel is an endpoint, but we need the proxy listener to
   // receive the messages so that it can quit the message loop.
   channel()->SetAttachmentBrokerEndpoint(false);
+  PostConnectSetUp();
   get_proxy_listener()->set_listener(get_broker());
 
   {
@@ -940,8 +950,12 @@ TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   thread->StartWithOptions(options);
 
-  CreateChannelProxy(get_proxy_listener(), thread->task_runner().get());
+  set_channel_proxy(std::unique_ptr<IPC::ChannelProxy>(new IPC::ChannelProxy(
+      get_proxy_listener(), thread->task_runner().get())));
   get_broker()->RegisterBrokerCommunicationChannel(channel_proxy());
+  channel_proxy()->Init(
+      CreateChannelFactory(GetTestChannelHandle(), thread->task_runner().get()),
+      true);
 
   ASSERT_TRUE(StartClient());
 
@@ -1060,11 +1074,11 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ShareReadOnlyToProcess) {
 // not have the task port for the parent process.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelfDelayedPort) {
   SetBroker(new MockBroker);
-  CommonSetUp("SendSharedMemoryHandleToSelfDelayedPort");
-
+  PreConnectSetUp("SendSharedMemoryHandleToSelfDelayedPort");
   // Technically, the channel is an endpoint, but we need the proxy listener to
   // receive the messages so that it can quit the message loop.
   channel()->SetAttachmentBrokerEndpoint(false);
+  PostConnectSetUp();
   get_proxy_listener()->set_listener(get_broker());
 
   {

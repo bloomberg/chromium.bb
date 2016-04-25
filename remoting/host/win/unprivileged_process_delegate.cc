@@ -337,8 +337,6 @@ void UnprivilegedProcessDelegate::LaunchProcess(
   }
 
   channel_ = std::move(server);
-  IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get(), io_task_runner_);
 
   ReportProcessLaunched(std::move(worker_process));
 }

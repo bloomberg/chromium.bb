@@ -473,15 +473,13 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 #endif  // defined(OS_POSIX)
 
   // Connect to the daemon process.
-  daemon_channel_ = IPC::ChannelProxy::Create(channel_handle,
-                                              IPC::Channel::MODE_CLIENT,
-                                              this,
-                                              context_->network_task_runner());
-
+  daemon_channel_.reset(
+      new IPC::ChannelProxy(this, context_->network_task_runner()));
   IPC::AttachmentBrokerUnprivileged::CreateBrokerIfNeeded();
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(daemon_channel_.get());
+  daemon_channel_->Init(channel_handle, IPC::Channel::MODE_CLIENT, true);
 
 #else  // !defined(REMOTING_MULTI_PROCESS)
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {

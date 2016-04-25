@@ -32,7 +32,7 @@ class IPC_EXPORT Endpoint : public Sender {
 
   // A callback that indicates that is_attachment_broker_endpoint() has been
   // changed.
-  virtual void OnSetAttachmentBrokerEndpoint(){};
+  virtual void OnSetAttachmentBrokerEndpoint() = 0;
 
   // Whether this channel is used as an endpoint for sending and receiving
   // brokerable attachment messages to/from the broker process.
