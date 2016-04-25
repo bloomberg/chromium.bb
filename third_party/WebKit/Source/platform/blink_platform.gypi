@@ -1093,6 +1093,7 @@
       'v8_inspector/public/V8DebuggerClient.h',
       'v8_inspector/public/V8HeapProfilerAgent.h',
       'v8_inspector/public/V8InspectorSession.h',
+      'v8_inspector/public/V8InspectorSessionClient.h',
       'v8_inspector/public/V8ProfilerAgent.h',
       'v8_inspector/public/V8RuntimeAgent.h',
       'v8_inspector/public/V8StackTrace.h',

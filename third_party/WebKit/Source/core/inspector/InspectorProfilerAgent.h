@@ -68,11 +68,6 @@ public:
     void start(ErrorString*) override;
     void stop(ErrorString*, OwnPtr<protocol::Profiler::CPUProfile>*) override;
 
-    void willProcessTask();
-    void didProcessTask();
-    void willEnterNestedRunLoop();
-    void didLeaveNestedRunLoop();
-
 private:
     InspectorProfilerAgent(V8ProfilerAgent*, Client*);
 

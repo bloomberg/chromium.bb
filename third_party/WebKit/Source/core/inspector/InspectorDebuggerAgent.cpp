@@ -60,14 +60,12 @@ DEFINE_TRACE(InspectorDebuggerAgent)
 void InspectorDebuggerAgent::enable(ErrorString* errorString)
 {
     m_v8DebuggerAgent->enable(errorString);
-    m_instrumentingAgents->setInspectorDebuggerAgent(this);
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
 }
 
 void InspectorDebuggerAgent::disable(ErrorString* errorString)
 {
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
-    m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
     m_v8DebuggerAgent->disable(errorString);
 }
 
@@ -255,43 +253,6 @@ void InspectorDebuggerAgent::setBlackboxedRanges(
     PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
 {
     m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, std::move(inPositions));
-}
-
-void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
-{
-    OwnPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
-    directive->setString("directiveText", directiveText);
-    m_v8DebuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
-}
-
-void InspectorDebuggerAgent::asyncTaskScheduled(const String& taskName, void* task)
-{
-    m_v8DebuggerAgent->asyncTaskScheduled(taskName, task, false);
-}
-
-void InspectorDebuggerAgent::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
-{
-    m_v8DebuggerAgent->asyncTaskScheduled(operationName, task, recurring);
-}
-
-void InspectorDebuggerAgent::asyncTaskCanceled(void* task)
-{
-    m_v8DebuggerAgent->asyncTaskCanceled(task);
-}
-
-void InspectorDebuggerAgent::allAsyncTasksCanceled()
-{
-    m_v8DebuggerAgent->allAsyncTasksCanceled();
-}
-
-void InspectorDebuggerAgent::asyncTaskStarted(void* task)
-{
-    m_v8DebuggerAgent->asyncTaskStarted(task);
-}
-
-void InspectorDebuggerAgent::asyncTaskFinished(void* task)
-{
-    m_v8DebuggerAgent->asyncTaskFinished(task);
 }
 
 // InspectorBaseAgent overrides.

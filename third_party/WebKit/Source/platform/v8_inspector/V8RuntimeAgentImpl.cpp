@@ -365,6 +365,9 @@ void V8RuntimeAgentImpl::restore()
 
 void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 {
+    if (m_enabled)
+        return;
+    m_session->changeInstrumentationCounter(+1);
     m_enabled = true;
     v8::HandleScope handles(m_debugger->isolate());
     m_session->reportAllContexts(this);
@@ -377,6 +380,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     m_enabled = false;
     m_session->discardInjectedScripts();
     reset();
+    m_session->changeInstrumentationCounter(-1);
 }
 
 void V8RuntimeAgentImpl::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback)

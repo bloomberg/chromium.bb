@@ -76,17 +76,6 @@ public:
     void setBlackboxPatterns(ErrorString*, PassOwnPtr<protocol::Array<String16>> patterns) override;
     void setBlackboxedRanges(ErrorString*, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> positions) override;
 
-    // Called by InspectorInstrumentation.
-    void scriptExecutionBlockedByCSP(const String& directiveText);
-
-    // Async stack implementation.
-    void asyncTaskScheduled(const String& taskName, void* task);
-    void asyncTaskScheduled(const String& taskName, void* task, bool recurring);
-    void asyncTaskCanceled(void* task);
-    void allAsyncTasksCanceled();
-    void asyncTaskStarted(void* task);
-    void asyncTaskFinished(void* task);
-
     // InspectorBaseAgent overrides.
     void init(InstrumentingAgents*, protocol::Frontend*, protocol::Dispatcher*, protocol::DictionaryValue*) override;
     void dispose() override;

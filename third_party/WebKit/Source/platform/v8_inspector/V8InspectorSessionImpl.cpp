@@ -26,8 +26,10 @@ PassOwnPtr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl
 V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int contextGroupId)
     : m_contextGroupId(contextGroupId)
     , m_debugger(debugger)
+    , m_client(nullptr)
     , m_injectedScriptHost(InjectedScriptHost::create(debugger, this))
     , m_customObjectFormatterEnabled(false)
+    , m_instrumentationCounter(0)
     , m_runtimeAgent(adoptPtr(new V8RuntimeAgentImpl(this)))
     , m_debuggerAgent(adoptPtr(new V8DebuggerAgentImpl(this)))
     , m_heapProfilerAgent(adoptPtr(new V8HeapProfilerAgentImpl(this)))
@@ -60,6 +62,11 @@ V8ProfilerAgent* V8InspectorSessionImpl::profilerAgent()
 V8RuntimeAgent* V8InspectorSessionImpl::runtimeAgent()
 {
     return m_runtimeAgent.get();
+}
+
+void V8InspectorSessionImpl::setClient(V8InspectorSessionClient* client)
+{
+    m_client = client;
 }
 
 void V8InspectorSessionImpl::reset()
@@ -161,6 +168,16 @@ void V8InspectorSessionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
         return;
     for (auto& idContext : *contexts)
         agent->reportExecutionContextCreated(idContext.second);
+}
+
+void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
+{
+    ASSERT(m_instrumentationCounter + delta >= 0);
+    if (!m_instrumentationCounter && m_client)
+        m_client->startInstrumenting();
+    m_instrumentationCounter += delta;
+    if (!m_instrumentationCounter && m_client)
+        m_client->stopInstrumenting();
 }
 
 } // namespace blink

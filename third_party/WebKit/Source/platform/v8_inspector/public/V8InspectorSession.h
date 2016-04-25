@@ -12,12 +12,15 @@ namespace blink {
 
 class V8DebuggerAgent;
 class V8HeapProfilerAgent;
+class V8InspectorSessionClient;
 class V8ProfilerAgent;
 class V8RuntimeAgent;
 
 class PLATFORM_EXPORT V8InspectorSession {
 public:
     virtual ~V8InspectorSession() { }
+
+    virtual void setClient(V8InspectorSessionClient*) = 0;
 
     virtual V8DebuggerAgent* debuggerAgent() = 0;
     virtual V8HeapProfilerAgent* heapProfilerAgent() = 0;

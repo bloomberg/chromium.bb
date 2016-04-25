@@ -10,6 +10,7 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
+#include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -33,6 +34,7 @@ public:
     ~V8InspectorSessionImpl();
 
     V8DebuggerImpl* debugger() const { return m_debugger; }
+    V8InspectorSessionClient* client() const { return m_client; }
     V8DebuggerAgentImpl* debuggerAgentImpl() { return m_debuggerAgent.get(); }
     V8ProfilerAgentImpl* profilerAgentImpl() { return m_profilerAgent.get(); }
     V8RuntimeAgentImpl* runtimeAgentImpl() { return m_runtimeAgent.get(); }
@@ -46,8 +48,10 @@ public:
     void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
     void releaseObjectGroup(const String16& objectGroup);
     void setCustomObjectFormatterEnabled(bool);
+    void changeInstrumentationCounter(int delta);
 
     // V8InspectorSession implementation.
+    void setClient(V8InspectorSessionClient*) override;
     V8DebuggerAgent* debuggerAgent() override;
     V8HeapProfilerAgent* heapProfilerAgent() override;
     V8ProfilerAgent* profilerAgent() override;
@@ -61,8 +65,10 @@ private:
 
     int m_contextGroupId;
     V8DebuggerImpl* m_debugger;
+    V8InspectorSessionClient* m_client;
     OwnPtr<InjectedScriptHost> m_injectedScriptHost;
     bool m_customObjectFormatterEnabled;
+    int m_instrumentationCounter;
 
     OwnPtr<V8RuntimeAgentImpl> m_runtimeAgent;
     OwnPtr<V8DebuggerAgentImpl> m_debuggerAgent;

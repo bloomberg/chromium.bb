@@ -16,7 +16,6 @@ class Isolate;
 
 namespace blink {
 
-class V8DebuggerImpl;
 class V8InspectorSessionImpl;
 
 class V8ProfilerAgentImpl : public V8ProfilerAgent {
@@ -52,7 +51,7 @@ private:
 
     bool isRecording() const;
 
-    V8DebuggerImpl* m_debugger;
+    V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Profiler* m_frontend;

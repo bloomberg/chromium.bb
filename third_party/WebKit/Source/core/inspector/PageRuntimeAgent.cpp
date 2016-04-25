@@ -63,12 +63,6 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
 {
     if (m_enabled)
         return;
-
-    m_instrumentingAgents->setPageRuntimeAgent(this);
-    if (m_inspectedFrames->root()->loader().stateMachine()->committedFirstRealDocumentLoad()) {
-        for (const LocalFrame* frame : *m_inspectedFrames)
-            frame->script().initializeMainWorld();
-    }
     InspectorRuntimeAgent::enable(errorString);
 }
 
@@ -77,12 +71,6 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
     if (!m_enabled)
         return;
     InspectorRuntimeAgent::disable(errorString);
-    m_instrumentingAgents->setPageRuntimeAgent(nullptr);
-}
-
-void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
-{
-    frame->script().initializeMainWorld();
 }
 
 } // namespace blink

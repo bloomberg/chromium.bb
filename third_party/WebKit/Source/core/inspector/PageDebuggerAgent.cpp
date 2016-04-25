@@ -79,12 +79,10 @@ void PageDebuggerAgent::enable(ErrorString* errorString)
         return;
     }
     InspectorDebuggerAgent::enable(errorString);
-    m_instrumentingAgents->setPageDebuggerAgent(this);
 }
 
 void PageDebuggerAgent::disable(ErrorString* errorString)
 {
-    m_instrumentingAgents->setPageDebuggerAgent(nullptr);
     m_compiledScriptURLs.clear();
     InspectorDebuggerAgent::disable(errorString);
 }
@@ -95,13 +93,5 @@ void PageDebuggerAgent::restore()
         InspectorDebuggerAgent::restore();
 }
 
-
-void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
-{
-    if (frame == m_inspectedFrames->root()) {
-        ErrorString error;
-        resume(&error);
-    }
-}
 
 } // namespace blink

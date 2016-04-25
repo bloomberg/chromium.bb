@@ -73,8 +73,8 @@ AsyncTask::AsyncTask(ExecutionContext* context, void* task, bool enabled)
     if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
         return;
     for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorDebuggerAgent())
-            session->instrumentingAgents()->inspectorDebuggerAgent()->asyncTaskStarted(m_task);
+        if (session->instrumentingAgents()->inspectorSession())
+            session->instrumentingAgents()->inspectorSession()->asyncTaskStarted(m_task);
     }
 }
 
@@ -83,8 +83,8 @@ AsyncTask::~AsyncTask()
     if (!m_instrumentingSessions || m_instrumentingSessions->isEmpty())
         return;
     for (InspectorSession* session : *m_instrumentingSessions) {
-        if (session->instrumentingAgents()->inspectorDebuggerAgent())
-            session->instrumentingAgents()->inspectorDebuggerAgent()->asyncTaskFinished(m_task);
+        if (session->instrumentingAgents()->inspectorSession())
+            session->instrumentingAgents()->inspectorSession()->asyncTaskFinished(m_task);
     }
 }
 

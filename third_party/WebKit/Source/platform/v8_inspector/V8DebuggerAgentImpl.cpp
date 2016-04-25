@@ -204,6 +204,7 @@ void V8DebuggerAgentImpl::enable()
 
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
+    m_session->changeInstrumentationCounter(+1);
 }
 
 bool V8DebuggerAgentImpl::enabled()
@@ -225,6 +226,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
 {
     if (!enabled())
         return;
+    m_session->changeInstrumentationCounter(-1);
 
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, protocol::DictionaryValue::create());
     m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);

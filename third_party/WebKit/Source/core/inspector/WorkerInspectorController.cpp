@@ -74,7 +74,7 @@ void WorkerInspectorController::connectFrontend()
         return;
 
     // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
-    m_session = new InspectorSession(this, 0, true /* autoFlush */);
+    m_session = new InspectorSession(this, nullptr, 0, true /* autoFlush */);
     m_v8Session = m_debugger->debugger()->connect(m_debugger->contextGroupId());
 
     m_session->append(WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope, this));
@@ -87,7 +87,7 @@ void WorkerInspectorController::connectFrontend()
     m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgent));
 
     m_instrumentingSessions->add(m_session);
-    m_session->attach(nullptr);
+    m_session->attach(m_v8Session.get(), nullptr);
 }
 
 void WorkerInspectorController::disconnectFrontend()

@@ -51,8 +51,6 @@ public:
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
 
-    void didClearDocumentOfWindowObject(LocalFrame*);
-
 private:
     PageRuntimeAgent(Client*, V8RuntimeAgent*, InspectedFrames*);
 

@@ -55,8 +55,6 @@ public:
     void disable(ErrorString*) final;
     void restore() final;
 
-    void didStartProvisionalLoad(LocalFrame*);
-
 private:
     PageDebuggerAgent(V8DebuggerAgent*, InspectedFrames*);
 

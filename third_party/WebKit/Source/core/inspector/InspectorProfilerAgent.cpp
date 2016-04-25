@@ -31,7 +31,6 @@
 
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/frame/UseCounter.h"
 #include "platform/v8_inspector/public/V8ProfilerAgent.h"
 
 namespace blink {
@@ -83,12 +82,10 @@ void InspectorProfilerAgent::enable(ErrorString* errorString)
 {
     m_v8ProfilerAgent->enable(errorString);
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, true);
-    m_instrumentingAgents->setInspectorProfilerAgent(this);
 }
 
 void InspectorProfilerAgent::disable(ErrorString* errorString)
 {
-    m_instrumentingAgents->setInspectorProfilerAgent(nullptr);
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
     m_v8ProfilerAgent->disable(errorString);
 }
@@ -110,26 +107,6 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, OwnPtr<protocol::Pro
     if (m_client)
         m_client->profilingStopped();
     m_v8ProfilerAgent->stop(errorString, profile);
-}
-
-void InspectorProfilerAgent::willProcessTask()
-{
-    m_v8ProfilerAgent->idleFinished();
-}
-
-void InspectorProfilerAgent::didProcessTask()
-{
-    m_v8ProfilerAgent->idleStarted();
-}
-
-void InspectorProfilerAgent::willEnterNestedRunLoop()
-{
-    m_v8ProfilerAgent->idleStarted();
-}
-
-void InspectorProfilerAgent::didLeaveNestedRunLoop()
-{
-    m_v8ProfilerAgent->idleFinished();
 }
 
 DEFINE_TRACE(InspectorProfilerAgent)

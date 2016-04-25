@@ -71,7 +71,7 @@ class WorkerInspectorProxy;
 class XMLHttpRequest;
 
     // We should call PageDebuggerAgent method first otherwise this method resets script cache and removes scripts executed by other agents.
-    [PageRuntime, Page, Animation]
+    [V8, Page, Animation]
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
     [DOMDebugger]
@@ -206,13 +206,13 @@ class XMLHttpRequest;
     [Resource]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 
-    [Debugger]
+    [V8]
     void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
 
     [Resource]
     void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
 
-    [PageDebugger]
+    [V8]
     void didStartProvisionalLoad([Keep] LocalFrame*);
 
     [DOM, Page]
@@ -257,17 +257,23 @@ class XMLHttpRequest;
     [Worker, PageConsole]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
-    [Profiler]
-    void willProcessTask(WorkerGlobalScope* context);
+    [V8]
+    void willProcessTask(WorkerGlobalScope*);
 
-    [Profiler]
-    void didProcessTask(WorkerGlobalScope* context);
+    [V8]
+    void didProcessTask(WorkerGlobalScope*);
 
-    [Profiler]
-    void willEnterNestedRunLoop(WorkerGlobalScope* context);
+    [V8]
+    void willProcessTask(LocalFrame*);
 
-    [Profiler]
-    void didLeaveNestedRunLoop(WorkerGlobalScope* context);
+    [V8]
+    void didProcessTask(LocalFrame*);
+
+    [V8]
+    void willEnterNestedRunLoop(WorkerGlobalScope*);
+
+    [V8]
+    void didLeaveNestedRunLoop(WorkerGlobalScope*);
 
     [Resource]
     void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
@@ -305,16 +311,16 @@ class XMLHttpRequest;
     [DOM]
     void pseudoElementDestroyed([Keep] PseudoElement*);
 
-    [Debugger]
+    [V8]
     void asyncTaskScheduled(ExecutionContext*, const String& name, void*);
 
-    [Debugger]
+    [V8]
     void asyncTaskScheduled(ExecutionContext*, const String& name, void*, bool recurring);
 
-    [Debugger]
+    [V8]
     void asyncTaskCanceled(ExecutionContext*, void*);
 
-    [Debugger]
+    [V8]
     void allAsyncTasksCanceled(ExecutionContext*);
 
     [Animation]

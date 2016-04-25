@@ -377,7 +377,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
 
 void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId)
 {
-    m_session = new InspectorSession(this, sessionId, false /* autoFlush */);
+    m_session = new InspectorSession(this, m_inspectedFrames.get(), sessionId, false /* autoFlush */);
 
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
@@ -488,7 +488,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
     if (attached())
         return;
     initializeSession(sessionId, hostId);
-    m_session->attach(nullptr);
+    m_session->attach(m_v8Session.get(), nullptr);
 }
 
 void WebDevToolsAgentImpl::reattach(const WebString& hostId, int sessionId, const WebString& savedState)
@@ -497,7 +497,7 @@ void WebDevToolsAgentImpl::reattach(const WebString& hostId, int sessionId, cons
         return;
     initializeSession(sessionId, hostId);
     String state = savedState;
-    m_session->attach(&state);
+    m_session->attach(m_v8Session.get(), &state);
 }
 
 void WebDevToolsAgentImpl::detach()
@@ -654,20 +654,14 @@ void WebDevToolsAgentImpl::willProcessTask()
 {
     if (!attached())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (InspectorProfilerAgent* profilerAgent = session->instrumentingAgents()->inspectorProfilerAgent())
-            profilerAgent->willProcessTask();
-    }
+    InspectorInstrumentation::willProcessTask(m_inspectedFrames->root());
 }
 
 void WebDevToolsAgentImpl::didProcessTask()
 {
     if (!attached())
         return;
-    for (InspectorSession* session : *m_instrumentingSessions) {
-        if (InspectorProfilerAgent* profilerAgent = session->instrumentingAgents()->inspectorProfilerAgent())
-            profilerAgent->didProcessTask();
-    }
+    InspectorInstrumentation::didProcessTask(m_inspectedFrames->root());
     flushPendingProtocolNotifications();
 }
 

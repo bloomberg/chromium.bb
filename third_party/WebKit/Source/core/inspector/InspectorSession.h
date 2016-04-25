@@ -11,6 +11,7 @@
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Values.h"
+#include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -18,13 +19,17 @@
 
 namespace blink {
 
+class ExecutionContext;
+class InspectedFrames;
 class InspectorAgent;
 class InstrumentingAgents;
 class LocalFrame;
+class V8InspectorSession;
 
 class CORE_EXPORT InspectorSession
     : public GarbageCollectedFinalized<InspectorSession>
-    , WTF_NON_EXPORTED_BASE(public protocol::FrontendChannel) {
+    , WTF_NON_EXPORTED_BASE(public protocol::FrontendChannel)
+    , public V8InspectorSessionClient {
     WTF_MAKE_NONCOPYABLE(InspectorSession);
 public:
     class Client {
@@ -33,16 +38,31 @@ public:
         virtual ~Client() {}
     };
 
-    InspectorSession(Client*, int sessionId, bool autoFlush);
+    InspectorSession(Client*, InspectedFrames*, int sessionId, bool autoFlush);
     int sessionId() { return m_sessionId; }
     InstrumentingAgents* instrumentingAgents() { return m_instrumentingAgents.get(); }
 
     void append(InspectorAgent*);
-    void attach(const String* savedState);
+    void attach(V8InspectorSession*, const String* savedState);
     void detach();
     void didCommitLoadForLocalFrame(LocalFrame*);
     void dispatchProtocolMessage(const String& message);
     void flushPendingProtocolNotifications();
+
+    // Instrumentation methods marked by [V8]
+    void scriptExecutionBlockedByCSP(const String& directiveText);
+    void asyncTaskScheduled(const String& taskName, void* task);
+    void asyncTaskScheduled(const String& taskName, void* task, bool recurring);
+    void asyncTaskCanceled(void* task);
+    void allAsyncTasksCanceled();
+    void asyncTaskStarted(void* task);
+    void asyncTaskFinished(void* task);
+    void didStartProvisionalLoad(LocalFrame*);
+    void didClearDocumentOfWindowObject(LocalFrame*);
+    void willProcessTask();
+    void didProcessTask();
+    void willEnterNestedRunLoop();
+    void didLeaveNestedRunLoop();
 
     DECLARE_TRACE();
 
@@ -52,10 +72,21 @@ private:
     void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override;
     void flush();
 
+    // V8InspectorSessionClient implementation.
+    void startInstrumenting() override;
+    void stopInstrumenting() override;
+
+    void forceContextsInAllFrames();
+#if ENABLE(ASSERT)
+    bool isInstrumenting();
+#endif
+
     Client* m_client;
+    V8InspectorSession* m_v8Session;
     int m_sessionId;
     bool m_autoFlush;
     bool m_attached;
+    Member<InspectedFrames> m_inspectedFrames;
     Member<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<protocol::Frontend> m_inspectorFrontend;
     OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;

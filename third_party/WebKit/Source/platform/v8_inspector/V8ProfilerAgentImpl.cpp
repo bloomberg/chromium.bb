@@ -121,8 +121,8 @@ public:
 };
 
 V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session)
-    : m_debugger(session->debugger())
-    , m_isolate(m_debugger->isolate())
+    : m_session(session)
+    , m_isolate(m_session->debugger()->isolate())
     , m_state(nullptr)
     , m_frontend(nullptr)
     , m_enabled(false)
@@ -136,16 +136,20 @@ V8ProfilerAgentImpl::~V8ProfilerAgentImpl()
 
 void V8ProfilerAgentImpl::consoleProfile(const String16& title)
 {
-    ASSERT(m_frontend && m_enabled);
+    if (!m_enabled)
+        return;
+    ASSERT(m_frontend);
     String16 id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     startProfiling(id);
-    m_frontend->consoleProfileStarted(id, currentDebugLocation(m_debugger), title);
+    m_frontend->consoleProfileStarted(id, currentDebugLocation(m_session->debugger()), title);
 }
 
 void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
 {
-    ASSERT(m_frontend && m_enabled);
+    if (!m_enabled)
+        return;
+    ASSERT(m_frontend);
     String16 id;
     String16 resolvedTitle;
     // Take last started profile if no title was passed.
@@ -170,17 +174,23 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
     OwnPtr<protocol::Profiler::CPUProfile> profile = stopProfiling(id, true);
     if (!profile)
         return;
-    OwnPtr<protocol::Debugger::Location> location = currentDebugLocation(m_debugger);
+    OwnPtr<protocol::Debugger::Location> location = currentDebugLocation(m_session->debugger());
     m_frontend->consoleProfileFinished(id, location.release(), profile.release(), resolvedTitle);
 }
 
 void V8ProfilerAgentImpl::enable(ErrorString*)
 {
+    if (m_enabled)
+        return;
     m_enabled = true;
+    m_session->changeInstrumentationCounter(+1);
 }
 
 void V8ProfilerAgentImpl::disable(ErrorString* errorString)
 {
+    if (!m_enabled)
+        return;
+    m_session->changeInstrumentationCounter(-1);
     for (size_t i = m_startedProfiles.size(); i > 0; --i)
         stopProfiling(m_startedProfiles[i - 1].m_id, false);
     m_startedProfiles.clear();
@@ -208,7 +218,9 @@ void V8ProfilerAgentImpl::clearFrontend()
 
 void V8ProfilerAgentImpl::restore()
 {
+    ASSERT(!m_enabled);
     m_enabled = true;
+    m_session->changeInstrumentationCounter(+1);
     int interval = 0;
     m_state->getNumber(ProfilerAgentState::samplingInterval, &interval);
     if (interval)
