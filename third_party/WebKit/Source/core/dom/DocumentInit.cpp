@@ -28,7 +28,7 @@
 #include "core/dom/DocumentInit.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -148,7 +148,7 @@ KURL DocumentInit::parentBaseURL() const
     return m_parent->baseURL();
 }
 
-DocumentInit& DocumentInit::withRegistrationContext(CustomElementRegistrationContext* registrationContext)
+DocumentInit& DocumentInit::withRegistrationContext(V0CustomElementRegistrationContext* registrationContext)
 {
     DCHECK(!m_createNewRegistrationContext);
     DCHECK(!m_registrationContext);
@@ -164,13 +164,13 @@ DocumentInit& DocumentInit::withNewRegistrationContext()
     return *this;
 }
 
-CustomElementRegistrationContext* DocumentInit::registrationContext(Document* document) const
+V0CustomElementRegistrationContext* DocumentInit::registrationContext(Document* document) const
 {
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())
         return nullptr;
 
     if (m_createNewRegistrationContext)
-        return CustomElementRegistrationContext::create();
+        return V0CustomElementRegistrationContext::create();
 
     return m_registrationContext.get();
 }

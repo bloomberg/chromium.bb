@@ -45,7 +45,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/V0CustomElement.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -82,8 +82,8 @@ class CompositorPendingAnimations;
 class Comment;
 class ConsoleMessage;
 class ContextFeatures;
-class CustomElementMicrotaskRunQueue;
-class CustomElementRegistrationContext;
+class V0CustomElementMicrotaskRunQueue;
+class V0CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMWindow;
 class DocumentFragment;
@@ -941,9 +941,9 @@ public:
 
     Element* createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     Element* createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
-    ScriptValue registerElement(ScriptState*, const AtomicString& name, const ElementRegistrationOptions&, ExceptionState&, CustomElement::NameSet validNames = CustomElement::StandardNames);
-    CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
-    CustomElementMicrotaskRunQueue* customElementMicrotaskRunQueue();
+    ScriptValue registerElement(ScriptState*, const AtomicString& name, const ElementRegistrationOptions&, ExceptionState&, V0CustomElement::NameSet validNames = V0CustomElement::StandardNames);
+    V0CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
+    V0CustomElementMicrotaskRunQueue* customElementMicrotaskRunQueue();
 
     void setImportsController(HTMLImportsController*);
     HTMLImportsController* importsController() const { return m_importsController; }
@@ -1344,8 +1344,8 @@ private:
     Member<MainThreadTaskRunner> m_taskRunner;
     Member<TextAutosizer> m_textAutosizer;
 
-    Member<CustomElementRegistrationContext> m_registrationContext;
-    Member<CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;
+    Member<V0CustomElementRegistrationContext> m_registrationContext;
+    Member<V0CustomElementMicrotaskRunQueue> m_customElementMicrotaskRunQueue;
 
     void elementDataCacheClearTimerFired(Timer<Document>*);
     Timer<Document> m_elementDataCacheClearTimer;

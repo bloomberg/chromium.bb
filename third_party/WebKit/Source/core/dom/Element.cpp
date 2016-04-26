@@ -73,8 +73,8 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
-#include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/V0CustomElement.h"
+#include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"
@@ -1196,7 +1196,7 @@ const QualifiedName& Element::subResourceAttributeName() const
 inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == isAttr)
-        CustomElementRegistrationContext::setTypeExtension(this, newValue);
+        V0CustomElementRegistrationContext::setTypeExtension(this, newValue);
     attributeChanged(name, nullAtom, newValue, reason);
 }
 
@@ -1418,7 +1418,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     }
 
     if (isUpgradedCustomElement() && inShadowIncludingDocument())
-        CustomElement::didAttach(this, document());
+        V0CustomElement::didAttach(this, document());
 
     TreeScope& scope = insertionPoint->treeScope();
     if (scope != treeScope())
@@ -1479,7 +1479,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
             document().accessSVGExtensions().removeElementFromPendingResources(this);
 
         if (isUpgradedCustomElement())
-            CustomElement::didDetach(this, insertionPoint->document());
+            V0CustomElement::didDetach(this, insertionPoint->document());
 
         if (needsStyleInvalidation())
             document().styleEngine().styleInvalidator().clearInvalidation(*this);
@@ -1884,7 +1884,7 @@ void Element::setNeedsCompositingUpdate()
     layoutObject->layer()->updateSelfPaintingLayer();
 }
 
-void Element::setCustomElementDefinition(CustomElementDefinition* definition)
+void Element::setCustomElementDefinition(V0CustomElementDefinition* definition)
 {
     if (!hasRareData() && !definition)
         return;
@@ -1892,7 +1892,7 @@ void Element::setCustomElementDefinition(CustomElementDefinition* definition)
     ensureElementRareData().setCustomElementDefinition(definition);
 }
 
-CustomElementDefinition* Element::customElementDefinition() const
+V0CustomElementDefinition* Element::customElementDefinition() const
 {
     if (hasRareData())
         return elementRareData()->customElementDefinition();
@@ -3176,7 +3176,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
     if (oldValue != newValue) {
         document().styleEngine().attributeChangedForElement(name, *this);
         if (isUpgradedCustomElement())
-            CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
+            V0CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }
 
     if (MutationObserverInterestGroup* recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, name))

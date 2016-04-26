@@ -30,14 +30,14 @@
 
 #include "public/web/WebCustomElement.h"
 
-#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/V0CustomElement.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
 
 void WebCustomElement::addEmbedderCustomElementName(const WebString& name)
 {
-    CustomElement::addEmbedderCustomElementName(name);
+    V0CustomElement::addEmbedderCustomElementName(name);
 }
 
 } // namespace blink

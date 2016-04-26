@@ -49,7 +49,7 @@ class CSSStyleDeclaration;
 class ClientRect;
 class ClientRectList;
 class CompositorMutation;
-class CustomElementDefinition;
+class V0CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
 class Dictionary;
@@ -509,8 +509,8 @@ public:
     void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
     virtual void buildPendingResource() { }
 
-    void setCustomElementDefinition(CustomElementDefinition*);
-    CustomElementDefinition* customElementDefinition() const;
+    void setCustomElementDefinition(V0CustomElementDefinition*);
+    V0CustomElementDefinition* customElementDefinition() const;
 
     bool containsFullScreenElement() const { return hasElementFlag(ContainsFullScreenElement); }
     void setContainsFullScreenElement(bool);

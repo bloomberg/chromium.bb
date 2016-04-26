@@ -298,7 +298,7 @@ v8::Local<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString&
     V8ElementRegistrationOptions::toImpl(isolate, options, registrationOptions, exceptionState);
     if (exceptionState.hadException())
         return v8::Local<v8::Value>();
-    ScriptValue constructor = document->registerElement(ScriptState::current(isolate), name, registrationOptions, exceptionState, CustomElement::EmbedderNames);
+    ScriptValue constructor = document->registerElement(ScriptState::current(isolate), name, registrationOptions, exceptionState, V0CustomElement::EmbedderNames);
     ec = exceptionState.code();
     if (exceptionState.hadException())
         return v8::Local<v8::Value>();

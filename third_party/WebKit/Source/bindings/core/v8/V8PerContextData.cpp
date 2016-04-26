@@ -145,7 +145,7 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* 
     return prototypeValue.As<v8::Object>();
 }
 
-void V8PerContextData::addCustomElementBinding(PassOwnPtr<CustomElementBinding> binding)
+void V8PerContextData::addCustomElementBinding(PassOwnPtr<V0CustomElementBinding> binding)
 {
     m_customElementBindings.append(std::move(binding));
 }

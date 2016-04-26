@@ -27,7 +27,6 @@
 
 #include "core/dom/Document.h"
 
-#include "bindings/core/v8/CustomElementConstructorBuilder.h"
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -36,6 +35,7 @@
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/V0CustomElementConstructorBuilder.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/WindowProxy.h"
@@ -105,8 +105,8 @@
 #include "core/dom/TreeWalker.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/XMLDocument.h"
-#include "core/dom/custom/CustomElementMicrotaskRunQueue.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/V0CustomElementMicrotaskRunQueue.h"
+#include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -645,7 +645,7 @@ Element* Document::createElement(const AtomicString& localName, const AtomicStri
 
     Element* element;
 
-    if (CustomElement::isValidName(localName) && registrationContext()) {
+    if (V0CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
     } else {
         element = createElement(localName, exceptionState);
@@ -654,7 +654,7 @@ Element* Document::createElement(const AtomicString& localName, const AtomicStri
     }
 
     if (!typeExtension.isEmpty())
-        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
+        V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
 
     return element;
 }
@@ -690,18 +690,18 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
         return nullptr;
 
     Element* element;
-    if (CustomElement::isValidName(qName.localName()) && registrationContext())
+    if (V0CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);
     else
         element = createElement(qName, false);
 
     if (!typeExtension.isEmpty())
-        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
+        V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
 
     return element;
 }
 
-ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
+ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, V0CustomElement::NameSet validNames)
 {
     OriginsUsingFeatures::countMainWorldOnly(scriptState, *this, OriginsUsingFeatures::Feature::DocumentRegisterElement);
 
@@ -710,15 +710,15 @@ ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicStri
         return ScriptValue();
     }
 
-    CustomElementConstructorBuilder constructorBuilder(scriptState, options);
+    V0CustomElementConstructorBuilder constructorBuilder(scriptState, options);
     registrationContext()->registerElement(this, &constructorBuilder, name, validNames, exceptionState);
     return constructorBuilder.bindingsReturnValue();
 }
 
-CustomElementMicrotaskRunQueue* Document::customElementMicrotaskRunQueue()
+V0CustomElementMicrotaskRunQueue* Document::customElementMicrotaskRunQueue()
 {
     if (!m_customElementMicrotaskRunQueue)
-        m_customElementMicrotaskRunQueue = CustomElementMicrotaskRunQueue::create();
+        m_customElementMicrotaskRunQueue = V0CustomElementMicrotaskRunQueue::create();
     return m_customElementMicrotaskRunQueue.get();
 }
 

@@ -31,8 +31,8 @@
 #ifndef V8PerContextData_h
 #define V8PerContextData_h
 
-#include "bindings/core/v8/CustomElementBinding.h"
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/V0CustomElementBinding.h"
 #include "bindings/core/v8/V8GlobalValueMap.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
@@ -84,7 +84,7 @@ public:
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
-    void addCustomElementBinding(PassOwnPtr<CustomElementBinding>);
+    void addCustomElementBinding(PassOwnPtr<V0CustomElementBinding>);
 
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
     void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
@@ -113,8 +113,8 @@ private:
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
-    typedef Vector<OwnPtr<CustomElementBinding>> CustomElementBindingList;
-    CustomElementBindingList m_customElementBindings;
+    typedef Vector<OwnPtr<V0CustomElementBinding>> V0CustomElementBindingList;
+    V0CustomElementBindingList m_customElementBindings;
 
     // This is owned by a static hash map in V8DOMActivityLogger.
     V8DOMActivityLogger* m_activityLogger;

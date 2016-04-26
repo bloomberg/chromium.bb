@@ -31,7 +31,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/WeakPtr.h"
@@ -72,9 +72,9 @@ public:
     LocalFrame* ownerFrame() const;
     Settings* settings() const;
 
-    DocumentInit& withRegistrationContext(CustomElementRegistrationContext*);
+    DocumentInit& withRegistrationContext(V0CustomElementRegistrationContext*);
     DocumentInit& withNewRegistrationContext();
-    CustomElementRegistrationContext* registrationContext(Document*) const;
+    V0CustomElementRegistrationContext* registrationContext(Document*) const;
     Document* contextDocument() const;
 
     static DocumentInit fromContext(Document* contextDocument, const KURL& = KURL());
@@ -88,7 +88,7 @@ private:
     Member<Document> m_owner;
     Member<Document> m_contextDocument;
     Member<HTMLImportsController> m_importsController;
-    Member<CustomElementRegistrationContext> m_registrationContext;
+    Member<V0CustomElementRegistrationContext> m_registrationContext;
     bool m_createNewRegistrationContext;
 
     // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For example,

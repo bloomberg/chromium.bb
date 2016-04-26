@@ -33,7 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
+#include "core/dom/custom/V0CustomElementSyncMicrotaskQueue.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -46,7 +46,7 @@ namespace blink {
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : m_controller(controller)
     , m_state(StateLoading)
-    , m_microtaskQueue(CustomElementSyncMicrotaskQueue::create())
+    , m_microtaskQueue(V0CustomElementSyncMicrotaskQueue::create())
 {
 }
 
@@ -211,7 +211,7 @@ bool HTMLImportLoader::shouldBlockScriptExecution() const
     return firstImport()->state().shouldBlockScriptExecution();
 }
 
-CustomElementSyncMicrotaskQueue* HTMLImportLoader::microtaskQueue() const
+V0CustomElementSyncMicrotaskQueue* HTMLImportLoader::microtaskQueue() const
 {
     return m_microtaskQueue;
 }

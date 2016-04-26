@@ -22,7 +22,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {% endif %}
     {% if method.is_custom_element_callbacks %}
-    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+    V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {# Security checks #}
     {% if method.is_check_security_for_receiver %}

@@ -33,9 +33,9 @@
 #include "core/css/StyleSheetList.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementMicrotaskImportStep.h"
-#include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
+#include "core/dom/custom/V0CustomElement.h"
+#include "core/dom/custom/V0CustomElementMicrotaskImportStep.h"
+#include "core/dom/custom/V0CustomElementSyncMicrotaskQueue.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -85,7 +85,7 @@ void HTMLImportChild::didFinishLoading()
     stateWillChange();
     if (document() && document()->styleSheets()->length() > 0)
         UseCounter::count(root()->document(), UseCounter::HTMLImportsHasStyleSheets);
-    CustomElement::didFinishLoadingImport(*(root()->document()));
+    V0CustomElement::didFinishLoadingImport(*(root()->document()));
 }
 
 void HTMLImportChild::didFinishUpgradingCustomElements()
@@ -142,7 +142,7 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
     ASSERT(!m_customElementMicrotaskStep);
 
     if (!hasFinishedLoading() && !formsCycle()) {
-        m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
+        m_customElementMicrotaskStep = V0CustomElement::didCreateImport(this);
     }
 }
 

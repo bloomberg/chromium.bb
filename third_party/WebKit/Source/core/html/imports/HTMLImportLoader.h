@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class CustomElementSyncMicrotaskQueue;
+class V0CustomElementSyncMicrotaskQueue;
 class Document;
 class DocumentWriter;
 class HTMLImportChild;
@@ -89,7 +89,7 @@ public:
     // Called by Document::didRemoveAllPendingStylesheet.
     void didRemoveAllPendingStylesheet();
 
-    CustomElementSyncMicrotaskQueue* microtaskQueue() const;
+    V0CustomElementSyncMicrotaskQueue* microtaskQueue() const;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -121,7 +121,7 @@ private:
     State m_state;
     Member<Document> m_document;
     Member<DocumentWriter> m_writer;
-    Member<CustomElementSyncMicrotaskQueue> m_microtaskQueue;
+    Member<V0CustomElementSyncMicrotaskQueue> m_microtaskQueue;
 };
 
 } // namespace blink

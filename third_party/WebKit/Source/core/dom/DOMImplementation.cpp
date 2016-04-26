@@ -36,7 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/dom/XMLDocument.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDocument.h"

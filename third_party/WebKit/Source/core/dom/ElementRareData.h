@@ -31,7 +31,7 @@
 #include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/V0CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "core/style/StyleInheritedData.h"
@@ -122,8 +122,8 @@ public:
     void decrementCompositorProxiedProperties(uint32_t properties);
     CompositorProxiedPropertySet* proxiedPropertyCounts() const { return m_proxiedProperties.get(); }
 
-    void setCustomElementDefinition(CustomElementDefinition* definition) { m_customElementDefinition = definition; }
-    CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
+    void setCustomElementDefinition(V0CustomElementDefinition* definition) { m_customElementDefinition = definition; }
+    V0CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
     AttrNodeList& ensureAttrNodeList();
     AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
@@ -161,7 +161,7 @@ private:
     Member<NodeIntersectionObserverData> m_intersectionObserverData;
 
     RefPtr<ComputedStyle> m_computedStyle;
-    Member<CustomElementDefinition> m_customElementDefinition;
+    Member<V0CustomElementDefinition> m_customElementDefinition;
 
     Member<PseudoElement> m_generatedBefore;
     Member<PseudoElement> m_generatedAfter;

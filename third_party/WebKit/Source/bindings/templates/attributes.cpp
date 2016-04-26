@@ -325,7 +325,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
           (attribute.is_reflect and
            not(attribute.idl_type == 'DOMString' and is_node)) %}
     {# Skip on compact node DOMString getters #}
-    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+    V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_call_with_execution_context or
           attribute.is_setter_call_with_execution_context %}
@@ -379,7 +379,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     }
     {% endif %}
     {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
-    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
+    V0CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.has_custom_setter %}
     {{v8_class}}::{{attribute.name}}AttributeSetterCustom(v8Value, info);
