@@ -318,9 +318,10 @@ test(() => {
 
 test(() => {
     var res = new Response('hello');
-    res.body.getReader();
+    const reader = res.body.getReader();
     assert_false(res.bodyUsed);
     assert_throws({name: 'TypeError'}, () => res.clone());
+    reader.releaseLock();
   }, 'Locked => clone');
 
 // Tests for MIME types.

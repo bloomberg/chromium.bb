@@ -260,32 +260,37 @@ promise_test(t => {
 
 promise_test(t => {
     var res = new Response('');
-    res.body.getReader();
+    const reader = res.body.getReader();
     return res.arrayBuffer().then(unreached_fulfillment(t), e => {
+        // TODO(yhirano): Use finally when it's available. Ditto below.
+        reader.releaseLock();
         assert_equals(e.name, 'TypeError');
       });
   }, 'Locked => arrayBuffer');
 
 promise_test(t => {
     var res = new Response('');
-    res.body.getReader();
+    const reader = res.body.getReader();
     return res.blob().then(unreached_fulfillment(t), e => {
+        reader.releaseLock();
         assert_equals(e.name, 'TypeError');
       });
   }, 'Locked => blob');
 
 promise_test(t => {
     var res = new Response('');
-    res.body.getReader();
+    const reader = res.body.getReader();
     return res.json().then(unreached_fulfillment(t), e => {
+        reader.releaseLock();
         assert_equals(e.name, 'TypeError');
       });
   }, 'Locked => json');
 
 promise_test(t => {
     var res = new Response('');
-    res.body.getReader();
+    const reader = res.body.getReader();
     return res.text().then(unreached_fulfillment(t), e => {
+        reader.releaseLock();
         assert_equals(e.name, 'TypeError');
       });
   }, 'Locked => text');
