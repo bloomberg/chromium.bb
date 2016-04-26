@@ -24,6 +24,7 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
 #include "components/web_resource/promo_resource_service.h"
 #include "ios/chrome/browser/application_context_impl.h"
@@ -58,6 +59,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   rappor::RapporService::RegisterPrefs(registry);
   ssl_config::SSLConfigServiceManager::RegisterPrefs(registry);
+  update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
 

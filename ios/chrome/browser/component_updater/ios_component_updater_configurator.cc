@@ -154,7 +154,7 @@ IOSConfigurator::GetSequencedTaskRunner() const {
 }
 
 PrefService* IOSConfigurator::GetPrefService() const {
-  return nullptr;
+  return GetApplicationContext()->GetLocalState();
 }
 
 }  // namespace
