@@ -36,7 +36,7 @@ def ConvertProto(opts):
   binary_pb_str = pb.SerializeToString()
 
   # Write it to disk
-  open(opts.outfile, 'w').write(binary_pb_str)
+  open(opts.outfile, 'wb').write(binary_pb_str)
 
 
 def main():

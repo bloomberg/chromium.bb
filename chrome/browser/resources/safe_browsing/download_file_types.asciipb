@@ -10,7 +10,7 @@
 version_id: 1
 sampled_ping_probability: 0.0
 default_file_type {
-  uma_value: 19
+  uma_value: 18
   platform_settings {
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
@@ -22,7 +22,7 @@ default_file_type {
 #
 file_types {
   extension: "exe"
-  uma_value: 777
+  uma_value: 0
   platform_settings {
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: DISALLOW_AUTO_OPEN
@@ -31,7 +31,7 @@ file_types {
 }
 file_types {
   extension: "zip"
-  uma_value: 888
+  uma_value: 7
   is_archive: true
   platform_settings {
     danger_level: NOT_DANGEROUS

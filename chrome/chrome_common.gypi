@@ -216,6 +216,8 @@
       'common/safe_browsing/binary_feature_extractor_win.cc',
       'common/safe_browsing/download_protection_util.cc',
       'common/safe_browsing/download_protection_util.h',
+      'common/safe_browsing/file_type_policies.cc',
+      'common/safe_browsing/file_type_policies.h',
       'common/safe_browsing/ipc_protobuf_message_macros.h',
       'common/safe_browsing/ipc_protobuf_message_null_macros.h',
       'common/safe_browsing/mach_o_image_reader_mac.cc',
