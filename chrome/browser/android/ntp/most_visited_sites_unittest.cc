@@ -53,16 +53,16 @@ class MostVisitedSitesTest : public testing::Test {
              const std::vector<bool>& old_sites_is_personal,
              const std::vector<bool>& expected_sites_is_personal,
              const std::vector<TitleURL>& expected_sites) {
-    MostVisitedSites::SuggestionsVector personal_suggestions;
+    MostVisitedSites::SuggestionsPtrVector personal_suggestions;
     for (const TitleURL& site : personal_sites)
       personal_suggestions.push_back(MakeSuggestionFrom(site, true, false));
-    MostVisitedSites::SuggestionsVector whitelist_suggestions;
+    MostVisitedSites::SuggestionsPtrVector whitelist_suggestions;
     for (const TitleURL& site : whitelist_entry_points)
       whitelist_suggestions.push_back(MakeSuggestionFrom(site, false, true));
-    MostVisitedSites::SuggestionsVector popular_suggestions;
+    MostVisitedSites::SuggestionsPtrVector popular_suggestions;
     for (const TitleURL& site : popular_sites)
       popular_suggestions.push_back(MakeSuggestionFrom(site, false, false));
-    MostVisitedSites::SuggestionsVector result_suggestions =
+    MostVisitedSites::SuggestionsPtrVector result_suggestions =
         MostVisitedSites::MergeSuggestions(
             &personal_suggestions, &whitelist_suggestions, &popular_suggestions,
             old_sites_url, old_sites_is_personal);

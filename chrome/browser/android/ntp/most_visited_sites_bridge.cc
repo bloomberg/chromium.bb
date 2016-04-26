@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -40,19 +41,15 @@ void CallJavaWithBitmap(
 }  // namespace
 
 class MostVisitedSitesBridge::Observer
-    : public MostVisitedSitesObserver {
+    : public MostVisitedSites::Observer {
  public:
   Observer(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
   void OnMostVisitedURLsAvailable(
-      const std::vector<base::string16>& titles,
-      const std::vector<std::string>& urls,
-      const std::vector<std::string>& whitelist_icon_paths) override;
+      const MostVisitedSites::SuggestionsVector& suggestions) override;
 
   void OnPopularURLsAvailable(
-      const std::vector<std::string>& urls,
-      const std::vector<std::string>& favicon_urls,
-      const std::vector<std::string>& large_icon_urls) override;
+      const MostVisitedSites::PopularSitesVector& sites) override;
 
  private:
   ScopedJavaGlobalRef<jobject> observer_;
@@ -65,12 +62,18 @@ MostVisitedSitesBridge::Observer::Observer(
     : observer_(env, obj) {}
 
 void MostVisitedSitesBridge::Observer::OnMostVisitedURLsAvailable(
-    const std::vector<base::string16>& titles,
-    const std::vector<std::string>& urls,
-    const std::vector<std::string>& whitelist_icon_paths) {
+    const MostVisitedSites::SuggestionsVector& suggestions) {
   JNIEnv* env = AttachCurrentThread();
-  DCHECK_EQ(titles.size(), urls.size());
-  DCHECK_EQ(titles.size(), whitelist_icon_paths.size());
+  std::vector<base::string16> titles;
+  std::vector<std::string> urls;
+  std::vector<std::string> whitelist_icon_paths;
+  titles.reserve(suggestions.size());
+  urls.reserve(suggestions.size());
+  for (const auto& suggestion : suggestions) {
+    titles.push_back(suggestion.title);
+    urls.push_back(suggestion.url.spec());
+    whitelist_icon_paths.push_back(suggestion.whitelist_icon_path.value());
+  }
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj(),
@@ -78,10 +81,16 @@ void MostVisitedSitesBridge::Observer::OnMostVisitedURLsAvailable(
 }
 
 void MostVisitedSitesBridge::Observer::OnPopularURLsAvailable(
-    const std::vector<std::string>& urls,
-    const std::vector<std::string>& favicon_urls,
-    const std::vector<std::string>& large_icon_urls) {
+    const MostVisitedSites::PopularSitesVector& sites) {
   JNIEnv* env = AttachCurrentThread();
+  std::vector<std::string> urls;
+  std::vector<std::string> favicon_urls;
+  std::vector<std::string> large_icon_urls;
+  for (const auto& site : sites) {
+    urls.emplace_back(site.url.spec());
+    favicon_urls.emplace_back(site.favicon_url.spec());
+    large_icon_urls.emplace_back(site.large_icon_url.spec());
+  }
   Java_MostVisitedURLsObserver_onPopularURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, urls).obj(),
       ToJavaArrayOfStrings(env, favicon_urls).obj(),

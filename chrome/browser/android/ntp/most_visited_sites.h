@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -35,21 +36,6 @@ class PrefRegistrySyncable;
 class PopularSites;
 class Profile;
 
-// The observer to be notified when the list of most visited sites changes.
-class MostVisitedSitesObserver {
- public:
-  virtual ~MostVisitedSitesObserver() {}
-
-  virtual void OnMostVisitedURLsAvailable(
-      const std::vector<base::string16>& titles,
-      const std::vector<std::string>& urls,
-      const std::vector<std::string>& whitelist_icon_paths) = 0;
-  virtual void OnPopularURLsAvailable(
-      const std::vector<std::string>& urls,
-      const std::vector<std::string>& favicon_urls,
-      const std::vector<std::string>& large_icon_urls) = 0;
-};
-
 // Tracks the list of most visited sites and their thumbnails.
 //
 // Do not use, except from MostVisitedSitesBridge. The interface is in flux
@@ -60,13 +46,51 @@ class MostVisitedSitesObserver {
 class MostVisitedSites : public history::TopSitesObserver,
                          public SupervisedUserServiceObserver {
  public:
+  struct Suggestion;
+  using SuggestionsVector = std::vector<Suggestion>;
+  using PopularSitesVector = std::vector<PopularSites::Site>;
+
+  // The source of the Most Visited sites.
+  enum MostVisitedSource { TOP_SITES, SUGGESTIONS_SERVICE, POPULAR, WHITELIST };
+
+  // The observer to be notified when the list of most visited sites changes.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    virtual void OnMostVisitedURLsAvailable(
+        const SuggestionsVector& suggestions) = 0;
+    virtual void OnPopularURLsAvailable(const PopularSitesVector& sites) = 0;
+  };
+
+  struct Suggestion {
+    base::string16 title;
+    GURL url;
+    MostVisitedSource source;
+
+    // Only valid for source == WHITELIST (empty otherwise).
+    base::FilePath whitelist_icon_path;
+
+    // Only valid for source == SUGGESTIONS_SERVICE (-1 otherwise).
+    int provider_index;
+
+    Suggestion();
+    ~Suggestion();
+
+    Suggestion(Suggestion&&);
+    Suggestion& operator=(Suggestion&&);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Suggestion);
+  };
+
   explicit MostVisitedSites(Profile* profile);
 
   ~MostVisitedSites() override;
 
   // Does not take ownership of |observer|, which must outlive this object.
   void SetMostVisitedURLsObserver(
-      MostVisitedSitesObserver* observer, int num_sites);
+      Observer* observer, int num_sites);
 
   using ThumbnailCallback = base::Callback<
       void(bool /* is_local_thumbnail */, const SkBitmap* /* bitmap */)>;
@@ -83,31 +107,8 @@ class MostVisitedSites : public history::TopSitesObserver,
  private:
   friend class MostVisitedSitesTest;
 
-  // The source of the Most Visited sites.
-  enum MostVisitedSource { TOP_SITES, SUGGESTIONS_SERVICE, POPULAR, WHITELIST };
-
-  struct Suggestion {
-    base::string16 title;
-    GURL url;
-    MostVisitedSource source;
-
-    // Only valid for source == WHITELIST (empty otherwise).
-    base::FilePath whitelist_icon_path;
-
-    // Only valid for source == SUGGESTIONS_SERVICE (-1 otherwise).
-    int provider_index;
-
-    Suggestion();
-    ~Suggestion();
-
-    // Get the Histogram name associated with the source.
-    std::string GetSourceHistogramName() const;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Suggestion);
-  };
-
-  using SuggestionsVector = std::vector<std::unique_ptr<Suggestion>>;
+  // TODO(treib): use SuggestionsVector in internal functions. crbug.com/601734
+  using SuggestionsPtrVector = std::vector<std::unique_ptr<Suggestion>>;
 
   void QueryMostVisitedURLs();
 
@@ -128,25 +129,25 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // Takes the personal suggestions and creates whitelist entry point
   // suggestions if necessary.
-  SuggestionsVector CreateWhitelistEntryPointSuggestions(
-      const SuggestionsVector& personal_suggestions);
+  SuggestionsPtrVector CreateWhitelistEntryPointSuggestions(
+      const SuggestionsPtrVector& personal_suggestions);
 
   // Takes the personal and whitelist suggestions and creates popular
   // suggestions if necessary.
-  SuggestionsVector CreatePopularSitesSuggestions(
-      const SuggestionsVector& personal_suggestions,
-      const SuggestionsVector& whitelist_suggestions);
+  SuggestionsPtrVector CreatePopularSitesSuggestions(
+      const SuggestionsPtrVector& personal_suggestions,
+      const SuggestionsPtrVector& whitelist_suggestions);
 
   // Takes the personal suggestions, creates and merges in whitelist and popular
   // suggestions if appropriate, and saves the new suggestions.
-  void SaveNewNTPSuggestions(SuggestionsVector* personal_suggestions);
+  void SaveNewNTPSuggestions(SuggestionsPtrVector* personal_suggestions);
 
   // Workhorse for SaveNewNTPSuggestions above. Implemented as a separate static
   // method for ease of testing.
-  static SuggestionsVector MergeSuggestions(
-      SuggestionsVector* personal_suggestions,
-      SuggestionsVector* whitelist_suggestions,
-      SuggestionsVector* popular_suggestions,
+  static SuggestionsPtrVector MergeSuggestions(
+      SuggestionsPtrVector* personal_suggestions,
+      SuggestionsPtrVector* whitelist_suggestions,
+      SuggestionsPtrVector* popular_suggestions,
       const std::vector<std::string>& old_sites_url,
       const std::vector<bool>& old_sites_is_personal);
 
@@ -161,8 +162,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // |match_urls|/|match_hosts| respectively. Unmatched suggestion indices from
   // |src_suggestions| are returned for ease of insertion later.
   static std::vector<size_t> InsertMatchingSuggestions(
-      SuggestionsVector* src_suggestions,
-      SuggestionsVector* dst_suggestions,
+      SuggestionsPtrVector* src_suggestions,
+      SuggestionsPtrVector* dst_suggestions,
       const std::vector<std::string>& match_urls,
       const std::vector<std::string>& match_hosts);
 
@@ -173,8 +174,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   static size_t InsertAllSuggestions(
       size_t start_position,
       const std::vector<size_t>& insert_positions,
-      SuggestionsVector* src_suggestions,
-      SuggestionsVector* dst_suggestions);
+      SuggestionsPtrVector* src_suggestions,
+      SuggestionsPtrVector* dst_suggestions);
 
   // Notifies the observer about the availability of suggestions.
   // Also records impressions UMA if not done already.
@@ -210,7 +211,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // The profile whose most visited sites will be queried.
   Profile* profile_;
 
-  MostVisitedSitesObserver* observer_;
+  Observer* observer_;
 
   // The maximum number of most visited sites to return.
   int num_sites_;

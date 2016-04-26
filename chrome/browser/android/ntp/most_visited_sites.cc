@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
@@ -149,14 +148,9 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
   return url1.host() == url2.host() && url1.path() == url2.path();
 }
 
-}  // namespace
-
-MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
-
-MostVisitedSites::Suggestion::~Suggestion() {}
-
-std::string MostVisitedSites::Suggestion::GetSourceHistogramName() const {
-  switch (source) {
+std::string GetSourceHistogramName(
+        const MostVisitedSites::Suggestion& suggestion) {
+  switch (suggestion.source) {
     case MostVisitedSites::TOP_SITES:
       return kHistogramClientName;
     case MostVisitedSites::POPULAR:
@@ -164,13 +158,24 @@ std::string MostVisitedSites::Suggestion::GetSourceHistogramName() const {
     case MostVisitedSites::WHITELIST:
       return kHistogramWhitelistName;
     case MostVisitedSites::SUGGESTIONS_SERVICE:
-      return provider_index >= 0
-                 ? base::StringPrintf(kHistogramServerFormat, provider_index)
+      return suggestion.provider_index >= 0
+                 ? base::StringPrintf(kHistogramServerFormat,
+                                      suggestion.provider_index)
                  : kHistogramServerName;
   }
   NOTREACHED();
   return std::string();
 }
+
+}  // namespace
+
+MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
+
+MostVisitedSites::Suggestion::~Suggestion() {}
+
+MostVisitedSites::Suggestion::Suggestion(Suggestion&&) = default;
+MostVisitedSites::Suggestion&
+MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), observer_(nullptr), num_sites_(0),
@@ -191,7 +196,7 @@ MostVisitedSites::~MostVisitedSites() {
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(
-      MostVisitedSitesObserver* observer, int num_sites) {
+      MostVisitedSites::Observer* observer, int num_sites) {
   observer_ = observer;
   num_sites_ = num_sites;
 
@@ -322,7 +327,7 @@ void MostVisitedSites::RecordTileTypeMetrics(
     ++counts_per_type[tile_type];
     std::string histogram = base::StringPrintf(
         "NewTabPage.TileType.%s",
-        current_suggestions_[i]->GetSourceHistogramName().c_str());
+        GetSourceHistogramName(current_suggestions_[i]).c_str());
     LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
   }
 
@@ -339,12 +344,12 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
   std::string histogram = base::StringPrintf(
       "NewTabPage.MostVisited.%s",
-      current_suggestions_[index]->GetSourceHistogramName().c_str());
+      GetSourceHistogramName(current_suggestions_[index]).c_str());
   LogHistogramEvent(histogram, index, num_sites_);
 
   histogram = base::StringPrintf(
       "NewTabPage.TileTypeClicked.%s",
-      current_suggestions_[index]->GetSourceHistogramName().c_str());
+      GetSourceHistogramName(current_suggestions_[index]).c_str());
   LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
@@ -402,7 +407,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       SupervisedUserServiceFactory::GetForProfile(profile_)
           ->GetURLFilterForUIThread();
 
-  MostVisitedSites::SuggestionsVector suggestions;
+  MostVisitedSites::SuggestionsPtrVector suggestions;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
   for (size_t i = 0; i < num_tiles; ++i) {
@@ -445,7 +450,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   SupervisedUserURLFilter* url_filter =
       SupervisedUserServiceFactory::GetForProfile(profile_)
           ->GetURLFilterForUIThread();
-  MostVisitedSites::SuggestionsVector suggestions;
+  MostVisitedSites::SuggestionsPtrVector suggestions;
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     if (url_filter->GetFilteringBehaviorForURL(GURL(suggestion.url())) ==
@@ -471,14 +476,14 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   NotifyMostVisitedURLsObserver();
 }
 
-MostVisitedSites::SuggestionsVector
+MostVisitedSites::SuggestionsPtrVector
 MostVisitedSites::CreateWhitelistEntryPointSuggestions(
-    const MostVisitedSites::SuggestionsVector& personal_suggestions) {
+    const MostVisitedSites::SuggestionsPtrVector& personal_suggestions) {
   size_t num_personal_suggestions = personal_suggestions.size();
   DCHECK_LE(num_personal_suggestions, static_cast<size_t>(num_sites_));
 
   size_t num_whitelist_suggestions = num_sites_ - num_personal_suggestions;
-  MostVisitedSites::SuggestionsVector whitelist_suggestions;
+  MostVisitedSites::SuggestionsPtrVector whitelist_suggestions;
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
@@ -520,13 +525,13 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
   return whitelist_suggestions;
 }
 
-MostVisitedSites::SuggestionsVector
+MostVisitedSites::SuggestionsPtrVector
 MostVisitedSites::CreatePopularSitesSuggestions(
-    const MostVisitedSites::SuggestionsVector& personal_suggestions,
-    const MostVisitedSites::SuggestionsVector& whitelist_suggestions) {
+    const MostVisitedSites::SuggestionsPtrVector& personal_suggestions,
+    const MostVisitedSites::SuggestionsPtrVector& whitelist_suggestions) {
   // For child accounts popular sites suggestions will not be added.
   if (profile_->IsChild())
-    return MostVisitedSites::SuggestionsVector();
+    return MostVisitedSites::SuggestionsPtrVector();
 
   size_t num_suggestions =
       personal_suggestions.size() + whitelist_suggestions.size();
@@ -535,7 +540,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
   // Collect non-blacklisted popular suggestions, skipping those already present
   // in the personal suggestions.
   size_t num_popular_sites_suggestions = num_sites_ - num_suggestions;
-  MostVisitedSites::SuggestionsVector popular_sites_suggestions;
+  MostVisitedSites::SuggestionsPtrVector popular_sites_suggestions;
 
   if (num_popular_sites_suggestions > 0 && popular_sites_) {
     std::set<std::string> hosts;
@@ -567,10 +572,10 @@ MostVisitedSites::CreatePopularSitesSuggestions(
 }
 
 void MostVisitedSites::SaveNewNTPSuggestions(
-    MostVisitedSites::SuggestionsVector* personal_suggestions) {
-  MostVisitedSites::SuggestionsVector whitelist_suggestions =
+    MostVisitedSites::SuggestionsPtrVector* personal_suggestions) {
+  MostVisitedSites::SuggestionsPtrVector whitelist_suggestions =
       CreateWhitelistEntryPointSuggestions(*personal_suggestions);
-  MostVisitedSites::SuggestionsVector popular_sites_suggestions =
+  MostVisitedSites::SuggestionsPtrVector popular_sites_suggestions =
       CreatePopularSitesSuggestions(*personal_suggestions,
                                     whitelist_suggestions);
   size_t num_actual_tiles = personal_suggestions->size() +
@@ -582,20 +587,22 @@ void MostVisitedSites::SaveNewNTPSuggestions(
   // |old_sites_url| and |old_sites_is_personal|, but that caused problems
   // (crbug.com/585391). Either figure out a way to fix them and re-enable,
   // or properly remove the order-persisting code. crbug.com/601734
-  MostVisitedSites::SuggestionsVector merged_suggestions = MergeSuggestions(
+  MostVisitedSites::SuggestionsPtrVector merged_suggestions = MergeSuggestions(
       personal_suggestions, &whitelist_suggestions, &popular_sites_suggestions,
       old_sites_url, old_sites_is_personal);
   DCHECK_EQ(num_actual_tiles, merged_suggestions.size());
-  current_suggestions_.swap(merged_suggestions);
+  current_suggestions_.resize(merged_suggestions.size());
+  for (size_t i = 0; i < merged_suggestions.size(); ++i)
+    std::swap(*merged_suggestions[i], current_suggestions_[i]);
   if (received_popular_sites_)
     SaveCurrentNTPSites();
 }
 
 // static
-MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
-    MostVisitedSites::SuggestionsVector* personal_suggestions,
-    MostVisitedSites::SuggestionsVector* whitelist_suggestions,
-    MostVisitedSites::SuggestionsVector* popular_suggestions,
+MostVisitedSites::SuggestionsPtrVector MostVisitedSites::MergeSuggestions(
+    MostVisitedSites::SuggestionsPtrVector* personal_suggestions,
+    MostVisitedSites::SuggestionsPtrVector* whitelist_suggestions,
+    MostVisitedSites::SuggestionsPtrVector* popular_suggestions,
     const std::vector<std::string>& old_sites_url,
     const std::vector<bool>& old_sites_is_personal) {
   size_t num_personal_suggestions = personal_suggestions->size();
@@ -603,7 +610,7 @@ MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
   size_t num_popular_suggestions = popular_suggestions->size();
   size_t num_tiles = num_popular_suggestions + num_whitelist_suggestions +
                      num_personal_suggestions;
-  MostVisitedSites::SuggestionsVector merged_suggestions;
+  MostVisitedSites::SuggestionsPtrVector merged_suggestions;
   merged_suggestions.resize(num_tiles);
 
   size_t num_old_tiles = old_sites_url.size();
@@ -676,8 +683,8 @@ void MostVisitedSites::SaveCurrentNTPSites() {
   base::ListValue url_list;
   base::ListValue source_list;
   for (const auto& suggestion : current_suggestions_) {
-    url_list.AppendString(suggestion->url.spec());
-    source_list.AppendBoolean(suggestion->source != MostVisitedSites::POPULAR);
+    url_list.AppendString(suggestion.url.spec());
+    source_list.AppendBoolean(suggestion.source != MostVisitedSites::POPULAR);
   }
   PrefService* prefs = profile_->GetPrefs();
   prefs->Set(prefs::kNTPSuggestionsIsPersonal, source_list);
@@ -686,8 +693,8 @@ void MostVisitedSites::SaveCurrentNTPSites() {
 
 // static
 std::vector<size_t> MostVisitedSites::InsertMatchingSuggestions(
-    MostVisitedSites::SuggestionsVector* src_suggestions,
-    MostVisitedSites::SuggestionsVector* dst_suggestions,
+    MostVisitedSites::SuggestionsPtrVector* src_suggestions,
+    MostVisitedSites::SuggestionsPtrVector* dst_suggestions,
     const std::vector<std::string>& match_urls,
     const std::vector<std::string>& match_hosts) {
   std::vector<size_t> unmatched_suggestions;
@@ -750,18 +757,7 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   if (!observer_)
     return;
 
-  std::vector<base::string16> titles;
-  std::vector<std::string> urls;
-  std::vector<std::string> whitelist_icon_paths;
-  titles.reserve(num_suggestions);
-  urls.reserve(num_suggestions);
-  for (const auto& suggestion : current_suggestions_) {
-    titles.push_back(suggestion->title);
-    urls.push_back(suggestion->url.spec());
-    whitelist_icon_paths.push_back(suggestion->whitelist_icon_path.value());
-  }
-
-  observer_->OnMostVisitedURLsAvailable(titles, urls, whitelist_icon_paths);
+  observer_->OnMostVisitedURLsAvailable(current_suggestions_);
 }
 
 void MostVisitedSites::OnPopularSitesAvailable(bool success) {
@@ -775,15 +771,7 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
   if (!observer_)
     return;
 
-  std::vector<std::string> urls;
-  std::vector<std::string> favicon_urls;
-  std::vector<std::string> large_icon_urls;
-  for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
-    urls.push_back(popular_site.url.spec());
-    favicon_urls.push_back(popular_site.favicon_url.spec());
-    large_icon_urls.push_back(popular_site.large_icon_url.spec());
-  }
-  observer_->OnPopularURLsAvailable(urls, favicon_urls, large_icon_urls);
+  observer_->OnPopularURLsAvailable(popular_sites_->sites());
   QueryMostVisitedURLs();
 }
 
@@ -791,7 +779,7 @@ void MostVisitedSites::RecordImpressionUMAMetrics() {
   for (size_t i = 0; i < current_suggestions_.size(); i++) {
     std::string histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s",
-        current_suggestions_[i]->GetSourceHistogramName().c_str());
+        GetSourceHistogramName(current_suggestions_[i]).c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
 }
