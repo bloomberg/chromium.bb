@@ -781,4 +781,12 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestVerifyGlobalPidClient,
 
 #endif  // OS_LINUX
 
+// This test always passes; it ensures that there is at least one test on all
+// targets. Otherwise, Android bots will fail because there is a test target
+// that runs 0 tests.
+// TODO(amistry): Remove this once at least one other test has been enabled.
+// https://crbug.com/606624.
+TEST_F(IPCChannelMojoTest, DummyAlwaysPasses) {
+}
+
 }  // namespace
