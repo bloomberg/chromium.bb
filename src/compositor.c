@@ -4234,7 +4234,7 @@ weston_output_move(struct weston_output *output, int x, int y)
 					output->model,
 					output->transform);
 
-		if (wl_resource_get_version(resource) >= 2)
+		if (wl_resource_get_version(resource) >= WL_OUTPUT_DONE_SINCE_VERSION)
 			wl_output_send_done(resource);
 	}
 }
