@@ -5,6 +5,10 @@
     "name": "step"
   },
   {
+    "cmd": [],
+    "name": "path exists"
+  },
+  {
     "name": "$result",
     "recipe_result": null,
     "status_code": 0

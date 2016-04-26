@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path, NamedBasePath
 
 
 class InfraPathsApi(recipe_api.RecipeApi):
@@ -27,6 +28,10 @@ class InfraPathsApi(recipe_api.RecipeApi):
       self.set_config(path_config)
     else:
       self.set_config('buildbot')
+
+    for path in self._test_data.get('exists', []):
+      assert isinstance(path.base, NamedBasePath)
+      self.m.path.mock_add_paths(self[path.base.name].join(*path.pieces))
 
   def __getitem__(self, name):
     self._lazy_set_config()
