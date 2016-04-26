@@ -252,7 +252,8 @@ void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
   EXPECT_EQ(!match_is_bookmarked, page_action->GetIsVisible(tab_id));
 }
 
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
+// Disabled due to flake. https://crbug.com/606574.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, DISABLED_Overview) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(
       FILE_PATH_LITERAL("background.js"),
