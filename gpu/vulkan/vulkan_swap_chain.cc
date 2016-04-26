@@ -43,14 +43,6 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
 
   std::unique_ptr<ImageData>& current_image_data = images_[current_image_];
 
-  // Default image subresource range.
-  VkImageSubresourceRange image_subresource_range = {};
-  image_subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  image_subresource_range.baseMipLevel = 0;
-  image_subresource_range.levelCount = 1;
-  image_subresource_range.baseArrayLayer = 0;
-  image_subresource_range.layerCount = 1;
-
   // Submit our command buffer for the current buffer.
   if (!current_image_data->command_buffer->Submit(
           1, &current_image_data->present_semaphore, 1,
