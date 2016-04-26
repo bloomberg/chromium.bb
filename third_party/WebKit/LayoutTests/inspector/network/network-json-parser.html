@@ -4,7 +4,7 @@
 <script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    var worker = new WorkerRuntime.Worker("formatter_worker");
+    var worker = new WebInspector.Worker("formatter_worker");
     function check(jsonText)
     {
         var resultData = WebInspector.JSONView._extractJSON(jsonText);

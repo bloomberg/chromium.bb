@@ -55,7 +55,7 @@ function getScriptText()
 function test()
 {
 
-    var worker = new WorkerRuntime.Worker("formatter_worker");
+    var worker = new WebInspector.Worker("formatter_worker");
 
     worker.onmessage = InspectorTest.safeWrap(function(event)
     {
