@@ -194,7 +194,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  output_cb_ = BindToCurrentLoop(output_cb);
+  output_cb_ = output_cb;
 
   // Success!
   state_ = kNormal;

@@ -131,6 +131,20 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
   cb.Run(success);
 }
 
+// static
+void ReleaseMailboxTrampoline(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const VideoFrame::ReleaseMailboxCB& release_mailbox_cb,
+    const gpu::SyncToken& release_sync_token) {
+  if (task_runner->BelongsToCurrentThread()) {
+    release_mailbox_cb.Run(release_sync_token);
+    return;
+  }
+
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(release_mailbox_cb, release_sync_token));
+}
+
 std::string GpuVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }
@@ -188,7 +202,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   supports_deferred_initialization_ = !!(
       capabilities.flags &
       VideoDecodeAccelerator::Capabilities::SUPPORTS_DEFERRED_INITIALIZATION);
-  output_cb_ = BindToCurrentLoop(output_cb);
+  output_cb_ = output_cb;
 
   if (config.is_encrypted() && !supports_deferred_initialization_) {
     DVLOG(1) << __FUNCTION__
@@ -551,9 +565,10 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       pixel_format, gpu::MailboxHolder(pb.texture_mailbox(0), gpu::SyncToken(),
                                        decoder_texture_target_),
-      BindToCurrentLoop(base::Bind(
-          &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
-          factories_, picture.picture_buffer_id(), pb.texture_ids())),
+      base::Bind(&ReleaseMailboxTrampoline, factories_->GetTaskRunner(),
+                 base::Bind(&GpuVideoDecoder::ReleaseMailbox,
+                            weak_factory_.GetWeakPtr(), factories_,
+                            picture.picture_buffer_id(), pb.texture_ids())),
       pb.size(), visible_rect, natural_size, timestamp));
   if (!frame) {
     DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();

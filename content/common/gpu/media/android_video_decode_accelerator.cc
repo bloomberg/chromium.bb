@@ -829,19 +829,20 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
     size_changed = true;
   }
 
-  // Connect the PictureBuffer to the decoded frame, via whatever
-  // mechanism the strategy likes.
-  strategy_->UseCodecBufferForPictureBuffer(codec_buffer_index, i->second);
-
   const bool allow_overlay = strategy_->ArePicturesOverlayable();
-
   media::Picture picture(picture_buffer_id, bitstream_id, gfx::Rect(size_),
                          allow_overlay);
   picture.set_size_changed(size_changed);
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyPictureReady,
-                            weak_this_factory_.GetWeakPtr(), picture));
+  // Notify picture ready before calling UseCodecBufferForPictureBuffer() since
+  // that process may be slow and shouldn't delay delivery of the frame to the
+  // renderer. The picture is only used on the same thread as this method is
+  // called, so it is safe to do this.
+  NotifyPictureReady(picture);
+
+  // Connect the PictureBuffer to the decoded frame, via whatever mechanism the
+  // strategy likes.
+  strategy_->UseCodecBufferForPictureBuffer(codec_buffer_index, i->second);
 }
 
 void AndroidVideoDecodeAccelerator::Decode(

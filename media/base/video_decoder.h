@@ -65,6 +65,10 @@ class MEDIA_EXPORT VideoDecoder {
   //    Upon reinitialization, all internal buffered frames will be dropped.
   // 2) This method should not be called during pending decode or reset.
   // 3) No VideoDecoder calls should be made before |init_cb| is executed.
+  // 4) VideoDecoders should take care to run |output_cb| as soon as the frame
+  // is ready (i.e. w/o thread trampolining) since it can strongly affect frame
+  // delivery times with high-frame-rate material.  See Decode() for additional
+  // notes.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           CdmContext* cdm_context,
@@ -84,9 +88,10 @@ class MEDIA_EXPORT VideoDecoder {
   // called again).
   //
   // After decoding is finished the decoder calls |output_cb| specified in
-  // Initialize() for each decoded frame. In general |output_cb| may be called
-  // before or after |decode_cb|, but software decoders normally call
-  // |output_cb| before calling |decode_cb|, i.e. while Decode() is pending.
+  // Initialize() for each decoded frame. |output_cb| is always called before
+  // |decode_cb|. However, |output_cb| may be called before Decode() returns, if
+  // other behavior is desired callers should ensure that |output_cb| will
+  // trampoline as necessary.
   //
   // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
   // |output_cb| must be called for each frame pending in the queue and

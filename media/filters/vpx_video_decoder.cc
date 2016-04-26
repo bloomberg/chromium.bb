@@ -391,7 +391,7 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Success!
   config_ = config;
   state_ = kNormal;
-  output_cb_ = BindToCurrentLoop(output_cb);
+  output_cb_ = offload_task_runner_ ? BindToCurrentLoop(output_cb) : output_cb;
   bound_init_cb.Run(true);
 }
 

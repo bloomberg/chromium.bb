@@ -471,10 +471,12 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     buffers.push_back(media::PictureBuffer(buffer_ids[i], texture_dimensions_,
                                            service_ids, buffer_texture_ids));
   }
+  {
+    DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+    for (uint32_t i = 0; i < buffer_ids.size(); ++i)
+      uncleared_textures_[buffer_ids[i]] = textures[i];
+  }
   video_decode_accelerator_->AssignPictureBuffers(buffers);
-  DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
-  for (uint32_t i = 0; i < buffer_ids.size(); ++i)
-    uncleared_textures_[buffer_ids[i]] = textures[i];
 }
 
 void GpuVideoDecodeAccelerator::OnReusePictureBuffer(
