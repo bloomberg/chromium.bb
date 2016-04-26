@@ -394,7 +394,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // after the preserved newline, causing the newline to be turned into a nbsp.
     if (leadingWhitespace.isNotNull() && leadingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(leadingWhitespace.anchorNode());
-        DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
+        DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace()) << textNode;
         replaceTextInNodePreservingMarkers(textNode, leadingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
 
@@ -473,7 +473,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // use |VisiblePosition::characterAfter()|.
         if (!isRenderedCharacter(positionAfterSplit)) {
             // Clear out all whitespace and insert one non-breaking space
-            DCHECK(!positionAfterSplit.computeContainerNode()->layoutObject() || positionAfterSplit.computeContainerNode()->layoutObject()->style()->collapseWhiteSpace());
+            DCHECK(!positionAfterSplit.computeContainerNode()->layoutObject() || positionAfterSplit.computeContainerNode()->layoutObject()->style()->collapseWhiteSpace()) << positionAfterSplit;
             deleteInsignificantTextDownstream(positionAfterSplit);
             if (positionAfterSplit.anchorNode()->isTextNode())
                 insertTextIntoNode(toText(positionAfterSplit.computeContainerNode()), 0, nonBreakingSpaceString());
