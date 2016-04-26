@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -195,6 +196,7 @@ test("views_mus_unittests") {
   ]
 
   data_deps = [
+    ":unittests_manifest",
     "//mash/wm",
   ]
 
@@ -228,6 +230,12 @@ test("views_mus_unittests") {
       "//ui/gfx/x",
     ]
   }
+}
+
+mojo_application_manifest("unittests_manifest") {
+  type = "exe"
+  application_name = "views_mus_unittests"
+  source = "unittests_manifest.json"
 }
 
 group("for_component") {
