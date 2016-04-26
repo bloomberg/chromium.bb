@@ -257,6 +257,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                 configureNewSession(data);
 
                 mPreferredTitle = preferredTitle;
+                updateTitle(mPreferredTitle);
                 mStartPositionMillis = startPositionMillis;
                 // Make sure we get a session status. If the session becomes active
                 // immediately then the broadcast session status can arrive before we have
@@ -563,7 +564,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
      */
     protected void onActivitiesDestroyed() {
         ApplicationStatus.unregisterApplicationStateListener(mApplicationStateListener);
-        disconnect();
+        release();
     }
 
     /**
@@ -634,7 +635,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         if (statusBundle.containsKey(MediaControlIntent.EXTRA_ITEM_METADATA)) {
             Bundle metadataBundle =
                     (Bundle) statusBundle.getParcelable(MediaControlIntent.EXTRA_ITEM_METADATA);
-            updateTitle(metadataBundle.getString(MediaItemMetadata.KEY_TITLE));
+            updateTitle(metadataBundle.getString(MediaItemMetadata.KEY_TITLE, mPreferredTitle));
         }
 
         // Extract the item status, if available.

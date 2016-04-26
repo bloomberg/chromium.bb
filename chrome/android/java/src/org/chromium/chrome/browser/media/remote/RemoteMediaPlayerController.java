@@ -159,9 +159,8 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
 
         if (!controller.initialize()) return;
 
-        if (mNotificationControl != null) {
-            mNotificationControl.setRouteController(controller);
-        }
+        mNotificationControl = CastNotificationControl.getOrCreate(
+                mChromeVideoActivity.get(), controller);
         controller.prepareMediaRoute();
 
         controller.addUiListener(this);
