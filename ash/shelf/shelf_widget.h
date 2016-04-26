@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/wm/common/background_animator.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 

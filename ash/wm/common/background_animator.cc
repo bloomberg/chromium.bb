@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/background_animator.h"
+#include "ash/wm/common/background_animator.h"
 
 namespace ash {
 namespace {
 
 // Duration of the background animation.
 const int kBackgroundDurationMS = 1000;
-
 }
 
 BackgroundAnimator::BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
@@ -24,15 +23,15 @@ BackgroundAnimator::BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
   animation_.SetSlideDuration(kBackgroundDurationMS);
 }
 
-BackgroundAnimator::~BackgroundAnimator() {
-}
+BackgroundAnimator::~BackgroundAnimator() {}
 
 void BackgroundAnimator::SetDuration(int time_in_ms) {
   animation_.SetSlideDuration(time_in_ms);
 }
 
 void BackgroundAnimator::SetPaintsBackground(
-    bool value, BackgroundAnimatorChangeType type) {
+    bool value,
+    BackgroundAnimatorChangeType type) {
   if (paints_background_ == value)
     return;
   paints_background_ = value;

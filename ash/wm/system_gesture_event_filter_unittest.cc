@@ -18,7 +18,7 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_positioning_utils.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

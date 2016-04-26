@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_STATE_H_
-#define ASH_WM_WINDOW_STATE_H_
+#ifndef ASH_WM_COMMON_WINDOW_STATE_H_
+#define ASH_WM_COMMON_WINDOW_STATE_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/common/drag_details.h"
 #include "ash/wm/common/wm_types.h"
-#include "ash/wm/drag_details.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -46,7 +46,6 @@ class WmWindow;
 // accessing the window using |window()| is cheap.
 class ASH_EXPORT WindowState {
  public:
-
   // A subclass of State class represents one of the window's states
   // that corresponds to WindowStateType in Ash environment, e.g.
   // maximized, minimized or side snapped, as subclass.
@@ -203,17 +202,13 @@ class ASH_EXPORT WindowState {
   // when shown.
   // TODO(oshima): Consolidate this and window_position_managed
   // into single parameter to control the window placement.
-  bool minimum_visibility() const {
-    return minimum_visibility_;
-  }
+  bool minimum_visibility() const { return minimum_visibility_; }
   void set_minimum_visibility(bool minimum_visibility) {
     minimum_visibility_ = minimum_visibility;
   }
 
   // Specifies if the window can be dragged by the user via the caption or not.
-  bool can_be_dragged() const {
-    return can_be_dragged_;
-  }
+  bool can_be_dragged() const { return can_be_dragged_; }
   void set_can_be_dragged(bool can_be_dragged) {
     can_be_dragged_ = can_be_dragged;
   }
@@ -245,9 +240,7 @@ class ASH_EXPORT WindowState {
   void set_bounds_changed_by_user(bool bounds_changed_by_user);
 
   // True if this window is an attached panel.
-  bool panel_attached() const {
-    return panel_attached_;
-  }
+  bool panel_attached() const { return panel_attached_; }
   void set_panel_attached(bool panel_attached) {
     panel_attached_ = panel_attached;
   }
@@ -280,9 +273,7 @@ class ASH_EXPORT WindowState {
   // different from the normal fullscreen mode by allowing the user to reveal
   // the top portion of the window through a touch / mouse gesture. It might
   // also allow the shelf to be shown in some situations.
-  bool in_immersive_fullscreen() const {
-    return in_immersive_fullscreen_;
-  }
+  bool in_immersive_fullscreen() const { return in_immersive_fullscreen_; }
   void set_in_immersive_fullscreen(bool enable) {
     in_immersive_fullscreen_ = enable;
   }
@@ -393,4 +384,4 @@ class ASH_EXPORT WindowState {
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_STATE_H_
+#endif  // ASH_WM_COMMON_WINDOW_STATE_H_

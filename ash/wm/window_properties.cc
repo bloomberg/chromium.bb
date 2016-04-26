@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_properties.h"
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WindowState*);

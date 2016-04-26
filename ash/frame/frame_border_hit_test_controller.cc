@@ -8,8 +8,8 @@
 
 #include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/resize_handle_window_targeter.h"
-#include "ash/wm/window_state_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"

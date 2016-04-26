@@ -9,9 +9,9 @@
 
 #include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector_item.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"

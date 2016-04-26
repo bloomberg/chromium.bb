@@ -5,10 +5,10 @@
 #include "ash/wm/window_positioner.h"
 
 #include "ash/wm/common/window_positioning_utils.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/window_state.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/screen.h"

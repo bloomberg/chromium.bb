@@ -9,7 +9,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"

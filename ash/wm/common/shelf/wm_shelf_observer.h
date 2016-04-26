@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 // TODO(sky): refactor into common.
-#include "ash/shelf/background_animator.h"
+#include "ash/wm/common/background_animator.h"
 #include "ash/wm/common/shelf/wm_shelf_types.h"
 
 namespace ash {

@@ -21,7 +21,7 @@
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/test_user_wallpaper_delegate.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

@@ -59,7 +59,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/root_window_finder.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"

@@ -11,7 +11,7 @@
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/root_window_finder.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"

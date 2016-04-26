@@ -6,9 +6,9 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/lock_window_state.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"

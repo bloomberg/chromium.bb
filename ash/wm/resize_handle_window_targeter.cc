@@ -5,8 +5,8 @@
 #include "ash/wm/resize_handle_window_targeter.h"
 
 #include "ash/ash_constants.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"

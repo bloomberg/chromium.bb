@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"

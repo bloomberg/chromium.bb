@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
-#define ASH_WM_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
+#define ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/common/dock/dock_types.h"
+#include "ash/wm/common/dock/docked_window_layout_manager_observer.h"
+#include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_activation_observer.h"
 #include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "ash/wm/common/wm_snap_to_pixel_layout_manager.h"
 #include "ash/wm/common/wm_window_observer.h"
-#include "ash/wm/dock/dock_types.h"
-#include "ash/wm/dock/docked_window_layout_manager_observer.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -120,7 +120,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   const gfx::Rect& docked_bounds() const { return docked_bounds_; }
 
   // Returns last known coordinates of |dragged_window_| after Relayout.
-  const gfx::Rect dragged_bounds() const { return dragged_bounds_;}
+  const gfx::Rect dragged_bounds() const { return dragged_bounds_; }
 
   // Returns true if currently dragged window is docked at the screen edge.
   bool is_dragged_window_docked() const { return is_dragged_window_docked_; }
@@ -312,4 +312,4 @@ class ASH_EXPORT DockedWindowLayoutManager
 
 }  // namespace ash
 
-#endif  // ASH_WM_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_

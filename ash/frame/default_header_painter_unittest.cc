@@ -9,7 +9,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"

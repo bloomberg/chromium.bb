@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_state_delegate.h"
+#include "ash/wm/common/window_state_delegate.h"
 
 namespace ash {
 namespace wm {
 
-WindowStateDelegate::WindowStateDelegate() {
-}
+WindowStateDelegate::WindowStateDelegate() {}
 
-WindowStateDelegate::~WindowStateDelegate() {
-}
+WindowStateDelegate::~WindowStateDelegate() {}
 
 bool WindowStateDelegate::ToggleFullscreen(WindowState* window_state) {
   return false;

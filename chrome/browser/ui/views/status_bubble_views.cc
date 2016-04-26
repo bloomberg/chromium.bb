@@ -38,7 +38,7 @@
 #include "url/gurl.h"
 
 #if defined(USE_ASH)
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #endif
 

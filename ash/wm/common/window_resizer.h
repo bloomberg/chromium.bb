@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WINDOW_RESIZER_H_
-#define ASH_WM_WINDOW_RESIZER_H_
+#ifndef ASH_WM_COMMON_WINDOW_RESIZER_H_
+#define ASH_WM_COMMON_WINDOW_RESIZER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/drag_details.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/drag_details.h"
+#include "ash/wm/common/window_state.h"
 #include "base/macros.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -108,4 +108,4 @@ ASH_EXPORT std::unique_ptr<WindowResizer> CreateWindowResizer(
 
 }  // namespace ash
 
-#endif  // ASH_WM_WINDOW_RESIZER_H_
+#endif  // ASH_WM_COMMON_WINDOW_RESIZER_H_

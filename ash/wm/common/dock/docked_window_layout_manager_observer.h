@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
-#define UI_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
+#ifndef ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
+#define ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
@@ -36,4 +36,4 @@ class ASH_EXPORT DockedWindowLayoutManagerObserver {
 
 }  // namespace ash
 
-#endif  // UI_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_
+#endif  // ASH_WM_COMMON_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_

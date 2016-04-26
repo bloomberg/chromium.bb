@@ -9,7 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/aura/wm_globals_aura.h"
-#include "ash/wm/window_resizer.h"
+#include "ash/wm/common/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"

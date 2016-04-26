@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/drag_details.h"
+#include "ash/wm/common/drag_details.h"
 
+#include "ash/wm/common/window_resizer.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/window_resizer.h"
-#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer.h"
 
 namespace ash {
 
@@ -64,13 +64,11 @@ DragDetails::DragDetails(wm::WmWindow* window,
                              window->GetWindowState()->panel_attached()) {
   wm::WindowState* window_state = window->GetWindowState();
   if ((window_state->IsNormalOrSnapped() || window_state->IsDocked()) &&
-      window_state->HasRestoreBounds() &&
-      window_component == HTCAPTION) {
+      window_state->HasRestoreBounds() && window_component == HTCAPTION) {
     restore_bounds = window_state->GetRestoreBoundsInScreen();
   }
 }
 
-DragDetails::~DragDetails() {
-}
+DragDetails::~DragDetails() {}
 
 }  // namespace ash

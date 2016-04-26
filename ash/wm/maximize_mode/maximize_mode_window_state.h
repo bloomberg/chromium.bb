@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "base/macros.h"
 
 namespace ash {

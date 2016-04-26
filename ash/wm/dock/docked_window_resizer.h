@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/wm/dock/dock_types.h"
-#include "ash/wm/window_resizer.h"
+#include "ash/wm/common/dock/dock_types.h"
+#include "ash/wm/common/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

@@ -6,8 +6,8 @@
 #define ASH_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/background_animator.h"
 #include "ash/shelf/shelf_types.h"
+#include "ash/wm/common/background_animator.h"
 
 namespace aura {
 class Window;

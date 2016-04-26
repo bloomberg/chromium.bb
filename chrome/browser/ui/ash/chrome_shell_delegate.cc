@@ -8,7 +8,7 @@
 
 #include "ash/content/gpu_support_impl.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"

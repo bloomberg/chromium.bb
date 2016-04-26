@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 
 #include <utility>
 
+#include "ash/wm/common/default_state.h"
 #include "ash/wm/common/window_positioning_utils.h"
+#include "ash/wm/common/window_state_delegate.h"
+#include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/default_state.h"
-#include "ash/wm/window_state_delegate.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/auto_reset.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -46,8 +46,7 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
 
 }  // namespace
 
-WindowState::~WindowState() {
-}
+WindowState::~WindowState() {}
 
 bool WindowState::HasDelegate() const {
   return !!delegate_;
@@ -77,17 +76,17 @@ bool WindowState::IsFullscreen() const {
 
 bool WindowState::IsMaximizedOrFullscreen() const {
   return GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN ||
-      GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED;
+         GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED;
 }
 
 bool WindowState::IsSnapped() const {
   return GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED ||
-      GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+         GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED;
 }
 
 bool WindowState::IsNormalStateType() const {
   return GetStateType() == WINDOW_STATE_TYPE_NORMAL ||
-      GetStateType() == WINDOW_STATE_TYPE_DEFAULT;
+         GetStateType() == WINDOW_STATE_TYPE_DEFAULT;
 }
 
 bool WindowState::IsNormalOrSnapped() const {
@@ -246,8 +245,7 @@ std::unique_ptr<WindowState::State> WindowState::SetStateObject(
   return old_object;
 }
 
-void WindowState::SetPreAutoManageWindowBounds(
-    const gfx::Rect& bounds) {
+void WindowState::SetPreAutoManageWindowBounds(const gfx::Rect& bounds) {
   pre_auto_manage_window_bounds_.reset(new gfx::Rect(bounds));
 }
 
@@ -314,8 +312,7 @@ ui::WindowShowState WindowState::GetShowState() const {
   return window_->GetShowState();
 }
 
-void WindowState::SetBoundsInScreen(
-    const gfx::Rect& bounds_in_screen) {
+void WindowState::SetBoundsInScreen(const gfx::Rect& bounds_in_screen) {
   gfx::Rect bounds_in_parent =
       window_->GetParent()->ConvertRectFromScreen(bounds_in_screen);
   window_->SetBounds(bounds_in_parent);

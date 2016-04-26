@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/common/wm_types.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/layout_manager.h"

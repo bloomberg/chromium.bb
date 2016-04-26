@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/macros.h"

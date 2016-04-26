@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_BACKGROUND_ANIMATOR_H_
-#define ASH_SHELF_BACKGROUND_ANIMATOR_H_
+#ifndef ASH_WM_COMMON_BACKGROUND_ANIMATOR_H_
+#define ASH_WM_COMMON_BACKGROUND_ANIMATOR_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -69,4 +69,4 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_BACKGROUND_ANIMATOR_H_
+#endif  // ASH_WM_COMMON_BACKGROUND_ANIMATOR_H_

@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
+#include "ash/wm/common/window_resizer.h"
 #include "ash/wm/common/wm_window_tracker.h"
-#include "ash/wm/window_resizer.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

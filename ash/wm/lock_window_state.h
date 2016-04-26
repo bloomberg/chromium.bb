@@ -5,7 +5,7 @@
 #ifndef ASH_WM_LOCK_WINDOW_STATE_H_
 #define ASH_WM_LOCK_WINDOW_STATE_H_
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "base/macros.h"
 
 namespace ash {

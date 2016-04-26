@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 
 #include <utility>
 
 #include "ash/screen_util.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"

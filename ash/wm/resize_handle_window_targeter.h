@@ -5,7 +5,7 @@
 #ifndef ASH_WM_RESIZE_HANDLE_WINDOW_TARGETER_H_
 #define ASH_WM_RESIZE_HANDLE_WINDOW_TARGETER_H_
 
-#include "ash/wm/window_state_observer.h"
+#include "ash/wm/common/window_state_observer.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_targeter.h"

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/default_state.h"
+#include "ash/wm/common/default_state.h"
 
-#include "ash/shell_window_ids.h"
+#include "ash/wm/common/dock/docked_window_layout_manager.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_positioning_utils.h"
+#include "ash/wm/common/window_state.h"
+#include "ash/wm/common/window_state_delegate.h"
 #include "ash/wm/common/window_state_util.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/dock/docked_window_layout_manager.h"
-#include "ash/wm/window_state.h"
-#include "ash/wm/window_state_delegate.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -108,14 +108,15 @@ class ScopedDockedLayoutEventSourceResetter {
 void CycleSnapDock(WindowState* window_state, WMEventType event) {
   DockedWindowLayoutManager* dock_layout =
       GetDockedWindowLayoutManager(window_state->window()->GetGlobals());
-  wm::WindowStateType desired_snap_state = event ==
-      WM_EVENT_CYCLE_SNAP_DOCK_LEFT ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED :
-      wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
-  DockedAlignment desired_dock_alignment = event ==
-      WM_EVENT_CYCLE_SNAP_DOCK_LEFT ?
-      DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
-  DockedAlignment current_dock_alignment = dock_layout ?
-      dock_layout->CalculateAlignment() : DOCKED_ALIGNMENT_NONE;
+  wm::WindowStateType desired_snap_state =
+      event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT
+          ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
+          : wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+  DockedAlignment desired_dock_alignment =
+      event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT ? DOCKED_ALIGNMENT_LEFT
+                                             : DOCKED_ALIGNMENT_RIGHT;
+  DockedAlignment current_dock_alignment =
+      dock_layout ? dock_layout->CalculateAlignment() : DOCKED_ALIGNMENT_NONE;
 
   if (!window_state->IsDocked() ||
       (current_dock_alignment != DOCKED_ALIGNMENT_NONE &&
@@ -124,8 +125,9 @@ void CycleSnapDock(WindowState* window_state, WMEventType event) {
         window_state->GetStateType() != desired_snap_state &&
         window_state->window()->GetType() != ui::wm::WINDOW_TYPE_PANEL) {
       const wm::WMEvent event(desired_snap_state ==
-                              wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ?
-                              wm::WM_EVENT_SNAP_LEFT : wm::WM_EVENT_SNAP_RIGHT);
+                                      wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
+                                  ? wm::WM_EVENT_SNAP_LEFT
+                                  : wm::WM_EVENT_SNAP_RIGHT);
       window_state->OnWMEvent(&event);
       return;
     }
@@ -161,8 +163,7 @@ DefaultState::DefaultState(WindowStateType initial_state_type)
     : state_type_(initial_state_type), stored_window_state_(nullptr) {}
 DefaultState::~DefaultState() {}
 
-void DefaultState::OnWMEvent(WindowState* window_state,
-                             const WMEvent* event) {
+void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
   if (ProcessWorkspaceEvents(window_state, event))
     return;
 
@@ -173,17 +174,17 @@ void DefaultState::OnWMEvent(WindowState* window_state,
   WindowStateType next_state_type = WINDOW_STATE_TYPE_NORMAL;
   switch (event->type()) {
     case WM_EVENT_NORMAL:
-      next_state_type =
-          current_state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED ?
-              WINDOW_STATE_TYPE_DOCKED : WINDOW_STATE_TYPE_NORMAL;
+      next_state_type = current_state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED
+                            ? WINDOW_STATE_TYPE_DOCKED
+                            : WINDOW_STATE_TYPE_NORMAL;
       break;
     case WM_EVENT_MAXIMIZE:
       next_state_type = WINDOW_STATE_TYPE_MAXIMIZED;
       break;
     case WM_EVENT_MINIMIZE:
-      next_state_type =
-          current_state_type == WINDOW_STATE_TYPE_DOCKED ?
-              WINDOW_STATE_TYPE_DOCKED_MINIMIZED : WINDOW_STATE_TYPE_MINIMIZED;
+      next_state_type = current_state_type == WINDOW_STATE_TYPE_DOCKED
+                            ? WINDOW_STATE_TYPE_DOCKED_MINIMIZED
+                            : WINDOW_STATE_TYPE_MINIMIZED;
       break;
     case WM_EVENT_FULLSCREEN:
       next_state_type = WINDOW_STATE_TYPE_FULLSCREEN;
@@ -221,9 +222,11 @@ void DefaultState::OnWMEvent(WindowState* window_state,
   }
 
   if (next_state_type == current_state_type && window_state->IsSnapped()) {
-    gfx::Rect snapped_bounds = event->type() == WM_EVENT_SNAP_LEFT ?
-        GetDefaultLeftSnappedWindowBoundsInParent(window_state->window()) :
-        GetDefaultRightSnappedWindowBoundsInParent(window_state->window());
+    gfx::Rect snapped_bounds =
+        event->type() == WM_EVENT_SNAP_LEFT
+            ? GetDefaultLeftSnappedWindowBoundsInParent(window_state->window())
+            : GetDefaultRightSnappedWindowBoundsInParent(
+                  window_state->window());
     window_state->SetBoundsDirectAnimated(snapped_bounds);
     return;
   }
@@ -235,9 +238,8 @@ WindowStateType DefaultState::GetType() const {
   return state_type_;
 }
 
-void DefaultState::AttachState(
-    WindowState* window_state,
-    WindowState::State* state_in_previous_mode) {
+void DefaultState::AttachState(WindowState* window_state,
+                               WindowState::State* state_in_previous_mode) {
   DCHECK_EQ(stored_window_state_, window_state);
 
   ReenterToCurrentState(window_state, state_in_previous_mode);
@@ -258,8 +260,9 @@ void DefaultState::AttachState(
 void DefaultState::DetachState(WindowState* window_state) {
   stored_window_state_ = window_state;
   stored_bounds_ = window_state->window()->GetBounds();
-  stored_restore_bounds_ = window_state->HasRestoreBounds() ?
-      window_state->GetRestoreBoundsInParent() : gfx::Rect();
+  stored_restore_bounds_ = window_state->HasRestoreBounds()
+                               ? window_state->GetRestoreBoundsInParent()
+                               : gfx::Rect();
   // Remember the display state so that in case of the display change
   // while in the other mode, we can perform necessary action to
   // restore the window state to the proper state for the current
@@ -536,8 +539,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
     if (!window_state->HasRestoreBounds() &&
         (previous_state_type == WINDOW_STATE_TYPE_DEFAULT ||
          previous_state_type == WINDOW_STATE_TYPE_NORMAL) &&
-        !window_state->IsMinimized() &&
-        !window_state->IsNormalStateType()) {
+        !window_state->IsMinimized() && !window_state->IsNormalStateType()) {
       window_state->SaveCurrentBoundsForRestore();
     }
 
@@ -547,8 +549,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
     // axis by double clicking the window border for example).
     gfx::Rect restore_bounds_in_screen;
     if (previous_state_type == WINDOW_STATE_TYPE_MINIMIZED &&
-        window_state->IsNormalStateType() &&
-        window_state->HasRestoreBounds() &&
+        window_state->IsNormalStateType() && window_state->HasRestoreBounds() &&
         !window_state->unminimize_to_restore_bounds()) {
       restore_bounds_in_screen = window_state->GetRestoreBoundsInScreen();
       window_state->SaveCurrentBoundsForRestore();

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"

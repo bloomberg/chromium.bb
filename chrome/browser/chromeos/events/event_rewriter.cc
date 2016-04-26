@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"

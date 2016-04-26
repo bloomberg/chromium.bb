@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/dock/docked_window_layout_manager.h"
+#include "ash/wm/common/dock/docked_window_layout_manager.h"
 
 #include "ash/wm/common/shelf/wm_shelf.h"
 #include "ash/wm/common/shelf/wm_shelf_constants.h"
 #include "ash/wm/common/shelf/wm_shelf_observer.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_parenting_utils.h"
+#include "ash/wm/common/window_resizer.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
-#include "ash/wm/window_resizer.h"
-#include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
@@ -81,9 +81,9 @@ class DockedBackgroundWidget : public views::Widget,
   void OnNativeWidgetPaint(const ui::PaintContext& context) override {
     gfx::Rect local_window_bounds(GetWindowBoundsInScreen().size());
     ui::PaintRecorder recorder(context, local_window_bounds.size());
-    const gfx::ImageSkia& shelf_background(
-        alignment_ == DOCKED_ALIGNMENT_LEFT ?
-            shelf_background_left_ : shelf_background_right_);
+    const gfx::ImageSkia& shelf_background(alignment_ == DOCKED_ALIGNMENT_LEFT
+                                               ? shelf_background_left_
+                                               : shelf_background_right_);
     SkPaint paint;
     paint.setAlpha(alpha_);
     recorder.canvas()->DrawImageInt(
@@ -160,8 +160,9 @@ class DockedBackgroundWidget : public views::Widget,
   void UpdateBackground() {
     wm::ShelfBackgroundType background_type =
         IsVisible() ? visible_background_type_ : wm::SHELF_BACKGROUND_DEFAULT;
-    BackgroundAnimatorChangeType change_type = IsVisible() ?
-        visible_background_change_type_ : BACKGROUND_CHANGE_IMMEDIATE;
+    BackgroundAnimatorChangeType change_type =
+        IsVisible() ? visible_background_change_type_
+                    : BACKGROUND_CHANGE_IMMEDIATE;
 
     float target_opacity =
         (background_type == wm::SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
@@ -247,9 +248,9 @@ int GetWindowWidthCloseTo(const wm::WmWindow* window, int target_width) {
               DockedWindowLayoutManager::kMaxDockWidth);
     return window->GetBounds().width();
   }
-  int width = std::max(DockedWindowLayoutManager::kMinDockWidth,
-                       std::min(target_width,
-                                DockedWindowLayoutManager::kMaxDockWidth));
+  int width = std::max(
+      DockedWindowLayoutManager::kMinDockWidth,
+      std::min(target_width, DockedWindowLayoutManager::kMaxDockWidth));
   width = std::max(width, window->GetMinimumSize().width());
   if (window->GetMaximumSize().width() != 0)
     width = std::min(width, window->GetMaximumSize().width());
@@ -360,8 +361,7 @@ struct DockedWindowLayoutManager::CompareWindowPos {
 class DockedWindowLayoutManager::ShelfWindowObserver
     : public wm::WmWindowObserver {
  public:
-  explicit ShelfWindowObserver(
-      DockedWindowLayoutManager* docked_layout_manager)
+  explicit ShelfWindowObserver(DockedWindowLayoutManager* docked_layout_manager)
       : docked_layout_manager_(docked_layout_manager) {
     DCHECK(docked_layout_manager_->shelf()->GetWindow());
     docked_layout_manager_->shelf()->GetWindow()->AddObserver(this);
@@ -467,10 +467,9 @@ void DockedWindowLayoutManager::StartDragging(wm::WmWindow* window) {
   if (dragged_window_->GetParent() != dock_container_) {
     dragged_window_->AddObserver(this);
     dragged_state->AddObserver(this);
-  } else if (!IsAnyWindowDocked() &&
-             dragged_state->drag_details() &&
+  } else if (!IsAnyWindowDocked() && dragged_state->drag_details() &&
              !(dragged_state->drag_details()->bounds_change &
-                 WindowResizer::kBoundsChange_Resizes)) {
+               WindowResizer::kBoundsChange_Resizes)) {
     // If there are no other docked windows clear alignment when a docked window
     // is moved (but not when it is resized or the window could get undocked
     // when resized away from the edge while docked).
@@ -515,7 +514,7 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
   DCHECK(!IsPopupOrTransient(dragged_window_));
   if (is_dragged_window_docked_)
     OnDraggedWindowUndocked();
-  DCHECK (!is_dragged_window_docked_);
+  DCHECK(!is_dragged_window_docked_);
   // Stop observing a window unless it is docked container's child in which
   // case it needs to keep being observed after the drag completes.
   if (dragged_window_->GetParent() != dock_container_) {
@@ -594,7 +593,8 @@ bool DockedWindowLayoutManager::CanDockWindow(
   // modal browser dialogs. Prevent docking of panels attached to shelf during
   // the drag.
   wm::WindowState* window_state = window->GetWindowState();
-  bool should_attach_to_shelf = window_state->drag_details() &&
+  bool should_attach_to_shelf =
+      window_state->drag_details() &&
       window_state->drag_details()->should_attach_to_shelf;
   if (IsPopupOrTransient(window) || should_attach_to_shelf)
     return false;
@@ -618,8 +618,7 @@ bool DockedWindowLayoutManager::CanDockWindow(
   // Cannot dock on the other size from an existing dock.
   const DockedAlignment alignment = CalculateAlignmentExcept(window);
   if (desired_alignment != DOCKED_ALIGNMENT_NONE &&
-      alignment != DOCKED_ALIGNMENT_NONE &&
-      alignment != desired_alignment) {
+      alignment != DOCKED_ALIGNMENT_NONE && alignment != desired_alignment) {
     return false;
   }
   // Do not allow docking on the same side as shelf.
@@ -646,8 +645,7 @@ void DockedWindowLayoutManager::MaybeSetDesiredDockedAlignment(
   // dock or not. If the requested alignment is the same as the current
   // alignment return early as an optimization.
   if (alignment == DOCKED_ALIGNMENT_NONE ||
-      alignment_ == DOCKED_ALIGNMENT_NONE ||
-      alignment_ == alignment ||
+      alignment_ == DOCKED_ALIGNMENT_NONE || alignment_ == alignment ||
       !IsDockedAlignmentValid(alignment)) {
     return;
   }
@@ -684,8 +682,9 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(wm::WmWindow* child) {
   // display via API or due to display configuration change, so the alignment
   // is set based on which edge is closer in the new display.
   if (alignment_ == DOCKED_ALIGNMENT_NONE) {
-    alignment_ = preferred_alignment_ != DOCKED_ALIGNMENT_NONE ?
-        preferred_alignment_ : GetEdgeNearestWindow(child);
+    alignment_ = preferred_alignment_ != DOCKED_ALIGNMENT_NONE
+                     ? preferred_alignment_
+                     : GetEdgeNearestWindow(child);
   }
   MaybeMinimizeChildrenExcept(child);
   child->AddObserver(this);
@@ -914,8 +913,8 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
     wm::WmWindow* window(*iter);
     if (window == child || !IsWindowDocked(window))
       continue;
-    int room_needed = GetWindowHeightCloseTo(window, 0) +
-        (gap_needed ? kMinDockGap : 0);
+    int room_needed =
+        GetWindowHeightCloseTo(window, 0) + (gap_needed ? kMinDockGap : 0);
     gap_needed = true;
     if (available_room > room_needed) {
       available_room -= room_needed;
@@ -976,10 +975,8 @@ void DockedWindowLayoutManager::RecordUmaAction(DockedAction action,
   base::Time time_now = base::Time::Now();
   base::TimeDelta time_between_use = time_now - last_action_time_;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.Dock.TimeBetweenUse",
-                              time_between_use.InSeconds(),
-                              1,
-                              base::TimeDelta::FromHours(10).InSeconds(),
-                              100);
+                              time_between_use.InSeconds(), 1,
+                              base::TimeDelta::FromHours(10).InSeconds(), 100);
   last_action_time_ = time_now;
   int docked_all_count = 0;
   int docked_visible_count = 0;
@@ -1020,7 +1017,7 @@ void DockedWindowLayoutManager::OnDraggedWindowDocked(wm::WmWindow* window) {
 }
 
 void DockedWindowLayoutManager::OnDraggedWindowUndocked() {
-  DCHECK (is_dragged_window_docked_);
+  DCHECK(is_dragged_window_docked_);
   is_dragged_window_docked_ = false;
 }
 
@@ -1081,12 +1078,10 @@ void DockedWindowLayoutManager::Relayout() {
   gfx::Rect work_area = dock_container_->GetDisplayNearestWindow().work_area();
   if (shelf_observer_)
     work_area.Subtract(shelf_observer_->shelf_bounds_in_screen());
-  int available_room = CalculateWindowHeightsAndRemainingRoom(work_area,
-                                                              &visible_windows);
-  FanOutChildren(work_area,
-                 CalculateIdealWidth(visible_windows),
-                 available_room,
-                 &visible_windows);
+  int available_room =
+      CalculateWindowHeightsAndRemainingRoom(work_area, &visible_windows);
+  FanOutChildren(work_area, CalculateIdealWidth(visible_windows),
+                 available_room, &visible_windows);
 
   // After the first Relayout allow the windows to change their order easier
   // since we know they are docked.
@@ -1111,7 +1106,7 @@ int DockedWindowLayoutManager::CalculateWindowHeightsAndRemainingRoom(
   // its proportional share of the remaining space.
   for (std::vector<WindowWithHeight>::reverse_iterator iter =
            visible_windows->rbegin();
-      iter != visible_windows->rend(); ++iter) {
+       iter != visible_windows->rend(); ++iter) {
     iter->height = GetWindowHeightCloseTo(
         iter->window,
         (available_room + gap_height) / remaining_windows - gap_height);
@@ -1142,8 +1137,8 @@ int DockedWindowLayoutManager::CalculateIdealWidth(
     largest_min_width = std::max(largest_min_width, min_window_width);
     smallest_max_width = std::min(smallest_max_width, max_window_width);
   }
-  int ideal_width = std::max(largest_min_width,
-                             std::min(smallest_max_width, kIdealWidth));
+  int ideal_width =
+      std::max(largest_min_width, std::min(smallest_max_width, kIdealWidth));
   // Restrict docked area width regardless of window restrictions.
   ideal_width = std::max(std::min(ideal_width, kMaxDockWidth), kMinDockWidth);
   return ideal_width;
@@ -1158,9 +1153,10 @@ void DockedWindowLayoutManager::FanOutChildren(
 
   // Calculate initial vertical offset and the gap or overlap between windows.
   const int num_windows = visible_windows->size();
-  const float delta = static_cast<float>(available_room) /
-      ((available_room > 0 || num_windows <= 1) ?
-          num_windows + 1 : num_windows - 1);
+  const float delta =
+      static_cast<float>(available_room) /
+      ((available_room > 0 || num_windows <= 1) ? num_windows + 1
+                                                : num_windows - 1);
   float y_pos = work_area.y() + ((delta > 0) ? delta : 0);
 
   // Docked area is shown only if there is at least one non-dragged visible
@@ -1198,9 +1194,9 @@ void DockedWindowLayoutManager::FanOutChildren(
 
     // Fan out windows evenly distributing the overlap or remaining free space.
     bounds.set_height(iter->height);
-    bounds.set_y(std::max(work_area.y(),
-                          std::min(work_area.bottom() - bounds.height(),
-                                   static_cast<int>(y_pos + 0.5))));
+    bounds.set_y(
+        std::max(work_area.y(), std::min(work_area.bottom() - bounds.height(),
+                                         static_cast<int>(y_pos + 0.5))));
     y_pos += bounds.height() + delta + kMinDockGap;
 
     // All docked windows other than the one currently dragged remain stuck
@@ -1247,12 +1243,10 @@ void DockedWindowLayoutManager::UpdateDockBounds(
           ? dock_container_->GetBounds().right() - dock_inset
           : dock_container_->GetBounds().x(),
       dock_container_->GetBounds().y(), dock_inset, work_area.height());
-  docked_bounds_ = bounds +
-      dock_container_->GetBoundsInScreen().OffsetFromOrigin();
-  FOR_EACH_OBSERVER(
-      DockedWindowLayoutManagerObserver,
-      observer_list_,
-      OnDockBoundsChanging(bounds, reason));
+  docked_bounds_ =
+      bounds + dock_container_->GetBoundsInScreen().OffsetFromOrigin();
+  FOR_EACH_OBSERVER(DockedWindowLayoutManagerObserver, observer_list_,
+                    OnDockBoundsChanging(bounds, reason));
   // Show or hide background for docked area.
   gfx::Rect background_bounds(docked_bounds_);
   if (shelf_observer_)

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DEFAULT_STATE_H_
-#define ASH_WM_DEFAULT_STATE_H_
+#ifndef ASH_WM_COMMON_DEFAULT_STATE_H_
+#define ASH_WM_COMMON_DEFAULT_STATE_H_
 
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "base/macros.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
@@ -79,4 +79,4 @@ class DefaultState : public WindowState::State {
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_DEFAULT_STATE_H_
+#endif  // ASH_WM_COMMON_DEFAULT_STATE_H_

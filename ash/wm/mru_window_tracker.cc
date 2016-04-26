@@ -11,7 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/switchable_windows.h"
 #include "ash/wm/ash_focus_rules.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
