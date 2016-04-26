@@ -17,6 +17,7 @@
       "-k",
       "[ROOT]/b/build/site_config/.rietveld_secret_key"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "apply_issue",
     "~followup_annotations": [
       "@@@STEP_LINK@Applied issue 1@http://review_tool.url/1@@@"

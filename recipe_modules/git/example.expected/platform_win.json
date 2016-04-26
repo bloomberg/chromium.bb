@@ -18,6 +18,7 @@
       "--git_cmd_path",
       "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "git setup"
   },
   {

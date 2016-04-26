@@ -24,6 +24,7 @@
       "src@HEAD",
       "--gerrit_no_reset"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },

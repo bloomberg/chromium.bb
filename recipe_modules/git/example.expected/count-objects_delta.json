@@ -9,6 +9,7 @@
       "--url",
       "https://chromium.googlesource.com/chromium/src.git"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "git setup"
   },
   {

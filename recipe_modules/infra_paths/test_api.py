@@ -5,7 +5,7 @@
 from recipe_engine import recipe_test_api
 from recipe_engine.config_types import Path, NamedBasePath
 
-class InfraPathsTestApi(recipe_test_api.RecipeTestApi):
+class InfraPathsTestApi(recipe_test_api.RecipeTestApi): #pragma: no cover
   @recipe_test_api.mod_test_data
   @staticmethod
   def exists(*paths):
