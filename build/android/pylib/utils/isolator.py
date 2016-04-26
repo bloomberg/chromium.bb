@@ -152,6 +152,16 @@ class Isolator(object):
       else:
         os.remove(p)
 
+  @classmethod
+  def _DestructiveMerge(cls, src, dest):
+    if os.path.exists(dest) and os.path.isdir(dest):
+      for p in os.listdir(src):
+        cls._DestructiveMerge(os.path.join(src, p), os.path.join(dest, p))
+      os.rmdir(src)
+    else:
+      shutil.move(src, dest)
+
+
   def MoveOutputDeps(self):
     """Moves files from the output directory to the top level of
       |self._isolate_deps_dir|.
@@ -176,6 +186,7 @@ class Isolator(object):
         deps_out_dir, os.path.basename(constants.GetOutDirectory()))
     if os.path.isdir(deps_product_dir):
       for p in os.listdir(deps_product_dir):
-        shutil.move(os.path.join(deps_product_dir, p), self._isolate_deps_dir)
+        Isolator._DestructiveMerge(os.path.join(deps_product_dir, p),
+                                   os.path.join(self._isolate_deps_dir, p))
       os.rmdir(deps_product_dir)
       os.rmdir(deps_out_dir)

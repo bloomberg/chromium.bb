@@ -930,7 +930,7 @@ test("ui_base_unittests") {
     ]
   }
 
-  if (is_linux || is_mac || is_win) {
+  if (is_android || is_linux || is_mac || is_win) {
     # TODO(brettw): We should be able to depend on //ui/resources:ui_test_pak
     # instead of depending directly on the non-test .pak files, but depending
     # on ui_test_pak seems to have no effect.
@@ -942,8 +942,6 @@ test("ui_base_unittests") {
       "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
       "//third_party/mesa:osmesa",
     ]
-  } else if (is_android) {
-    data += [ "test/data/data_pack_unittest/truncated-header.pak" ]
   }
   if (is_linux || is_win) {
     data += [
