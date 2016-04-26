@@ -382,7 +382,6 @@ class CONTENT_EXPORT RenderFrameImpl
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
-  blink::WebNode GetContextMenuNode() const override;
   blink::WebPlugin* CreatePlugin(
       blink::WebFrame* frame,
       const WebPluginInfo& info,
@@ -532,7 +531,6 @@ class CONTENT_EXPORT RenderFrameImpl
                             blink::WebString* actual_value) override;
   bool runModalBeforeUnloadDialog(bool is_reload) override;
   void showContextMenu(const blink::WebContextMenuData& data) override;
-  void clearContextMenu() override;
   void willSendRequest(blink::WebLocalFrame* frame,
                        unsigned identifier,
                        blink::WebURLRequest& request,
@@ -1063,9 +1061,6 @@ class CONTENT_EXPORT RenderFrameImpl
   base::ObserverList<RenderFrameObserver> observers_;
 
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
-
-  // The node that the context menu was pressed over.
-  blink::WebNode context_menu_node_;
 
   // External context menu requests we're waiting for. "Internal"
   // (WebKit-originated) context menu events will have an ID of 0 and will not

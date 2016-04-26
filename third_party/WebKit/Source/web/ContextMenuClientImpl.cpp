@@ -358,9 +358,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         data.inputFieldType = WebContextMenuData::InputFieldTypeNone;
     }
 
-    data.node = r.innerNodeOrImageMapImage();
-
     WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
+    selectedWebFrame->setContextMenuNode(r.innerNodeOrImageMapImage());
     if (selectedWebFrame->client())
         selectedWebFrame->client()->showContextMenu(data);
 }
@@ -373,8 +372,7 @@ void ContextMenuClientImpl::clearContextMenu()
         return;
 
     WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
-    if (selectedWebFrame->client())
-        selectedWebFrame->client()->clearContextMenu();
+    selectedWebFrame->clearContextMenuNode();
 }
 
 static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVector<WebMenuItemInfo>& subMenuItems)

@@ -1450,6 +1450,7 @@ DEFINE_TRACE(WebLocalFrameImpl)
     visitor->trace(m_textFinder);
     visitor->trace(m_printContext);
     visitor->trace(m_geolocationClientProxy);
+    visitor->trace(m_contextMenuNode);
     visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
     WebFrameImplBase::trace(visitor);
@@ -1837,10 +1838,11 @@ WebLocalFrame* WebLocalFrameImpl::traverseNextLocal(bool wrap) const
     return nextLocalFrame ? nextLocalFrame->toWebLocalFrame() : nullptr;
 }
 
-void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& destinationURL)
+void WebLocalFrameImpl::sendPings(const WebURL& destinationURL)
 {
     DCHECK(frame());
-    Element* anchor = contextNode.constUnwrap<Node>()->enclosingLinkEventParentOrSelf();
+    DCHECK(m_contextMenuNode.get());
+    Element* anchor = m_contextMenuNode->enclosingLinkEventParentOrSelf();
     if (isHTMLAnchorElement(anchor))
         toHTMLAnchorElement(anchor)->sendPings(destinationURL);
 }

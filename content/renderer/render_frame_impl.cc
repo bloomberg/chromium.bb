@@ -1650,9 +1650,7 @@ void RenderFrameImpl::OnContextMenuClosed(
     }
   } else {
     if (custom_context.link_followed.is_valid())
-        frame_->sendPings(context_menu_node_, custom_context.link_followed);
-    // Internal request, forward to WebKit.
-    context_menu_node_.reset();
+      frame_->sendPings(custom_context.link_followed);
   }
 
   render_view()->webview()->didCloseContextMenu();
@@ -1688,9 +1686,10 @@ void RenderFrameImpl::OnCut() {
 
 void RenderFrameImpl::OnCopy() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  WebNode current_node = context_menu_node_.isNull() ?
-      GetFocusedElement() : context_menu_node_;
-  frame_->executeCommand(WebString::fromUTF8("Copy"), current_node);
+  WebNode current_node = frame_->contextMenuNode();
+  frame_->executeCommand(WebString::fromUTF8("Copy"), current_node.isNull()
+                                                          ? GetFocusedElement()
+                                                          : current_node);
 }
 
 void RenderFrameImpl::OnPaste() {
@@ -2235,10 +2234,6 @@ int RenderFrameImpl::ShowContextMenu(ContextMenuClient* client,
 void RenderFrameImpl::CancelContextMenu(int request_id) {
   DCHECK(pending_context_menus_.Lookup(request_id));
   pending_context_menus_.Remove(request_id);
-}
-
-blink::WebNode RenderFrameImpl::GetContextMenuNode() const {
-  return context_menu_node_;
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
@@ -3670,7 +3665,6 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   //                 data encoded images.  We should have a way to save them.
   if (params.src_url.spec().size() > url::kMaxURLChars)
     params.src_url = GURL();
-  context_menu_node_ = data.node;
 
 #if defined(OS_ANDROID)
   gfx::Rect start_rect;
@@ -3681,10 +3675,6 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
 #endif
 
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
-}
-
-void RenderFrameImpl::clearContextMenu() {
-  context_menu_node_.reset();
 }
 
 void RenderFrameImpl::willSendRequest(

@@ -177,10 +177,12 @@ void ChromeRenderFrameObserver::OnSetIsPrerendering(bool is_prerendering) {
 }
 
 void ChromeRenderFrameObserver::OnRequestReloadImageForContextNode() {
-  WebNode context_node = render_frame()->GetContextMenuNode();
-  if (!context_node.isNull() && context_node.isElementNode() &&
-      render_frame()->GetWebFrame()) {
-    render_frame()->GetWebFrame()->reloadImage(context_node);
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  // TODO(dglazkov): This code is clearly in the wrong place. Need
+  // to investigate what it is doing and fix (http://crbug.com/606164).
+  WebNode context_node = frame->contextMenuNode();
+  if (!context_node.isNull() && context_node.isElementNode()) {
+    frame->reloadImage(context_node);
   }
 }
 
@@ -188,7 +190,7 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
     int thumbnail_min_area_pixels,
     const gfx::Size& thumbnail_max_size_pixels,
     int callback_id) {
-  WebNode context_node = render_frame()->GetContextMenuNode();
+  WebNode context_node = render_frame()->GetWebFrame()->contextMenuNode();
   SkBitmap thumbnail;
   gfx::Size original_size;
   if (!context_node.isNull() && context_node.isElementNode()) {
@@ -226,7 +228,7 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
   printing::PrintWebViewHelper* helper =
       printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)
-    helper->PrintNode(render_frame()->GetContextMenuNode());
+    helper->PrintNode(render_frame()->GetWebFrame()->contextMenuNode());
 #endif
 }
 

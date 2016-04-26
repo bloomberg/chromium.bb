@@ -118,9 +118,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // menu is closed.
   virtual void CancelContextMenu(int request_id) = 0;
 
-  // Gets the node that the context menu was pressed over.
-  virtual blink::WebNode GetContextMenuNode() const = 0;
-
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
   // plugin was found. |throttler| may be empty.
   virtual blink::WebPlugin* CreatePlugin(
