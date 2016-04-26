@@ -8,7 +8,7 @@
 
 namespace views {
 
-gfx::Screen* CreateDesktopScreen() {
+display::Screen* CreateDesktopScreen() {
   return DesktopFactoryOzone::GetInstance()->CreateDesktopScreen();
 }
 

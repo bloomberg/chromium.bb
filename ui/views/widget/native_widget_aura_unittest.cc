@@ -19,7 +19,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/root_view.h"

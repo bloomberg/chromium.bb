@@ -4,7 +4,7 @@
 
 #include "ui/views/test/desktop_screen_x11_test_api.h"
 
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
 namespace views {
@@ -12,7 +12,7 @@ namespace test {
 
 void DesktopScreenX11TestApi::UpdateDisplays() {
   DesktopScreenX11* screen =
-      static_cast<DesktopScreenX11*>(gfx::Screen::GetScreen());
+      static_cast<DesktopScreenX11*>(display::Screen::GetScreen());
   screen->ConfigureTimerFired();
 }
 

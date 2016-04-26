@@ -18,7 +18,8 @@ public:
 
  private:
   // Overridden from display::win::ScreenWin:
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  display::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const override;
   HWND GetHWNDFromNativeView(gfx::NativeView window) const override;
   gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override;
 

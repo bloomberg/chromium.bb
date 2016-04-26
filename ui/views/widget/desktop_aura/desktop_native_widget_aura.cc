@@ -19,12 +19,11 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -680,7 +679,7 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   if (!content_window_)
     return;
   aura::Window* root = host_->window();
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   gfx::Rect bounds_in_pixels = screen->DIPToScreenRectInWindow(root, bounds);
   desktop_window_tree_host_->AsWindowTreeHost()->SetBounds(bounds_in_pixels);
 }

@@ -14,9 +14,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -413,7 +413,7 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 gfx::Rect BubbleFrameView::GetAvailableScreenBounds(
     const gfx::Rect& rect) const {
   // The bubble attempts to fit within the current screen bounds.
-  return gfx::Screen::GetScreen()
+  return display::Screen::GetScreen()
       ->GetDisplayNearestPoint(rect.CenterPoint())
       .work_area();
 }

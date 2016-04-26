@@ -28,7 +28,7 @@ class WM_EXPORT DefaultScreenPositionClient
                                 gfx::Point* point) override;
   void SetBounds(aura::Window* window,
                  const gfx::Rect& bounds,
-                 const gfx::Display& display) override;
+                 const display::Display& display) override;
 
  protected:
   // Returns the origin of the host platform-window in system pixel coordinates.

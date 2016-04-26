@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "ui/views/repeat_controller.h"
 
-#if defined(OS_LINUX)
-#include "ui/gfx/screen.h"
-#endif
-
 namespace views {
 
 ///////////////////////////////////////////////////////////////////////////////

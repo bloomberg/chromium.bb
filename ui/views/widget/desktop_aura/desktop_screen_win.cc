@@ -8,7 +8,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
@@ -26,7 +26,7 @@ DesktopScreenWin::~DesktopScreenWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, display::win::ScreenWin implementation:
 
-gfx::Display DesktopScreenWin::GetDisplayMatching(
+display::Display DesktopScreenWin::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   return GetDisplayNearestPoint(match_rect.CenterPoint());
 }
@@ -43,7 +43,7 @@ gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-gfx::Screen* CreateDesktopScreen() {
+display::Screen* CreateDesktopScreen() {
   return new DesktopScreenWin;
 }
 

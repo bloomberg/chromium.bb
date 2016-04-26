@@ -34,7 +34,6 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_core_switches.h"
 #include "ui/wm/public/animation_host.h"

@@ -24,10 +24,6 @@
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_LINUX)
-#include "ui/gfx/screen.h"
-#endif
-
 #undef min
 #undef max
 

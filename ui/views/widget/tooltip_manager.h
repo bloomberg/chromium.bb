@@ -11,7 +11,6 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
-class Display;
 class FontList;
 class Point;
 }  // namespace gfx

@@ -16,15 +16,15 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/util/display_util.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -47,8 +47,8 @@ double GetDeviceScaleFactor() {
   if (views::LinuxUI::instance()) {
     device_scale_factor =
       views::LinuxUI::instance()->GetDeviceScaleFactor();
-  } else if (gfx::Display::HasForceDeviceScaleFactor()) {
-    device_scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
+  } else if (display::Display::HasForceDeviceScaleFactor()) {
+    device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
   }
   return device_scale_factor;
 }
@@ -61,7 +61,7 @@ gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
   return gfx::ScaleToFlooredPoint(dip_point, GetDeviceScaleFactor());
 }
 
-std::vector<gfx::Display> GetFallbackDisplayList() {
+std::vector<display::Display> GetFallbackDisplayList() {
   ::XDisplay* display = gfx::GetXDisplay();
   ::Screen* screen = DefaultScreenOfDisplay(display);
   int width = WidthOfScreen(screen);
@@ -69,15 +69,15 @@ std::vector<gfx::Display> GetFallbackDisplayList() {
   gfx::Size physical_size(WidthMMOfScreen(screen), HeightMMOfScreen(screen));
 
   gfx::Rect bounds_in_pixels(0, 0, width, height);
-  gfx::Display gfx_display(0, bounds_in_pixels);
-  if (!gfx::Display::HasForceDeviceScaleFactor() &&
+  display::Display gfx_display(0, bounds_in_pixels);
+  if (!display::Display::HasForceDeviceScaleFactor() &&
       !ui::IsDisplaySizeBlackListed(physical_size)) {
     const float device_scale_factor = GetDeviceScaleFactor();
     DCHECK_LE(1.0f, device_scale_factor);
     gfx_display.SetScaleAndBounds(device_scale_factor, bounds_in_pixels);
   }
 
-  return std::vector<gfx::Display>(1, gfx_display);
+  return std::vector<display::Display>(1, gfx_display);
 }
 
 }  // namespace
@@ -126,7 +126,7 @@ DesktopScreenX11::~DesktopScreenX11() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopScreenX11, gfx::Screen implementation:
+// DesktopScreenX11, display::Screen implementation:
 
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   TRACE_EVENT0("views", "DesktopScreenX11::GetCursorScreenPoint()");
@@ -164,11 +164,11 @@ int DesktopScreenX11::GetNumDisplays() const {
   return displays_.size();
 }
 
-std::vector<gfx::Display> DesktopScreenX11::GetAllDisplays() const {
+std::vector<display::Display> DesktopScreenX11::GetAllDisplays() const {
   return displays_;
 }
 
-gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
+display::Display DesktopScreenX11::GetDisplayNearestWindow(
     gfx::NativeView window) const {
   if (!window)
     return GetPrimaryDisplay();
@@ -193,9 +193,9 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
   return GetPrimaryDisplay();
 }
 
-gfx::Display DesktopScreenX11::GetDisplayNearestPoint(
+display::Display DesktopScreenX11::GetDisplayNearestPoint(
     const gfx::Point& point) const {
-  for (std::vector<gfx::Display>::const_iterator it = displays_.begin();
+  for (std::vector<display::Display>::const_iterator it = displays_.begin();
        it != displays_.end(); ++it) {
     if (it->bounds().Contains(point))
       return *it;
@@ -204,11 +204,11 @@ gfx::Display DesktopScreenX11::GetDisplayNearestPoint(
   return GetPrimaryDisplay();
 }
 
-gfx::Display DesktopScreenX11::GetDisplayMatching(
+display::Display DesktopScreenX11::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   int max_area = 0;
-  const gfx::Display* matching = NULL;
-  for (std::vector<gfx::Display>::const_iterator it = displays_.begin();
+  const display::Display* matching = NULL;
+  for (std::vector<display::Display>::const_iterator it = displays_.begin();
        it != displays_.end(); ++it) {
     gfx::Rect intersect = gfx::IntersectRects(it->bounds(), match_rect);
     int area = intersect.width() * intersect.height();
@@ -221,15 +221,15 @@ gfx::Display DesktopScreenX11::GetDisplayMatching(
   return matching ? *matching : GetPrimaryDisplay();
 }
 
-gfx::Display DesktopScreenX11::GetPrimaryDisplay() const {
+display::Display DesktopScreenX11::GetPrimaryDisplay() const {
   return displays_.front();
 }
 
-void DesktopScreenX11::AddObserver(gfx::DisplayObserver* observer) {
+void DesktopScreenX11::AddObserver(display::DisplayObserver* observer) {
   change_notifier_.AddObserver(observer);
 }
 
-void DesktopScreenX11::RemoveObserver(gfx::DisplayObserver* observer) {
+void DesktopScreenX11::RemoveObserver(display::DisplayObserver* observer) {
   change_notifier_.RemoveObserver(observer);
 }
 
@@ -270,7 +270,7 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
 // static
 void DesktopScreenX11::UpdateDeviceScaleFactorForTest() {
   DesktopScreenX11* screen =
-      static_cast<DesktopScreenX11*>(gfx::Screen::GetScreen());
+      static_cast<DesktopScreenX11*>(display::Screen::GetScreen());
   screen->ConfigureTimerFired();
 }
 
@@ -278,17 +278,16 @@ void DesktopScreenX11::UpdateDeviceScaleFactorForTest() {
 // DesktopScreenX11, private:
 
 DesktopScreenX11::DesktopScreenX11(
-    const std::vector<gfx::Display>& test_displays)
+    const std::vector<display::Display>& test_displays)
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       has_xrandr_(false),
       xrandr_event_base_(0),
       displays_(test_displays),
-      atom_cache_(xdisplay_, kAtomsToCache) {
-}
+      atom_cache_(xdisplay_, kAtomsToCache) {}
 
-std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
-  std::vector<gfx::Display> displays;
+std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
+  std::vector<display::Display> displays;
   gfx::XScopedPtr<
       XRRScreenResources,
       gfx::XObjectDeleter<XRRScreenResources, void, XRRFreeScreenResources>>
@@ -334,9 +333,9 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
       }
 
       gfx::Rect crtc_bounds(crtc->x, crtc->y, crtc->width, crtc->height);
-      gfx::Display display(display_id, crtc_bounds);
+      display::Display display(display_id, crtc_bounds);
 
-      if (!gfx::Display::HasForceDeviceScaleFactor()) {
+      if (!display::Display::HasForceDeviceScaleFactor()) {
         display.SetScaleAndBounds(device_scale_factor, crtc_bounds);
       }
 
@@ -354,16 +353,16 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 
       switch (crtc->rotation) {
         case RR_Rotate_0:
-          display.set_rotation(gfx::Display::ROTATE_0);
+          display.set_rotation(display::Display::ROTATE_0);
           break;
         case RR_Rotate_90:
-          display.set_rotation(gfx::Display::ROTATE_90);
+          display.set_rotation(display::Display::ROTATE_90);
           break;
         case RR_Rotate_180:
-          display.set_rotation(gfx::Display::ROTATE_180);
+          display.set_rotation(display::Display::ROTATE_180);
           break;
         case RR_Rotate_270:
-          display.set_rotation(gfx::Display::ROTATE_270);
+          display.set_rotation(display::Display::ROTATE_270);
           break;
       }
 
@@ -378,13 +377,13 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 }
 
 void DesktopScreenX11::ConfigureTimerFired() {
-  std::vector<gfx::Display> old_displays = displays_;
+  std::vector<display::Display> old_displays = displays_;
   SetDisplaysInternal(BuildDisplaysFromXRandRInfo());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
 
 void DesktopScreenX11::SetDisplaysInternal(
-    const std::vector<gfx::Display>& displays) {
+    const std::vector<display::Display>& displays) {
   displays_ = displays;
   gfx::SetFontRenderParamsDeviceScaleFactor(
       GetPrimaryDisplay().device_scale_factor());
@@ -392,7 +391,7 @@ void DesktopScreenX11::SetDisplaysInternal(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-gfx::Screen* CreateDesktopScreen() {
+display::Screen* CreateDesktopScreen() {
   return new DesktopScreenX11;
 }
 

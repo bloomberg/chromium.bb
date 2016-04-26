@@ -10,9 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/test/test_ink_drop_delegate.h"
@@ -392,7 +392,7 @@ TEST_F(CustomButtonTest, AsCustomButton) {
 // Note: Ink drop is not hidden upon release because CustomButton descendants
 // may enter a different ink drop state.
 TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
-  gfx::Point old_cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point old_cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
   bool ink_shown = false;
   bool ink_hidden = false;
   CreateButtonWithInkDrop(base::WrapUnique(
@@ -411,7 +411,7 @@ TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
 // Tests that pressing a button shows and releasing capture hides ink drop.
 // Releasing capture should also reset PRESSED button state to NORMAL.
 TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
-  gfx::Point old_cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point old_cursor = display::Screen::GetScreen()->GetCursorScreenPoint();
   bool ink_shown = false;
   bool ink_hidden = false;
   CreateButtonWithInkDrop(base::WrapUnique(

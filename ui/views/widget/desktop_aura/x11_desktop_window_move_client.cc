@@ -14,7 +14,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
-#include "ui/gfx/screen.h"
 
 namespace views {
 

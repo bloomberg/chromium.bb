@@ -15,10 +15,10 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
@@ -426,13 +426,13 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
                                           &screen_position_client_);
 #if !defined(OS_CHROMEOS)
     desktop_screen_.reset(CreateDesktopScreen());
-    gfx::Screen::SetScreenInstance(desktop_screen_.get());
+    display::Screen::SetScreenInstance(desktop_screen_.get());
 #endif
   }
 
   void TearDown() override {
 #if !defined(OS_CHROMEOS)
-    gfx::Screen::SetScreenInstance(test_screen());
+    display::Screen::SetScreenInstance(test_screen());
     desktop_screen_.reset();
 #endif
     aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
@@ -441,7 +441,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 
  private:
   wm::DefaultScreenPositionClient screen_position_client_;
-  std::unique_ptr<gfx::Screen> desktop_screen_;
+  std::unique_ptr<display::Screen> desktop_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerCaptureTest);
 };

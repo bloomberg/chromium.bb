@@ -14,6 +14,10 @@ namespace gfx {
 class Display;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace wm {
 
 // Interface where platforms such as Ash or Desktop aura are notified of
@@ -25,9 +29,8 @@ class WM_EXPORT NativeCursorManager {
   virtual ~NativeCursorManager() {}
 
   // A request to set the screen DPI. Can cause changes in the current cursor.
-  virtual void SetDisplay(
-      const gfx::Display& display,
-      NativeCursorManagerDelegate* delegate) = 0;
+  virtual void SetDisplay(const display::Display& display,
+                          NativeCursorManagerDelegate* delegate) = 0;
 
   // A request to set the cursor to |cursor|. At minimum, implementer should
   // call NativeCursorManagerDelegate::CommitCursor() with whatever cursor is

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 
 namespace views {
 
@@ -36,7 +36,8 @@ void BaseScrollBarButton::OnMouseCaptureLost() {
 
 void BaseScrollBarButton::RepeaterNotifyClick() {
   // TODO(sky): See if we can convert to using |Screen| everywhere.
-  gfx::Point cursor_point = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point cursor_point =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
   ui::MouseEvent event(ui::ET_MOUSE_RELEASED, cursor_point, cursor_point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                        ui::EF_LEFT_MOUSE_BUTTON);

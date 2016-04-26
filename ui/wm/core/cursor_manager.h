@@ -17,10 +17,6 @@
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 #include "ui/wm/wm_export.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace ui {
 class KeyEvent;
 }
@@ -57,7 +53,7 @@ class WM_EXPORT CursorManager : public aura::client::CursorClient,
   void EnableMouseEvents() override;
   void DisableMouseEvents() override;
   bool IsMouseEventsEnabled() const override;
-  void SetDisplay(const gfx::Display& display) override;
+  void SetDisplay(const display::Display& display) override;
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsCursorLocked() const override;

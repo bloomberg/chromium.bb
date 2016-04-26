@@ -10,9 +10,10 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/corewm/cursor_height_provider_win.h"
 
 namespace views {
@@ -86,8 +87,8 @@ void TooltipWin::PositionTooltip() {
                                    reinterpret_cast<LPARAM>(&toolinfo_));
   const gfx::Size size(LOWORD(tooltip_size), HIWORD(tooltip_size));
 
-  const gfx::Display display(
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(location_));
+  const display::Display display(
+      display::Screen::GetScreen()->GetDisplayNearestPoint(location_));
 
   gfx::Rect tooltip_bounds(screen_point, size);
   tooltip_bounds.AdjustToFit(
@@ -100,8 +101,8 @@ void TooltipWin::PositionTooltip() {
 int TooltipWin::GetMaxWidth(const gfx::Point& location) const {
   const gfx::Point screen_point =
       display::win::ScreenWin::DIPToScreenPoint(location);
-  gfx::Display display(
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(screen_point));
+  display::Display display(
+      display::Screen::GetScreen()->GetDisplayNearestPoint(screen_point));
   const gfx::Rect monitor_bounds = display.bounds();
   return (monitor_bounds.width() + 1) / 2;
 }

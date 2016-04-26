@@ -230,7 +230,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
  private:
   aura::Window* RootWindowForPoint(const gfx::Point& point) {
     // Most interactive_ui_tests run inside of the aura_test_helper
-    // environment. This means that we can't rely on gfx::Screen and several
+    // environment. This means that we can't rely on display::Screen and several
     // other things to work properly. Therefore we hack around this by
     // iterating across the windows owned DesktopWindowTreeHostX11 since this
     // doesn't rely on having a DesktopScreenX11.

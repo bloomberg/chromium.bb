@@ -9,9 +9,9 @@
 #include "base/strings/string_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -138,7 +138,7 @@ void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
                                    const gfx::Size& tooltip_size) {
   gfx::Rect tooltip_rect(mouse_pos, tooltip_size);
   tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   gfx::Rect display_bounds(screen->GetDisplayNearestPoint(mouse_pos).bounds());
 
   // If tooltip is out of bounds on the x axis, we simply shift it
@@ -166,7 +166,7 @@ void TooltipAura::DestroyWidget() {
 }
 
 int TooltipAura::GetMaxWidth(const gfx::Point& location) const {
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   gfx::Rect display_bounds(screen->GetDisplayNearestPoint(location).bounds());
   return std::min(kTooltipMaxWidthPixels, (display_bounds.width() + 1) / 2);
 }

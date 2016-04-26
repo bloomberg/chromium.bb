@@ -11,14 +11,14 @@
 
 namespace views {
 
-std::vector<gfx::Display> GetDisplaysFromWindow(mus::Window* window) {
+std::vector<display::Display> GetDisplaysFromWindow(mus::Window* window) {
   static int64_t synthesized_display_id = 2000;
-  gfx::Display display;
+  display::Display display;
   display.set_id(synthesized_display_id++);
   display.SetScaleAndBounds(
       window->viewport_metrics().device_pixel_ratio,
       gfx::Rect(window->viewport_metrics().size_in_pixels.To<gfx::Size>()));
-  std::vector<gfx::Display> displays;
+  std::vector<display::Display> displays;
   displays.push_back(display);
   return displays;
 }

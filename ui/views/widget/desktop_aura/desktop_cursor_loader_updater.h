@@ -17,6 +17,10 @@ namespace gfx {
 class Display;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ui {
 class CursorLoader;
 }
@@ -39,7 +43,7 @@ class VIEWS_EXPORT DesktopCursorLoaderUpdater {
 
   // Called when the display has changed (as we may need to reload the cursor
   // assets in response to a device scale factor or rotation change).
-  virtual void OnDisplayUpdated(const gfx::Display& display,
+  virtual void OnDisplayUpdated(const display::Display& display,
                                 ui::CursorLoader* loader) = 0;
 };
 

@@ -16,6 +16,7 @@
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
+        '../display/display.gyp:display',
         '../events/devices/events_devices.gyp:events_devices',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',

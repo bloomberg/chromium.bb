@@ -21,13 +21,13 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -1099,8 +1099,8 @@ void Textfield::WriteDragDataForView(View* sender,
   label.SetSubpixelRenderingEnabled(false);
   gfx::Size size(label.GetPreferredSize());
   gfx::NativeView native_view = GetWidget()->GetNativeView();
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
   size.SetToMin(gfx::Size(display.size().width(), height()));
   label.SetBoundsRect(gfx::Rect(size));
   std::unique_ptr<gfx::Canvas> canvas(

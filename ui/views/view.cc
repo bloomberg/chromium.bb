@@ -33,6 +33,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/transform_recorder.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -40,7 +41,6 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
@@ -954,7 +954,7 @@ bool View::IsMouseHovered() const {
   if (!GetWidget()->IsMouseEventsEnabled())
     return false;
 
-  gfx::Point cursor_pos(gfx::Screen::GetScreen()->GetCursorScreenPoint());
+  gfx::Point cursor_pos(display::Screen::GetScreen()->GetCursorScreenPoint());
   ConvertPointFromScreen(this, &cursor_pos);
   return HitTestPoint(cursor_pos);
 }

@@ -34,7 +34,6 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/win/direct_manipulation.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/rendering_window_manager.h"

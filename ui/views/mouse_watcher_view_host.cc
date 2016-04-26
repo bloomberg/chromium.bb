@@ -4,7 +4,7 @@
 
 #include "ui/views/mouse_watcher_view_host.h"
 
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -49,7 +49,7 @@ bool MouseWatcherViewHost::IsMouseOverWindow() {
   if (!widget)
     return false;
 
-  return gfx::Screen::GetScreen()->GetWindowUnderCursor() ==
+  return display::Screen::GetScreen()->GetWindowUnderCursor() ==
          widget->GetNativeWindow();
 }
 

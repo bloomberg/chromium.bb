@@ -15,8 +15,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/display_observer.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/views_test_base.h"
@@ -57,7 +57,7 @@ const int64_t kFirstDisplay = 5321829;
 const int64_t kSecondDisplay = 928310;
 
 class DesktopScreenX11Test : public views::ViewsTestBase,
-                             public gfx::DisplayObserver {
+                             public display::DisplayObserver {
  public:
   DesktopScreenX11Test() {}
   ~DesktopScreenX11Test() override {}
@@ -66,8 +66,9 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
   void SetUp() override {
     ViewsTestBase::SetUp();
     // Initialize the world to the single monitor case.
-    std::vector<gfx::Display> displays;
-    displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+    std::vector<display::Display> displays;
+    displays.push_back(
+        display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
     screen_.reset(new DesktopScreenX11(displays));
     screen_->AddObserver(this);
   }
@@ -78,14 +79,14 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
   }
 
  protected:
-  std::vector<gfx::Display> changed_display_;
-  std::vector<gfx::Display> added_display_;
-  std::vector<gfx::Display> removed_display_;
+  std::vector<display::Display> changed_display_;
+  std::vector<display::Display> added_display_;
+  std::vector<display::Display> removed_display_;
 
   DesktopScreenX11* screen() { return screen_.get(); }
 
-  void NotifyDisplaysChanged(const std::vector<gfx::Display>& displays) {
-    std::vector<gfx::Display> old_displays = screen_->displays_;
+  void NotifyDisplaysChanged(const std::vector<display::Display>& displays) {
+    std::vector<display::Display> old_displays = screen_->displays_;
     screen_->SetDisplaysInternal(displays);
     screen_->change_notifier_.NotifyDisplaysChanged(old_displays,
                                                     screen_->displays_);
@@ -116,16 +117,16 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
   }
 
  private:
-  // Overridden from gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override {
+  // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override {
     added_display_.push_back(new_display);
   }
 
-  void OnDisplayRemoved(const gfx::Display& old_display) override {
+  void OnDisplayRemoved(const display::Display& old_display) override {
     removed_display_.push_back(old_display);
   }
 
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override {
     changed_display_.push_back(display);
   }
@@ -136,8 +137,9 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
 };
 
 TEST_F(DesktopScreenX11Test, BoundsChangeSingleMonitor) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(1u, changed_display_.size());
@@ -146,10 +148,11 @@ TEST_F(DesktopScreenX11Test, BoundsChangeSingleMonitor) {
 }
 
 TEST_F(DesktopScreenX11Test, AddMonitorToTheRight) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(0u, changed_display_.size());
@@ -158,9 +161,11 @@ TEST_F(DesktopScreenX11Test, AddMonitorToTheRight) {
 }
 
 TEST_F(DesktopScreenX11Test, AddMonitorToTheLeft) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kSecondDisplay, gfx::Rect(0, 0, 1024, 768)));
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(1024, 0, 640, 480)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(0, 0, 1024, 768)));
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(1024, 0, 640, 480)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(1u, changed_display_.size());
@@ -169,16 +174,18 @@ TEST_F(DesktopScreenX11Test, AddMonitorToTheLeft) {
 }
 
 TEST_F(DesktopScreenX11Test, RemoveMonitorOnRight) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   ResetDisplayChanges();
 
   displays.clear();
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(0u, changed_display_.size());
@@ -187,16 +194,18 @@ TEST_F(DesktopScreenX11Test, RemoveMonitorOnRight) {
 }
 
 TEST_F(DesktopScreenX11Test, RemoveMonitorOnLeft) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   ResetDisplayChanges();
 
   displays.clear();
-  displays.push_back(gfx::Display(kSecondDisplay, gfx::Rect(0, 0, 1024, 768)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(0, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(1u, changed_display_.size());
@@ -205,10 +214,11 @@ TEST_F(DesktopScreenX11Test, RemoveMonitorOnLeft) {
 }
 
 TEST_F(DesktopScreenX11Test, GetDisplayNearestPoint) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(kFirstDisplay,
@@ -222,10 +232,11 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestPoint) {
 }
 
 TEST_F(DesktopScreenX11Test, GetDisplayMatchingBasic) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(kSecondDisplay,
@@ -233,10 +244,11 @@ TEST_F(DesktopScreenX11Test, GetDisplayMatchingBasic) {
 }
 
 TEST_F(DesktopScreenX11Test, GetDisplayMatchingOverlap) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(kSecondDisplay,
@@ -244,10 +256,11 @@ TEST_F(DesktopScreenX11Test, GetDisplayMatchingOverlap) {
 }
 
 TEST_F(DesktopScreenX11Test, GetPrimaryDisplay) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
-  displays.push_back(gfx::Display(kSecondDisplay, gfx::Rect(0, 0, 640, 480)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(640, 0, 1024, 768)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(0, 0, 640, 480)));
   NotifyDisplaysChanged(displays);
 
   // The first display in the list is always the primary, even if other
@@ -257,10 +270,11 @@ TEST_F(DesktopScreenX11Test, GetPrimaryDisplay) {
 
 TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
   // Set up a two monitor situation.
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  displays.push_back(gfx::Display(kSecondDisplay,
-                                  gfx::Rect(640, 0, 1024, 768)));
+  std::vector<display::Display> displays;
+  displays.push_back(
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
 
   Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10),
@@ -370,41 +384,43 @@ TEST_F(DesktopScreenX11Test, RightClickDuringDoubleClickDoesntMaximize) {
 
 // Test that rotating the displays notifies the DisplayObservers.
 TEST_F(DesktopScreenX11Test, RotationChange) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  std::vector<display::Display> displays;
   displays.push_back(
-      gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 
-  displays[0].set_rotation(gfx::Display::ROTATE_90);
+  displays[0].set_rotation(display::Display::ROTATE_90);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(1u, changed_display_.size());
 
-  displays[1].set_rotation(gfx::Display::ROTATE_90);
+  displays[1].set_rotation(display::Display::ROTATE_90);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
-  displays[0].set_rotation(gfx::Display::ROTATE_270);
+  displays[0].set_rotation(display::Display::ROTATE_270);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(3u, changed_display_.size());
 
-  displays[0].set_rotation(gfx::Display::ROTATE_270);
+  displays[0].set_rotation(display::Display::ROTATE_270);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(3u, changed_display_.size());
 
-  displays[0].set_rotation(gfx::Display::ROTATE_0);
-  displays[1].set_rotation(gfx::Display::ROTATE_0);
+  displays[0].set_rotation(display::Display::ROTATE_0);
+  displays[1].set_rotation(display::Display::ROTATE_0);
   NotifyDisplaysChanged(displays);
   EXPECT_EQ(5u, changed_display_.size());
 }
 
 // Test that changing the displays workarea notifies the DisplayObservers.
 TEST_F(DesktopScreenX11Test, WorkareaChange) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  std::vector<display::Display> displays;
   displays.push_back(
-      gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 
@@ -432,10 +448,11 @@ TEST_F(DesktopScreenX11Test, WorkareaChange) {
 
 // Test that changing the device scale factor notifies the DisplayObservers.
 TEST_F(DesktopScreenX11Test, DeviceScaleFactorChange) {
-  std::vector<gfx::Display> displays;
-  displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  std::vector<display::Display> displays;
   displays.push_back(
-      gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
+      display::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
+  displays.push_back(
+      display::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
   NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 

@@ -11,7 +11,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursors_aura.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace views {
 namespace {
@@ -63,7 +63,7 @@ void DesktopCursorLoaderUpdaterAuraLinux::OnCreate(
 }
 
 void DesktopCursorLoaderUpdaterAuraLinux::OnDisplayUpdated(
-    const gfx::Display& display,
+    const display::Display& display,
     ui::CursorLoader* loader) {
   LoadImageCursors(display.device_scale_factor(), loader);
 }

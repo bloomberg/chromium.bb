@@ -25,9 +25,6 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace gfx {
-class Screen;
-}
 namespace ui {
 class OSExchangeData;
 class ScopedEventDispatcher;

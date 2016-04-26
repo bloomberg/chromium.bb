@@ -28,20 +28,20 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
-#include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/corewm/tooltip_aura.h"
@@ -822,8 +822,8 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   // See https://crbug.com/361408
   if (fullscreen) {
     restored_bounds_in_pixels_ = bounds_in_pixels_;
-    const gfx::Display display =
-        gfx::Screen::GetScreen()->GetDisplayNearestWindow(window());
+    const display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window());
     bounds_in_pixels_ = ToPixelRect(display.bounds());
   } else {
     bounds_in_pixels_ = restored_bounds_in_pixels_;
@@ -941,10 +941,10 @@ void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 
 gfx::Transform DesktopWindowTreeHostX11::GetRootTransform() const {
-  gfx::Display display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   if (window_mapped_) {
     aura::Window* win = const_cast<aura::Window*>(window());
-    display = gfx::Screen::GetScreen()->GetDisplayNearestWindow(win);
+    display = display::Screen::GetScreen()->GetDisplayNearestWindow(win);
   }
 
   float scale = display.device_scale_factor();
@@ -1296,8 +1296,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
 
 gfx::Size DesktopWindowTreeHostX11::AdjustSize(
     const gfx::Size& requested_size_in_pixels) {
-  std::vector<gfx::Display> displays =
-      gfx::Screen::GetScreen()->GetAllDisplays();
+  std::vector<display::Display> displays =
+      display::Screen::GetScreen()->GetAllDisplays();
   // Compare against all monitor sizes. The window manager can move the window
   // to whichever monitor it wants.
   for (size_t i = 0; i < displays.size(); ++i) {
@@ -1568,10 +1568,10 @@ void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
     ui::LocatedEvent* located_event,
     DesktopWindowTreeHostX11* host) {
   DCHECK_NE(this, host);
-  const gfx::Display display_src =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window());
-  const gfx::Display display_dest =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(host->window());
+  const display::Display display_src =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+  const display::Display display_dest =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(host->window());
   DCHECK_EQ(display_src.device_scale_factor(),
             display_dest.device_scale_factor());
   gfx::Vector2d offset = GetLocationOnNativeScreen() -

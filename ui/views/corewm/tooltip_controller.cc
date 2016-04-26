@@ -17,10 +17,10 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -97,7 +97,7 @@ aura::Window* GetTooltipTarget(const ui::MouseEvent& event,
       gfx::Point screen_loc(event.location());
       aura::client::GetScreenPositionClient(event_target->GetRootWindow())->
           ConvertPointToScreen(event_target, &screen_loc);
-      gfx::Screen* screen = gfx::Screen::GetScreen();
+      display::Screen* screen = display::Screen::GetScreen();
       aura::Window* target = screen->GetWindowAtScreenPoint(screen_loc);
       if (!target)
         return NULL;
@@ -203,8 +203,8 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_DRAGGED: {
       curr_mouse_loc_ = event->location();
       aura::Window* target = NULL;
-      // Avoid a call to gfx::Screen::GetWindowAtScreenPoint() since it can be
-      // very expensive on X11 in cases when the tooltip is hidden anyway.
+      // Avoid a call to display::Screen::GetWindowAtScreenPoint() since it can
+      // be very expensive on X11 in cases when the tooltip is hidden anyway.
       if (tooltips_enabled_ &&
           !aura::Env::GetInstance()->IsMouseButtonDown() &&
           !IsDragDropInProgress()) {

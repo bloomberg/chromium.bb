@@ -22,7 +22,7 @@ class VIEWS_EXPORT DesktopScreenPositionClient
   // aura::client::DefaultScreenPositionClient:
   void SetBounds(aura::Window* window,
                  const gfx::Rect& bounds,
-                 const gfx::Display& display) override;
+                 const display::Display& display) override;
 
  private:
   aura::Window* root_window_;

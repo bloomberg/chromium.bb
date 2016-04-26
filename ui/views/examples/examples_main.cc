@@ -20,7 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/in_process_context_factory.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
     std::unique_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());
-    gfx::Screen::SetScreenInstance(desktop_screen.get());
+    display::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
     views::examples::ShowExamplesWindow(

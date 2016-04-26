@@ -25,11 +25,11 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_foreign_window_manager.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
@@ -1187,8 +1187,8 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
 
-  gfx::Point location =
-      gfx::Screen::GetScreen()->GetCursorScreenPoint() - drag_widget_offset_;
+  gfx::Point location = display::Screen::GetScreen()->GetCursorScreenPoint() -
+                        drag_widget_offset_;
   params.bounds = gfx::Rect(location, image.size());
   widget->set_focus_on_creation(false);
   widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);

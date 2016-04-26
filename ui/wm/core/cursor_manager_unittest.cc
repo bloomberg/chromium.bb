@@ -15,7 +15,7 @@ namespace {
 class TestingCursorManager : public wm::NativeCursorManager {
  public:
   // Overridden from wm::NativeCursorManager:
-  void SetDisplay(const gfx::Display& display,
+  void SetDisplay(const display::Display& display,
                   wm::NativeCursorManagerDelegate* delegate) override {}
 
   void SetCursor(gfx::NativeCursor cursor,

@@ -50,7 +50,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager
 
  private:
   // Overridden from wm::NativeCursorManager:
-  void SetDisplay(const gfx::Display& display,
+  void SetDisplay(const display::Display& display,
                   wm::NativeCursorManagerDelegate* delegate) override;
   void SetCursor(gfx::NativeCursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override;

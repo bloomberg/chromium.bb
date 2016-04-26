@@ -162,7 +162,7 @@ bool CursorManager::IsMouseEventsEnabled() const {
   return current_state_->mouse_events_enabled();
 }
 
-void CursorManager::SetDisplay(const gfx::Display& display) {
+void CursorManager::SetDisplay(const display::Display& display) {
   delegate_->SetDisplay(display, this);
 }
 

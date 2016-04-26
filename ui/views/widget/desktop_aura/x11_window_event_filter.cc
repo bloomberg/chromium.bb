@@ -14,10 +14,10 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -152,7 +152,7 @@ void X11WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
     return;
 
   gfx::Rect display_work_area =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(target).work_area();
+      display::Screen::GetScreen()->GetDisplayNearestWindow(target).work_area();
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
   if (event->IsMiddleMouseButton()) {
     bounds.set_y(display_work_area.y());

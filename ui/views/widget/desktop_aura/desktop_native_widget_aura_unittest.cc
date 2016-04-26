@@ -14,10 +14,10 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -432,7 +432,8 @@ TEST_F(DesktopAuraWidgetTest, TopLevelOwnedPopupRepositionTest) {
 
   gfx::Rect new_pos(10, 10, 400, 400);
   popup_window.owned_window()->SetBoundsInScreen(
-      new_pos, gfx::Screen::GetScreen()->GetDisplayNearestPoint(gfx::Point()));
+      new_pos,
+      display::Screen::GetScreen()->GetDisplayNearestPoint(gfx::Point()));
 
   EXPECT_EQ(new_pos,
             popup_window.top_level_widget()->GetWindowBoundsInScreen());

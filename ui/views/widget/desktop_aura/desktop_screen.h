@@ -11,11 +11,15 @@ namespace gfx {
 class Screen;
 }
 
+namespace display {
+using Screen = gfx::Screen;
+}
+
 namespace views {
 
 // Creates a Screen that represents the screen of the environment that hosts
 // a WindowTreeHost. Caller owns the result.
-VIEWS_EXPORT gfx::Screen* CreateDesktopScreen();
+VIEWS_EXPORT display::Screen* CreateDesktopScreen();
 
 }  // namespace views
 

@@ -34,7 +34,7 @@ DesktopScreenPositionClient::~DesktopScreenPositionClient() {
 
 void DesktopScreenPositionClient::SetBounds(aura::Window* window,
                                             const gfx::Rect& bounds,
-                                            const gfx::Display& display) {
+                                            const display::Display& display) {
   // TODO(jam): Use the 3rd parameter, |display|.
   aura::Window* root = window->GetRootWindow();
 
