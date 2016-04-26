@@ -810,9 +810,9 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " etag = '%s'"
         " has_download_file = %s"
         " url_chain = \n\t\"%s\"\n\t"
-        " current_path = \"%" PRFilePath
-        "\"\n\t"
-        " target_path = \"%" PRFilePath "\"",
+        " current_path = \"%" PRFilePath "\"\n\t"
+        " target_path = \"%" PRFilePath "\""
+        " referrer = \"%s\"",
         GetTotalBytes(),
         GetReceivedBytes(),
         DownloadInterruptReasonToString(last_reason_).c_str(),
@@ -826,7 +826,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         download_file_.get() ? "true" : "false",
         url_list.c_str(),
         GetFullPath().value().c_str(),
-        GetTargetFilePath().value().c_str());
+        GetTargetFilePath().value().c_str(),
+        GetReferrerUrl().spec().c_str());
   } else {
     description += base::StringPrintf(" url = \"%s\"", url_list.c_str());
   }
@@ -1913,6 +1914,12 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   download_params->set_etag(GetETag());
   download_params->set_hash_of_partial_file(hash_);
   download_params->set_hash_state(std::move(hash_state_));
+
+  // Note that resumed downloads disallow redirects. Hence the referrer URL
+  // (which is the contents of the Referer header for the last download request)
+  // will only be sent to the URL returned by GetURL().
+  download_params->set_referrer(
+      Referrer(GetReferrerUrl(), blink::WebReferrerPolicyAlways));
 
   TransitionTo(RESUMING_INTERNAL);
   delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());

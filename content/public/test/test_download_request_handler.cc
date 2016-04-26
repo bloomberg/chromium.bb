@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -63,8 +64,7 @@ class TestDownloadRequestHandler::Interceptor
 
   // Can be called by a URLRequestJob to notify this interceptor of a completed
   // request.
-  void AddCompletedRequest(
-      const TestDownloadRequestHandler::CompletedRequest& request);
+  void AddCompletedRequest(std::unique_ptr<CompletedRequest> request);
 
   // Returns the task runner that should be used for invoking any client
   // supplied callbacks.
@@ -201,6 +201,13 @@ scoped_refptr<net::HttpResponseHeaders> HeadersFromString(
 
 }  // namespace
 
+TestDownloadRequestHandler::CompletedRequest::CompletedRequest() {}
+
+TestDownloadRequestHandler::CompletedRequest::~CompletedRequest() {}
+
+TestDownloadRequestHandler::CompletedRequest::CompletedRequest(
+    CompletedRequest&&) = default;
+
 // static
 net::URLRequestJob* TestDownloadRequestHandler::PartialResponseJob::Factory(
     const Parameters& parameters,
@@ -312,10 +319,17 @@ int TestDownloadRequestHandler::PartialResponseJob::ReadRawData(
 
 void TestDownloadRequestHandler::PartialResponseJob::ReportCompletedRequest() {
   if (interceptor_.get()) {
-    TestDownloadRequestHandler::CompletedRequest completed_request;
-    completed_request.transferred_byte_count = read_byte_count_;
-    completed_request.request_headers = request()->extra_request_headers();
-    interceptor_->AddCompletedRequest(completed_request);
+    std::unique_ptr<CompletedRequest> completed_request(new CompletedRequest);
+    completed_request->transferred_byte_count = read_byte_count_;
+    completed_request->request_headers = request()->extra_request_headers();
+    completed_request->referrer = request()->referrer();
+    completed_request->referrer_policy = request()->referrer_policy();
+    completed_request->initiator = request()->initiator();
+    completed_request->first_party_for_cookies =
+        request()->first_party_for_cookies();
+    completed_request->first_party_url_policy =
+        request()->first_party_url_policy();
+    interceptor_->AddCompletedRequest(std::move(completed_request));
   }
 }
 
@@ -515,8 +529,8 @@ void TestDownloadRequestHandler::Interceptor::GetAndResetCompletedRequests(
 }
 
 void TestDownloadRequestHandler::Interceptor::AddCompletedRequest(
-    const TestDownloadRequestHandler::CompletedRequest& request) {
-  completed_requests_.push_back(request);
+    std::unique_ptr<CompletedRequest> request) {
+  completed_requests_.push_back(std::move(request));
 }
 
 scoped_refptr<base::SequencedTaskRunner>

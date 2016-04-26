@@ -197,15 +197,32 @@ class TestDownloadRequestHandler : public base::NonThreadSafe {
 
   // Details about completed requests returned by GetCompletedRequestInfo().
   struct CompletedRequest {
+    CompletedRequest();
+    CompletedRequest(CompletedRequest&&);
+    ~CompletedRequest();
+
     // Count of bytes read by the client of the URLRequestJob. This counts the
     // number of bytes of the entity that was transferred *after* content
     // decoding is complete.
     int64_t transferred_byte_count = -1;
 
     net::HttpRequestHeaders request_headers;
+
+    std::string referrer;
+    net::URLRequest::ReferrerPolicy referrer_policy =
+        net::URLRequest::NEVER_CLEAR_REFERRER;
+
+    GURL first_party_for_cookies;
+    net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
+        net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+
+    url::Origin initiator;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(CompletedRequest);
   };
 
-  using CompletedRequests = std::vector<CompletedRequest>;
+  using CompletedRequests = std::vector<std::unique_ptr<CompletedRequest>>;
 
   // Registers a request handler at the default URL. Call url() to determine the
   // URL.
