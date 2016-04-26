@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
@@ -82,6 +83,7 @@ public class HttpCacheTest extends AwTestBase {
         assertTrue(dummyCacheFile.exists());
 
         // Set up JNI bindings.
+        ContextUtils.initApplicationContext(targetContext.getApplicationContext());
         AwBrowserProcess.loadLibrary(targetContext);
         // No delay before removing the legacy cache files.
         AwContentsStatics.setLegacyCacheRemovalDelayForTest(0);

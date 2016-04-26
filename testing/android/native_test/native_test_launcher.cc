@@ -77,7 +77,6 @@ static void RunTests(JNIEnv* env,
 
   // Set the application context in base.
   base::android::RegisterJni(env);
-  base::android::InitApplicationContext(env, app_context);
 
   std::vector<std::string> args;
 
