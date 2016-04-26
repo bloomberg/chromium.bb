@@ -1165,10 +1165,10 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         This setting is managed by your domain policy.
       </message>
       <message desc="Platform-specific text indicating that a component is for the Windows OS." name="IDS_FOR_PLATFORM_WINDOWS">
-        For Windows (XP and above)
+        For Windows 7 and above
       </message>
       <message desc="Platform-specific text indicating that a component is for the Mac OS." name="IDS_FOR_PLATFORM_MAC">
-        For Mac (OS X 10.6 and above)
+        For Mac (OS X Mavericks 10.9 and above)
       </message>
       <message desc="Text for the button the user clicks to indicate that they agree to the terms of service and want to proceed with downloading the installer." name="IDS_ACCEPT_AND_INSTALL">
         Accept and Install

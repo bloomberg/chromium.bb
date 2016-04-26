@@ -94,8 +94,8 @@
     <PropertyRef Id="WIX_ACCOUNT_ADMINISTRATORS" />
 
     <Condition
-      Message="$(var.ChromotingHost) is only supported on Windows XP, Windows Server 2003, or higher.">
-      <![CDATA[Installed OR (VersionNT >= 501)]]>
+      Message="$(var.ChromotingHost) is only supported on Windows 7 and above.">
+      <![CDATA[Installed OR (VersionNT >= 601)]]>
     </Condition>
 
     <!-- The upgrade rules below could be expressed with MajorUpgrade element.
@@ -616,15 +616,6 @@
                   Property="chromoting_service_description"
                   Value="@[binaries]$(var.CoreBinary),-102" />
 
-    <!-- XP does not support MUI strings in the service name and description, so
-         we fall back to plain strings on XP. -->
-    <CustomAction Id="set_service_display_name_xp"
-                  Property="chromoting_service_display_name"
-                  Value="$(var.ChromotingServiceName)" />
-    <CustomAction Id="set_service_description_xp"
-                  Property="chromoting_service_description"
-                  Value="$(var.ChromotingServiceDescription)" />
-
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
@@ -664,18 +655,8 @@
       </Custom>
 
       <!-- Set the service name and description -->
-      <Custom Action="set_service_display_name_xp" Before="InstallInitialize">
-        <![CDATA[VersionNT < 600]]>
-      </Custom>
-      <Custom Action="set_service_description_xp" Before="InstallInitialize">
-        <![CDATA[VersionNT < 600]]>
-      </Custom>
-      <Custom Action="set_service_display_name" Before="InstallInitialize">
-        <![CDATA[VersionNT >= 600]]>
-      </Custom>
-      <Custom Action="set_service_description" Before="InstallInitialize">
-        <![CDATA[VersionNT >= 600]]>
-      </Custom>
+      <Custom Action="set_service_display_name" Before="InstallInitialize"/>
+      <Custom Action="set_service_description" Before="InstallInitialize"/>
 
       <!-- Schedule RemoveExistingProducts before installing any files.
            See http://msdn.microsoft.com/en-us/library/aa371197.aspx. -->
