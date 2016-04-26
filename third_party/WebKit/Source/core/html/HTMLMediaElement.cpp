@@ -996,7 +996,8 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
 
     bool attemptLoad = true;
 
-    if (source.isMediaStream() || url.protocolIs(mediaSourceBlobProtocol)) {
+    bool isStreamOrBlobUrl = source.isMediaStream() || url.protocolIs(mediaSourceBlobProtocol);
+    if (isStreamOrBlobUrl) {
         bool isMediaStream = source.isMediaStream() || (source.isURL() && isMediaStreamURL(url.getString()));
         if (isMediaStream) {
             m_autoplayHelper->removeUserGestureRequirement(GesturelessPlaybackEnabledByStream);
@@ -1018,7 +1019,10 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
     if (attemptLoad && canLoadResource) {
         ASSERT(!webMediaPlayer());
 
-        if (effectivePreloadType() == WebMediaPlayer::PreloadNone) {
+        // Conditionally defer the load if effective preload is 'none'.
+        // Skip this optional deferral for MediaStream sources or any blob URL,
+        // including MediaSource blob URLs.
+        if (!isStreamOrBlobUrl && effectivePreloadType() == WebMediaPlayer::PreloadNone) {
             WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) : Delaying load because preload == 'none'", this);
             deferLoad();
         } else {
