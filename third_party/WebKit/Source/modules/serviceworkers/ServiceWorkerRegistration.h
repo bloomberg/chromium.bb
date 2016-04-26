@@ -80,7 +80,6 @@ private:
     // A handle to the registration representation in the embedder.
     OwnPtr<WebServiceWorkerRegistration::Handle> m_handle;
 
-    WebServiceWorkerProvider* m_provider;
     Member<ServiceWorker> m_installing;
     Member<ServiceWorker> m_waiting;
     Member<ServiceWorker> m_active;

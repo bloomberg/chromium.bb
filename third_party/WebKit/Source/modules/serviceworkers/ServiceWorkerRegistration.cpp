@@ -71,29 +71,25 @@ String ServiceWorkerRegistration::scope() const
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState)
 {
+    ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(getExecutionContext());
+    if (!client || !client->provider())
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Failed to update a ServiceWorkerRegistration: No associated provider is available."));
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-
-    if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "Failed to update a ServiceWorkerRegistration: No associated provider is available."));
-        return promise;
-    }
-
-    m_handle->registration()->update(m_provider, new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver));
+    m_handle->registration()->update(client->provider(), new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver));
     return promise;
 }
 
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
 {
+    ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(getExecutionContext());
+    if (!client || !client->provider())
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Failed to unregister a ServiceWorkerRegistration: No associated provider is available."));
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-
-    if (!m_provider) {
-        resolver->reject(DOMException::create(InvalidStateError, "Failed to unregister a ServiceWorkerRegistration: No associated provider is available."));
-        return promise;
-    }
-
-    m_handle->registration()->unregister(m_provider, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
+    m_handle->registration()->unregister(client->provider(), new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
     return promise;
 }
 
@@ -101,7 +97,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
     , m_handle(std::move(handle))
-    , m_provider(nullptr)
     , m_stopped(false)
 {
     ASSERT(m_handle);
@@ -110,8 +105,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
 
     if (!executionContext)
         return;
-    if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext))
-        m_provider = client->provider();
     m_handle->registration()->setProxy(this);
 }
 

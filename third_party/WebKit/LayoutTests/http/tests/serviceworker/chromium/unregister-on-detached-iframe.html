@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Service Worker: Unregistration on detached iframe context</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<script>
+promise_test(function(t) {
+    var url = './resources/blank.html';
+    var scope_for_iframe = './unregister-on-detached-iframe'
+    var scope_for_main = './resources/' + scope_for_iframe;
+    var script = './resources/empty-worker.js';
+    var frame;
+
+    return service_worker_unregister(t, scope_for_main)
+      .then(function() {
+          return with_iframe(url);
+        })
+      .then(function(f) {
+          frame = f;
+          return navigator.serviceWorker.register(script,
+                                                  {scope: scope_for_main});
+        })
+      .then(function(r) {
+          add_completion_callback(function() { r.unregister(); } );
+          return frame.contentWindow.navigator.serviceWorker.getRegistration(
+            scope_for_iframe);
+        })
+      .then(function(r) {
+          frame.remove();
+          return promise_rejects(t, 'InvalidStateError', r.unregister());
+        });
+  }, 'Unregistration on a detached iframe should fail and throw ' +
+     'InvalidStateError exception');
+</script>
