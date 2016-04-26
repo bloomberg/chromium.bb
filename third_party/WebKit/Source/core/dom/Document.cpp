@@ -2227,8 +2227,10 @@ void Document::detach(const AttachContext& context)
     // If this document is the master for an HTMLImportsController, sever that
     // relationship. This ensures that we don't leave import loads in flight,
     // thinking they should have access to a valid frame when they don't.
-    if (m_importsController)
-        HTMLImportsController::removeFrom(*this);
+    if (m_importsController) {
+        m_importsController->dispose();
+        setImportsController(nullptr);
+    }
 
     m_timers.setTimerTaskRunner(
         Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone());

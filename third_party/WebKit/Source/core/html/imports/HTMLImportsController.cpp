@@ -41,35 +41,10 @@
 
 namespace blink {
 
-const char* HTMLImportsController::supplementName()
-{
-    return "HTMLImportsController";
-}
-
-void HTMLImportsController::provideTo(Document& master)
-{
-    HTMLImportsController* controller = new HTMLImportsController(master);
-    master.setImportsController(controller);
-    Supplement<Document>::provideTo(master, supplementName(), controller);
-}
-
-void HTMLImportsController::removeFrom(Document& master)
-{
-    HTMLImportsController* controller = master.importsController();
-    ASSERT(controller);
-    controller->dispose();
-    static_cast<Supplementable<Document>&>(master).removeSupplement(supplementName());
-    master.setImportsController(nullptr);
-}
-
 HTMLImportsController::HTMLImportsController(Document& master)
     : m_root(HTMLImportTreeRoot::create(&master))
 {
     UseCounter::count(master, UseCounter::HTMLImports);
-}
-
-HTMLImportsController::~HTMLImportsController()
-{
 }
 
 void HTMLImportsController::dispose()
@@ -172,7 +147,6 @@ DEFINE_TRACE(HTMLImportsController)
 {
     visitor->trace(m_root);
     visitor->trace(m_loaders);
-    Supplement<Document>::trace(visitor);
 }
 
 } // namespace blink

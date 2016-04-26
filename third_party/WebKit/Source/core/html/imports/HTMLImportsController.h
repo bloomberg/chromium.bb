@@ -46,17 +46,14 @@ class HTMLImportLoader;
 class HTMLImportTreeRoot;
 class KURL;
 
-class HTMLImportsController final : public GarbageCollectedFinalized<HTMLImportsController>, public Supplement<Document> {
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
+class HTMLImportsController final : public GarbageCollected<HTMLImportsController> {
 public:
-    static const char* supplementName();
-    static void provideTo(Document&);
-    static void removeFrom(Document&);
+    static HTMLImportsController* create(Document& master)
+    {
+        return new HTMLImportsController(master);
+    }
 
-    explicit HTMLImportsController(Document&);
-    virtual ~HTMLImportsController();
-
-    HTMLImportTreeRoot* root() const { return m_root.get(); }
+    HTMLImportTreeRoot* root() const { return m_root; }
 
     bool shouldBlockScriptExecution(const Document&) const;
     HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
@@ -66,16 +63,18 @@ public:
     HTMLImportLoader* createLoader();
 
     size_t loaderCount() const { return m_loaders.size(); }
-    HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i].get(); }
+    HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i]; }
     Document* loaderDocumentAt(size_t) const;
     HTMLImportLoader* loaderFor(const Document&) const;
 
-    DECLARE_VIRTUAL_TRACE();
-
-private:
-    HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
+    DECLARE_TRACE();
 
     void dispose();
+
+private:
+    explicit HTMLImportsController(Document&);
+
+    HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
 
     Member<HTMLImportTreeRoot> m_root;
     using LoaderList = HeapVector<Member<HTMLImportLoader>>;
