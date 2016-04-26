@@ -74,25 +74,25 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
   scoped_refptr<Sequence> sequence_a(new Sequence);
   sequence_a->PushTask(WrapUnique(new Task(
       FROM_HERE, Closure(),
-      TaskTraits().WithPriority(TaskPriority::USER_VISIBLE), TimeTicks())));
+      TaskTraits().WithPriority(TaskPriority::USER_VISIBLE), TimeDelta())));
   SequenceSortKey sort_key_a = sequence_a->GetSortKey();
 
   scoped_refptr<Sequence> sequence_b(new Sequence);
   sequence_b->PushTask(WrapUnique(new Task(
       FROM_HERE, Closure(),
-      TaskTraits().WithPriority(TaskPriority::USER_BLOCKING), TimeTicks())));
+      TaskTraits().WithPriority(TaskPriority::USER_BLOCKING), TimeDelta())));
   SequenceSortKey sort_key_b = sequence_b->GetSortKey();
 
   scoped_refptr<Sequence> sequence_c(new Sequence);
   sequence_c->PushTask(WrapUnique(new Task(
       FROM_HERE, Closure(),
-      TaskTraits().WithPriority(TaskPriority::USER_BLOCKING), TimeTicks())));
+      TaskTraits().WithPriority(TaskPriority::USER_BLOCKING), TimeDelta())));
   SequenceSortKey sort_key_c = sequence_c->GetSortKey();
 
   scoped_refptr<Sequence> sequence_d(new Sequence);
   sequence_d->PushTask(WrapUnique(new Task(
       FROM_HERE, Closure(), TaskTraits().WithPriority(TaskPriority::BACKGROUND),
-      TimeTicks())));
+      TimeDelta())));
   SequenceSortKey sort_key_d = sequence_d->GetSortKey();
 
   // Create a PriorityQueue and a Transaction.

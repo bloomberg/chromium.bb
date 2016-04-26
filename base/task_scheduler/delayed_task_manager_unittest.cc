@@ -87,8 +87,8 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTaskBeforeDelayedRunTime) {
   testing::StrictMock<TestDelayedTaskManager> manager;
 
   std::unique_ptr<Task> task(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
-               manager.Now() + TimeDelta::FromSeconds(1)));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  task->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
   testing::StrictMock<MockSchedulerThreadPool> thread_pool;
@@ -113,8 +113,8 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTasksAtDelayedRunTime) {
   testing::StrictMock<TestDelayedTaskManager> manager;
 
   std::unique_ptr<Task> task(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
-               manager.Now() + TimeDelta::FromSeconds(1)));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  task->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
   testing::StrictMock<MockSchedulerThreadPool> thread_pool;
@@ -142,8 +142,8 @@ TEST(TaskSchedulerDelayedTaskManagerTest, PostReadyTasksAfterDelayedRunTime) {
   testing::StrictMock<TestDelayedTaskManager> manager;
 
   std::unique_ptr<Task> task(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
-               manager.Now() + TimeDelta::FromSeconds(1)));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  task->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_raw = task.get();
   scoped_refptr<Sequence> sequence(new Sequence);
   testing::StrictMock<MockSchedulerThreadPool> thread_pool;
@@ -175,18 +175,18 @@ TEST(TaskSchedulerDelayedTaskManagerTest, AddAndPostReadyTasks) {
   testing::StrictMock<MockSchedulerThreadPool> thread_pool;
 
   std::unique_ptr<Task> task_a(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
-               manager.Now() + TimeDelta::FromSeconds(2)));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  task_a->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(2);
   const Task* task_a_raw = task_a.get();
 
   std::unique_ptr<Task> task_b(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
-               manager.Now() + TimeDelta::FromSeconds(2)));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  task_b->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(2);
   const Task* task_b_raw = task_b.get();
 
   std::unique_ptr<Task> task_c(
-      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(),
-               manager.Now() + TimeDelta::FromSeconds(1)));
+      new Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  task_c->delayed_run_time = manager.Now() + TimeDelta::FromSeconds(1);
   const Task* task_c_raw = task_c.get();
 
   // Add |task_a| to the DelayedTaskManager. The delayed run time should be

@@ -71,7 +71,7 @@ class TaskSchedulerTaskTrackerTest
     return WrapUnique(new Task(
         FROM_HERE,
         Bind(&TaskSchedulerTaskTrackerTest::RunTaskCallback, Unretained(this)),
-        TaskTraits().WithShutdownBehavior(shutdown_behavior), TimeTicks()));
+        TaskTraits().WithShutdownBehavior(shutdown_behavior), TimeDelta()));
   }
 
   // Calls tracker_->Shutdown() on a new thread. When this returns, Shutdown()
@@ -146,7 +146,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
   WaitableEvent event(false, false);
   std::unique_ptr<Task> blocked_task(
       new Task(FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
-               TaskTraits().WithShutdownBehavior(GetParam()), TimeTicks()));
+               TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta()));
 
   // Inform |task_tracker_| that |blocked_task| will be posted.
   EXPECT_TRUE(tracker_.WillPostTask(blocked_task.get()));

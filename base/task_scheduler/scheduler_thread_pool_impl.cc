@@ -41,9 +41,7 @@ class SchedulerParallelTaskRunner : public TaskRunner {
                        TimeDelta delay) override {
     // Post the task as part of a one-off single-task Sequence.
     return thread_pool_->PostTaskWithSequence(
-        WrapUnique(
-            new Task(from_here, closure, traits_,
-                     delay.is_zero() ? TimeTicks() : TimeTicks::Now() + delay)),
+        WrapUnique(new Task(from_here, closure, traits_, delay)),
         make_scoped_refptr(new Sequence));
   }
 
@@ -76,10 +74,7 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
                        TimeDelta delay) override {
     // Post the task as part of |sequence|.
     return thread_pool_->PostTaskWithSequence(
-        WrapUnique(
-            new Task(from_here, closure, traits_,
-                     delay.is_zero() ? TimeTicks() : TimeTicks::Now() + delay)),
-        sequence_);
+        WrapUnique(new Task(from_here, closure, traits_, delay)), sequence_);
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
