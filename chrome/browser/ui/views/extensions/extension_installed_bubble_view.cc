@@ -269,13 +269,13 @@ void ExtensionInstalledBubbleView::ButtonPressed(views::Button* sender,
 void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
                                                int event_flags) {
   DCHECK_EQ(manage_shortcut_, source);
-  CloseBubble();
 
   std::string configure_url = chrome::kChromeUIExtensionsURL;
   configure_url += chrome::kExtensionConfigureCommandsSubPage;
   chrome::NavigateParams params(
       chrome::GetSingletonTabNavigateParams(browser(), GURL(configure_url)));
   chrome::Navigate(&params);
+  CloseBubble();
 }
 
 void ExtensionInstalledBubbleView::Init() {
