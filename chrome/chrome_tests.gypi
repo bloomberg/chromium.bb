@@ -1770,8 +1770,8 @@
               # cross-platform panels).
               'sources': [
                 # Note: List duplicated in GN build.
-                'browser/notifications/notification_browsertest.cc',
-                'browser/notifications/platform_notification_service_browsertest.cc',
+                'browser/notifications/notification_interactive_uitest.cc',
+                'browser/notifications/platform_notification_service_interactive_uitest.cc',
               ],
             }],
             ['OS=="android"', {
@@ -1782,8 +1782,8 @@
                 'browser/notifications/message_center_notifications_browsertest.cc',
 
                 # TODO(peter): Enable the Notification browser tests.
-                'browser/notifications/notification_browsertest.cc',
-                'browser/notifications/platform_notification_service_browsertest.cc',
+                'browser/notifications/notification_ui_browsertest.cc',
+                'browser/notifications/platform_notification_service_ui_browsertest.cc',
               ]
             }],
           ],

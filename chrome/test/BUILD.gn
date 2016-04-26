@@ -560,8 +560,8 @@ if (!is_android) {
       # panels).
       if (!is_chromeos) {
         sources += [
-          "../browser/notifications/notification_browsertest.cc",
-          "../browser/notifications/platform_notification_service_browsertest.cc",
+          "../browser/notifications/notification_interactive_uitest.cc",
+          "../browser/notifications/platform_notification_service_interactive_uitest.cc",
         ]
       }
 
@@ -571,8 +571,8 @@ if (!is_android) {
           "../browser/notifications/message_center_notifications_browsertest.cc",
 
           # TODO(peter): Enable the Notification browser tests.
-          "../browser/notifications/notification_browsertest.cc",
-          "../browser/notifications/platform_notification_service_browsertest.cc",
+          "../browser/notifications/notification_interactive_uitest.cc",
+          "../browser/notifications/platform_notification_service_interactive_uitest.cc",
         ]
       }
     }  # enable_notifications
@@ -1410,6 +1410,7 @@ if (!is_android) {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/WebKit/public:blink",
+
       # Language detection is irrelevant to sync, so it can depend on any
       # implementation for CLD2. Dynamic is smaller, so go with dynamic.
       "//third_party/cld_2:cld2_dynamic",
@@ -1484,6 +1485,7 @@ if (!is_android) {
       "//sync",
       "//testing/gmock",
       "//testing/gtest",
+
       # Language detection is irrelevant to sync, so it can depend on any
       # implementation for CLD2. Dynamic is smaller, so go with dynamic.
       "//third_party/cld_2:cld2_dynamic",
@@ -1635,6 +1637,7 @@ test("unit_tests") {
     "//google_apis",
     "//skia",
     "//third_party/cacheinvalidation",
+
     # Unit tests should be independent of the CLD2 access mechanism, just use
     # static for simplicity.
     "//third_party/cld_2:cld2_static",
@@ -2212,7 +2215,7 @@ if (is_win || (is_linux && !is_chromeos)) {
       "//testing/gmock",
       "//testing/gtest",
       "//testing/perf",
-      "//third_party/cld_2:cld2_platform_impl"
+      "//third_party/cld_2:cld2_platform_impl",
     ]
 
     if (is_win) {
