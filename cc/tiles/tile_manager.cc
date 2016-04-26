@@ -886,11 +886,13 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   // We can skip the image hijack canvas if we have no images.
   playback_settings.use_image_hijack_canvas = !images.empty();
+  ImageDecodeController::TracingInfo tracing_info(
+      prepare_tiles_count_, prioritized_tile.priority().priority_bin);
   for (auto it = images.begin(); it != images.end();) {
     scoped_refptr<TileTask> task;
     bool need_to_unref_when_finished =
-        image_decode_controller_->GetTaskForImageAndRef(
-            *it, prepare_tiles_count_, &task);
+        image_decode_controller_->GetTaskForImageAndRef(*it, tracing_info,
+                                                        &task);
     if (task)
       decode_tasks.push_back(task);
 

@@ -61,18 +61,18 @@ class ImageDecodeTaskImpl : public TileTask {
  public:
   ImageDecodeTaskImpl(GpuImageDecodeController* controller,
                       const DrawImage& draw_image,
-                      uint64_t source_prepare_tiles_id)
+                      const ImageDecodeController::TracingInfo& tracing_info)
       : TileTask(true),
         controller_(controller),
         image_(draw_image),
-        source_prepare_tiles_id_(source_prepare_tiles_id) {
+        tracing_info_(tracing_info) {
     DCHECK(!SkipImage(draw_image));
   }
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
     TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode", "gpu",
-                 "source_prepare_tiles_id", source_prepare_tiles_id_);
+                 "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
     controller_->DecodeImage(image_);
   }
 
@@ -88,7 +88,7 @@ class ImageDecodeTaskImpl : public TileTask {
  private:
   GpuImageDecodeController* controller_;
   DrawImage image_;
-  const uint64_t source_prepare_tiles_id_;
+  const ImageDecodeController::TracingInfo tracing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
@@ -101,11 +101,11 @@ class ImageUploadTaskImpl : public TileTask {
   ImageUploadTaskImpl(GpuImageDecodeController* controller,
                       const DrawImage& draw_image,
                       scoped_refptr<TileTask> decode_dependency,
-                      uint64_t source_prepare_tiles_id)
+                      const ImageDecodeController::TracingInfo& tracing_info)
       : TileTask(false),
         controller_(controller),
         image_(draw_image),
-        source_prepare_tiles_id_(source_prepare_tiles_id) {
+        tracing_info_(tracing_info) {
     DCHECK(!SkipImage(draw_image));
     // If an image is already decoded and locked, we will not generate a
     // decode task.
@@ -116,7 +116,7 @@ class ImageUploadTaskImpl : public TileTask {
   // Override from Task:
   void RunOnWorkerThread() override {
     TRACE_EVENT2("cc", "ImageUploadTaskImpl::RunOnWorkerThread", "mode", "gpu",
-                 "source_prepare_tiles_id", source_prepare_tiles_id_);
+                 "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
     controller_->UploadImage(image_);
   }
 
@@ -131,7 +131,7 @@ class ImageUploadTaskImpl : public TileTask {
  private:
   GpuImageDecodeController* controller_;
   DrawImage image_;
-  uint64_t source_prepare_tiles_id_;
+  const ImageDecodeController::TracingInfo tracing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageUploadTaskImpl);
 };
@@ -189,7 +189,7 @@ GpuImageDecodeController::~GpuImageDecodeController() {
 
 bool GpuImageDecodeController::GetTaskForImageAndRef(
     const DrawImage& draw_image,
-    uint64_t prepare_tiles_id,
+    const TracingInfo& tracing_info,
     scoped_refptr<TileTask>* task) {
   if (SkipImage(draw_image)) {
     *task = nullptr;
@@ -260,8 +260,8 @@ bool GpuImageDecodeController::GetTaskForImageAndRef(
   // in UploadTaskCompleted.
   RefImage(draw_image);
   existing_task = make_scoped_refptr(new ImageUploadTaskImpl(
-      this, draw_image, GetImageDecodeTaskAndRef(draw_image, prepare_tiles_id),
-      prepare_tiles_id));
+      this, draw_image, GetImageDecodeTaskAndRef(draw_image, tracing_info),
+      tracing_info));
 
   // Ref the image again - this ref is owned by the caller, and it is their
   // responsibility to release it by calling UnrefImage.
@@ -470,7 +470,7 @@ void GpuImageDecodeController::UploadTaskCompleted(
 // the requested decode.
 scoped_refptr<TileTask> GpuImageDecodeController::GetImageDecodeTaskAndRef(
     const DrawImage& draw_image,
-    uint64_t prepare_tiles_id) {
+    const TracingInfo& tracing_info) {
   lock_.AssertAcquired();
 
   const uint32_t image_id = draw_image.image()->uniqueID();
@@ -496,7 +496,7 @@ scoped_refptr<TileTask> GpuImageDecodeController::GetImageDecodeTaskAndRef(
     // DecodeTaskCompleted.
     RefImageDecode(draw_image);
     existing_task = make_scoped_refptr(
-        new ImageDecodeTaskImpl(this, draw_image, prepare_tiles_id));
+        new ImageDecodeTaskImpl(this, draw_image, tracing_info));
   }
   return existing_task;
 }

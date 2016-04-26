@@ -42390,6 +42390,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.LockExistingCachedImage" enum="BooleanSuccess">
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    For each attempted lock of a cached image, records whether it was
+    successful.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.MainThreadGestureScrollReason"
     enum="MainThreadScrollingReason">
   <owner>tdresser@chromium.org</owner>
@@ -90076,6 +90084,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="LocalStorage.BrowserTimeToPrimeLocalStorage"/>
   <affected-histogram name="LocalStorage.MojoTimeToPrimeFor"/>
   <affected-histogram name="LocalStorage.RendererTimeToPrimeLocalStorage"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="LockExistingCachedImage" separator=".">
+  <suffix name="Software.EVENTUALLY" label="Eventually bin for software"/>
+  <suffix name="Software.NOW" label="Now bin for software"/>
+  <suffix name="Software.SOON" label="Soon bin for software"/>
+  <affected-histogram name="Renderer4.LockExistingCachedImage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LowMemoryMargin">

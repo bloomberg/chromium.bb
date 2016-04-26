@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -60,18 +61,18 @@ class ImageDecodeTaskImpl : public TileTask {
   ImageDecodeTaskImpl(SoftwareImageDecodeController* controller,
                       const SoftwareImageDecodeController::ImageKey& image_key,
                       const DrawImage& image,
-                      uint64_t source_prepare_tiles_id)
+                      const ImageDecodeController::TracingInfo& tracing_info)
       : TileTask(true),
         controller_(controller),
         image_key_(image_key),
         image_(image),
-        source_prepare_tiles_id_(source_prepare_tiles_id) {}
+        tracing_info_(tracing_info) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
     TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode",
                  "software", "source_prepare_tiles_id",
-                 source_prepare_tiles_id_);
+                 tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         image_.image().get());
     controller_->DecodeImage(image_key_, image_);
@@ -90,7 +91,7 @@ class ImageDecodeTaskImpl : public TileTask {
   SoftwareImageDecodeController* controller_;
   SoftwareImageDecodeController::ImageKey image_key_;
   DrawImage image_;
-  uint64_t source_prepare_tiles_id_;
+  const ImageDecodeController::TracingInfo tracing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
@@ -118,6 +119,21 @@ SkImageInfo CreateImageInfo(size_t width,
   return SkImageInfo::Make(width, height,
                            ResourceFormatToClosestSkColorType(format),
                            kPremul_SkAlphaType);
+}
+
+void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
+                                            bool success) {
+  switch (bin) {
+    case TilePriority::NOW:
+      UMA_HISTOGRAM_BOOLEAN("Renderer4.LockExistingCachedImage.Software.NOW",
+                            success);
+    case TilePriority::SOON:
+      UMA_HISTOGRAM_BOOLEAN("Renderer4.LockExistingCachedImage.Software.SOON",
+                            success);
+    case TilePriority::EVENTUALLY:
+      UMA_HISTOGRAM_BOOLEAN(
+          "Renderer4.LockExistingCachedImage.Software.EVENTUALLY", success);
+  }
 }
 
 }  // namespace
@@ -151,7 +167,7 @@ SoftwareImageDecodeController::~SoftwareImageDecodeController() {
 
 bool SoftwareImageDecodeController::GetTaskForImageAndRef(
     const DrawImage& image,
-    uint64_t prepare_tiles_id,
+    const TracingInfo& tracing_info,
     scoped_refptr<TileTask>* task) {
   // If the image already exists or if we're going to create a task for it, then
   // we'll likely need to ref this image (the exception is if we're prerolling
@@ -182,7 +198,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
       scoped_refptr<TileTask>& existing_task = pending_image_tasks_[key];
       if (!existing_task) {
         existing_task = make_scoped_refptr(
-            new ImageDecodeTaskImpl(this, key, image, prepare_tiles_id));
+            new ImageDecodeTaskImpl(this, key, image, tracing_info));
       }
       *task = existing_task;
     } else {
@@ -198,17 +214,28 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   bool new_image_fits_in_memory =
       locked_images_budget_.AvailableMemoryBytes() >= key.locked_bytes();
   if (decoded_it != decoded_images_.end()) {
-    if (decoded_it->second->is_locked() ||
+    bool image_was_locked = decoded_it->second->is_locked();
+    if (image_was_locked ||
         (new_image_fits_in_memory && decoded_it->second->Lock())) {
       RefImage(key);
       *task = nullptr;
       SanityCheckState(__LINE__, true);
+
+      // If the image wasn't locked, then we just succeeded in locking it.
+      if (!image_was_locked) {
+        RecordLockExistingCachedImageHistogram(tracing_info.requesting_tile_bin,
+                                               true);
+      }
       return true;
     }
+
     // If the image fits in memory, then we at least tried to lock it and
     // failed. This means that it's not valid anymore.
-    if (new_image_fits_in_memory)
+    if (new_image_fits_in_memory) {
+      RecordLockExistingCachedImageHistogram(tracing_info.requesting_tile_bin,
+                                             false);
       decoded_images_.Erase(decoded_it);
+    }
   }
 
   // If the task exists, return it.
@@ -236,7 +263,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   // ref.
   RefImage(key);
   existing_task = make_scoped_refptr(
-      new ImageDecodeTaskImpl(this, key, image, prepare_tiles_id));
+      new ImageDecodeTaskImpl(this, key, image, tracing_info));
   *task = existing_task;
   SanityCheckState(__LINE__, true);
   return true;

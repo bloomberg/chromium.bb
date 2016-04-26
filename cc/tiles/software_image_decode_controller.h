@@ -109,7 +109,7 @@ class CC_EXPORT SoftwareImageDecodeController
 
   // ImageDecodeController overrides.
   bool GetTaskForImageAndRef(const DrawImage& image,
-                             uint64_t prepare_tiles_id,
+                             const TracingInfo& tracing_info,
                              scoped_refptr<TileTask>* task) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override;

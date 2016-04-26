@@ -62,7 +62,7 @@ class CC_EXPORT GpuImageDecodeController
   // Finds the existing uploaded image for the provided DrawImage. Creates an
   // upload task to upload the image if an exsiting image does not exist.
   bool GetTaskForImageAndRef(const DrawImage& image,
-                             uint64_t prepare_tiles_id,
+                             const TracingInfo& tracing_info,
                              scoped_refptr<TileTask>* task) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& draw_image) override;
@@ -141,8 +141,9 @@ class CC_EXPORT GpuImageDecodeController
 
   // Similar to GetTaskForImageAndRef, but gets the dependent decode task
   // rather than the upload task, if necessary.
-  scoped_refptr<TileTask> GetImageDecodeTaskAndRef(const DrawImage& image,
-                                                   uint64_t prepare_tiles_id);
+  scoped_refptr<TileTask> GetImageDecodeTaskAndRef(
+      const DrawImage& image,
+      const TracingInfo& tracing_info);
 
   void RefImageDecode(const DrawImage& draw_image);
   void UnrefImageDecode(const DrawImage& draw_image);

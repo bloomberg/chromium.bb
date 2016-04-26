@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/playback/decoded_draw_image.h"
 #include "cc/playback/draw_image.h"
+#include "cc/tiles/tile_priority.h"
 
 namespace cc {
 
@@ -33,6 +34,22 @@ class TileTask;
 //    thread.
 class CC_EXPORT ImageDecodeController {
  public:
+  // This information should be used strictly in tracing, UMA, and any other
+  // reporting systems.
+  struct TracingInfo {
+    TracingInfo(uint64_t prepare_tiles_id,
+                TilePriority::PriorityBin requesting_tile_bin)
+        : prepare_tiles_id(prepare_tiles_id),
+          requesting_tile_bin(requesting_tile_bin) {}
+    TracingInfo() : TracingInfo(0, TilePriority::NOW) {}
+
+    // ID for the current prepare tiles call.
+    const uint64_t prepare_tiles_id;
+
+    // The bin of the tile that caused this image to be requested.
+    const TilePriority::PriorityBin requesting_tile_bin;
+  };
+
   virtual ~ImageDecodeController() {}
 
   // Fill in an TileTask which will decode the given image when run. In
@@ -42,7 +59,7 @@ class CC_EXPORT ImageDecodeController {
   // This is called by the tile manager (on the compositor thread) when creating
   // a raster task.
   virtual bool GetTaskForImageAndRef(const DrawImage& image,
-                                     uint64_t prepare_tiles_id,
+                                     const TracingInfo& tracing_info,
                                      scoped_refptr<TileTask>* task) = 0;
   // Unrefs an image. When the tile is finished, this should be called for every
   // GetTaskForImageAndRef call that returned true.
