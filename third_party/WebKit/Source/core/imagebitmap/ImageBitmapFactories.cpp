@@ -41,6 +41,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -53,10 +54,23 @@
 
 namespace blink {
 
-static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSourceUnion& value)
+static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSourceUnion& value, ExceptionState& exceptionState, bool hasCropRect)
 {
-    if (value.isHTMLImageElement())
-        return value.getAsHTMLImageElement();
+    if (value.isHTMLImageElement()) {
+        HTMLImageElement* imageElement = value.getAsHTMLImageElement();
+        if (!imageElement || !imageElement->cachedImage()) {
+            exceptionState.throwDOMException(InvalidStateError, "No image can be retrieved from the provided element.");
+            return nullptr;
+        }
+        if (imageElement->cachedImage()->getImage()->isSVGImage()) {
+            SVGImage* image = toSVGImage(imageElement->cachedImage()->getImage());
+            if (!image->hasIntrinsicDimensions() && !hasCropRect) {
+                exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image without intrinsic dimensions.");
+                return nullptr;
+            }
+        }
+        return imageElement;
+    }
     if (value.isHTMLVideoElement())
         return value.getAsHTMLVideoElement();
     if (value.isHTMLCanvasElement())
@@ -75,7 +89,9 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
     UseCounter::count(scriptState->getExecutionContext(), feature);
-    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource);
+    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, false);
+    if (!bitmapSourceInternal)
+        return ScriptPromise();
     if (bitmapSourceInternal->isBlob()) {
         Blob* blob = static_cast<Blob*>(bitmapSourceInternal);
         ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), options, scriptState);
@@ -92,7 +108,9 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
     UseCounter::count(scriptState->getExecutionContext(), feature);
-    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource);
+    ImageBitmapSource* bitmapSourceInternal = toImageBitmapSourceInternal(bitmapSource, exceptionState, true);
+    if (!bitmapSourceInternal)
+        return ScriptPromise();
     return createImageBitmap(scriptState, eventTarget, bitmapSourceInternal, sx, sy, sw, sh, options, exceptionState);
 }
 

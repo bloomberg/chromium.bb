@@ -685,17 +685,6 @@ void HTMLImageElement::forceReload() const
 ScriptPromise HTMLImageElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     ASSERT(eventTarget.toLocalDOMWindow());
-    if (!cachedImage()) {
-        exceptionState.throwDOMException(InvalidStateError, "No image can be retrieved from the provided element.");
-        return ScriptPromise();
-    }
-    if (cachedImage()->getImage()->isSVGImage()) {
-        SVGImage* image = toSVGImage(cachedImage()->getImage());
-        if (!image->hasIntrinsicDimensions()) {
-            exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image without intrinsic dimensions.");
-            return ScriptPromise();
-        }
-    }
     if (!sw || !sh) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
