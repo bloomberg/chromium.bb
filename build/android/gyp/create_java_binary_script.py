@@ -37,6 +37,7 @@ if os.getcwd() != self_dir:
   classpath = [os.path.join(offset, p) for p in classpath]
   bootclasspath = [os.path.join(offset, p) for p in bootclasspath]
 java_cmd = ["java"]
+{noverify_flag}
 if bootclasspath:
     java_cmd.append("-Xbootclasspath/p:" + ":".join(bootclasspath))
 java_cmd.extend(
@@ -58,7 +59,15 @@ def main(argv):
       help='Classpath for running the jar.')
   parser.add_option('--bootclasspath', action='append', default=[],
       help='zip/jar files to add to bootclasspath for java cmd.')
+  parser.add_option('--noverify', action='store_true',
+      help='JVM flag: noverify.')
+
   options, extra_program_args = parser.parse_args(argv)
+
+  if (options.noverify):
+    noverify_flag = 'java_cmd.append("-noverify")'
+  else:
+    noverify_flag = ''
 
   classpath = [options.jar_path]
   for cp_arg in options.classpath:
@@ -78,7 +87,8 @@ def main(argv):
       bootclasspath=('"%s"' % '", "'.join(bootclasspath)
                      if bootclasspath else ''),
       main_class=options.main_class,
-      extra_program_args=repr(extra_program_args)))
+      extra_program_args=repr(extra_program_args),
+      noverify_flag=noverify_flag))
 
   os.chmod(options.output, 0750)
 

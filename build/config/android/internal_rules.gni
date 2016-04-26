@@ -240,6 +240,15 @@ template("java_binary_script") {
       "--main-class",
       _main_class,
     ]
+    if (emma_coverage) {
+      args += [
+        "--classpath",
+        rebase_path(
+            "//third_party/android_tools_internal/sdk/tools/lib/emma.jar",
+            root_build_dir),
+      ]
+      args += [ "--noverify" ]
+    }
     if (defined(invoker.wrapper_script_args)) {
       args += [ "--" ] + invoker.wrapper_script_args
     }
