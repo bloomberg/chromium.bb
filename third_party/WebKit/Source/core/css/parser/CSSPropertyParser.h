@@ -58,14 +58,14 @@ private:
     // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
     bool parseValueStart(CSSPropertyID unresolvedProperty, bool important);
     bool consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important);
-    CSSValue* parseSingleValue(CSSPropertyID);
+    CSSValue* parseSingleValue(CSSPropertyID, CSSPropertyID = CSSPropertyInvalid);
 
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
 
     bool parseViewportDescriptor(CSSPropertyID propId, bool important);
     bool parseFontFaceDescriptor(CSSPropertyID);
 
-    void addProperty(CSSPropertyID, CSSValue*, bool important, bool implicit = false);
+    void addProperty(CSSPropertyID, CSSPropertyID, CSSValue*, bool important, bool implicit = false);
     void addExpandedPropertyForValue(CSSPropertyID propId, CSSValue*, bool);
 
     bool consumeBorder(bool important);
@@ -81,8 +81,8 @@ private:
     bool consumeColumns(bool important);
 
     bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
-    bool consumeGridTemplateRowsAndAreasAndColumns(bool important);
-    bool consumeGridTemplateShorthand(bool important);
+    bool consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID, bool important);
+    bool consumeGridTemplateShorthand(CSSPropertyID, bool important);
     bool consumeGridShorthand(bool important);
     bool consumeGridAreaShorthand(bool important);
 
@@ -98,35 +98,12 @@ private:
 
     bool consumeLegacyBreakProperty(CSSPropertyID, bool important);
 
-    class ShorthandScope {
-        STACK_ALLOCATED();
-    public:
-        ShorthandScope(CSSPropertyParser* parser, CSSPropertyID propId) : m_parser(parser)
-        {
-            if (!(m_parser->m_inParseShorthand++))
-                m_parser->m_currentShorthand = propId;
-        }
-        ~ShorthandScope()
-        {
-            if (!(--m_parser->m_inParseShorthand))
-                m_parser->m_currentShorthand = CSSPropertyInvalid;
-        }
-
-    private:
-        CSSPropertyParser* m_parser;
-    };
-
 private:
     // Inputs:
     CSSParserTokenRange m_range;
     const CSSParserContext& m_context;
-
     // Outputs:
     HeapVector<CSSProperty, 256>* m_parsedProperties;
-
-    // Locals during parsing:
-    int m_inParseShorthand;
-    CSSPropertyID m_currentShorthand;
 };
 
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
