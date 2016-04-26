@@ -141,8 +141,15 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       static_cast<uint8_t*>(output_buffer->data()),
       output_buffer->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
       base::TimeDelta());
-  if (!(*storage))
+  // If creating the VideoFrame wrapper failed, call DidCaptureFrame() with
+  // !success to execute the required post-capture steps (tracing, notification
+  // of failure to VideoCaptureOracle, etc.).
+  if (!(*storage)) {
+    DidCaptureFrame(frame_number, std::move(output_buffer), capture_begin_time,
+                    estimated_frame_duration, *storage, event_time, false);
     return false;
+  }
+
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
                          frame_number, base::Passed(&output_buffer),
                          capture_begin_time, estimated_frame_duration);

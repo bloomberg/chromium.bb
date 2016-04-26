@@ -48,9 +48,10 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
   // resources.
   //
   // If this method returns false, the caller should take no further action.
-  // Otherwise, |storage| is set to the destination for the video frame capture;
-  // and, the caller should initiate capture, and then run |callback| once the
-  // video frame has been populated with its content.
+  // Otherwise, |storage| is set to the destination for the video frame capture
+  // and the caller should initiate capture.  Then, once the video frame has
+  // been populated with its content, or if capture failed, the |callback|
+  // should be run.
   bool ObserveEventAndDecideCapture(VideoCaptureOracle::Event event,
                                     const gfx::Rect& damage_rect,
                                     base::TimeTicks event_time,

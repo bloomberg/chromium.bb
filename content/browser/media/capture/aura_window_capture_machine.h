@@ -89,7 +89,9 @@ class AuraWindowCaptureMachine
                      std::unique_ptr<cc::CopyOutputResult> result);
 
   // A helper which does the real work for DidCopyOutput. Returns true if
-  // succeeded.
+  // succeeded and |capture_frame_cb| will be run at some future point. Returns
+  // false on error, and |capture_frame_cb| should be run by the caller (with
+  // failure status).
   bool ProcessCopyOutputResponse(scoped_refptr<media::VideoFrame> video_frame,
                                  base::TimeTicks start_time,
                                  const CaptureFrameCallback& capture_frame_cb,

@@ -199,7 +199,7 @@ void AuraWindowCaptureMachine::DidCopyOutput(
 
   static bool first_call = true;
 
-  bool succeeded = ProcessCopyOutputResponse(
+  const bool succeeded = ProcessCopyOutputResponse(
       video_frame, start_time, capture_frame_cb, std::move(result));
 
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
@@ -223,6 +223,11 @@ void AuraWindowCaptureMachine::DidCopyOutput(
                                          : FIRST_WINDOW_CAPTURE_FAILED);
     }
   }
+
+  // If ProcessCopyOutputResponse() failed, it will not run |capture_frame_cb|,
+  // so do that now.
+  if (!succeeded)
+    capture_frame_cb.Run(video_frame, start_time, false);
 }
 
 bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
@@ -310,8 +315,11 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
   if (machine) {
     if (machine->cursor_renderer_ && result)
       machine->cursor_renderer_->RenderOnVideoFrame(target);
-    capture_frame_cb.Run(target, start_time, result);
+  } else {
+    result = false;
   }
+
+  capture_frame_cb.Run(target, start_time, result);
 }
 
 void AuraWindowCaptureMachine::OnWindowBoundsChanged(
