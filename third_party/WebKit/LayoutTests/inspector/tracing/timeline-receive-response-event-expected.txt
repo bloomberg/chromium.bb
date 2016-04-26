@@ -6,7 +6,7 @@ ResourceReceivedData
 ResourceFinish
 EventDispatch
     FunctionCall
-        ResourceSendRequest
+    ResourceSendRequest
 ResourceReceiveResponse
 ResourceReceivedData
 ResourceFinish

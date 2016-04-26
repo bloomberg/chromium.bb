@@ -696,7 +696,6 @@ PassOwnPtr<TracedValue> InspectorCompileScriptEvent::data(const String& url, con
 PassOwnPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* context, const v8::Local<v8::Function>& function)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
-    setCallStack(value.get());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
 

@@ -34,13 +34,12 @@ function test()
         {
             // Ignore stray paint & rendering events for better stability.
             var categoryName = WebInspector.TimelineUIUtils.eventStyle(traceEvent).category.name;
-               if (categoryName !== "loading" && categoryName !== "scripting")
+            if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
             // Filter out InjectedScript function call because they happen out of sync.
-            if (typesToDump.has(traceEvent.name) && (traceEvent.name !== "FunctionCall" || traceEvent.args["data"].scriptName)) {
+            if (typesToDump.has(traceEvent.name) && (traceEvent.name !== "FunctionCall" || traceEvent.args["data"].scriptName))
                 InspectorTest.addResult("    ".repeat(level - 1) + traceEvent.name);
-            }
         }
         InspectorTest.walkTimelineEventTree(dumpEvent);
         InspectorTest.completeTest();
