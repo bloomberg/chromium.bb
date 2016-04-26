@@ -357,6 +357,30 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_UNOWNED_INPUTS_VISIBLE:
       return "Some control elements not associated to a form element are "
              "visible";
+    case SavePasswordProgressLogger::STRING_ON_FILL_PASSWORD_FORM_METHOD:
+      return "PasswordAutofillAgent::OnFillPasswordForm";
+    case SavePasswordProgressLogger::STRING_AMBIGUOUS_OR_EMPTY_NAMES:
+      return "ambiguous_or_empty_names";
+    case SavePasswordProgressLogger::STRING_NUMBER_OF_POTENTIAL_FORMS_TO_FILL:
+      return "Number of potential forms to fill";
+    case SavePasswordProgressLogger::STRING_CONTAINS_FILLABLE_USERNAME_FIELD:
+      return "form_contains_fillable_username_field";
+    case SavePasswordProgressLogger::STRING_USERNAME_FIELD_NAME_EMPTY:
+      return "username_field_name empty";
+    case SavePasswordProgressLogger::STRING_PASSWORD_FIELD_NAME_EMPTY:
+      return "password_field_name empty";
+    case SavePasswordProgressLogger::STRING_FORM_DATA_WAIT:
+      return "form_data's wait_for_username";
+    case SavePasswordProgressLogger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD:
+      return "FillUserNameAndPassword in PasswordAutofillAgent";
+    case SavePasswordProgressLogger::STRING_USERNAMES_MATCH:
+      return "Username to fill matches that on the page";
+    case SavePasswordProgressLogger::STRING_MATCH_IN_ADDITIONAL:
+      return "Match found in additional logins";
+    case SavePasswordProgressLogger::STRING_USERNAME_FILLED:
+      return "Username was filled";
+    case SavePasswordProgressLogger::STRING_PASSWORD_FILLED:
+      return "Password was filled";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
