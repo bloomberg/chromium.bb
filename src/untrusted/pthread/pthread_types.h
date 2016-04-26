@@ -11,6 +11,8 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_ 1
 
+#include <sys/queue.h>
+
 #include "native_client/src/untrusted/pthread/pthread.h"
 
 
