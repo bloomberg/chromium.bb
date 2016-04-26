@@ -111,7 +111,7 @@ class GoogleInstanceHelper(object):
                  'value': bucket},
                 {'key': 'startup-script-url',
                  'value': 'gs://%s/deployment/startup-script.sh' % bucket},
-                {'key': 'taskqueue_tag', 'value': tag}]}}}
+                {'key': 'taskqueue-tag', 'value': tag}]}}}
     request = self._compute_api.instanceTemplates().insert(
         project=self._project, body=request_body)
     return self._ExecuteApiRequest(request)

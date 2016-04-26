@@ -17,7 +17,7 @@ PROJECTID=$(curl -s \
     "http://metadata.google.internal/computeMetadata/v1/project/project-id" \
     -H "Metadata-Flavor: Google")
 
-INSTANCE_ID=$(curl -s \
+INSTANCE_NAME=$(curl -s \
     "http://metadata.google.internal/computeMetadata/v1/instance/hostname" \
     -H "Metadata-Flavor: Google")
 
@@ -70,15 +70,22 @@ chown -R pythonapp:pythonapp /opt/app
 
 # Create the configuration file for this deployment.
 DEPLOYMENT_CONFIG_PATH=/opt/app/clovis/deployment_config.json
-TASKQUEUE_TAG=`get_instance_metadata taskqueue_tag`
+TASKQUEUE_TAG=`get_instance_metadata taskqueue-tag`
+if [ "$(get_instance_metadata self-destruct)" == "false" ]; then
+  SELF_DESTRUCT_CONFIG_LINE=""
+else
+  SELF_DESTRUCT_CONFIG_LINE="\"destruct_instance_name\" : \"$INSTANCE_NAME\","
+fi
+
 cat >$DEPLOYMENT_CONFIG_PATH << EOF
 {
+  $SELF_DESTRUCT_CONFIG_LINE
   "project_name" : "$PROJECTID",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
   "chrome_path" : "/opt/app/clovis/binaries/chrome",
   "src_path" : "/opt/app/clovis/src",
   "taskqueue_tag" : "$TASKQUEUE_TAG",
-  "trace_database_filename" : "trace_database_${INSTANCE_ID}.json"
+  "trace_database_filename" : "trace_database_${INSTANCE_NAME}.json"
 }
 EOF
 

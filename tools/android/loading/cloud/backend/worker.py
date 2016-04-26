@@ -21,6 +21,7 @@ sys.path.insert(0,
                  os.pardir))
 import controller
 from cloud.common.clovis_task import ClovisTask
+from cloud.common.google_instance_helper import GoogleInstanceHelper
 from google_storage_accessor import GoogleStorageAccessor
 import loading_trace
 from loading_trace_database import LoadingTraceDatabase
@@ -33,6 +34,7 @@ class Worker(object):
     self._project_name = config['project_name']
     self._taskqueue_tag = config['taskqueue_tag']
     self._src_path = config['src_path']
+    self._destruct_instance_name = config.get('destruct_instance_name')
     self._credentials = GoogleCredentials.get_application_default()
     self._logger = logger
 
@@ -80,15 +82,7 @@ class Worker(object):
       (clovis_task, task_id) = self._FetchClovisTask(project, task_api,
                                                      queue_name)
       if not clovis_task:
-        if self._trace_database.ToJsonDict():
-          self._logger.info('No remaining tasks in the queue.')
-          break
-        else:
-          delay_seconds = 60
-          self._logger.info(
-              'Nothing in the queue, retrying in %i seconds.' % delay_seconds)
-          time.sleep(delay_seconds)
-          continue
+        break
 
       self._logger.info('Processing task %s' % task_id)
       self._ProcessClovisTask(clovis_task)
@@ -126,7 +120,7 @@ class Worker(object):
                          if no tasks are found.
     """
     response = task_api.tasks().lease(
-        project=project_name, taskqueue=queue_name, numTasks=1, leaseSecs=180,
+        project=project_name, taskqueue=queue_name, numTasks=1, leaseSecs=600,
         groupByTag=True, tag=self._taskqueue_tag).execute()
     if (not response.get('items')) or (len(response['items']) < 1):
       return (None, None)
@@ -138,8 +132,19 @@ class Worker(object):
 
   def _Finalize(self):
     """Called before exiting."""
-    # TODO(droger): Implement automatic instance destruction.
     self._logger.info('Done')
+    # Self destruct.
+    if self._destruct_instance_name:
+      self._logger.info('Starting instance destruction: ' +
+                        self._destruct_instance_name)
+      google_instance_helper = GoogleInstanceHelper(
+          self._credentials, self._project_name, self._logger)
+      success = google_instance_helper.DeleteInstance(
+          self._taskqueue_tag, self._destruct_instance_name)
+      if not success:
+        self._logger.error('Self destruction failed')
+    # Do not add anything after this line, as the instance might be killed at
+    # any time.
 
   def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
                      log_filename):
