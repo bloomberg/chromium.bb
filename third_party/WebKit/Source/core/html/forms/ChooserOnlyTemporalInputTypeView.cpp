@@ -37,8 +37,8 @@
 namespace blink {
 
 ChooserOnlyTemporalInputTypeView::ChooserOnlyTemporalInputTypeView(HTMLInputElement& element, BaseTemporalInputType& inputType)
-    : InputTypeView(element)
-    , m_inputType(inputType)
+    : BaseClickableWithKeyInputType(element)
+    ,  m_inputType(inputType)
 {
     ThreadState::current()->registerPreFinalizer(this);
 }
@@ -142,27 +142,6 @@ void ChooserOnlyTemporalInputTypeView::closeDateTimeChooser()
 {
     if (m_dateTimeChooser)
         m_dateTimeChooser->endChooser();
-}
-
-void ChooserOnlyTemporalInputTypeView::handleKeydownEvent(KeyboardEvent* event)
-{
-    BaseClickableWithKeyInputType::handleKeydownEvent(element(), event);
-}
-
-void ChooserOnlyTemporalInputTypeView::handleKeypressEvent(KeyboardEvent* event)
-{
-    BaseClickableWithKeyInputType::handleKeypressEvent(element(), event);
-}
-
-void ChooserOnlyTemporalInputTypeView::handleKeyupEvent(KeyboardEvent* event)
-{
-    BaseClickableWithKeyInputType::handleKeyupEvent(*this, event);
-}
-
-void ChooserOnlyTemporalInputTypeView::accessKeyAction(bool sendMouseEvents)
-{
-    InputTypeView::accessKeyAction(sendMouseEvents);
-    BaseClickableWithKeyInputType::accessKeyAction(element(), sendMouseEvents);
 }
 
 } // namespace blink

@@ -50,7 +50,8 @@ using blink::WebLocalizedString;
 using namespace HTMLNames;
 
 inline FileInputType::FileInputType(HTMLInputElement& element)
-    : BaseClickableWithKeyInputType(element)
+    : InputType(element)
+    , BaseClickableWithKeyInputType(element)
     , m_fileList(FileList::create())
 {
 }
@@ -64,6 +65,12 @@ DEFINE_TRACE(FileInputType)
 {
     visitor->trace(m_fileList);
     BaseClickableWithKeyInputType::trace(visitor);
+    InputType::trace(visitor);
+}
+
+InputTypeView* FileInputType::createView()
+{
+    return this;
 }
 
 Vector<FileChooserFileInfo> FileInputType::filesFromFormControlState(const FormControlState& state)

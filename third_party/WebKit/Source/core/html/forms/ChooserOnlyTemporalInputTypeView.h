@@ -36,7 +36,7 @@ namespace blink {
 
 class ChooserOnlyTemporalInputTypeView final
     : public GarbageCollectedFinalized<ChooserOnlyTemporalInputTypeView>
-    , public InputTypeView
+    , public BaseClickableWithKeyInputType
     , public DateTimeChooserClient {
     USING_GARBAGE_COLLECTED_MIXIN(ChooserOnlyTemporalInputTypeView);
     USING_PRE_FINALIZER(ChooserOnlyTemporalInputTypeView, closeDateTimeChooser);
@@ -54,10 +54,6 @@ private:
     void closePopupView() override;
     void didSetValue(const String&, bool valueChanged) override;
     void handleDOMActivateEvent(Event*) override;
-    void handleKeydownEvent(KeyboardEvent*) override;
-    void handleKeypressEvent(KeyboardEvent*) override;
-    void handleKeyupEvent(KeyboardEvent*) override;
-    void accessKeyAction(bool sendMouseEvents) override;
     void updateView() override;
 
     // DateTimeChooserClient functions:

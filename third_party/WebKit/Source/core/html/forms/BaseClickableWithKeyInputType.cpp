@@ -38,21 +38,21 @@ namespace blink {
 
 using namespace HTMLNames;
 
-void BaseClickableWithKeyInputType::handleKeydownEvent(HTMLInputElement& element, KeyboardEvent* event)
+void BaseClickableWithKeyInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     const String& key = event->keyIdentifier();
     if (key == "U+0020") {
-        element.setActive(true);
+        element().setActive(true);
         // No setDefaultHandled(), because IE dispatches a keypress in this case
         // and the caller will only dispatch a keypress if we don't call setDefaultHandled().
     }
 }
 
-void BaseClickableWithKeyInputType::handleKeypressEvent(HTMLInputElement& element, KeyboardEvent* event)
+void BaseClickableWithKeyInputType::handleKeypressEvent(KeyboardEvent* event)
 {
     int charCode = event->charCode();
     if (charCode == '\r') {
-        element.dispatchSimulatedClick(event);
+        element().dispatchSimulatedClick(event);
         event->setDefaultHandled();
         return;
     }
@@ -62,40 +62,20 @@ void BaseClickableWithKeyInputType::handleKeypressEvent(HTMLInputElement& elemen
     }
 }
 
-void BaseClickableWithKeyInputType::handleKeyupEvent(InputTypeView& inputTypeView, KeyboardEvent* event)
+void BaseClickableWithKeyInputType::handleKeyupEvent(KeyboardEvent* event)
 {
     const String& key = event->keyIdentifier();
     if (key != "U+0020")
         return;
     // Simulate mouse click for spacebar for button types.
-    inputTypeView.dispatchSimulatedClickIfActive(event);
+    dispatchSimulatedClickIfActive(event);
 }
 
 // FIXME: Could share this with BaseCheckableInputType and RangeInputType if we had a common base class.
-void BaseClickableWithKeyInputType::accessKeyAction(HTMLInputElement& element, bool sendMouseEvents)
-{
-    element.dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
-}
-
-void BaseClickableWithKeyInputType::handleKeydownEvent(KeyboardEvent* event)
-{
-    handleKeydownEvent(element(), event);
-}
-
-void BaseClickableWithKeyInputType::handleKeypressEvent(KeyboardEvent* event)
-{
-    handleKeypressEvent(element(), event);
-}
-
-void BaseClickableWithKeyInputType::handleKeyupEvent(KeyboardEvent* event)
-{
-    handleKeyupEvent(*this, event);
-}
-
 void BaseClickableWithKeyInputType::accessKeyAction(bool sendMouseEvents)
 {
     InputTypeView::accessKeyAction(sendMouseEvents);
-    accessKeyAction(element(), sendMouseEvents);
+    element().dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
 }
 
 } // namespace blink
