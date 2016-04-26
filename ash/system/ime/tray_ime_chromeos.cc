@@ -352,7 +352,7 @@ void TrayIME::DestroyDetailedView() {
 void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayIME::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   SetTrayLabelItemBorder(tray_label_, alignment);
   tray_label_->Layout();
 }

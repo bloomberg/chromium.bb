@@ -44,7 +44,7 @@ class TrayNetwork : public SystemTrayItem,
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override;
 
   // NetworkObserver
   void RequestToggleWifi() override;

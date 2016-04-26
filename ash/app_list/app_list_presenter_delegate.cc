@@ -51,12 +51,12 @@ views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
 gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
                                              views::Widget* widget) {
   DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment =
+  wm::ShelfAlignment shelf_alignment =
       Shelf::ForWindow(widget->GetNativeView()->GetRootWindow())->alignment();
   gfx::Point anchor(button_bounds.CenterPoint());
   switch (shelf_alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case wm::SHELF_ALIGNMENT_BOTTOM:
+    case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
       if (base::i18n::IsRTL()) {
         int screen_width = widget->GetWorkAreaBoundsInScreen().width();
         return gfx::Vector2d(
@@ -66,10 +66,10 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
       }
       return gfx::Vector2d(
           std::max(kMinimalAnchorPositionOffset - anchor.x(), 0), 0);
-    case SHELF_ALIGNMENT_LEFT:
+    case wm::SHELF_ALIGNMENT_LEFT:
       return gfx::Vector2d(
           0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
-    case SHELF_ALIGNMENT_RIGHT:
+    case wm::SHELF_ALIGNMENT_RIGHT:
       return gfx::Vector2d(
           0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
   }

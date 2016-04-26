@@ -16,6 +16,7 @@ namespace wm {
 
 class WmGlobals;
 class WmRootWindowControllerObserver;
+class WmShelf;
 class WmWindow;
 
 // Provides state associated with a root of a window hierarchy.
@@ -30,6 +31,8 @@ class ASH_EXPORT WmRootWindowController {
   virtual WmGlobals* GetGlobals() = 0;
 
   virtual WorkspaceWindowState GetWorkspaceWindowState() = 0;
+
+  virtual WmShelf* GetShelf() = 0;
 
   // Returns the window associated with this WmRootWindowController.
   virtual WmWindow* GetWindow() = 0;

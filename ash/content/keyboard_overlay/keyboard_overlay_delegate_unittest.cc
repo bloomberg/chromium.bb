@@ -17,14 +17,14 @@ namespace ash {
 
 class KeyboardOverlayDelegateTest
     : public test::AshTestBase,
-      public testing::WithParamInterface<ShelfAlignment> {
+      public testing::WithParamInterface<wm::ShelfAlignment> {
  public:
   KeyboardOverlayDelegateTest() : shelf_alignment_(GetParam()) {}
   virtual ~KeyboardOverlayDelegateTest() {}
-  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+  wm::ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
 
  private:
-  ShelfAlignment shelf_alignment_;
+  wm::ShelfAlignment shelf_alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegateTest);
 };
@@ -61,9 +61,9 @@ TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
 // Tests run three times - for all possible values of shelf alignment
 INSTANTIATE_TEST_CASE_P(ShelfAlignmentAny,
                         KeyboardOverlayDelegateTest,
-                        testing::Values(SHELF_ALIGNMENT_BOTTOM,
-                                        SHELF_ALIGNMENT_LEFT,
-                                        SHELF_ALIGNMENT_RIGHT,
-                                        SHELF_ALIGNMENT_BOTTOM_LOCKED));
+                        testing::Values(wm::SHELF_ALIGNMENT_BOTTOM,
+                                        wm::SHELF_ALIGNMENT_LEFT,
+                                        wm::SHELF_ALIGNMENT_RIGHT,
+                                        wm::SHELF_ALIGNMENT_BOTTOM_LOCKED));
 
 }  // namespace ash

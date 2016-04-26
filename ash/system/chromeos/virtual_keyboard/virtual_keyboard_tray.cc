@@ -46,7 +46,7 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
     Shell::GetInstance()->keyboard_ui()->RemoveObserver(this);
 }
 
-void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
+void VirtualKeyboardTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
 

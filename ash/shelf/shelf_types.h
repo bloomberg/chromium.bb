@@ -5,17 +5,10 @@
 #ifndef ASH_SHELF_SHELF_TYPES_H_
 #define ASH_SHELF_SHELF_TYPES_H_
 
+// TODO(sky): make callers explicitly include this.
+#include "ash/wm/common/shelf/wm_shelf_types.h"
+
 namespace ash {
-
-enum ShelfAlignment {
-  SHELF_ALIGNMENT_BOTTOM,
-  SHELF_ALIGNMENT_LEFT,
-  SHELF_ALIGNMENT_RIGHT,
-  // Top has never been supported.
-
-  // The locked alignment is set temporarily and not saved to preferences.
-  SHELF_ALIGNMENT_BOTTOM_LOCKED,
-};
 
 enum ShelfAutoHideBehavior {
   // Always auto-hide.
@@ -42,17 +35,6 @@ enum ShelfVisibilityState {
 enum ShelfAutoHideState {
   SHELF_AUTO_HIDE_SHOWN,
   SHELF_AUTO_HIDE_HIDDEN,
-};
-
-enum ShelfBackgroundType {
-  // The default transparent background.
-  SHELF_BACKGROUND_DEFAULT,
-
-  // The background when a window is overlapping.
-  SHELF_BACKGROUND_OVERLAP,
-
-  // The background when a window is maximized.
-  SHELF_BACKGROUND_MAXIMIZED,
 };
 
 }  // namespace ash

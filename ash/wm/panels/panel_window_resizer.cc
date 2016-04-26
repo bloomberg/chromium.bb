@@ -126,22 +126,22 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
             ->shelf_widget()
             ->GetWindowBoundsInScreen());
     switch (panel_layout_manager->shelf()->alignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case wm::SHELF_ALIGNMENT_BOTTOM:
+      case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
         if (bounds.bottom() >= (launcher_bounds.y() -
                                 kPanelSnapToLauncherDistance)) {
           should_attach = true;
           offset->set_y(launcher_bounds.y() - bounds.height() - bounds.y());
         }
         break;
-      case SHELF_ALIGNMENT_LEFT:
+      case wm::SHELF_ALIGNMENT_LEFT:
         if (bounds.x() <= (launcher_bounds.right() +
                            kPanelSnapToLauncherDistance)) {
           should_attach = true;
           offset->set_x(launcher_bounds.right() - bounds.x());
         }
         break;
-      case SHELF_ALIGNMENT_RIGHT:
+      case wm::SHELF_ALIGNMENT_RIGHT:
         if (bounds.right() >= (launcher_bounds.x() -
                                kPanelSnapToLauncherDistance)) {
           should_attach = true;

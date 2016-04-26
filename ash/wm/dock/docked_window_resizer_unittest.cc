@@ -380,7 +380,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
 
   // set launcher shelf to be aligned on the right
   ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
+  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_RIGHT,
                            shell->GetPrimaryRootWindow());
   // The window should have moved and get attached to the left dock.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
@@ -388,7 +388,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   // set launcher shelf to be aligned on the left
-  shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
+  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
                            shell->GetPrimaryRootWindow());
   // The window should have moved and get attached to the right edge.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
@@ -396,7 +396,7 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   // set launcher shelf to be aligned at the bottom
-  shell->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM,
+  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM,
                            shell->GetPrimaryRootWindow());
   // The window should stay in the right edge.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),

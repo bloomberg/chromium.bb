@@ -82,7 +82,7 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override;
 
   // Overridden from PowerStatus::Observer.
   void OnPowerStatusChanged() override;

@@ -258,7 +258,7 @@ void ShelfDelegateMus::AddObserver(
 }
 
 void ShelfDelegateMus::SetAlignment(mash::shelf::mojom::Alignment alignment) {
-  ShelfAlignment value = static_cast<ShelfAlignment>(alignment);
+  wm::ShelfAlignment value = static_cast<wm::ShelfAlignment>(alignment);
   Shell::GetInstance()->SetShelfAlignment(value, Shell::GetPrimaryRootWindow());
 }
 

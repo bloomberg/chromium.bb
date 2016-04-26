@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_SHELF_H_
 #define ASH_SHELF_SHELF_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_locking_manager.h"
@@ -37,6 +39,10 @@ class ShelfIconObserver;
 class ShelfModel;
 class ShelfView;
 
+namespace wm {
+class WmShelfAura;
+}
+
 namespace test {
 class ShelfTestAPI;
 }
@@ -56,8 +62,8 @@ class ASH_EXPORT Shelf {
   // user is logged in yet.
   static Shelf* ForWindow(const aura::Window* window);
 
-  void SetAlignment(ShelfAlignment alignment);
-  ShelfAlignment alignment() const { return alignment_; }
+  void SetAlignment(wm::ShelfAlignment alignment);
+  wm::ShelfAlignment alignment() const { return alignment_; }
   bool IsHorizontalAlignment() const;
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
@@ -73,12 +79,12 @@ class ASH_EXPORT Shelf {
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (alignment_) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case wm::SHELF_ALIGNMENT_BOTTOM:
+      case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
-      case SHELF_ALIGNMENT_LEFT:
+      case wm::SHELF_ALIGNMENT_LEFT:
         return left;
-      case SHELF_ALIGNMENT_RIGHT:
+      case wm::SHELF_ALIGNMENT_RIGHT:
         return right;
     }
     NOTREACHED();
@@ -139,15 +145,18 @@ class ASH_EXPORT Shelf {
   // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
 
+  wm::WmShelfAura* wm_shelf() { return wm_shelf_.get(); }
+
  private:
   friend class test::ShelfTestAPI;
 
+  std::unique_ptr<wm::WmShelfAura> wm_shelf_;
   ShelfDelegate* delegate_;
   ShelfWidget* shelf_widget_;
   ShelfView* shelf_view_;
   ShelfLockingManager shelf_locking_manager_;
 
-  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM;
+  wm::ShelfAlignment alignment_ = wm::SHELF_ALIGNMENT_BOTTOM;
   ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);

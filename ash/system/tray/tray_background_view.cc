@@ -157,12 +157,13 @@ class TrayBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
 
-TrayBackgroundView::TrayContainer::TrayContainer(ShelfAlignment alignment)
+TrayBackgroundView::TrayContainer::TrayContainer(wm::ShelfAlignment alignment)
     : alignment_(alignment) {
   UpdateLayout();
 }
 
-void TrayBackgroundView::TrayContainer::SetAlignment(ShelfAlignment alignment) {
+void TrayBackgroundView::TrayContainer::SetAlignment(
+    wm::ShelfAlignment alignment) {
   if (alignment_ == alignment)
     return;
   alignment_ = alignment;
@@ -225,7 +226,7 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
     : status_area_widget_(status_area_widget),
       tray_container_(NULL),
-      shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
+      shelf_alignment_(wm::SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
       hide_background_animator_(this, 0, kTrayBackgroundAlpha),
       hover_background_animator_(
@@ -393,7 +394,7 @@ ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
   return status_area_widget()->shelf_widget()->shelf_layout_manager();
 }
 
-void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
+void TrayBackgroundView::SetShelfAlignment(wm::ShelfAlignment alignment) {
   shelf_alignment_ = alignment;
   SetTrayBorder();
   tray_container_->SetAlignment(alignment);
@@ -410,7 +411,7 @@ void TrayBackgroundView::SetTrayBorder() {
     bottom_edge = kShelfSize -
         ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
     right_edge = on_edge ? kPaddingFromEdgeOfShelf : 0;
-  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+  } else if (shelf_alignment() == wm::SHELF_ALIGNMENT_LEFT) {
     top_edge = 0;
     left_edge = kShelfSize -
         ShelfLayoutManager::kShelfItemInset - kShelfItemHeight;
@@ -559,9 +560,9 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
 }
 
 TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
-  if (shelf_alignment_ == SHELF_ALIGNMENT_LEFT)
+  if (shelf_alignment_ == wm::SHELF_ALIGNMENT_LEFT)
     return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
-  if (shelf_alignment_ == SHELF_ALIGNMENT_RIGHT)
+  if (shelf_alignment_ == wm::SHELF_ALIGNMENT_RIGHT)
     return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }

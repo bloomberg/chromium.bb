@@ -58,7 +58,7 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override;
 
   // Overridden from ClockObserver.
   void OnDateFormatChanged() override;

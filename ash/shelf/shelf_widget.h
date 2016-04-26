@@ -39,12 +39,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   static bool ShelfAlignmentAllowed();
 
   void OnShelfAlignmentChanged();
-  ShelfAlignment GetAlignment() const;
+  wm::ShelfAlignment GetAlignment() const;
 
   // Sets the shelf's background type.
-  void SetPaintsBackground(ShelfBackgroundType background_type,
+  void SetPaintsBackground(wm::ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type);
-  ShelfBackgroundType GetBackgroundType() const;
+  wm::ShelfBackgroundType GetBackgroundType() const;
 
   // Hide the shelf behind a black bar during e.g. a user transition when |hide|
   // is true. The |animation_time_ms| will be used as animation duration.

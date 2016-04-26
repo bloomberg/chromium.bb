@@ -6,11 +6,9 @@
 
 namespace ash {
 
-const int kShelfBackgroundAlpha = 204;
 const int kInvalidImageResourceID = -1;
 const int kShelfSize = 47;
 const int kShelfButtonSpacing = 10;
 const int kShelfButtonSize = 44;
-const int kTimeToSwitchBackgroundMs = 1000;
 
 }  // namespace ash

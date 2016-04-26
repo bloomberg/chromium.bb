@@ -9,9 +9,6 @@
 
 namespace ash {
 
-// Max alpha of the shelf background.
-ASH_EXPORT extern const int kShelfBackgroundAlpha;
-
 // Invalid image resource id used for ShelfItemDetails.
 extern const int kInvalidImageResourceID;
 
@@ -25,9 +22,6 @@ ASH_EXPORT extern const int kShelfButtonSpacing;
 
 // Size allocated for each button on the shelf.
 ASH_EXPORT extern const int kShelfButtonSize;
-
-// Animation duration for switching black shelf and dock background on and off.
-ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 
 // The direction of the focus cycling.
 enum CycleDirection {

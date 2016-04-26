@@ -24,7 +24,9 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
   ~ShelfLockingManager() override;
 
   bool is_locked() const { return session_locked_ || screen_locked_; }
-  void set_stored_alignment(ShelfAlignment value) { stored_alignment_ = value; }
+  void set_stored_alignment(wm::ShelfAlignment value) {
+    stored_alignment_ = value;
+  }
 
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
@@ -42,7 +44,7 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
   Shelf* shelf_;
   bool session_locked_ = false;
   bool screen_locked_ = false;
-  ShelfAlignment stored_alignment_ = SHELF_ALIGNMENT_BOTTOM;
+  wm::ShelfAlignment stored_alignment_ = wm::SHELF_ALIGNMENT_BOTTOM;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLockingManager);
 };

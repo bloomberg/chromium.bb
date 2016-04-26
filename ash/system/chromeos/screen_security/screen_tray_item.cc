@@ -183,7 +183,8 @@ void ScreenTrayItem::DestroyDefaultView() {
   default_view_ = NULL;
 }
 
-void ScreenTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void ScreenTrayItem::UpdateAfterShelfAlignmentChange(
+    wm::ShelfAlignment alignment) {
   if (!tray_view_)
     return;
 

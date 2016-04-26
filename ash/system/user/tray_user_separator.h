@@ -31,7 +31,7 @@ class ASH_EXPORT TrayUserSeparator : public SystemTrayItem {
   void DestroyDefaultView() override;
   void DestroyDetailedView() override {}
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override {}
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override {}
+  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override {}
 
   // True if the separator gets shown.
   bool separator_shown_;

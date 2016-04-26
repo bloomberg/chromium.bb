@@ -388,12 +388,12 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     } else {
       bool correct_direction = false;
       switch (GetAlignment()) {
-        case SHELF_ALIGNMENT_BOTTOM:
-        case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        case SHELF_ALIGNMENT_RIGHT:
+        case wm::SHELF_ALIGNMENT_BOTTOM:
+        case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+        case wm::SHELF_ALIGNMENT_RIGHT:
           correct_direction = gesture_drag_amount_ < 0;
           break;
-        case SHELF_ALIGNMENT_LEFT:
+        case wm::SHELF_ALIGNMENT_LEFT:
           correct_direction = gesture_drag_amount_ > 0;
           break;
       }
@@ -846,7 +846,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   } else {
     // Move and size the shelf with the gesture.
     int shelf_width = target_bounds->shelf_bounds_in_root.width();
-    bool right_aligned = GetAlignment() == SHELF_ALIGNMENT_RIGHT;
+    bool right_aligned = GetAlignment() == wm::SHELF_ALIGNMENT_RIGHT;
     if (right_aligned)
       shelf_width -= translate;
     else
@@ -869,26 +869,26 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
 void ShelfLayoutManager::UpdateShelfBackground(
     BackgroundAnimatorChangeType type) {
-  const ShelfBackgroundType background_type(GetShelfBackgroundType());
+  const wm::ShelfBackgroundType background_type(GetShelfBackgroundType());
   shelf_->SetPaintsBackground(background_type, type);
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnBackgroundUpdated(background_type, type));
 }
 
-ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
+wm::ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
-    return SHELF_BACKGROUND_MAXIMIZED;
+    return wm::SHELF_BACKGROUND_MAXIMIZED;
   }
 
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       (!state_.is_screen_locked && !state_.is_adding_user_screen &&
        window_overlaps_shelf_) ||
       (state_.visibility_state == SHELF_AUTO_HIDE)) {
-    return SHELF_BACKGROUND_OVERLAP;
+    return wm::SHELF_BACKGROUND_OVERLAP;
   }
 
-  return SHELF_BACKGROUND_DEFAULT;
+  return wm::SHELF_BACKGROUND_DEFAULT;
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
@@ -990,11 +990,13 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       IsVisible()) {
     // Increase the the hit test area to prevent the shelf from disappearing
     // when the mouse is over the bubble gap.
-    ShelfAlignment alignment = GetAlignment();
+    wm::ShelfAlignment alignment = GetAlignment();
     shelf_region.Inset(
-        alignment == SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight : 0,
+        alignment == wm::SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight
+                                               : 0,
         IsHorizontalAlignment() ? -kNotificationBubbleGapHeight : 0,
-        alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
+        alignment == wm::SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight
+                                              : 0,
         0);
   }
 

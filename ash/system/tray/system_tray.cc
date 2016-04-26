@@ -324,7 +324,7 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   PreferredSizeChanged();
 }
 
-void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void SystemTray::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   for (SystemTrayItem* item : items_)
     item->UpdateAfterShelfAlignmentChange(alignment);
 }
@@ -611,7 +611,7 @@ base::string16 SystemTray::GetAccessibleTimeString(
       now, hour_type, base::kKeepAmPm);
 }
 
-void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
+void SystemTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   TrayBackgroundView::SetShelfAlignment(alignment);

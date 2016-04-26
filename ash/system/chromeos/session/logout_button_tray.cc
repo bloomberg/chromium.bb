@@ -110,7 +110,7 @@ LogoutButtonTray::~LogoutButtonTray() {
       RemoveLogoutButtonObserver(this);
 }
 
-void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
+void LogoutButtonTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
 }

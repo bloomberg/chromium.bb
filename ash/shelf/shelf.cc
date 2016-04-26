@@ -21,6 +21,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -49,6 +50,9 @@ Shelf::Shelf(ShelfModel* shelf_model,
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
   shelf_widget_->GetNativeView()->SetName(kNativeViewName);
+  // This has to be done after the ShelfWidget and ShelfLayoutManager have
+  // been created.
+  wm_shelf_.reset(new wm::WmShelfAura(this));
 }
 
 Shelf::~Shelf() {
@@ -66,12 +70,12 @@ Shelf* Shelf::ForWindow(const aura::Window* window) {
   return shelf_widget ? shelf_widget->shelf() : nullptr;
 }
 
-void Shelf::SetAlignment(ShelfAlignment alignment) {
+void Shelf::SetAlignment(wm::ShelfAlignment alignment) {
   if (alignment_ == alignment)
     return;
 
   if (shelf_locking_manager_.is_locked() &&
-      alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+      alignment != wm::SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     shelf_locking_manager_.set_stored_alignment(alignment);
     return;
   }

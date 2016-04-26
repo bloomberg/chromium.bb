@@ -338,7 +338,7 @@ class CastTrayView : public TrayItemView {
 
   // Called when the tray alignment changes so that the icon can recenter
   // itself.
-  void UpdateAlignment(ShelfAlignment alignment);
+  void UpdateAlignment(wm::ShelfAlignment alignment);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastTrayView);
@@ -356,7 +356,7 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
 CastTrayView::~CastTrayView() {
 }
 
-void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
+void CastTrayView::UpdateAlignment(wm::ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
   views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
                                              ? views::BoxLayout::kVertical
@@ -673,7 +673,7 @@ void TrayCast::OnCastingSessionStartedOrStopped(bool started) {
   UpdatePrimaryView();
 }
 
-void TrayCast::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayCast::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   if (tray_)
     tray_->UpdateAlignment(alignment);
 }

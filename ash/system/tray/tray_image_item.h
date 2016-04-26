@@ -36,11 +36,11 @@ class TrayImageItem : public SystemTrayItem {
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override;
 
  private:
   // Set the alignment of the image depending on the shelf alignment.
-  void SetItemAlignment(ShelfAlignment alignment);
+  void SetItemAlignment(wm::ShelfAlignment alignment);
 
   int resource_id_;
   TrayItemView* tray_view_;

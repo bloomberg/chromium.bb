@@ -6,8 +6,11 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/aura/wm_globals_aura.h"
+#include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "ash/wm/workspace_controller.h"
@@ -74,6 +77,12 @@ WmGlobals* WmRootWindowControllerAura::GetGlobals() {
 
 WorkspaceWindowState WmRootWindowControllerAura::GetWorkspaceWindowState() {
   return root_window_controller_->workspace_controller()->GetWindowState();
+}
+
+WmShelf* WmRootWindowControllerAura::GetShelf() {
+  return root_window_controller_->shelf()
+             ? root_window_controller_->shelf()->shelf()->wm_shelf()
+             : nullptr;
 }
 
 WmWindow* WmRootWindowControllerAura::GetWindow() {

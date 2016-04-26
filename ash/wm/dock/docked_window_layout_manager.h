@@ -30,6 +30,7 @@ class Shelf;
 
 namespace wm {
 class WmRootWindowController;
+class WmShelf;
 }
 
 // DockedWindowLayoutManager is responsible for organizing windows when they are
@@ -92,8 +93,8 @@ class ASH_EXPORT DockedWindowLayoutManager
   // the current shelf alignment conflicts. Never clears the |alignment_|.
   void MaybeSetDesiredDockedAlignment(DockedAlignment alignment);
 
-  Shelf* shelf() { return shelf_; }
-  void SetShelf(Shelf* shelf);
+  wm::WmShelf* shelf() { return shelf_; }
+  void SetShelf(wm::WmShelf* shelf);
 
   // Calculates if a window is touching the screen edges and returns edge.
   DockedAlignment GetAlignmentOfWindow(const wm::WmWindow* window) const;
@@ -267,7 +268,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   bool is_dragged_from_dock_;
 
   // The shelf to respond to alignment changes.
-  Shelf* shelf_;
+  wm::WmShelf* shelf_;
 
   // Tracks if any window in the same root window is in fullscreen mode.
   bool in_fullscreen_;

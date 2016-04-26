@@ -99,7 +99,7 @@ void OverviewButtonTray::HideBubbleWithView(
   // This class has no bubbles to hide.
 }
 
-void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
+void OverviewButtonTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
 

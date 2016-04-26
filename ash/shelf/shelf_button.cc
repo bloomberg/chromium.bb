@@ -374,7 +374,7 @@ void ShelfButton::Layout() {
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
-  if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
+  if (wm::SHELF_ALIGNMENT_LEFT == shelf->alignment())
     x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
   // Center icon with respect to the secondary axis, and ensure
@@ -490,7 +490,7 @@ void ShelfButton::UpdateBar() {
     gfx::ImageSkia image = *rb->GetImageNamed(bar_id).ToImageSkia();
     if (!shelf->IsHorizontalAlignment()) {
       image = gfx::ImageSkiaOperations::CreateRotatedImage(
-          image, shelf->alignment() == SHELF_ALIGNMENT_LEFT
+          image, shelf->alignment() == wm::SHELF_ALIGNMENT_LEFT
                      ? SkBitmapOperations::ROTATION_90_CW
                      : SkBitmapOperations::ROTATION_270_CW);
     }

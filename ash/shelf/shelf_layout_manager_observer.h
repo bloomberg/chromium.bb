@@ -29,9 +29,8 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
 
   // Called when shelf background animation is started.
-  virtual void OnBackgroundUpdated(
-      ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) {}
+  virtual void OnBackgroundUpdated(wm::ShelfBackgroundType background_type,
+                                   BackgroundAnimatorChangeType change_type) {}
 };
 
 }  // namespace ash

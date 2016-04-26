@@ -4,7 +4,7 @@
 
 module mash.shelf.mojom;
 
-// These values match ash::ShelfAlignment.
+// These values match ash::wm::ShelfAlignment.
 enum Alignment { BOTTOM, LEFT, RIGHT, };
 
 // These values match ash::ShelfAutoHideBehavior.

@@ -127,7 +127,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     ASSERT_LT(icon_bounds.width(), window_bounds.width());
     ASSERT_LT(icon_bounds.height(), window_bounds.height());
     gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
-    ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
+    wm::ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
 
     if (IsHorizontal(alignment)) {
       // The horizontal bounds of the panel window should contain the bounds of
@@ -141,9 +141,9 @@ class PanelLayoutManagerTest : public test::AshTestBase {
       EXPECT_GE(window_bounds.bottom(), icon_bounds.bottom());
     }
 
-    if (alignment == SHELF_ALIGNMENT_LEFT)
+    if (alignment == wm::SHELF_ALIGNMENT_LEFT)
       EXPECT_EQ(shelf_bounds.right(), window_bounds.x());
-    else if (alignment == SHELF_ALIGNMENT_RIGHT)
+    else if (alignment == wm::SHELF_ALIGNMENT_RIGHT)
       EXPECT_EQ(shelf_bounds.x(), window_bounds.right());
     else
       EXPECT_EQ(shelf_bounds.y(), window_bounds.bottom());
@@ -164,10 +164,10 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
     EXPECT_TRUE(widget->IsVisible());
 
-    ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
-    if (alignment == SHELF_ALIGNMENT_LEFT)
+    wm::ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
+    if (alignment == wm::SHELF_ALIGNMENT_LEFT)
       EXPECT_EQ(panel_bounds.x(), callout_bounds.right());
-    else if (alignment == SHELF_ALIGNMENT_RIGHT)
+    else if (alignment == wm::SHELF_ALIGNMENT_RIGHT)
       EXPECT_EQ(panel_bounds.right(), callout_bounds.x());
     else
       EXPECT_EQ(panel_bounds.bottom(), callout_bounds.y());
@@ -209,11 +209,11 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
-  void SetAlignment(aura::Window* root_window, ShelfAlignment alignment) {
+  void SetAlignment(aura::Window* root_window, wm::ShelfAlignment alignment) {
     Shelf::ForWindow(root_window)->SetAlignment(alignment);
   }
 
-  ShelfAlignment GetAlignment(const aura::Window* root_window) {
+  wm::ShelfAlignment GetAlignment(const aura::Window* root_window) {
     return Shelf::ForWindow(root_window)->alignment();
   }
 
@@ -238,8 +238,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
  private:
   std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
-  bool IsHorizontal(ShelfAlignment alignment) {
-    return alignment == SHELF_ALIGNMENT_BOTTOM;
+  bool IsHorizontal(wm::ShelfAlignment alignment) {
+    return alignment == wm::SHELF_ALIGNMENT_BOTTOM;
   }
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTest);
@@ -367,7 +367,7 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelStacking) {
 
 TEST_F(PanelLayoutManagerTest, MultiplePanelStackingVertical) {
   // Set shelf to be aligned on the right.
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), wm::SHELF_ALIGNMENT_RIGHT);
 
   // Size panels in such a way that ordering them by X coordinate would cause
   // stacking order to be incorrect. Test that stacking order is based on Y.
@@ -686,10 +686,10 @@ TEST_F(PanelLayoutManagerTest, PanelAlignmentSecondDisplay) {
   IsPanelAboveLauncherIcon(p1_d2.get());
   IsCalloutAboveLauncherIcon(p1_d2.get());
 
-  SetAlignment(root_windows[1], SHELF_ALIGNMENT_RIGHT);
+  SetAlignment(root_windows[1], wm::SHELF_ALIGNMENT_RIGHT);
   IsPanelAboveLauncherIcon(p1_d2.get());
   IsCalloutAboveLauncherIcon(p1_d2.get());
-  SetAlignment(root_windows[1], SHELF_ALIGNMENT_LEFT);
+  SetAlignment(root_windows[1], wm::SHELF_ALIGNMENT_LEFT);
   IsPanelAboveLauncherIcon(p1_d2.get());
   IsCalloutAboveLauncherIcon(p1_d2.get());
 }
@@ -697,7 +697,7 @@ TEST_F(PanelLayoutManagerTest, PanelAlignmentSecondDisplay) {
 TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
   gfx::Rect bounds(0, 0, 201, 201);
   std::unique_ptr<aura::Window> w(CreatePanelWindow(bounds));
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), wm::SHELF_ALIGNMENT_LEFT);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
 }
@@ -705,7 +705,7 @@ TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
 TEST_F(PanelLayoutManagerTest, AlignmentRight) {
   gfx::Rect bounds(0, 0, 201, 201);
   std::unique_ptr<aura::Window> w(CreatePanelWindow(bounds));
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), wm::SHELF_ALIGNMENT_RIGHT);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
 }
@@ -777,7 +777,7 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   // in src/ash/root_window_controller.cc.
 
   // Hit test outside the right edge with a bottom-aligned shelf.
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_BOTTOM);
+  SetAlignment(Shell::GetPrimaryRootWindow(), wm::SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect bounds(w->bounds());
   ui::TouchEvent touch(ui::ET_TOUCH_PRESSED,
                        gfx::Point(bounds.right() + 3, bounds.y() + 2),
@@ -791,7 +791,7 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   EXPECT_NE(w.get(), target);
 
   // Hit test outside the bottom edge with a right-aligned shelf.
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), wm::SHELF_ALIGNMENT_RIGHT);
   bounds = w->bounds();
   touch.set_location(gfx::Point(bounds.x() + 6, bounds.bottom() + 5));
   target = targeter->FindTargetForEvent(root, &touch);
@@ -803,7 +803,7 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   EXPECT_NE(w.get(), target);
 
   // Hit test outside the top edge with a left-aligned shelf.
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_LEFT);
+  SetAlignment(Shell::GetPrimaryRootWindow(), wm::SHELF_ALIGNMENT_LEFT);
   bounds = w->bounds();
   touch.set_location(gfx::Point(bounds.x() + 4, bounds.y() - 6));
   target = targeter->FindTargetForEvent(root, &touch);

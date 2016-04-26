@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/shelf/wm_shelf_constants.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/screen.h"
@@ -43,7 +44,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
   set_background(NULL);
-  set_color(SkColorSetARGB(kShelfBackgroundAlpha, 0, 0, 0));
+  set_color(SkColorSetARGB(wm::kShelfBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   // Overflow bubble should not get focus. If it get focus when it is shown,
   // active state item is changed to running state.

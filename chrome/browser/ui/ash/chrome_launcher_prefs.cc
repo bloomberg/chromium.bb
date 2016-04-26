@@ -115,24 +115,24 @@ void SetPerDisplayPref(PrefService* prefs,
   pref_dictionary->SetStringWithoutPathExpansion(pref_key, value);
 }
 
-ShelfAlignment AlignmentFromPref(const std::string& value) {
+wm::ShelfAlignment AlignmentFromPref(const std::string& value) {
   if (value == kShelfAlignmentLeft)
-    return SHELF_ALIGNMENT_LEFT;
+    return wm::SHELF_ALIGNMENT_LEFT;
   else if (value == kShelfAlignmentRight)
-    return SHELF_ALIGNMENT_RIGHT;
+    return wm::SHELF_ALIGNMENT_RIGHT;
   // Default to bottom.
-  return SHELF_ALIGNMENT_BOTTOM;
+  return wm::SHELF_ALIGNMENT_BOTTOM;
 }
 
-const char* AlignmentToPref(ShelfAlignment alignment) {
+const char* AlignmentToPref(wm::ShelfAlignment alignment) {
   switch (alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
+    case wm::SHELF_ALIGNMENT_BOTTOM:
       return kShelfAlignmentBottom;
-    case SHELF_ALIGNMENT_LEFT:
+    case wm::SHELF_ALIGNMENT_LEFT:
       return kShelfAlignmentLeft;
-    case SHELF_ALIGNMENT_RIGHT:
+    case wm::SHELF_ALIGNMENT_RIGHT:
       return kShelfAlignmentRight;
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
       // This should not be a valid preference option for now. We only want to
       // lock the shelf during login or when adding a user.
       return nullptr;
@@ -242,7 +242,8 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
   }
 }
 
-ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
+wm::ShelfAlignment GetShelfAlignmentPref(PrefService* prefs,
+                                         int64_t display_id) {
   DCHECK_GE(display_id, 0);
 
   // See comment in |kShelfAlignment| as to why we consider two prefs.
@@ -252,7 +253,7 @@ ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
 
 void SetShelfAlignmentPref(PrefService* prefs,
                            int64_t display_id,
-                           ShelfAlignment alignment) {
+                           wm::ShelfAlignment alignment) {
   DCHECK_GE(display_id, 0);
 
   const char* value = AlignmentToPref(alignment);

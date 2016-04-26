@@ -34,6 +34,7 @@
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/aura/aura_layout_manager_adapter.h"
+#include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
@@ -443,7 +444,7 @@ void RootWindowController::OnShelfCreated() {
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(shelf_->shelf());
   if (docked_layout_manager_) {
-    docked_layout_manager_->SetShelf(shelf_->shelf());
+    docked_layout_manager_->SetShelf(shelf_->shelf()->wm_shelf());
     if (shelf_->shelf_layout_manager())
       docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
   }

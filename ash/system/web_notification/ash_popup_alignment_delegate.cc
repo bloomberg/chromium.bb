@@ -98,7 +98,7 @@ bool AshPopupAlignmentDelegate::IsTopDown() const {
 }
 
 bool AshPopupAlignmentDelegate::IsFromLeft() const {
-  return GetAlignment() == SHELF_ALIGNMENT_LEFT;
+  return GetAlignment() == wm::SHELF_ALIGNMENT_LEFT;
 }
 
 void AshPopupAlignmentDelegate::RecomputeAlignment(
@@ -106,7 +106,7 @@ void AshPopupAlignmentDelegate::RecomputeAlignment(
   // Nothing needs to be done.
 }
 
-ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
+wm::ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
   return shelf_->GetAlignment();
 }
 

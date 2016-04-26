@@ -28,10 +28,10 @@ void TrayStep::DoShow() {
   FirstRunActor::StepPosition position;
   position.SetTop(bounds.y());
   ash::Shell* shell = ash::Shell::GetInstance();
-  ash::ShelfAlignment alignment =
+  ash::wm::ShelfAlignment alignment =
       shell->GetShelfAlignment(shell->GetPrimaryRootWindow());
-  if ((!base::i18n::IsRTL() && alignment != ash::SHELF_ALIGNMENT_LEFT) ||
-      alignment == ash::SHELF_ALIGNMENT_RIGHT)
+  if ((!base::i18n::IsRTL() && alignment != ash::wm::SHELF_ALIGNMENT_LEFT) ||
+      alignment == ash::wm::SHELF_ALIGNMENT_RIGHT)
     position.SetRight(GetOverlaySize().width() - bounds.x());
   else
     position.SetLeft(bounds.right());

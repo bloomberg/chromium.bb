@@ -92,14 +92,14 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
 
   const gfx::ImageSkia* background =
       rb.GetImageNamed(background_image_id).ToImageSkia();
-  ShelfAlignment alignment = shelf_->alignment();
-  if (alignment == SHELF_ALIGNMENT_LEFT) {
+  wm::ShelfAlignment alignment = shelf_->alignment();
+  if (alignment == wm::SHELF_ALIGNMENT_LEFT) {
     bounds = gfx::Rect(
         bounds.right() - background->width() -
             ShelfLayoutManager::kShelfItemInset,
         bounds.y() + (bounds.height() - background->height()) / 2,
         background->width(), background->height());
-  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
+  } else if (alignment == wm::SHELF_ALIGNMENT_RIGHT) {
     bounds = gfx::Rect(
         bounds.x() + ShelfLayoutManager::kShelfItemInset,
         bounds.y() + (bounds.height() - background->height()) / 2,
@@ -118,14 +118,14 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   const gfx::ImageSkia* image = NULL;
 
   switch(alignment) {
-    case SHELF_ALIGNMENT_LEFT:
+    case wm::SHELF_ALIGNMENT_LEFT:
       if (left_image_.isNull()) {
         left_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
             *bottom_image_, SkBitmapOperations::ROTATION_90_CW);
       }
       image = &left_image_;
       break;
-    case SHELF_ALIGNMENT_RIGHT:
+    case wm::SHELF_ALIGNMENT_RIGHT:
       if (right_image_.isNull()) {
         right_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
             *bottom_image_, SkBitmapOperations::ROTATION_270_CW);

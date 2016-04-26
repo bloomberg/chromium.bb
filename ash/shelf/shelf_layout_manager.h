@@ -180,22 +180,22 @@ class ASH_EXPORT ShelfLayoutManager
   }
 
   // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
-  void SetAlignment(ShelfAlignment alignment) {
+  void SetAlignment(wm::ShelfAlignment alignment) {
     shelf_->shelf()->SetAlignment(alignment);
   }
-  ShelfAlignment GetAlignment() const { return shelf_->GetAlignment(); }
+  wm::ShelfAlignment GetAlignment() const { return shelf_->GetAlignment(); }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (GetAlignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case wm::SHELF_ALIGNMENT_BOTTOM:
+      case wm::SHELF_ALIGNMENT_BOTTOM_LOCKED:
         return bottom;
-      case SHELF_ALIGNMENT_LEFT:
+      case wm::SHELF_ALIGNMENT_LEFT:
         return left;
-      case SHELF_ALIGNMENT_RIGHT:
+      case wm::SHELF_ALIGNMENT_RIGHT:
         return right;
     }
     NOTREACHED();
@@ -289,7 +289,7 @@ class ASH_EXPORT ShelfLayoutManager
   void UpdateShelfBackground(BackgroundAnimatorChangeType type);
 
   // Returns how the shelf background is painted.
-  ShelfBackgroundType GetShelfBackgroundType() const;
+  wm::ShelfBackgroundType GetShelfBackgroundType() const;
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();

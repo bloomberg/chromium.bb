@@ -96,7 +96,7 @@ void ChromeMashShelfController::OnAlignmentChanged(
     mash::shelf::mojom::Alignment alignment) {
   ash::SetShelfAlignmentPref(ProfileManager::GetActiveUserProfile()->GetPrefs(),
                              gfx::Screen::GetScreen()->GetPrimaryDisplay().id(),
-                             static_cast<ash::ShelfAlignment>(alignment));
+                             static_cast<ash::wm::ShelfAlignment>(alignment));
 }
 
 void ChromeMashShelfController::OnAutoHideBehaviorChanged(

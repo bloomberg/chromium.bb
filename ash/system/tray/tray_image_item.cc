@@ -57,7 +57,8 @@ views::View* TrayImageItem::CreateDetailedView(user::LoginStatus status) {
 void TrayImageItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayImageItem::UpdateAfterShelfAlignmentChange(
+    wm::ShelfAlignment alignment) {
   SetTrayImageItemBorder(tray_view_, alignment);
   SetItemAlignment(alignment);
 }
@@ -72,7 +73,7 @@ void TrayImageItem::DestroyDefaultView() {
 void TrayImageItem::DestroyDetailedView() {
 }
 
-void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
+void TrayImageItem::SetItemAlignment(wm::ShelfAlignment alignment) {
   // Center the item dependent on the orientation of the shelf.
   views::BoxLayout::Orientation layout = IsHorizontalAlignment(alignment)
                                              ? views::BoxLayout::kHorizontal

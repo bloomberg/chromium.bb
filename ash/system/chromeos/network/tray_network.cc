@@ -91,7 +91,7 @@ class NetworkTrayView : public TrayItemView,
     }
   }
 
-  void UpdateAlignment(ShelfAlignment alignment) {
+  void UpdateAlignment(wm::ShelfAlignment alignment) {
     SetLayoutManager(new views::BoxLayout(IsHorizontalAlignment(alignment)
                                               ? views::BoxLayout::kHorizontal
                                               : views::BoxLayout::kVertical,
@@ -303,7 +303,8 @@ void TrayNetwork::DestroyDetailedView() {
 void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayNetwork::UpdateAfterShelfAlignmentChange(
+    wm::ShelfAlignment alignment) {
   if (tray_) {
     SetTrayImageItemBorder(tray_, alignment);
     tray_->UpdateAlignment(alignment);

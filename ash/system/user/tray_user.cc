@@ -188,7 +188,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   UpdateLayoutOfItem();
 }
 
-void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayUser::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;

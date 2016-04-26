@@ -40,7 +40,7 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 typedef test::AshTestBase ShelfWidgetTest;
 
 void TestLauncherAlignment(aura::Window* root,
-                           ShelfAlignment alignment,
+                           wm::ShelfAlignment alignment,
                            const std::string& expected) {
   Shell::GetInstance()->SetShelfAlignment(alignment, root);
   gfx::Screen* screen = gfx::Screen::GetScreen();
@@ -61,25 +61,22 @@ TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
   {
     SCOPED_TRACE("Single Bottom");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_BOTTOM,
-                          "0,0 400x353");
+                          wm::SHELF_ALIGNMENT_BOTTOM, "0,0 400x353");
   }
   {
     SCOPED_TRACE("Single Locked");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_BOTTOM_LOCKED, "0,0 400x353");
+                          wm::SHELF_ALIGNMENT_BOTTOM_LOCKED, "0,0 400x353");
   }
   {
     SCOPED_TRACE("Single Right");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_RIGHT,
-                          "0,0 353x400");
+                          wm::SHELF_ALIGNMENT_RIGHT, "0,0 353x400");
   }
   {
     SCOPED_TRACE("Single Left");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),
-                          SHELF_ALIGNMENT_LEFT,
-                          "47,0 353x400");
+                          wm::SHELF_ALIGNMENT_LEFT, "47,0 353x400");
   }
   if (!SupportsMultipleDisplays())
     return;
@@ -88,48 +85,42 @@ TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   {
     SCOPED_TRACE("Primary Bottom");
-    TestLauncherAlignment(root_windows[0],
-                          SHELF_ALIGNMENT_BOTTOM,
+    TestLauncherAlignment(root_windows[0], wm::SHELF_ALIGNMENT_BOTTOM,
                           "0,0 300x253");
   }
   {
     SCOPED_TRACE("Primary Locked");
-    TestLauncherAlignment(root_windows[0], SHELF_ALIGNMENT_BOTTOM_LOCKED,
+    TestLauncherAlignment(root_windows[0], wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
                           "0,0 300x253");
   }
   {
     SCOPED_TRACE("Primary Right");
-    TestLauncherAlignment(root_windows[0],
-                          SHELF_ALIGNMENT_RIGHT,
+    TestLauncherAlignment(root_windows[0], wm::SHELF_ALIGNMENT_RIGHT,
                           "0,0 253x300");
   }
   {
     SCOPED_TRACE("Primary Left");
-    TestLauncherAlignment(root_windows[0],
-                          SHELF_ALIGNMENT_LEFT,
+    TestLauncherAlignment(root_windows[0], wm::SHELF_ALIGNMENT_LEFT,
                           "47,0 253x300");
   }
   {
     SCOPED_TRACE("Secondary Bottom");
-    TestLauncherAlignment(root_windows[1],
-                          SHELF_ALIGNMENT_BOTTOM,
+    TestLauncherAlignment(root_windows[1], wm::SHELF_ALIGNMENT_BOTTOM,
                           "300,0 500x453");
   }
   {
     SCOPED_TRACE("Secondary Locked");
-    TestLauncherAlignment(root_windows[1], SHELF_ALIGNMENT_BOTTOM_LOCKED,
+    TestLauncherAlignment(root_windows[1], wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
                           "300,0 500x453");
   }
   {
     SCOPED_TRACE("Secondary Right");
-    TestLauncherAlignment(root_windows[1],
-                          SHELF_ALIGNMENT_RIGHT,
+    TestLauncherAlignment(root_windows[1], wm::SHELF_ALIGNMENT_RIGHT,
                           "300,0 453x500");
   }
   {
     SCOPED_TRACE("Secondary Left");
-    TestLauncherAlignment(root_windows[1],
-                          SHELF_ALIGNMENT_LEFT,
+    TestLauncherAlignment(root_windows[1], wm::SHELF_ALIGNMENT_LEFT,
                           "347,0 453x500");
   }
 }
@@ -239,7 +230,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   }
 
   // Change shelf alignment to verify that the targeter insets are updated.
-  shelf_layout_manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf_layout_manager->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   shelf_layout_manager->LayoutShelf();
   shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
   {
@@ -254,7 +245,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   }
 
   // Now restore shelf alignment (bottom) and auto-hide (hidden) the shelf.
-  shelf_layout_manager->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf_layout_manager->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_layout_manager->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_layout_manager->visibility_state());
@@ -336,7 +327,7 @@ namespace {
 // OnShelfCreated, to simulate ChromeLauncherController's behavior.
 class TestShelfDelegate : public ShelfDelegate {
  public:
-  TestShelfDelegate(ShelfAlignment initial_alignment,
+  TestShelfDelegate(wm::ShelfAlignment initial_alignment,
                     ShelfAutoHideBehavior initial_auto_hide_behavior)
       : initial_alignment_(initial_alignment),
         initial_auto_hide_behavior_(initial_auto_hide_behavior) {}
@@ -360,7 +351,7 @@ class TestShelfDelegate : public ShelfDelegate {
   void UnpinAppWithID(const std::string& app_id) override {}
 
  private:
-  ShelfAlignment initial_alignment_;
+  wm::ShelfAlignment initial_alignment_;
   ShelfAutoHideBehavior initial_auto_hide_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfDelegate);
@@ -378,7 +369,7 @@ class ShelfWidgetTestShellDelegate : public test::TestShellDelegate {
                                  initial_auto_hide_behavior_);
   }
 
-  void set_initial_alignment(ShelfAlignment alignment) {
+  void set_initial_alignment(wm::ShelfAlignment alignment) {
     initial_alignment_ = alignment;
   }
 
@@ -387,7 +378,7 @@ class ShelfWidgetTestShellDelegate : public test::TestShellDelegate {
   }
 
  private:
-  ShelfAlignment initial_alignment_ = SHELF_ALIGNMENT_BOTTOM;
+  wm::ShelfAlignment initial_alignment_ = wm::SHELF_ALIGNMENT_BOTTOM;
   ShelfAutoHideBehavior initial_auto_hide_behavior_ =
       SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
   DISALLOW_COPY_AND_ASSIGN(ShelfWidgetTestShellDelegate);
@@ -407,7 +398,7 @@ class ShelfWidgetTestWithDelegate : public ShelfWidgetTest {
   }
 
   void TestCreateShelfWithInitialValues(
-      ShelfAlignment initial_alignment,
+      wm::ShelfAlignment initial_alignment,
       ShelfAutoHideBehavior initial_auto_hide_behavior,
       ShelfVisibilityState expected_shelf_visibility_state,
       ShelfAutoHideState expected_shelf_auto_hide_state) {
@@ -443,28 +434,28 @@ class ShelfWidgetTestWithDelegate : public ShelfWidgetTest {
 
 TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideAlwaysShelf) {
   // The actual auto hide state is shown because there are no open windows.
-  TestCreateShelfWithInitialValues(SHELF_ALIGNMENT_BOTTOM,
+  TestCreateShelfWithInitialValues(wm::SHELF_ALIGNMENT_BOTTOM,
                                    SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
                                    SHELF_AUTO_HIDE, SHELF_AUTO_HIDE_SHOWN);
 }
 
 TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideNeverShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
-  TestCreateShelfWithInitialValues(SHELF_ALIGNMENT_LEFT,
+  TestCreateShelfWithInitialValues(wm::SHELF_ALIGNMENT_LEFT,
                                    SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
                                    SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
 }
 
 TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideAlwaysHideShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
-  TestCreateShelfWithInitialValues(SHELF_ALIGNMENT_RIGHT,
+  TestCreateShelfWithInitialValues(wm::SHELF_ALIGNMENT_RIGHT,
                                    SHELF_AUTO_HIDE_ALWAYS_HIDDEN, SHELF_HIDDEN,
                                    SHELF_AUTO_HIDE_HIDDEN);
 }
 
 TEST_F(ShelfWidgetTestWithDelegate, CreateLockedShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
-  TestCreateShelfWithInitialValues(SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  TestCreateShelfWithInitialValues(wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
                                    SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
                                    SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
 }

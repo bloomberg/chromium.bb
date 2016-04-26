@@ -123,14 +123,14 @@ void AppListButton::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Rect background_bounds, forground_bounds;
 
-  ShelfAlignment alignment = shelf_view_->shelf()->alignment();
+  wm::ShelfAlignment alignment = shelf_view_->shelf()->alignment();
   background_bounds.set_size(background_image->size());
-  if (alignment == SHELF_ALIGNMENT_LEFT) {
+  if (alignment == wm::SHELF_ALIGNMENT_LEFT) {
     background_bounds.set_x(contents_bounds.width() -
         ShelfLayoutManager::kShelfItemInset - background_image->width());
     background_bounds.set_y(contents_bounds.y() +
         (contents_bounds.height() - background_image->height()) / 2);
-  } else if(alignment == SHELF_ALIGNMENT_RIGHT) {
+  } else if (alignment == wm::SHELF_ALIGNMENT_RIGHT) {
     background_bounds.set_x(ShelfLayoutManager::kShelfItemInset);
     background_bounds.set_y(contents_bounds.y() +
         (contents_bounds.height() - background_image->height()) / 2);

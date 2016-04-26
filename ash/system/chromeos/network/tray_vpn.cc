@@ -170,8 +170,7 @@ void TrayVPN::DestroyDetailedView() {
 void TrayVPN::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayVPN::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-}
+void TrayVPN::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {}
 
 void TrayVPN::NetworkStateChanged() {
   if (default_)

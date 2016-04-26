@@ -54,7 +54,7 @@ views::View* TrayDate::CreateDefaultViewForTesting(user::LoginStatus status) {
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   CHECK(time_tray_ == NULL);
   ClockLayout clock_layout =
-      system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM
+      system_tray()->shelf_alignment() == wm::SHELF_ALIGNMENT_BOTTOM
           ? HORIZONTAL_CLOCK
           : VERTICAL_CLOCK;
   time_tray_ = new tray::TimeView(clock_layout);
@@ -93,7 +93,7 @@ void TrayDate::DestroyDetailedView() {
 void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayDate::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayDate::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   if (time_tray_) {
     ClockLayout clock_layout =
         IsHorizontalAlignment(alignment) ? HORIZONTAL_CLOCK : VERTICAL_CLOCK;

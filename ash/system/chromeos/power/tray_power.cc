@@ -187,7 +187,7 @@ void TrayPower::DestroyDefaultView() {
 void TrayPower::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
+void TrayPower::UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) {
   SetTrayImageItemBorder(power_tray_, alignment);
 }
 

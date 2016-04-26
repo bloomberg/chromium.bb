@@ -49,10 +49,11 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
                                   ShelfAutoHideBehavior behavior);
 
 // Get or set the shelf alignment preference for a root window.
-ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id);
+wm::ShelfAlignment GetShelfAlignmentPref(PrefService* prefs,
+                                         int64_t display_id);
 void SetShelfAlignmentPref(PrefService* prefs,
                            int64_t display_id,
-                           ShelfAlignment alignment);
+                           wm::ShelfAlignment alignment);
 
 }  // namespace ash
 

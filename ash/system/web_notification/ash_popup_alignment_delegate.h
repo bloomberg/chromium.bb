@@ -61,7 +61,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   friend class WebNotificationTrayTest;
 
   // Get the current alignment of the shelf.
-  ShelfAlignment GetAlignment() const;
+  wm::ShelfAlignment GetAlignment() const;
 
   // Utility function to get the display which should be care about.
   gfx::Display GetCurrentDisplay() const;

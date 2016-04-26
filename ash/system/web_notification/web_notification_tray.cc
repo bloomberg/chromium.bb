@@ -303,7 +303,7 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
   OnMessageCenterTrayChanged();
 }
 
-void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
+void WebNotificationTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   TrayBackgroundView::SetShelfAlignment(alignment);

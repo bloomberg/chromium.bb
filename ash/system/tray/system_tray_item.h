@@ -63,7 +63,7 @@ class ASH_EXPORT SystemTrayItem {
 
   // Updates the tray view (if applicable) when shelf's alignment changes.
   // The default implementation does nothing.
-  virtual void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
+  virtual void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment);
 
   // Shows the detailed view for this item. If the main popup for the tray is
   // currently visible, then making this call would use the existing window to

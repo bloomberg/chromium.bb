@@ -63,7 +63,7 @@ class ToastManagerTest : public test::AshTestBase {
       overlay->ClickDismissButtonForTesting(DummyEvent());
   }
 
-  void SetShelfAlignment(ShelfAlignment alignment) {
+  void SetShelfAlignment(wm::ShelfAlignment alignment) {
     Shelf::ForPrimaryDisplay()->shelf_layout_manager()->SetAlignment(alignment);
   }
 
@@ -144,7 +144,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
   ShelfLayoutManager* shelf =
       Shelf::ForPrimaryDisplay()->shelf_layout_manager();
   SetShelfState(ash::SHELF_VISIBLE);
-  SetShelfAlignment(ash::SHELF_ALIGNMENT_BOTTOM);
+  SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
 
   manager()->Show("DUMMY", kLongLongDuration /* prevent timeout */);
   EXPECT_EQ(1, GetToastId());
@@ -173,7 +173,7 @@ TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
 
   ShelfLayoutManager* shelf =
       Shelf::ForPrimaryDisplay()->shelf_layout_manager();
-  SetShelfAlignment(ash::SHELF_ALIGNMENT_BOTTOM);
+  SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
@@ -195,7 +195,7 @@ TEST_F(ToastManagerTest, PositionWithHiddenBottomShelf) {
   ShelfLayoutManager* shelf =
       Shelf::ForPrimaryDisplay()->shelf_layout_manager();
   SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
-  SetShelfAlignment(ash::SHELF_ALIGNMENT_BOTTOM);
+  SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   SetShelfState(ash::SHELF_HIDDEN);
 
   manager()->Show("DUMMY", kLongLongDuration /* prevent timeout */);
@@ -214,7 +214,7 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
   ShelfLayoutManager* shelf =
       Shelf::ForPrimaryDisplay()->shelf_layout_manager();
   SetShelfState(ash::SHELF_VISIBLE);
-  SetShelfAlignment(ash::SHELF_ALIGNMENT_LEFT);
+  SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT);
 
   manager()->Show("DUMMY", kLongLongDuration /* prevent timeout */);
   EXPECT_EQ(1, GetToastId());
@@ -248,7 +248,7 @@ TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
   ShelfLayoutManager* shelf =
       Shelf::ForPrimaryDisplay()->shelf_layout_manager();
   SetShelfState(ash::SHELF_VISIBLE);
-  SetShelfAlignment(ash::SHELF_ALIGNMENT_BOTTOM);
+  SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
 
   manager()->Show("DUMMY", kLongLongDuration /* prevent timeout */);
   EXPECT_EQ(1, GetToastId());

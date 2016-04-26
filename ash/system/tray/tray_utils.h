@@ -25,11 +25,12 @@ void SetupLabelForTray(views::Label* label);
 // TODO(jennyz): refactor these two functions to SystemTrayItem.
 // Sets the empty border of an image tray item for adjusting the space
 // around it.
-void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment);
+void SetTrayImageItemBorder(views::View* tray_view,
+                            wm::ShelfAlignment alignment);
 // Sets the empty border around a label tray item for adjusting the space
 // around it.
 void SetTrayLabelItemBorder(TrayItemView* tray_view,
-                            ShelfAlignment alignment);
+                            wm::ShelfAlignment alignment);
 
 // Computes an accessible label for this button based on all descendant view
 // labels by concatenating them in depth-first order.

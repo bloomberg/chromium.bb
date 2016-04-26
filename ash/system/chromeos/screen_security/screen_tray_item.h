@@ -123,7 +123,7 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   views::View* CreateDefaultView(user::LoginStatus status) override = 0;
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+  void UpdateAfterShelfAlignmentChange(wm::ShelfAlignment alignment) override;
 
  private:
   tray::ScreenTrayView* tray_view_;

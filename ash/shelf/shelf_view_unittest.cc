@@ -960,12 +960,12 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 
   // Test that any two successive visible icons never overlap in all shelf
   // alignment types.
-  const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM,
-      SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  const wm::ShelfAlignment kAlignments[] = {
+      wm::SHELF_ALIGNMENT_LEFT, wm::SHELF_ALIGNMENT_RIGHT,
+      wm::SHELF_ALIGNMENT_BOTTOM, wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
   };
 
-  for (ShelfAlignment alignment : kAlignments) {
+  for (wm::ShelfAlignment alignment : kAlignments) {
     shelf_view_->shelf()->SetAlignment(alignment);
     // For every 2 successive visible icons, expect that their bounds don't
     // intersect.
@@ -984,9 +984,9 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 
 // Making sure the overflow bubble arrow correctly tracks with shelf position.
 TEST_F(ShelfViewTest, OverflowArrowForShelfPosition) {
-  const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT,
-      SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  const wm::ShelfAlignment kAlignments[] = {
+      wm::SHELF_ALIGNMENT_BOTTOM, wm::SHELF_ALIGNMENT_LEFT,
+      wm::SHELF_ALIGNMENT_RIGHT, wm::SHELF_ALIGNMENT_BOTTOM_LOCKED,
   };
 
   // These must match what is expected for each alignment above.
@@ -1411,7 +1411,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Change the shelf layout. This should not crash.
-  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
+  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
                                           Shell::GetPrimaryRootWindow());
 }
 
@@ -1428,7 +1428,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Changing shelf alignment hides the tooltip.
-  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
+  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
                                           Shell::GetPrimaryRootWindow());
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
@@ -1769,8 +1769,9 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
   aura::Window* second_root = Shell::GetAllRootWindows()[1];
 
-  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, second_root);
-  ASSERT_EQ(SHELF_ALIGNMENT_LEFT,
+  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
+                                          second_root);
+  ASSERT_EQ(wm::SHELF_ALIGNMENT_LEFT,
             Shell::GetInstance()->GetShelfAlignment(second_root));
 
   // Initially, app list and browser shortcut are added.
