@@ -50,7 +50,7 @@ void CompositorAnimationPlayer::detachLayer()
 
 bool CompositorAnimationPlayer::isLayerAttached() const
 {
-    return m_animationPlayer->layer_id() != 0;
+    return m_animationPlayer->element_id() != 0;
 }
 
 void CompositorAnimationPlayer::addAnimation(CompositorAnimation* animation)

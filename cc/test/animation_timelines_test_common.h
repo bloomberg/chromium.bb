@@ -233,7 +233,7 @@ class AnimationTimelinesTest : public testing::Test {
 
   const int timeline_id_;
   const int player_id_;
-  int layer_id_;
+  int element_id_;
 
   int next_test_layer_id_;
 

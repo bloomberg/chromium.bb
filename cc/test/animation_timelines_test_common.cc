@@ -295,7 +295,7 @@ AnimationTimelinesTest::AnimationTimelinesTest()
   host_ = client_.host();
   host_impl_ = client_impl_.host();
 
-  layer_id_ = NextTestLayerId();
+  element_id_ = NextTestLayerId();
 }
 
 AnimationTimelinesTest::~AnimationTimelinesTest() {
@@ -323,18 +323,18 @@ void AnimationTimelinesTest::CreateTestLayer(
 }
 
 void AnimationTimelinesTest::CreateTestMainLayer() {
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
+  client_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
 }
 
 void AnimationTimelinesTest::CreateTestImplLayer(
     LayerTreeType layer_tree_type) {
-  client_impl_.RegisterLayer(layer_id_, layer_tree_type);
+  client_impl_.RegisterLayer(element_id_, layer_tree_type);
 }
 
 void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(layer_id_);
+  player_->AttachLayer(element_id_);
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {

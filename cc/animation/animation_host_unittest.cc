@@ -81,12 +81,12 @@ TEST_F(AnimationHostTest, ImplOnlyTimeline) {
 }
 
 TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
-  client_.RegisterLayer(layer_id_, LayerTreeType::ACTIVE);
-  client_impl_.RegisterLayer(layer_id_, LayerTreeType::PENDING);
+  client_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_impl_.RegisterLayer(element_id_, LayerTreeType::PENDING);
 
   gfx::ScrollOffset target_offset(0., 2.);
   gfx::ScrollOffset current_offset(0., 1.);
-  host_impl_->ImplOnlyScrollAnimationCreate(layer_id_, target_offset,
+  host_impl_->ImplOnlyScrollAnimationCreate(element_id_, target_offset,
                                             current_offset);
 
   gfx::Vector2dF scroll_delta(0, 0.5);
@@ -96,14 +96,14 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_TRUE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
-      layer_id_, scroll_delta, max_scroll_offset, time));
+      element_id_, scroll_delta, max_scroll_offset, time));
 
   // Detach all players from layers and timelines.
   host_impl_->ClearTimelines();
 
   time += base::TimeDelta::FromSecondsD(0.1);
   EXPECT_FALSE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
-      layer_id_, scroll_delta, max_scroll_offset, time));
+      element_id_, scroll_delta, max_scroll_offset, time));
 }
 
 }  // namespace

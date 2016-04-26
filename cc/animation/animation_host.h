@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
+#include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -28,8 +29,6 @@ class AnimationPlayer;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerTreeHost;
-class MutatorHostClient;
-enum class LayerTreeType;
 
 enum class ThreadInstance { MAIN, IMPL };
 
@@ -55,14 +54,14 @@ class CC_EXPORT AnimationHost {
 
   void ClearTimelines();
 
-  void RegisterLayer(int layer_id, LayerTreeType tree_type);
-  void UnregisterLayer(int layer_id, LayerTreeType tree_type);
+  void RegisterLayer(ElementId element_id, LayerTreeType tree_type);
+  void UnregisterLayer(ElementId element_id, LayerTreeType tree_type);
 
-  void RegisterPlayerForLayer(int layer_id, AnimationPlayer* player);
-  void UnregisterPlayerForLayer(int layer_id, AnimationPlayer* player);
+  void RegisterPlayerForLayer(ElementId element_id, AnimationPlayer* player);
+  void UnregisterPlayerForLayer(ElementId element_id, AnimationPlayer* player);
 
   scoped_refptr<ElementAnimations> GetElementAnimationsForLayerId(
-      int layer_id) const;
+      ElementId element_id) const;
 
   // Parent LayerTreeHost or LayerTreeHostImpl.
   MutatorHostClient* mutator_host_client() { return mutator_host_client_; }
@@ -88,58 +87,60 @@ class CC_EXPORT AnimationHost {
   std::unique_ptr<AnimationEvents> CreateEvents();
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
 
-  bool ScrollOffsetAnimationWasInterrupted(int layer_id) const;
+  bool ScrollOffsetAnimationWasInterrupted(ElementId element_id) const;
 
-  bool IsAnimatingFilterProperty(int layer_id, LayerTreeType tree_type) const;
-  bool IsAnimatingOpacityProperty(int layer_id, LayerTreeType tree_type) const;
-  bool IsAnimatingTransformProperty(int layer_id,
+  bool IsAnimatingFilterProperty(ElementId element_id,
+                                 LayerTreeType tree_type) const;
+  bool IsAnimatingOpacityProperty(ElementId element_id,
+                                  LayerTreeType tree_type) const;
+  bool IsAnimatingTransformProperty(ElementId element_id,
                                     LayerTreeType tree_type) const;
 
-  bool HasPotentiallyRunningFilterAnimation(int layer_id,
+  bool HasPotentiallyRunningFilterAnimation(ElementId element_id,
                                             LayerTreeType tree_type) const;
-  bool HasPotentiallyRunningOpacityAnimation(int layer_id,
+  bool HasPotentiallyRunningOpacityAnimation(ElementId element_id,
                                              LayerTreeType tree_type) const;
-  bool HasPotentiallyRunningTransformAnimation(int layer_id,
+  bool HasPotentiallyRunningTransformAnimation(ElementId element_id,
                                                LayerTreeType tree_type) const;
 
-  bool HasAnyAnimationTargetingProperty(int layer_id,
+  bool HasAnyAnimationTargetingProperty(ElementId element_id,
                                         TargetProperty::Type property) const;
 
-  bool FilterIsAnimatingOnImplOnly(int layer_id) const;
-  bool OpacityIsAnimatingOnImplOnly(int layer_id) const;
-  bool ScrollOffsetIsAnimatingOnImplOnly(int layer_id) const;
-  bool TransformIsAnimatingOnImplOnly(int layer_id) const;
+  bool FilterIsAnimatingOnImplOnly(ElementId element_id) const;
+  bool OpacityIsAnimatingOnImplOnly(ElementId element_id) const;
+  bool ScrollOffsetIsAnimatingOnImplOnly(ElementId element_id) const;
+  bool TransformIsAnimatingOnImplOnly(ElementId element_id) const;
 
-  bool HasFilterAnimationThatInflatesBounds(int layer_id) const;
-  bool HasTransformAnimationThatInflatesBounds(int layer_id) const;
-  bool HasAnimationThatInflatesBounds(int layer_id) const;
+  bool HasFilterAnimationThatInflatesBounds(ElementId element_id) const;
+  bool HasTransformAnimationThatInflatesBounds(ElementId element_id) const;
+  bool HasAnimationThatInflatesBounds(ElementId element_id) const;
 
-  bool FilterAnimationBoundsForBox(int layer_id,
+  bool FilterAnimationBoundsForBox(ElementId element_id,
                                    const gfx::BoxF& box,
                                    gfx::BoxF* bounds) const;
-  bool TransformAnimationBoundsForBox(int layer_id,
+  bool TransformAnimationBoundsForBox(ElementId element_id,
                                       const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
 
-  bool HasOnlyTranslationTransforms(int layer_id,
+  bool HasOnlyTranslationTransforms(ElementId element_id,
                                     LayerTreeType tree_type) const;
-  bool AnimationsPreserveAxisAlignment(int layer_id) const;
+  bool AnimationsPreserveAxisAlignment(ElementId element_id) const;
 
-  bool MaximumTargetScale(int layer_id,
+  bool MaximumTargetScale(ElementId element_id,
                           LayerTreeType tree_type,
                           float* max_scale) const;
-  bool AnimationStartScale(int layer_id,
+  bool AnimationStartScale(ElementId element_id,
                            LayerTreeType tree_type,
                            float* start_scale) const;
 
-  bool HasAnyAnimation(int layer_id) const;
-  bool HasActiveAnimationForTesting(int layer_id) const;
+  bool HasAnyAnimation(ElementId element_id) const;
+  bool HasActiveAnimationForTesting(ElementId element_id) const;
 
-  void ImplOnlyScrollAnimationCreate(int layer_id,
+  void ImplOnlyScrollAnimationCreate(ElementId element_id,
                                      const gfx::ScrollOffset& target_offset,
                                      const gfx::ScrollOffset& current_offset);
   bool ImplOnlyScrollAnimationUpdateTarget(
-      int layer_id,
+      ElementId element_id,
       const gfx::Vector2dF& scroll_delta,
       const gfx::ScrollOffset& max_scroll_offset,
       base::TimeTicks frame_monotonic_time);

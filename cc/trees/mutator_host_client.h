@@ -15,6 +15,8 @@ namespace cc {
 class FilterOperations;
 class Layer;
 
+using ElementId = int;
+
 enum class LayerTreeType { ACTIVE, PENDING };
 
 class MutatorHostClient {

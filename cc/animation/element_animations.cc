@@ -28,7 +28,7 @@ scoped_refptr<ElementAnimations> ElementAnimations::Create() {
 ElementAnimations::ElementAnimations()
     : players_list_(new PlayersList()),
       animation_host_(),
-      layer_id_(),
+      element_id_(),
       is_active_(false),
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
@@ -43,23 +43,23 @@ void ElementAnimations::SetAnimationHost(AnimationHost* host) {
   animation_host_ = host;
 }
 
-void ElementAnimations::SetLayerId(int layer_id) {
-  layer_id_ = layer_id;
+void ElementAnimations::SetElementId(ElementId element_id) {
+  element_id_ = element_id;
 }
 
 void ElementAnimations::InitAffectedElementTypes() {
-  DCHECK(layer_id_);
+  DCHECK(element_id_);
   DCHECK(animation_host_);
 
   UpdateActivation(FORCE_ACTIVATION);
 
   DCHECK(animation_host_->mutator_host_client());
   if (animation_host_->mutator_host_client()->IsLayerInTree(
-          layer_id_, LayerTreeType::ACTIVE)) {
+          element_id_, LayerTreeType::ACTIVE)) {
     set_has_element_in_active_list(true);
   }
   if (animation_host_->mutator_host_client()->IsLayerInTree(
-          layer_id_, LayerTreeType::PENDING)) {
+          element_id_, LayerTreeType::PENDING)) {
     set_has_element_in_pending_list(true);
   }
 }
@@ -79,8 +79,9 @@ void ElementAnimations::ClearAffectedElementTypes() {
   UpdateActivation(FORCE_ACTIVATION);
 }
 
-void ElementAnimations::LayerRegistered(int layer_id, LayerTreeType tree_type) {
-  DCHECK_EQ(layer_id_, layer_id);
+void ElementAnimations::LayerRegistered(ElementId element_id,
+                                        LayerTreeType tree_type) {
+  DCHECK_EQ(element_id_, element_id);
 
   if (tree_type == LayerTreeType::ACTIVE)
     set_has_element_in_active_list(true);
@@ -88,9 +89,9 @@ void ElementAnimations::LayerRegistered(int layer_id, LayerTreeType tree_type) {
     set_has_element_in_pending_list(true);
 }
 
-void ElementAnimations::LayerUnregistered(int layer_id,
+void ElementAnimations::LayerUnregistered(ElementId element_id,
                                           LayerTreeType tree_type) {
-  DCHECK_EQ(this->layer_id(), layer_id);
+  DCHECK_EQ(this->element_id(), element_id);
   if (tree_type == LayerTreeType::ACTIVE)
     set_has_element_in_active_list(false);
   else
@@ -173,7 +174,7 @@ void ElementAnimations::AccumulatePropertyUpdates(
         animation->TrimTimeToCurrentIteration(monotonic_time);
     switch (animation->target_property()) {
       case TargetProperty::OPACITY: {
-        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, layer_id_,
+        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, element_id_,
                              animation->group(), TargetProperty::OPACITY,
                              monotonic_time);
         const FloatAnimationCurve* float_animation_curve =
@@ -185,7 +186,7 @@ void ElementAnimations::AccumulatePropertyUpdates(
       }
 
       case TargetProperty::TRANSFORM: {
-        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, layer_id_,
+        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, element_id_,
                              animation->group(), TargetProperty::TRANSFORM,
                              monotonic_time);
         const TransformAnimationCurve* transform_animation_curve =
@@ -197,7 +198,7 @@ void ElementAnimations::AccumulatePropertyUpdates(
       }
 
       case TargetProperty::FILTER: {
-        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, layer_id_,
+        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, element_id_,
                              animation->group(), TargetProperty::FILTER,
                              monotonic_time);
         const FilterAnimationCurve* filter_animation_curve =
@@ -748,7 +749,7 @@ void ElementAnimations::PromoteStartedAnimations(base::TimeTicks monotonic_time,
         else
           start_time = monotonic_time;
         AnimationEvent started_event(
-            AnimationEvent::STARTED, layer_id_, animations_[i]->group(),
+            AnimationEvent::STARTED, element_id_, animations_[i]->group(),
             animations_[i]->target_property(), start_time);
         started_event.is_impl_only = animations_[i]->is_impl_only();
         if (started_event.is_impl_only)
@@ -791,7 +792,7 @@ void ElementAnimations::MarkAnimationsForDeletion(
     if (animations_[i]->run_state() == Animation::ABORTED) {
       if (events && !animations_[i]->is_impl_only()) {
         AnimationEvent aborted_event(
-            AnimationEvent::ABORTED, layer_id_, group_id,
+            AnimationEvent::ABORTED, element_id_, group_id,
             animations_[i]->target_property(), monotonic_time);
         events->events_.push_back(aborted_event);
       }
@@ -810,7 +811,7 @@ void ElementAnimations::MarkAnimationsForDeletion(
     if (events &&
         animations_[i]->run_state() ==
             Animation::ABORTED_BUT_NEEDS_COMPLETION) {
-      AnimationEvent aborted_event(AnimationEvent::TAKEOVER, layer_id_,
+      AnimationEvent aborted_event(AnimationEvent::TAKEOVER, element_id_,
                                    group_id, animations_[i]->target_property(),
                                    monotonic_time);
       aborted_event.animation_start_time =
@@ -881,7 +882,7 @@ void ElementAnimations::MarkAnimationsForDeletion(
         size_t animation_index = animations_with_same_group_id[j];
         if (events) {
           AnimationEvent finished_event(
-              AnimationEvent::FINISHED, layer_id_,
+              AnimationEvent::FINISHED, element_id_,
               animations_[animation_index]->group(),
               animations_[animation_index]->target_property(), monotonic_time);
           finished_event.is_impl_only =
@@ -1243,39 +1244,39 @@ Animation* ElementAnimations::GetAnimationById(int animation_id) const {
 
 void ElementAnimations::OnFilterAnimated(LayerTreeType tree_type,
                                          const FilterOperations& filters) {
-  DCHECK(layer_id());
+  DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerFilterMutated(
-      layer_id(), tree_type, filters);
+      element_id(), tree_type, filters);
 }
 
 void ElementAnimations::OnOpacityAnimated(LayerTreeType tree_type,
                                           float opacity) {
-  DCHECK(layer_id());
+  DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerOpacityMutated(
-      layer_id(), tree_type, opacity);
+      element_id(), tree_type, opacity);
 }
 
 void ElementAnimations::OnTransformAnimated(LayerTreeType tree_type,
                                             const gfx::Transform& transform) {
-  DCHECK(layer_id());
+  DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerTransformMutated(
-      layer_id(), tree_type, transform);
+      element_id(), tree_type, transform);
 }
 
 void ElementAnimations::OnScrollOffsetAnimated(
     LayerTreeType tree_type,
     const gfx::ScrollOffset& scroll_offset) {
-  DCHECK(layer_id());
+  DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetLayerScrollOffsetMutated(
-      layer_id(), tree_type, scroll_offset);
+      element_id(), tree_type, scroll_offset);
 }
 
 void ElementAnimations::OnAnimationWaitingForDeletion() {
@@ -1288,12 +1289,12 @@ void ElementAnimations::OnAnimationWaitingForDeletion() {
 void ElementAnimations::OnTransformIsPotentiallyAnimatingChanged(
     LayerTreeType tree_type,
     bool is_animating) {
-  DCHECK(layer_id());
+  DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()
       ->mutator_host_client()
-      ->LayerTransformIsPotentiallyAnimatingChanged(layer_id(), tree_type,
+      ->LayerTransformIsPotentiallyAnimatingChanged(element_id(), tree_type,
                                                     is_animating);
 }
 
@@ -1350,7 +1351,7 @@ gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
   if (animation_host()) {
     DCHECK(animation_host()->mutator_host_client());
     return animation_host()->mutator_host_client()->GetScrollOffsetForAnimation(
-        layer_id());
+        element_id());
   }
 
   return gfx::ScrollOffset();

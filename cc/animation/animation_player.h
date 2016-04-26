@@ -39,7 +39,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   scoped_refptr<AnimationPlayer> CreateImplInstance() const;
 
   int id() const { return id_; }
-  int layer_id() const { return layer_id_; }
+  ElementId element_id() const { return element_id_; }
 
   // Parent AnimationHost. AnimationPlayer can be detached from
   // AnimationTimeline.
@@ -63,7 +63,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
     layer_animation_delegate_ = delegate;
   }
 
-  void AttachLayer(int layer_id);
+  void AttachLayer(ElementId element_id);
   void DetachLayer();
 
   void AddAnimation(std::unique_ptr<Animation> animation);
@@ -121,7 +121,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   AnimationDelegate* layer_animation_delegate_;
 
   int id_;
-  int layer_id_;
+  ElementId element_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
 };

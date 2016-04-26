@@ -43,8 +43,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
  public:
   static scoped_refptr<ElementAnimations> Create();
 
-  int layer_id() const { return layer_id_; }
-  void SetLayerId(int layer_id);
+  ElementId element_id() const { return element_id_; }
+  void SetElementId(ElementId element_id);
 
   // Parent AnimationHost.
   AnimationHost* animation_host() { return animation_host_; }
@@ -54,8 +54,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void InitAffectedElementTypes();
   void ClearAffectedElementTypes();
 
-  void LayerRegistered(int layer_id, LayerTreeType tree_type);
-  void LayerUnregistered(int layer_id, LayerTreeType tree_type);
+  void LayerRegistered(ElementId element_id, LayerTreeType tree_type);
+  void LayerUnregistered(ElementId element_id, LayerTreeType tree_type);
 
   void AddPlayer(AnimationPlayer* player);
   void RemovePlayer(AnimationPlayer* player);
@@ -258,7 +258,7 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   std::unique_ptr<PlayersList> players_list_;
   AnimationHost* animation_host_;
-  int layer_id_;
+  ElementId element_id_;
   std::vector<std::unique_ptr<Animation>> animations_;
 
   // This is used to ensure that we don't spam the animation host.
