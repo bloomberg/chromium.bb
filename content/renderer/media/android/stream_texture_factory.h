@@ -9,9 +9,11 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/layers/video_frame_provider.h"
+#include "content/renderer/gpu/stream_texture_host_android.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -19,30 +21,48 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }  // namespace gles2
+class GpuChannelHost;
 }  // namespace gpu
 
-// TODO(boliu): Remove interfaces.
 namespace content {
+
+class ContextProviderCommandBuffer;
+class StreamTextureFactory;
 
 // The proxy class for the gpu thread to notify the compositor thread
 // when a new video frame is available.
-class StreamTextureProxy {
+class StreamTextureProxy : public StreamTextureHost::Listener {
  public:
-  virtual ~StreamTextureProxy() {}
+  ~StreamTextureProxy() override;
 
   // Initialize and bind to the loop, which becomes the thread that
   // a connected client will receive callbacks on. This can be called
   // on any thread, but must be called with the same loop every time.
-  virtual void BindToLoop(int32_t stream_id,
-                          cc::VideoFrameProvider::Client* client,
-                          scoped_refptr<base::SingleThreadTaskRunner> loop) = 0;
+  void BindToLoop(int32_t stream_id,
+                  cc::VideoFrameProvider::Client* client,
+                  scoped_refptr<base::SingleThreadTaskRunner> loop);
 
-  // Causes this instance to be deleted on the thread it is bound to.
-  virtual void Release() = 0;
+  // StreamTextureHost::Listener implementation:
+  void OnFrameAvailable() override;
 
   struct Deleter {
     inline void operator()(StreamTextureProxy* ptr) const { ptr->Release(); }
   };
+ private:
+  friend class StreamTextureFactory;
+  explicit StreamTextureProxy(StreamTextureHost* host);
+
+  void BindOnThread(int32_t stream_id);
+  void Release();
+
+  const std::unique_ptr<StreamTextureHost> host_;
+
+  // Protects access to |client_| and |loop_|.
+  base::Lock lock_;
+  cc::VideoFrameProvider::Client* client_;
+  scoped_refptr<base::SingleThreadTaskRunner> loop_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxy);
 };
 
 typedef std::unique_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
@@ -51,33 +71,42 @@ typedef std::unique_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
 // Factory class for managing stream textures.
 class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
  public:
+  static scoped_refptr<StreamTextureFactory> Create(
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      gpu::GpuChannelHost* channel);
+
   // Create the StreamTextureProxy object.
-  virtual StreamTextureProxy* CreateProxy() = 0;
+  StreamTextureProxy* CreateProxy();
 
   // Send an IPC message to the browser process to request a java surface
   // object for the given stream_id. After the the surface is created,
   // it will be passed back to the WebMediaPlayerAndroid object identified by
   // the player_id.
-  virtual void EstablishPeer(int32_t stream_id,
-                             int player_id,
-                             int frame_id) = 0;
+  void EstablishPeer(int32_t stream_id, int player_id, int frame_id);
 
   // Creates a gpu::StreamTexture and returns its id.  Sets |*texture_id| to the
   // client-side id of the gpu::StreamTexture. The texture is produced into
   // a mailbox so it can be shipped in a VideoFrame.
-  virtual unsigned CreateStreamTexture(unsigned texture_target,
-                                       unsigned* texture_id,
-                                       gpu::Mailbox* texture_mailbox) = 0;
+  unsigned CreateStreamTexture(unsigned texture_target,
+                               unsigned* texture_id,
+                               gpu::Mailbox* texture_mailbox);
 
   // Set the streamTexture size for the given stream Id.
-  virtual void SetStreamTextureSize(int32_t texture_id,
-                                    const gfx::Size& size) = 0;
+  void SetStreamTextureSize(int32_t texture_id, const gfx::Size& size);
 
-  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+  gpu::gles2::GLES2Interface* ContextGL();
 
- protected:
+ private:
   friend class base::RefCounted<StreamTextureFactory>;
-  virtual ~StreamTextureFactory() {}
+  StreamTextureFactory(
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      gpu::GpuChannelHost* channel);
+  ~StreamTextureFactory();
+
+  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactory);
 };
 
 }  // namespace content

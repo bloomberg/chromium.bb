@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/android/stream_texture_factory_impl.h"
+#include "content/renderer/media/android/stream_texture_factory.h"
 
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/renderer/gpu/stream_texture_host_android.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -15,42 +14,12 @@
 
 namespace content {
 
-namespace {
-
-class StreamTextureProxyImpl : public StreamTextureProxy,
-                               public StreamTextureHost::Listener {
- public:
-  explicit StreamTextureProxyImpl(StreamTextureHost* host);
-  ~StreamTextureProxyImpl() override;
-
-  // StreamTextureProxy implementation:
-  void BindToLoop(int32_t stream_id,
-                  cc::VideoFrameProvider::Client* client,
-                  scoped_refptr<base::SingleThreadTaskRunner> loop) override;
-  void Release() override;
-
-  // StreamTextureHost::Listener implementation:
-  void OnFrameAvailable() override;
-
- private:
-  void BindOnThread(int32_t stream_id);
-
-  const std::unique_ptr<StreamTextureHost> host_;
-
-  // Protects access to |client_| and |loop_|.
-  base::Lock lock_;
-  cc::VideoFrameProvider::Client* client_;
-  scoped_refptr<base::SingleThreadTaskRunner> loop_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxyImpl);
-};
-
-StreamTextureProxyImpl::StreamTextureProxyImpl(StreamTextureHost* host)
+StreamTextureProxy::StreamTextureProxy(StreamTextureHost* host)
     : host_(host), client_(NULL) {}
 
-StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
+StreamTextureProxy::~StreamTextureProxy() {}
 
-void StreamTextureProxyImpl::Release() {
+void StreamTextureProxy::Release() {
   {
     // Cannot call into |client_| anymore (from any thread) after returning
     // from here.
@@ -66,7 +35,7 @@ void StreamTextureProxyImpl::Release() {
   }
 }
 
-void StreamTextureProxyImpl::BindToLoop(
+void StreamTextureProxy::BindToLoop(
     int32_t stream_id,
     cc::VideoFrameProvider::Client* client,
     scoped_refptr<base::SingleThreadTaskRunner> loop) {
@@ -86,46 +55,44 @@ void StreamTextureProxyImpl::BindToLoop(
   // Unretained is safe here only because the object is deleted on |loop_|
   // thread.
   loop->PostTask(FROM_HERE,
-                 base::Bind(&StreamTextureProxyImpl::BindOnThread,
+                 base::Bind(&StreamTextureProxy::BindOnThread,
                             base::Unretained(this),
                             stream_id));
 }
 
-void StreamTextureProxyImpl::BindOnThread(int32_t stream_id) {
+void StreamTextureProxy::BindOnThread(int32_t stream_id) {
   host_->BindToCurrentThread(stream_id, this);
 }
 
-void StreamTextureProxyImpl::OnFrameAvailable() {
+void StreamTextureProxy::OnFrameAvailable() {
   base::AutoLock lock(lock_);
   if (client_)
     client_->DidReceiveFrame();
 }
 
-}  // namespace
-
 // static
-scoped_refptr<StreamTextureFactoryImpl> StreamTextureFactoryImpl::Create(
+scoped_refptr<StreamTextureFactory> StreamTextureFactory::Create(
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     gpu::GpuChannelHost* channel) {
-  return new StreamTextureFactoryImpl(context_provider, channel);
+  return new StreamTextureFactory(context_provider, channel);
 }
 
-StreamTextureFactoryImpl::StreamTextureFactoryImpl(
+StreamTextureFactory::StreamTextureFactory(
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     gpu::GpuChannelHost* channel)
     : context_provider_(context_provider), channel_(channel) {
   DCHECK(channel);
 }
 
-StreamTextureFactoryImpl::~StreamTextureFactoryImpl() {}
+StreamTextureFactory::~StreamTextureFactory() {}
 
-StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
+StreamTextureProxy* StreamTextureFactory::CreateProxy() {
   DCHECK(channel_.get());
   StreamTextureHost* host = new StreamTextureHost(channel_.get());
-  return new StreamTextureProxyImpl(host);
+  return new StreamTextureProxy(host);
 }
 
-void StreamTextureFactoryImpl::EstablishPeer(int32_t stream_id,
+void StreamTextureFactory::EstablishPeer(int32_t stream_id,
                                              int player_id,
                                              int frame_id) {
   DCHECK(channel_.get());
@@ -133,7 +100,7 @@ void StreamTextureFactoryImpl::EstablishPeer(int32_t stream_id,
       new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id, player_id));
 }
 
-unsigned StreamTextureFactoryImpl::CreateStreamTexture(
+unsigned StreamTextureFactory::CreateStreamTexture(
     unsigned texture_target,
     unsigned* texture_id,
     gpu::Mailbox* texture_mailbox) {
@@ -149,12 +116,12 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(
   return stream_id;
 }
 
-void StreamTextureFactoryImpl::SetStreamTextureSize(int32_t stream_id,
+void StreamTextureFactory::SetStreamTextureSize(int32_t stream_id,
                                                     const gfx::Size& size) {
   channel_->Send(new GpuStreamTextureMsg_SetSize(stream_id, size));
 }
 
-gpu::gles2::GLES2Interface* StreamTextureFactoryImpl::ContextGL() {
+gpu::gles2::GLES2Interface* StreamTextureFactory::ContextGL() {
   return context_provider_->ContextGL();
 }
 

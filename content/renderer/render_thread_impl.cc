@@ -168,7 +168,7 @@
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
-#include "content/renderer/media/android/stream_texture_factory_impl.h"
+#include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
 #endif
 
@@ -1528,7 +1528,7 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
       LOG(ERROR) << "Failed to establish GPU channel for media player";
       stream_texture_factory_ = NULL;
     } else {
-      stream_texture_factory_ = StreamTextureFactoryImpl::Create(
+      stream_texture_factory_ = StreamTextureFactory::Create(
           shared_main_thread_contexts_, gpu_channel_host.get());
     }
   }
