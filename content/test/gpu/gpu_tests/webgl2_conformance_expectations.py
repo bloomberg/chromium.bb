@@ -315,6 +315,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # This test actually passes from time to time.
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
         ['win'], bug=606021)
+    # More intermittently flaky.
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_03.html',
+        ['win'], bug=606021)
 
     # Win / AMD
     # It's unfortunate that this suppression needs to be so broad, but
