@@ -322,18 +322,13 @@ bool NavigatorImpl::NavigateToEntry(
         frame_tree_node->navigation_request()) {
       // TODO(carlosk): extend these traces to support subframes and
       // non-PlzNavigate navigations.
-      // For these traces below we're using the navigation handle as the async
+      // For the trace below we're using the navigation handle as the async
       // trace id, |navigation_start| as the timestamp and reporting the
       // FrameTreeNode id as a parameter. For navigations where no network
       // request is made (data URLs, JavaScript URLs, etc) there is no handle
       // and so no tracing is done.
       TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
           "navigation", "Navigation timeToNetworkStack",
-          frame_tree_node->navigation_request()->navigation_handle(),
-          navigation_start.ToInternalValue(),
-          "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
-      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-          "navigation", "Navigation timeToCommit",
           frame_tree_node->navigation_request()->navigation_handle(),
           navigation_start.ToInternalValue(),
           "FrameTreeNode id", frame_tree_node->frame_tree_node_id());
@@ -573,12 +568,6 @@ void NavigatorImpl::DidNavigate(
   // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
   if (!params.url_is_unreachable)
     render_frame_host->set_last_successful_url(params.url);
-
-  if (did_navigate && render_frame_host->frame_tree_node()->IsMainFrame() &&
-      IsBrowserSideNavigationEnabled()) {
-    TRACE_EVENT_ASYNC_END0("navigation", "Navigation timeToCommit",
-                           render_frame_host->navigation_handle());
-  }
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include

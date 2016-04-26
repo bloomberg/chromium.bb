@@ -67,6 +67,12 @@ NavigationHandleImpl::NavigationHandleImpl(
       pending_nav_entry_id_(pending_nav_entry_id) {
   DCHECK(!navigation_start.is_null());
   GetDelegate()->DidStartNavigation(this);
+
+  if (IsInMainFrame()) {
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "navigation", "Navigation StartToCommit", this,
+        navigation_start.ToInternalValue(), "Initial URL", url_.spec());
+  }
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
@@ -76,6 +82,12 @@ NavigationHandleImpl::~NavigationHandleImpl() {
   // destroyed in the middle of the NavigationThrottles checks.
   if (!IsBrowserSideNavigationEnabled() && !complete_callback_.is_null())
     RunCompleteCallback(NavigationThrottle::CANCEL_AND_IGNORE);
+
+  if (IsInMainFrame()) {
+    TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
+                           "URL", url_.spec(), "Net Error Code",
+                           net_error_code_);
+  }
 }
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
