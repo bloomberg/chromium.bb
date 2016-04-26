@@ -6,6 +6,8 @@
 #define CC_PROTO_CC_CONVERSIONS_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/input/scrollbar.h"
+#include "cc/proto/layer.pb.h"
 
 namespace cc {
 class Region;
@@ -18,6 +20,13 @@ class Region;
 // (crbug.com/548432).
 CC_EXPORT void RegionToProto(const Region& region, proto::Region* proto);
 CC_EXPORT Region RegionFromProto(const proto::Region& proto);
+
+// Conversion methods for ScrollbarOrientation.
+CC_EXPORT proto::SolidColorScrollbarLayerProperties::ScrollbarOrientation
+ScrollbarOrientationToProto(const ScrollbarOrientation& orientation);
+CC_EXPORT ScrollbarOrientation ScrollbarOrientationFromProto(
+    const proto::SolidColorScrollbarLayerProperties::ScrollbarOrientation&
+        proto);
 
 }  // namespace cc
 

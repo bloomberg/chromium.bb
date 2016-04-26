@@ -29,6 +29,7 @@ message LayerNode {
     LAYER = 1;
     PICTURE_LAYER = 2;
     HEADS_UP_DISPLAY_LAYER = 3;
+    SOLID_COLOR_SCROLLBAR_LAYER = 4;
 
     // TODO(nyquist): Add the rest of the necessary LayerTypes.
   };
@@ -63,6 +64,7 @@ message LayerProperties {
   // TODO(dtrainor): use a 'oneof' union when it's supported in Chromium.  See
   // crbug.com/570371.
   optional PictureLayerProperties picture = 6;
+  optional SolidColorScrollbarLayerProperties solid_scrollbar = 7;
 }
 
 // NEXT ID: 54
@@ -137,4 +139,17 @@ message PictureLayerProperties {
   optional bool nearest_neighbor = 5;
 
   optional int64 update_source_frame_number = 6;
+}
+
+message SolidColorScrollbarLayerProperties {
+  enum ScrollbarOrientation {
+    HORIZONTAL = 0;
+    VERTICAL = 1;
+  };
+
+  optional int32 scroll_layer_id = 1;
+  optional int32 thumb_thickness = 2;
+  optional int32 track_start = 3;
+  optional bool is_left_side_vertical_scrollbar = 4;
+  optional ScrollbarOrientation orientation = 5;
 }

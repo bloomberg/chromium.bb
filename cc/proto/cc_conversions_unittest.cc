@@ -50,5 +50,16 @@ TEST(RegionTest, OverlappingRectSubtractProtoConversion) {
   VerifySerializeAndDeserializeProto(region);
 }
 
+TEST(ScrollbarOrientationTest, ScrollbarOrientationToProtoConversion) {
+  ASSERT_NE(ScrollbarOrientation::HORIZONTAL, ScrollbarOrientation::VERTICAL);
+  ScrollbarOrientation orientation = ScrollbarOrientation::HORIZONTAL;
+  EXPECT_EQ(orientation, ScrollbarOrientationFromProto(
+                             ScrollbarOrientationToProto(orientation)));
+
+  orientation = ScrollbarOrientation::VERTICAL;
+  EXPECT_EQ(orientation, ScrollbarOrientationFromProto(
+                             ScrollbarOrientationToProto(orientation)));
+}
+
 }  // namespace
 }  // namespace cc

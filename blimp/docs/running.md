@@ -117,11 +117,8 @@ Then start the engine using these flags:
 
 ```bash
 out-linux/Debug/blimp_engine_app \
-  --use-remote-compositing \
-  --disable-cached-picture-raster \
-  --blimp-client-token-path=/tmp/blimpengine-token \
-  --user-data-dir=/tmp/blimpengine \
   --android-fonts-path=out-linux/Debug/gen/third_party/blimp_fonts \
+  --blimp-client-token-path=/tmp/blimpengine-token \
   --enable-logging=stderr \
   --vmodule="blimp*=1"
 ```

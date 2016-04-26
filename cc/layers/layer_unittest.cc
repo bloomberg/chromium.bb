@@ -14,6 +14,7 @@
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/proto/layer.pb.h"
@@ -345,6 +346,36 @@ class LayerSerializationTest : public testing::Test {
     layer->update_rect_ = gfx::Rect(14, 15);
 
     VerifyBaseLayerPropertiesSerializationAndDeserialization(layer.get());
+  }
+
+  void VerifySolidColorScrollbarLayerAfterSerializationAndDeserialization(
+      scoped_refptr<SolidColorScrollbarLayer> source_scrollbar) {
+    proto::LayerProperties serialized_scrollbar;
+    source_scrollbar->LayerSpecificPropertiesToProto(&serialized_scrollbar);
+
+    scoped_refptr<SolidColorScrollbarLayer> deserialized_scrollbar =
+        SolidColorScrollbarLayer::Create(ScrollbarOrientation::HORIZONTAL, -1,
+                                         -1, false, Layer::INVALID_ID);
+    deserialized_scrollbar->layer_id_ = source_scrollbar->layer_id_;
+
+    // FromLayerSpecificPropertiesProto expects a non-null LayerTreeHost to be
+    // set.
+    deserialized_scrollbar->SetLayerTreeHost(layer_tree_host_.get());
+    deserialized_scrollbar->FromLayerSpecificPropertiesProto(
+        serialized_scrollbar);
+
+    EXPECT_EQ(source_scrollbar->track_start_,
+              deserialized_scrollbar->track_start_);
+    EXPECT_EQ(source_scrollbar->thumb_thickness_,
+              deserialized_scrollbar->thumb_thickness_);
+    EXPECT_EQ(source_scrollbar->scroll_layer_id_,
+              deserialized_scrollbar->scroll_layer_id_);
+    EXPECT_EQ(source_scrollbar->is_left_side_vertical_scrollbar_,
+              deserialized_scrollbar->is_left_side_vertical_scrollbar_);
+    EXPECT_EQ(source_scrollbar->orientation_,
+              deserialized_scrollbar->orientation_);
+
+    deserialized_scrollbar->SetLayerTreeHost(nullptr);
   }
 
   void RunScrollAndClipLayersTest() {
@@ -2493,6 +2524,24 @@ TEST_F(LayerSerializationTest, AllMembersChanged) {
 
 TEST_F(LayerSerializationTest, ScrollAndClipLayers) {
   RunScrollAndClipLayersTest();
+}
+
+TEST_F(LayerSerializationTest, SolidColorScrollbarSerialization) {
+  std::vector<scoped_refptr<SolidColorScrollbarLayer>> scrollbar_layers;
+
+  scrollbar_layers.push_back(SolidColorScrollbarLayer::Create(
+      ScrollbarOrientation::HORIZONTAL, 20, 5, true, 3));
+  scrollbar_layers.push_back(SolidColorScrollbarLayer::Create(
+      ScrollbarOrientation::VERTICAL, 20, 5, false, 3));
+  scrollbar_layers.push_back(SolidColorScrollbarLayer::Create(
+      ScrollbarOrientation::HORIZONTAL, 0, 0, true, 0));
+  scrollbar_layers.push_back(SolidColorScrollbarLayer::Create(
+      ScrollbarOrientation::VERTICAL, 10, 35, true, 3));
+
+  for (size_t i = 0; i < scrollbar_layers.size(); i++) {
+    VerifySolidColorScrollbarLayerAfterSerializationAndDeserialization(
+        scrollbar_layers[i]);
+  }
 }
 
 TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {

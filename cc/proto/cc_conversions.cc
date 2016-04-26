@@ -22,4 +22,27 @@ Region RegionFromProto(const proto::Region& proto) {
   return region;
 }
 
+proto::SolidColorScrollbarLayerProperties::ScrollbarOrientation
+ScrollbarOrientationToProto(const ScrollbarOrientation& orientation) {
+  switch (orientation) {
+    case ScrollbarOrientation::HORIZONTAL:
+      return proto::SolidColorScrollbarLayerProperties::HORIZONTAL;
+    case ScrollbarOrientation::VERTICAL:
+      return proto::SolidColorScrollbarLayerProperties::VERTICAL;
+  }
+  return proto::SolidColorScrollbarLayerProperties::HORIZONTAL;
+}
+
+ScrollbarOrientation ScrollbarOrientationFromProto(
+    const proto::SolidColorScrollbarLayerProperties::ScrollbarOrientation&
+        proto) {
+  switch (proto) {
+    case proto::SolidColorScrollbarLayerProperties::HORIZONTAL:
+      return ScrollbarOrientation::HORIZONTAL;
+    case proto::SolidColorScrollbarLayerProperties::VERTICAL:
+      return ScrollbarOrientation::VERTICAL;
+  }
+  return ScrollbarOrientation::HORIZONTAL;
+}
+
 }  // namespace cc

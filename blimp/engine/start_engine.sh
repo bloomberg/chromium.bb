@@ -12,17 +12,13 @@ stunnel \
   -d 25466 -r 25467 -f &
 
 # Start (and restart) the engine so long as there hasn't been an error.
-# Currently, the engine can cleanly exit in the event that a conneciton is lost.
+# Currently, the engine can cleanly exit in the event that a connection is lost.
 # In these cases, it's safe to restart the engine. However, if either stunnel or
 # the engine exit with a nonzero return code, stop all execution.
 while :; do
   LD_LIBRARY_PATH=/engine/ /engine/blimp_engine_app \
-    --disable-gpu \
-    --use-remote-compositing \
-    --disable-cached-picture-raster \
-    --blimp-client-token-path=/engine/data/client_token \
     --android-fonts-path=/engine/fonts \
-    --disable-remote-fonts \
+    --blimp-client-token-path=/engine/data/client_token \
     $@ &
 
   # Wait for a process to exit. Bomb out if anything had an error.

@@ -46,7 +46,15 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
                            int scroll_layer_id);
   ~SolidColorScrollbarLayer() override;
 
+  // Layer overrides for proto conversions.
+  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
+  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto) override;
+  void FromLayerSpecificPropertiesProto(
+      const proto::LayerProperties& proto) override;
+
  private:
+  friend class LayerSerializationTest;
+
   int scroll_layer_id_;
   ScrollbarOrientation orientation_;
   int thumb_thickness_;
