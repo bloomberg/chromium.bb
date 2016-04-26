@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.18",
+  "version": "10.19",
   "entries": [
     {
       "id": 1,
@@ -518,7 +518,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     {
       "id": 50,
       "description": "Disable VMware software renderer on older Mesa",
-      "cr_bugs": [145531, 332596],
+      "cr_bugs": [145531, 332596, 571899],
       "os": {
         "type": "linux"
       },
@@ -531,6 +531,14 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
             "value": "9.2.1"
           },
           "gl_renderer": ".*SVGA3D.*"
+        },
+        {
+          "driver_vendor": "Mesa",
+          "driver_version": {
+            "op": ">=",
+            "value": "10.1.3"
+          },
+          "gl_renderer": ".*Gallium.*llvmpipe.*"
         }
       ],
       "features": [
@@ -1211,6 +1219,28 @@ LONG_STRING_CONST(
       },
       "features": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 110,
+      "description": "Only enable WebGL for the Mesa Gallium llvmpipe driver",
+      "cr_bugs": [571899],
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "gl_vendor": "VMware.*",
+      "gl_renderer": ".*Gallium.*llvmpipe.*",
+      "features": [
+        "accelerated_2d_canvas",
+        "gpu_compositing",
+        "flash_3d",
+        "flash_stage3d",
+        "flash_stage3d_baseline",
+        "accelerated_video_decode",
+        "accelerated_video_encode",
+        "panel_fitting",
+        "gpu_rasterization"
       ]
     }
   ]

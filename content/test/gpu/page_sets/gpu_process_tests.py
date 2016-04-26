@@ -367,6 +367,49 @@ class IdentifyActiveGpuPage4(IdentifyActiveGpuPageBase):
   def Validate(self, tab, results):
     super(IdentifyActiveGpuPage4, self).Validate(tab, results)
 
+
+class ReadbackWebGLGpuProcessSharedPageState(GpuProcessSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(ReadbackWebGLGpuProcessSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    options = finder_options.browser_options
+
+    if sys.platform.startswith('linux'):
+      # Hit id 110 from kSoftwareRenderingListJson.
+      options.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x10de')
+      options.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0de1')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-vendor=VMware')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-renderer=Gallium 0.4 ' \
+        'on llvmpipe (LLVM 3.4, 256 bits)')
+      options.AppendExtraBrowserArgs('--gpu-testing-gl-version="3.0 Mesa 11.2"')
+
+class ReadbackWebGLGpuProcessPage(gpu_test_base.PageBase):
+  def __init__(self, story_set, expectations):
+    super(ReadbackWebGLGpuProcessPage, self).__init__(
+      url='chrome:gpu',
+      name='GpuProcess.readback_webgl_gpu_process',
+      page_set=story_set,
+      shared_page_state_class=ReadbackWebGLGpuProcessSharedPageState,
+      expectations=expectations)
+
+  def Validate(self, tab, results):
+    if sys.platform.startswith('linux'):
+      feature_status_js = 'browserBridge.gpuInfo.featureStatus.featureStatus'
+      feature_status_list = tab.EvaluateJavaScript(feature_status_js)
+      result = True
+      for name, status in feature_status_list.items():
+        if name == 'multiple_raster_threads':
+          result = result and status == 'enabled_on'
+        elif name == 'native_gpu_memory_buffers':
+          result = result and status == 'disabled_software'
+        elif name == 'webgl':
+          result = result and status == 'enabled_readback'
+        else:
+          result = result and status == 'unavailable_software'
+      if not result:
+        raise page_test.Failure('WebGL readback setup failed: %s' \
+          % feature_status_list)
+
 class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
@@ -397,6 +440,7 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     self.AddStory(IdentifyActiveGpuPage2(self, expectations))
     self.AddStory(IdentifyActiveGpuPage3(self, expectations))
     self.AddStory(IdentifyActiveGpuPage4(self, expectations))
+    self.AddStory(ReadbackWebGLGpuProcessPage(self, expectations))
 
   @property
   def allow_mixed_story_states(self):
