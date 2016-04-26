@@ -16,8 +16,8 @@
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -84,7 +84,7 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
 
   mojo::Closure connection_error_handler_;
 
-  mojo::Binding<DeviceManager> binding_;
+  mojo::StrongBinding<DeviceManager> binding_;
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerImpl);

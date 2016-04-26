@@ -100,7 +100,6 @@ void DataSourceSender::ShutDown() {
 }
 
 DataSourceSender::~DataSourceSender() {
-  DCHECK(shut_down_);
 }
 
 void DataSourceSender::Init(uint32_t buffer_size) {

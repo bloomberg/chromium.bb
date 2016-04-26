@@ -47,8 +47,8 @@ DeviceManagerImpl::DeviceManagerImpl(
       binding_(this, std::move(request)),
       weak_factory_(this) {
   // This object owns itself and will be destroyed if the message pipe it is
-  // bound to is closed or the UsbService is shut down.
-  binding_.set_connection_error_handler([this]() { delete this; });
+  // bound to is closed, the message loop is destructed, or the UsbService is
+  // shut down.
   observer_.Add(usb_service_);
 }
 

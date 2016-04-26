@@ -138,9 +138,9 @@ DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
   DCHECK(device_);
   // This object owns itself and will be destroyed if,
   //  * the device is disconnected or
-  //  * the message pipe it is bound to is closed
+  //  * the message pipe it is bound to is closed or the message loop is
+  //  * destructed.
   observer_.Add(device_.get());
-  binding_.set_connection_error_handler([this]() { delete this; });
 }
 
 DeviceImpl::~DeviceImpl() {
