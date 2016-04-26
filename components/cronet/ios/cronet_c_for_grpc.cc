@@ -78,7 +78,7 @@ class CronetBidirectionalStreamAdapter
 
   virtual ~CronetBidirectionalStreamAdapter();
 
-  void OnHeadersSent() override;
+  void OnStreamReady() override;
 
   void OnHeadersReceived(const net::SpdyHeaderBlock& headers_block,
                          const char* negotiated_protocol) override;
@@ -126,9 +126,9 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {}
 
-void CronetBidirectionalStreamAdapter::OnHeadersSent() {
+void CronetBidirectionalStreamAdapter::OnStreamReady() {
   DCHECK(callback_->on_response_headers_received);
-  callback_->on_request_headers_sent(stream_);
+  callback_->on_stream_ready(stream_);
 }
 
 void CronetBidirectionalStreamAdapter::OnHeadersReceived(

@@ -113,13 +113,13 @@ void CronetBidirectionalStream::Destroy() {
                             base::Unretained(this)));
 }
 
-void CronetBidirectionalStream::OnHeadersSent() {
+void CronetBidirectionalStream::OnStreamReady() {
   DCHECK(environment_->IsOnNetworkThread());
   DCHECK(write_state_ == STARTED);
   write_state_ = WAITING_FOR_WRITE;
   if (write_end_of_stream_)
     write_state_ = WRITING_DONE;
-  delegate_->OnHeadersSent();
+  delegate_->OnStreamReady();
 }
 
 void CronetBidirectionalStream::OnHeadersReceived(
@@ -195,7 +195,7 @@ void CronetBidirectionalStream::StartOnNetworkThread(
       std::move(request_info), environment_->GetURLRequestContext()
                                    ->http_transaction_factory()
                                    ->GetSession(),
-      this));
+      /*disable_auto_flush=*/false, this));
   DCHECK(read_state_ == NOT_STARTED && write_state_ == NOT_STARTED);
   read_state_ = write_state_ = STARTED;
 }

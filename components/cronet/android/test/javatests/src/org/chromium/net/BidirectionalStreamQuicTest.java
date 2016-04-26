@@ -77,6 +77,95 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    public void testSimplePost() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        String path = "/simple.txt";
+        String quicURL = QuicTestServer.getServerURL() + path;
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        // Although we have no way to verify data sent at this point, this test
+        // can make sure that onWriteCompleted is invoked appropriately.
+        callback.addWriteData("Test String".getBytes());
+        callback.addWriteData("1234567890".getBytes());
+        callback.addWriteData("woot!".getBytes());
+        BidirectionalStream stream = new BidirectionalStream
+                                             .Builder(quicURL, callback, callback.getExecutor(),
+                                                     mTestFramework.mCronetEngine)
+                                             .addHeader("foo", "bar")
+                                             .addHeader("empty", "")
+                                             .addHeader("Content-Type", "zebra")
+                                             .build();
+        stream.start();
+        callback.blockForDone();
+        assertTrue(stream.isDone());
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testSimplePostWithFlush() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        String path = "/simple.txt";
+        String quicURL = QuicTestServer.getServerURL() + path;
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        // Although we have no way to verify data sent at this point, this test
+        // can make sure that onWriteCompleted is invoked appropriately.
+        callback.addWriteData("Test String".getBytes(), false);
+        callback.addWriteData("1234567890".getBytes(), false);
+        callback.addWriteData("woot!".getBytes(), true);
+        BidirectionalStream stream = new BidirectionalStream
+                                             .Builder(quicURL, callback, callback.getExecutor(),
+                                                     mTestFramework.mCronetEngine)
+                                             .disableAutoFlush(true)
+                                             .addHeader("foo", "bar")
+                                             .addHeader("empty", "")
+                                             .addHeader("Content-Type", "zebra")
+                                             .build();
+        stream.start();
+        callback.blockForDone();
+        assertTrue(stream.isDone());
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testSimplePostWithFlushTwice() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        String path = "/simple.txt";
+        String quicURL = QuicTestServer.getServerURL() + path;
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
+        // Although we have no way to verify data sent at this point, this test
+        // can make sure that onWriteCompleted is invoked appropriately.
+        callback.addWriteData("Test String".getBytes(), false);
+        callback.addWriteData("1234567890".getBytes(), false);
+        callback.addWriteData("woot!".getBytes(), true);
+        callback.addWriteData("Test String".getBytes(), false);
+        callback.addWriteData("1234567890".getBytes(), false);
+        callback.addWriteData("woot!".getBytes(), true);
+        BidirectionalStream stream = new BidirectionalStream
+                                             .Builder(quicURL, callback, callback.getExecutor(),
+                                                     mTestFramework.mCronetEngine)
+                                             .disableAutoFlush(true)
+                                             .addHeader("foo", "bar")
+                                             .addHeader("empty", "")
+                                             .addHeader("Content-Type", "zebra")
+                                             .build();
+        stream.start();
+        callback.blockForDone();
+        assertTrue(stream.isDone());
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testQuicBidirectionalStreamDisabled() throws Exception {
         setUp(QuicBidirectionalStreams.DISABLED);
         String path = "/simple.txt";
@@ -109,10 +198,10 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
 
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
             @Override
-            public void onWriteCompleted(
-                    BidirectionalStream stream, UrlResponseInfo info, ByteBuffer buffer) {
+            public void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
+                    ByteBuffer buffer, boolean endOfStream) {
                 // Super class will write the next piece of data.
-                super.onWriteCompleted(stream, info, buffer);
+                super.onWriteCompleted(stream, info, buffer, endOfStream);
                 // Shut down the server, and the stream should error out.
                 // The second call to shutdownQuicTestServer is no-op.
                 QuicTestServer.shutdownQuicTestServer();

@@ -58,11 +58,16 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
         on_data_sent_count_(0),
         do_not_start_read_(false),
         run_until_completion_(false),
-        not_expect_callback_(false) {}
+        not_expect_callback_(false),
+        disable_auto_flush_(false) {}
 
   ~TestDelegateBase() override {}
 
-  void OnHeadersSent() override { CHECK(!not_expect_callback_); }
+  void OnStreamReady() override {
+    if (callback_.is_null())
+      return;
+    callback_.Run(OK);
+  }
 
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
     CHECK(!not_expect_callback_);
@@ -106,10 +111,23 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
       loop_->Quit();
   }
 
+  void DisableAutoFlush() { disable_auto_flush_ = true; }
+
   void Start(std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
              HttpNetworkSession* session) {
     stream_.reset(new BidirectionalStream(std::move(request_info), session,
-                                          this, std::move(timer_)));
+                                          false, this, std::move(timer_)));
+    if (run_until_completion_)
+      loop_->Run();
+  }
+
+  void Start(std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
+             HttpNetworkSession* session,
+             const CompletionCallback& cb) {
+    callback_ = cb;
+    stream_.reset(new BidirectionalStream(std::move(request_info), session,
+                                          disable_auto_flush_, this,
+                                          std::move(timer_)));
     if (run_until_completion_)
       loop_->Run();
   }
@@ -117,6 +135,14 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   void SendData(IOBuffer* data, int length, bool end_of_stream) {
     not_expect_callback_ = true;
     stream_->SendData(data, length, end_of_stream);
+    not_expect_callback_ = false;
+  }
+
+  void SendvData(const std::vector<IOBuffer*>& data,
+                 const std::vector<int>& length,
+                 bool end_of_stream) {
+    not_expect_callback_ = true;
+    stream_->SendvData(data, length, end_of_stream);
     not_expect_callback_ = false;
   }
 
@@ -194,7 +220,9 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
   // This is to ensure that delegate callback is not invoked synchronously when
   // calling into |stream_|.
   bool not_expect_callback_;
+  bool disable_auto_flush_;
 
+  CompletionCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(TestDelegateBase);
 };
 
@@ -657,6 +685,76 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   EXPECT_EQ(2, delegate->on_data_read_count());
   EXPECT_EQ(3, delegate->on_data_sent_count());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
+}
+
+TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+
+  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+      "https://www.example.org", 1, kBodyDataSize * 1, LOWEST, nullptr, 0));
+  std::string body_data = "some really long piece of data";
+  std::unique_ptr<SpdySerializedFrame> data_frame1(framer.CreateDataFrame(
+      1, body_data.c_str(), body_data.size(), DATA_FLAG_FIN));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*data_frame1, 1),
+  };
+
+  std::unique_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  std::unique_ptr<SpdySerializedFrame> response_body_frame1(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(*resp, 2),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),  // Force a pause.
+      CreateMockRead(*response_body_frame1, 4), MockRead(ASYNC, 0, 5),
+  };
+
+  HostPortPair host_port_pair("www.example.org", 443);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+
+  std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
+      new BidirectionalStreamRequestInfo);
+  request_info->method = "POST";
+  request_info->url = GURL("https://www.example.org/");
+  request_info->priority = LOWEST;
+  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
+                                        base::SizeTToString(kBodyDataSize * 1));
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  MockTimer* timer = new MockTimer();
+  std::unique_ptr<TestDelegateBase> delegate(new TestDelegateBase(
+      read_buffer.get(), kReadBufferSize, base::WrapUnique(timer)));
+  delegate->set_do_not_start_read(true);
+  delegate->DisableAutoFlush();
+  TestCompletionCallback callback;
+  delegate->Start(std::move(request_info), http_session_.get(),
+                  callback.callback());
+  // Wait until the stream is ready.
+  callback.WaitForResult();
+  // Send a DATA frame.
+  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(body_data.substr(0, 5)));
+  scoped_refptr<StringIOBuffer> buf2(
+      new StringIOBuffer(body_data.substr(5, body_data.size() - 5)));
+  delegate->SendvData({buf.get(), buf2.get()}, {buf->size(), buf2->size()},
+                      true);
+  sequenced_data_->RunUntilPaused();  // OnHeadersReceived.
+  // ReadData and it should return asynchronously because no data is buffered.
+  EXPECT_EQ(ERR_IO_PENDING, delegate->ReadData());
+  sequenced_data_->Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, delegate->on_data_sent_count());
+  EXPECT_EQ(1, delegate->on_data_read_count());
+
+  EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
+  EXPECT_EQ(1, delegate->on_data_read_count());
+  EXPECT_EQ(1, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
             delegate->GetTotalSentBytes());

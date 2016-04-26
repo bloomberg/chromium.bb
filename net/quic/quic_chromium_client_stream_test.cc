@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/quic_chromium_client_session.h"
@@ -459,6 +460,52 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   // All data written.
   EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kDataLen, true)));
+  stream_->OnCanWrite();
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_EQ(OK, callback.WaitForResult());
+}
+
+TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+
+  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer("hello world!"));
+  scoped_refptr<StringIOBuffer> buf2(
+      new StringIOBuffer("Just a small payload"));
+
+  // All data written.
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(buf1->size(), false)))
+      .WillOnce(Return(QuicConsumedData(buf2->size(), true)));
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK, stream_->WritevStreamData({buf1.get(), buf2.get()},
+                                          {buf1->size(), buf2->size()}, true,
+                                          callback.callback()));
+}
+
+TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
+  EXPECT_CALL(delegate_, HasSendHeadersComplete()).Times(AnyNumber());
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+
+  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer("hello world!"));
+  scoped_refptr<StringIOBuffer> buf2(
+      new StringIOBuffer("Just a small payload"));
+
+  // Only a part of the data is written.
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _))
+      // First piece of data is written.
+      .WillOnce(Return(QuicConsumedData(buf1->size(), false)))
+      // Second piece of data is queued.
+      .WillOnce(Return(QuicConsumedData(0, false)));
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            stream_->WritevStreamData({buf1.get(), buf2.get()},
+                                      {buf1->size(), buf2->size()}, true,
+                                      callback.callback()));
+  ASSERT_FALSE(callback.have_result());
+
+  // The second piece of data is written.
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _))
+      .WillOnce(Return(QuicConsumedData(buf2->size(), true)));
   stream_->OnCanWrite();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());

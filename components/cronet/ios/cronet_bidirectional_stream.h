@@ -33,7 +33,7 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
  public:
   class Delegate {
    public:
-    virtual void OnHeadersSent() = 0;
+    virtual void OnStreamReady() = 0;
 
     virtual void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers,
                                    const char* negotiated_protocol) = 0;
@@ -117,7 +117,7 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
   };
 
   // net::BidirectionalStream::Delegate implementations:
-  void OnHeadersSent() override;
+  void OnStreamReady() override;
   void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;

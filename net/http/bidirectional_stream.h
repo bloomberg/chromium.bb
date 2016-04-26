@@ -31,8 +31,9 @@ struct BidirectionalStreamRequestInfo;
 struct SSLConfig;
 
 // A class to do HTTP/2 bidirectional streaming. Note that at most one each of
-// ReadData or SendData should be in flight until the operation completes.
-// The BidirectionalStream must be torn down before the HttpNetworkSession.
+// ReadData or SendData/SendvData should be in flight until the operation
+// completes. The BidirectionalStream must be torn down before the
+// HttpNetworkSession.
 class NET_EXPORT BidirectionalStream
     : public NON_EXPORTED_BASE(BidirectionalStreamImpl::Delegate),
       public NON_EXPORTED_BASE(HttpStreamRequest::Delegate) {
@@ -43,13 +44,13 @@ class NET_EXPORT BidirectionalStream
    public:
     Delegate();
 
-    // Called when headers have been sent. This is called at most once for
-    // the lifetime of a stream.
+    // Called when the stream is ready for writing and reading. This is called
+    // at most once for the lifetime of a stream.
     // The delegate may call BidirectionalStream::ReadData to start reading,
     // or call BidirectionalStream::SendData to send data.
     // The delegate should not call BidirectionalStream::Cancel
     // during this callback.
-    virtual void OnHeadersSent() = 0;
+    virtual void OnStreamReady() = 0;
 
     // Called when headers are received. This is called at most once for the
     // lifetime of a stream.
@@ -96,6 +97,7 @@ class NET_EXPORT BidirectionalStream
   BidirectionalStream(
       std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
       HttpNetworkSession* session,
+      bool disable_auto_flush,
       Delegate* delegate);
 
   // Constructor that accepts a Timer, which can be used in tests to control
@@ -103,6 +105,7 @@ class NET_EXPORT BidirectionalStream
   BidirectionalStream(
       std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
       HttpNetworkSession* session,
+      bool disable_auto_flush,
       Delegate* delegate,
       std::unique_ptr<base::Timer> timer);
 
@@ -124,6 +127,11 @@ class NET_EXPORT BidirectionalStream
   // invoked. If |end_stream| is true, the DATA frame will have an END_STREAM
   // flag.
   void SendData(IOBuffer* data, int length, bool end_stream);
+
+  // Same as SendData except this takes in a vector of IOBuffers.
+  void SendvData(const std::vector<IOBuffer*>& buffers,
+                 const std::vector<int>& lengths,
+                 bool end_stream);
 
   // If |stream_request_| is non-NULL, cancel it. If |stream_impl_| is
   // established, cancel it. No delegate method will be called after Cancel().
@@ -151,7 +159,7 @@ class NET_EXPORT BidirectionalStream
 
  private:
   // BidirectionalStreamImpl::Delegate implementation:
-  void OnHeadersSent() override;
+  void OnStreamReady() override;
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;
@@ -194,6 +202,7 @@ class NET_EXPORT BidirectionalStream
 
   HttpNetworkSession* session_;
 
+  bool disable_auto_flush_;
   Delegate* const delegate_;
 
   // Timer used to buffer data received in short time-spans and send a single
@@ -208,10 +217,10 @@ class NET_EXPORT BidirectionalStream
 
   // Buffer used for reading.
   scoped_refptr<IOBuffer> read_buffer_;
-  // Buffer used for writing.
-  scoped_refptr<IOBuffer> write_buffer_;
-  // Length of |write_buffer_|.
-  size_t write_buffer_len_;
+  // List of buffers used for writing.
+  std::vector<scoped_refptr<IOBuffer>> write_buffer_list_;
+  // List of buffer length.
+  std::vector<int> write_buffer_len_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BidirectionalStream);
 };

@@ -47,6 +47,8 @@ public abstract class BidirectionalStream {
         // Priority of the stream. Default is medium.
         @StreamPriority private int mPriority = STREAM_PRIORITY_MEDIUM;
 
+        private boolean mDisableAutoFlush;
+
         /**
          * Creates a builder for {@link BidirectionalStream} objects. All callbacks for
          * generated {@code BidirectionalStream} objects will be invoked on
@@ -159,6 +161,19 @@ public abstract class BidirectionalStream {
         }
 
         /**
+         * Disables or enables auto flush. By default, data is flushed after
+         * every {@link #write write()}. If the auto flush is disabled, the
+         * client should explicitly call {@link #flush flush()} to flush the data.
+         *
+         * @param disableAutoFlush if true, auto flush will be disabled.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder disableAutoFlush(boolean disableAutoFlush) {
+            mDisableAutoFlush = disableAutoFlush;
+            return this;
+        }
+
+        /**
          * Creates a {@link BidirectionalStream} using configuration from this
          * {@link Builder}. The returned {@code BidirectionalStream} can then be started
          * by calling {@link BidirectionalStream#start}.
@@ -167,8 +182,8 @@ public abstract class BidirectionalStream {
          *         this {@link Builder}
          */
         public BidirectionalStream build() {
-            return mCronetEngine.createBidirectionalStream(
-                    mUrl, mCallback, mExecutor, mHttpMethod, mRequestHeaders, mPriority);
+            return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
+                    mRequestHeaders, mPriority, mDisableAutoFlush);
         }
     }
 
@@ -177,22 +192,23 @@ public abstract class BidirectionalStream {
      */
     public abstract static class Callback {
         /**
-         * Invoked when request headers are sent. Indicates that stream has initiated the request.
+         * Invoked when the stream is ready for reading and writing.
+         * Consumer may call {@link BidirectionalStream#read read()} to start reading data.
          * Consumer may call {@link BidirectionalStream#write write()} to start writing data.
          *
-         * @param stream the stream on which request headers were sent
+         * @param stream the stream that is ready.
          */
-        public abstract void onRequestHeadersSent(BidirectionalStream stream);
+        public abstract void onStreamReady(BidirectionalStream stream);
 
         /**
          * Invoked when initial response headers are received. Headers are available from
          * {@code info.}{@link UrlResponseInfo#getAllHeaders getAllHeaders()}.
-         * Consumer must call {@link BidirectionalStream#read read()} to start reading.
+         * Consumer may call {@link BidirectionalStream#read read()} to start reading.
          * Consumer may call {@link BidirectionalStream#write write()} to start writing or close the
          * stream.
          *
-         * @param stream the stream on which response headers were received
-         * @param info the response information
+         * @param stream the stream on which response headers were received.
+         * @param info the response information.
          */
         public abstract void onResponseHeadersReceived(
                 BidirectionalStream stream, UrlResponseInfo info);
@@ -207,15 +223,15 @@ public abstract class BidirectionalStream {
          * @param stream the stream on which the read completed
          * @param info the response information
          * @param buffer the buffer that was passed to {@link BidirectionalStream#read read()},
-         *     now containing the received data. The buffer's position is set to the end of
-         *     the received data. If position is not updated, it means the remote side has signaled
-         *     that it will send no more data; future calls to {@code read()} will result in the
-         *     same {@link #onReadCompleted onReadCompleted()} callback or {@link #onSucceeded
-         *     onSucceeded()} callback if {@link BidirectionalStream#write write()} was invoked with
-         *     {@code endOfStream} set to {@code true}. The buffer's limit is not changed.
+         *     now containing the received data. The buffer's limit is not changed.
+         *     The buffer's position is set to the end of the received data. If position is not
+         *     updated, it means the remote side has signaled that it will send no more data.
+         * @param endOfStream if true, this is the last read data, remote will not send more data,
+         *     and the read side is closed.
+         *
          */
-        public abstract void onReadCompleted(
-                BidirectionalStream stream, UrlResponseInfo info, ByteBuffer buffer);
+        public abstract void onReadCompleted(BidirectionalStream stream, UrlResponseInfo info,
+                ByteBuffer buffer, boolean endOfStream);
 
         /**
          * Invoked when data passed to {@link BidirectionalStream#write write()} is sent. The
@@ -229,9 +245,11 @@ public abstract class BidirectionalStream {
          * @param buffer the buffer that was passed to {@link BidirectionalStream#write write()}.
          *     The buffer's position is set to the end of the sent data. The buffer's limit
          *     is not changed.
+         * @param endOfStream the endOfStream flag that was passed to the corresponding
+         *     {@link BidirectionalStream#write write()}. If true, the write side is closed.
          */
-        public abstract void onWriteCompleted(
-                BidirectionalStream stream, UrlResponseInfo info, ByteBuffer buffer);
+        public abstract void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
+                ByteBuffer buffer, boolean endOfStream);
 
         /**
          * Invoked when trailers are received before closing the stream. Only invoked
@@ -313,13 +331,13 @@ public abstract class BidirectionalStream {
 
     /**
      * Reads data from the stream into the provided buffer.
-     * Must only be called at most once in response to each invocation of the
+     * Can only be called at most once in response to each invocation of the
+     * {@link Callback#onStreamReady onStreamReady()}/
      * {@link Callback#onResponseHeadersReceived onResponseHeadersReceived()} and {@link
      * Callback#onReadCompleted onReadCompleted()} methods of the {@link
      * Callback}. Each call will result in an invocation of one of the
      * {@link Callback Callback}'s {@link Callback#onReadCompleted onReadCompleted()}
-     * method if data is read, its {@link Callback#onSucceeded onSucceeded()} method if
-     * the stream is closed, or its {@link Callback#onFailed onFailed()} method if
+     * method if data is read, or its {@link Callback#onFailed onFailed()} method if
      * there's an error.
      *
      * An attempt to read data into {@code buffer} starting at {@code
@@ -331,20 +349,17 @@ public abstract class BidirectionalStream {
      *     direct ByteBuffer. The embedder must not read or modify buffer's
      *     position, limit, or data between its position and limit until
      *     {@link Callback#onReadCompleted onReadCompleted()}, {@link Callback#onCanceled
-     *     onCanceled()}, {@link Callback#onSucceeded onSucceeded()} or {@link Callback#onFailed
-     *     onFailed()} are invoked.
+     *     onCanceled()}, or {@link Callback#onFailed onFailed()} are invoked.
      */
     public abstract void read(ByteBuffer buffer);
 
     /**
      * Attempts to write data from the provided buffer into the stream.
-     * Must only be called at most once in response to each invocation of the
-     * {@link Callback#onRequestHeadersSent onRequestHeadersSent()} or {@link
-     * Callback#onWriteCompleted onWriteCompleted()} methods of the {@link Callback}.
-     * Each call will result in an asynchronous call to one of the {@link Callback Callback}'s
-     * {@link Callback#onWriteCompleted onWriteCompleted()} method if data
-     * is sent, its {@link Callback#onSucceeded onSucceeded()} method if stream is closed,
-     * or its {@link Callback#onFailed onFailed()} method if there's an error.
+     * If auto flush is disabled, data will be sent only after {@link #flush flush()} is called.
+     * Each call will result in an invocation of one of the
+     * {@link Callback Callback}'s {@link Callback#onWriteCompleted onWriteCompleted()}
+     * method if data is sent, or its {@link Callback#onFailed onFailed()} method if
+     * there's an error.
      *
      * An attempt to write data from {@code buffer} starting at {@code
      * buffer.position()} is begun. At most {@code buffer.remaining()} bytes are
@@ -355,13 +370,19 @@ public abstract class BidirectionalStream {
      *     direct ByteBuffer. The embedder must not read or modify buffer's
      *     position, limit, or data between its position and limit until
      *     {@link Callback#onWriteCompleted onWriteCompleted()}, {@link Callback#onCanceled
-     *     onCanceled()}, {@link Callback#onSucceeded onSucceeded()} or {@link Callback#onFailed
-     *     onFailed()} are invoked. Can be empty when {@code endOfStream} is {@code true}.
+     *     onCanceled()}, or {@link Callback#onFailed onFailed()} are invoked. Can be empty
+     *     when {@code endOfStream} is {@code true}.
      * @param endOfStream if {@code true}, then {@code buffer} is the last buffer to be written,
      *     and once written, stream is closed from the client side, resulting in half-closed
      *     stream or a fully closed stream if the remote side has already closed.
      */
     public abstract void write(ByteBuffer buffer, boolean endOfStream);
+
+    /**
+     * Flushes pending writes. This method should only be invoked when auto
+     * flush is disabled through {@link Builder#disableAutoFlush}.
+     */
+    public abstract void flush();
 
     /**
      * Pings remote end-point. {@code callback} methods will be invoked on {@code executor}.

@@ -43,11 +43,12 @@ typedef struct cronet_bidirectional_stream_header_array {
 
 /* Set of callbacks used to receive callbacks from bidirectional stream. */
 typedef struct cronet_bidirectional_stream_callback {
-  /* Invoked when request headers are sent. Indicates that stream has initiated
-   * the request. Consumer may call cronet_bidirectional_stream_write() to start
-   * writing data.
+  /* Invoked when the stream is ready for reading and writing.
+   * Consumer may call cronet_bidirectional_stream_read() to start reading data.
+   * Consumer may call cronet_bidirectional_stream_write() to start writing
+   * data.
    */
-  void (*on_request_headers_sent)(cronet_bidirectional_stream* stream);
+  void (*on_stream_ready)(cronet_bidirectional_stream* stream);
 
   /* Invoked when initial response headers are received.
    * Consumer must call cronet_bidirectional_stream_read() to start reading.
@@ -154,8 +155,8 @@ int cronet_bidirectional_stream_start(
 
 /* Read response data into |buffer| of |capacity| length. Must only be called at
  * most once in response to each invocation of the
- * on_response_headers_received() and on_read_completed() methods of the
- * cronet_bidirectional_stream_callback.
+ * on_stream_ready()/on_response_headers_received() and on_read_completed()
+ * methods of the cronet_bidirectional_stream_callback.
  * Each call will result in an invocation of the callback's
  * on_read_completed() method if data is read, or its on_failed() method if
  * there's an error. The callback's on_succeeded() method is also invoked if
@@ -167,7 +168,7 @@ int cronet_bidirectional_stream_read(cronet_bidirectional_stream* stream,
 
 /* Write request data from |buffer| of |buffer_length| length. Must only be
  * called at most once in response to each invocation of the
- * on_request_headers_sent() and on_write_completed() methods of the
+ * on_stream_ready() and on_write_completed() methods of the
  * cronet_bidirectional_stream_callback.
  * Each call will result in an invocation the callback's on_write_completed()
  * method if data is sent, or its on_failed() method if there's an error.

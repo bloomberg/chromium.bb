@@ -13,6 +13,7 @@ import static junit.framework.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,7 +64,10 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     private int mBufferPositionBeforeRead;
 
     // Data to write.
-    private ArrayList<ByteBuffer> mWriteBuffers = new ArrayList<ByteBuffer>();
+    private final ArrayList<WriteBuffer> mWriteBuffers = new ArrayList<WriteBuffer>();
+
+    // Buffers that we yet to receive the corresponding onWriteCompleted callback.
+    private final ArrayList<WriteBuffer> mWriteBuffersToBeAcked = new ArrayList<WriteBuffer>();
 
     private class ExecutorThreadFactory implements ThreadFactory {
         public Thread newThread(Runnable r) {
@@ -72,16 +76,25 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         }
     }
 
+    private static class WriteBuffer {
+        final ByteBuffer mBuffer;
+        final boolean mFlush;
+        public WriteBuffer(ByteBuffer buffer, boolean flush) {
+            mBuffer = buffer;
+            mFlush = flush;
+        }
+    }
+
     public enum ResponseStep {
         NOTHING,
-        ON_REQUEST_HEADERS_SENT,
+        ON_STREAM_READY,
         ON_RESPONSE_STARTED,
         ON_READ_COMPLETED,
         ON_WRITE_COMPLETED,
         ON_TRAILERS,
         ON_CANCELED,
         ON_FAILED,
-        ON_SUCCEEDED
+        ON_SUCCEEDED,
     }
 
     public enum FailureType {
@@ -126,20 +139,24 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     }
 
     public void addWriteData(byte[] data) {
+        addWriteData(data, true);
+    }
+
+    public void addWriteData(byte[] data, boolean flush) {
         ByteBuffer writeBuffer = ByteBuffer.allocateDirect(data.length);
         writeBuffer.put(data);
         writeBuffer.flip();
-        mWriteBuffers.add(writeBuffer);
+        mWriteBuffers.add(new WriteBuffer(writeBuffer, flush));
+        mWriteBuffersToBeAcked.add(new WriteBuffer(writeBuffer, flush));
     }
 
     @Override
-    public void onRequestHeadersSent(BidirectionalStream stream) {
+    public void onStreamReady(BidirectionalStream stream) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(stream.isDone());
         assertEquals(ResponseStep.NOTHING, mResponseStep);
         assertNull(mError);
-
-        mResponseStep = ResponseStep.ON_REQUEST_HEADERS_SENT;
+        mResponseStep = ResponseStep.ON_STREAM_READY;
         if (maybeThrowCancelOrPause(stream, mWriteStepBlock)) {
             return;
         }
@@ -151,7 +168,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(stream.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
-                || mResponseStep == ResponseStep.ON_REQUEST_HEADERS_SENT
+                || mResponseStep == ResponseStep.ON_STREAM_READY
                 || mResponseStep == ResponseStep.ON_WRITE_COMPLETED);
         assertNull(mError);
 
@@ -164,8 +181,8 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
     }
 
     @Override
-    public void onReadCompleted(
-            BidirectionalStream stream, UrlResponseInfo info, ByteBuffer byteBuffer) {
+    public void onReadCompleted(BidirectionalStream stream, UrlResponseInfo info,
+            ByteBuffer byteBuffer, boolean endOfStream) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(stream.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
@@ -175,6 +192,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         assertNull(mError);
 
         mResponseStep = ResponseStep.ON_READ_COMPLETED;
+        mResponseInfo = info;
 
         final int bytesRead = byteBuffer.position() - mBufferPositionBeforeRead;
         mHttpResponseDataLength += bytesRead;
@@ -190,19 +208,23 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         if (maybeThrowCancelOrPause(stream, mReadStepBlock)) {
             return;
         }
-        startNextRead(stream);
+        // Do not read if EOF has been reached.
+        if (!endOfStream) {
+            startNextRead(stream);
+        }
     }
 
     @Override
-    public void onWriteCompleted(
-            BidirectionalStream stream, UrlResponseInfo info, ByteBuffer buffer) {
+    public void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
+            ByteBuffer buffer, boolean endOfStream) {
         assertEquals(mExecutorThread, Thread.currentThread());
         assertFalse(stream.isDone());
         assertNull(mError);
         mResponseStep = ResponseStep.ON_WRITE_COMPLETED;
-        if (!mWriteBuffers.isEmpty()) {
-            assertEquals(buffer, mWriteBuffers.get(0));
-            mWriteBuffers.remove(0);
+        mResponseInfo = info;
+        if (!mWriteBuffersToBeAcked.isEmpty()) {
+            assertEquals(buffer, mWriteBuffersToBeAcked.get(0).mBuffer);
+            mWriteBuffersToBeAcked.remove(0);
         }
         if (maybeThrowCancelOrPause(stream, mWriteStepBlock)) {
             return;
@@ -217,6 +239,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         assertFalse(stream.isDone());
         assertNull(mError);
         mResponseStep = ResponseStep.ON_TRAILERS;
+        mResponseInfo = info;
         mTrailers = trailers;
         if (maybeThrowCancelOrPause(stream, mReadStepBlock)) {
             return;
@@ -234,6 +257,8 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         assertFalse(mOnErrorCalled);
         assertFalse(mOnCanceledCalled);
         assertNull(mError);
+        assertEquals(0, mWriteBuffers.size());
+        assertEquals(0, mWriteBuffersToBeAcked.size());
 
         mResponseStep = ResponseStep.ON_SUCCEEDED;
         mResponseInfo = info;
@@ -252,6 +277,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         assertFalse(mOnCanceledCalled);
         assertNull(mError);
         mResponseStep = ResponseStep.ON_FAILED;
+        mResponseInfo = info;
 
         mOnErrorCalled = true;
         mError = error;
@@ -268,6 +294,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         assertFalse(mOnErrorCalled);
         assertNull(mError);
         mResponseStep = ResponseStep.ON_CANCELED;
+        mResponseInfo = info;
 
         mOnCanceledCalled = true;
         openDone();
@@ -285,8 +312,16 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
 
     public void startNextWrite(BidirectionalStream stream) {
         if (!mWriteBuffers.isEmpty()) {
-            boolean isLastBuffer = mWriteBuffers.size() == 1;
-            stream.write(mWriteBuffers.get(0), isLastBuffer);
+            Iterator<WriteBuffer> iterator = mWriteBuffers.iterator();
+            while (iterator.hasNext()) {
+                WriteBuffer b = iterator.next();
+                stream.write(b.mBuffer, !iterator.hasNext());
+                iterator.remove();
+                if (b.mFlush) {
+                    stream.flush();
+                    break;
+                }
+            }
         }
     }
 
@@ -295,6 +330,13 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
         // indefinitely, so have to block for one millisecond to get state
         // without blocking.
         return mDone.block(1);
+    }
+
+    /**
+     * Returns the number of pending Writes.
+     */
+    public int numPendingWrites() {
+        return mWriteBuffers.size();
     }
 
     protected void openDone() {

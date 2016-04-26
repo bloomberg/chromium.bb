@@ -710,12 +710,13 @@ public abstract class CronetEngine {
      * @param priority priority of the stream which should be one of the
      *         {@link BidirectionalStream.Builder#STREAM_PRIORITY_IDLE STREAM_PRIORITY_*}
      *         values.
+     * @param disableAutoFlush whether auto flush should be disabled
      * @return a new stream.
      */
     abstract BidirectionalStream createBidirectionalStream(String url,
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders,
-            @BidirectionalStream.Builder.StreamPriority int priority);
+            @BidirectionalStream.Builder.StreamPriority int priority, boolean disableAutoFlush);
 
     /**
      * @return {@code true} if the engine is enabled.

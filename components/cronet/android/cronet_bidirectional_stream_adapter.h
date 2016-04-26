@@ -29,9 +29,9 @@ class CronetURLRequestContextAdapter;
 class IOBufferWithByteBuffer;
 
 // An adapter from Java BidirectionalStream object to net::BidirectionalStream.
-// Created and configured from a Java thread. Start, ReadData, WriteData and
+// Created and configured from a Java thread. Start, ReadData, WritevData and
 // Destroy can be called on any thread (including network thread), and post
-// calls to corresponding {Start|ReadData|WriteData|Destroy}OnNetworkThread to
+// calls to corresponding {Start|ReadData|WritevData|Destroy}OnNetworkThread to
 // the network thread. The object is always deleted on network thread. All
 // callbacks into the Java BidirectionalStream are done on the network thread.
 // Java BidirectionalStream is expected to initiate the next step like ReadData
@@ -44,7 +44,8 @@ class CronetBidirectionalStreamAdapter
   CronetBidirectionalStreamAdapter(
       CronetURLRequestContextAdapter* context,
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jbidi_stream);
+      const base::android::JavaParamRef<jobject>& jbidi_stream,
+      bool jdisable_auto_flush);
   ~CronetBidirectionalStreamAdapter() override;
 
   // Validates method and headers, initializes and starts the request. If
@@ -71,16 +72,19 @@ class CronetBidirectionalStreamAdapter
                     jint jposition,
                     jint jlimit);
 
-  // Writes more data from |jbyte_buffer| starting at |jposition| and ending at
-  // |jlimit|-1. Arguments are preserved to ensure that |jbyte_buffer|
+  // Writes more data from |jbyte_buffers|. For the i_th buffer in
+  // |jbyte_buffers|, bytes to write start from i_th position in |jpositions|
+  // and end at i_th limit in |jlimits|.
+  // Arguments are preserved to ensure that |jbyte_buffer|
   // is not modified by the application during write. The |jend_of_stream| is
   // passed to remote to indicate end of stream.
-  jboolean WriteData(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jcaller,
-                     const base::android::JavaParamRef<jobject>& jbyte_buffer,
-                     jint jposition,
-                     jint jlimit,
-                     jboolean jend_of_stream);
+  jboolean WritevData(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobjectArray>& jbyte_buffers,
+      const base::android::JavaParamRef<jintArray>& jpositions,
+      const base::android::JavaParamRef<jintArray>& jlimits,
+      jboolean jend_of_stream);
 
   // Releases all resources for the request and deletes the object itself.
   // |jsend_on_canceled| indicates if Java onCanceled callback should be
@@ -90,8 +94,9 @@ class CronetBidirectionalStreamAdapter
                jboolean jsend_on_canceled);
 
  private:
+  typedef std::vector<scoped_refptr<IOBufferWithByteBuffer>> IOByteBufferList;
   // net::BidirectionalStream::Delegate implementations:
-  void OnHeadersSent() override;
+  void OnStreamReady() override;
   void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
   void OnDataRead(int bytes_read) override;
   void OnDataSent() override;
@@ -103,10 +108,8 @@ class CronetBidirectionalStreamAdapter
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
-  void WriteDataOnNetworkThread(
-      scoped_refptr<IOBufferWithByteBuffer> read_buffer,
-      int buffer_size,
-      bool end_of_stream);
+  void WritevDataOnNetworkThread(const IOByteBufferList& buffers,
+                                 bool end_of_stream);
   void DestroyOnNetworkThread(bool send_on_canceled);
   // Gets headers as a Java array.
   base::android::ScopedJavaLocalRef<jobjectArray> GetHeadersArray(
@@ -117,9 +120,13 @@ class CronetBidirectionalStreamAdapter
 
   // Java object that owns this CronetBidirectionalStreamAdapter.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
+  const bool disable_auto_flush_;
+  // Whether an end of stream flag is passed in through a write call.
+  // Not applicable to HTTP methods that do not send data.
+  bool write_end_of_stream_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
-  scoped_refptr<IOBufferWithByteBuffer> write_buffer_;
+  IOByteBufferList write_buffer_list_;
   std::unique_ptr<net::BidirectionalStream> bidi_stream_;
 
   // Whether BidirectionalStream::Delegate::OnFailed callback is invoked.

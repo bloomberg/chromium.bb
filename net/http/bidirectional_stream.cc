@@ -28,29 +28,34 @@ namespace net {
 
 BidirectionalStream::Delegate::Delegate() {}
 
+void BidirectionalStream::Delegate::OnStreamReady() {}
+
 BidirectionalStream::Delegate::~Delegate() {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
+    bool disable_auto_flush,
     Delegate* delegate)
     : BidirectionalStream(std::move(request_info),
                           session,
+                          disable_auto_flush,
                           delegate,
                           base::WrapUnique(new base::Timer(false, false))) {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,
     HttpNetworkSession* session,
+    bool disable_auto_flush,
     Delegate* delegate,
     std::unique_ptr<base::Timer> timer)
     : request_info_(std::move(request_info)),
       net_log_(BoundNetLog::Make(session->net_log(),
                                  NetLog::SOURCE_BIDIRECTIONAL_STREAM)),
       session_(session),
+      disable_auto_flush_(disable_auto_flush),
       delegate_(delegate),
-      timer_(std::move(timer)),
-      write_buffer_len_(0) {
+      timer_(std::move(timer)) {
   DCHECK(delegate_);
   DCHECK(request_info_);
 
@@ -104,10 +109,27 @@ void BidirectionalStream::SendData(IOBuffer* data,
                                    int length,
                                    bool end_stream) {
   DCHECK(stream_impl_);
+  DCHECK(write_buffer_list_.empty());
+  DCHECK(write_buffer_len_list_.empty());
 
   stream_impl_->SendData(data, length, end_stream);
-  write_buffer_ = data;
-  write_buffer_len_ = length;
+  write_buffer_list_.push_back(data);
+  write_buffer_len_list_.push_back(length);
+}
+
+void BidirectionalStream::SendvData(const std::vector<IOBuffer*>& buffers,
+                                    const std::vector<int>& lengths,
+                                    bool end_stream) {
+  DCHECK(stream_impl_);
+  DCHECK_EQ(buffers.size(), lengths.size());
+  DCHECK(write_buffer_list_.empty());
+  DCHECK(write_buffer_len_list_.empty());
+
+  stream_impl_->SendvData(buffers, lengths, end_stream);
+  for (size_t i = 0; i < buffers.size(); ++i) {
+    write_buffer_list_.push_back(buffers[i]);
+    write_buffer_len_list_.push_back(lengths[i]);
+  }
 }
 
 void BidirectionalStream::Cancel() {
@@ -139,8 +161,8 @@ int64_t BidirectionalStream::GetTotalSentBytes() const {
   return stream_impl_->GetTotalSentBytes();
 }
 
-void BidirectionalStream::OnHeadersSent() {
-  delegate_->OnHeadersSent();
+void BidirectionalStream::OnStreamReady() {
+  delegate_->OnStreamReady();
 }
 
 void BidirectionalStream::OnHeadersReceived(
@@ -169,12 +191,16 @@ void BidirectionalStream::OnDataRead(int bytes_read) {
 }
 
 void BidirectionalStream::OnDataSent() {
-  DCHECK(write_buffer_);
+  DCHECK(!write_buffer_list_.empty());
+  DCHECK_EQ(write_buffer_list_.size(), write_buffer_len_list_.size());
 
-  net_log_.AddByteTransferEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
-                                write_buffer_len_, write_buffer_->data());
-  write_buffer_ = nullptr;
-  write_buffer_len_ = 0;
+  for (size_t i = 0; i < write_buffer_list_.size(); ++i) {
+    net_log_.AddByteTransferEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+                                  write_buffer_len_list_[i],
+                                  write_buffer_list_[i]->data());
+  }
+  write_buffer_list_.clear();
+  write_buffer_len_list_.clear();
   delegate_->OnDataSent();
 }
 
@@ -200,7 +226,8 @@ void BidirectionalStream::OnBidirectionalStreamImplReady(
 
   stream_request_.reset();
   stream_impl_.reset(stream);
-  stream_impl_->Start(request_info_.get(), net_log_, this, std::move(timer_));
+  stream_impl_->Start(request_info_.get(), net_log_, disable_auto_flush_, this,
+                      std::move(timer_));
 }
 
 void BidirectionalStream::OnWebSocketHandshakeStreamReady(

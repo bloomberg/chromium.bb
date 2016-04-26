@@ -148,11 +148,11 @@ class CronetUrlRequestContext extends CronetEngine {
     @Override
     BidirectionalStream createBidirectionalStream(String url, BidirectionalStream.Callback callback,
             Executor executor, String httpMethod, List<Map.Entry<String, String>> requestHeaders,
-            @BidirectionalStream.Builder.StreamPriority int priority) {
+            @BidirectionalStream.Builder.StreamPriority int priority, boolean disableAutoFlush) {
         synchronized (mLock) {
             checkHaveAdapter();
-            return new CronetBidirectionalStream(
-                    this, url, priority, callback, executor, httpMethod, requestHeaders);
+            return new CronetBidirectionalStream(this, url, priority, callback, executor,
+                    httpMethod, requestHeaders, disableAutoFlush);
         }
     }
 
