@@ -88,7 +88,6 @@ Replaceable
 # Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
 SameObject
-TraceWrappers=*
 SetWrapperReferenceFrom=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow

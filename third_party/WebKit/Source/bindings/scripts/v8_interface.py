@@ -150,11 +150,6 @@ def interface_context(interface):
         has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
         set_wrapper_reference_from or set_wrapper_reference_to)
 
-    # [TraceWrappers]
-    trace_wrappers = extended_attribute_value_as_list(interface, 'TraceWrappers')
-    if trace_wrappers:
-        includes.add('bindings/core/v8/ScriptWrappableVisitor.h')
-
     wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
 
     v8_class_name = v8_utilities.v8_class_name(interface)
@@ -173,7 +168,6 @@ def interface_context(interface):
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_partial_interface': len(interface.partial_interfaces) > 0,
         'has_visit_dom_wrapper': has_visit_dom_wrapper,
-        'trace_wrappers': trace_wrappers,
         'header_includes': header_includes,
         'interface_name': interface.name,
         'is_array_buffer_or_view': is_array_buffer_or_view,
@@ -184,7 +178,7 @@ def interface_context(interface):
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
-        'lifetime': 'Dependent' if (has_visit_dom_wrapper or trace_wrappers or is_dependent_lifetime) else 'Independent',
+        'lifetime': 'Dependent' if (has_visit_dom_wrapper or is_dependent_lifetime) else 'Independent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface, None),
         'parent_interface': parent_interface,

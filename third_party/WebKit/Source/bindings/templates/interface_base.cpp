@@ -186,7 +186,6 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 } // namespace {{cpp_class_or_partial}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
-{% block trace_wrappers %}{% endblock %}
 {##############################################################################}
 {% block install_attributes %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
