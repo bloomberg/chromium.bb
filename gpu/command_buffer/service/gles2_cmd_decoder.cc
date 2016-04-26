@@ -15727,11 +15727,12 @@ error::Error GLES2DecoderImpl::HandlePathParameteriCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilFillPathCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilFillPathCHROMIUM";
   const gles2::cmds::StencilFillPathCHROMIUM& c =
       *static_cast<const gles2::cmds::StencilFillPathCHROMIUM*>(cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
-  PathCommandValidatorContext v(this, "glStencilFillPathCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLenum fill_mode = GL_COUNT_UP_CHROMIUM;
   GLuint mask = 0;
   if (!v.GetFillModeAndMask(c, &fill_mode, &mask))
@@ -15743,6 +15744,8 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathCHROMIUM(
     // This holds for other rendering functions, too.
     return error::kNoError;
   }
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilFillPathNV(service_id, fill_mode, mask);
   return error::kNoError;
@@ -15751,6 +15754,7 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilStrokePathCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilStrokePathCHROMIUM";
   const gles2::cmds::StencilStrokePathCHROMIUM& c =
       *static_cast<const gles2::cmds::StencilStrokePathCHROMIUM*>(cmd_data);
   if (!features().chromium_path_rendering)
@@ -15762,6 +15766,8 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathCHROMIUM(
   }
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilStrokePathNV(service_id, reference, mask);
   return error::kNoError;
@@ -15770,12 +15776,13 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathCHROMIUM(
 error::Error GLES2DecoderImpl::HandleCoverFillPathCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glCoverFillPathCHROMIUM";
   const gles2::cmds::CoverFillPathCHROMIUM& c =
       *static_cast<const gles2::cmds::CoverFillPathCHROMIUM*>(cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glCoverFillPathCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLenum cover_mode = GL_BOUNDING_BOX_CHROMIUM;
   if (!v.GetCoverMode(c, &cover_mode))
     return v.error();
@@ -15783,7 +15790,8 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathCHROMIUM(
   GLuint service_id = 0;
   if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
     return error::kNoError;
-
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glCoverFillPathNV(service_id, cover_mode);
   return error::kNoError;
@@ -15792,12 +15800,13 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathCHROMIUM(
 error::Error GLES2DecoderImpl::HandleCoverStrokePathCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glCoverStrokePathCHROMIUM";
   const gles2::cmds::CoverStrokePathCHROMIUM& c =
       *static_cast<const gles2::cmds::CoverStrokePathCHROMIUM*>(cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glCoverStrokePathCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLenum cover_mode = GL_BOUNDING_BOX_CHROMIUM;
   if (!v.GetCoverMode(c, &cover_mode))
     return v.error();
@@ -15806,6 +15815,8 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathCHROMIUM(
   if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
     return error::kNoError;
 
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glCoverStrokePathNV(service_id, cover_mode);
   return error::kNoError;
@@ -15814,13 +15825,14 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilThenCoverFillPathCHROMIUM";
   const gles2::cmds::StencilThenCoverFillPathCHROMIUM& c =
       *static_cast<const gles2::cmds::StencilThenCoverFillPathCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glStencilThenCoverFillPathCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLenum fill_mode = GL_COUNT_UP_CHROMIUM;
   GLuint mask = 0;
   GLenum cover_mode = GL_BOUNDING_BOX_CHROMIUM;
@@ -15832,6 +15844,8 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathCHROMIUM(
   if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
     return error::kNoError;
 
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverFillPathNV(service_id, fill_mode, mask, cover_mode);
   return error::kNoError;
@@ -15840,13 +15854,14 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilThenCoverStrokePathCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilThenCoverStrokePathCHROMIUM";
   const gles2::cmds::StencilThenCoverStrokePathCHROMIUM& c =
       *static_cast<const gles2::cmds::StencilThenCoverStrokePathCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glStencilThenCoverStrokePathCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLenum cover_mode = GL_BOUNDING_BOX_CHROMIUM;
   if (!v.GetCoverMode(c, &cover_mode))
     return v.error();
@@ -15857,6 +15872,9 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverStrokePathCHROMIUM(
 
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
+
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverStrokePathNV(service_id, reference, mask, cover_mode);
   return error::kNoError;
@@ -15865,13 +15883,14 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverStrokePathCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilFillPathInstancedCHROMIUM";
   const gles2::cmds::StencilFillPathInstancedCHROMIUM& c =
       *static_cast<const gles2::cmds::StencilFillPathInstancedCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glStencilFillPathInstancedCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLuint num_paths = 0;
   GLenum path_name_type = GL_NONE;
   GLenum fill_mode = GL_COUNT_UP_CHROMIUM;
@@ -15893,6 +15912,8 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
                                fill_mode, mask, transform_type, transforms);
@@ -15902,13 +15923,14 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilStrokePathInstancedCHROMIUM";
   const gles2::cmds::StencilStrokePathInstancedCHROMIUM& c =
       *static_cast<const gles2::cmds::StencilStrokePathInstancedCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glStencilStrokePathInstancedCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLuint num_paths = 0;
   GLenum path_name_type = GL_NONE;
   GLenum transform_type = GL_NONE;
@@ -15929,6 +15951,8 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
 
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
                                  reference, mask, transform_type, transforms);
@@ -15938,13 +15962,14 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
 error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glCoverFillPathInstancedCHROMIUM";
   const gles2::cmds::CoverFillPathInstancedCHROMIUM& c =
       *static_cast<const gles2::cmds::CoverFillPathInstancedCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glCoverFillPathInstancedCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLuint num_paths = 0;
   GLenum path_name_type = GL_NONE;
   GLenum cover_mode = GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM;
@@ -15965,6 +15990,8 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
                              cover_mode, transform_type, transforms);
@@ -15974,13 +16001,14 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
 error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] = "glCoverStrokePathInstancedCHROMIUM";
   const gles2::cmds::CoverStrokePathInstancedCHROMIUM& c =
       *static_cast<const gles2::cmds::CoverStrokePathInstancedCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
 
-  PathCommandValidatorContext v(this, "glCoverStrokePathInstancedCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLuint num_paths = 0;
   GLenum path_name_type = GL_NONE;
   GLenum cover_mode = GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM;
@@ -16001,6 +16029,8 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glCoverStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
                                cover_mode, transform_type, transforms);
@@ -16010,14 +16040,16 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
 error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] =
+      "glStencilThenCoverFillPathInstancedCHROMIUM";
   const gles2::cmds::StencilThenCoverFillPathInstancedCHROMIUM& c =
       *static_cast<
           const gles2::cmds::StencilThenCoverFillPathInstancedCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
-  PathCommandValidatorContext v(this,
-                                "glStencilThenCoverFillPathInstancedCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
+
   GLuint num_paths = 0;
   GLenum path_name_type = GL_NONE;
   GLenum fill_mode = GL_COUNT_UP_CHROMIUM;
@@ -16041,6 +16073,8 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(),
                                         0, fill_mode, mask, cover_mode,
@@ -16052,14 +16086,15 @@ error::Error
 GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
+  static const char kFunctionName[] =
+      "glStencilThenCoverStrokeInstancedCHROMIUM";
   const gles2::cmds::StencilThenCoverStrokePathInstancedCHROMIUM& c =
       *static_cast<
           const gles2::cmds::StencilThenCoverStrokePathInstancedCHROMIUM*>(
           cmd_data);
   if (!features().chromium_path_rendering)
     return error::kUnknownCommand;
-  PathCommandValidatorContext v(this,
-                                "glStencilThenCoverStrokeInstancedCHROMIUM");
+  PathCommandValidatorContext v(this, kFunctionName);
   GLuint num_paths = 0;
   GLenum path_name_type = GL_NONE;
   GLenum cover_mode = GL_BOUNDING_BOX_OF_BOUNDING_BOXES_CHROMIUM;
@@ -16082,6 +16117,9 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
 
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
+
+  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+    return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverStrokePathInstancedNV(
       num_paths, GL_UNSIGNED_INT, paths.get(), 0, reference, mask, cover_mode,
