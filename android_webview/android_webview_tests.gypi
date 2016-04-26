@@ -116,7 +116,7 @@
         'java_in_dir': '../android_webview/javatests',
         'is_test_apk': 1,
         'test_type': 'instrumentation',
-        'isolate_file': 'android_webview_test_apk.isolate',
+        'isolate_file': 'android_webview_test_data.isolate',
       },
       'includes': [
         '../build/java_apk.gypi',
@@ -256,7 +256,7 @@
               '../build/isolate.gypi',
             ],
             'sources': [
-              'android_webview_test_apk_run.isolate',
+              'android_webview_test_apk.isolate',
             ],
           },
           {

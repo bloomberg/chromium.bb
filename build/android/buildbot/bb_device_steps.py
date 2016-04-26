@@ -75,7 +75,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'org.chromium.android_webview.shell',
       'AndroidWebViewTest',
       'webview:android_webview/test/data/device_files',
-      isolate_file_path='android_webview/android_webview_test_apk.isolate'),
+      isolate_file_path='android_webview/android_webview_test_data.isolate'),
     I('ChromeSyncShell',
       'ChromeSyncShell.apk',
       'org.chromium.chrome.browser.sync',
