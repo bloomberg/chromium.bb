@@ -132,7 +132,7 @@ void BluetoothControllerPairingController::OnGetAdapter(
 }
 
 void BluetoothControllerPairingController::OnStartDiscoverySession(
-    scoped_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK(thread_checker_.CalledOnValidThread());
   discovery_session_ = std::move(discovery_session);
   ChangeStage(STAGE_DEVICES_DISCOVERY);

@@ -35,11 +35,11 @@ void SafeJsonParserAndroid::Start() {
 void SafeJsonParserAndroid::OnSanitizationSuccess(
     const std::string& sanitized_json) {
   // Self-destruct at the end of this method.
-  scoped_ptr<SafeJsonParserAndroid> deleter(this);
+  std::unique_ptr<SafeJsonParserAndroid> deleter(this);
 
   int error_code;
   std::string error;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       sanitized_json, base::JSON_PARSE_RFC, &error_code, &error);
 
   if (!value) {

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/process_memory_maps.h"
@@ -122,11 +124,11 @@ void CreateAndSetSmapsFileForTesting(const char* smaps_string,
 TEST(ProcessMetricsMemoryDumpProviderTest, DumpRSS) {
   const base::trace_event::MemoryDumpArgs high_detail_args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-  scoped_ptr<ProcessMetricsMemoryDumpProvider> pmtdp(
+  std::unique_ptr<ProcessMetricsMemoryDumpProvider> pmtdp(
       new ProcessMetricsMemoryDumpProvider(base::kNullProcessId));
-  scoped_ptr<base::trace_event::ProcessMemoryDump> pmd_before(
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd_before(
       new base::trace_event::ProcessMemoryDump(nullptr));
-  scoped_ptr<base::trace_event::ProcessMemoryDump> pmd_after(
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd_after(
       new base::trace_event::ProcessMemoryDump(nullptr));
 
   ProcessMetricsMemoryDumpProvider::rss_bytes_for_testing = 1024;
@@ -164,7 +166,7 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   const base::trace_event::MemoryDumpArgs dump_args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
-  scoped_ptr<ProcessMetricsMemoryDumpProvider> pmmdp(
+  std::unique_ptr<ProcessMetricsMemoryDumpProvider> pmmdp(
       new ProcessMetricsMemoryDumpProvider(base::kNullProcessId));
 
   // Emulate an empty /proc/self/smaps.

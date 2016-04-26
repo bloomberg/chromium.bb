@@ -4,6 +4,8 @@
 
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/string_escape.h"
@@ -309,7 +311,7 @@ void LoadablePluginPlaceholder::DidFinishIconRepositionForTestingCallback() {
   blink::WebElement element = plugin()->container()->element();
   element.setAttribute("placeholderReady", "true");
 
-  scoped_ptr<content::V8ValueConverter> converter(
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   base::StringValue value("placeholderReady");
   blink::WebSerializedScriptValue message_data =

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_TOOLKIT_DELEGATE_VIEWS_H_
 #define COMPONENTS_RENDERER_CONTEXT_MENU_RENDER_TOOLKIT_DELEGATE_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "ui/base/ui_base_types.h"
@@ -42,8 +44,8 @@ class ToolkitDelegateViews : public RenderViewContextMenuBase::ToolkitDelegate {
                       bool hidden,
                       const base::string16& title) override;
 
-  scoped_ptr<views::MenuModelAdapter> menu_adapter_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // Weak. Owned by menu_runner_;
   views::MenuItemView* menu_view_;

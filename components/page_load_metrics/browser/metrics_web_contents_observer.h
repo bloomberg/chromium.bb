@@ -6,6 +6,7 @@
 #define COMPONENTS_PAGE_LOAD_METRICS_BROWSER_METRICS_WEB_CONTENTS_OBSERVER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -138,7 +139,7 @@ class PageLoadTracker {
   UserAbortType abort_type() const { return abort_type_; }
   base::TimeTicks abort_time() const { return abort_time_; }
 
-  void AddObserver(scoped_ptr<PageLoadMetricsObserver> observer);
+  void AddObserver(std::unique_ptr<PageLoadMetricsObserver> observer);
 
   // If the user performs some abort-like action while we are tracking this page
   // load, notify the tracker. Note that we may not classify this as an abort if
@@ -216,7 +217,7 @@ class PageLoadTracker {
   // Interface to chrome features. Must outlive the class.
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
 
-  std::vector<scoped_ptr<PageLoadMetricsObserver>> observers_;
+  std::vector<std::unique_ptr<PageLoadMetricsObserver>> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
@@ -231,10 +232,10 @@ class MetricsWebContentsObserver
   // Note that the returned metrics is owned by the web contents.
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
-      scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
+      std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   MetricsWebContentsObserver(
       content::WebContents* web_contents,
-      scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
+      std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
 
   // content::WebContentsObserver implementation:
@@ -263,7 +264,7 @@ class MetricsWebContentsObserver
   // used for more consistent attribution tracking for aborted provisional
   // loads. This method returns the provisional load that was likely aborted by
   // this navigation, to help instantiate the new PageLoadTracker.
-  scoped_ptr<PageLoadTracker> NotifyAbortedProvisionalLoadsNewNavigation(
+  std::unique_ptr<PageLoadTracker> NotifyAbortedProvisionalLoadsNewNavigation(
       content::NavigationHandle* new_navigation);
 
   void OnTimingUpdated(content::RenderFrameHost*,
@@ -275,13 +276,13 @@ class MetricsWebContentsObserver
 
   // The PageLoadTrackers must be deleted before the |embedded_interface_|,
   // because they hold a pointer to the |embedder_interface_|.
-  scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface_;
+  std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface_;
 
   // This map tracks all of the navigations ongoing that are not committed
   // yet. Once a navigation is committed, it moves from the map to
   // committed_load_. Note that a PageLoadTrackers NavigationHandle is only
   // valid until commit time, when we remove it from the map.
-  std::map<content::NavigationHandle*, scoped_ptr<PageLoadTracker>>
+  std::map<content::NavigationHandle*, std::unique_ptr<PageLoadTracker>>
       provisional_loads_;
 
   // Tracks aborted provisional loads for a little bit longer than usual (one
@@ -289,9 +290,9 @@ class MetricsWebContentsObserver
   // navigation failed. This is because most provisional loads are destroyed and
   // vanish before we get signal about what caused the abort (new navigation,
   // stop button, etc.).
-  std::vector<scoped_ptr<PageLoadTracker>> aborted_provisional_loads_;
+  std::vector<std::unique_ptr<PageLoadTracker>> aborted_provisional_loads_;
 
-  scoped_ptr<PageLoadTracker> committed_load_;
+  std::unique_ptr<PageLoadTracker> committed_load_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };

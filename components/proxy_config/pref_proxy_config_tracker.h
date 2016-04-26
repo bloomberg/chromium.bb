@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_
 #define COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/proxy_config/proxy_config_export.h"
 
 namespace net {
@@ -29,8 +30,9 @@ class PROXY_CONFIG_EXPORT PrefProxyConfigTracker {
   // |base_service|, which can be NULL. This |base_service| provides the proxy
   // settings of the OS (except of ChromeOS). This must be called on the
   // UI thread.
-  virtual scoped_ptr<net::ProxyConfigService> CreateTrackingProxyConfigService(
-      scoped_ptr<net::ProxyConfigService> base_service) = 0;
+  virtual std::unique_ptr<net::ProxyConfigService>
+  CreateTrackingProxyConfigService(
+      std::unique_ptr<net::ProxyConfigService> base_service) = 0;
 
   // Releases the PrefService passed upon construction and the |base_service|
   // passed to CreateTrackingProxyConfigService. This must be called on the UI

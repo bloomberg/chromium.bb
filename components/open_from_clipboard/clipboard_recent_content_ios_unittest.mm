@@ -6,7 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -58,7 +59,7 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<ClipboardRecentContentIOS> clipboard_content_;
+  std::unique_ptr<ClipboardRecentContentIOS> clipboard_content_;
 };
 
 TEST_F(ClipboardRecentContentIOSTest, SchemeFiltering) {

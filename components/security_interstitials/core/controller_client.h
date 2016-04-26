@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SECURITY_INTERSTITIALS_CORE_CONTROLLER_CLIENT_H_
 #define COMPONENTS_SECURITY_INTERSTITIALS_CORE_CONTROLLER_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 class PrefService;
@@ -76,7 +76,7 @@ class ControllerClient {
   virtual void Reload() = 0;
 
   MetricsHelper* metrics_helper() const;
-  void set_metrics_helper(scoped_ptr<MetricsHelper> metrics_helper);
+  void set_metrics_helper(std::unique_ptr<MetricsHelper> metrics_helper);
 
   virtual void OpenUrlInCurrentTab(const GURL& url) = 0;
 
@@ -86,7 +86,7 @@ class ControllerClient {
   virtual const std::string GetExtendedReportingPrefName() = 0;
 
  private:
-  scoped_ptr<MetricsHelper> metrics_helper_;
+  std::unique_ptr<MetricsHelper> metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerClient);
 };

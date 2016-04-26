@@ -6,11 +6,11 @@
 #define COMPONENTS_RAPPOR_SAMPLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/rappor/rappor_parameters.h"
 #include "components/rappor/sample.h"
 
@@ -30,7 +30,8 @@ class Sampler {
 
   // Store this sample for metric name, randomly selecting a sample if
   // others have already been recorded.
-  void AddSample(const std::string& metric_name, scoped_ptr<Sample> sample);
+  void AddSample(const std::string& metric_name,
+                 std::unique_ptr<Sample> sample);
 
   // Generate randomized reports for all stored samples and store them
   // in |reports|, then discard the samples.
@@ -41,7 +42,7 @@ class Sampler {
   std::map<std::string, int> sample_counts_;
 
   // Stores a Sample for each metric, by metric name.
-  base::ScopedPtrHashMap<std::string, scoped_ptr<Sample>> samples_;
+  base::ScopedPtrHashMap<std::string, std::unique_ptr<Sample>> samples_;
 
   DISALLOW_COPY_AND_ASSIGN(Sampler);
 };

@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_TIMERS_ALARM_TIMER_CHROMEOS_H_
 #define COMPONENTS_TIMERS_ALARM_TIMER_CHROMEOS_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -68,7 +69,7 @@ class AlarmTimer : public base::Timer {
 
   // Keeps track of the user task we want to run.  A new one is constructed
   // every time Reset() is called.
-  scoped_ptr<base::PendingTask> pending_task_;
+  std::unique_ptr<base::PendingTask> pending_task_;
 
   // Tracks whether the timer has the ability to wake the system up from
   // suspend.  This is a runtime check because we won't know if the system
@@ -83,7 +84,7 @@ class AlarmTimer : public base::Timer {
   // Observes |origin_message_loop_| and informs this class if it will be
   // destroyed.
   class MessageLoopObserver;
-  scoped_ptr<MessageLoopObserver> message_loop_observer_;
+  std::unique_ptr<MessageLoopObserver> message_loop_observer_;
 
   base::WeakPtrFactory<AlarmTimer> weak_factory_;
 

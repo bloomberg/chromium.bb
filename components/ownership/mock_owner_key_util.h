@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/ownership/ownership_export.h"
 
@@ -46,7 +46,7 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   void SetPublicKeyFromPrivateKey(const crypto::RSAPrivateKey& key);
 
   // Sets the private key (also configures the public key).
-  void SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key);
+  void SetPrivateKey(std::unique_ptr<crypto::RSAPrivateKey> key);
 
  private:
   ~MockOwnerKeyUtil() override;

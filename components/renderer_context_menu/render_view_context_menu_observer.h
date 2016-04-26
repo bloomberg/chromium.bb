@@ -59,12 +59,13 @@ struct ContextMenuParams;
 //  }
 //
 // 4. Add this observer class to the RenderViewContextMenu class. (It is good
-// to use scoped_ptr<> so Chrome can create its instances only when it needs.)
+// to use std::unique_ptr<> so Chrome can create its instances only when it
+// needs.)
 //
 //  class RenderViewContextMenu {
 //    ...
 //   private:
-//    scoped_ptr<MyMenuObserver> my_menu_observer_;
+//    std::unique_ptr<MyMenuObserver> my_menu_observer_;
 //  };
 //
 // 5. Create its instance in InitMenu() and add it to the observer list of the

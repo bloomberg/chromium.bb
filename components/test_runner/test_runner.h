@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/test_runner/layout_test_runtime_flags.h"
 #include "components/test_runner/test_runner_export.h"
@@ -750,7 +750,7 @@ class TestRunner : public WebTestRunner {
   blink::WebFrame* top_loading_frame_;
 
   // WebContentSettingsClient mock object.
-  scoped_ptr<MockContentSettingsClient> mock_content_settings_client_;
+  std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;
 
   bool pointer_locked_;
   enum {
@@ -760,11 +760,11 @@ class TestRunner : public WebTestRunner {
   } pointer_lock_planned_result_;
   bool use_mock_theme_;
 
-  scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
-  scoped_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
-  scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
-  scoped_ptr<MockWebUserMediaClient> user_media_client_;
-  scoped_ptr<SpellCheckClient> spellcheck_;
+  std::unique_ptr<MockCredentialManagerClient> credential_manager_client_;
+  std::unique_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
+  std::unique_ptr<MockWebSpeechRecognizer> speech_recognizer_;
+  std::unique_ptr<MockWebUserMediaClient> user_media_client_;
+  std::unique_ptr<SpellCheckClient> spellcheck_;
 
   // Number of currently active color choosers.
   int chooser_count_;

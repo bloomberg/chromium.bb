@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -149,7 +149,7 @@ class PrecacheManager : public KeyedService,
 
   // The PrecacheFetcher used to precache resources. Should only be used on the
   // UI thread.
-  scoped_ptr<PrecacheFetcher> precache_fetcher_;
+  std::unique_ptr<PrecacheFetcher> precache_fetcher_;
 
   // The callback that will be run if precaching finishes without being
   // canceled.
@@ -157,7 +157,7 @@ class PrecacheManager : public KeyedService,
 
   // The PrecacheDatabase for tracking precache metrics. Should only be used on
   // the DB thread.
-  scoped_ptr<PrecacheDatabase> precache_database_;
+  std::unique_ptr<PrecacheDatabase> precache_database_;
 
   // Flag indicating whether or not precaching is currently in progress.
   bool is_precaching_;

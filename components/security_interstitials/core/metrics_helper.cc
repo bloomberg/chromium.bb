@@ -4,6 +4,7 @@
 
 #include "components/security_interstitials/core/metrics_helper.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/metrics/histogram.h"
@@ -166,7 +167,7 @@ void MetricsHelper::RecordUserDecisionToRappor(Decision decision) {
   if (!rappor_service_ || (decision != PROCEED && decision != DONT_PROCEED))
     return;
 
-  scoped_ptr<rappor::Sample> sample =
+  std::unique_ptr<rappor::Sample> sample =
       rappor_service_->CreateSample(settings_.rappor_report_type);
 
   // This will populate, for example, "intersitial.malware.domain" or

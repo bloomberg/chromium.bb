@@ -871,12 +871,12 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
 }
 
 // static
-scoped_ptr<BookmarkNode::MetaInfoMap>
+std::unique_ptr<BookmarkNode::MetaInfoMap>
 BookmarkChangeProcessor::GetBookmarkMetaInfo(
     const syncer::BaseNode* sync_node) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
-  scoped_ptr<BookmarkNode::MetaInfoMap> meta_info_map(
+  std::unique_ptr<BookmarkNode::MetaInfoMap> meta_info_map(
       new BookmarkNode::MetaInfoMap);
   for (int i = 0; i < specifics.meta_info_size(); ++i) {
     (*meta_info_map)[specifics.meta_info(i).key()] =

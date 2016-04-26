@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 #define COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/session_manager/session_manager_export.h"
 
 namespace session_manager {
@@ -73,7 +74,7 @@ class SESSION_EXPORT SessionManager {
   static SessionManager* instance;
 
   SessionState session_state_;
-  scoped_ptr<SessionManagerDelegate> delegate_;
+  std::unique_ptr<SessionManagerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };

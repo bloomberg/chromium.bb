@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_RAPPOR_LOG_UPLOADER_H_
 #define COMPONENTS_RAPPOR_LOG_UPLOADER_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/rappor/log_uploader_interface.h"
@@ -90,7 +90,7 @@ class LogUploader : public net::URLFetcherDelegate,
   bool is_running_;
 
   // The outstanding transmission that appears as a URL Fetch operation.
-  scoped_ptr<net::URLFetcher> current_fetch_;
+  std::unique_ptr<net::URLFetcher> current_fetch_;
 
   // The logs that still need to be uploaded.
   std::queue<std::string> queued_logs_;

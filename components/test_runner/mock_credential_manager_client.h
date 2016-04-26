@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_TEST_RUNNER_MOCK_CREDENTIAL_MANAGER_CLIENT_H_
 #define COMPONENTS_TEST_RUNNER_MOCK_CREDENTIAL_MANAGER_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -38,7 +39,7 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
                    RequestCallbacks* callbacks) override;
 
  private:
-  scoped_ptr<blink::WebCredential> credential_;
+  std::unique_ptr<blink::WebCredential> credential_;
   blink::WebCredentialManagerError error_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCredentialManagerClient);

@@ -52,7 +52,8 @@ void MockOwnerKeyUtil::SetPublicKeyFromPrivateKey(
   CHECK(key.ExportPublicKey(&public_key_));
 }
 
-void MockOwnerKeyUtil::SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key) {
+void MockOwnerKeyUtil::SetPrivateKey(
+    std::unique_ptr<crypto::RSAPrivateKey> key) {
   crypto::EnsureNSSInit();
 
   CHECK(key->ExportPublicKey(&public_key_));

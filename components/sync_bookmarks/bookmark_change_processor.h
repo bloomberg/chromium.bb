@@ -187,8 +187,8 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   };
 
   // Retrieves the meta info from the given sync node.
-  static scoped_ptr<bookmarks::BookmarkNode::MetaInfoMap> GetBookmarkMetaInfo(
-      const syncer::BaseNode* sync_node);
+  static std::unique_ptr<bookmarks::BookmarkNode::MetaInfoMap>
+  GetBookmarkMetaInfo(const syncer::BaseNode* sync_node);
 
   // Sets the meta info of the given sync node from the given bookmark node.
   static void SetSyncNodeMetaInfo(const bookmarks::BookmarkNode* node,

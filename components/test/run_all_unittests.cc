@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -133,7 +134,7 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
 
  private:
 #if !defined(OS_IOS)
-  scoped_ptr<content::TestContentClientInitializer> content_initializer_;
+  std::unique_ptr<content::TestContentClientInitializer> content_initializer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ComponentsUnitTestEventListener);

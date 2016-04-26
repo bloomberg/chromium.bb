@@ -5,6 +5,7 @@
 #include "components/ssl_errors/error_classification.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -189,8 +190,8 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
   TestingPrefServiceSimple pref_service;
   network_time::NetworkTimeTracker::RegisterPrefs(pref_service.registry());
   network_time::NetworkTimeTracker network_time_tracker(
-      make_scoped_ptr(new base::DefaultClock()),
-      make_scoped_ptr(new base::DefaultTickClock()), &pref_service);
+      base::WrapUnique(new base::DefaultClock()),
+      base::WrapUnique(new base::DefaultTickClock()), &pref_service);
   EXPECT_EQ(
       ssl_errors::ClockState::CLOCK_STATE_UNKNOWN,
       ssl_errors::GetClockState(base::Time::Now(), &network_time_tracker));

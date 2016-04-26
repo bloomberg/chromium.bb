@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
@@ -350,7 +351,7 @@ const char kChromeMainTicksEnvVar[] = "CHROME_MAIN_TICKS";
 
 // Returns the time of main entry recorded from RecordExeMainEntryTime.
 base::TimeTicks ExeMainEntryPointTicks() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string ticks_string;
   int64_t time_int = 0;
   if (env->GetVar(kChromeMainTicksEnvVar, &ticks_string) &&
@@ -537,7 +538,7 @@ void RecordMainEntryPointTime(const base::Time& time) {
 void RecordExeMainEntryPointTime(const base::Time& time) {
   const std::string exe_load_ticks =
       base::Int64ToString(StartupTimeToTimeTicks(time).ToInternalValue());
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(kChromeMainTicksEnvVar, exe_load_ticks);
 }
 

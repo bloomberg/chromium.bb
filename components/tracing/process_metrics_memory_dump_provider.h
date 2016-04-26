@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_TRACING_PROCESS_MEMORY_METRICS_DUMP_PROVIDER_H_
 #define COMPONENTS_TRACING_PROCESS_MEMORY_METRICS_DUMP_PROVIDER_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
@@ -52,7 +53,7 @@ class TRACING_EXPORT ProcessMetricsMemoryDumpProvider
 #endif
 
   base::ProcessId process_;
-  scoped_ptr<base::ProcessMetrics> process_metrics_;
+  std::unique_ptr<base::ProcessMetrics> process_metrics_;
 
   // The peak may not be resettable on all the processes if the linux kernel is
   // older than http://bit.ly/reset_rss or only on child processes if yama LSM

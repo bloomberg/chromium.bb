@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/test_runner/test_runner_export.h"
 
 namespace blink {
@@ -62,7 +62,7 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   blink::WebAudioDevice* CreateAudioDevice(double sample_rate);
 
-  scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient();
+  std::unique_ptr<blink::WebAppBannerClient> CreateAppBannerClient();
 
   TestInterfaces* GetTestInterfaces();
 
@@ -70,21 +70,21 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // forwarding javascript console output to the test harness).  The caller
   // should guarantee that the returned object won't be used beyond the lifetime
   // of WebTestInterfaces and/or the lifetime of |web_test_proxy_base|.
-  scoped_ptr<WebFrameTestClient> CreateWebFrameTestClient(
+  std::unique_ptr<WebFrameTestClient> CreateWebFrameTestClient(
       WebTestProxyBase* web_test_proxy_base);
 
   // Creates a WebViewClient implementation providing test behavior (i.e.
   // providing a mocked speech recognizer).  The caller should guarantee that
   // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
   // and/or the lifetime of |web_test_proxy_base|.
-  scoped_ptr<WebViewTestClient> CreateWebViewTestClient(
+  std::unique_ptr<WebViewTestClient> CreateWebViewTestClient(
       WebTestProxyBase* web_test_proxy_base);
 
   // Gets a list of currently opened windows created by the current test.
   std::vector<blink::WebView*> GetWindowList();
 
  private:
-  scoped_ptr<TestInterfaces> interfaces_;
+  std::unique_ptr<TestInterfaces> interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestInterfaces);
 };

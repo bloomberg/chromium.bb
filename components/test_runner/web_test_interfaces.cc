@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/mock_web_audio_device.h"
 #include "components/test_runner/mock_web_media_stream_center.h"
@@ -80,24 +81,24 @@ WebAudioDevice* WebTestInterfaces::CreateAudioDevice(double sample_rate) {
   return new MockWebAudioDevice(sample_rate);
 }
 
-scoped_ptr<blink::WebAppBannerClient>
+std::unique_ptr<blink::WebAppBannerClient>
 WebTestInterfaces::CreateAppBannerClient() {
-  scoped_ptr<AppBannerClient> client(new AppBannerClient);
+  std::unique_ptr<AppBannerClient> client(new AppBannerClient);
   interfaces_->SetAppBannerClient(client.get());
   return std::move(client);
 }
 
-scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
+std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
     WebTestProxyBase* web_test_proxy_base) {
-  return make_scoped_ptr(new WebFrameTestClient(interfaces_->GetTestRunner(),
-                                                interfaces_->GetDelegate(),
-                                                web_test_proxy_base));
+  return base::WrapUnique(new WebFrameTestClient(interfaces_->GetTestRunner(),
+                                                 interfaces_->GetDelegate(),
+                                                 web_test_proxy_base));
 }
 
-scoped_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
+std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
     WebTestProxyBase* web_test_proxy_base) {
-  return make_scoped_ptr(new WebViewTestClient(interfaces_->GetTestRunner(),
-                                               web_test_proxy_base));
+  return base::WrapUnique(
+      new WebViewTestClient(interfaces_->GetTestRunner(), web_test_proxy_base));
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {

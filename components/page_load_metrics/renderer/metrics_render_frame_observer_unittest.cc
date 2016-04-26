@@ -4,9 +4,10 @@
 
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
@@ -45,7 +46,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
     ON_CALL(*this, HasNoRenderFrame()).WillByDefault(Return(false));
   }
 
-  scoped_ptr<base::Timer> CreateTimer() const override {
+  std::unique_ptr<base::Timer> CreateTimer() const override {
     if (!mock_timer_)
       ADD_FAILURE() << "CreateTimer() called, but no MockTimer available.";
     return std::move(mock_timer_);
@@ -59,7 +60,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
     return true;
   }
 
-  void set_mock_timer(scoped_ptr<base::Timer> timer) {
+  void set_mock_timer(std::unique_ptr<base::Timer> timer) {
     ASSERT_EQ(nullptr, mock_timer_);
     mock_timer_ = std::move(timer);
   }
@@ -71,7 +72,7 @@ class MockMetricsRenderFrameObserver : public MetricsRenderFrameObserver {
 
  private:
   StrictMock<MockIPCInterceptor> interceptor_;
-  mutable scoped_ptr<base::Timer> mock_timer_;
+  mutable std::unique_ptr<base::Timer> mock_timer_;
 };
 
 typedef testing::Test MetricsRenderFrameObserverTest;
@@ -79,7 +80,7 @@ typedef testing::Test MetricsRenderFrameObserverTest;
 TEST_F(MetricsRenderFrameObserverTest, NoMetrics) {
   NiceMock<MockMetricsRenderFrameObserver> observer;
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
-  observer.set_mock_timer(make_scoped_ptr(mock_timer));
+  observer.set_mock_timer(base::WrapUnique(mock_timer));
   observer.DidCommitProvisionalLoad(true, false);
 
   EXPECT_CALL(observer, GetTiming()).WillRepeatedly(Return(PageLoadTiming()));
@@ -93,7 +94,7 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
 
   NiceMock<MockMetricsRenderFrameObserver> observer;
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
-  observer.set_mock_timer(make_scoped_ptr(mock_timer));
+  observer.set_mock_timer(base::WrapUnique(mock_timer));
   observer.DidCommitProvisionalLoad(true, false);
 
   PageLoadTiming timing;
@@ -116,7 +117,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
 
   NiceMock<MockMetricsRenderFrameObserver> observer;
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
-  observer.set_mock_timer(make_scoped_ptr(mock_timer));
+  observer.set_mock_timer(base::WrapUnique(mock_timer));
   observer.DidCommitProvisionalLoad(true, false);
 
   PageLoadTiming timing;
@@ -163,7 +164,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
 
   NiceMock<MockMetricsRenderFrameObserver> observer;
   base::MockTimer* mock_timer = new base::MockTimer(false, false);
-  observer.set_mock_timer(make_scoped_ptr(mock_timer));
+  observer.set_mock_timer(base::WrapUnique(mock_timer));
   observer.DidCommitProvisionalLoad(true, false);
 
   PageLoadTiming timing;
@@ -193,7 +194,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   timing_2.load_event_start = load_event_2;
 
   base::MockTimer* mock_timer2 = new base::MockTimer(false, false);
-  observer.set_mock_timer(make_scoped_ptr(mock_timer2));
+  observer.set_mock_timer(base::WrapUnique(mock_timer2));
   observer.DidCommitProvisionalLoad(true, false);
   EXPECT_CALL(*observer.ipc_interceptor(),
               OnTimingUpdated(timing, PageLoadMetadata()));

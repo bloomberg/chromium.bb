@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ssl_config/ssl_config_service_manager.h"
-
+#include <memory>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/ssl_config/ssl_config_switches.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
@@ -37,7 +36,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());
@@ -55,7 +54,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());
@@ -91,7 +90,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());
@@ -129,7 +128,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());
@@ -165,7 +164,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoSSL3) {
                           new base::StringValue("ssl3"));
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());
@@ -187,7 +186,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoTLS1Fallback) {
                           new base::StringValue("tls1"));
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   ASSERT_TRUE(config_manager.get());
@@ -204,7 +203,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoTLS1Fallback) {
 TEST_F(SSLConfigServiceManagerPrefTest, TLSFallbackFeature) {
   // Toggle the feature.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine("SSLVersionFallbackTLSv1.1",
                                           std::string());
   base::FeatureList::SetInstance(std::move(feature_list));
@@ -212,7 +211,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLSFallbackFeature) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
 
-  scoped_ptr<SSLConfigServiceManager> config_manager(
+  std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(
           &local_state, base::ThreadTaskRunnerHandle::Get()));
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());

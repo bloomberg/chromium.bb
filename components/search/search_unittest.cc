@@ -4,7 +4,8 @@
 
 #include "components/search/search.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/metrics/field_trial.h"
 #include "base/metrics/statistics_recorder.h"
 #include "build/build_config.h"
@@ -22,7 +23,7 @@ class EmbeddedSearchFieldTrialTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 TEST_F(EmbeddedSearchFieldTrialTest, GetFieldTrialInfoEmptyAndValid) {

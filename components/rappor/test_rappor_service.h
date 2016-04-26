@@ -58,9 +58,9 @@ class TestRapporService : public RapporService {
   ~TestRapporService() override;
 
   // RapporService:
-  scoped_ptr<Sample> CreateSample(RapporType type) override;
+  std::unique_ptr<Sample> CreateSample(RapporType type) override;
   void RecordSampleObj(const std::string& metric_name,
-                       scoped_ptr<Sample> sample) override;
+                       std::unique_ptr<Sample> sample) override;
   void RecordSample(const std::string& metric_name,
                     RapporType type,
                     const std::string& sample) override;

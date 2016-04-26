@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PRECACHE_CORE_FETCHER_POOL_H_
 #define COMPONENTS_PRECACHE_CORE_FETCHER_POOL_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace precache {
 
@@ -42,7 +42,7 @@ class FetcherPool {
 
   // Takes ownership and adds the given |element| to the pool.
   // The element will live until its deletion.
-  void Add(scoped_ptr<T> element) {
+  void Add(std::unique_ptr<T> element) {
     DCHECK(IsAvailable()) << "FetcherPool size exceeded. "
                              "Did you check IsAvailable?";
     DCHECK(element) << "The element cannot be null.";
@@ -69,7 +69,7 @@ class FetcherPool {
 
  private:
   const size_t max_size_;
-  std::unordered_map<const T*, scoped_ptr<T>> elements_;
+  std::unordered_map<const T*, std::unique_ptr<T>> elements_;
 
   DISALLOW_COPY_AND_ASSIGN(FetcherPool);
 };

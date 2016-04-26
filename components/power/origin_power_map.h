@@ -6,10 +6,10 @@
 #define COMPONENTS_POWER_ORIGIN_POWER_MAP_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -38,7 +38,7 @@ class OriginPowerMap : public KeyedService {
   PercentOriginMap GetPercentOriginMap();
 
   // Adds a callback for the completion of a round of updates to |origin_map_|.
-  scoped_ptr<Subscription> AddPowerConsumptionUpdatedCallback(
+  std::unique_ptr<Subscription> AddPowerConsumptionUpdatedCallback(
       const base::Closure& callback);
 
   // Notifies observers to let them know that the origin power map has finished

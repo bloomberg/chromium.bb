@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/precache/core/precache_url_table.h"
@@ -90,7 +90,7 @@ class PrecacheDatabase {
   // posted.
   void MaybePostFlush();
 
-  scoped_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::Connection> db_;
 
   // Table that keeps track of URLs that are in the cache because of precaching,
   // and wouldn't be in the cache otherwise. If |buffered_writes_| is non-empty,

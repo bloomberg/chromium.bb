@@ -4,6 +4,7 @@
 
 #include "components/rappor/sampler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/metrics/metrics_hashes.h"
@@ -22,8 +23,8 @@ const RapporParameters kTestRapporParameters = {
 
 class TestSamplerFactory {
  public:
-  static scoped_ptr<Sample> CreateSample() {
-    return scoped_ptr<Sample>(new Sample(0, kTestRapporParameters));
+  static std::unique_ptr<Sample> CreateSample() {
+    return std::unique_ptr<Sample>(new Sample(0, kTestRapporParameters));
   }
 };
 
@@ -33,11 +34,11 @@ namespace internal {
 TEST(RapporSamplerTest, TestExport) {
   Sampler sampler;
 
-  scoped_ptr<Sample> sample1 = TestSamplerFactory::CreateSample();
+  std::unique_ptr<Sample> sample1 = TestSamplerFactory::CreateSample();
   sample1->SetStringField("Foo", "Junk");
   sampler.AddSample("Metric1", std::move(sample1));
 
-  scoped_ptr<Sample> sample2 = TestSamplerFactory::CreateSample();
+  std::unique_ptr<Sample> sample2 = TestSamplerFactory::CreateSample();
   sample2->SetStringField("Foo", "Junk2");
   sampler.AddSample("Metric1", std::move(sample2));
 
@@ -59,7 +60,7 @@ TEST(RapporSamplerTest, TestExport) {
 TEST(RapporSamplerTest, TestNoNoise) {
   Sampler sampler;
 
-  scoped_ptr<Sample> sample1 = TestSamplerFactory::CreateSample();
+  std::unique_ptr<Sample> sample1 = TestSamplerFactory::CreateSample();
   sample1->SetFlagsField("Foo", 0xde, 8, NO_NOISE);
   sample1->SetUInt64Field("Bar", 0x0011223344aabbccdd, NO_NOISE);
   sampler.AddSample("Metric1", std::move(sample1));

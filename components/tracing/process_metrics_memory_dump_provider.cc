@@ -14,6 +14,7 @@
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -28,8 +29,9 @@ namespace tracing {
 namespace {
 
 base::LazyInstance<
-    std::map<base::ProcessId, scoped_ptr<ProcessMetricsMemoryDumpProvider>>>::
-    Leaky g_dump_providers_map = LAZY_INSTANCE_INITIALIZER;
+    std::map<base::ProcessId,
+             std::unique_ptr<ProcessMetricsMemoryDumpProvider>>>::Leaky
+    g_dump_providers_map = LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 const char kClearPeakRssCommand[] = "5";
@@ -155,19 +157,21 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-scoped_ptr<base::ProcessMetrics> CreateProcessMetrics(base::ProcessId process) {
+std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
+    base::ProcessId process) {
   if (process == base::kNullProcessId)
-    return make_scoped_ptr(base::ProcessMetrics::CreateCurrentProcessMetrics());
+    return base::WrapUnique(
+        base::ProcessMetrics::CreateCurrentProcessMetrics());
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Just pass ProcessId instead of handle since they are the same in linux and
   // android.
-  return make_scoped_ptr(base::ProcessMetrics::CreateProcessMetrics(process));
+  return base::WrapUnique(base::ProcessMetrics::CreateProcessMetrics(process));
 #else
   // Creating process metrics for child processes in mac or windows requires
   // additional information like ProcessHandle or port provider. This is a non
   // needed use case.
   NOTREACHED();
-  return scoped_ptr<base::ProcessMetrics>();
+  return std::unique_ptr<base::ProcessMetrics>();
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 }
 
@@ -205,7 +209,7 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
 // static
 void ProcessMetricsMemoryDumpProvider::RegisterForProcess(
     base::ProcessId process) {
-  scoped_ptr<ProcessMetricsMemoryDumpProvider> metrics_provider(
+  std::unique_ptr<ProcessMetricsMemoryDumpProvider> metrics_provider(
       new ProcessMetricsMemoryDumpProvider(process));
   base::trace_event::MemoryDumpProvider::Options options;
   options.target_pid = process;

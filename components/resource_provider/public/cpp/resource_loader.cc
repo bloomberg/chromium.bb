@@ -51,7 +51,7 @@ bool ResourceLoader::BlockUntilLoaded() {
 
 base::File ResourceLoader::ReleaseFile(const std::string& path) {
   CHECK(resource_map_.count(path));
-  scoped_ptr<base::File> file_wrapper(std::move(resource_map_[path]));
+  std::unique_ptr<base::File> file_wrapper(std::move(resource_map_[path]));
   resource_map_.erase(path);
   return std::move(*file_wrapper);
 }

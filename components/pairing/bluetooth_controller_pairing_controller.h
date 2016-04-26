@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/pairing/controller_pairing_controller.h"
@@ -46,7 +46,7 @@ class BluetoothControllerPairingController
   void OnSetPowered();
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
   void OnStartDiscoverySession(
-      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
   void OnConnect();
   void OnConnectToService(scoped_refptr<device::BluetoothSocket> socket);
   void OnSendComplete(int bytes_sent);
@@ -108,14 +108,14 @@ class BluetoothControllerPairingController
 
   Stage current_stage_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
+  std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
   scoped_refptr<device::BluetoothSocket> socket_;
   std::string controller_device_id_;
 
   std::string confirmation_code_;
   std::set<std::string> discovered_devices_;
 
-  scoped_ptr<ProtoDecoder> proto_decoder_;
+  std::unique_ptr<ProtoDecoder> proto_decoder_;
 
   base::ThreadChecker thread_checker_;
   base::ObserverList<ControllerPairingController::Observer> observers_;

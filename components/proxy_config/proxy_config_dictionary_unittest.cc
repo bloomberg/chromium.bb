@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/proxy_config/proxy_config_dictionary.h"
+
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "components/proxy_config/proxy_config_dictionary.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 struct ProxyConfigHolder {
@@ -17,7 +18,7 @@ struct ProxyConfigHolder {
 };
 
 TEST(ProxyConfigDictionaryTest, CreateDirect) {
-  scoped_ptr<base::DictionaryValue> dict_value(
+  std::unique_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreateDirect());
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
@@ -30,7 +31,7 @@ TEST(ProxyConfigDictionaryTest, CreateDirect) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
-  scoped_ptr<base::DictionaryValue> dict_value(
+  std::unique_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreateAutoDetect());
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
@@ -43,7 +44,7 @@ TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreatePacScript) {
-  scoped_ptr<base::DictionaryValue> dict_value(
+  std::unique_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreatePacScript("pac", false));
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
@@ -57,7 +58,7 @@ TEST(ProxyConfigDictionaryTest, CreatePacScript) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateFixedServers) {
-  scoped_ptr<base::DictionaryValue> dict_value(
+  std::unique_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreateFixedServers("http://1.2.3.4",
                                                 "http://foo"));
   ProxyConfigDictionary dict(dict_value.get());
@@ -73,7 +74,7 @@ TEST(ProxyConfigDictionaryTest, CreateFixedServers) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateSystem) {
-  scoped_ptr<base::DictionaryValue> dict_value(
+  std::unique_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreateSystem());
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;

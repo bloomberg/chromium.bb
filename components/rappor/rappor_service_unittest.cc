@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -121,7 +123,7 @@ TEST(RapporServiceTest, Incognito) {
 // Check that Sample objects record correctly.
 TEST(RapporServiceTest, RecordSample) {
   TestRapporService rappor_service;
-  scoped_ptr<Sample> sample =
+  std::unique_ptr<Sample> sample =
       rappor_service.CreateSample(SAFEBROWSING_RAPPOR_TYPE);
   sample->SetStringField("Url", "example.com");
   sample->SetFlagsField("Flags1", 0xbcd, 12);

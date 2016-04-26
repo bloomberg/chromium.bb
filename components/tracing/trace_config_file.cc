@@ -6,13 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -97,11 +97,11 @@ TraceConfigFile::~TraceConfigFile() {
 }
 
 bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
-  scoped_ptr<base::Value> value(base::JSONReader::Read(content));
+  std::unique_ptr<base::Value> value(base::JSONReader::Read(content));
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
-  scoped_ptr<base::DictionaryValue> dict(
+  std::unique_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
   base::DictionaryValue* trace_config_dict = NULL;

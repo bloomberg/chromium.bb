@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
@@ -265,7 +265,7 @@ class EventSender {
   bool touch_cancelable_;
   std::vector<blink::WebTouchPoint> touch_points_;
 
-  scoped_ptr<blink::WebContextMenuData> last_context_menu_data_;
+  std::unique_ptr<blink::WebContextMenuData> last_context_menu_data_;
 
   blink::WebDragData current_drag_data_;
 

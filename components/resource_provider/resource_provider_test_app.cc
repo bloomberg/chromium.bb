@@ -23,7 +23,7 @@ namespace test {
 
 std::string ReadFile(base::File* file) {
   const size_t kBufferSize = 1 << 16;
-  scoped_ptr<char[]> buffer(new char[kBufferSize]);
+  std::unique_ptr<char[]> buffer(new char[kBufferSize]);
   const int read = file->ReadAtCurrentPos(buffer.get(), kBufferSize);
   if (read == -1)
     return std::string();
@@ -108,7 +108,7 @@ class TestApp : public shell::ShellClient,
   }
 
  private:
-  scoped_ptr<Test> test_;
+  std::unique_ptr<Test> test_;
   mojo::BindingSet<test::mojom::Test> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestApp);

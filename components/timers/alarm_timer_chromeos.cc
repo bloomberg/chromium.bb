@@ -145,7 +145,7 @@ class AlarmTimer::Delegate
   base::Closure on_timer_fired_callback_for_test_;
 
   // Manages watching file descriptors.
-  scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> fd_watcher_;
+  std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> fd_watcher_;
 
   // The sequence numbers of the last Reset() call handled respectively on
   // |origin_task_runner_| and on the MessageLoopForIO used for watching the
@@ -426,7 +426,8 @@ void AlarmTimer::OnTimerFired() {
 
   // Take ownership of the pending user task, which is going to be cleared by
   // the Stop() or Reset() functions below.
-  scoped_ptr<base::PendingTask> pending_user_task(std::move(pending_task_));
+  std::unique_ptr<base::PendingTask> pending_user_task(
+      std::move(pending_task_));
 
   // Re-schedule or stop the timer as requested.
   if (base::Timer::is_repeating())

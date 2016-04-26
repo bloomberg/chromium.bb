@@ -4,11 +4,12 @@
 
 #include "components/test_runner/pixel_dump.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/test_runner/layout_test_runtime_flags.h"
@@ -84,7 +85,7 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
   canvas->drawIRect(rect, paint);
 }
 
-void CapturePixelsForPrinting(scoped_ptr<PixelsDumpRequest> dump_request) {
+void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   dump_request->web_view->updateAllLifecyclePhases();
 
   blink::WebSize page_size_in_pixels = dump_request->web_view->size();
@@ -132,7 +133,7 @@ void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
   delete this;
 }
 
-void DidCapturePixelsAsync(scoped_ptr<PixelsDumpRequest> dump_request,
+void DidCapturePixelsAsync(std::unique_ptr<PixelsDumpRequest> dump_request,
                            const SkBitmap& bitmap) {
   SkCanvas canvas(bitmap);
   DrawSelectionRect(*dump_request, &canvas);
@@ -150,7 +151,7 @@ void DumpPixelsAsync(blink::WebView* web_view,
   DCHECK(!callback.is_null());
   DCHECK(!layout_test_runtime_flags.dump_drag_image());
 
-  scoped_ptr<PixelsDumpRequest> pixels_request(
+  std::unique_ptr<PixelsDumpRequest> pixels_request(
       new PixelsDumpRequest(web_view, layout_test_runtime_flags, callback));
 
   if (layout_test_runtime_flags.is_printing()) {

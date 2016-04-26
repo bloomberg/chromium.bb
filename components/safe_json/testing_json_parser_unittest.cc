@@ -4,6 +4,8 @@
 
 #include "components/safe_json/testing_json_parser.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
@@ -34,7 +36,7 @@ class TestingJsonParserTest : public testing::Test {
  private:
   static void SuccessCallback(TestingJsonParserTest* test,
                               base::Closure quit_closure,
-                              scoped_ptr<base::Value> value) {
+                              std::unique_ptr<base::Value> value) {
     test->did_success_ = true;
     quit_closure.Run();
 

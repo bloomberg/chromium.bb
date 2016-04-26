@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
@@ -178,7 +179,7 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
       net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
   cache_url_fetcher_->SetRequestContext(request_context_);
   cache_url_fetcher_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoTracking);
-  scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
+  std::unique_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
   cache_url_fetcher_->SaveResponseWithWriter(std::move(null_writer));
   cache_url_fetcher_->Start();
 }
@@ -195,7 +196,7 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
     network_url_fetcher_->SetLoadFlags(net::LOAD_VALIDATE_CACHE | kNoTracking);
     // We don't need a copy of the response body for resource requests. The
     // request is issued only to populate the browser cache.
-    scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
+    std::unique_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
     network_url_fetcher_->SaveResponseWithWriter(std::move(null_writer));
   } else {
     // Config and manifest requests do not need to be revalidated. It's okay if
@@ -321,7 +322,7 @@ void PrecacheFetcher::Start() {
   // Fetch the precache configuration settings from the server.
   DCHECK(pool_.IsEmpty()) << "All parallel requests should be available";
   VLOG(3) << "Fetching " << config_url;
-  pool_.Add(scoped_ptr<Fetcher>(new Fetcher(
+  pool_.Add(base::WrapUnique(new Fetcher(
       request_context_.get(), config_url,
       base::Bind(&PrecacheFetcher::OnConfigFetchComplete,
                  base::Unretained(this)),
@@ -334,7 +335,7 @@ void PrecacheFetcher::StartNextResourceFetch() {
         std::min(config_->max_bytes_per_resource(),
                  config_->max_bytes_total() - total_response_bytes_);
     VLOG(3) << "Fetching " << resource_urls_to_fetch_.front();
-    pool_.Add(scoped_ptr<Fetcher>(
+    pool_.Add(base::WrapUnique(
         new Fetcher(request_context_.get(), resource_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnResourceFetchComplete,
                                base::Unretained(this)),
@@ -354,7 +355,7 @@ void PrecacheFetcher::StartNextManifestFetch() {
       << "There are no available parallel requests to fetch the next manifest. "
          "Did you forget to call Delete?";
   VLOG(3) << "Fetching " << manifest_urls_to_fetch_.front();
-  pool_.Add(scoped_ptr<Fetcher>(new Fetcher(
+  pool_.Add(base::WrapUnique(new Fetcher(
       request_context_.get(), manifest_urls_to_fetch_.front(),
       base::Bind(&PrecacheFetcher::OnManifestFetchComplete,
                  base::Unretained(this)),

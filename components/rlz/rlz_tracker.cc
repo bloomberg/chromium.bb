@@ -172,7 +172,7 @@ RLZTracker::~RLZTracker() {
 }
 
 // static
-void RLZTracker::SetRlzDelegate(scoped_ptr<RLZTrackerDelegate> delegate) {
+void RLZTracker::SetRlzDelegate(std::unique_ptr<RLZTrackerDelegate> delegate) {
   RLZTracker* tracker = GetInstance();
   if (!tracker->delegate_) {
     // RLZTracker::SetRlzDelegate is called at Profile creation time which can
@@ -182,7 +182,7 @@ void RLZTracker::SetRlzDelegate(scoped_ptr<RLZTrackerDelegate> delegate) {
   }
 }
 
-void RLZTracker::SetDelegate(scoped_ptr<RLZTrackerDelegate> delegate) {
+void RLZTracker::SetDelegate(std::unique_ptr<RLZTrackerDelegate> delegate) {
   DCHECK(delegate);
   DCHECK(!delegate_);
   delegate_ = std::move(delegate);

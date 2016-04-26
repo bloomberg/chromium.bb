@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PROXY_CONFIG_PROXY_CONFIG_DICTIONARY_H_
 #define COMPONENTS_PROXY_CONFIG_PROXY_CONFIG_DICTIONARY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/proxy_config/proxy_config_export.h"
 #include "components/proxy_config/proxy_prefs.h"
 
@@ -67,7 +67,7 @@ class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
       const std::string& proxy_server,
       const std::string& bypass_list);
 
-  scoped_ptr<base::DictionaryValue> dict_;
+  std::unique_ptr<base::DictionaryValue> dict_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigDictionary);
 };

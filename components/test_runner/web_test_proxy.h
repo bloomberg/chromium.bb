@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_PROXY_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_PROXY_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_view_test_client.h"
@@ -69,7 +69,8 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
     web_view_ = view;
   }
 
-  void set_view_test_client(scoped_ptr<WebViewTestClient> view_test_client) {
+  void set_view_test_client(
+      std::unique_ptr<WebViewTestClient> view_test_client) {
     DCHECK(view_test_client);
     DCHECK(!view_test_client_);
     view_test_client_ = std::move(view_test_client);
@@ -108,10 +109,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   WebTestDelegate* delegate_;
   blink::WebView* web_view_;
   blink::WebWidget* web_widget_;
-  scoped_ptr<WebViewTestClient> view_test_client_;
-  scoped_ptr<AccessibilityController> accessibility_controller_;
-  scoped_ptr<EventSender> event_sender_;
-  scoped_ptr<TextInputController> text_input_controller_;
+  std::unique_ptr<WebViewTestClient> view_test_client_;
+  std::unique_ptr<AccessibilityController> accessibility_controller_;
+  std::unique_ptr<EventSender> event_sender_;
+  std::unique_ptr<TextInputController> text_input_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };

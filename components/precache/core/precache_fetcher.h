@@ -9,13 +9,13 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/precache/core/fetcher_pool.h"
 #include "net/url_request/url_fetcher.h"
@@ -68,7 +68,7 @@ extern const int kNoTracking;
 //   }
 //
 //  private:
-//   scoped_ptr<PrecacheFetcher> fetcher_;
+//   std::unique_ptr<PrecacheFetcher> fetcher_;
 // };
 class PrecacheFetcher {
  public:
@@ -145,7 +145,7 @@ class PrecacheFetcher {
   // Non-owning pointer. Should not be NULL.
   PrecacheDelegate* precache_delegate_;
 
-  scoped_ptr<PrecacheConfigurationSettings> config_;
+  std::unique_ptr<PrecacheConfigurationSettings> config_;
 
   // Tally of the total number of bytes contained in URL fetches, including
   // config, manifests, and resources. This the number of bytes as they would be
@@ -223,8 +223,8 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
 
   FetchStage fetch_stage_;
   // The cache_url_fetcher_ is kept alive until Fetcher destruction for testing.
-  scoped_ptr<net::URLFetcher> cache_url_fetcher_;
-  scoped_ptr<net::URLFetcher> network_url_fetcher_;
+  std::unique_ptr<net::URLFetcher> cache_url_fetcher_;
+  std::unique_ptr<net::URLFetcher> network_url_fetcher_;
   int64_t response_bytes_;
   int64_t network_response_bytes_;
 

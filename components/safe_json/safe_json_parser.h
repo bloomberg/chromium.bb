@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
 #define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -23,7 +23,7 @@ namespace safe_json {
 // deletes itself.
 class SafeJsonParser {
  public:
-  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
 
   using Factory = SafeJsonParser* (*)(const std::string& unsafe_json,

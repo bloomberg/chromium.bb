@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_TEST_RUNNER_TRACKED_DICTIONARY_H_
 #define COMPONENTS_TEST_RUNNER_TRACKED_DICTIONARY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/test_runner/test_runner_export.h"
 
@@ -40,7 +40,7 @@ class TEST_RUNNER_EXPORT TrackedDictionary {
   void ApplyUntrackedChanges(const base::DictionaryValue& new_changes);
 
   // Sets a value in |current_values| and tracks the change in |changed_values|.
-  void Set(const std::string& path, scoped_ptr<base::Value> new_value);
+  void Set(const std::string& path, std::unique_ptr<base::Value> new_value);
 
   // Type-specific setter for convenience.
   void SetBoolean(const std::string& path, bool new_value);

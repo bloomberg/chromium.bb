@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/safe_json/json_sanitizer.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/safe_json/json_sanitizer.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,20 +56,20 @@ class JsonSanitizerTest : public ::testing::Test {
   std::string error_;
   State state_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 void JsonSanitizerTest::CheckSuccess(const std::string& json) {
   SCOPED_TRACE(json);
   Sanitize(json);
-  scoped_ptr<base::Value> parsed = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(json);
   ASSERT_TRUE(parsed);
   EXPECT_EQ(State::STATE_SUCCESS, state_) << "Error: " << error_;
 
   // The JSON parser should accept the result.
   int error_code;
   std::string error;
-  scoped_ptr<base::Value> reparsed = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> reparsed = base::JSONReader::ReadAndReturnError(
       result_, base::JSON_PARSE_RFC, &error_code, &error);
   EXPECT_TRUE(reparsed)
       << "Invalid result: " << error;

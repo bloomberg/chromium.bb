@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+
 namespace test_runner {
 
 TrackedDictionary::TrackedDictionary() {}
@@ -25,7 +27,7 @@ void TrackedDictionary::ApplyUntrackedChanges(
 }
 
 void TrackedDictionary::Set(const std::string& path,
-                            scoped_ptr<base::Value> new_value) {
+                            std::unique_ptr<base::Value> new_value) {
   // Is this truly a *new* value?
   const base::Value* old_value;
   if (current_values_.Get(path, &old_value)) {
@@ -38,12 +40,12 @@ void TrackedDictionary::Set(const std::string& path,
 }
 
 void TrackedDictionary::SetBoolean(const std::string& path, bool new_value) {
-  Set(path, make_scoped_ptr(new base::FundamentalValue(new_value)));
+  Set(path, base::WrapUnique(new base::FundamentalValue(new_value)));
 }
 
 void TrackedDictionary::SetString(const std::string& path,
                                   const std::string& new_value) {
-  Set(path, make_scoped_ptr(new base::StringValue(new_value)));
+  Set(path, base::WrapUnique(new base::StringValue(new_value)));
 }
 
 }  // namespace test_runner

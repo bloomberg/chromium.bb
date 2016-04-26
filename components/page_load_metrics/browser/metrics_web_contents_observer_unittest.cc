@@ -4,10 +4,11 @@
 
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/kill.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -65,7 +66,7 @@ class TestPageLoadMetricsEmbedderInterface
     is_prerendering_ = is_prerendering;
   }
   void RegisterObservers(PageLoadTracker* tracker) override {
-    tracker->AddObserver(make_scoped_ptr(new TestPageLoadMetricsObserver(
+    tracker->AddObserver(base::WrapUnique(new TestPageLoadMetricsObserver(
         &observed_timings_, &observed_committed_urls_)));
   }
   const std::vector<PageLoadTiming>& observed_timings() const {
@@ -110,7 +111,7 @@ class MetricsWebContentsObserverTest
   void AttachObserver() {
     embedder_interface_ = new TestPageLoadMetricsEmbedderInterface();
     observer_.reset(new MetricsWebContentsObserver(
-        web_contents(), make_scoped_ptr(embedder_interface_)));
+        web_contents(), base::WrapUnique(embedder_interface_)));
     observer_->WasShown();
   }
 
@@ -157,7 +158,7 @@ class MetricsWebContentsObserverTest
  protected:
   base::HistogramTester histogram_tester_;
   TestPageLoadMetricsEmbedderInterface* embedder_interface_;
-  scoped_ptr<MetricsWebContentsObserver> observer_;
+  std::unique_ptr<MetricsWebContentsObserver> observer_;
 
  private:
   int num_errors_;

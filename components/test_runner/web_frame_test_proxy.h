@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 #define COMPONENTS_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_frame_test_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -20,7 +20,7 @@ namespace test_runner {
 
 class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
  public:
-  void set_test_client(scoped_ptr<WebFrameTestClient> client) {
+  void set_test_client(std::unique_ptr<WebFrameTestClient> client) {
     DCHECK(client);
     DCHECK(!test_client_);
     test_client_ = std::move(client);
@@ -32,7 +32,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
   blink::WebFrameClient* test_client() { return test_client_.get(); }
 
  private:
-  scoped_ptr<WebFrameTestClient> test_client_;
+  std::unique_ptr<WebFrameTestClient> test_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxyBase);
 };

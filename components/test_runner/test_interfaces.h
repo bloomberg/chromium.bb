@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_TEST_RUNNER_TEST_INTERFACES_H_
 #define COMPONENTS_TEST_RUNNER_TEST_INTERFACES_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/test_runner/mock_web_theme_engine.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
@@ -54,12 +54,12 @@ class TestInterfaces {
 
  private:
   base::WeakPtr<GamepadController> gamepad_controller_;
-  scoped_ptr<TestRunner> test_runner_;
+  std::unique_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
   AppBannerClient* app_banner_client_;
 
   std::vector<WebTestProxyBase*> window_list_;
-  scoped_ptr<MockWebThemeEngine> theme_engine_;
+  std::unique_ptr<MockWebThemeEngine> theme_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
 };

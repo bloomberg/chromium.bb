@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -47,7 +47,8 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   virtual ~RapporService();
 
   // Add an observer for collecting daily metrics.
-  void AddDailyObserver(scoped_ptr<metrics::DailyEvent::Observer> observer);
+  void AddDailyObserver(
+      std::unique_ptr<metrics::DailyEvent::Observer> observer);
 
   // Initializes the rappor service, including loading the cohort and secret
   // preferences from disk.
@@ -63,7 +64,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   void Update(int recording_groups, bool may_upload);
 
   // Constructs a Sample object for the caller to record fields in.
-  virtual scoped_ptr<Sample> CreateSample(RapporType);
+  virtual std::unique_ptr<Sample> CreateSample(RapporType);
 
   // Records a Sample of rappor metric specified by |metric_name|.
   //
@@ -71,7 +72,8 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   // to RecordSample.
   //
   // example:
-  // scoped_ptr<Sample> sample = rappor_service->CreateSample(MY_METRIC_TYPE);
+  // std::unique_ptr<Sample> sample =
+  // rappor_service->CreateSample(MY_METRIC_TYPE);
   // sample->SetStringField("Field1", "some string");
   // sample->SetFlagsValue("Field2", SOME|FLAGS);
   // rappor_service->RecordSample("MyMetric", std::move(sample));
@@ -80,7 +82,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   // "MyMetric.Field2", and they will both be generated from the same sample,
   // to allow for correllations to be computed.
   virtual void RecordSampleObj(const std::string& metric_name,
-                               scoped_ptr<Sample> sample);
+                               std::unique_ptr<Sample> sample);
 
   // Records a sample of the rappor metric specified by |metric_name|.
   // Creates and initializes the metric, if it doesn't yet exist.
@@ -94,7 +96,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
 
  protected:
   // Initializes the state of the RapporService.
-  void InitializeInternal(scoped_ptr<LogUploaderInterface> uploader,
+  void InitializeInternal(std::unique_ptr<LogUploaderInterface> uploader,
                           int32_t cohort,
                           const std::string& secret);
 
@@ -153,7 +155,7 @@ class RapporService : public base::SupportsWeakPtr<RapporService> {
   metrics::DailyEvent daily_event_;
 
   // A private LogUploader instance for sending reports to the server.
-  scoped_ptr<LogUploaderInterface> uploader_;
+  std::unique_ptr<LogUploaderInterface> uploader_;
 
   // The set of recording groups that metrics are being recorded, e.g.
   //     UMA_RECORDING_GROUP | SAFEBROWSING_RECORDING_GROUP

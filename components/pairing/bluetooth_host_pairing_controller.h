@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -114,7 +116,7 @@ class BluetoothHostPairingController
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<device::BluetoothSocket> service_socket_;
   scoped_refptr<device::BluetoothSocket> controller_socket_;
-  scoped_ptr<ProtoDecoder> proto_decoder_;
+  std::unique_ptr<ProtoDecoder> proto_decoder_;
 
   base::ThreadChecker thread_checker_;
   base::ObserverList<Observer> observers_;

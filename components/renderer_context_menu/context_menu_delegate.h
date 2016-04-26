@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_DELEGATE_H_
 #define COMPONENTS_RENDERER_CONTEXT_MENU_CONTEXT_MENU_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class RenderViewContextMenuBase;
 
@@ -26,12 +27,12 @@ class ContextMenuDelegate {
 
   // Builds and returns a context menu for a context specified by |params|.
   // The returned value can be used to display the context menu.
-  virtual scoped_ptr<RenderViewContextMenuBase> BuildMenu(
+  virtual std::unique_ptr<RenderViewContextMenuBase> BuildMenu(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params) = 0;
 
   // Displays the context menu.
-  virtual void ShowMenu(scoped_ptr<RenderViewContextMenuBase> menu) = 0;
+  virtual void ShowMenu(std::unique_ptr<RenderViewContextMenuBase> menu) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContextMenuDelegate);

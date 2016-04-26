@@ -5,7 +5,6 @@
 #include "components/test_runner/app_banner_client.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptResult.h"
 
 namespace test_runner {

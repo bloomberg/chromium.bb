@@ -4,6 +4,7 @@
 
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -85,7 +86,7 @@ class PrefProxyConfigTrackerImplTest : public testing::Test {
         pref_service_.get(), base::ThreadTaskRunnerHandle::Get()));
     proxy_config_service_ =
         proxy_config_tracker_->CreateTrackingProxyConfigService(
-            scoped_ptr<net::ProxyConfigService>(delegate_service_));
+            std::unique_ptr<net::ProxyConfigService>(delegate_service_));
     // SetProxyConfigServiceImpl triggers update of initial prefs proxy
     // config by tracker to chrome proxy config service, so flush all pending
     // tasks so that tests start fresh.
@@ -100,13 +101,13 @@ class PrefProxyConfigTrackerImplTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   TestProxyConfigService* delegate_service_; // weak
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;
 
  private:
-  scoped_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
+  std::unique_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
 };
 
 TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {

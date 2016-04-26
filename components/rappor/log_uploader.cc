@@ -143,7 +143,7 @@ void LogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   // Note however that |source| is aliased to the fetcher, so we should be
   // careful not to delete it too early.
   DCHECK_EQ(current_fetch_.get(), source);
-  scoped_ptr<net::URLFetcher> fetch(std::move(current_fetch_));
+  std::unique_ptr<net::URLFetcher> fetch(std::move(current_fetch_));
 
   const net::URLRequestStatus& request_status = source->GetStatus();
 

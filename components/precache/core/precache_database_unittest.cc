@@ -7,11 +7,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/test/histogram_tester.h"
@@ -108,7 +108,7 @@ class PrecacheDatabaseTest : public testing::Test {
   // to be set properly.
   base::MessageLoopForUI loop_;
 
-  scoped_ptr<PrecacheDatabase> precache_database_;
+  std::unique_ptr<PrecacheDatabase> precache_database_;
   base::HistogramTester histograms_;
   base::HistogramTester::CountsMap expected_histogram_counts_;
 

@@ -30,7 +30,7 @@ MetricsHelper* ControllerClient::metrics_helper() const {
 }
 
 void ControllerClient::set_metrics_helper(
-    scoped_ptr<MetricsHelper> metrics_helper) {
+    std::unique_ptr<MetricsHelper> metrics_helper) {
   metrics_helper_ = std::move(metrics_helper);
 }
 

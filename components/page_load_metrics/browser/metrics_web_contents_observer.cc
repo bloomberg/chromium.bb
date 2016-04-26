@@ -10,7 +10,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
@@ -366,7 +366,7 @@ void PageLoadTracker::set_renderer_tracked(bool renderer_tracked) {
 }
 
 void PageLoadTracker::AddObserver(
-    scoped_ptr<PageLoadMetricsObserver> observer) {
+    std::unique_ptr<PageLoadMetricsObserver> observer) {
   observers_.push_back(std::move(observer));
 }
 
@@ -459,14 +459,14 @@ void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
 // static
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
-    scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
+    std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
       in_foreground_(false),
       embedder_interface_(std::move(embedder_interface)) {}
 
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
-    scoped_ptr<PageLoadMetricsEmbedderInterface> embedder_interface) {
+    std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface) {
   DCHECK(web_contents);
 
   MetricsWebContentsObserver* metrics = FromWebContents(web_contents);
@@ -502,7 +502,7 @@ void MetricsWebContentsObserver::DidStartNavigation(
   if (embedder_interface_->IsPrerendering(web_contents()))
     return;
 
-  scoped_ptr<PageLoadTracker> last_aborted =
+  std::unique_ptr<PageLoadTracker> last_aborted =
       NotifyAbortedProvisionalLoadsNewNavigation(navigation_handle);
 
   int chain_size_same_url = 0;
@@ -527,7 +527,7 @@ void MetricsWebContentsObserver::DidStartNavigation(
   // committed_load_ or navigation_handle beyond the scope of the constructor.
   provisional_loads_.insert(std::make_pair(
       navigation_handle,
-      make_scoped_ptr(new PageLoadTracker(
+      base::WrapUnique(new PageLoadTracker(
           in_foreground_, embedder_interface_.get(), committed_load_.get(),
           navigation_handle, chain_size, chain_size_same_url))));
 }
@@ -537,7 +537,7 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  scoped_ptr<PageLoadTracker> finished_nav(
+  std::unique_ptr<PageLoadTracker> finished_nav(
       std::move(provisional_loads_[navigation_handle]));
   provisional_loads_.erase(navigation_handle);
 
@@ -673,7 +673,7 @@ void MetricsWebContentsObserver::NotifyAbortAllLoadsWithTimestamp(
   aborted_provisional_loads_.clear();
 }
 
-scoped_ptr<PageLoadTracker>
+std::unique_ptr<PageLoadTracker>
 MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
     content::NavigationHandle* new_navigation) {
   // If there are multiple aborted loads that can be attributed to this one,
@@ -684,7 +684,7 @@ MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
   if (aborted_provisional_loads_.size() > 1)
     RecordInternalError(ERR_NAVIGATION_SIGNALS_MULIPLE_ABORTED_LOADS);
 
-  scoped_ptr<PageLoadTracker> last_aborted_load =
+  std::unique_ptr<PageLoadTracker> last_aborted_load =
       std::move(aborted_provisional_loads_.back());
   aborted_provisional_loads_.pop_back();
 

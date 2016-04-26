@@ -52,11 +52,13 @@ const char kGoodManifestURL[] =
 
 class TestURLFetcherCallback {
  public:
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url, net::URLFetcherDelegate* delegate,
-      const std::string& response_data, net::HttpStatusCode response_code,
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
+      const GURL& url,
+      net::URLFetcherDelegate* delegate,
+      const std::string& response_data,
+      net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
-    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, delegate, response_data, response_code, status));
 
     requested_urls_.insert(url);

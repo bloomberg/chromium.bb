@@ -78,7 +78,7 @@ namespace {
 
 WebString V8StringToWebString(v8::Local<v8::String> v8_str) {
   int length = v8_str->Utf8Length() + 1;
-  scoped_ptr<char[]> chars(new char[length]);
+  std::unique_ptr<char[]> chars(new char[length]);
   v8_str->WriteUtf8(chars.get(), length);
   return WebString::fromUTF8(chars.get());
 }

@@ -18,9 +18,10 @@ namespace {
 const int kTimerDelayMillis = 1000;
 }  // namespace
 
-PageTimingMetricsSender::PageTimingMetricsSender(IPC::Sender* ipc_sender,
-                                                 int routing_id,
-                                                 scoped_ptr<base::Timer> timer)
+PageTimingMetricsSender::PageTimingMetricsSender(
+    IPC::Sender* ipc_sender,
+    int routing_id,
+    std::unique_ptr<base::Timer> timer)
     : ipc_sender_(ipc_sender),
       routing_id_(routing_id),
       timer_(std::move(timer)),

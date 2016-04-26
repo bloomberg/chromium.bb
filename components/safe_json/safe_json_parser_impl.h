@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_IMPL_H_
 #define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -54,7 +54,7 @@ class SafeJsonParserImpl : public content::UtilityProcessHostClient,
   ErrorCallback error_callback_;
   scoped_refptr<base::SequencedTaskRunner> caller_task_runner_;
 
-  scoped_ptr<base::Value> parsed_json_;
+  std::unique_ptr<base::Value> parsed_json_;
   std::string error_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserImpl);

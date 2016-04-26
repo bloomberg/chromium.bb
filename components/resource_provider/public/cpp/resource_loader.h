@@ -6,12 +6,12 @@
 #define COMPONENTS_RESOURCE_PROVIDER_PUBLIC_CPP_RESOURCE_LOADER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -49,7 +49,7 @@ class ResourceLoader {
   bool loaded() const { return loaded_; }
 
  private:
-  using ResourceMap = std::map<std::string, scoped_ptr<base::File>>;
+  using ResourceMap = std::map<std::string, std::unique_ptr<base::File>>;
 
   // Callback when resources have loaded.
   void OnGotResources(const std::vector<std::string>& paths,

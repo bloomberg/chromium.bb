@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -78,7 +79,7 @@ std::string IdToFileName(int64_t product_id) {
 // QuirksManager
 
 QuirksManager::QuirksManager(
-    scoped_ptr<Delegate> delegate,
+    std::unique_ptr<Delegate> delegate,
     scoped_refptr<base::SequencedWorkerPool> blocking_pool,
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter)
@@ -96,7 +97,7 @@ QuirksManager::~QuirksManager() {
 
 // static
 void QuirksManager::Initialize(
-    scoped_ptr<Delegate> delegate,
+    std::unique_ptr<Delegate> delegate,
     scoped_refptr<base::SequencedWorkerPool> blocking_pool,
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter) {
@@ -131,7 +132,7 @@ void QuirksManager::OnLoginCompleted() {
     clients_.clear();
   }
 
-  for (const scoped_ptr<QuirksClient>& client : clients_)
+  for (const std::unique_ptr<QuirksClient>& client : clients_)
     client->StartDownload();
 }
 
@@ -156,14 +157,14 @@ void QuirksManager::ClientFinished(QuirksClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SetLastServerCheck(client->product_id(), base::Time::Now());
   auto it = std::find_if(clients_.begin(), clients_.end(),
-                         [client](const scoped_ptr<QuirksClient>& c) {
+                         [client](const std::unique_ptr<QuirksClient>& c) {
                            return c.get() == client;
                          });
   CHECK(it != clients_.end());
   clients_.erase(it);
 }
 
-scoped_ptr<net::URLFetcher> QuirksManager::CreateURLFetcher(
+std::unique_ptr<net::URLFetcher> QuirksManager::CreateURLFetcher(
     const GURL& url,
     net::URLFetcherDelegate* delegate) {
   if (!fake_quirks_fetcher_creator_.is_null())
@@ -244,7 +245,7 @@ void QuirksManager::CreateClient(
   DCHECK(thread_checker_.CalledOnValidThread());
   QuirksClient* client =
       new QuirksClient(product_id, on_request_finished, this);
-  clients_.insert(make_scoped_ptr(client));
+  clients_.insert(base::WrapUnique(client));
   if (!waiting_for_login_)
     client->StartDownload();
   else

@@ -4,10 +4,12 @@
 
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -88,7 +90,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
 
   void CreateBookmarkModel(BookmarkLoadPolicy bookmark_load_policy) {
     bookmark_model_.reset(new BookmarkModel(
-        make_scoped_ptr(new bookmarks::TestBookmarkClient())));
+        base::WrapUnique(new bookmarks::TestBookmarkClient())));
     if (bookmark_load_policy == LOAD_MODEL) {
       TestingPrefServiceSimple prefs;
       bookmark_model_->Load(&prefs, base::FilePath(),
@@ -135,9 +137,9 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
 
   base::MessageLoop message_loop_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
-  scoped_ptr<SyncApiComponentFactoryMock> profile_sync_factory_;
-  scoped_ptr<BookmarkModel> bookmark_model_;
-  scoped_ptr<HistoryMock> history_service_;
+  std::unique_ptr<SyncApiComponentFactoryMock> profile_sync_factory_;
+  std::unique_ptr<BookmarkModel> bookmark_model_;
+  std::unique_ptr<HistoryMock> history_service_;
   sync_driver::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;

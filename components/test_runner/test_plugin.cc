@@ -6,10 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "cc/blink/web_layer_impl.h"
@@ -106,13 +108,13 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
 
 class DeferredDeleteTask : public blink::WebTaskRunner::Task {
  public:
-  DeferredDeleteTask(scoped_ptr<TestPlugin> plugin)
+  DeferredDeleteTask(std::unique_ptr<TestPlugin> plugin)
       : plugin_(std::move(plugin)) {}
 
   void run() override {}
 
  private:
-  scoped_ptr<TestPlugin> plugin_;
+  std::unique_ptr<TestPlugin> plugin_;
 };
 
 }  // namespace
@@ -184,7 +186,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   DCHECK(!container->element().document().isNull());
   blink::WebURL url = container->element().document().url();
   blink::Platform::GraphicsInfo gl_info;
-  context_provider_ = make_scoped_ptr(
+  context_provider_ = base::WrapUnique(
       blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
           attrs, url, nullptr, &gl_info));
   context_ = context_provider_ ? context_provider_->context3d() : nullptr;
@@ -194,7 +196,7 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
     return false;
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
-  web_layer_ = make_scoped_ptr(new cc_blink::WebLayerImpl(layer_));
+  web_layer_ = base::WrapUnique(new cc_blink::WebLayerImpl(layer_));
   container_->setWebLayer(web_layer_.get());
   if (re_request_touch_events_) {
     container_->requestTouchEventType(
@@ -224,7 +226,7 @@ void TestPlugin::destroy() {
 
   blink::Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       blink::WebTraceLocation(__FUNCTION__, __FILE__),
-      new DeferredDeleteTask(make_scoped_ptr(this)));
+      new DeferredDeleteTask(base::WrapUnique(this)));
 }
 
 blink::WebPluginContainer* TestPlugin::container() const {
@@ -277,7 +279,7 @@ void TestPlugin::updateGeometry(
     gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
     texture_mailbox_ = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
   } else {
-    scoped_ptr<cc::SharedBitmap> bitmap =
+    std::unique_ptr<cc::SharedBitmap> bitmap =
         delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(
             gfx::Rect(rect_).size());
     if (!bitmap) {
@@ -301,13 +303,13 @@ bool TestPlugin::isPlaceholder() {
 static void IgnoreReleaseCallback(const gpu::SyncToken& sync_token, bool lost) {
 }
 
-static void ReleaseSharedMemory(scoped_ptr<cc::SharedBitmap> bitmap,
+static void ReleaseSharedMemory(std::unique_ptr<cc::SharedBitmap> bitmap,
                                 const gpu::SyncToken& sync_token,
                                 bool lost) {}
 
 bool TestPlugin::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   if (!mailbox_changed_)
     return false;

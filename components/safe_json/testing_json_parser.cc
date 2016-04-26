@@ -4,11 +4,12 @@
 
 #include "components/safe_json/testing_json_parser.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 
@@ -45,7 +46,7 @@ TestingJsonParser::~TestingJsonParser() {}
 void TestingJsonParser::Start() {
   int error_code;
   std::string error;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       unsafe_json_, base::JSON_PARSE_RFC, &error_code, &error);
 
   // Run the callback asynchronously. Post the delete task first, so that the

@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/ownership/ownership_export.h"
 #include "crypto/scoped_nss_types.h"
 

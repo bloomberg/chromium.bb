@@ -4,6 +4,8 @@
 
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
@@ -454,7 +456,7 @@ syncer::SyncError BookmarkModelAssociator::AssociateModels(
   if (error.IsSet())
     return error;
 
-  scoped_ptr<ScopedAssociationUpdater> association_updater(
+  std::unique_ptr<ScopedAssociationUpdater> association_updater(
       new ScopedAssociationUpdater(bookmark_model_));
   DisassociateModels();
 

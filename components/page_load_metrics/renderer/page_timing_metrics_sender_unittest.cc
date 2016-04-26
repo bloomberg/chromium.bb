@@ -39,7 +39,7 @@ class TestPageTimingMetricsSender : public PageTimingMetricsSender {
       : PageTimingMetricsSender(
             ipc_sender,
             MSG_ROUTING_NONE,
-            scoped_ptr<base::Timer>(new base::MockTimer(false, false))) {}
+            std::unique_ptr<base::Timer>(new base::MockTimer(false, false))) {}
 
   base::MockTimer* mock_timer() const {
     return reinterpret_cast<base::MockTimer*>(timer());

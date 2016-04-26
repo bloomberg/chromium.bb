@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
@@ -57,22 +58,21 @@ TestRapporService::TestRapporService()
       is_incognito_(false) {
   RegisterPrefs(test_prefs_.registry());
   test_uploader_ = new TestLogUploader();
-  InitializeInternal(make_scoped_ptr(test_uploader_),
-                     0,
+  InitializeInternal(base::WrapUnique(test_uploader_), 0,
                      HmacByteVectorGenerator::GenerateEntropyInput());
   Update(UMA_RAPPOR_GROUP | SAFEBROWSING_RAPPOR_GROUP, true);
 }
 
 TestRapporService::~TestRapporService() {}
 
-scoped_ptr<Sample> TestRapporService::CreateSample(RapporType type) {
-  scoped_ptr<TestSample> test_sample(new TestSample(type));
+std::unique_ptr<Sample> TestRapporService::CreateSample(RapporType type) {
+  std::unique_ptr<TestSample> test_sample(new TestSample(type));
   return std::move(test_sample);
 }
 
 // Intercepts the sample being recorded and saves it in a test structure.
 void TestRapporService::RecordSampleObj(const std::string& metric_name,
-                                        scoped_ptr<Sample> sample) {
+                                        std::unique_ptr<Sample> sample) {
   TestSample* test_sample = static_cast<TestSample*>(sample.get());
   // Erase the previous sample if we logged one.
   shadows_.erase(metric_name);

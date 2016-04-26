@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <cstring>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,8 +16,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -64,11 +65,13 @@ class TestURLFetcherCallback {
  public:
   TestURLFetcherCallback() : total_response_bytes_(0) {}
 
-  scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url, net::URLFetcherDelegate* delegate,
-      const std::string& response_data, net::HttpStatusCode response_code,
+  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
+      const GURL& url,
+      net::URLFetcherDelegate* delegate,
+      const std::string& response_data,
+      net::HttpStatusCode response_code,
       net::URLRequestStatus::Status status) {
-    scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
+    std::unique_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, delegate, response_data, response_code, status));
 
     total_response_bytes_ += response_data.size();
@@ -111,12 +114,13 @@ class MockURLFetcherFactory : public net::URLFetcherFactory {
       net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* delegate);
 
-  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* delegate) override {
-    return make_scoped_ptr(DoCreateURLFetcher(id, url, request_type, delegate));
+    return base::WrapUnique(
+        DoCreateURLFetcher(id, url, request_type, delegate));
   }
 
   // The method to mock out, instead of CreateURLFetcher. This is necessary

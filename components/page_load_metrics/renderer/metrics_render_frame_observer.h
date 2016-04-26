@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_PAGE_LOAD_METRICS_RENDERER_PAGE_LOAD_METRICS_RENDER_FRAME_OBSERVER_H_
 #define COMPONENTS_PAGE_LOAD_METRICS_RENDERER_PAGE_LOAD_METRICS_RENDER_FRAME_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
@@ -35,12 +36,12 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
 
  private:
   // Will be null when we're not actively sending metrics.
-  scoped_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;
+  std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;
 
   void SendMetrics();
   virtual bool ShouldSendMetrics() const;
   virtual PageLoadTiming GetTiming() const;
-  virtual scoped_ptr<base::Timer> CreateTimer() const;
+  virtual std::unique_ptr<base::Timer> CreateTimer() const;
   virtual bool HasNoRenderFrame() const;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsRenderFrameObserver);

@@ -210,9 +210,9 @@ PrefProxyConfigTrackerImpl::~PrefProxyConfigTrackerImpl() {
   DCHECK(pref_service_ == NULL);
 }
 
-scoped_ptr<net::ProxyConfigService>
+std::unique_ptr<net::ProxyConfigService>
 PrefProxyConfigTrackerImpl::CreateTrackingProxyConfigService(
-    scoped_ptr<net::ProxyConfigService> base_service) {
+    std::unique_ptr<net::ProxyConfigService> base_service) {
   proxy_config_service_impl_ =
       new ProxyConfigServiceImpl(base_service.release());
   VLOG(1) << this << ": set chrome proxy config service to "
@@ -220,7 +220,7 @@ PrefProxyConfigTrackerImpl::CreateTrackingProxyConfigService(
   if (proxy_config_service_impl_ && update_pending_)
     OnProxyConfigChanged(config_state_, pref_config_);
 
-  return scoped_ptr<net::ProxyConfigService>(proxy_config_service_impl_);
+  return std::unique_ptr<net::ProxyConfigService>(proxy_config_service_impl_);
 }
 
 void PrefProxyConfigTrackerImpl::DetachFromPrefService() {

@@ -4,6 +4,7 @@
 
 #include "components/safe_json/safe_json_parser_message_filter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -42,7 +43,7 @@ bool SafeJsonParserMessageFilter::OnMessageReceived(
 void SafeJsonParserMessageFilter::OnParseJSON(const std::string& json) {
   int error_code;
   std::string error;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &error_code, &error);
   if (value) {
     base::ListValue wrapper;

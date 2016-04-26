@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
@@ -136,8 +137,8 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
   return timing;
 }
 
-scoped_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() const {
-  return make_scoped_ptr(new base::OneShotTimer);
+std::unique_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() const {
+  return base::WrapUnique(new base::OneShotTimer);
 }
 
 bool MetricsRenderFrameObserver::HasNoRenderFrame() const {

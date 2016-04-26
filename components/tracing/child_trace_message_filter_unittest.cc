@@ -4,8 +4,9 @@
 
 #include "components/tracing/child_trace_message_filter.h"
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/tracing/tracing_messages.h"
 #include "ipc/ipc_message.h"
@@ -26,7 +27,7 @@ class FakeSender : public IPC::Sender {
     return true;
   }
 
-  scoped_ptr<IPC::Message> last_message_;
+  std::unique_ptr<IPC::Message> last_message_;
 };
 
 class ChildTraceMessageFilterTest : public testing::Test {

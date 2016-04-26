@@ -4,9 +4,11 @@
 
 #include "components/rlz/rlz_tracker.h"
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/sequenced_worker_pool_owner.h"
@@ -257,7 +259,7 @@ class RlzLibTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   TestRLZTrackerDelegate* delegate_;
-  scoped_ptr<TestRLZTracker> tracker_;
+  std::unique_ptr<TestRLZTracker> tracker_;
   RlzLibTestNoMachineStateHelper m_rlz_test_helper_;
 };
 
@@ -267,7 +269,7 @@ void RlzLibTest::SetUp() {
 
   delegate_ = new TestRLZTrackerDelegate;
   tracker_.reset(new TestRLZTracker());
-  RLZTracker::SetRlzDelegate(make_scoped_ptr(delegate_));
+  RLZTracker::SetRlzDelegate(base::WrapUnique(delegate_));
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.

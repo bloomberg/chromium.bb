@@ -4,6 +4,8 @@
 
 #include <sys/timerfd.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -57,7 +59,7 @@ class OneShotAlarmTimerTester {
 
   bool* did_run_;
   const base::TimeDelta delay_;
-  scoped_ptr<timers::OneShotAlarmTimer> timer_;
+  std::unique_ptr<timers::OneShotAlarmTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OneShotAlarmTimerTester);
 };
@@ -85,7 +87,7 @@ class OneShotSelfDeletingAlarmTimerTester {
 
   bool* did_run_;
   const base::TimeDelta delay_;
-  scoped_ptr<timers::OneShotAlarmTimer> timer_;
+  std::unique_ptr<timers::OneShotAlarmTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OneShotSelfDeletingAlarmTimerTester);
 };
@@ -116,7 +118,7 @@ class RepeatingAlarmTimerTester {
   bool* did_run_;
   const base::TimeDelta delay_;
   int counter_;
-  scoped_ptr<timers::RepeatingAlarmTimer> timer_;
+  std::unique_ptr<timers::RepeatingAlarmTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RepeatingAlarmTimerTester);
 };

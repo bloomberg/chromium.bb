@@ -4,8 +4,9 @@
 
 #include "components/test_runner/web_frame_test_client.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -759,7 +760,7 @@ void WebFrameTestClient::checkIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebSetSinkIdCallbacks* web_callbacks) {
-  scoped_ptr<blink::WebSetSinkIdCallbacks> callback(web_callbacks);
+  std::unique_ptr<blink::WebSetSinkIdCallbacks> callback(web_callbacks);
   std::string device_id = sink_id.utf8();
   if (device_id == "valid" || device_id.empty())
     callback->onSuccess();

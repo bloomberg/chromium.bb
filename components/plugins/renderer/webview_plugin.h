@@ -6,8 +6,8 @@
 #define COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_
 
 #include <list>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -174,7 +174,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
   blink::WebURLResponse response_;
   std::list<std::string> data_;
-  scoped_ptr<blink::WebURLError> error_;
+  std::unique_ptr<blink::WebURLError> error_;
   blink::WebString old_title_;
   bool finished_loading_;
   bool focused_;

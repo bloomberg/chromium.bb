@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -226,8 +226,9 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
                                   document.size(), &status);
   // Locale does not matter because there's no per-locale customization
   // for character iterator.
-  scoped_ptr<icu::BreakIterator> bi(icu::BreakIterator::createCharacterInstance(
-      icu::Locale::getDefault(), status));
+  std::unique_ptr<icu::BreakIterator> bi(
+      icu::BreakIterator::createCharacterInstance(icu::Locale::getDefault(),
+                                                  status));
   bi->setText(document_utext, status);
   DCHECK(U_SUCCESS(status));
 

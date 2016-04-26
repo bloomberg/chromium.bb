@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_OWNERSHIP_OWNER_SETTINGS_SERVICE_H_
 #define COMPONENTS_OWNERSHIP_OWNER_SETTINGS_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -52,7 +52,8 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   };
 
   typedef base::Callback<void(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response)>
+      std::unique_ptr<enterprise_management::PolicyFetchResponse>
+          policy_response)>
       AssembleAndSignPolicyAsyncCallback;
 
   typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
@@ -82,7 +83,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   // the original thread via |callback|.
   bool AssembleAndSignPolicyAsync(
       base::TaskRunner* task_runner,
-      scoped_ptr<enterprise_management::PolicyData> policy,
+      std::unique_ptr<enterprise_management::PolicyData> policy,
       const AssembleAndSignPolicyAsyncCallback& callback);
 
   // Checks whether |setting| is handled by OwnerSettingsService.
@@ -106,7 +107,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   // TODO (ygorshenin@, crbug.com/230018): that this is a temporary
   // solution and should be removed.
   virtual bool CommitTentativeDeviceSettings(
-      scoped_ptr<enterprise_management::PolicyData> policy) = 0;
+      std::unique_ptr<enterprise_management::PolicyData> policy) = 0;
 
   bool SetBoolean(const std::string& setting, bool value);
   bool SetInteger(const std::string& setting, int value);
