@@ -205,6 +205,44 @@ MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {
   return g_thunks.FuseMessagePipes(handle0, handle1);
 }
 
+MojoResult MojoWriteMessageNew(MojoHandle message_pipe_handle,
+                               MojoMessageHandle message,
+                               MojoWriteMessageFlags flags) {
+  assert(g_thunks.WriteMessageNew);
+  return g_thunks.WriteMessageNew(message_pipe_handle, message, flags);
+}
+
+MojoResult MojoReadMessageNew(MojoHandle message_pipe_handle,
+                              MojoMessageHandle* message,
+                              uint32_t* num_bytes,
+                              MojoHandle* handles,
+                              uint32_t* num_handles,
+                              MojoReadMessageFlags flags) {
+  assert(g_thunks.ReadMessageNew);
+  return g_thunks.ReadMessageNew(message_pipe_handle, message, num_bytes,
+                                 handles, num_handles, flags);
+}
+
+MojoResult MojoAllocMessage(uint32_t num_bytes,
+                            const MojoHandle* handles,
+                            uint32_t num_handles,
+                            MojoAllocMessageFlags flags,
+                            MojoMessageHandle* message) {
+  assert(g_thunks.AllocMessage);
+  return g_thunks.AllocMessage(
+      num_bytes, handles, num_handles, flags, message);
+}
+
+MojoResult MojoFreeMessage(MojoMessageHandle message) {
+  assert(g_thunks.FreeMessage);
+  return g_thunks.FreeMessage(message);
+}
+
+MojoResult MojoGetMessageBuffer(MojoMessageHandle message, void** buffer) {
+  assert(g_thunks.GetMessageBuffer);
+  return g_thunks.GetMessageBuffer(message, buffer);
+}
+
 extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
     const MojoSystemThunks* system_thunks) {
   if (system_thunks->size >= sizeof(g_thunks))

@@ -52,6 +52,8 @@ component("system") {
     "handle_table.h",
     "mapping_table.cc",
     "mapping_table.h",
+    "message_for_transit.cc",
+    "message_for_transit.h",
     "message_pipe_dispatcher.cc",
     "message_pipe_dispatcher.h",
     "node_channel.cc",

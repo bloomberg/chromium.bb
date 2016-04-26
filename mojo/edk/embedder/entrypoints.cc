@@ -53,6 +53,22 @@ MojoResult MojoCancelWatch(MojoHandle handle, uintptr_t context) {
   return g_core->CancelWatch(handle, context);
 }
 
+MojoResult MojoAllocMessage(uint32_t num_bytes,
+                            const MojoHandle* handles,
+                            uint32_t num_handles,
+                            MojoAllocMessageFlags flags,
+                            MojoMessageHandle* message) {
+  return g_core->AllocMessage(num_bytes, handles, num_handles, flags, message);
+}
+
+MojoResult MojoFreeMessage(MojoMessageHandle message) {
+  return g_core->FreeMessage(message);
+}
+
+MojoResult MojoGetMessageBuffer(MojoMessageHandle message, void** buffer) {
+  return g_core->GetMessageBuffer(message, buffer);
+}
+
 MojoResult MojoCreateWaitSet(MojoHandle* wait_set_handle) {
   return g_core->CreateWaitSet(wait_set_handle);
 }
@@ -93,6 +109,12 @@ MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
                               num_handles, flags);
 }
 
+MojoResult MojoWriteMessageNew(MojoHandle message_pipe_handle,
+                               MojoMessageHandle message,
+                               MojoWriteMessageFlags flags) {
+  return g_core->WriteMessageNew(message_pipe_handle, message, flags);
+}
+
 MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
                            void* bytes,
                            uint32_t* num_bytes,
@@ -101,6 +123,16 @@ MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
                            MojoReadMessageFlags flags) {
   return g_core->ReadMessage(
       message_pipe_handle, bytes, num_bytes, handles, num_handles, flags);
+}
+
+MojoResult MojoReadMessageNew(MojoHandle message_pipe_handle,
+                              MojoMessageHandle* message,
+                              uint32_t* num_bytes,
+                              MojoHandle* handles,
+                              uint32_t* num_handles,
+                              MojoReadMessageFlags flags) {
+  return g_core->ReadMessageNew(
+      message_pipe_handle, message, num_bytes, handles, num_handles, flags);
 }
 
 MojoResult MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1) {

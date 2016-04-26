@@ -84,6 +84,8 @@
         'edk/system/handle_table.h',
         'edk/system/mapping_table.cc',
         'edk/system/mapping_table.h',
+        'edk/system/message_for_transit.cc',
+        'edk/system/message_for_transit.h',
         'edk/system/message_pipe_dispatcher.cc',
         'edk/system/message_pipe_dispatcher.h',
         'edk/system/node_channel.cc',

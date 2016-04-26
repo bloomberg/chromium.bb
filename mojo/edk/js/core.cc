@@ -145,12 +145,10 @@ MojoResult WriteMessage(
                           raw_handles.empty() ? NULL : &raw_handles[0],
                           static_cast<uint32_t>(raw_handles.size()),
                           flags);
-  // MojoWriteMessage takes ownership of the handles upon success, so
-  // release them here.
-  if (rv == MOJO_RESULT_OK) {
-    for (size_t i = 0; i < handles.size(); ++i)
-      ignore_result(handles[i]->release());
-  }
+  // MojoWriteMessage takes ownership of the handles, so release them here.
+  for (size_t i = 0; i < handles.size(); ++i)
+    ignore_result(handles[i]->release());
+
   return rv;
 }
 

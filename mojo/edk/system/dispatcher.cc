@@ -32,19 +32,17 @@ MojoResult Dispatcher::CancelWatch(uintptr_t context) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::WriteMessage(const void* bytes,
-                                    uint32_t num_bytes,
-                                    const DispatcherInTransit* dispatchers,
-                                    uint32_t num_dispatchers,
+MojoResult Dispatcher::WriteMessage(std::unique_ptr<MessageForTransit> message,
                                     MojoWriteMessageFlags flags) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::ReadMessage(void* bytes,
+MojoResult Dispatcher::ReadMessage(std::unique_ptr<MessageForTransit>* message,
                                    uint32_t* num_bytes,
                                    MojoHandle* handles,
                                    uint32_t* num_handles,
-                                   MojoReadMessageFlags flags) {
+                                   MojoReadMessageFlags flags,
+                                   bool read_any_size) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 

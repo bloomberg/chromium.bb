@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <string.h>
 
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/test_utils.h"
@@ -407,6 +408,72 @@ TEST_F(MessagePipeTest, BasicWaiting) {
                      MOJO_DEADLINE_INDEFINITE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+}
+
+TEST_F(MessagePipeTest, InvalidMessageObjects) {
+  // null message
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoFreeMessage(MOJO_MESSAGE_HANDLE_INVALID));
+
+  // null message
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoGetMessageBuffer(MOJO_MESSAGE_HANDLE_INVALID, nullptr));
+
+  // Non-zero num_handles with null handles array.
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoAllocMessage(0, nullptr, 1, MOJO_ALLOC_MESSAGE_FLAG_NONE,
+                             nullptr));
+}
+
+TEST_F(MessagePipeTest, AllocAndFreeMessage) {
+  const std::string kMessage = "Hello, world.";
+  MojoMessageHandle message = MOJO_MESSAGE_HANDLE_INVALID;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoAllocMessage(static_cast<uint32_t>(kMessage.size()), nullptr, 0,
+                             MOJO_ALLOC_MESSAGE_FLAG_NONE, &message));
+  ASSERT_NE(MOJO_MESSAGE_HANDLE_INVALID, message);
+  ASSERT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+}
+
+TEST_F(MessagePipeTest, WriteAndReadMessageObject) {
+  const std::string kMessage = "Hello, world.";
+  MojoMessageHandle message = MOJO_MESSAGE_HANDLE_INVALID;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAllocMessage(static_cast<uint32_t>(kMessage.size()), nullptr, 0,
+                             MOJO_ALLOC_MESSAGE_FLAG_NONE, &message));
+  ASSERT_NE(MOJO_MESSAGE_HANDLE_INVALID, message);
+
+  void* buffer = nullptr;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageBuffer(message, &buffer));
+  ASSERT_TRUE(buffer);
+  memcpy(buffer, kMessage.data(), kMessage.size());
+
+  MojoHandle a, b;
+  CreateMessagePipe(&a, &b);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWriteMessageNew(a, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWait(b, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+                     nullptr));
+  uint32_t num_bytes = 0;
+  uint32_t num_handles = 0;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoReadMessageNew(b, &message, &num_bytes, nullptr, &num_handles,
+                               MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_NE(MOJO_MESSAGE_HANDLE_INVALID, message);
+  EXPECT_EQ(static_cast<uint32_t>(kMessage.size()), num_bytes);
+  EXPECT_EQ(0u, num_handles);
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageBuffer(message, &buffer));
+  ASSERT_TRUE(buffer);
+
+  EXPECT_EQ(0, strncmp(static_cast<const char*>(buffer), kMessage.data(),
+                       num_bytes));
+
+  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
 #if !defined(OS_IOS)

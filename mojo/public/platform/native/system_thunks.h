@@ -120,6 +120,22 @@ struct MojoSystemThunks {
                       uintptr_t context);
   MojoResult (*CancelWatch)(MojoHandle handle, uintptr_t context);
   MojoResult (*FuseMessagePipes)(MojoHandle handle0, MojoHandle handle1);
+  MojoResult (*WriteMessageNew)(MojoHandle message_pipe_handle,
+                                MojoMessageHandle message,
+                                MojoWriteMessageFlags flags);
+  MojoResult (*ReadMessageNew)(MojoHandle message_pipe_handle,
+                               MojoMessageHandle* message,
+                               uint32_t* num_bytes,
+                               MojoHandle* handles,
+                               uint32_t* num_handles,
+                               MojoReadMessageFlags flags);
+  MojoResult (*AllocMessage)(uint32_t num_bytes,
+                             const MojoHandle* handles,
+                             uint32_t num_handles,
+                             MojoAllocMessageFlags flags,
+                             MojoMessageHandle* message);
+  MojoResult (*FreeMessage)(MojoMessageHandle message);
+  MojoResult (*GetMessageBuffer)(MojoMessageHandle message, void** buffer);
 };
 #pragma pack(pop)
 
@@ -153,7 +169,12 @@ inline MojoSystemThunks MojoMakeSystemThunks() {
                                     MojoGetReadyHandles,
                                     MojoWatch,
                                     MojoCancelWatch,
-                                    MojoFuseMessagePipes};
+                                    MojoFuseMessagePipes,
+                                    MojoWriteMessageNew,
+                                    MojoReadMessageNew,
+                                    MojoAllocMessage,
+                                    MojoFreeMessage,
+                                    MojoGetMessageBuffer};
   return system_thunks;
 }
 #endif

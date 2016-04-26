@@ -144,6 +144,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                    MojoWatchCallback callback,
                    uintptr_t context);
   MojoResult CancelWatch(MojoHandle handle, uintptr_t context);
+  MojoResult AllocMessage(uint32_t num_bytes,
+                          const MojoHandle* handles,
+                          uint32_t num_handles,
+                          MojoAllocMessageFlags flags,
+                          MojoMessageHandle* message);
+  MojoResult FreeMessage(MojoMessageHandle message);
+  MojoResult GetMessageBuffer(MojoMessageHandle message, void** buffer);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/wait_set.h":
@@ -171,12 +178,21 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                           const MojoHandle* handles,
                           uint32_t num_handles,
                           MojoWriteMessageFlags flags);
+  MojoResult WriteMessageNew(MojoHandle message_pipe_handle,
+                             MojoMessageHandle message,
+                             MojoWriteMessageFlags flags);
   MojoResult ReadMessage(MojoHandle message_pipe_handle,
                          void* bytes,
                          uint32_t* num_bytes,
                          MojoHandle* handles,
                          uint32_t* num_handles,
                          MojoReadMessageFlags flags);
+  MojoResult ReadMessageNew(MojoHandle message_pipe_handle,
+                            MojoMessageHandle* message,
+                            uint32_t* num_bytes,
+                            MojoHandle* handles,
+                            uint32_t* num_handles,
+                            MojoReadMessageFlags flags);
   MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
 
   // These methods correspond to the API functions defined in

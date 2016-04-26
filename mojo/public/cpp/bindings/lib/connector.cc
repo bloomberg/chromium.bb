@@ -160,11 +160,12 @@ bool Connector::Accept(Message* message) {
                       static_cast<uint32_t>(message->mutable_handles()->size()),
                       MOJO_WRITE_MESSAGE_FLAG_NONE);
 
+  // The handles are always either transferred or closed, so we don't need the
+  // message to track their lifetime any longer.
+  message->mutable_handles()->clear();
+
   switch (rv) {
     case MOJO_RESULT_OK:
-      // The handles were successfully transferred, so we don't need the message
-      // to track their lifetime any longer.
-      message->mutable_handles()->clear();
       break;
     case MOJO_RESULT_FAILED_PRECONDITION:
       // There's no point in continuing to write to this pipe since the other

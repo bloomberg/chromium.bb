@@ -14,6 +14,7 @@
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
+#include "mojo/edk/system/message_for_transit.h"
 #include "mojo/edk/system/ports/port_ref.h"
 
 namespace mojo {
@@ -52,16 +53,14 @@ class MessagePipeDispatcher : public Dispatcher {
                    const Watcher::WatchCallback& callback,
                    uintptr_t context) override;
   MojoResult CancelWatch(uintptr_t context) override;
-  MojoResult WriteMessage(const void* bytes,
-                          uint32_t num_bytes,
-                          const DispatcherInTransit* dispatchers,
-                          uint32_t num_dispatchers,
+  MojoResult WriteMessage(std::unique_ptr<MessageForTransit> message,
                           MojoWriteMessageFlags flags) override;
-  MojoResult ReadMessage(void* bytes,
+  MojoResult ReadMessage(std::unique_ptr<MessageForTransit>* message,
                          uint32_t* num_bytes,
                          MojoHandle* handles,
                          uint32_t* num_handles,
-                         MojoReadMessageFlags flags) override;
+                         MojoReadMessageFlags flags,
+                         bool read_any_size) override;
   HandleSignalsState GetHandleSignalsState() const override;
   MojoResult AddAwakable(Awakable* awakable,
                          MojoHandleSignals signals,

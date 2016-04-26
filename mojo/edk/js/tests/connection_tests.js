@@ -67,20 +67,12 @@ define([
       connection0.close();
       connection1.close();
 
-      // The Connection objects are responsible for closing these handles.
-      expect(core.close(pipe.handle0)).toBe(core.RESULT_INVALID_ARGUMENT);
-      expect(core.close(pipe.handle1)).toBe(core.RESULT_INVALID_ARGUMENT);
-
       return Promise.resolve();
     });
 
-    // sourcePipe.handle0 was closed automatically when sent over IPC.
-    expect(core.close(sourcePipe.handle0)).toBe(core.RESULT_INVALID_ARGUMENT);
     // sourcePipe.handle1 hasn't been closed yet.
     expect(core.close(sourcePipe.handle1)).toBe(core.RESULT_OK);
 
-    // anotherPipe.handle0 was closed automatically when sent over IPC.
-    expect(core.close(anotherPipe.handle0)).toBe(core.RESULT_INVALID_ARGUMENT);
     // anotherPipe.handle1 hasn't been closed yet.
     expect(core.close(anotherPipe.handle1)).toBe(core.RESULT_OK);
 
