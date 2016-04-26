@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import utils
+
 from telemetry import page
 from telemetry import story
 from benchmarks.pagesets import media_router_page
@@ -31,21 +33,7 @@ class CastDialogPage(media_router_page.CastPage):
         shared_page_state_class=shared_page_state_class)
 
   def RunPageInteractions(self, action_runner):
-     # Wait for 5s after Chrome is opened in order to get consistent results.
-    action_runner.Wait(5)
-    with action_runner.CreateInteraction('LaunchDialog'):
-      action_runner.ExecuteJavaScript('collectPerfData();')
-      self._WaitForResult(
-          action_runner,
-          lambda: action_runner.EvaluateJavaScript('initialized'),
-          'Failed to initialize')
-
-      action_runner.TapElement(selector='#start_session_button')
-      action_runner.Wait(5)
-      for tab in action_runner.tab.browser.tabs:
-        # Close media router dialog
-        if tab.url == 'chrome://media-router/':
-          self.CloseDialog(tab)
+     pass
 
 
 class CastIdlePage(CastDialogPage):
@@ -58,8 +46,11 @@ class CastIdlePage(CastDialogPage):
         shared_page_state_class=SharedState)
 
   def RunPageInteractions(self, action_runner):
-    super(CastIdlePage, self).RunPageInteractions(action_runner)
-    action_runner.Wait(15)
+    # Wait for 5s after Chrome is opened in order to get consistent results.
+    action_runner.Wait(5)
+    with action_runner.CreateInteraction('Idle'):
+      action_runner.ExecuteJavaScript('collectPerfData();')
+      action_runner.Wait(300)
 
 
 class CastFlingingPage(media_router_page.CastPage):
@@ -75,8 +66,6 @@ class CastFlingingPage(media_router_page.CastPage):
      # Wait for 5s after Chrome is opened in order to get consistent results.
     action_runner.Wait(5)
     with action_runner.CreateInteraction('flinging'):
-      action_runner.ExecuteJavaScript('collectPerfData();')
-
       self._WaitForResult(
           action_runner,
           lambda: action_runner.EvaluateJavaScript('initialized'),
@@ -103,14 +92,16 @@ class CastFlingingPage(media_router_page.CastPage):
          timeout=10)
 
       # Load Media
-      # TODO: use local video instead of the public one.
       self.ExecuteAsyncJavaScript(
           action_runner,
-          'loadMedia("http://easyhtml5video.com/images/happyfit2.mp4");',
+          'loadMedia("%s");' % utils.GetInternalVideoURL(),
           lambda: action_runner.EvaluateJavaScript('currentMedia'),
-          'Failed to load media')
+          'Failed to load media',
+          timeout=120)
 
-      action_runner.Wait(20)
+      action_runner.Wait(5)
+      action_runner.ExecuteJavaScript('collectPerfData();')
+      action_runner.Wait(300)
       # Stop session
       self.ExecuteAsyncJavaScript(
           action_runner,

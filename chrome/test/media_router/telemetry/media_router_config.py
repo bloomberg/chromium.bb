@@ -10,6 +10,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, os.pardir, os.pardir,
                              os.pardir, 'tools', 'perf'))
 
+# Add //chrome/test/media_router/internal to system path.
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                                 os.pardir, 'internal'))
+
 from chrome_telemetry_build import chromium_config
 
 TELEMETRY_DIR = chromium_config.GetTelemetryDir()

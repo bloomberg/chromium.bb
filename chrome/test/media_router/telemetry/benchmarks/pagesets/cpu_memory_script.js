@@ -16,7 +16,9 @@ var extensionId = 'ocihafebdemjoofhbdnamghkfobfgbal';
  * key: the metric, e.g. CPU, private memory
  * value: map of the performance results for different processes.
  *    key: process type, e.g. tab, browser, gpu, extension.
- *    value: list of the performance results.
+ *    value: list of the performance results per second. Task Manager notifies
+ *           the event listener nearly every second for the latest status of
+ *           each process.
  */
 window.perfResults = {};
 

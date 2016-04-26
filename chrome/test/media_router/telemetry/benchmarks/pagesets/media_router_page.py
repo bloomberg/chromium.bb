@@ -4,6 +4,7 @@
 
 import os
 import time
+import utils
 
 from telemetry import page
 from telemetry import story
@@ -59,8 +60,9 @@ class CastPage(page.Page):
 
   def _GetDeviceName(self):
     """Gets device name from environment variable RECEIVER_NAME."""
-    if 'RECEIVER_NAME' not in os.environ or not os.environ.get('RECEIVER_NAME'):
+
+    if 'RECEIVER_IP' not in os.environ or not os.environ.get('RECEIVER_IP'):
       raise page.page_test.Failure(
           'Your test machine is not set up correctly, '
-          'RECEIVER_NAME enviroment variable is missing.')
-    return os.environ.get('RECEIVER_NAME')
+          'RECEIVER_IP enviroment variable is missing.')
+    return utils.GetDeviceName(os.environ.get('RECEIVER_IP'))
