@@ -491,6 +491,10 @@ def GetChangeDescriptionFromGitiles(url, revision):
   """
   parsed = urlparse.urlparse(url)
   path = '%s/+/%s?format=json' % (parsed.path, revision)
+  # Note: Gerrit instances that Chrome infrastructure uses thus far have all
+  # enabled Gitiles, which allowes us to execute this call. This isn't true for
+  # all Gerrit instances out there. Thus, if line below fails, consider adding a
+  # fallback onto actually fetching ref from remote using pure git.
   return ReadHttpJsonResponse(CreateHttpConn(parsed.netloc, path))['message']
 
 
