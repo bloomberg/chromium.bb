@@ -49,12 +49,11 @@ void ShelfLockingManager::OnLockStateEvent(EventType event) {
 }
 
 void ShelfLockingManager::UpdateLockedState() {
-  const bool should_be_locked = screen_locked_ || session_locked_;
   const ShelfAlignment alignment = shelf_->alignment();
-  if (should_be_locked && alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  if (is_locked() && alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     stored_alignment_ = alignment;
     shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM_LOCKED);
-  } else if (!should_be_locked && alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  } else if (!is_locked() && alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
     shelf_->SetAlignment(stored_alignment_);
   }
 }

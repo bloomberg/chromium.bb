@@ -891,6 +891,7 @@
       'shelf/scoped_observer_with_duplicated_sources_unittest.cc',
       'shelf/shelf_button_pressed_metric_tracker_unittest.cc',
       'shelf/shelf_layout_manager_unittest.cc',
+      'shelf/shelf_locking_manager_unittest.cc',
       'shelf/shelf_model_unittest.cc',
       'shelf/shelf_navigator_unittest.cc',
       'shelf/shelf_tooltip_manager_unittest.cc',

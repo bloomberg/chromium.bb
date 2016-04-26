@@ -23,6 +23,9 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
   explicit ShelfLockingManager(Shelf* shelf);
   ~ShelfLockingManager() override;
 
+  bool is_locked() const { return session_locked_ || screen_locked_; }
+  void set_stored_alignment(ShelfAlignment value) { stored_alignment_ = value; }
+
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
 

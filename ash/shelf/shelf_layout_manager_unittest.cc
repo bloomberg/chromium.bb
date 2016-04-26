@@ -379,19 +379,6 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     Shell::GetInstance()->OnLockStateChanged(false);
   }
 
-  // Open the add user screen if |show| is true, otherwise end it.
-  void ShowAddUserScreen(bool show) {
-    SetUserAddingScreenRunning(show);
-
-    const SessionStateDelegate::SessionState state =
-        show ? SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY
-             : SessionStateDelegate::SESSION_STATE_ACTIVE;
-    GetShelfWidget()->shelf_layout_manager()->SessionStateChanged(state);
-    test::ShelfTestAPI(GetShelfWidget()->shelf())
-        .shelf_locking_manager()
-        ->SessionStateChanged(state);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
 };
@@ -761,50 +748,6 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   status_bounds = shelf->status_area_widget()->GetNativeView()->bounds();
   EXPECT_LT(status_bounds.y(),
             screen->GetPrimaryDisplay().bounds().bottom());
-}
-
-// Makes sure shelf alignment is correct for lock screen.
-TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithLockScreen) {
-  ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
-  manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
-  LockScreen();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, manager->GetAlignment());
-  UnlockScreen();
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
-}
-
-// Makes sure shelf alignment is correct for add user screen.
-TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithAddUserScreen) {
-  ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
-  manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
-  ShowAddUserScreen(true);
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, manager->GetAlignment());
-  ShowAddUserScreen(false);
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
-}
-
-// Makes sure shelf alignment is correct for login screen.
-TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithLoginScreen) {
-  ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
-  ASSERT_EQ(SHELF_ALIGNMENT_BOTTOM, manager->GetAlignment());
-  SetUserLoggedIn(false);
-  SetSessionStarted(false);
-
-  // The test session state delegate does not fire state changes.
-  SetSessionStarting();
-  manager->SessionStateChanged(
-      Shell::GetInstance()->session_state_delegate()->GetSessionState());
-
-  // Login sets alignment preferences before the session completes startup.
-  manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  SetUserLoggedIn(true);
-  SetSessionStarted(true);
-
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
-  // Ensure that the shelf has been notified.
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetShelfWidget()->shelf()->alignment());
 }
 
 // Makes sure LayoutShelf invoked while animating cleans things up.

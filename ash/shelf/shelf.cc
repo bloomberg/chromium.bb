@@ -70,6 +70,12 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   if (alignment_ == alignment)
     return;
 
+  if (shelf_locking_manager_.is_locked() &&
+      alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+    shelf_locking_manager_.set_stored_alignment(alignment);
+    return;
+  }
+
   alignment_ = alignment;
   shelf_view_->OnShelfAlignmentChanged();
   shelf_widget_->OnShelfAlignmentChanged();
