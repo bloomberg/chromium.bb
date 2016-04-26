@@ -43,6 +43,12 @@ Polymer({
       value: ''
     },
 
+    // True if it's searching at the backend.
+    searching: {
+      type: Boolean,
+      value: false
+    },
+
     // True if the page has a sidebar that we need to account for when
     // positioning toolbar items.
     hasSidebar: {

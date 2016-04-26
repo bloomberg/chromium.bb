@@ -66,6 +66,7 @@ window.addEventListener('delete-selected', function() {
 window.addEventListener('search-changed', function(e) {
   $('toolbar').setSearchTerm(e.detail.search);
   /** @type {HistoryListElement} */($('history-list')).setLoading();
+  /** @type {HistoryToolbarElement} */($('toolbar')).searching = true;
   chrome.send('queryHistory', [e.detail.search, 0, 0, 0, RESULTS_PER_PAGE]);
 });
 
@@ -90,6 +91,7 @@ function historyResult(info, results) {
   waitForUpgrade(listElem).then(function() {
     var list = /** @type {HistoryListElement} */(listElem);
     list.addNewResults(results, info.term);
+    /** @type {HistoryToolbarElement} */$('toolbar').searching = false;
     if (info.finished)
       list.disableResultLoading();
     // TODO(tsergeant): Showing everything as soon as the list is ready is not

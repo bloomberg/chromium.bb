@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
@@ -50,8 +51,20 @@
         padding: 0 var(--card-padding-side);
       }
 
+      #right-content {
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
+        justify-content: flex-end;
+      }
+
       #search-input {
         -webkit-padding-end: 20px;
+      }
+
+      #searching-spinner {
+        height: 20px;
+        width: 20px;
+        -webkit-padding-end: 10px;
       }
 
       #overlay-buttons {
@@ -92,6 +105,8 @@
           </paper-button>
         </div>
         <div id="right-content">
+          <paper-spinner id="searching-spinner" active="[[searching]]">
+          </paper-spinner>
           <cr-search-field id="search-input" label="$i18n{search}"
               clear-label="$i18n{clearSearch}">
           </cr-search-field>
