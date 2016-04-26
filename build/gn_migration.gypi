@@ -516,7 +516,6 @@
         ['OS=="win"', {
           'dependencies': [
             '../base/base.gyp:pe_image_test',
-            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:setup',
             '../chrome/chrome.gyp:setup_unittests',
@@ -707,10 +706,6 @@
             # to the GN build.
             '../chrome/chrome.gyp:sb_sigutil',
 
-            # This project is up in the air. Don't need to convert it unless
-            # we decide we need for something. Owner: scottmg.
-            '../chrome/tools/crash_service/caps/caps.gyp:caps',
-
             '../components/test_runner/test_runner.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
             '../gpu/gpu.gyp:angle_end2end_tests',
@@ -728,7 +723,6 @@
             # TODO(GYP): All of these targets need to be ported over.
             '../base/base.gyp:base_win64',
             '../base/base.gyp:base_i18n_nacl_win64',
-            '../chrome/chrome.gyp:crash_service_win64',
             '../chrome/chrome.gyp:launcher_support64',
             '../components/components.gyp:breakpad_win64',
             '../courgette/courgette.gyp:courgette64',

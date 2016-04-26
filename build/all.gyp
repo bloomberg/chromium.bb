@@ -225,7 +225,6 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../chrome/tools/crash_service/caps/caps.gyp:*',
             '../chrome_elf/chrome_elf.gyp:*',
             '../courgette/courgette.gyp:*',
             '../rlz/rlz.gyp:*',
@@ -641,16 +640,6 @@
                 '../chrome/chrome.gyp:linux_symbols'
               ],
             }],
-            ['OS=="win"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
-              ],
-            }],
-            ['OS=="win" and target_arch=="ia32"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service_win64',
-              ],
-            }],
           ],
         }, # target_name: chromium_gpu_debug_builder
         {
@@ -1001,7 +990,6 @@
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',
             '../cc/cc_tests.gyp:cc_unittests',
             '../chrome/chrome.gyp:browser_tests',
-            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:gcapi_test',
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:interactive_ui_tests',
@@ -1042,13 +1030,6 @@
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
-          ],
-          'conditions': [
-            ['target_arch=="ia32"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service_win64',
-              ],
-            }],
           ],
         },
         {
@@ -1154,7 +1135,6 @@
               'target_name': 'chrome_official_builder_no_unittests',
               'type': 'none',
               'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:pack_policy_templates',
                 '../chrome/installer/mini_installer.gyp:mini_installer',
@@ -1164,11 +1144,6 @@
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
               ],
               'conditions': [
-                ['target_arch=="ia32"', {
-                  'dependencies': [
-                    '../chrome/chrome.gyp:crash_service_win64',
-                  ],
-                }],
                 ['component != "shared_library" and wix_exists == "True" and \
                     sas_dll_exists == "True"', {
                   'dependencies': [
@@ -1267,16 +1242,6 @@
             'blink_tests',
           ],
           'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service',
-              ],
-            }],
-            ['OS=="win" and target_arch=="ia32"', {
-              'dependencies': [
-                '../chrome/chrome.gyp:crash_service_win64',
-              ],
-            }],
             ['OS=="linux"', {
               # Tests that currently only work on Linux.
               'dependencies': [

@@ -416,28 +416,6 @@
           ],
         },
         {
-          # GN version: //chrome/tools/crash_service
-          'target_name': 'crash_service',
-          'type': 'executable',
-          'dependencies': [
-            'installer_util',
-            '../base/base.gyp:base',
-            '../chrome/common_constants.gyp:common_constants',
-            '../components/components.gyp:breakpad_crash_service',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'tools/crash_service/main.cc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
-            },
-          },
-        },
-        {
           'target_name': 'sb_sigutil',
           'type': 'executable',
           'dependencies': [
@@ -487,38 +465,6 @@
                 'AdditionalLibraryDirectories': ['<(lib_dir)', ],
                 'AdditionalDependencies': ['chrome.user32.delay.lib', ],
               },
-            },
-          },
-        },
-        {
-          # GN version: //chrome/tools/crash_service:crash_service_win64
-          'target_name': 'crash_service_win64',
-          'type': 'executable',
-          'product_name': 'crash_service64',
-          'dependencies': [
-            'installer_util_nacl_win64',
-            '../base/base.gyp:base_static_win64',
-            '../chrome/common_constants.gyp:common_constants_win64',
-            '../components/components.gyp:breakpad_crash_service_win64',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            '../content/public/common/content_switches.cc',
-            'tools/crash_service/main.cc',
-          ],
-          'defines': [
-            'COMPILE_CONTENT_STATICALLY',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
-            },
-          },
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
             },
           },
         },
