@@ -18,6 +18,7 @@ source_set("child") {
     "//content/public/child:child_sources",
     "//content/renderer/*",
     "//content/utility/*",
+    "//tools/ipc_fuzzer/*",
   ]
 
   sources = rebase_path(content_child_gypi_values.private_child_sources,

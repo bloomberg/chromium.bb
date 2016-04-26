@@ -4,6 +4,7 @@
 
 import("//build/config/nacl/config.gni")
 import("//testing/test.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 assert(!is_ios)
 
@@ -140,6 +141,10 @@ component("ipc") {
     # On Windows HandleAttachmentWin needs to generate random IDs.
     # On Mac MachPortAttachmentMac needs to generate random IDs.
     deps += [ "//crypto" ]
+  }
+
+  if (enable_ipc_fuzzer) {
+    public_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
 }
 

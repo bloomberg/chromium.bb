@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
 gypi_values = exec_script("//build/gypi_to_gn.py",
                           [ rebase_path("../chrome_renderer.gypi") ],
@@ -180,6 +181,10 @@ static_library("renderer") {
       "spellchecker/hunspell_engine.cc",
       "spellchecker/hunspell_engine.h",
     ]
+  }
+
+  if (enable_ipc_fuzzer) {
+    configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
 }
 

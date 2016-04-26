@@ -13,7 +13,8 @@ contribute.
 
 ### Build instructions
 
-*   add `enable_ipc_fuzzer=1` to `GYP_DEFINES`
+*   Run `gn args` and add `enable_ipc_fuzzer = true` to your args.gn. If you use
+    GYP, add `enable_ipc_fuzzer=1` to `GYP_DEFINES`.
 *   build `ipc_fuzzer_all` target
 *   component builds are currently broken, sorry
 *   Debug builds are broken; only Release mode works.

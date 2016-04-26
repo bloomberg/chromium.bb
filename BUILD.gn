@@ -103,6 +103,7 @@ group("both_gn_and_gyp") {
     "//skia:skia_unittests",
     "//sql:sql_unittests",
     "//sync:sync_unit_tests",
+    "//tools/ipc_fuzzer:ipc_fuzzer_all",
     "//ui/base:ui_base_unittests",
     "//ui/gfx:gfx_unittests",
     "//url:url_unittests",
