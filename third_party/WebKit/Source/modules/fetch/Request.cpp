@@ -19,6 +19,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -326,9 +327,9 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     if (request->credentials() == WebURLRequest::FetchCredentialsModePassword) {
         r->getHeaders()->append(HTTPNames::Content_Type, init.contentType, exceptionState);
 
-        // TODO(mkwst): This should be a registrable-domain match.
-        if (!origin->canRequest(r->url())) {
-            exceptionState.throwTypeError("Credentials may only be submitted to same-origin endpoints.");
+        const OriginAccessEntry accessEntry = OriginAccessEntry(r->url().protocol(), r->url().host(), OriginAccessEntry::AllowRegisterableDomains);
+        if (accessEntry.matchesDomain(*origin) == OriginAccessEntry::DoesNotMatchOrigin) {
+            exceptionState.throwTypeError("Credentials may only be submitted to endpoints on the same registrable domain.");
             return nullptr;
         }
     }
