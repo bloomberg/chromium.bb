@@ -1103,6 +1103,8 @@ source_set("test_support") {
     "net/url_request_mock_util.h",
     "notifications/notification_test_util.cc",
     "notifications/notification_test_util.h",
+    "notifications/stub_notification_platform_bridge.cc",
+    "notifications/stub_notification_platform_bridge.h",
     "profile_resetter/profile_resetter_test_base.cc",
     "profile_resetter/profile_resetter_test_base.h",
     "search_engines/template_url_service_factory_test_util.cc",

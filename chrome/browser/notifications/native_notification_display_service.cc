@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/native_notification_display_service.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -37,6 +38,7 @@ void NativeNotificationDisplayService::Display(
     const Notification& notification) {
   notification_bridge_->Display(notification_id, GetProfileId(profile_),
                                 profile_->IsOffTheRecord(), notification);
+  notification.delegate()->Display();
 }
 
 void NativeNotificationDisplayService::Close(

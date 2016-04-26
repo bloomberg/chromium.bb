@@ -94,9 +94,8 @@ void OnCloseEventDispatchComplete(
 void OnCloseNonPersistentNotificationProfileLoaded(
     const std::string& notification_id,
     Profile* profile) {
-  PlatformNotificationServiceImpl::GetInstance()
-      ->GetNotificationDisplayService(profile)
-      ->Close(notification_id);
+  NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
+      notification_id);
 }
 
 // Callback to run once the profile has been loaded in order to perform a

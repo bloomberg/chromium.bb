@@ -138,6 +138,8 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
+  void SetNotificationPlatformBridge(
+      std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
   void SetRapporService(rappor::RapporService* rappor_service);
   void ShutdownBrowserPolicyConnector();
 
@@ -153,6 +155,7 @@ class TestingBrowserProcess : public BrowserProcess {
   bool created_browser_policy_connector_ = false;
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
+  std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
 
 #if defined(ENABLE_PRINTING)
   std::unique_ptr<printing::PrintJobManager> print_job_manager_;

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -227,7 +228,7 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 
 NotificationPlatformBridge*
 TestingBrowserProcess::notification_platform_bridge() {
-  return nullptr;
+  return notification_platform_bridge_.get();
 }
 
 message_center::MessageCenter* TestingBrowserProcess::message_center() {
@@ -381,6 +382,11 @@ void TestingBrowserProcess::SetSystemRequestContext(
 void TestingBrowserProcess::SetNotificationUIManager(
     std::unique_ptr<NotificationUIManager> notification_ui_manager) {
   notification_ui_manager_.swap(notification_ui_manager);
+}
+
+void TestingBrowserProcess::SetNotificationPlatformBridge(
+    std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge) {
+  notification_platform_bridge_.swap(notification_platform_bridge);
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {

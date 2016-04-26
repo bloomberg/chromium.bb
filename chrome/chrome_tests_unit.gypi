@@ -1764,6 +1764,8 @@
         'browser/net/url_request_mock_util.h',
         'browser/notifications/notification_test_util.cc',
         'browser/notifications/notification_test_util.h',
+        'browser/notifications/stub_notification_platform_bridge.cc',
+        'browser/notifications/stub_notification_platform_bridge.h',
         'browser/policy/test/local_policy_test_server.cc',
         'browser/policy/test/local_policy_test_server.h',
         'browser/profile_resetter/profile_resetter_test_base.cc',

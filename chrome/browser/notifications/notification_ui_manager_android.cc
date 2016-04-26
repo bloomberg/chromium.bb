@@ -189,8 +189,6 @@ void NotificationUIManagerAndroid::Display(const std::string& notification_id,
 
   regenerated_notification_infos_[persistent_notification_id] =
       std::make_pair(origin_url.spec(), notification.tag());
-
-  notification.delegate()->Display();
 }
 
 void NotificationUIManagerAndroid::Close(const std::string& profile_id,

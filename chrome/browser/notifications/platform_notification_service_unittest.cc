@@ -15,8 +15,10 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification_delegate.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/notifications/stub_notification_platform_bridge.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -85,21 +87,22 @@ class MockDesktopNotificationDelegate
 class PlatformNotificationServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    profile_.reset(new TestingProfile());
-    ui_manager_.reset(new StubNotificationUIManager);
-    display_service_.reset(
-        new MessageCenterDisplayService(profile_.get(), ui_manager_.get()));
-    service()->SetNotificationDisplayServiceForTesting(display_service_.get());
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("Miguel");
+    std::unique_ptr<NotificationUIManager> ui_manager(
+        new StubNotificationUIManager);
+    std::unique_ptr<NotificationPlatformBridge> notification_bridge(
+        new StubNotificationPlatformBridge());
+
+    TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
+        std::move(ui_manager));
+    TestingBrowserProcess::GetGlobal()->SetNotificationPlatformBridge(
+        std::move(notification_bridge));
   }
 
   void TearDown() override {
-    service()->SetNotificationDisplayServiceForTesting(nullptr);
-    display_service_.reset();
-    ui_manager_.reset();
-    profile_.reset();
     profile_manager_.reset();
     TestingBrowserProcess::DeleteInstance();
   }
@@ -136,24 +139,40 @@ class PlatformNotificationServiceTest : public testing::Test {
   }
 
   // Returns the Profile to be used for these tests.
-  Profile* profile() const { return profile_.get(); }
+  Profile* profile() const { return profile_; }
 
-  // Returns the UI Manager on which notifications will be displayed.
-  StubNotificationUIManager* ui_manager() const { return ui_manager_.get(); }
+  size_t GetNotificationCount() const {
+    std::set<std::string> notifications;
+    EXPECT_TRUE(display_service()->GetDisplayed(&notifications));
+    return notifications.size();
+  }
+
+  Notification GetDisplayedNotification() {
+#if defined(OS_ANDROID)
+    return static_cast<StubNotificationPlatformBridge*>(
+               g_browser_process->notification_platform_bridge())
+        ->GetNotificationAt(profile_->GetPath().BaseName().value(), 0);
+#else
+    return static_cast<StubNotificationUIManager*>(
+               g_browser_process->notification_ui_manager())
+        ->GetNotificationAt(0);
+#endif
+  }
 
  private:
-  std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<StubNotificationUIManager> ui_manager_;
-  std::unique_ptr<MessageCenterDisplayService> display_service_;
+  NotificationDisplayService* display_service() const {
+    return NotificationDisplayServiceFactory::GetForProfile(profile_);
+  }
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageDisplayedEvent) {
   auto* delegate = CreateSimplePageNotification();
 
-  EXPECT_EQ(1u, ui_manager()->GetNotificationCount());
+  EXPECT_EQ(1u, GetNotificationCount());
   EXPECT_TRUE(delegate->displayed());
 }
 
@@ -161,13 +180,12 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageCloseClosure) {
   base::Closure close_closure;
   CreateSimplePageNotificationWithCloseClosure(&close_closure);
 
-  EXPECT_EQ(1u, ui_manager()->GetNotificationCount());
+  EXPECT_EQ(1u, GetNotificationCount());
 
   ASSERT_FALSE(close_closure.is_null());
   close_closure.Run();
 
-  EXPECT_EQ(0u, ui_manager()->GetNotificationCount());
-
+  EXPECT_EQ(0u, GetNotificationCount());
   // Note that we cannot verify whether the closed event was called on the
   // delegate given that it'd result in a use-after-free.
 }
@@ -184,9 +202,9 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
       profile(), kPersistentNotificationId, GURL("https://chrome.com/"),
       notification_data, NotificationResources());
 
-  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+  ASSERT_EQ(1u, GetNotificationCount());
 
-  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  Notification notification = GetDisplayedNotification();
   EXPECT_EQ("https://chrome.com/", notification.origin_url().spec());
   EXPECT_EQ("My notification's title",
       base::UTF16ToUTF8(notification.title()));
@@ -194,7 +212,7 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
       base::UTF16ToUTF8(notification.message()));
 
   service()->ClosePersistentNotification(profile(), kPersistentNotificationId);
-  EXPECT_EQ(0u, ui_manager()->GetNotificationCount());
+  EXPECT_EQ(0u, GetNotificationCount());
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -215,9 +233,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
                                  notification_data, NotificationResources(),
                                  base::WrapUnique(delegate), nullptr);
 
-  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+  ASSERT_EQ(1u, GetNotificationCount());
 
-  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  Notification notification = GetDisplayedNotification();
   EXPECT_EQ("https://chrome.com/", notification.origin_url().spec());
   EXPECT_EQ("My notification's title",
       base::UTF16ToUTF8(notification.title()));
@@ -251,9 +269,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
       profile(), 0u /* persistent notification */, GURL("https://chrome.com/"),
       notification_data, notification_resources);
 
-  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+  ASSERT_EQ(1u, GetNotificationCount());
 
-  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  Notification notification = GetDisplayedNotification();
   EXPECT_EQ("https://chrome.com/", notification.origin_url().spec());
   EXPECT_EQ("My notification's title", base::UTF16ToUTF8(notification.title()));
   EXPECT_EQ("Hello, world!", base::UTF16ToUTF8(notification.message()));

@@ -51,10 +51,6 @@ class PlatformNotificationServiceImpl
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
 
-  // Returns the notification display service to use. This is overriden in tests
-  // TODO(miguelg) make it private once the tests are updated
-  NotificationDisplayService* GetNotificationDisplayService(Profile* profile);
-
   // Load the profile corresponding to |profile_id| and perform the
   // |operation| on the given notification once it has been loaded.
   void ProcessPersistentNotificationOperation(
@@ -142,6 +138,12 @@ class PlatformNotificationServiceImpl
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,
                                               const GURL& origin) const;
+
+  // Returns the notification display service to use.
+  // This can be overriden in tests.
+  // TODO(miguelg): Remove this method in favor of providing a testing factory
+  // to the NotificationDisplayServiceFactory.
+  NotificationDisplayService* GetNotificationDisplayService(Profile* profile);
 
   void SetNotificationDisplayServiceForTesting(
       NotificationDisplayService* service);

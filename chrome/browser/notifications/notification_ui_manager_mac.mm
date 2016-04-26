@@ -179,7 +179,6 @@ void NotificationUIManagerMac::Display(const std::string& notification_id,
   };
 
   [notification_center_ deliverNotification:toast];
-  notification.delegate()->Display();
 }
 
 void NotificationUIManagerMac::Close(const std::string& profile_id,
