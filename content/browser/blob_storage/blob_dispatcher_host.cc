@@ -219,11 +219,14 @@ void BlobDispatcherHost::OnCancelBuildingBlob(
 void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobStorageContext* context = this->context();
-  if (uuid.empty() || !context->registry().HasEntry(uuid)) {
-    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_INCREMENT,
-                              BDH_TRACING_ENUM_LAST);
+  if (uuid.empty()) {
     bad_message::ReceivedBadMessage(
         this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
+    return;
+  }
+  if (!context->registry().HasEntry(uuid)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_INCREMENT,
+                              BDH_TRACING_ENUM_LAST);
     return;
   }
   context->IncrementBlobRefCount(uuid);
@@ -232,11 +235,14 @@ void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
 
 void BlobDispatcherHost::OnDecrementBlobRefCount(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (uuid.empty() || !IsInUseInHost(uuid)) {
-    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_DECREMENT,
-                              BDH_TRACING_ENUM_LAST);
+  if (uuid.empty()) {
     bad_message::ReceivedBadMessage(
         this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
+    return;
+  }
+  if (!IsInUseInHost(uuid)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_DECREMENT,
+                              BDH_TRACING_ENUM_LAST);
     return;
   }
   BlobStorageContext* context = this->context();
@@ -262,12 +268,14 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
                                                  const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobStorageContext* context = this->context();
-  if (uuid.empty() || !IsInUseInHost(uuid) ||
-      context->registry().IsURLMapped(public_url)) {
-    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_INCREMENT,
-                              BDH_TRACING_ENUM_LAST);
+  if (uuid.empty()) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_URL_OPERATION);
+    return;
+  }
+  if (!IsInUseInHost(uuid) || context->registry().IsURLMapped(public_url)) {
+    UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_INCREMENT,
+                              BDH_TRACING_ENUM_LAST);
     return;
   }
   context->RegisterPublicBlobURL(public_url, uuid);
@@ -276,11 +284,14 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
 
 void BlobDispatcherHost::OnRevokePublicBlobURL(const GURL& public_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!public_url.is_valid()) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_URL_OPERATION);
+    return;
+  }
   if (!IsUrlRegisteredInHost(public_url)) {
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_DECREMENT,
                               BDH_TRACING_ENUM_LAST);
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::BDH_INVALID_URL_OPERATION);
     return;
   }
   context()->RevokePublicBlobURL(public_url);
