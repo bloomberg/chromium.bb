@@ -637,8 +637,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)reloadInternal;
 // Aborts any load for both the web view and web controller.
 - (void)abortLoad;
-// Cancels any load in progress in the web view.
-- (void)abortWebLoad;
 // Updates the internal state and informs the delegate that any outstanding load
 // operations are cancelled.
 - (void)loadCancelled;
@@ -2162,14 +2160,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)abortLoad {
-  [self abortWebLoad];
-  _certVerificationErrors->Clear();
-  [self loadCancelled];
-}
-
-- (void)abortWebLoad {
   [_webView stopLoading];
   [_pendingNavigationInfo setCancelled:YES];
+  _certVerificationErrors->Clear();
+  [self loadCancelled];
 }
 
 - (void)loadCancelled {
@@ -5006,7 +5000,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // process (which may potentially be controller by an attacker) is
       // dangerous.
       if (web::GetWebClient()->IsAppSpecificURL(_documentURL)) {
-        [self abortWebLoad];
+        [self abortLoad];
         NavigationManager::WebLoadParams params(webViewURL);
         [self loadWithParams:params];
       }
