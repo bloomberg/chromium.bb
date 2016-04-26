@@ -13,6 +13,7 @@ namespace blink {
 
 class LayoutPoint;
 class LayoutSize;
+class LayoutUnit;
 
 class LayoutBoxItem : public LayoutBoxModel {
 public:
@@ -49,6 +50,11 @@ public:
     LayoutPoint location() const
     {
         return toBox()->location();
+    }
+
+    LayoutUnit minPreferredLogicalWidth() const
+    {
+        return toBox()->minPreferredLogicalWidth();
     }
 
 private:

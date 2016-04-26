@@ -67,7 +67,6 @@
 #include "core/input/EventHandler.h"
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -3433,10 +3432,10 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
         mainFrameImpl()->frame()->view()->updateLifecycleToCompositingCleanPlusScrolling();
 
     Document* document = m_page->mainFrame()->isLocalFrame() ? m_page->deprecatedLocalMainFrame()->document() : nullptr;
-    if (!document || !document->layoutView() || !document->documentElement() || !document->documentElement()->layoutBox())
+    if (!document || document->layoutViewItem().isNull() || !document->documentElement() || !document->documentElement()->layoutBox())
         return WebSize();
 
-    int widthScaled = document->layoutView()->minPreferredLogicalWidth().round(); // Already accounts for zoom.
+    int widthScaled = document->layoutViewItem().minPreferredLogicalWidth().round(); // Already accounts for zoom.
     int heightScaled = document->documentElement()->layoutBox()->scrollHeight().round();
     return IntSize(widthScaled, heightScaled);
 }
@@ -4209,10 +4208,10 @@ PaintLayerCompositor* WebViewImpl::compositor() const
         return nullptr;
 
     Document* document = frame->frame()->document();
-    if (!document || !document->layoutView())
+    if (!document || document->layoutViewItem().isNull())
         return nullptr;
 
-    return document->layoutView()->compositor();
+    return document->layoutViewItem().compositor();
 }
 
 GraphicsLayer* WebViewImpl::rootGraphicsLayer()
