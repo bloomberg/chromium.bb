@@ -215,10 +215,8 @@ void CardUnmaskPromptControllerImpl::NewCardLinkClicked() {
 
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
 #if defined(OS_IOS)
-  // The iOS UI has less room for the title and places a "Verify" button right
-  // next to it so the full title ("Verify your" + type and last four) is
-  // unnecessary.
-  return card_.TypeAndLastFourDigits();
+  // The iOS UI has less room for the title so it shows a shorter string.
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE);
 #else
   int ids;
   if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST)
@@ -232,24 +230,28 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
+  int ids;
   if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST) {
-    return l10n_util::GetStringUTF16(
-        card_.type() == kAmericanExpressCard
-            ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX
-            : IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS);
+    ids = card_.type() == kAmericanExpressCard
+        ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX
+        : IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS;
+  } else if (ShouldRequestExpirationDate()) {
+    ids = card_.type() == kAmericanExpressCard
+        ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX
+        : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED;
+  } else {
+    ids = card_.type() == kAmericanExpressCard
+        ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX
+        : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS;
   }
 
-  if (ShouldRequestExpirationDate()) {
-    return l10n_util::GetStringUTF16(
-        card_.type() == kAmericanExpressCard
-            ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX
-            : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED);
-  }
-
-  return l10n_util::GetStringUTF16(
-      card_.type() == kAmericanExpressCard
-          ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX
-          : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
+#if defined(OS_IOS)
+  // The iOS UI shows the card details in the instructions text since they
+  // don't fit in the title.
+  return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
+#else
+  return l10n_util::GetStringUTF16(ids);
+#endif
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetOkButtonLabel() const {

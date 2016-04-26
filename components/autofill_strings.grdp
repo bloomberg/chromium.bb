@@ -219,33 +219,58 @@
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_NETWORK" desc="Error message to show when a credit card cannot be verified because Wallet servers can't be reached.">
     There was a problem verifying your card. Check your internet connection and try again.
   </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="Title for the credit card unmasking dialog.">
-    Verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE" desc="Title for the credit card unmasking dialog when the credit card is expired.">
-    Update and verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_TITLE" desc="Title for the dialog for unmasking a credit card and using this card to pay.">
-    Pay with <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
-    Enter the 3-digit CVC from the back of your card
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the card unmasking dialog for amex cards.">
-    Enter the 4-digit CVC from the front of your card
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS" desc="Text explaining what the user should do in the dialog for unmasking a credit card and paying with this card.">
-    Enter the 3-digit CVC from the back of your card for verification
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the dialog for unmasking an amex card and paying with this card.">
-    Enter the 4-digit CVC from the front of your card for verification
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.">
-    Enter the expiration date and 3-digit CVC from the back of your card
-  </message>
-  <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX" desc="Text explaining what the user should do in the card unmasking dialog to update an expired amex card.">
-    Enter the expiration date and 4-digit CVC from the front of your card
-  </message>
+  <if expr="not is_ios">
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="Title for the credit card unmasking dialog.">
+      Verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE" desc="Title for the credit card unmasking dialog when the credit card is expired.">
+      Update and verify your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_TITLE" desc="Title for the dialog for unmasking a credit card and using this card to pay.">
+      Pay with <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
+      Enter the 3-digit CVC from the back of your card
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the card unmasking dialog for amex cards.">
+      Enter the 4-digit CVC from the front of your card
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS" desc="Text explaining what the user should do in the dialog for unmasking a credit card and paying with this card.">
+      Enter the 3-digit CVC from the back of your card for verification
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the dialog for unmasking an amex card and paying with this card.">
+      Enter the 4-digit CVC from the front of your card for verification
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.">
+      Enter the expiration date and 3-digit CVC from the back of your card
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX" desc="Text explaining what the user should do in the card unmasking dialog to update an expired amex card.">
+      Enter the expiration date and 4-digit CVC from the front of your card
+    </message>
+  </if>
+  <if expr="is_ios">
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE" desc="Title for the credit card unmasking dialog.">
+      Verify Card
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
+      Enter the 3-digit CVC from the back of your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the card unmasking dialog for amex cards.">
+      Enter the 4-digit CVC from the front of your <ph name="CREDIT_CARD">$1<ex>Amex - 5679</ex></ph>
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS" desc="Text explaining what the user should do in the dialog for unmasking a credit card and paying with this card.">
+      Enter the 3-digit CVC from the back of your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph> for verification
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX" desc="Text explaining what the user should do in the dialog for unmasking an amex card and paying with this card.">
+      Enter the 4-digit CVC from the front of your <ph name="CREDIT_CARD">$1<ex>Amex - 5679</ex></ph> for verification
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.">
+      Enter the expiration date and 3-digit CVC from the back of your <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
+    </message>
+    <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX" desc="Text explaining what the user should do in the card unmasking dialog to update an expired amex card.">
+      Enter the expiration date and 4-digit CVC from the front of your <ph name="CREDIT_CARD">$1<ex>Amex - 5679</ex></ph>
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX" desc="Text for checkbox in card unmasking dialog that allows user to store a Wallet card on their local device. If checked, the dialog won't show up again for the given credit card." formatter_data="android_java">
     Keep a copy of this card on this device
   </message>
