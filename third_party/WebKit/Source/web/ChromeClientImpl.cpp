@@ -934,6 +934,14 @@ void ChromeClientImpl::setEventListenerProperties(WebEventListenerClass eventCla
     }
 }
 
+void ChromeClientImpl::beginLifecycleUpdates()
+{
+    if (WebLayerTreeView* treeView = m_webView->layerTreeView()) {
+        treeView->setDeferCommits(false);
+        treeView->setNeedsBeginFrame();
+    }
+}
+
 WebEventListenerProperties ChromeClientImpl::eventListenerProperties(WebEventListenerClass eventClass) const
 {
     if (WebLayerTreeView* treeView = m_webView->layerTreeView())

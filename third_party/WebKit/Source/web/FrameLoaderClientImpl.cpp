@@ -180,12 +180,6 @@ void FrameLoaderClientImpl::documentElementAvailable()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDocumentElement(m_webFrame);
-
-    if (m_webFrame->parent())
-        return;
-
-    if (m_webFrame->viewImpl())
-        m_webFrame->viewImpl()->mainFrameDocumentElementAvailable();
 }
 
 void FrameLoaderClientImpl::runScriptsAtDocumentElementAvailable()
@@ -234,16 +228,6 @@ void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didUpdateCurrentHistoryItem();
-}
-
-// TODO(dglazkov): Can this be plumbing be streamlined out?
-void FrameLoaderClientImpl::didRemoveAllPendingStylesheet()
-{
-    if (m_webFrame->parent())
-        return;
-
-    if (WebViewImpl* webview = m_webFrame->viewImpl())
-        webview->didRemoveAllPendingStylesheetsInMainFrameDocument();
 }
 
 bool FrameLoaderClientImpl::allowScript(bool enabledPerSettings)
@@ -438,11 +422,6 @@ void FrameLoaderClientImpl::dispatchDidFinishLoading(DocumentLoader* loader,
 
 void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad()
 {
-    if (!m_webFrame->parent()) {
-        if (WebViewImpl* webview = m_webFrame->viewImpl())
-            webview->didFinishMainFrameDocumentLoad();
-    }
-
     // TODO(dglazkov): Sadly, workers are WebFrameClients, and they can totally
     // destroy themselves when didFinishDocumentLoad is invoked, and in turn destroy
     // the fake WebLocalFrame that they create, which means that you should not
@@ -985,12 +964,6 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
 {
     if (m_webFrame->client())
         m_webFrame->client()->willInsertBody(m_webFrame);
-
-    if (m_webFrame->parent())
-        return;
-
-    if (m_webFrame->viewImpl())
-        m_webFrame->viewImpl()->willInsertMainFrameDocumentBody();
 }
 
 PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider()

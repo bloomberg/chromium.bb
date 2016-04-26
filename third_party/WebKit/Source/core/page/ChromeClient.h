@@ -98,6 +98,8 @@ public:
 
     virtual bool hadFormInteraction() const = 0;
 
+    virtual void beginLifecycleUpdates() = 0;
+
     // Start a system drag and drop operation.
     virtual void startDragging(LocalFrame*, const WebDragData&, WebDragOperationsMask, const WebImage& dragImage, const WebPoint& dragImageOffset) = 0;
     virtual bool acceptsLoadDrops() const = 0;

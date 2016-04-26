@@ -610,6 +610,14 @@ void Document::childrenChanged(const ChildrenChange& change)
     ContainerNode::childrenChanged(change);
     m_documentElement = ElementTraversal::firstWithin(*this);
 
+    // For non-HTML documents the willInsertBody notification won't happen
+    // so we resume as soon as we have a document element. Even for XHTML
+    // documents there may never be a <body> (since the parser won't always
+    // insert one), so we resume here too. That does mean XHTML documents make
+    // frames when there's only a <head>, but such documents are pretty rare.
+    if (m_documentElement && !isHTMLDocument())
+        beginLifecycleUpdatesIfRenderingReady();
+
     // Installs the viewport scrolling callback (the "applyScroll" in Scroll
     // Customization lingo) on the documentElement. This callback is
     // responsible for viewport related scroll actions like top controls
@@ -2497,6 +2505,18 @@ void Document::setBody(HTMLElement* prpNewBody, ExceptionState& exceptionState)
         documentElement()->appendChild(newBody, exceptionState);
 }
 
+void Document::willInsertBody()
+{
+    if (frame())
+        frame()->loader().client()->dispatchWillInsertBody();
+    // If we get to the <body> try to resume commits since we should have content
+    // to paint now.
+    // TODO(esprehn): Is this really optimal? We might start producing frames
+    // for very little content, should we wait for some heuristic like
+    // isVisuallyNonEmpty() ?
+    beginLifecycleUpdatesIfRenderingReady();
+}
+
 HTMLHeadElement* Document::head() const
 {
     Node* de = documentElement();
@@ -3017,8 +3037,14 @@ void Document::didLoadAllScriptBlockingResources()
 {
     loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
 
-    if (frame())
-        frame()->loader().client()->didRemoveAllPendingStylesheet();
+    if (isHTMLDocument() && body()) {
+        // For HTML if we have no more stylesheets to load and we're past the body
+        // tag, we should have something to paint so resume.
+        beginLifecycleUpdatesIfRenderingReady();
+    } else if (!isHTMLDocument() && documentElement()) {
+        // For non-HTML there is no body so resume as soon as the sheets are loaded.
+        beginLifecycleUpdatesIfRenderingReady();
+    }
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
         view()->processUrlFragment(m_url);
@@ -4742,6 +4768,8 @@ void Document::finishedParsing()
         if (mainResourceWasAlreadyRequested)
             updateLayoutTree();
 
+        beginLifecycleUpdatesIfRenderingReady();
+
         frame->loader().finishedParsing();
 
         TRACE_EVENT_INSTANT1("devtools.timeline", "MarkDOMContent", TRACE_EVENT_SCOPE_THREAD, "data", InspectorMarkLoadEvent::data(frame));
@@ -4761,6 +4789,23 @@ void Document::finishedParsing()
 void Document::elementDataCacheClearTimerFired(Timer<Document>*)
 {
     m_elementDataCache.clear();
+}
+
+void Document::beginLifecycleUpdatesIfRenderingReady()
+{
+    if (!isActive())
+        return;
+    if (!isRenderingReady())
+        return;
+    if (LocalFrame* frame = this->frame()) {
+        // Avoid pumping frames for the initially empty document.
+        if (!frame->loader().stateMachine()->committedFirstRealDocumentLoad())
+            return;
+        // The compositor will "defer commits" for the main frame until we
+        // explicitly request them.
+        if (frame->isMainFrame())
+            frame->page()->chromeClient().beginLifecycleUpdates();
+    }
 }
 
 Vector<IconURL> Document::iconURLs(int iconTypesMask)

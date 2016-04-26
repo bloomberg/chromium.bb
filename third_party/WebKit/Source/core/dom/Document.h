@@ -757,6 +757,7 @@ public:
     HTMLBodyElement* firstBodyElement() const;
 
     void setBody(HTMLElement*, ExceptionState&);
+    void willInsertBody();
 
     HTMLHeadElement* head() const;
 
@@ -1109,6 +1110,8 @@ private:
     void notifyLayoutTreeOfSubtreeChanges();
 
     void detachParser();
+
+    void beginLifecycleUpdatesIfRenderingReady();
 
     bool isDocument() const final { return true; }
 

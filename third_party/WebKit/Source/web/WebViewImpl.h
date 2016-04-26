@@ -374,10 +374,6 @@ public:
     // unless the view did not need a layout.
     void layoutUpdated(WebLocalFrameImpl*);
 
-    void mainFrameDocumentElementAvailable();
-    void willInsertMainFrameDocumentBody();
-    void didRemoveAllPendingStylesheetsInMainFrameDocument();
-    void didFinishMainFrameDocumentLoad();
     void didChangeContentsSize();
     void pageScaleFactorChanged();
 
@@ -536,7 +532,6 @@ private:
 
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();
-    void resumeTreeViewCommitsIfRenderingReady();
     IntSize contentsSize() const;
 
     void performResize();

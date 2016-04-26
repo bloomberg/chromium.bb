@@ -187,7 +187,6 @@ public:
 
     virtual void didChangeScrollOffset() { }
     virtual void didUpdateCurrentHistoryItem() { }
-    virtual void didRemoveAllPendingStylesheet() { }
 
     virtual bool allowScript(bool enabledPerSettings) { return enabledPerSettings; }
     virtual bool allowScriptFromSource(bool enabledPerSettings, const KURL&) { return enabledPerSettings; }

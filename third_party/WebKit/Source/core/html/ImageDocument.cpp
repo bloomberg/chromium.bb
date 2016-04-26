@@ -223,7 +223,7 @@ void ImageDocument::createDocumentStructure()
     HTMLBodyElement* body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
 
-    frame()->loader().client()->dispatchWillInsertBody();
+    willInsertBody();
 
     m_imageElement = HTMLImageElement::create(*this);
     m_imageElement->setAttribute(styleAttr, "-webkit-user-select: none");

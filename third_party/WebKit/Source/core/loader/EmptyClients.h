@@ -89,6 +89,8 @@ public:
 
     void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) override {}
 
+    void beginLifecycleUpdates() override { }
+
     bool hadFormInteraction() const override { return false; }
 
     void startDragging(LocalFrame*, const WebDragData&, WebDragOperationsMask, const WebImage& dragImage, const WebPoint& dragImageOffset) {}

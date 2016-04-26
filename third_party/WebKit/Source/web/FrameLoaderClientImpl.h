@@ -136,7 +136,6 @@ public:
         const KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) override;
     void didChangeScrollOffset() override;
     void didUpdateCurrentHistoryItem() override;
-    void didRemoveAllPendingStylesheet() override;
     bool allowScript(bool enabledPerSettings) override;
     bool allowScriptFromSource(bool enabledPerSettings, const KURL& scriptURL) override;
     bool allowPlugins(bool enabledPerSettings) override;
