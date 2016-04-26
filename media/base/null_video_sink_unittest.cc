@@ -98,11 +98,12 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
   {
     SCOPED_TRACE("Waiting for second render call.");
     WaitableMessageLoopEvent event;
+    scoped_refptr<VideoFrame> test_frame_2 = CreateFrame(kInterval);
     EXPECT_CALL(*this, Render(_, _, true))
         .WillOnce(Return(test_frame))
-        .WillOnce(Return(nullptr));
+        .WillOnce(Return(test_frame_2));
     EXPECT_CALL(*this, FrameReceived(test_frame)).Times(0);
-    EXPECT_CALL(*this, FrameReceived(scoped_refptr<VideoFrame>()))
+    EXPECT_CALL(*this, FrameReceived(test_frame_2))
         .WillOnce(RunClosure(event.GetClosure()));
     event.RunAndWait();
   }
@@ -122,10 +123,11 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
   std::unique_ptr<NullVideoSink> sink = ConstructSink(true, interval);
 
   scoped_refptr<VideoFrame> test_frame = CreateFrame(base::TimeDelta());
+  scoped_refptr<VideoFrame> test_frame_2 = CreateFrame(interval);
   sink->Start(this);
 
   EXPECT_CALL(*this, FrameReceived(test_frame)).Times(1);
-  EXPECT_CALL(*this, FrameReceived(scoped_refptr<VideoFrame>())).Times(1);
+  EXPECT_CALL(*this, FrameReceived(test_frame_2)).Times(1);
 
   const int kTestRuns = 6;
   const base::TimeTicks now = base::TimeTicks::Now();
@@ -141,7 +143,8 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
     } else {
       EXPECT_CALL(*this, Render(current_time + i * interval,
                                 current_time + (i + 1) * interval, false))
-          .WillOnce(DoAll(RunClosure(event.GetClosure()), Return(nullptr)));
+          .WillOnce(
+              DoAll(RunClosure(event.GetClosure()), Return(test_frame_2)));
     }
   }
   event.RunAndWait();

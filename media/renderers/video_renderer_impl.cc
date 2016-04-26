@@ -299,8 +299,17 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
   if (time_progressing_) {
     // If only an EOS frame came in after a seek, the renderer may not have
     // received the ended event yet though we've posted it.
-    if (!rendered_end_of_stream_)
-      StartSink();
+    if (rendered_end_of_stream_)
+      return;
+
+    // If we have no frames queued, there is a pending buffering state change in
+    // flight and we should ignore the start attempt.
+    if (!algorithm_->frames_queued()) {
+      DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
+      return;
+    }
+
+    StartSink();
   } else {
     StopSink();
 

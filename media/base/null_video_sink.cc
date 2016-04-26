@@ -56,6 +56,7 @@ void NullVideoSink::CallRender() {
   const base::TimeTicks end_of_interval = current_render_time_ + interval_;
   scoped_refptr<VideoFrame> new_frame = callback_->Render(
       current_render_time_, end_of_interval, background_render_);
+  DCHECK(new_frame);
   const bool is_new_frame = new_frame != last_frame_;
   last_frame_ = new_frame;
   if (is_new_frame && !new_frame_cb_.is_null())

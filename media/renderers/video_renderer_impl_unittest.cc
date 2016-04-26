@@ -339,6 +339,10 @@ class VideoRendererImplTest
       Mock::VerifyAndClearExpectations(&mock_cb_);
     }
 
+    // Simulate delayed buffering state callbacks.
+    renderer_->OnTimeStateChanged(false);
+    renderer_->OnTimeStateChanged(true);
+
     // Receiving end of stream should signal having enough.
     {
       SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
