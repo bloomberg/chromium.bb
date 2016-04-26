@@ -1842,10 +1842,10 @@ bool ShellUtil::CanMakeChromeDefaultUnattended() {
 ShellUtil::InteractiveSetDefaultMode ShellUtil::GetInteractiveSetDefaultMode() {
   DCHECK(!CanMakeChromeDefaultUnattended());
 
-  if (base::win::GetVersion() == base::win::VERSION_WIN8)
-    return InteractiveSetDefaultMode::INTENT_PICKER;
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return InteractiveSetDefaultMode::SYSTEM_SETTINGS;
 
-  return InteractiveSetDefaultMode::SYSTEM_SETTINGS;
+  return InteractiveSetDefaultMode::INTENT_PICKER;
 }
 
 bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
