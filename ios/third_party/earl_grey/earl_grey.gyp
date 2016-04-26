@@ -269,6 +269,9 @@
         'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
         'USE_HEADERMAP': 'YES',
         'CLANG_ENABLE_OBJC_ARC': 'YES',
+        'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
+        'BUNDLE_IDENTIFIER': 'com.google.earlgrey.EarlGrey',
+        'INFOPLIST_FILE': 'src/EarlGrey-Info.plist',
       },
       'link_settings': {
         'libraries': [

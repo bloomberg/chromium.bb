@@ -227,6 +227,9 @@
         'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
         'USE_HEADERMAP': 'YES',
         'CLANG_ENABLE_ARC': 'YES',
+        'CODE_SIGN_IDENTITY[sdk=iphoneos*]': 'iPhone Developer',
+        'PRODUCT_BUNDLE_IDENTIFIER': 'org.hamcrest.OCHamcrest.OCHamcrest-iOS',
+        'INFOPLIST_FILE': 'src/Source/OCHamcrest-Info.plist',
       },
       'include_dirs': [
         'src',
