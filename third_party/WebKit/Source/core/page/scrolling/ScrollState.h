@@ -8,12 +8,14 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/Element.h"
 #include "core/page/scrolling/ScrollStateInit.h"
 #include "platform/scroll/ScrollStateData.h"
+#include "wtf/Forward.h"
 #include <deque>
 
 namespace blink {
+
+class Element;
 
 class CORE_EXPORT ScrollState final : public GarbageCollectedFinalized<ScrollState>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -90,8 +92,9 @@ public:
 
 private:
     ScrollState();
-    ScrollState(PassOwnPtr<ScrollStateData>);
-    PassOwnPtr<ScrollStateData> m_data;
+    explicit ScrollState(PassOwnPtr<ScrollStateData>);
+
+    OwnPtr<ScrollStateData> m_data;
     std::deque<int> m_scrollChain;
 };
 
