@@ -4366,22 +4366,29 @@ viewport_set_source(struct wl_client *client,
 	}
 
 	assert(surface->viewport_resource == resource);
+	assert(surface->resource);
 
 	if (src_width == wl_fixed_from_int(-1) &&
-	    src_height == wl_fixed_from_int(-1)) {
-		/* unset source size */
+	    src_height == wl_fixed_from_int(-1) &&
+	    src_x == wl_fixed_from_int(-1) &&
+	    src_y == wl_fixed_from_int(-1)) {
+		/* unset source rect */
 		surface->pending.buffer_viewport.buffer.src_width =
 			wl_fixed_from_int(-1);
 		surface->pending.buffer_viewport.changed = 1;
 		return;
 	}
 
-	if (src_width <= 0 || src_height <= 0) {
+	if (src_width <= 0 || src_height <= 0 || src_x < 0 || src_y < 0) {
 		wl_resource_post_error(resource,
 			WP_VIEWPORT_ERROR_BAD_VALUE,
-			"source size must be positive (%fx%f)",
+			"wl_surface@%d viewport source "
+			"w=%f <= 0, h=%f <= 0, x=%f < 0, or y=%f < 0",
+			wl_resource_get_id(surface->resource),
 			wl_fixed_to_double(src_width),
-			wl_fixed_to_double(src_height));
+			wl_fixed_to_double(src_height),
+			wl_fixed_to_double(src_x),
+			wl_fixed_to_double(src_y));
 		return;
 	}
 
