@@ -424,6 +424,7 @@ _x86_internal_release_boards = frozenset([
     'glimmer',
     'gnawty',
     'guado',
+    'guado_labstation',
     'guado_moblab',
     'heli',
     'jecht',
