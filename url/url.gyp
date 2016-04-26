@@ -74,7 +74,6 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        '../mojo/mojo_edk.gyp:mojo_common_test_support',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icuuc',
         'url_test_mojom',
@@ -95,6 +94,9 @@
         ['OS!="ios"', {
           'sources': [
             'mojo/url_gurl_struct_traits_unittest.cc',
+          ],
+          'dependencies': [
+            '../mojo/mojo_edk.gyp:mojo_common_test_support',
           ],
         }],
         # Unit tests that are not supported by the current ICU alternatives on Android.
