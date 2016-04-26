@@ -35,14 +35,28 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
                               const gfx::Rect& aperture_rect,
                               const gfx::Size& layer_size,
                               const gfx::Rect& border,
+                              const gfx::Rect& occlusion,
                               bool fill_center,
                               size_t expected_quad_size) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   gfx::Rect visible_layer_rect(layer_size);
-  gfx::Rect expected_remaining(border.x(),
-                               border.y(),
-                               layer_size.width() - border.width(),
-                               layer_size.height() - border.height());
+  gfx::Rect expected_layer_remaining;
+  gfx::Rect expected_tex_remaining;
+
+  if (!occlusion.IsEmpty()) {
+    expected_layer_remaining = occlusion;
+    expected_tex_remaining.SetRect(
+        occlusion.x(), occlusion.y(),
+        (bitmap_size.width() - occlusion.x()) -
+            (layer_size.width() - occlusion.right()),
+        (bitmap_size.height() - occlusion.y()) -
+            (layer_size.height() - occlusion.bottom()));
+  } else {
+    expected_layer_remaining.SetRect(border.x(), border.y(),
+                                     layer_size.width() - border.width(),
+                                     layer_size.height() - border.height());
+    expected_tex_remaining = aperture_rect;
+  }
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestSharedBitmapManager shared_bitmap_manager;
@@ -66,7 +80,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   host_impl.CreateUIResource(uid, bitmap);
   layer->SetUIResourceId(uid);
   layer->SetImageBounds(bitmap_size);
-  layer->SetLayout(aperture_rect, border, fill_center, false);
+  layer->SetLayout(aperture_rect, border, occlusion, fill_center, false);
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
 
@@ -74,21 +88,21 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   const QuadList& quads = render_pass->quad_list;
   EXPECT_EQ(expected_quad_size, quads.size());
 
-  Region remaining(visible_layer_rect);
+  Region layer_remaining(visible_layer_rect);
   for (auto iter = quads.cbegin(); iter != quads.cend(); ++iter) {
     gfx::Rect quad_rect = iter->rect;
 
     EXPECT_TRUE(visible_layer_rect.Contains(quad_rect)) << iter.index();
-    EXPECT_TRUE(remaining.Contains(quad_rect)) << iter.index();
-    remaining.Subtract(Region(quad_rect));
+    EXPECT_TRUE(layer_remaining.Contains(quad_rect)) << iter.index();
+    layer_remaining.Subtract(Region(quad_rect));
   }
 
   // Check if the left-over quad is the same size as the mapped aperture quad in
   // layer space.
   if (!fill_center) {
-    EXPECT_EQ(expected_remaining, remaining.bounds());
+    EXPECT_EQ(expected_layer_remaining, layer_remaining.bounds());
   } else {
-    EXPECT_TRUE(remaining.bounds().IsEmpty());
+    EXPECT_TRUE(layer_remaining.bounds().IsEmpty());
   }
 
   // Verify UV rects
@@ -103,11 +117,11 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   }
 
   if (!fill_center) {
-    EXPECT_EQ(aperture_rect, tex_remaining.bounds());
-    Region aperture_region(aperture_rect);
+    EXPECT_EQ(expected_tex_remaining, tex_remaining.bounds());
+    Region aperture_region(expected_tex_remaining);
     EXPECT_EQ(aperture_region, tex_remaining);
   } else {
-    EXPECT_TRUE(remaining.bounds().IsEmpty());
+    EXPECT_TRUE(layer_remaining.bounds().IsEmpty());
   }
 }
 
@@ -120,12 +134,8 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
   gfx::Rect border(40, 40, 80, 80);
   bool fill_center = false;
   size_t expected_quad_size = 8;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
 
   // The bounds of the layer are set to less than the bitmap size.
   bitmap_size = gfx::Size(100, 100);
@@ -134,12 +144,8 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
   border = gfx::Rect(10, 10, 25, 15);
   fill_center = true;
   expected_quad_size = 9;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
 
   // Layer and image sizes are equal.
   bitmap_size = gfx::Size(100, 100);
@@ -148,12 +154,21 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
   border = gfx::Rect(20, 30, 40, 50);
   fill_center = true;
   expected_quad_size = 9;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
+}
+
+TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithOcclusion) {
+  // Input is a 100x100 bitmap with a 40x50 aperture at x=20, y=30.
+  // The bounds of the layer are set to 400x400.
+  gfx::Size bitmap_size(100, 100);
+  gfx::Rect aperture_rect(30, 30, 40, 40);
+  gfx::Size layer_size(400, 400);
+  gfx::Rect occlusion(20, 20, 360, 360);
+  bool fill_center = false;
+  size_t expected_quad_size = 12;
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, gfx::Rect(),
+                           occlusion, fill_center, expected_quad_size);
 }
 
 TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithEmptyPatches) {
@@ -165,12 +180,8 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithEmptyPatches) {
   gfx::Rect border(10, 0, 20, 10);
   bool fill_center = false;
   size_t expected_quad_size = 5;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
 
   // The top and left components of the 9-patch are empty, so there should be no
   // quads for the left and top components.
@@ -180,12 +191,8 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithEmptyPatches) {
   border = gfx::Rect(0, 0, 10, 10);
   fill_center = false;
   expected_quad_size = 3;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
 
   // The aperture is the size of the bitmap and the center doesn't draw.
   bitmap_size = gfx::Size(100, 100);
@@ -194,12 +201,8 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithEmptyPatches) {
   border = gfx::Rect(0, 0, 0, 0);
   fill_center = false;
   expected_quad_size = 0;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
 
   // The aperture is the size of the bitmap and the center does draw.
   bitmap_size = gfx::Size(100, 100);
@@ -208,12 +211,8 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithEmptyPatches) {
   border = gfx::Rect(0, 0, 0, 0);
   fill_center = true;
   expected_quad_size = 1;
-  NinePatchLayerLayoutTest(bitmap_size,
-                           aperture_rect,
-                           layer_size,
-                           border,
-                           fill_center,
-                           expected_quad_size);
+  NinePatchLayerLayoutTest(bitmap_size, aperture_rect, layer_size, border,
+                           gfx::Rect(), fill_center, expected_quad_size);
 }
 
 TEST(NinePatchLayerImplTest, Occlusion) {
@@ -238,7 +237,7 @@ TEST(NinePatchLayerImplTest, Occlusion) {
 
   gfx::Rect aperture = gfx::Rect(3, 3, 4, 4);
   gfx::Rect border = gfx::Rect(300, 300, 400, 400);
-  nine_patch_layer_impl->SetLayout(aperture, border, true, false);
+  nine_patch_layer_impl->SetLayout(aperture, border, gfx::Rect(), true, false);
 
   impl.CalcDrawProps(viewport_size);
 
@@ -316,7 +315,8 @@ TEST(NinePatchLayerImplTest, OpaqueRect) {
 
     gfx::Rect aperture = gfx::Rect(3, 3, 4, 4);
     gfx::Rect border = gfx::Rect(300, 300, 400, 400);
-    nine_patch_layer_impl->SetLayout(aperture, border, true, false);
+    nine_patch_layer_impl->SetLayout(aperture, border, gfx::Rect(), true,
+                                     false);
 
     impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, gfx::Rect());
 

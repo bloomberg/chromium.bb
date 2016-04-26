@@ -182,12 +182,13 @@ void Shadow::UpdateLayerBounds() {
   int aperture = GetShadowApertureForStyle(style_);
   int aperture_x = std::min(aperture, layer_bounds.width() / 2);
   int aperture_y = std::min(aperture, layer_bounds.height() / 2);
+
   shadow_layer_->UpdateNinePatchLayerAperture(
       gfx::Rect(aperture_x, aperture_y,
                 image_size_.width() - aperture_x * 2,
                 image_size_.height() - aperture_y * 2));
-  shadow_layer_->UpdateNinePatchLayerBorder(
-      gfx::Rect(aperture_x, aperture_y, aperture_x * 2, aperture_y * 2));
+  shadow_layer_->UpdateNinePatchOcclusion(
+      content_bounds_ + gfx::Vector2d(interior_inset_, interior_inset_));
 }
 
 }  // namespace wm

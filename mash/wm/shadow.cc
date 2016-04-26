@@ -199,8 +199,8 @@ void Shadow::UpdateLayerBounds() {
       gfx::Rect(aperture_x, aperture_y,
                 image_size_.width() - aperture_x * 2,
                 image_size_.height() - aperture_y * 2));
-  shadow_layer_->UpdateNinePatchLayerBorder(
-      gfx::Rect(aperture_x, aperture_y, aperture_x * 2, aperture_y * 2));
+  shadow_layer_->UpdateNinePatchOcclusion(
+      content_bounds_ + gfx::Vector2d(interior_inset_, interior_inset_));
 }
 
 void Shadow::OnWindowDestroyed(mus::Window* window) {

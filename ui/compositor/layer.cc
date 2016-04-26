@@ -626,9 +626,9 @@ void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip) {
   nine_patch_layer_->SetAperture(aperture_in_pixel);
 }
 
-void Layer::UpdateNinePatchLayerBorder(const gfx::Rect& border) {
+void Layer::UpdateNinePatchOcclusion(const gfx::Rect& occlusion) {
   DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
-  nine_patch_layer_->SetBorder(border);
+  nine_patch_layer_->SetLayerOcclusion(occlusion);
 }
 
 void Layer::SetColor(SkColor color) { GetAnimator()->SetColor(color); }
@@ -810,6 +810,7 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
       above ?
       (child_i < other_i ? other_i : other_i + 1) :
       (child_i < other_i ? other_i - 1 : other_i);
+
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
