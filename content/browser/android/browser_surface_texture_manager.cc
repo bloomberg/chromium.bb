@@ -59,26 +59,10 @@ BrowserSurfaceTextureManager::AcquireNativeWidgetForSurfaceTexture(
   return native_window;
 }
 
-void BrowserSurfaceTextureManager::EstablishSurfaceTexturePeer(
-    base::ProcessHandle render_process_handle,
-    scoped_refptr<gfx::SurfaceTexture> surface_texture,
-    int render_frame_id,
-    int player_id) {
-  if (!surface_texture.get())
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowserMediaPlayerManager::SetSurfacePeer, surface_texture,
-                 render_process_handle, render_frame_id, player_id));
-}
-
 BrowserSurfaceTextureManager::BrowserSurfaceTextureManager() {
-  SurfaceTexturePeer::InitInstance(this);
 }
 
 BrowserSurfaceTextureManager::~BrowserSurfaceTextureManager() {
-  SurfaceTexturePeer::InitInstance(nullptr);
 }
 
 }  // namespace content

@@ -821,7 +821,6 @@
       'browser/android/java/java_type_unittest.cc',
       'browser/android/java/jni_helper_unittest.cc',
       'browser/android/url_request_content_job_unittest.cc',
-      'common/gpu/client/gpu_memory_buffer_impl_surface_texture_unittest.cc',
       'renderer/java/gin_java_bridge_value_converter_unittest.cc',
       'renderer/media/android/webmediasession_android_unittest.cc',
     ],
@@ -1514,47 +1513,6 @@
         }],
       ],
     },
-    {
-      # GN version: //content/test:content_gl_tests
-      'target_name': 'content_gl_tests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        'content.gyp:content_common',
-        'test_support_content',
-        '../base/base.gyp:test_support_base',
-        '../gpu/gpu.gyp:command_buffer_common',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/public/blink.gyp:blink',
-        '../ui/base/ui_base.gyp:ui_base',
-        '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/gfx/gfx.gyp:gfx_test_support',
-        '../ui/gl/gl.gyp:gl',
-        '../ui/gl/gl.gyp:gl_test_support',
-        '../v8/src/v8.gyp:v8',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'common/gpu/client/gpu_context_tests.h',
-        'common/gpu/client/gpu_in_process_context_tests.cc',
-        'test/run_all_gl_tests.cc',
-      ],
-      'conditions': [
-        ['OS=="android"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }, {
-          'dependencies': [
-            # Runtime dependencis.
-            '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-            '../third_party/mesa/mesa.gyp:osmesa',
-          ],
-        }],
-      ],
-    },
   ],
   'conditions': [
     ['test_isolation_mode != "noop"', {
@@ -1610,26 +1568,6 @@
             '../third_party/catapult/telemetry/telemetry.gyp:bitmaptools#host',
           ],
         },
-      ],
-      'conditions': [
-        ['archive_gpu_tests==1', {
-          'targets': [
-            {
-              # GN: content/test:content_gl_tests_run
-              'target_name': 'content_gl_tests_run',
-              'type': 'none',
-              'dependencies': [
-                'content_shell_and_tests.gyp:content_gl_tests',
-              ],
-              'includes': [
-                '../build/isolate.gypi',
-              ],
-              'sources': [
-                'content_gl_tests.isolate',
-              ],
-            },
-          ],
-        }],
       ],
     }],
     ['chromeos==1 or OS=="win" or OS=="android"', {
@@ -1812,21 +1750,6 @@
     }],
     ['OS == "android"', {
       'targets': [
-        {
-          # GN: //content/test:content_gl_tests
-          'target_name': 'content_gl_tests_apk',
-          'type': 'none',
-          'dependencies': [
-            'content_gl_tests',
-            'content_java_test_support',
-          ],
-          'variables': {
-            'test_suite_name': 'content_gl_tests',
-          },
-          'includes': [
-            '../build/apk_test.gypi',
-          ],
-        },
         {
           # GN: //content/test:content_unittests
           'target_name': 'content_unittests_apk',

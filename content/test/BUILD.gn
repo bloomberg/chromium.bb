@@ -908,52 +908,6 @@ test("content_perftests") {
   }
 }
 
-test("content_gl_tests") {
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [
-    "../common/gpu/client/gpu_context_tests.h",
-    "../common/gpu/client/gpu_in_process_context_tests.cc",
-    "run_all_gl_tests.cc",
-  ]
-
-  deps = [
-    ":test_support",
-    "//base/test:test_support",
-    "//content/browser:for_content_tests",
-    "//content/public/common",
-    "//gpu/command_buffer/client:gl_in_process_context",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/common",
-    "//media",
-    "//testing/gtest",
-    "//third_party/WebKit/public:blink",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx:test_support",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//ui/gl:test_support",
-    "//v8",
-  ]
-
-  if (is_android) {
-    deps += [
-      "//content/public/test/android:content_java_test_support",
-      "//content/shell/android:content_shell_assets",
-    ]
-  } else {
-    data_deps = [
-      "//third_party/ffmpeg",
-      "//third_party/mesa:osmesa",
-    ]
-  }
-}
-
 if (is_android) {
   # TODO(GYP): Port Windows and ChromeOS logic.
   test("video_decode_accelerator_unittest") {

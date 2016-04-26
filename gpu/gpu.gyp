@@ -280,10 +280,13 @@
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
+          'sources+': [
+            'ipc/client/gpu_memory_buffer_impl_surface_texture_unittest.cc',
+          ],
         }],
         ['OS == "mac"', {
           'sources+': [
-           'ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc',
+            'ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc',
           ]
         }],
         ['use_ozone == 1', {
@@ -291,7 +294,7 @@
             '../ui/ozone/ozone.gyp:ozone',
           ],
           'sources+': [
-           'ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc',
+            'ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc',
           ]
         }],
       ],

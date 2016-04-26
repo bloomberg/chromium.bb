@@ -410,7 +410,6 @@ group("both_gn_and_gyp") {
       "//cc/blink:cc_blink_unittests",
       "//components:components_perftests",
       "//components/display_compositor:display_compositor_unittests",
-      "//content/test:content_gl_tests",
       "//device:device_unittests",
       "//gin:gin_shell",
       "//gin:gin_unittests",

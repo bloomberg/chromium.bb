@@ -605,7 +605,6 @@ COMMON_GTESTS = {
     ],
     'args': ['--use-gpu-in-tests']
   },
-  'content_gl_tests': {'args': ['--use-gpu-in-tests']},
   # TODO(kbr): content_unittests is killing the Linux GPU swarming
   # bots. crbug.com/582094 . It's not useful now anyway until audio
   # hardware is deployed on the swarming bots, so stop running it

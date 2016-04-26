@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_SURFACE_TEXTURE_MANAGER_H_
-#define CONTENT_BROWSER_ANDROID_IN_PROCESS_SURFACE_TEXTURE_MANAGER_H_
-
-#include "gpu/ipc/common/android/surface_texture_manager.h"
+#ifndef GPU_IPC_CLIENT_ANDROID_IN_PROCESS_SURFACE_TEXTURE_MANAGER_H_
+#define GPU_IPC_CLIENT_ANDROID_IN_PROCESS_SURFACE_TEXTURE_MANAGER_H_
 
 #include <memory>
 
@@ -13,15 +11,13 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
-#include "gpu/ipc/common/android/surface_texture_peer.h"
+#include "gpu/gpu_export.h"
+#include "gpu/ipc/common/android/surface_texture_manager.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
-namespace content {
+namespace gpu {
 
-class CONTENT_EXPORT InProcessSurfaceTextureManager
-    : public gpu::SurfaceTextureManager,
-      public gpu::SurfaceTexturePeer {
+class GPU_EXPORT InProcessSurfaceTextureManager : public SurfaceTextureManager {
  public:
   static InProcessSurfaceTextureManager* GetInstance();
 
@@ -32,13 +28,6 @@ class CONTENT_EXPORT InProcessSurfaceTextureManager
   void UnregisterSurfaceTexture(int surface_texture_id, int client_id) override;
   gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
       int surface_texture_id) override;
-
-  // Overridden from SurfaceTexturePeer:
-  void EstablishSurfaceTexturePeer(
-      base::ProcessHandle render_process_handle,
-      scoped_refptr<gfx::SurfaceTexture> surface_texture,
-      int render_frame_id,
-      int player_id) override;
 
  private:
   friend struct base::DefaultSingletonTraits<InProcessSurfaceTextureManager>;
@@ -54,6 +43,6 @@ class CONTENT_EXPORT InProcessSurfaceTextureManager
   DISALLOW_COPY_AND_ASSIGN(InProcessSurfaceTextureManager);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_BROWSER_ANDROID_IN_PROCESS_SURFACE_TEXTURE_MANAGER_H_
+#endif  // GPU_IPC_CLIENT_ANDROID_IN_PROCESS_SURFACE_TEXTURE_MANAGER_H_

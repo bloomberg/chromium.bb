@@ -43,6 +43,8 @@
       'sources+': [
         'ipc/client/gpu_memory_buffer_impl_surface_texture.cc',
         'ipc/client/gpu_memory_buffer_impl_surface_texture.h',
+        'ipc/client/android/in_process_surface_texture_manager.cc',
+        'ipc/client/android/in_process_surface_texture_manager.h',
       ],
     }],
     ['OS == "mac"', {

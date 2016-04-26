@@ -182,6 +182,8 @@ test("gl_tests") {
     "command_buffer/tests/gl_unittests_android.cc",
     "command_buffer/tests/gl_virtual_contexts_unittest.cc",
     "command_buffer/tests/occlusion_query_unittest.cc",
+    "ipc/client/gpu_context_tests.h",
+    "ipc/client/gpu_in_process_context_tests.cc",
   ]
 
   defines = [ "GL_GLEXT_PROTOTYPES" ]
@@ -194,6 +196,7 @@ test("gl_tests") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
@@ -310,6 +313,12 @@ test("gpu_unittests") {
     "ipc/client/gpu_memory_buffer_impl_shared_memory_unittest.cc",
     "ipc/client/gpu_memory_buffer_impl_test_template.h",
   ]
+
+  if (is_android) {
+    sources +=
+        [ "ipc/client/gpu_memory_buffer_impl_surface_texture_unittest.cc" ]
+  }
+
   if (is_mac) {
     sources += [ "ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc" ]
   }
@@ -341,6 +350,13 @@ test("gpu_unittests") {
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
   ]
+
+  if (is_android) {
+    deps += [
+      "//ui/android:ui_java",
+      "//ui/gl:gl_jni_headers",
+    ]
+  }
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]

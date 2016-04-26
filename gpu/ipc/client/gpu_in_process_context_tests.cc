@@ -59,4 +59,4 @@ class ContextTestBase : public testing::Test {
 
 // Include the actual tests.
 #define CONTEXT_TEST_F TEST_F
-#include "content/common/gpu/client/gpu_context_tests.h"
+#include "gpu/ipc/client/gpu_context_tests.h"

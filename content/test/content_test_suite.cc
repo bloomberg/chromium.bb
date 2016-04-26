@@ -29,7 +29,8 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/in_process_surface_texture_manager.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
+#include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
 #endif
 
 namespace content {
@@ -97,7 +98,8 @@ void ContentTestSuite::Initialize() {
   listeners.Append(new TestInitializationListener);
 #if defined(OS_ANDROID)
   gpu::SurfaceTextureManager::SetInstance(
-      InProcessSurfaceTextureManager::GetInstance());
+      gpu::InProcessSurfaceTextureManager::GetInstance());
+  content::BrowserMediaPlayerManager::InitSurfaceTexturePeer();
 #endif
 }
 

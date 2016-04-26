@@ -145,7 +145,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   # buildbot JSON files.
   # TODO(kbr): remove these before closing http://crbug.com/542370 .
   'angle_end2end_tests',
-  'content_gl_tests',
   'gl_tests',
   'gl_unittests',
   'gles2_conform_test',

@@ -406,8 +406,6 @@
       'browser/android/content_video_view.cc',
       'browser/android/content_video_view.h',
       'browser/android/devtools_auth.cc',
-      'browser/android/in_process_surface_texture_manager.cc',
-      'browser/android/in_process_surface_texture_manager.h',
       'browser/android/service_registry_android_impl.cc',
       'browser/android/service_registry_android_impl.h',
       'browser/android/url_request_content_job.cc',

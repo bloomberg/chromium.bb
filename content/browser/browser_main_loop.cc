@@ -104,10 +104,11 @@
 #include "components/tracing/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/browser_surface_texture_manager.h"
-#include "content/browser/android/in_process_surface_texture_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/public/browser/screen_orientation_provider.h"
+#include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
 #include "ui/gl/gl_surface.h"
 #endif
 
@@ -659,11 +660,12 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTextureManager");
     if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
       gpu::SurfaceTextureManager::SetInstance(
-          InProcessSurfaceTextureManager::GetInstance());
+          gpu::InProcessSurfaceTextureManager::GetInstance());
     } else {
       gpu::SurfaceTextureManager::SetInstance(
           BrowserSurfaceTextureManager::GetInstance());
     }
+    BrowserMediaPlayerManager::InitSurfaceTexturePeer();
   }
 
   if (!parsed_command_line_.HasSwitch(

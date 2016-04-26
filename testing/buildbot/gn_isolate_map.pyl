@@ -207,11 +207,6 @@
     "label": "//content/test:content_browsertests",
     "type": "windowed_test_launcher",
   },
-  "content_gl_tests": {
-    "label": "//content/test:content_gl_tests",
-    "type": "raw",
-    "args": [],
-  },
   "content_site_isolation_browsertests": {
     "label": "//content/test:content_site_isolation_browsertests",
     "label_type": "group",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/in_process_surface_texture_manager.h"
+#include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
 
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
@@ -11,10 +11,8 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "content/browser/media/android/browser_media_player_manager.h"
-#include "content/public/browser/browser_thread.h"
 
-namespace content {
+namespace gpu {
 
 // static
 InProcessSurfaceTextureManager* InProcessSurfaceTextureManager::GetInstance() {
@@ -55,26 +53,8 @@ InProcessSurfaceTextureManager::AcquireNativeWidgetForSurfaceTexture(
       env, surface_textures_.get(surface_texture_id)->j_surface().obj());
 }
 
-void InProcessSurfaceTextureManager::EstablishSurfaceTexturePeer(
-    base::ProcessHandle render_process_handle,
-    scoped_refptr<gfx::SurfaceTexture> surface_texture,
-    int render_frame_id,
-    int player_id) {
-  if (!surface_texture.get())
-    return;
+InProcessSurfaceTextureManager::InProcessSurfaceTextureManager() {}
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowserMediaPlayerManager::SetSurfacePeer, surface_texture,
-                 render_process_handle, render_frame_id, player_id));
-}
+InProcessSurfaceTextureManager::~InProcessSurfaceTextureManager() {}
 
-InProcessSurfaceTextureManager::InProcessSurfaceTextureManager() {
-  SurfaceTexturePeer::InitInstance(this);
-}
-
-InProcessSurfaceTextureManager::~InProcessSurfaceTextureManager() {
-  SurfaceTexturePeer::InitInstance(nullptr);
-}
-
-}  // namespace content
+}  // namespace gpu

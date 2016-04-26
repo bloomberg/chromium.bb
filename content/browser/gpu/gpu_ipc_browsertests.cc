@@ -96,7 +96,7 @@ class ContextTestBase : public content::ContentBrowserTest {
 
 // Include the shared tests.
 #define CONTEXT_TEST_F IN_PROC_BROWSER_TEST_F
-#include "content/common/gpu/client/gpu_context_tests.h"
+#include "gpu/ipc/client/gpu_context_tests.h"
 
 namespace content {
 

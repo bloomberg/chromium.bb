@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/singleton.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "media/base/android/media_codec_player.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
@@ -45,6 +47,57 @@ using media::MediaPlayerManager;
 using media::MediaSourcePlayer;
 
 namespace content {
+
+namespace {
+
+class BrowserSurfaceTexturePeer : public gpu::SurfaceTexturePeer {
+ public:
+  static BrowserSurfaceTexturePeer* GetInstance();
+
+ private:
+  friend struct base::DefaultSingletonTraits<BrowserSurfaceTexturePeer>;
+
+  BrowserSurfaceTexturePeer();
+  ~BrowserSurfaceTexturePeer() override;
+
+  void EstablishSurfaceTexturePeer(
+      base::ProcessHandle render_process_handle,
+      scoped_refptr<gfx::SurfaceTexture> surface_texture,
+      int render_frame_id,
+      int player_id) override;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserSurfaceTexturePeer);
+};
+
+// static
+BrowserSurfaceTexturePeer* BrowserSurfaceTexturePeer::GetInstance() {
+  return base::Singleton<
+      BrowserSurfaceTexturePeer,
+      base::LeakySingletonTraits<BrowserSurfaceTexturePeer>>::get();
+}
+
+BrowserSurfaceTexturePeer::BrowserSurfaceTexturePeer() {
+  gpu::SurfaceTexturePeer::InitInstance(this);
+}
+
+BrowserSurfaceTexturePeer::~BrowserSurfaceTexturePeer() {
+  gpu::SurfaceTexturePeer::InitInstance(nullptr);
+}
+
+void BrowserSurfaceTexturePeer::EstablishSurfaceTexturePeer(
+    base::ProcessHandle render_process_handle,
+    scoped_refptr<gfx::SurfaceTexture> surface_texture,
+    int render_frame_id,
+    int player_id) {
+  if (!surface_texture.get())
+    return;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowserMediaPlayerManager::SetSurfacePeer, surface_texture,
+                 render_process_handle, render_frame_id, player_id));
+}
+
+}  // namespace
 
 // Threshold on the number of media players per renderer before we start
 // attempting to release inactive media players.
@@ -68,6 +121,11 @@ void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
 void BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
     media::MediaUrlInterceptor* media_url_interceptor) {
   media_url_interceptor_ = media_url_interceptor;
+}
+
+// static
+void BrowserMediaPlayerManager::InitSurfaceTexturePeer() {
+  BrowserSurfaceTexturePeer::GetInstance();
 }
 
 // static
