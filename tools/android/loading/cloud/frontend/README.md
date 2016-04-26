@@ -8,13 +8,24 @@ Visit the application URL in your browser, and upload a JSON dictionary with the
 following keys:
 
 -   `action` (string): the action to perform. Only `trace` is supported.
--   `params` (dictionary): the parameters associated to the action. See below
-    for more details.
--   `taskqueue_tag` (string, optional): the [TaskQueue][2] tag internally used
-    to send the work from AppEngine to ComputeEngine.  If this parameter is not
-    specified, a unique tag will be created.
+-   `action_params` (dictionary): the parameters associated to the action.
+    See below for more details.
+-   `backend_params` (dictionary): the parameters configuring the backend for
+    this task. See below for more details.
 
-### Parameters for the `trace` action.
+### Parameters for `backend_params`
+
+-   `instance_count` (int): Number of Compute Engine instances that will be
+    started for this task.
+-   `storage_bucket` (string): Name of the storage bucket used by the backend
+    instances. Backend code and data must have been previously deployed to this
+    bucket using the `deploy.sh` [script][4].
+-   `tag` (string, optional): tag internally used to associate tasks to backend
+    ComputeEngine instances. This parameter should not be set in general, as it
+    is mostly exposed for development purposes. If this parameter is not
+    specified, a unique tag will be generated.
+
+### Parameters for the `trace` action
 
 -   `urls` (list of strings): the list of URLs to process.
 -   `repeat_count` (integer, optional): the number of traces to be generated
@@ -67,19 +78,20 @@ following keys:
 # Chromium checkout, see the cleanup intructions below.
 pip install -r requirements.txt -t lib
 # Start the local server.
-dev_appserver.py .
+dev_appserver.py -A $PROJECT_NAME .
 ```
 
 Visit the application [http://localhost:8080](http://localhost:8080).
 
 After you are done, cleanup your Chromium checkout:
+
 ```shell
 rm -rf $CHROMIUM_SRC/tools/android/loading/frontend/lib
 ```
 
 ### Deploy
 
-````shell
+```shell
 # Install dependencies in the lib/ directory.
 pip install -r requirements.txt -t lib
 # Deploy.
@@ -89,3 +101,4 @@ gcloud preview app deploy app.yaml
 [1]: https://cloud.google.com/sdk
 [2]: https://cloud.google.com/appengine/docs/python/taskqueue
 [3]: https://cloud.google.com/appengine/docs/python/config/queue
+[4]: ../backend/README.md#Deploy-the-code

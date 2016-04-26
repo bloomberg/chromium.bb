@@ -209,7 +209,7 @@ class Worker(object):
       return
 
     # Extract the task parameters.
-    params = clovis_task.Params()
+    params = clovis_task.ActionParams()
     urls = params['urls']
     repeat_count = params.get('repeat_count', 1)
     emulate_device = params.get('emulate_device')

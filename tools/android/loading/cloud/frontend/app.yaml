@@ -8,3 +8,7 @@ handlers:
 
 - url: .*
   script: clovis_frontend.app
+
+libraries:
+- name: ssl
+  version: latest

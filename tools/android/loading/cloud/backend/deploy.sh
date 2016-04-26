@@ -55,6 +55,10 @@ chrome/tools/build/make_zip.py $builddir chrome/tools/build/linux/FILES.cfg \
   $tmpdir/linux.zip
 gsutil cp $tmpdir/linux.zip gs://$deployment_gcs_path/binaries/linux.zip
 
+# Copy the startup script uncompressed so that it can be executed.
+gsutil cp tools/android/loading/cloud/backend/startup-script.sh \
+  gs://$deployment_gcs_path/
+
 # Generate and upload metadata about this deployment.
 CHROMIUM_REV=$(git merge-base HEAD origin/master)
 cat >$tmpdir/build_metadata.json << EOF

@@ -1,0 +1,39 @@
+{# Template for a page displaying a body and logs (optional) under a collapsible
+   section.
+#}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Clovis</title>
+</head>
+
+<body>
+{{ body }}
+
+{% if log %}
+
+<p><a onclick="javascript:ShowHide('HiddenDiv'); return false;" href="#">
+  Show/hide details
+</a></p>
+<div id="HiddenDiv" style="display:none";>
+
+{# Loop over the lines of the log to add linebreaks. #}
+{%- for line in log -%}
+  {{ line }}<br/>
+{%- endfor -%}
+
+</div>
+
+<script type="text/javascript">
+function ShowHide(divId) {
+  element = document.getElementById(divId)
+  element.style.display = (element.style.display == 'none') ? 'block' : 'none';
+}
+</script>
+
+{% endif %}
+
+</body>
+
+</html>
