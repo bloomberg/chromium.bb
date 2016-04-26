@@ -88,20 +88,51 @@ static bool hasSource(const HTMLMediaElement* mediaElement)
         && mediaElement->getNetworkState() != HTMLMediaElement::NETWORK_NO_SOURCE;
 }
 
-static bool paintMediaButton(GraphicsContext& context, const IntRect& rect, Image* image, bool isEnabled = true)
+static FloatRect adjustRectForPadding(IntRect rect, const LayoutObject* object)
 {
-    if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
-        isEnabled = true; // New UI only.
+    FloatRect adjustedRect(rect);
+
+    if (!object)
+        return adjustedRect;
+
+    // TODO(liberato): make this more elegant, crbug.com/598861 .
+    if (const ComputedStyle* style = object->style()) {
+        const float paddingLeft = style->paddingLeft().getFloatValue();
+        const float paddingTop = style->paddingTop().getFloatValue();
+        const float paddingRight = style->paddingRight().getFloatValue();
+        const float paddingBottom = style->paddingBottom().getFloatValue();
+        adjustedRect = FloatRect(rect.x() + paddingLeft,
+            rect.y() + paddingTop,
+            rect.width() - paddingLeft - paddingRight,
+            rect.height() - paddingTop - paddingBottom);
+    }
+
+    return adjustedRect;
+}
+
+static bool paintMediaButton(GraphicsContext& context, const IntRect& rect, Image* image, const LayoutObject* object, bool isEnabled)
+{
+    if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
+        context.drawImage(image, rect);
+        return true;
+    }
+
+    FloatRect drawRect = adjustRectForPadding(rect, object);
 
     if (!isEnabled)
         context.beginLayer(kDisabledAlpha);
 
-    context.drawImage(image, rect);
+    context.drawImage(image, drawRect, FloatRect(FloatPoint(), FloatSize(image->size())));
 
     if (!isEnabled)
         context.endLayer();
 
     return true;
+}
+
+static bool paintMediaButton(GraphicsContext& context, const IntRect& rect, Image* image, bool isEnabled = true)
+{
+    return paintMediaButton(context, rect, image, 0, isEnabled);
 }
 
 bool MediaControlsPainter::paintMediaMuteButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -123,18 +154,18 @@ bool MediaControlsPainter::paintMediaMuteButton(const LayoutObject& object, cons
         "mediaplayerSoundLevel0New");
 
     if (!hasSource(mediaElement) || !mediaElement->hasAudio())
-        return paintMediaButton(paintInfo.context, rect, soundDisabled, false);
+        return paintMediaButton(paintInfo.context, rect, soundDisabled, &object, false);
 
     if (mediaElement->muted() || mediaElement->volume() <= 0)
-        return paintMediaButton(paintInfo.context, rect, soundLevel0);
+        return paintMediaButton(paintInfo.context, rect, soundLevel0, &object, true);
 
     if (mediaElement->volume() <= 0.33)
-        return paintMediaButton(paintInfo.context, rect, soundLevel1);
+        return paintMediaButton(paintInfo.context, rect, soundLevel1, &object, true);
 
     if (mediaElement->volume() <= 0.66)
-        return paintMediaButton(paintInfo.context, rect, soundLevel2);
+        return paintMediaButton(paintInfo.context, rect, soundLevel2, &object, true);
 
-    return paintMediaButton(paintInfo.context, rect, soundLevel3);
+    return paintMediaButton(paintInfo.context, rect, soundLevel3, &object, true);
 }
 
 bool MediaControlsPainter::paintMediaPlayButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -150,10 +181,10 @@ bool MediaControlsPainter::paintMediaPlayButton(const LayoutObject& object, cons
     static Image* mediaPlayDisabled = platformResource("mediaplayerPlayDisabled", "mediaplayerPlayNew");
 
     if (!hasSource(mediaElement))
-        return paintMediaButton(paintInfo.context, rect, mediaPlayDisabled, false);
+        return paintMediaButton(paintInfo.context, rect, mediaPlayDisabled, &object, false);
 
     Image * image = !object.node()->isMediaControlElement() || mediaControlElementType(object.node()) == MediaPlayButton ? mediaPlay : mediaPause;
-    return paintMediaButton(paintInfo.context, rect, image);
+    return paintMediaButton(paintInfo.context, rect, image, &object, true);
 }
 
 bool MediaControlsPainter::paintMediaOverlayPlayButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -172,6 +203,7 @@ bool MediaControlsPainter::paintMediaOverlayPlayButton(const LayoutObject& objec
     if (RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
         // Overlay play button covers the entire player, so center and draw a
         // smaller button.  Center in the entire element.
+        // TODO(liberato): object.enclosingBox()?
         const LayoutBox* box = mediaElement->layoutObject()->enclosingBox();
         if (!box)
             return false;
@@ -486,8 +518,8 @@ bool MediaControlsPainter::paintMediaFullscreenButton(const LayoutObject& object
     bool isEnabled = hasSource(mediaElement);
 
     if (mediaControlElementType(object.node()) == MediaExitFullscreenButton)
-        return paintMediaButton(paintInfo.context, rect, mediaExitFullscreenButton, isEnabled);
-    return paintMediaButton(paintInfo.context, rect, mediaEnterFullscreenButton, isEnabled);
+        return paintMediaButton(paintInfo.context, rect, mediaExitFullscreenButton, &object, isEnabled);
+    return paintMediaButton(paintInfo.context, rect, mediaEnterFullscreenButton, &object, isEnabled);
 }
 
 bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -505,9 +537,9 @@ bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(const LayoutObje
     bool isEnabled = mediaElement->hasClosedCaptions();
 
     if (mediaElement->textTracksVisible())
-        return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButton, isEnabled);
+        return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButton, &object, isEnabled);
 
-    return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled, isEnabled);
+    return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled, &object, isEnabled);
 }
 
 bool MediaControlsPainter::paintMediaCastButton(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -528,11 +560,11 @@ bool MediaControlsPainter::paintMediaCastButton(const LayoutObject& object, cons
 
     switch (mediaControlElementType(object.node())) {
     case MediaCastOnButton:
-        return paintMediaButton(paintInfo.context, rect, mediaCastOn, isEnabled);
+        return paintMediaButton(paintInfo.context, rect, mediaCastOn, &object, isEnabled);
     case MediaOverlayCastOnButton:
         return paintMediaButton(paintInfo.context, rect, mediaCastOn);
     case MediaCastOffButton:
-        return paintMediaButton(paintInfo.context, rect, mediaCastOff, isEnabled);
+        return paintMediaButton(paintInfo.context, rect, mediaCastOff, &object, isEnabled);
     case MediaOverlayCastOffButton:
         return paintMediaButton(paintInfo.context, rect, mediaOverlayCastOff);
     default:

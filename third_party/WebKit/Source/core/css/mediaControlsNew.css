@@ -33,7 +33,7 @@ audio:not([controls]) {
 
 audio {
     width: 300px;
-    height: 48px;
+    height: 32px;
 }
 
 audio::-webkit-media-controls,
@@ -51,7 +51,7 @@ video::-webkit-media-controls {
 
 audio::-webkit-media-controls-enclosure, video::-webkit-media-controls-enclosure {
     width: 100%;
-    height: 48px;
+    height: 32px;
     flex-shrink: 0;
     bottom: 0;
     text-indent: 0;
@@ -75,13 +75,14 @@ audio::-webkit-media-controls-panel, video::-webkit-media-controls-panel {
     overflow: hidden;
     text-align: right;
     bottom: auto;
-    height: 48px;
+    height: 32px;
     min-width: 48px;
+    line-height: 32px;
     background-color: #fafafa;
     /* The duration is also specified in MediaControlElements.cpp and LayoutTests/media/media-controls.js */
     transition: opacity 0.3s;
 
-    font-size: 14px;
+    font-size: 12px;
     font-weight: normal;  /* Make sure that we don't inherit non-defaults. */
     font-style: normal;
 }
@@ -100,11 +101,11 @@ audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-bu
     -webkit-appearance: media-mute-button;
     display: flex;
     flex: none;
-    border: none;
-    width: 48px;
-    height: 48px;
-    line-height: 48px;
-    padding: 12px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
     background-color: initial;
     color: inherit;
 }
@@ -136,7 +137,7 @@ video::-webkit-media-controls-overlay-play-button {
     top: 0;
     left: 0;
     margin: 0;
-    border: none;
+    border-width: 0px;
     background-color: transparent;
     width: 100%;
     height: 100%;
@@ -151,10 +152,10 @@ video::-internal-media-controls-overlay-cast-button {
     left: 8px;
     margin-left: 0px;
     margin-top: 0px;
-    border: none;
+    border-width: 0px;
     background-color: transparent;
-    width: 48px;
-    height: 48px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     transition: opacity 0.3s;
 }
@@ -163,11 +164,11 @@ audio::-webkit-media-controls-play-button, video::-webkit-media-controls-play-bu
     -webkit-appearance: media-play-button;
     display: flex;
     flex: none;
-    border-sizing: border-box;
-    width: 48px;
-    height: 48px;
-    line-height: 48px;
-    padding: 12px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
     background-color: initial;
     color: inherit;
 }
@@ -193,12 +194,11 @@ audio::-webkit-media-controls-current-time-display, video::-webkit-media-control
     border: none;
     cursor: default;
 
-    height: 48px;
+    height: 32px;
 
     /* text runs right to the edge of the container */
     padding: 0;
 
-    line-height: 48px;
     color: #5a5a5a;
 
     letter-spacing: normal;
@@ -217,13 +217,12 @@ audio::-webkit-media-controls-time-remaining-display, video::-webkit-media-contr
     border: none;
     cursor: default;
 
-    height: 48px;
+    height: 32px;
 
     /* text runs right to the edge of the container, plus a little on
      * the left to pad the leading "/" */
     padding: 0 0 0 4px;
 
-    line-height: 48px;
     color: #5a5a5a;
 
     letter-spacing: normal;
@@ -305,10 +304,11 @@ audio::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-f
     display: flex;
     flex: none;
     overflow: hidden;
-    border: none;
-    width: 48px;
-    height: 48px;
-    line-height: 48px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
     background-color: initial;
     color: inherit;
 }
@@ -317,13 +317,13 @@ audio::-internal-media-controls-cast-button, video::-internal-media-controls-cas
     -webkit-appearance: -internal-media-cast-off-button;
     display: flex;
     flex: none;
-    border: none;
-    width: 48px;
-    height: 48px;
-    line-height: 48px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
     margin-left: 0px;
     margin-right: 0px;
-    padding: 12px;
     background-color: initial;
     color: inherit;
 }
@@ -336,13 +336,13 @@ video::-webkit-media-controls-toggle-closed-captions-button {
     -webkit-appearance: media-toggle-closed-captions-button;
     display: flex;
     flex: none;
-    border: none;
-    width: 48px;
-    height: 48px;
-    line-height: 48px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    padding: 0px;
+    border-width: 0px;
     margin-left: 0px;
     margin-right: 0px;
-    padding: 12px;
     background-color: initial;
     color: inherit;
 }
