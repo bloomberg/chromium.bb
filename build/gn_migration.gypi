@@ -707,10 +707,6 @@
             # to the GN build.
             '../chrome/chrome.gyp:sb_sigutil',
 
-            # This project is up in the air. Don't need to convert it unless
-            # we decide we need for something. Owner: scottmg.
-            '../chrome/tools/crash_service/caps/caps.gyp:caps',
-
             '../components/test_runner/test_runner.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
             '../gpu/gpu.gyp:angle_end2end_tests',
