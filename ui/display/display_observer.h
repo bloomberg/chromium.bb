@@ -8,6 +8,7 @@
 #include "ui/gfx/display_observer.h"
 
 namespace display {
+using Display = gfx::Display;
 
 // TODO(oshima): move the gfx::DisplayObserver to display::DisplayObserver.
 using DisplayObserver = gfx::DisplayObserver;
