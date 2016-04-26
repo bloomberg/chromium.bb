@@ -122,18 +122,29 @@ int main(int argc, const char** argv) {
   // Enable devtools if requested.
   base::CommandLine command_line(argc, argv);
   if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    std::string address = kDevToolsHttpServerAddress;
+    if (command_line.HasSwitch(headless::switches::kRemoteDebuggingAddress)) {
+      address = command_line.GetSwitchValueASCII(
+          headless::switches::kRemoteDebuggingAddress);
+      net::IPAddress parsed_address;
+      if (!net::ParseURLHostnameToAddress(address, &parsed_address)) {
+        LOG(ERROR) << "Invalid devtools server address";
+        return EXIT_FAILURE;
+      }
+    }
     int parsed_port;
     std::string port_str =
         command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    if (base::StringToInt(port_str, &parsed_port) &&
-        base::IsValueInRangeForNumericType<uint16_t>(parsed_port)) {
-      net::IPAddress devtools_address;
-      bool result =
-          devtools_address.AssignFromIPLiteral(kDevToolsHttpServerAddress);
-      DCHECK(result);
-      builder.EnableDevToolsServer(net::IPEndPoint(
-          devtools_address, base::checked_cast<uint16_t>(parsed_port)));
+    if (!base::StringToInt(port_str, &parsed_port) ||
+        !base::IsValueInRangeForNumericType<uint16_t>(parsed_port)) {
+      LOG(ERROR) << "Invalid devtools server port";
+      return EXIT_FAILURE;
     }
+    net::IPAddress devtools_address;
+    bool result = devtools_address.AssignFromIPLiteral(address);
+    DCHECK(result);
+    builder.EnableDevToolsServer(net::IPEndPoint(
+        devtools_address, base::checked_cast<uint16_t>(parsed_port)));
   }
 
   if (command_line.HasSwitch(headless::switches::kProxyServer)) {

@@ -8,6 +8,7 @@
 namespace headless {
 namespace switches {
 extern const char kProxyServer[];
+extern const char kRemoteDebuggingAddress[];
 }  // namespace switches
 }  // namespace headless
 

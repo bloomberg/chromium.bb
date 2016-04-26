@@ -11,5 +11,11 @@ namespace switches {
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";
 
+// Use the given address instead of the default loopback for accepting remote
+// debugging connections. Should be used together with --remote-debugging-port.
+// Note that the remote debugging protocol does not perform any authentication,
+// so exposing it too widely can be a security risk.
+const char kRemoteDebuggingAddress[] = "remote-debugging-address";
+
 }  // namespace switches
 }  // namespace headless
