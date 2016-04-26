@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/ssl_server_socket_openssl.h"
+#include "net/socket/ssl_server_socket_impl.h"
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -51,12 +51,12 @@ scoped_refptr<X509Certificate> CreateX509Certificate(X509* cert,
   return X509Certificate::CreateFromDERCertChain(der_chain);
 }
 
-class SSLServerSocketOpenSSL : public SSLServerSocket {
+class SSLServerSocketImpl : public SSLServerSocket {
  public:
   // See comments on CreateSSLServerSocket for details of how these
   // parameters are used.
-  SSLServerSocketOpenSSL(std::unique_ptr<StreamSocket> socket, SSL* ssl);
-  ~SSLServerSocketOpenSSL() override;
+  SSLServerSocketImpl(std::unique_ptr<StreamSocket> socket, SSL* ssl);
+  ~SSLServerSocketImpl() override;
 
   // SSLServerSocket interface.
   int Handshake(const CompletionCallback& callback) override;
@@ -168,10 +168,10 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   State next_handshake_state_;
   bool completed_handshake_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLServerSocketOpenSSL);
+  DISALLOW_COPY_AND_ASSIGN(SSLServerSocketImpl);
 };
 
-SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
+SSLServerSocketImpl::SSLServerSocketImpl(
     std::unique_ptr<StreamSocket> transport_socket,
     SSL* ssl)
     : transport_send_busy_(false),
@@ -186,7 +186,7 @@ SSLServerSocketOpenSSL::SSLServerSocketOpenSSL(
       next_handshake_state_(STATE_NONE),
       completed_handshake_(false) {}
 
-SSLServerSocketOpenSSL::~SSLServerSocketOpenSSL() {
+SSLServerSocketImpl::~SSLServerSocketImpl() {
   if (ssl_) {
     // Calling SSL_shutdown prevents the session from being marked as
     // unresumable.
@@ -200,7 +200,7 @@ SSLServerSocketOpenSSL::~SSLServerSocketOpenSSL() {
   }
 }
 
-int SSLServerSocketOpenSSL::Handshake(const CompletionCallback& callback) {
+int SSLServerSocketImpl::Handshake(const CompletionCallback& callback) {
   net_log_.BeginEvent(NetLog::TYPE_SSL_SERVER_HANDSHAKE);
 
   // Set up new ssl object.
@@ -225,12 +225,11 @@ int SSLServerSocketOpenSSL::Handshake(const CompletionCallback& callback) {
   return rv > OK ? OK : rv;
 }
 
-int SSLServerSocketOpenSSL::ExportKeyingMaterial(
-    const base::StringPiece& label,
-    bool has_context,
-    const base::StringPiece& context,
-    unsigned char* out,
-    unsigned int outlen) {
+int SSLServerSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
+                                              bool has_context,
+                                              const base::StringPiece& context,
+                                              unsigned char* out,
+                                              unsigned int outlen) {
   if (!IsConnected())
     return ERR_SOCKET_NOT_CONNECTED;
 
@@ -238,22 +237,21 @@ int SSLServerSocketOpenSSL::ExportKeyingMaterial(
 
   int rv = SSL_export_keying_material(
       ssl_, out, outlen, label.data(), label.size(),
-      reinterpret_cast<const unsigned char*>(context.data()),
-      context.length(), context.length() > 0);
+      reinterpret_cast<const unsigned char*>(context.data()), context.length(),
+      context.length() > 0);
 
   if (rv != 1) {
     int ssl_error = SSL_get_error(ssl_, rv);
     LOG(ERROR) << "Failed to export keying material;"
-               << " returned " << rv
-               << ", SSL error code " << ssl_error;
+               << " returned " << rv << ", SSL error code " << ssl_error;
     return MapOpenSSLError(ssl_error, err_tracer);
   }
   return OK;
 }
 
-int SSLServerSocketOpenSSL::Read(IOBuffer* buf,
-                                 int buf_len,
-                                 const CompletionCallback& callback) {
+int SSLServerSocketImpl::Read(IOBuffer* buf,
+                              int buf_len,
+                              const CompletionCallback& callback) {
   DCHECK(user_read_callback_.is_null());
   DCHECK(user_handshake_callback_.is_null());
   DCHECK(!user_read_buf_);
@@ -276,9 +274,9 @@ int SSLServerSocketOpenSSL::Read(IOBuffer* buf,
   return rv;
 }
 
-int SSLServerSocketOpenSSL::Write(IOBuffer* buf,
-                                  int buf_len,
-                                  const CompletionCallback& callback) {
+int SSLServerSocketImpl::Write(IOBuffer* buf,
+                               int buf_len,
+                               const CompletionCallback& callback) {
   DCHECK(user_write_callback_.is_null());
   DCHECK(!user_write_buf_);
   DCHECK(!callback.is_null());
@@ -297,72 +295,72 @@ int SSLServerSocketOpenSSL::Write(IOBuffer* buf,
   return rv;
 }
 
-int SSLServerSocketOpenSSL::SetReceiveBufferSize(int32_t size) {
+int SSLServerSocketImpl::SetReceiveBufferSize(int32_t size) {
   return transport_socket_->SetReceiveBufferSize(size);
 }
 
-int SSLServerSocketOpenSSL::SetSendBufferSize(int32_t size) {
+int SSLServerSocketImpl::SetSendBufferSize(int32_t size) {
   return transport_socket_->SetSendBufferSize(size);
 }
 
-int SSLServerSocketOpenSSL::Connect(const CompletionCallback& callback) {
+int SSLServerSocketImpl::Connect(const CompletionCallback& callback) {
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }
 
-void SSLServerSocketOpenSSL::Disconnect() {
+void SSLServerSocketImpl::Disconnect() {
   transport_socket_->Disconnect();
 }
 
-bool SSLServerSocketOpenSSL::IsConnected() const {
+bool SSLServerSocketImpl::IsConnected() const {
   // TODO(wtc): Find out if we should check transport_socket_->IsConnected()
   // as well.
   return completed_handshake_;
 }
 
-bool SSLServerSocketOpenSSL::IsConnectedAndIdle() const {
+bool SSLServerSocketImpl::IsConnectedAndIdle() const {
   return completed_handshake_ && transport_socket_->IsConnectedAndIdle();
 }
 
-int SSLServerSocketOpenSSL::GetPeerAddress(IPEndPoint* address) const {
+int SSLServerSocketImpl::GetPeerAddress(IPEndPoint* address) const {
   if (!IsConnected())
     return ERR_SOCKET_NOT_CONNECTED;
   return transport_socket_->GetPeerAddress(address);
 }
 
-int SSLServerSocketOpenSSL::GetLocalAddress(IPEndPoint* address) const {
+int SSLServerSocketImpl::GetLocalAddress(IPEndPoint* address) const {
   if (!IsConnected())
     return ERR_SOCKET_NOT_CONNECTED;
   return transport_socket_->GetLocalAddress(address);
 }
 
-const BoundNetLog& SSLServerSocketOpenSSL::NetLog() const {
+const BoundNetLog& SSLServerSocketImpl::NetLog() const {
   return net_log_;
 }
 
-void SSLServerSocketOpenSSL::SetSubresourceSpeculation() {
+void SSLServerSocketImpl::SetSubresourceSpeculation() {
   transport_socket_->SetSubresourceSpeculation();
 }
 
-void SSLServerSocketOpenSSL::SetOmniboxSpeculation() {
+void SSLServerSocketImpl::SetOmniboxSpeculation() {
   transport_socket_->SetOmniboxSpeculation();
 }
 
-bool SSLServerSocketOpenSSL::WasEverUsed() const {
+bool SSLServerSocketImpl::WasEverUsed() const {
   return transport_socket_->WasEverUsed();
 }
 
-bool SSLServerSocketOpenSSL::WasNpnNegotiated() const {
+bool SSLServerSocketImpl::WasNpnNegotiated() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-NextProto SSLServerSocketOpenSSL::GetNegotiatedProtocol() const {
+NextProto SSLServerSocketImpl::GetNegotiatedProtocol() const {
   // NPN is not supported by this class.
   return kProtoUnknown;
 }
 
-bool SSLServerSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
+bool SSLServerSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->Reset();
   if (!completed_handshake_)
     return false;
@@ -389,16 +387,15 @@ bool SSLServerSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   return true;
 }
 
-void SSLServerSocketOpenSSL::GetConnectionAttempts(
-    ConnectionAttempts* out) const {
+void SSLServerSocketImpl::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
-int64_t SSLServerSocketOpenSSL::GetTotalReceivedBytes() const {
+int64_t SSLServerSocketImpl::GetTotalReceivedBytes() const {
   return transport_socket_->GetTotalReceivedBytes();
 }
 
-void SSLServerSocketOpenSSL::OnSendComplete(int result) {
+void SSLServerSocketImpl::OnSendComplete(int result) {
   if (next_handshake_state_ == STATE_HANDSHAKE) {
     // In handshake phase.
     OnHandshakeIOComplete(result);
@@ -406,7 +403,7 @@ void SSLServerSocketOpenSSL::OnSendComplete(int result) {
   }
 
   // TODO(byungchul): This state machine is not correct. Copy the state machine
-  // of SSLClientSocketOpenSSL::OnSendComplete() which handles it better.
+  // of SSLClientSocketImpl::OnSendComplete() which handles it better.
   if (!completed_handshake_)
     return;
 
@@ -420,7 +417,7 @@ void SSLServerSocketOpenSSL::OnSendComplete(int result) {
   }
 }
 
-void SSLServerSocketOpenSSL::OnRecvComplete(int result) {
+void SSLServerSocketImpl::OnRecvComplete(int result) {
   if (next_handshake_state_ == STATE_HANDSHAKE) {
     // In handshake phase.
     OnHandshakeIOComplete(result);
@@ -437,7 +434,7 @@ void SSLServerSocketOpenSSL::OnRecvComplete(int result) {
     DoReadCallback(rv);
 }
 
-void SSLServerSocketOpenSSL::OnHandshakeIOComplete(int result) {
+void SSLServerSocketImpl::OnHandshakeIOComplete(int result) {
   int rv = DoHandshakeLoop(result);
   if (rv == ERR_IO_PENDING)
     return;
@@ -450,7 +447,7 @@ void SSLServerSocketOpenSSL::OnHandshakeIOComplete(int result) {
 // Return 0 for EOF,
 // > 0 for bytes transferred immediately,
 // < 0 for error (or the non-error ERR_IO_PENDING).
-int SSLServerSocketOpenSSL::BufferSend() {
+int SSLServerSocketImpl::BufferSend() {
   if (transport_send_busy_)
     return ERR_IO_PENDING;
 
@@ -467,7 +464,7 @@ int SSLServerSocketOpenSSL::BufferSend() {
 
   int rv = transport_socket_->Write(
       send_buffer_.get(), send_buffer_->BytesRemaining(),
-      base::Bind(&SSLServerSocketOpenSSL::BufferSendComplete,
+      base::Bind(&SSLServerSocketImpl::BufferSendComplete,
                  base::Unretained(this)));
   if (rv == ERR_IO_PENDING) {
     transport_send_busy_ = true;
@@ -477,13 +474,13 @@ int SSLServerSocketOpenSSL::BufferSend() {
   return rv;
 }
 
-void SSLServerSocketOpenSSL::BufferSendComplete(int result) {
+void SSLServerSocketImpl::BufferSendComplete(int result) {
   transport_send_busy_ = false;
   TransportWriteComplete(result);
   OnSendComplete(result);
 }
 
-void SSLServerSocketOpenSSL::TransportWriteComplete(int result) {
+void SSLServerSocketImpl::TransportWriteComplete(int result) {
   DCHECK(ERR_IO_PENDING != result);
   if (result < 0) {
     // Got a socket write error; close the BIO to indicate this upward.
@@ -510,7 +507,7 @@ void SSLServerSocketOpenSSL::TransportWriteComplete(int result) {
   }
 }
 
-int SSLServerSocketOpenSSL::BufferRecv() {
+int SSLServerSocketImpl::BufferRecv() {
   if (transport_recv_busy_)
     return ERR_IO_PENDING;
 
@@ -539,7 +536,7 @@ int SSLServerSocketOpenSSL::BufferRecv() {
   recv_buffer_ = new IOBuffer(max_write);
   int rv = transport_socket_->Read(
       recv_buffer_.get(), max_write,
-      base::Bind(&SSLServerSocketOpenSSL::BufferRecvComplete,
+      base::Bind(&SSLServerSocketImpl::BufferRecvComplete,
                  base::Unretained(this)));
   if (rv == ERR_IO_PENDING) {
     transport_recv_busy_ = true;
@@ -549,12 +546,12 @@ int SSLServerSocketOpenSSL::BufferRecv() {
   return rv;
 }
 
-void SSLServerSocketOpenSSL::BufferRecvComplete(int result) {
+void SSLServerSocketImpl::BufferRecvComplete(int result) {
   result = TransportReadComplete(result);
   OnRecvComplete(result);
 }
 
-int SSLServerSocketOpenSSL::TransportReadComplete(int result) {
+int SSLServerSocketImpl::TransportReadComplete(int result) {
   DCHECK(ERR_IO_PENDING != result);
   if (result <= 0) {
     DVLOG(1) << "TransportReadComplete result " << result;
@@ -583,7 +580,7 @@ int SSLServerSocketOpenSSL::TransportReadComplete(int result) {
 // Do as much network I/O as possible between the buffer and the
 // transport socket. Return true if some I/O performed, false
 // otherwise (error or ERR_IO_PENDING).
-bool SSLServerSocketOpenSSL::DoTransportIO() {
+bool SSLServerSocketImpl::DoTransportIO() {
   bool network_moved = false;
   int rv;
   // Read and write as much data as possible. The loop is necessary because
@@ -598,7 +595,7 @@ bool SSLServerSocketOpenSSL::DoTransportIO() {
   return network_moved;
 }
 
-int SSLServerSocketOpenSSL::DoPayloadRead() {
+int SSLServerSocketImpl::DoPayloadRead() {
   DCHECK(user_read_buf_);
   DCHECK_GT(user_read_buf_len_, 0);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -607,8 +604,8 @@ int SSLServerSocketOpenSSL::DoPayloadRead() {
     return rv;
   int ssl_error = SSL_get_error(ssl_, rv);
   OpenSSLErrorInfo error_info;
-  int net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer,
-                                             &error_info);
+  int net_error =
+      MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
   if (net_error != ERR_IO_PENDING) {
     net_log_.AddEvent(
         NetLog::TYPE_SSL_READ_ERROR,
@@ -617,7 +614,7 @@ int SSLServerSocketOpenSSL::DoPayloadRead() {
   return net_error;
 }
 
-int SSLServerSocketOpenSSL::DoPayloadWrite() {
+int SSLServerSocketImpl::DoPayloadWrite() {
   DCHECK(user_write_buf_);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int rv = SSL_write(ssl_, user_write_buf_->data(), user_write_buf_len_);
@@ -625,8 +622,8 @@ int SSLServerSocketOpenSSL::DoPayloadWrite() {
     return rv;
   int ssl_error = SSL_get_error(ssl_, rv);
   OpenSSLErrorInfo error_info;
-  int net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer,
-                                             &error_info);
+  int net_error =
+      MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
   if (net_error != ERR_IO_PENDING) {
     net_log_.AddEvent(
         NetLog::TYPE_SSL_WRITE_ERROR,
@@ -635,7 +632,7 @@ int SSLServerSocketOpenSSL::DoPayloadWrite() {
   return net_error;
 }
 
-int SSLServerSocketOpenSSL::DoHandshakeLoop(int last_io_result) {
+int SSLServerSocketImpl::DoHandshakeLoop(int last_io_result) {
   int rv = last_io_result;
   do {
     // Default to STATE_NONE for next state.
@@ -668,7 +665,7 @@ int SSLServerSocketOpenSSL::DoHandshakeLoop(int last_io_result) {
   return rv;
 }
 
-int SSLServerSocketOpenSSL::DoReadLoop(int result) {
+int SSLServerSocketImpl::DoReadLoop(int result) {
   DCHECK(completed_handshake_);
   DCHECK(next_handshake_state_ == STATE_NONE);
 
@@ -684,7 +681,7 @@ int SSLServerSocketOpenSSL::DoReadLoop(int result) {
   return rv;
 }
 
-int SSLServerSocketOpenSSL::DoWriteLoop(int result) {
+int SSLServerSocketImpl::DoWriteLoop(int result) {
   DCHECK(completed_handshake_);
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
 
@@ -700,7 +697,7 @@ int SSLServerSocketOpenSSL::DoWriteLoop(int result) {
   return rv;
 }
 
-int SSLServerSocketOpenSSL::DoHandshake() {
+int SSLServerSocketImpl::DoHandshake() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int net_error = OK;
   int rv = SSL_do_handshake(ssl_);
@@ -733,9 +730,8 @@ int SSLServerSocketOpenSSL::DoHandshake() {
     if (net_error == ERR_IO_PENDING) {
       GotoState(STATE_HANDSHAKE);
     } else {
-      LOG(ERROR) << "handshake failed; returned " << rv
-                 << ", SSL error code " << ssl_error
-                 << ", net_error " << net_error;
+      LOG(ERROR) << "handshake failed; returned " << rv << ", SSL error code "
+                 << ssl_error << ", net_error " << net_error;
       net_log_.AddEvent(
           NetLog::TYPE_SSL_HANDSHAKE_ERROR,
           CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
@@ -744,12 +740,12 @@ int SSLServerSocketOpenSSL::DoHandshake() {
   return net_error;
 }
 
-void SSLServerSocketOpenSSL::DoHandshakeCallback(int rv) {
+void SSLServerSocketImpl::DoHandshakeCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   base::ResetAndReturn(&user_handshake_callback_).Run(rv > OK ? OK : rv);
 }
 
-void SSLServerSocketOpenSSL::DoReadCallback(int rv) {
+void SSLServerSocketImpl::DoReadCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!user_read_callback_.is_null());
 
@@ -758,7 +754,7 @@ void SSLServerSocketOpenSSL::DoReadCallback(int rv) {
   base::ResetAndReturn(&user_read_callback_).Run(rv);
 }
 
-void SSLServerSocketOpenSSL::DoWriteCallback(int rv) {
+void SSLServerSocketImpl::DoWriteCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!user_write_callback_.is_null());
 
@@ -767,7 +763,7 @@ void SSLServerSocketOpenSSL::DoWriteCallback(int rv) {
   base::ResetAndReturn(&user_write_callback_).Run(rv);
 }
 
-int SSLServerSocketOpenSSL::Init() {
+int SSLServerSocketImpl::Init() {
   DCHECK(!transport_bio_);
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -788,8 +784,8 @@ int SSLServerSocketOpenSSL::Init() {
 }
 
 // static
-int SSLServerSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx,
-                                               void* arg) {
+int SSLServerSocketImpl::CertVerifyCallback(X509_STORE_CTX* store_ctx,
+                                            void* arg) {
   ClientCertVerifier* verifier = reinterpret_cast<ClientCertVerifier*>(arg);
   // If a verifier was not supplied, all certificates are accepted.
   if (!verifier)
@@ -824,10 +820,10 @@ std::unique_ptr<SSLServerContext> CreateSSLServerContext(
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_server_config) {
   return std::unique_ptr<SSLServerContext>(
-      new SSLServerContextOpenSSL(certificate, key, ssl_server_config));
+      new SSLServerContextImpl(certificate, key, ssl_server_config));
 }
 
-SSLServerContextOpenSSL::SSLServerContextOpenSSL(
+SSLServerContextImpl::SSLServerContextImpl(
     X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_server_config)
@@ -850,9 +846,9 @@ SSLServerContextOpenSSL::SSLServerContextOpenSSL(
     case SSLServerConfig::ClientCertType::OPTIONAL_CLIENT_CERT:
       verify_mode |= SSL_VERIFY_PEER;
       SSL_CTX_set_verify(ssl_ctx_.get(), verify_mode, nullptr);
-      SSL_CTX_set_cert_verify_callback(
-          ssl_ctx_.get(), SSLServerSocketOpenSSL::CertVerifyCallback,
-          ssl_server_config_.client_cert_verifier);
+      SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(),
+                                       SSLServerSocketImpl::CertVerifyCallback,
+                                       ssl_server_config_.client_cert_verifier);
       break;
     case SSLServerConfig::ClientCertType::NO_CLIENT_CERT:
       break;
@@ -941,13 +937,13 @@ SSLServerContextOpenSSL::SSLServerContextOpenSSL(
   }
 }
 
-SSLServerContextOpenSSL::~SSLServerContextOpenSSL() {}
+SSLServerContextImpl::~SSLServerContextImpl() {}
 
-std::unique_ptr<SSLServerSocket> SSLServerContextOpenSSL::CreateSSLServerSocket(
+std::unique_ptr<SSLServerSocket> SSLServerContextImpl::CreateSSLServerSocket(
     std::unique_ptr<StreamSocket> socket) {
   SSL* ssl = SSL_new(ssl_ctx_.get());
   return std::unique_ptr<SSLServerSocket>(
-      new SSLServerSocketOpenSSL(std::move(socket), ssl));
+      new SSLServerSocketImpl(std::move(socket), ssl));
 }
 
 void EnableSSLServerSockets() {

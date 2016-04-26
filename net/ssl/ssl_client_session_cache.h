@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SSL_SSL_CLIENT_SESSION_CACHE_OPENSSL_H
-#define NET_SSL_SSL_CLIENT_SESSION_CACHE_OPENSSL_H
+#ifndef NET_SSL_SSL_CLIENT_SESSION_CACHE_H
+#define NET_SSL_SSL_CLIENT_SESSION_CACHE_H
 
 #include <openssl/ssl.h>
 #include <stddef.h>
@@ -25,7 +25,7 @@ class Clock;
 
 namespace net {
 
-class NET_EXPORT SSLClientSessionCacheOpenSSL {
+class NET_EXPORT SSLClientSessionCache {
  public:
   struct Config {
     // The maximum number of entries in the cache.
@@ -36,8 +36,8 @@ class NET_EXPORT SSLClientSessionCacheOpenSSL {
     base::TimeDelta timeout = base::TimeDelta::FromHours(1);
   };
 
-  explicit SSLClientSessionCacheOpenSSL(const Config& config);
-  ~SSLClientSessionCacheOpenSSL();
+  explicit SSLClientSessionCache(const Config& config);
+  ~SSLClientSessionCache();
 
   size_t size() const;
 
@@ -84,9 +84,9 @@ class NET_EXPORT SSLClientSessionCacheOpenSSL {
   // classes in net.
   base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLClientSessionCacheOpenSSL);
+  DISALLOW_COPY_AND_ASSIGN(SSLClientSessionCache);
 };
 
 }  // namespace net
 
-#endif  // NET_SSL_SSL_CLIENT_SESSION_CACHE_OPENSSL_H
+#endif  // NET_SSL_SSL_CLIENT_SESSION_CACHE_H

@@ -11,8 +11,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_export.h"
 
-// OpenSSL-specific functions to use the Android platform keystore.
-// The features provided here are highly specific to OpenSSL and are
+// The features provided here are highly implementation specific and are
 // segregated from net/android/keystore.h because the latter only provides
 // simply JNI stubs to call Java code which only uses platform APIs.
 

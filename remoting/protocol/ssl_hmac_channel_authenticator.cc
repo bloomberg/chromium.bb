@@ -34,7 +34,7 @@
 #include "remoting/protocol/p2p_stream_socket.h"
 
 #if defined(OS_NACL)
-#include "net/socket/ssl_client_socket_openssl.h"
+#include "net/socket/ssl_client_socket_impl.h"
 #else
 #include "net/socket/client_socket_factory.h"
 #endif
@@ -269,7 +269,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
 #if defined(OS_NACL)
     // net_nacl doesn't include ClientSocketFactory.
-    socket_.reset(new net::SSLClientSocketOpenSSL(
+    socket_.reset(new net::SSLClientSocketImpl(
         std::move(socket_handle), host_and_port, ssl_config, context));
 #else
     socket_ =

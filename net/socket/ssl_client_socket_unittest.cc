@@ -1501,9 +1501,8 @@ TEST_F(SSLClientSocketTest, Read_DeleteWhilePendingFullDuplex) {
   ASSERT_EQ(ERR_IO_PENDING, rv);
   ASSERT_FALSE(read_callback.have_result());
 
-  // Attempt to write the remaining data. NSS will not be able to consume the
-  // application data because the internal buffers are full, while OpenSSL will
-  // return that its blocked because the underlying transport is blocked.
+  // Attempt to write the remaining data. OpenSSL will return that its blocked
+  // because the underlying transport is blocked.
   rv = raw_sock->Write(request_buffer.get(),
                        request_buffer->BytesRemaining(),
                        callback.callback());
@@ -2458,10 +2457,8 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
 
   // TODO(davidben): Read one byte to ensure the test server has responded and
   // then assert IsConnectedAndIdle is false. This currently doesn't work
-  // because neither SSLClientSocketNSS nor SSLClientSocketOpenSSL check their
-  // SSL implementation's internal buffers. Either call PR_Available and
-  // SSL_pending, although the former isn't actually implemented or perhaps
-  // attempt to read one byte extra.
+  // because SSLClientSocketImpl doesn't check the implementation's internal
+  // buffer. Call SSL_pending.
 }
 
 // Tests that IsConnectedAndIdle treats a socket as idle even if a Write hasn't
@@ -2492,8 +2489,8 @@ TEST_F(SSLClientSocketTest, ReusableAfterWrite) {
   scoped_refptr<IOBuffer> request_buffer(new IOBuffer(kRequestLen));
   memcpy(request_buffer->data(), kRequestText, kRequestLen);
 
-  // Although transport writes are blocked, both SSLClientSocketOpenSSL and
-  // SSLClientSocketNSS complete the outer Write operation.
+  // Although transport writes are blocked, SSLClientSocketImpl completes the
+  // outer Write operation.
   EXPECT_EQ(static_cast<int>(kRequestLen),
             callback.GetResult(sock->Write(request_buffer.get(), kRequestLen,
                                            callback.callback())));

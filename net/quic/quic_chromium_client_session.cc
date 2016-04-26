@@ -55,7 +55,7 @@ const size_t kMaxReadersPerQuicSession = 5;
 // Size of the MRU cache of Token Binding signatures. Since the material being
 // signed is constant and there aren't many keys being used to sign, a fairly
 // small number was chosen, somewhat arbitrarily, and to match
-// SSLClientSocketOpenssl.
+// SSLClientSocketImpl.
 const size_t kTokenBindingSignatureMapSize = 10;
 
 // Histograms for tracking down the crashes from http://crbug.com/354669

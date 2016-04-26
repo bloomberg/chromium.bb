@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/ssl_client_session_cache_openssl.h"
+#include "net/ssl/ssl_client_session_cache.h"
 
 #include <openssl/ssl.h>
 
@@ -15,9 +15,9 @@
 namespace net {
 
 // Test basic insertion and lookup operations.
-TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
-  SSLClientSessionCacheOpenSSL::Config config;
-  SSLClientSessionCacheOpenSSL cache(config);
+TEST(SSLClientSessionCacheTest, Basic) {
+  SSLClientSessionCache::Config config;
+  SSLClientSessionCache cache(config);
 
   ScopedSSL_SESSION session1(SSL_SESSION_new());
   ScopedSSL_SESSION session2(SSL_SESSION_new());
@@ -65,9 +65,9 @@ TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
 
 // Test that a session may be inserted at two different keys. This should never
 // be necessary, but the API doesn't prohibit it.
-TEST(SSLClientSessionCacheOpenSSLTest, DoubleInsert) {
-  SSLClientSessionCacheOpenSSL::Config config;
-  SSLClientSessionCacheOpenSSL cache(config);
+TEST(SSLClientSessionCacheTest, DoubleInsert) {
+  SSLClientSessionCache::Config config;
+  SSLClientSessionCache cache(config);
 
   ScopedSSL_SESSION session(SSL_SESSION_new());
   EXPECT_EQ(1u, session->references);
@@ -99,10 +99,10 @@ TEST(SSLClientSessionCacheOpenSSLTest, DoubleInsert) {
 }
 
 // Tests that the session cache's size is correctly bounded.
-TEST(SSLClientSessionCacheOpenSSLTest, MaxEntries) {
-  SSLClientSessionCacheOpenSSL::Config config;
+TEST(SSLClientSessionCacheTest, MaxEntries) {
+  SSLClientSessionCache::Config config;
   config.max_entries = 3;
-  SSLClientSessionCacheOpenSSL cache(config);
+  SSLClientSessionCache cache(config);
 
   ScopedSSL_SESSION session1(SSL_SESSION_new());
   ScopedSSL_SESSION session2(SSL_SESSION_new());
@@ -137,15 +137,15 @@ TEST(SSLClientSessionCacheOpenSSLTest, MaxEntries) {
 }
 
 // Tests that session expiration works properly.
-TEST(SSLClientSessionCacheOpenSSLTest, Expiration) {
+TEST(SSLClientSessionCacheTest, Expiration) {
   const size_t kNumEntries = 20;
   const size_t kExpirationCheckCount = 10;
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
 
-  SSLClientSessionCacheOpenSSL::Config config;
+  SSLClientSessionCache::Config config;
   config.expiration_check_count = kExpirationCheckCount;
   config.timeout = kTimeout;
-  SSLClientSessionCacheOpenSSL cache(config);
+  SSLClientSessionCache cache(config);
   base::SimpleTestClock* clock = new base::SimpleTestClock;
   cache.SetClockForTesting(base::WrapUnique(clock));
 
@@ -184,16 +184,16 @@ TEST(SSLClientSessionCacheOpenSSLTest, Expiration) {
 
 // Tests that Lookup performs an expiration check before returning a cached
 // session.
-TEST(SSLClientSessionCacheOpenSSLTest, LookupExpirationCheck) {
+TEST(SSLClientSessionCacheTest, LookupExpirationCheck) {
   // kExpirationCheckCount is set to a suitably large number so the automated
   // pruning never triggers.
   const size_t kExpirationCheckCount = 1000;
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
 
-  SSLClientSessionCacheOpenSSL::Config config;
+  SSLClientSessionCache::Config config;
   config.expiration_check_count = kExpirationCheckCount;
   config.timeout = kTimeout;
-  SSLClientSessionCacheOpenSSL cache(config);
+  SSLClientSessionCache cache(config);
   base::SimpleTestClock* clock = new base::SimpleTestClock;
   cache.SetClockForTesting(base::WrapUnique(clock));
 

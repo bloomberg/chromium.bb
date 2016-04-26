@@ -104,7 +104,7 @@ void ExDataFree(void* parent,
                 void* argp) {
   // Ensure the global JNI reference created with this wrapper is
   // properly destroyed with it.
-  KeyExData *ex_data = reinterpret_cast<KeyExData*>(ptr);
+  KeyExData* ex_data = reinterpret_cast<KeyExData*>(ptr);
   delete ex_data;
 }
 
@@ -124,10 +124,10 @@ class BoringSSLEngine {
                                               ExDataDup,
                                               ExDataFree)),
         engine_(ENGINE_new()) {
-    ENGINE_set_RSA_method(
-        engine_, &android_rsa_method, sizeof(android_rsa_method));
-    ENGINE_set_ECDSA_method(
-        engine_, &android_ecdsa_method, sizeof(android_ecdsa_method));
+    ENGINE_set_RSA_method(engine_, &android_rsa_method,
+                          sizeof(android_rsa_method));
+    ENGINE_set_ECDSA_method(engine_, &android_ecdsa_method,
+                            sizeof(android_ecdsa_method));
   }
 
   int rsa_ex_index() const { return rsa_index_; }
@@ -143,7 +143,6 @@ class BoringSSLEngine {
 
 base::LazyInstance<BoringSSLEngine>::Leaky global_boringssl_engine =
     LAZY_INSTANCE_INITIALIZER;
-
 
 // VectorBignumSize returns the number of bytes needed to represent the bignum
 // given in |v|, i.e. the length of |v| less any leading zero bytes.
@@ -161,8 +160,8 @@ KeyExData* RsaGetExData(const RSA* rsa) {
       RSA_get_ex_data(rsa, global_boringssl_engine.Get().rsa_ex_index()));
 }
 
-size_t RsaMethodSize(const RSA *rsa) {
-  const KeyExData *ex_data = RsaGetExData(rsa);
+size_t RsaMethodSize(const RSA* rsa) {
+  const KeyExData* ex_data = RsaGetExData(rsa);
   return ex_data->cached_size;
 }
 
@@ -199,7 +198,7 @@ int RsaMethodSignRaw(RSA* rsa,
   }
 
   // Retrieve private key JNI reference.
-  const KeyExData *ex_data = RsaGetExData(rsa);
+  const KeyExData* ex_data = RsaGetExData(rsa);
   if (!ex_data || !ex_data->private_key.obj()) {
     LOG(WARNING) << "Null JNI reference passed to RsaMethodSignRaw!";
     OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
@@ -239,8 +238,8 @@ int RsaMethodSignRaw(RSA* rsa,
 
   size_t expected_size = static_cast<size_t>(RSA_size(rsa));
   if (result.size() > expected_size) {
-    LOG(ERROR) << "RSA Signature size mismatch, actual: "
-               <<  result.size() << ", expected <= " << expected_size;
+    LOG(ERROR) << "RSA Signature size mismatch, actual: " << result.size()
+               << ", expected <= " << expected_size;
     OPENSSL_PUT_ERROR(RSA, ERR_R_INTERNAL_ERROR);
     return 0;
   }
@@ -286,8 +285,7 @@ int RsaMethodVerifyRaw(RSA* rsa,
 
 const RSA_METHOD android_rsa_method = {
     {
-     0 /* references */,
-     1 /* is_static */
+        0 /* references */, 1 /* is_static */
     } /* common */,
     nullptr /* app_data */,
 
@@ -322,8 +320,7 @@ crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
     jobject private_key,
     AndroidRSA* legacy_rsa,
     const crypto::OpenSSLErrStackTracer& tracer) {
-  crypto::ScopedRSA rsa(
-      RSA_new_method(global_boringssl_engine.Get().engine()));
+  crypto::ScopedRSA rsa(RSA_new_method(global_boringssl_engine.Get().engine()));
 
   std::vector<uint8_t> modulus;
   if (!GetRSAKeyModulus(private_key, &modulus)) {
@@ -399,8 +396,7 @@ crypto::ScopedEVP_PKEY GetRsaPkeyWrapper(jobject private_key) {
   // Route around platform limitation: if Android < 4.2, then
   // base::android::RawSignDigestWithPrivateKey() cannot work, so try to get the
   // system OpenSSL's EVP_PKEY backing this PrivateKey object.
-  AndroidEVP_PKEY* sys_pkey =
-      GetOpenSSLSystemHandleForPrivateKey(private_key);
+  AndroidEVP_PKEY* sys_pkey = GetOpenSSLSystemHandleForPrivateKey(private_key);
   if (sys_pkey == nullptr)
     return nullptr;
 
@@ -463,9 +459,8 @@ int EcdsaMethodSign(const uint8_t* digest,
   // ECDSA_size().
   size_t max_expected_size = ECDSA_size(ec_key);
   if (signature.size() > max_expected_size) {
-    LOG(ERROR) << "ECDSA Signature size mismatch, actual: "
-               <<  signature.size() << ", expected <= "
-               << max_expected_size;
+    LOG(ERROR) << "ECDSA Signature size mismatch, actual: " << signature.size()
+               << ", expected <= " << max_expected_size;
     return 0;
   }
 
@@ -522,8 +517,7 @@ crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
 
 const ECDSA_METHOD android_ecdsa_method = {
     {
-     0 /* references */,
-     1 /* is_static */
+        0 /* references */, 1 /* is_static */
     } /* common */,
     NULL /* app_data */,
 

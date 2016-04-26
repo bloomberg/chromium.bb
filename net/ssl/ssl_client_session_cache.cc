@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/ssl_client_session_cache_openssl.h"
+#include "net/ssl/ssl_client_session_cache.h"
 
 #include <utility>
 
@@ -11,23 +11,21 @@
 
 namespace net {
 
-SSLClientSessionCacheOpenSSL::SSLClientSessionCacheOpenSSL(const Config& config)
+SSLClientSessionCache::SSLClientSessionCache(const Config& config)
     : clock_(new base::DefaultClock),
       config_(config),
       cache_(config.max_entries),
-      lookups_since_flush_(0) {
-}
+      lookups_since_flush_(0) {}
 
-SSLClientSessionCacheOpenSSL::~SSLClientSessionCacheOpenSSL() {
+SSLClientSessionCache::~SSLClientSessionCache() {
   Flush();
 }
 
-size_t SSLClientSessionCacheOpenSSL::size() const {
+size_t SSLClientSessionCache::size() const {
   return cache_.size();
 }
 
-ScopedSSL_SESSION SSLClientSessionCacheOpenSSL::Lookup(
-    const std::string& cache_key) {
+ScopedSSL_SESSION SSLClientSessionCache::Lookup(const std::string& cache_key) {
   base::AutoLock lock(lock_);
 
   // Expire stale sessions.
@@ -47,8 +45,8 @@ ScopedSSL_SESSION SSLClientSessionCacheOpenSSL::Lookup(
   return ScopedSSL_SESSION(SSL_SESSION_up_ref(iter->second->session.get()));
 }
 
-void SSLClientSessionCacheOpenSSL::Insert(const std::string& cache_key,
-                                          SSL_SESSION* session) {
+void SSLClientSessionCache::Insert(const std::string& cache_key,
+                                   SSL_SESSION* session) {
   base::AutoLock lock(lock_);
 
   // Make a new entry.
@@ -60,31 +58,28 @@ void SSLClientSessionCacheOpenSSL::Insert(const std::string& cache_key,
   cache_.Put(cache_key, std::move(entry));
 }
 
-void SSLClientSessionCacheOpenSSL::Flush() {
+void SSLClientSessionCache::Flush() {
   base::AutoLock lock(lock_);
 
   cache_.Clear();
 }
 
-void SSLClientSessionCacheOpenSSL::SetClockForTesting(
+void SSLClientSessionCache::SetClockForTesting(
     std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 
-SSLClientSessionCacheOpenSSL::CacheEntry::CacheEntry() {
-}
+SSLClientSessionCache::CacheEntry::CacheEntry() {}
 
-SSLClientSessionCacheOpenSSL::CacheEntry::~CacheEntry() {
-}
+SSLClientSessionCache::CacheEntry::~CacheEntry() {}
 
-bool SSLClientSessionCacheOpenSSL::IsExpired(
-    SSLClientSessionCacheOpenSSL::CacheEntry* entry,
-    const base::Time& now) {
+bool SSLClientSessionCache::IsExpired(SSLClientSessionCache::CacheEntry* entry,
+                                      const base::Time& now) {
   return now < entry->creation_time ||
          entry->creation_time + config_.timeout < now;
 }
 
-void SSLClientSessionCacheOpenSSL::FlushExpiredSessions() {
+void SSLClientSessionCache::FlushExpiredSessions() {
   base::Time now = clock_->Now();
   CacheEntryMap::iterator iter = cache_.begin();
   while (iter != cache_.end()) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_SSL_CLIENT_SOCKET_OPENSSL_H_
-#define NET_SOCKET_SSL_CLIENT_SOCKET_OPENSSL_H_
+#ifndef NET_SOCKET_SSL_CLIENT_SOCKET_IMPL_H_
+#define NET_SOCKET_SSL_CLIENT_SOCKET_IMPL_H_
 
 #include <openssl/base.h>
 #include <openssl/ssl.h>
@@ -46,18 +46,17 @@ class SSLInfo;
 
 using SignedEkmMap = base::MRUCache<std::string, std::vector<uint8_t>>;
 
-// An SSL client socket implemented with OpenSSL.
-class SSLClientSocketOpenSSL : public SSLClientSocket {
+class SSLClientSocketImpl : public SSLClientSocket {
  public:
   // Takes ownership of the transport_socket, which may already be connected.
   // The given hostname will be compared with the name(s) in the server's
   // certificate during the SSL handshake.  ssl_config specifies the SSL
   // settings.
-  SSLClientSocketOpenSSL(std::unique_ptr<ClientSocketHandle> transport_socket,
-                         const HostPortPair& host_and_port,
-                         const SSLConfig& ssl_config,
-                         const SSLClientSocketContext& context);
-  ~SSLClientSocketOpenSSL() override;
+  SSLClientSocketImpl(std::unique_ptr<ClientSocketHandle> transport_socket,
+                      const HostPortPair& host_and_port,
+                      const SSLConfig& ssl_config,
+                      const SSLClientSocketContext& context);
+  ~SSLClientSocketImpl() override;
 
   const HostPortPair& host_and_port() const { return host_and_port_; }
   const std::string& ssl_session_cache_shard() const {
@@ -165,25 +164,31 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // CertVerifyCallback is called to verify the server's certificates. We do
   // verification after the handshake so this function only enforces that the
   // certificates don't change during renegotiation.
-  int CertVerifyCallback(X509_STORE_CTX *store_ctx);
+  int CertVerifyCallback(X509_STORE_CTX* store_ctx);
 
   // Callback from the SSL layer to check which NPN protocol we are supporting
-  int SelectNextProtoCallback(unsigned char** out, unsigned char* outlen,
-                              const unsigned char* in, unsigned int inlen);
+  int SelectNextProtoCallback(unsigned char** out,
+                              unsigned char* outlen,
+                              const unsigned char* in,
+                              unsigned int inlen);
 
   // Called during an operation on |transport_bio_|'s peer. Checks saved
   // transport error state and, if appropriate, returns an error through
   // OpenSSL's error system.
-  long MaybeReplayTransportError(BIO *bio,
+  long MaybeReplayTransportError(BIO* bio,
                                  int cmd,
-                                 const char *argp, int argi, long argl,
+                                 const char* argp,
+                                 int argi,
+                                 long argl,
                                  long retvalue);
 
   // Callback from the SSL layer when an operation is performed on
   // |transport_bio_|'s peer.
-  static long BIOCallback(BIO *bio,
+  static long BIOCallback(BIO* bio,
                           int cmd,
-                          const char *argp, int argi, long argl,
+                          const char* argp,
+                          int argi,
+                          long argl,
                           long retvalue);
 
   // Called after the initial handshake completes and after the server
@@ -237,7 +242,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   bool transport_send_busy_;
   bool transport_recv_busy_;
 
-  // Buffers which are shared by BoringSSL and SSLClientSocketOpenSSL.
+  // Buffers which are shared by BoringSSL and SSLClientSocketImpl.
   // GrowableIOBuffer is used to keep ownership and setting offset.
   scoped_refptr<GrowableIOBuffer> send_buffer_;
   scoped_refptr<GrowableIOBuffer> recv_buffer_;
@@ -364,9 +369,9 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   std::string pinning_failure_log_;
 
   BoundNetLog net_log_;
-  base::WeakPtrFactory<SSLClientSocketOpenSSL> weak_factory_;
+  base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_;
 };
 
 }  // namespace net
 
-#endif  // NET_SOCKET_SSL_CLIENT_SOCKET_OPENSSL_H_
+#endif  // NET_SOCKET_SSL_CLIENT_SOCKET_IMPL_H_

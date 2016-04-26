@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
-#define NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
+#ifndef NET_SOCKET_SSL_SERVER_SOCKET_IMPL_H_
+#define NET_SOCKET_SSL_SERVER_SOCKET_IMPL_H_
 
 #include <stdint.h>
 
@@ -28,12 +28,12 @@ namespace net {
 
 class SSLInfo;
 
-class SSLServerContextOpenSSL : public SSLServerContext {
+class SSLServerContextImpl : public SSLServerContext {
  public:
-  SSLServerContextOpenSSL(X509Certificate* certificate,
-                          const crypto::RSAPrivateKey& key,
-                          const SSLServerConfig& ssl_server_config);
-  ~SSLServerContextOpenSSL() override;
+  SSLServerContextImpl(X509Certificate* certificate,
+                       const crypto::RSAPrivateKey& key,
+                       const SSLServerConfig& ssl_server_config);
+  ~SSLServerContextImpl() override;
 
   std::unique_ptr<SSLServerSocket> CreateSSLServerSocket(
       std::unique_ptr<StreamSocket> socket) override;
@@ -53,4 +53,4 @@ class SSLServerContextOpenSSL : public SSLServerContext {
 
 }  // namespace net
 
-#endif  // NET_SOCKET_SSL_SERVER_SOCKET_OPENSSL_H_
+#endif  // NET_SOCKET_SSL_SERVER_SOCKET_IMPL_H_
