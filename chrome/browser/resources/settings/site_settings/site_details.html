@@ -17,15 +17,14 @@
         <div class="website-icon" style$="[[computeSiteIcon(site)]]"></div>
         <div class="origin flex">[[site.originForDisplay]]</div>
       </div>
-      <h2 i18n-content="siteSettingsUsage" id="usage"
-          hidden$="[[!storedData_]]"></h2>
+      <h2 id="usage" hidden$="[[!storedData_]]">$i18n{siteSettingsUsage}</h2>
       <paper-item id="storage" hidden$="[[!storedData_]]">
         <div class="flex">[[storedData_]]</div>
         <paper-icon-button icon="delete"
             on-tap="onClearStorage_"
             i18n-values="alt:siteSettingsDelete"></paper-icon-button>
       </paper-item>
-      <h2 i18n-content="siteSettingsPermissions"></h2>
+      <h2>$i18n{siteSettingsPermissions}</h2>
       <site-details-permission site="[[site]]" id="cookies"
           category="{{ContentSettingsTypes.COOKIES}}">
       </site-details-permission>
@@ -50,10 +49,9 @@
       <site-details-permission site="[[site]]" id="mic"
           category="{{ContentSettingsTypes.MIC}}">
       </site-details-permission>
-      <paper-button
-          on-tap="onClearAndReset_"
-          raised i18n-content="siteSettingsClearAndReset"
-          class="reset-button"></paper-button>
+      <paper-button on-tap="onClearAndReset_" raised class="reset-button">
+        $i18n{siteSettingsClearAndReset}
+      </paper-button>
     </div>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"
