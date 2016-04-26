@@ -4,21 +4,14 @@
 
 import("//build/symlink.gni")
 
-if (current_toolchain == host_toolchain) {
-  # GYP: //tools/android/forwarder/forwarder.gyp:forwarder
-  executable("forwarder") {
-    sources = [
-      "forwarder.cc",
-    ]
-    deps = [
-      "//base",
-      "//build/config/sanitizers:deps",
-      "//tools/android/common",
-    ]
-  }
-} else {
-  # Create a symlink from root_build_dir -> clang_x64/forwarder.
-  binary_symlink("forwarder") {
-    binary_label = ":$target_name($host_toolchain)"
-  }
+# GYP: //tools/android/forwarder/forwarder.gyp:forwarder
+executable("forwarder") {
+  sources = [
+    "forwarder.cc",
+  ]
+  deps = [
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//tools/android/common",
+  ]
 }
