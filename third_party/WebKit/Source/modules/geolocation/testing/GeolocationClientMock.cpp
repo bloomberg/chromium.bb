@@ -147,7 +147,7 @@ void GeolocationClientMock::setEnableHighAccuracy(bool)
 
 GeolocationPosition* GeolocationClientMock::lastPosition()
 {
-    return m_lastPosition.get();
+    return m_lastPosition;
 }
 
 void GeolocationClientMock::asyncUpdateController()
@@ -162,10 +162,10 @@ void GeolocationClientMock::controllerTimerFired(Timer<GeolocationClientMock>* t
 
     // Make a copy of the set of controllers since it might be modified while iterating.
     GeolocationControllers controllers = m_controllers;
-    if (m_lastPosition.get()) {
+    if (m_lastPosition) {
         ASSERT(!m_hasError);
         for (GeolocationControllers::iterator it = controllers.begin(); it != controllers.end(); ++it)
-            (*it)->positionChanged(m_lastPosition.get());
+            (*it)->positionChanged(m_lastPosition);
     } else if (m_hasError) {
         for (GeolocationControllers::iterator it = controllers.begin(); it != controllers.end(); ++it)
             (*it)->errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, m_errorMessage));

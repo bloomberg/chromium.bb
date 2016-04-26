@@ -29,7 +29,7 @@ GeoNotifier* GeolocationWatchers::find(int id)
     IdToNotifierMap::iterator iter = m_idToNotifierMap.find(id);
     if (iter == m_idToNotifierMap.end())
         return 0;
-    return iter->value.get();
+    return iter->value;
 }
 
 void GeolocationWatchers::remove(int id)

@@ -33,7 +33,6 @@
 namespace blink {
 
 class GeolocationController;
-class GeolocationControllerPrivate;
 class WebGeolocationPosition;
 class WebGeolocationError;
 
@@ -55,7 +54,7 @@ private:
 
     BLINK_EXPORT void reset();
 
-    WebPrivatePtr<GeolocationControllerPrivate> m_private;
+    WebPrivatePtr<GeolocationController> m_private;
 };
 
 } // namespace blink

@@ -35,41 +35,8 @@
 
 namespace blink {
 
-// TODO(Oilpan): once GeolocationController is always on the heap,
-// shorten out this GeolocationControllerPrivate intermediary.
-class GeolocationControllerPrivate final : public GarbageCollected<GeolocationControllerPrivate> {
-public:
-    static GeolocationControllerPrivate* create(GeolocationController* controller)
-    {
-        return new GeolocationControllerPrivate(controller);
-    }
-
-    static GeolocationController& controller(const WebPrivatePtr<GeolocationControllerPrivate>& controller)
-    {
-        DCHECK(!controller.isNull());
-        DCHECK(controller->m_controller);
-        return *controller->m_controller;
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_controller);
-    }
-
-private:
-    explicit GeolocationControllerPrivate(GeolocationController* controller)
-        : m_controller(controller)
-    {
-    }
-
-    // Non-Oilpan, this bare pointer is owned as a supplement and kept alive
-    // by the frame of the WebLocalFrame which creates the WebGeolocationController
-    // object that wraps it all up.
-    Member<GeolocationController> m_controller;
-};
-
 WebGeolocationController::WebGeolocationController(GeolocationController* controller)
-    : m_private(GeolocationControllerPrivate::create(controller))
+    : m_private(controller)
 {
 }
 
@@ -80,12 +47,12 @@ void WebGeolocationController::reset()
 
 void WebGeolocationController::positionChanged(const WebGeolocationPosition& webPosition)
 {
-    GeolocationControllerPrivate::controller(m_private).positionChanged(static_cast<GeolocationPosition*>(webPosition));
+    m_private->positionChanged(static_cast<GeolocationPosition*>(webPosition));
 }
 
 void WebGeolocationController::errorOccurred(const WebGeolocationError& webError)
 {
-    GeolocationControllerPrivate::controller(m_private).errorOccurred(static_cast<GeolocationError*>(webError));
+    m_private->errorOccurred(static_cast<GeolocationError*>(webError));
 }
 
 } // namespace blink

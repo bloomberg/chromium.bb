@@ -140,8 +140,8 @@ void GeolocationController::errorOccurred(GeolocationError* error)
 
 GeolocationPosition* GeolocationController::lastPosition()
 {
-    if (m_lastPosition.get())
-        return m_lastPosition.get();
+    if (m_lastPosition)
+        return m_lastPosition;
 
     if (!m_client)
         return 0;

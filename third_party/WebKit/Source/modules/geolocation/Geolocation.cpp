@@ -138,7 +138,7 @@ Geoposition* Geolocation::lastPosition()
 
     m_lastPosition = createGeoposition(GeolocationController::from(frame)->lastPosition());
 
-    return m_lastPosition.get();
+    return m_lastPosition;
 }
 
 void Geolocation::recordOriginTypeAccess() const

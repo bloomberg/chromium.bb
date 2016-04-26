@@ -47,7 +47,7 @@ public:
     }
 
     DOMTimeStamp timestamp() const { return m_timestamp; }
-    Coordinates* coords() const { return m_coordinates.get(); }
+    Coordinates* coords() const { return m_coordinates; }
 
 private:
     Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)

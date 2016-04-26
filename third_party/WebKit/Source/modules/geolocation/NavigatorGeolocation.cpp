@@ -58,7 +58,7 @@ Geolocation* NavigatorGeolocation::geolocation()
 {
     if (!m_geolocation && frame())
         m_geolocation = Geolocation::create(frame()->document());
-    return m_geolocation.get();
+    return m_geolocation;
 }
 
 DEFINE_TRACE(NavigatorGeolocation)

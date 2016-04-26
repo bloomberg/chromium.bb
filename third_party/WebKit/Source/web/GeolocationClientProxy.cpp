@@ -74,7 +74,7 @@ GeolocationPosition* GeolocationClientProxy::lastPosition()
     else
         m_lastPosition.clear();
 
-    return m_lastPosition.get();
+    return m_lastPosition;
 }
 
 void GeolocationClientProxy::requestPermission(Geolocation* geolocation)
