@@ -233,7 +233,7 @@ InspectorTest.printTimelineRecordsWithDetails = function(typeName)
 InspectorTest.walkTimelineEventTree = function(callback)
 {
     var model = InspectorTest.timelineModel();
-    var view = new WebInspector.EventsTimelineTreeView(model, null);
+    var view = new WebInspector.EventsTimelineTreeView(model, WebInspector.panels.timeline._filters, null);
     var selection = WebInspector.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime());
     view.updateContents(selection);
     InspectorTest.walkTimelineEventTreeUnderNode(callback, view._currentTree, 0);

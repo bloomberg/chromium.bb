@@ -36,7 +36,7 @@ function test()
     ];
 
     var model = InspectorTest.createTimelineModelWithEvents(testData);
-    var view = new WebInspector.EventsTimelineTreeView(model, null);
+    var view = new WebInspector.EventsTimelineTreeView(model, WebInspector.panels.timeline._filters, null);
     view.updateContents(WebInspector.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime()));
     var filtersControl = view._filtersControl;
 
