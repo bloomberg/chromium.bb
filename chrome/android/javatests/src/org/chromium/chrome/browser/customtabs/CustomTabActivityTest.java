@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -1229,6 +1230,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         final ActivityMonitor monitor = getInstrumentation().addMonitor(
                 ChromeTabbedActivity.class.getName(), result, false);
         final Tab tabToBeReparented = mActivity.getActivityTab();
+        final CallbackHelper tabHiddenHelper = new CallbackHelper();
+        TabObserver observer = new EmptyTabObserver() {
+            @Override
+            public void onHidden(Tab tab) {
+                tabHiddenHelper.notifyCalled();
+            }
+        };
+        tabToBeReparented.addObserver(observer);
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1261,6 +1270,9 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertEquals(newActivity.getWindowAndroid(),
                 tabToBeReparented.getContentViewCore().getWindowAndroid());
         assertFalse(tabToBeReparented.getDelegateFactory() instanceof CustomTabDelegateFactory);
+        assertEquals("The tab should never be hidden during the reparenting process",
+                0, tabHiddenHelper.getCallCount());
+        tabToBeReparented.removeObserver(observer);
         return newActivity;
     }
 

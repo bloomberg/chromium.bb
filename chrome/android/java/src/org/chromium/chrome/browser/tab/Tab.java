@@ -352,6 +352,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private boolean mIsFullscreenWaitingForLoad = false;
 
     /**
+     * Indicates whether this tab has been detached from its activity and the corresponding
+     * {@link WindowAndroid} for reparenting to a new activity.
+     */
+    private boolean mIsDetachedForReparenting;
+
+    /**
      * The UMA object used to report stats for this tab. Note that this may be null under certain
      * conditions, such as incognito mode.
      */
@@ -1419,6 +1425,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public boolean detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
             Runnable finalizeCallback) {
+        mIsDetachedForReparenting = true;
         ChromeActivity activity = getActivity();
         if (activity == null) return false;
         TabModelSelector tabModelSelector = getTabModelSelector();
@@ -1482,6 +1489,17 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         maybeShowNativePage(getUrl(), true);
 
         reparentingParams.finalizeTabReparenting();
+        mIsDetachedForReparenting = false;
+    }
+
+    /**
+     * @return Whether the tab is detached from its Activity and {@link WindowAndroid} for
+     * reparenting. Certain functionalities will not work until it is attached to a new activity
+     * with {@link Tab#attachAndFinishReparenting(
+     * ChromeActivity, TabDelegateFactory, TabReparentingParams)}.
+     */
+    public boolean isDetachedForReparenting() {
+        return mIsDetachedForReparenting;
     }
 
     /**
