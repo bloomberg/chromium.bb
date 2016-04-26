@@ -1515,3 +1515,5 @@ crbug.com/605047 [ Mac10.11 Retina ] fast/text/emphasis.html [ Failure ]
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
 crbug.com/606302 [ Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure Pass ]
+
+crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
