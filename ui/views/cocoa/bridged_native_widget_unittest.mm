@@ -716,8 +716,7 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
   EXPECT_FALSE(bridge()->target_fullscreen_state());
 
   // Cocoa follows up with a failure message sent to the NSWindowDelegate (there
-  // is no equivalent notification for failure). Called via id so that this
-  // compiles on 10.6.
+  // is no equivalent notification for failure).
   ViewsNSWindowDelegate* window_delegate =
       base::mac::ObjCCast<ViewsNSWindowDelegate>([window delegate]);
   [window_delegate windowDidFailToEnterFullScreen:window];

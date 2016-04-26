@@ -11,7 +11,6 @@
 
 #if defined(OS_MACOSX)
 #include <OpenGL/OpenGL.h>
-#include "base/mac/mac_util.h"
 #include "ui/gl/gl_context_cgl.h"
 #endif  // OS_MACOSX
 
@@ -95,9 +94,6 @@ bool GpuSwitchingManager::SupportsDualGpus() {
       if (flag && command_line.HasSwitch(switches::kUseGL) &&
           command_line.GetSwitchValueASCII(switches::kUseGL) !=
             gfx::kGLImplementationDesktopName)
-        flag = false;
-
-      if (flag && !base::mac::IsOSLionOrLater())
         flag = false;
 
       if (flag) {

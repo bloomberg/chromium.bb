@@ -347,10 +347,6 @@
 // simple, since -[NSWindow attachedSheet] returns nil while the sheet is still
 // closing.
 - (void)registerKeyStateEventTap {
-  // Parent key state sharing is only avaiable on 10.7+.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   NSWindow* window = self.window;
   NSNotification* note =
       [NSNotification notificationWithName:NSWindowDidResignKeyNotification

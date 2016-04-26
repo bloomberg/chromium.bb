@@ -201,10 +201,8 @@ void StorageMonitorMac::Init() {
   DASessionScheduleWithRunLoop(
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 
-  if (base::mac::IsOSLionOrLater()) {
-    image_capture_device_manager_.reset(new ImageCaptureDeviceManager);
-    image_capture_device_manager_->SetNotifications(receiver());
-  }
+  image_capture_device_manager_.reset(new ImageCaptureDeviceManager);
+  image_capture_device_manager_->SetNotifications(receiver());
 }
 
 void StorageMonitorMac::UpdateDisk(

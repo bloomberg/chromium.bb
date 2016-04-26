@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -145,29 +144,6 @@ RenderWidgetHostViewMac* GetRenderWidgetHostViewToUse(
 - (void)stopSpeaking:(id)sender;
 - (BOOL)isSpeaking;
 @end
-
-// This method will return YES for OS X versions 10.7.3 and later, and NO
-// otherwise.
-// Used to prevent a crash when building with the 10.7 SDK and accessing the
-// notification below. See: http://crbug.com/260595.
-static BOOL SupportsBackingPropertiesChangedNotification() {
-  // windowDidChangeBackingProperties: method has been added to the
-  // NSWindowDelegate protocol in 10.7.3, at the same time as the
-  // NSWindowDidChangeBackingPropertiesNotification notification was added.
-  // If the protocol contains this method description, the notification should
-  // be supported as well.
-  Protocol* windowDelegateProtocol = NSProtocolFromString(@"NSWindowDelegate");
-  struct objc_method_description methodDescription =
-      protocol_getMethodDescription(
-          windowDelegateProtocol,
-          @selector(windowDidChangeBackingProperties:),
-          NO,
-          YES);
-
-  // If the protocol does not contain the method, the returned method
-  // description is {NULL, NULL}
-  return methodDescription.name != NULL || methodDescription.types != NULL;
-}
 
 // Private methods:
 @interface RenderWidgetHostViewCocoa ()
@@ -2351,8 +2327,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)shortCircuitScrollWheelEvent:(NSEvent*)event {
-  DCHECK(base::mac::IsOSLionOrLater());
-
   if ([event phase] != NSEventPhaseEnded &&
       [event phase] != NSEventPhaseCancelled) {
     return;
@@ -2518,8 +2492,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // the event is received even when the mouse cursor is no longer over the view
   // when the scrolling ends (e.g. if the tab was switched). This is necessary
   // for ending rubber-banding in such cases.
-  if (base::mac::IsOSLionOrLater() && [event phase] == NSEventPhaseBegan &&
-      !endWheelMonitor_) {
+  if ([event phase] == NSEventPhaseBegan && !endWheelMonitor_) {
     endWheelMonitor_ =
       [NSEvent addLocalMonitorForEventsMatchingMask:NSScrollWheelMask
       handler:^(NSEvent* blockEvent) {
@@ -2582,18 +2555,11 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
-  // Backing property notifications crash on 10.6 when building with the 10.7
-  // SDK, see http://crbug.com/260595.
-  static BOOL supportsBackingPropertiesNotification =
-      SupportsBackingPropertiesChangedNotification();
-
   if (oldWindow) {
-    if (supportsBackingPropertiesNotification) {
-      [notificationCenter
-          removeObserver:self
-                    name:NSWindowDidChangeBackingPropertiesNotification
-                  object:oldWindow];
-    }
+    [notificationCenter
+        removeObserver:self
+                  name:NSWindowDidChangeBackingPropertiesNotification
+                object:oldWindow];
     [notificationCenter
         removeObserver:self
                   name:NSWindowDidMoveNotification
@@ -2612,13 +2578,11 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
                 object:oldWindow];
   }
   if (newWindow) {
-    if (supportsBackingPropertiesNotification) {
-      [notificationCenter
-          addObserver:self
-             selector:@selector(windowDidChangeBackingProperties:)
-                 name:NSWindowDidChangeBackingPropertiesNotification
-               object:newWindow];
-    }
+    [notificationCenter
+        addObserver:self
+           selector:@selector(windowDidChangeBackingProperties:)
+               name:NSWindowDidChangeBackingPropertiesNotification
+             object:newWindow];
     [notificationCenter
         addObserver:self
            selector:@selector(windowChangedGlobalFrame:)

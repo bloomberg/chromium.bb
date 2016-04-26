@@ -4,7 +4,6 @@
 
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
-#import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -84,11 +83,8 @@ void ApplyNSWindowSizeConstraints(NSWindow* window,
   SetResizableStyleMask(window, can_resize);
   [window setShowsResizeIndicator:can_resize];
 
-  // Set the window to participate in Lion Fullscreen mode. Setting this flag
-  // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
-  // only shown for windows that have unbounded size.
-  if (base::mac::IsOSLionOrLater())
-    SetNSWindowCanFullscreen(window, can_fullscreen);
+  // Set the window to participate in Lion Fullscreen mode.
+  SetNSWindowCanFullscreen(window, can_fullscreen);
 
   [[window standardWindowButton:NSWindowZoomButton] setEnabled:can_fullscreen];
 }

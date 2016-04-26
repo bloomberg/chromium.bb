@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -40,7 +39,8 @@ namespace chrome {
 namespace mac {
 
 bool SupportsSystemFullscreen() {
-  return base::mac::IsOSLionOrLater();
+  // TODO(spqchan): Clean this up, https://crbug.com/579259
+  return true;
 }
 
 }  // namespace mac

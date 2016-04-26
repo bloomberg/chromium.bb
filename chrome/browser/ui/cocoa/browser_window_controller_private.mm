@@ -106,9 +106,7 @@ void RecordFullscreenStyle(FullscreenStyle style) {
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
-
 - (NSWindow*)_windowForToolbar;
-
 @end
 
 @implementation BrowserWindowController(Private)
@@ -913,7 +911,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)enterAppKitFullscreen {
-  DCHECK(base::mac::IsOSLionOrLater());
   if (FramedBrowserWindow* framedBrowserWindow =
           base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
     [framedBrowserWindow toggleSystemFullScreen];
@@ -921,7 +918,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)exitAppKitFullscreen {
-  DCHECK(base::mac::IsOSLionOrLater());
   if (FramedBrowserWindow* framedBrowserWindow =
           base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
     [framedBrowserWindow toggleSystemFullScreen];

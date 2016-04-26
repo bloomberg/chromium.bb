@@ -14,32 +14,10 @@
 #import "base/strings/sys_string_conversions.h"
 #include "ui/gfx/font.h"
 
-// CTFontCopyDefaultCascadeListForLanguages() doesn't exist in the 10.6 SDK.
-// There is only the following. It doesn't exist in the public header files,
-// but is an exported symbol so should always link.
-extern "C" CFArrayRef CTFontCopyDefaultCascadeList(CTFontRef font_ref);
-
-namespace {
-
-// Wrapper for CTFontCopyDefaultCascadeListForLanguages() which should appear in
-// CoreText.h from 10.8 onwards.
-// TODO(tapted): Delete this wrapper when only 10.8+ is supported.
-CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
-    CTFontRef font_ref,
-    CFArrayRef language_pref_list) {
-  typedef CFArrayRef (*MountainLionPrototype)(CTFontRef, CFArrayRef);
-  static const MountainLionPrototype cascade_with_languages_function =
-      reinterpret_cast<MountainLionPrototype>(
-          dlsym(RTLD_DEFAULT, "CTFontCopyDefaultCascadeListForLanguages"));
-  if (cascade_with_languages_function)
-    return cascade_with_languages_function(font_ref, language_pref_list);
-
-  // Fallback to the 10.6 Private API.
-  DCHECK(base::mac::IsOSLionOrEarlier());
-  return CTFontCopyDefaultCascadeList(font_ref);
-}
-
-}  // namespace
+// TODO(thakis): Remove this prototype once the deployment target is 10.8+.
+extern "C" CFArrayRef CTFontCopyDefaultCascadeListForLanguages(
+    CTFontRef font,
+    CFArrayRef languagePrefList);
 
 namespace gfx {
 
@@ -56,7 +34,7 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
       stringArrayForKey:@"AppleLanguages"];
   CFArrayRef languages_cf = base::mac::NSToCFCast(languages);
   base::ScopedCFTypeRef<CFArrayRef> cascade_list(
-      CTFontCopyDefaultCascadeListForLanguagesWrapper(
+      CTFontCopyDefaultCascadeListForLanguages(
           static_cast<CTFontRef>(font.GetNativeFont()), languages_cf));
 
   std::vector<Font> fallback_fonts;

@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
-#include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -146,17 +145,13 @@ class BaseBubbleControllerTest : public CocoaTest {
   // Instead of the hacks below, one could make a browser_test or transform the
   // process type, but this seems easiest and is best suited to a unit test.
   //
-  // On Lion and above, which have the event taps, simply post a notification
-  // that will cause the controller to call |-windowDidResignKey:|. Earlier
-  // OSes can call through directly.
+  // Simply post a notification that will cause the controller to call
+  // |-windowDidResignKey:|.
   void SimulateKeyStatusChange() {
     NSNotification* notif =
         [NSNotification notificationWithName:NSWindowDidResignKeyNotification
                                       object:[controller_ window]];
-    if (base::mac::IsOSLionOrLater())
-      [[NSNotificationCenter defaultCenter] postNotification:notif];
-    else
-      [controller_ windowDidResignKey:notif];
+    [[NSNotificationCenter defaultCenter] postNotification:notif];
   }
 
  protected:
@@ -285,10 +280,6 @@ TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
 // Test that clicking outside the window causes the bubble to close if
 // shouldCloseOnResignKey is YES.
 TEST_F(BaseBubbleControllerTest, LionClickOutsideClosesWithoutContextMenu) {
-  // The event tap is only installed on 10.7+.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
   NSWindow* window = [controller_ window];
 
@@ -327,10 +318,6 @@ TEST_F(BaseBubbleControllerTest, LionClickOutsideClosesWithoutContextMenu) {
 // Test that right-clicking the window with displaying a context menu causes
 // the bubble  to close.
 TEST_F(BaseBubbleControllerTest, LionRightClickOutsideClosesWithContextMenu) {
-  // The event tap is only installed on 10.7+.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
   NSWindow* window = [controller_ window];
 
@@ -443,10 +430,6 @@ TEST_F(BaseBubbleControllerTest, ExitFullscreen) {
 
 // Tests that a bubble will not close when it's becoming a key window.
 TEST_F(BaseBubbleControllerTest, StayOnFocus) {
-  // The event tap is only installed on 10.7+.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   [controller_ setShouldOpenAsKeyWindow:NO];
   base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
 

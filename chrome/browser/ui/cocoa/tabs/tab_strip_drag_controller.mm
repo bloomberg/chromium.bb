@@ -211,13 +211,9 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
         // Offset the new window's drag location so that the tab will still be
         // positioned correctly beneath the mouse (being careful to convert the
         // view frame offset to screen coordinates).
-        if (base::mac::IsOSLionOrLater()) {
-          NSWindow* tabViewWindow = [[draggedTab_ tabView] window];
-          horizDragOffset_ = [tabViewWindow convertRectToScreen:
-              NSMakeRect(0.0, 0.0, tabWidthBeyondRightEdge, 1.0)].size.width;
-        } else {
-          horizDragOffset_ = tabWidthBeyondRightEdge;
-        }
+        NSWindow* tabViewWindow = [[draggedTab_ tabView] window];
+        horizDragOffset_ = [tabViewWindow convertRectToScreen:
+            NSMakeRect(0.0, 0.0, tabWidthBeyondRightEdge, 1.0)].size.width;
       }
 
       [[draggedTab_ tabView] setFrameOrigin:newTabFrame.origin];

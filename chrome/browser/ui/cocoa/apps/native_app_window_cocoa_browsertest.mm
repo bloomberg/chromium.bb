@@ -223,9 +223,6 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when
 // the window is fullscreened natively.
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Fullscreen) {
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 
   extensions::AppWindow* app_window =
@@ -552,10 +549,8 @@ void TestControls(AppWindow* app_window) {
   BOOL can_fullscreen =
       ![NSStringFromClass([ns_window class]) isEqualTo:@"AppFramelessNSWindow"];
   // The window can fullscreen and maximize.
-  if (base::mac::IsOSLionOrLater()) {
-    EXPECT_EQ(can_fullscreen, !!([ns_window collectionBehavior] &
-                                 NSWindowCollectionBehaviorFullScreenPrimary));
-  }
+  EXPECT_EQ(can_fullscreen, !!([ns_window collectionBehavior] &
+                               NSWindowCollectionBehaviorFullScreenPrimary));
 
   // In OSX 10.10+, the zoom button performs the zoom action rather than the
   // fullscreen action. The above check that collectionBehavior does not include
@@ -578,9 +573,8 @@ void TestControls(AppWindow* app_window) {
   EXPECT_TRUE([ns_window styleMask] & NSResizableWindowMask);
 
   // Fullscreen and maximize are disabled.
-  if (base::mac::IsOSLionOrLater())
-    EXPECT_FALSE([ns_window collectionBehavior] &
-                 NSWindowCollectionBehaviorFullScreenPrimary);
+  EXPECT_FALSE([ns_window collectionBehavior] &
+               NSWindowCollectionBehaviorFullScreenPrimary);
   EXPECT_FALSE([[ns_window standardWindowButton:NSWindowZoomButton] isEnabled]);
 
   // Set a minimum size equal to the maximum size.
@@ -594,22 +588,20 @@ void TestControls(AppWindow* app_window) {
 
   // If a window is made fullscreen by the API, fullscreen should be enabled so
   // the user can exit fullscreen.
-  if (base::mac::IsOSLionOrLater()) {
-    ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-    base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter([
-        [NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
-    app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, true);
-    [waiter waitForEnterCount:1 exitCount:0];
-    EXPECT_TRUE([ns_window collectionBehavior] &
-                NSWindowCollectionBehaviorFullScreenPrimary);
-    EXPECT_EQ(NSWidth([[ns_window contentView] frame]),
-              NSWidth([ns_window frame]));
-    // Once it leaves fullscreen, it is disabled again.
-    app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, false);
-    [waiter waitForEnterCount:1 exitCount:1];
-    EXPECT_FALSE([ns_window collectionBehavior] &
-                 NSWindowCollectionBehaviorFullScreenPrimary);
-  }
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+  base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
+      [[NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
+  app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, true);
+  [waiter waitForEnterCount:1 exitCount:0];
+  EXPECT_TRUE([ns_window collectionBehavior] &
+              NSWindowCollectionBehaviorFullScreenPrimary);
+  EXPECT_EQ(NSWidth([[ns_window contentView] frame]),
+            NSWidth([ns_window frame]));
+  // Once it leaves fullscreen, it is disabled again.
+  app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, false);
+  [waiter waitForEnterCount:1 exitCount:1];
+  EXPECT_FALSE([ns_window collectionBehavior] &
+               NSWindowCollectionBehaviorFullScreenPrimary);
 }
 
 }  // namespace

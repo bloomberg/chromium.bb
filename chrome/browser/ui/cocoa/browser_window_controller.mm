@@ -202,11 +202,7 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
-
-- (void)setBottomCornerRounded:(BOOL)rounded;
-
 - (NSRect)_growBoxRect;
-
 @end
 
 @implementation BrowserWindowController
@@ -264,12 +260,10 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
     // functionality appears to be leaky (or at least interacts badly with our
     // architecture) and thus BrowserWindowController never gets released. This
     // prevents the browser from being able to quit <http://crbug.com/79113>.
-    if ([window respondsToSelector:@selector(setRestorable:)])
-      [window setRestorable:NO];
+    [window setRestorable:NO];
 
     // Get the windows to swish in on Lion.
-    if ([window respondsToSelector:@selector(setAnimationBehavior:)])
-      [window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
+    [window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
 
     // Get the most appropriate size for the window, then enforce the
     // minimum width and height. The window shim will handle flipping
@@ -1860,7 +1854,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 @implementation BrowserWindowController(Fullscreen)
 
 - (void)handleLionToggleFullscreen {
-  DCHECK(base::mac::IsOSLionOrLater());
   chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
 }
 

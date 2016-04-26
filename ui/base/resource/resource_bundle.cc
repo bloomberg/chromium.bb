@@ -55,10 +55,6 @@
 #include "ui/display/win/dpi.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mac_util.h"
-#endif
-
 namespace ui {
 
 namespace {
@@ -671,10 +667,8 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   } else {
     supported_scale_factors.push_back(SCALE_FACTOR_100P);
   }
-#elif defined(OS_MACOSX)
-  if (base::mac::IsOSLionOrLater())
-    supported_scale_factors.push_back(SCALE_FACTOR_200P);
-#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
+#elif defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
+    defined(OS_WIN)
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #endif
   ui::SetSupportedScaleFactors(supported_scale_factors);

@@ -203,12 +203,8 @@ void AcceleratedWidgetMac::GotIOSurfaceFrame(
   [local_layer_ setBounds:CGRectMake(0, 0, pixel_size.width() / scale_factor,
                                      pixel_size.height() / scale_factor)];
 
-  if ([local_layer_ respondsToSelector:(@selector(contentsScale))] &&
-      [local_layer_ respondsToSelector:(@selector(setContentsScale:))] &&
-      [local_layer_ contentsScale] != scale_factor) {
-    DCHECK(base::mac::IsOSLionOrLater());
+  if ([local_layer_ contentsScale] != scale_factor)
     [local_layer_ setContentsScale:scale_factor];
-  }
 
   // Remove any different-type layers that this is replacing.
   DestroyCAContextLayer(ca_context_layer_);

@@ -188,8 +188,7 @@ void AppShimController::Init() {
   SetUpMenu();
 
   // Chrome will relaunch shims when relaunching apps.
-  if (base::mac::IsOSLionOrLater())
-    [NSApp disableRelaunchOnLogin];
+  [NSApp disableRelaunchOnLogin];
 
   // The user_data_dir for shims actually contains the app_data_path.
   // I.e. <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/

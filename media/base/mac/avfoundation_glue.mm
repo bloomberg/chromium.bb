@@ -16,20 +16,6 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
 
-// Forward declarations of AVFoundation.h strings.
-// This is needed to avoid compile time warnings since currently
-// |mac_deployment_target| is 10.6.
-extern NSString* const AVCaptureDeviceWasConnectedNotification;
-extern NSString* const AVCaptureDeviceWasDisconnectedNotification;
-extern NSString* const AVMediaTypeVideo;
-extern NSString* const AVMediaTypeAudio;
-extern NSString* const AVMediaTypeMuxed;
-extern NSString* const AVCaptureSessionRuntimeErrorNotification;
-extern NSString* const AVCaptureSessionDidStopRunningNotification;
-extern NSString* const AVCaptureSessionErrorKey;
-extern NSString* const AVVideoScalingModeKey;
-extern NSString* const AVVideoScalingModeResizeAspectFill;
-
 namespace {
 // This class is used to retrieve AVFoundation NSBundle and library handle. It
 // must be used as a LazyInstance so that it is initialised once and in a

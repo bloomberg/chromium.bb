@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/app/resources/grit/content_resources.h"
@@ -121,11 +120,9 @@ NSCursor* GetCoreCursorWithFallback(CrCoreCursorType type,
                                     int resource_id,
                                     int hotspot_x,
                                     int hotspot_y) {
-  if (base::mac::IsOSLionOrLater()) {
-    NSCursor* cursor = [CrCoreCursor cursorWithType:type];
-    if (cursor)
-      return cursor;
-  }
+  NSCursor* cursor = [CrCoreCursor cursorWithType:type];
+  if (cursor)
+    return cursor;
 
   return LoadCursor(resource_id, hotspot_x, hotspot_y);
 }
@@ -192,12 +189,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::TypeCross:
       return [NSCursor crosshairCursor];
     case WebCursorInfo::TypeHand:
-      // If >= 10.7, the pointingHandCursor has a shadow so use it. Otherwise
-      // use the custom one.
-      if (base::mac::IsOSLionOrLater())
-        return [NSCursor pointingHandCursor];
-      else
-        return LoadCursor(IDR_LINK_CURSOR, 6, 1);
+      return [NSCursor pointingHandCursor];
     case WebCursorInfo::TypeIBeam:
       return [NSCursor IBeamCursor];
     case WebCursorInfo::TypeWait:

@@ -761,16 +761,12 @@ void RenderThreadImpl::Init(
       switches::kEnableGpuMemoryBufferCompositorResources);
 
 #if defined(OS_MACOSX)
-  is_elastic_overscroll_enabled_ = base::mac::IsOSLionOrLater();
-  if (is_elastic_overscroll_enabled_) {
-    base::ScopedCFTypeRef<CFStringRef> key(
-        base::SysUTF8ToCFStringRef("NSScrollViewRubberbanding"));
-    Boolean key_exists = false;
-    Boolean value = CFPreferencesGetAppBooleanValue(
-        key, kCFPreferencesCurrentApplication, &key_exists);
-    if (key_exists && !value)
-      is_elastic_overscroll_enabled_ = false;
-  }
+  base::ScopedCFTypeRef<CFStringRef> key(
+      base::SysUTF8ToCFStringRef("NSScrollViewRubberbanding"));
+  Boolean key_exists = false;
+  Boolean value = CFPreferencesGetAppBooleanValue(
+      key, kCFPreferencesCurrentApplication, &key_exists);
+  is_elastic_overscroll_enabled_ = !key_exists || value;
 #else
   is_elastic_overscroll_enabled_ = false;
 #endif

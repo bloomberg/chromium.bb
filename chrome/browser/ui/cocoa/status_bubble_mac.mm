@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
@@ -750,12 +749,11 @@ void StatusBubbleMac::ExpandBubble() {
     return;
 
   // Get the current corner flags and see what needs to change based on the
-  // expansion. This is only needed on Lion, which has rounded window bottoms.
-  if (base::mac::IsOSLionOrLater()) {
-    unsigned long corner_flags = [[window_ contentView] cornerFlags];
-    corner_flags |= OSDependentCornerFlags(actual_window_frame);
-    [[window_ contentView] setCornerFlags:corner_flags];
-  }
+  // expansion.
+  unsigned long corner_flags = [[window_ contentView] cornerFlags];
+  corner_flags |= OSDependentCornerFlags(actual_window_frame);
+  [[window_ contentView] setCornerFlags:corner_flags];
+
 
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:kExpansionDurationSeconds];
@@ -833,26 +831,24 @@ NSRect StatusBubbleMac::CalculateWindowFrame(bool expanded_width) {
 unsigned long StatusBubbleMac::OSDependentCornerFlags(NSRect window_frame) {
   unsigned long corner_flags = 0;
 
-  if (base::mac::IsOSLionOrLater()) {
-    NSRect parent_frame = [parent_ frame];
+  NSRect parent_frame = [parent_ frame];
 
-    // Round the bottom corners when they're right up against the
-    // corresponding edge of the parent window, or when below the parent
-    // window.
-    if (NSMinY(window_frame) <= NSMinY(parent_frame)) {
-      if (NSMinX(window_frame) == NSMinX(parent_frame)) {
-        corner_flags |= kRoundedBottomLeftCorner;
-      }
-
-      if (NSMaxX(window_frame) == NSMaxX(parent_frame)) {
-        corner_flags |= kRoundedBottomRightCorner;
-      }
+  // Round the bottom corners when they're right up against the
+  // corresponding edge of the parent window, or when below the parent
+  // window.
+  if (NSMinY(window_frame) <= NSMinY(parent_frame)) {
+    if (NSMinX(window_frame) == NSMinX(parent_frame)) {
+      corner_flags |= kRoundedBottomLeftCorner;
     }
 
-    // Round the top corners when the bubble is below the parent window.
-    if (NSMinY(window_frame) < NSMinY(parent_frame)) {
-      corner_flags |= kRoundedTopLeftCorner | kRoundedTopRightCorner;
+    if (NSMaxX(window_frame) == NSMaxX(parent_frame)) {
+      corner_flags |= kRoundedBottomRightCorner;
     }
+  }
+
+  // Round the top corners when the bubble is below the parent window.
+  if (NSMinY(window_frame) < NSMinY(parent_frame)) {
+    corner_flags |= kRoundedTopLeftCorner | kRoundedTopRightCorner;
   }
 
   return corner_flags;

@@ -4,7 +4,6 @@
 
 #include "ui/app_list/cocoa/scroll_view_with_no_scrollbars.h"
 
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -29,7 +28,7 @@
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
-    [self setHasHorizontalScroller:base::mac::IsOSLionOrLater()];
+    [self setHasHorizontalScroller:YES];
     NSRect horizontalScrollerRect = [self bounds];
     horizontalScrollerRect.size.height = 0;
     base::scoped_nsobject<InvisibleScroller> horizontalScroller(
@@ -37,12 +36,6 @@
     [self setHorizontalScroller:horizontalScroller];
   }
   return self;
-}
-
-- (void)endGestureWithEvent:(NSEvent*)event {
-  [super endGestureWithEvent:event];
-  if (!base::mac::IsOSLionOrLater())
-    [delegate_ userScrolling:NO];
 }
 
 - (void)scrollWheel:(NSEvent*)event {

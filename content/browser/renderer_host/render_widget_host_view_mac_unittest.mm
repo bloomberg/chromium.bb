@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
@@ -820,10 +819,6 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
-  // This tests Lion+ functionality, so don't run the test pre-Lion.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
@@ -862,10 +857,6 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
-  // This tests Lion+ functionality, so don't run the test pre-Lion.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   SetupForWheelGestures(false);
 
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
@@ -923,10 +914,6 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
 
 TEST_F(RenderWidgetHostViewMacTest,
        IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
-  // This tests Lion+ functionality, so don't run the test pre-Lion.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   SetupForWheelGestures(true);
 
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
@@ -1110,10 +1097,6 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
 };
 
 TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
-  // This tests Lion+ functionality, so don't run the test pre-Lion.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.

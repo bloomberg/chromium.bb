@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -176,11 +175,6 @@ TEST_F(MacSignatureEvaluatorTest, ModifiedMainExecTest32) {
 }
 
 TEST_F(MacSignatureEvaluatorTest, ModifiedMainExecTest64) {
-  // Snow Leopard does not know about the 64-bit slice so this test is
-  // irrelevant.
-  if (!base::mac::IsOSLionOrLater())
-    return;
-
   // Now to a test modified, signed bundle.
   base::FilePath path = testdata_path_.AppendASCII("modified-main-exec64.app");
 

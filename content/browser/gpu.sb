@@ -11,18 +11,17 @@
 
 (allow file-read-metadata (literal "/"))
 
-; Needed for WebGL on OS X 10.7 - crbug.com/75343
-(if (param-true? lion-or-later)
-  (allow iokit-open
-    (iokit-connection "IOAccelerator")
-    (iokit-user-client-class "IOAccelerationUserClient")
-    (iokit-user-client-class "IOFramebufferSharedUserClient")
-    (iokit-user-client-class "AppleGraphicsControlClient")
-    (iokit-user-client-class "AGPMClient")
-    (iokit-user-client-class "IOHIDParamUserClient")
-    (iokit-user-client-class "RootDomainUserClient")
-    (iokit-user-client-class "IOSurfaceRootUserClient")
-    (iokit-user-client-class "IOSurfaceSendRight")))
+; Needed for WebGL - crbug.com/75343
+(allow iokit-open
+  (iokit-connection "IOAccelerator")
+  (iokit-user-client-class "IOAccelerationUserClient")
+  (iokit-user-client-class "IOFramebufferSharedUserClient")
+  (iokit-user-client-class "AppleGraphicsControlClient")
+  (iokit-user-client-class "AGPMClient")
+  (iokit-user-client-class "IOHIDParamUserClient")
+  (iokit-user-client-class "RootDomainUserClient")
+  (iokit-user-client-class "IOSurfaceRootUserClient")
+  (iokit-user-client-class "IOSurfaceSendRight"))
 
 ; https://crbug.com/515280
 (if (param-true? elcap-or-later)

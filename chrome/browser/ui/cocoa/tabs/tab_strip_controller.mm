@@ -1131,14 +1131,10 @@ private:
       // tabs.
       ScopedNSAnimationContextGroup subAnimationGroup(animate);
       subAnimationGroup.SetCurrentContextDuration(kAnimationDuration);
-      // -[NSAnimationContext setCompletionHandler:] is only available on
-      // 10.7 and higher.
-      if (base::mac::IsOSLionOrLater()) {
-        NSView* tabView = [tab view];
-        [[NSAnimationContext currentContext] setCompletionHandler:^{
-          [tabView setNeedsDisplay:YES];
-        }];
-      }
+      NSView* tabView = [tab view];
+      [[NSAnimationContext currentContext] setCompletionHandler:^{
+        [tabView setNeedsDisplay:YES];
+      }];
 
       [frameTarget setFrame:tabFrame];
       [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]

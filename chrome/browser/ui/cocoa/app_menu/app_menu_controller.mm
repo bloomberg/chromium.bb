@@ -68,7 +68,6 @@ using base::UserMetricsAction;
 - (void)performCommandDispatch:(NSNumber*)tag;
 - (NSButton*)zoomDisplay;
 - (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item;
-- (void)removeAllItems:(NSMenu*)menu;
 - (NSMenu*)recentTabsSubmenu;
 - (RecentTabsSubMenuModel*)recentTabsMenuModel;
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
@@ -401,7 +400,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   DCHECK(!browserActionsController_.get());
 
   // First empty out the menu and create a new model.
-  [self removeAllItems:menu];
+  [menu removeAllItems];
   [self createModel];
   [menu setMinimumWidth:0];
 
@@ -409,7 +408,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   // start, so simply copy the items.
   NSMenu* newMenu = [self menuFromModel:model_];
   NSArray* itemArray = [newMenu itemArray];
-  [self removeAllItems:newMenu];
+  [newMenu removeAllItems];
   for (NSMenuItem* item in itemArray) {
     [menu addItem:item];
   }
@@ -542,13 +541,6 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   if (browserActionsController_.get()) {
     [browserActionsController_ setFocusedInOverflow:
         (item == browserActionsMenuItem_)];
-  }
-}
-
-// -[NSMenu removeAllItems] is only available on 10.6+.
-- (void)removeAllItems:(NSMenu*)menu {
-  while ([menu numberOfItems]) {
-    [menu removeItemAtIndex:0];
   }
 }
 

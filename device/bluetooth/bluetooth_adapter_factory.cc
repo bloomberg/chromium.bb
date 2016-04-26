@@ -13,10 +13,6 @@
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 namespace device {
 
 namespace {
@@ -60,10 +56,8 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
   if (default_adapter.Get())
     return true;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_LINUX)
+    defined(OS_LINUX) || defined(OS_MACOSX)
   return true;
-#elif defined(OS_MACOSX)
-  return base::mac::IsOSLionOrLater();
 #else
   return false;
 #endif

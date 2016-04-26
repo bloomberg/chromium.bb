@@ -474,9 +474,6 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   if (!compiler.InsertStringParam("USER_HOMEDIR_AS_LITERAL", quoted_home_dir))
     return false;
 
-  bool lion_or_later = base::mac::IsOSLionOrLater();
-  if (!compiler.InsertBooleanParam("LION_OR_LATER", lion_or_later))
-    return false;
   bool elcap_or_later = base::mac::IsOSElCapitanOrLater();
   if (!compiler.InsertBooleanParam("ELCAP_OR_LATER", elcap_or_later))
     return false;

@@ -466,18 +466,6 @@ enum {
 
 }  // namespace
 
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_7)
-bool IsOSLion() {
-  return MacOSXMinorVersion() == LION_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_7)
-bool IsOSLionOrLater() {
-  return MacOSXMinorVersion() >= LION_MINOR_VERSION;
-}
-#endif
-
 #if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_8)
 bool IsOSMountainLion() {
   return MacOSXMinorVersion() == MOUNTAIN_LION_MINOR_VERSION;
