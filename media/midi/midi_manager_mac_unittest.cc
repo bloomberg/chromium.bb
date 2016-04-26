@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -126,15 +127,15 @@ class MidiManagerMacTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<MidiManager> manager_;
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<MidiManager> manager_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerMacTest);
 };
 
 
 TEST_F(MidiManagerMacTest, MidiNotification) {
-  scoped_ptr<FakeMidiManagerClient> client(new FakeMidiManagerClient);
+  std::unique_ptr<FakeMidiManagerClient> client(new FakeMidiManagerClient);
   StartSession(client.get());
 
   Result result = client->WaitForResult();

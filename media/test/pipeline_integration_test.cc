@@ -4,13 +4,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -283,7 +285,7 @@ class FakeEncryptedMedia {
 
   scoped_refptr<AesDecryptor> decryptor_;
   TestCdmContext cdm_context_;
-  scoped_ptr<AppBase> app_;
+  std::unique_ptr<AppBase> app_;
 };
 
 enum PromiseResult { RESOLVED, REJECTED };
@@ -309,18 +311,19 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(expected, REJECTED) << error_message;
   }
 
-  scoped_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
-    scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-        base::Bind(&KeyProvidingApp::OnResolve, base::Unretained(this),
-                   expected),
-        base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
-                   expected)));
+  std::unique_ptr<SimpleCdmPromise> CreatePromise(PromiseResult expected) {
+    std::unique_ptr<media::SimpleCdmPromise> promise(
+        new media::CdmCallbackPromise<>(
+            base::Bind(&KeyProvidingApp::OnResolve, base::Unretained(this),
+                       expected),
+            base::Bind(&KeyProvidingApp::OnReject, base::Unretained(this),
+                       expected)));
     return promise;
   }
 
-  scoped_ptr<NewSessionCdmPromise> CreateSessionPromise(
+  std::unique_ptr<NewSessionCdmPromise> CreateSessionPromise(
       PromiseResult expected) {
-    scoped_ptr<media::NewSessionCdmPromise> promise(
+    std::unique_ptr<media::NewSessionCdmPromise> promise(
         new media::CdmCallbackPromise<std::string>(
             base::Bind(&KeyProvidingApp::OnResolveWithSession,
                        base::Unretained(this), expected),
@@ -506,7 +509,9 @@ class MockMediaSource {
 
   virtual ~MockMediaSource() {}
 
-  scoped_ptr<Demuxer> GetDemuxer() { return std::move(owned_chunk_demuxer_); }
+  std::unique_ptr<Demuxer> GetDemuxer() {
+    return std::move(owned_chunk_demuxer_);
+  }
 
   void set_encrypted_media_init_data_cb(
       const Demuxer::EncryptedMediaInitDataCB& encrypted_media_init_data_cb) {
@@ -639,11 +644,11 @@ class MockMediaSource {
   }
 
   // A workaround for gtest mocks not allowing moving scoped_ptrs.
-  void InitSegmentReceivedWrapper(scoped_ptr<MediaTracks> tracks) {
+  void InitSegmentReceivedWrapper(std::unique_ptr<MediaTracks> tracks) {
     InitSegmentReceived(tracks);
   }
 
-  MOCK_METHOD1(InitSegmentReceived, void(scoped_ptr<MediaTracks>&));
+  MOCK_METHOD1(InitSegmentReceived, void(std::unique_ptr<MediaTracks>&));
 
  private:
   scoped_refptr<DecoderBuffer> file_data_;
@@ -651,7 +656,7 @@ class MockMediaSource {
   size_t initial_append_size_;
   std::string mimetype_;
   ChunkDemuxer* chunk_demuxer_;
-  scoped_ptr<Demuxer> owned_chunk_demuxer_;
+  std::unique_ptr<Demuxer> owned_chunk_demuxer_;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   base::TimeDelta last_timestamp_offset_;
 };
@@ -668,14 +673,14 @@ class PipelineIntegrationTestHost : public shell::test::ApplicationTestBase,
   }
 
  protected:
-  scoped_ptr<Renderer> CreateRenderer() override {
+  std::unique_ptr<Renderer> CreateRenderer() override {
     connector()->ConnectToInterface("mojo:media", &media_service_factory_);
 
     interfaces::RendererPtr mojo_renderer;
     media_service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));
 
-    return make_scoped_ptr(new MojoRendererImpl(message_loop_.task_runner(),
-                                                std::move(mojo_renderer)));
+    return base::WrapUnique(new MojoRendererImpl(message_loop_.task_runner(),
+                                                 std::move(mojo_renderer)));
   }
 
  private:

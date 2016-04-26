@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -65,8 +66,8 @@ class RendererImplTest : public ::testing::Test {
         audio_renderer_(new StrictMock<MockAudioRenderer>()),
         renderer_impl_(
             new RendererImpl(message_loop_.task_runner(),
-                             scoped_ptr<AudioRenderer>(audio_renderer_),
-                             scoped_ptr<VideoRenderer>(video_renderer_))),
+                             std::unique_ptr<AudioRenderer>(audio_renderer_),
+                             std::unique_ptr<VideoRenderer>(video_renderer_))),
         cdm_context_(new StrictMock<MockCdmContext>()),
         initialization_status_(PIPELINE_OK) {
     // SetDemuxerExpectations() adds overriding expectations for expected
@@ -86,9 +87,9 @@ class RendererImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<StrictMock<MockDemuxerStream> > CreateStream(
+  std::unique_ptr<StrictMock<MockDemuxerStream>> CreateStream(
       DemuxerStream::Type type) {
-    scoped_ptr<StrictMock<MockDemuxerStream> > stream(
+    std::unique_ptr<StrictMock<MockDemuxerStream>> stream(
         new StrictMock<MockDemuxerStream>(type));
     return stream;
   }
@@ -271,15 +272,15 @@ class RendererImplTest : public ::testing::Test {
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
 
-  scoped_ptr<StrictMock<MockDemuxer> > demuxer_;
+  std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;
   StrictMock<MockVideoRenderer>* video_renderer_;
   StrictMock<MockAudioRenderer>* audio_renderer_;
-  scoped_ptr<RendererImpl> renderer_impl_;
-  scoped_ptr<StrictMock<MockCdmContext>> cdm_context_;
+  std::unique_ptr<RendererImpl> renderer_impl_;
+  std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
 
   StrictMock<MockTimeSource> time_source_;
-  scoped_ptr<StrictMock<MockDemuxerStream> > audio_stream_;
-  scoped_ptr<StrictMock<MockDemuxerStream> > video_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> audio_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> video_stream_;
   MockDemuxerStreamVector streams_;
   BufferingStateCB audio_buffering_state_cb_;
   BufferingStateCB video_buffering_state_cb_;

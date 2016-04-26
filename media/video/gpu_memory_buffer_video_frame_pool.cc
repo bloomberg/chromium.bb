@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -75,7 +76,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // Resource to represent a plane.
   struct PlaneResource {
     gfx::Size size;
-    scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
     unsigned texture_id = 0u;
     unsigned image_id = 0u;
     gpu::Mailbox mailbox;
@@ -540,7 +541,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
         const scoped_refptr<VideoFrame>& video_frame,
         FrameResources* frame_resources,
         const FrameReadyCB& frame_ready_cb) {
-  scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+  std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
       gpu_factories_->GetGLContextLock());
   if (!lock) {
     frame_ready_cb.Run(video_frame);
@@ -677,7 +678,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
   }
 
   // Create the resources.
-  scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+  std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
       gpu_factories_->GetGLContextLock());
   if (!lock)
     return nullptr;
@@ -719,7 +720,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
   // make sure that we won't execute this callback (use a weak pointer to
   // the old context).
 
-  scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+  std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
       gpu_factories->GetGLContextLock());
   if (!lock)
     return;

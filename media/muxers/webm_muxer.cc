@@ -5,6 +5,7 @@
 #include "media/muxers/webm_muxer.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
@@ -106,7 +107,7 @@ WebmMuxer::~WebmMuxer() {
 }
 
 void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
-                               scoped_ptr<std::string> encoded_data,
+                               std::unique_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp,
                                bool is_key_frame) {
   DVLOG(1) << __FUNCTION__ << " - " << encoded_data->size() << "B";
@@ -127,7 +128,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
     if (is_key_frame)  // Upon Key frame reception, empty the encoded queue.
       encoded_frames_queue_.clear();
 
-    encoded_frames_queue_.push_back(make_scoped_ptr(new EncodedVideoFrame(
+    encoded_frames_queue_.push_back(base::WrapUnique(new EncodedVideoFrame(
         std::move(encoded_data), timestamp, is_key_frame)));
     return;
   }
@@ -146,7 +147,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
 }
 
 void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
-                               scoped_ptr<std::string> encoded_data,
+                               std::unique_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__ << " - " << encoded_data->size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -281,7 +282,7 @@ void WebmMuxer::ElementStartNotify(mkvmuxer::uint64 element_id,
       << "Can't go back in a live WebM stream.";
 }
 
-void WebmMuxer::AddFrame(scoped_ptr<std::string> encoded_data,
+void WebmMuxer::AddFrame(std::unique_ptr<std::string> encoded_data,
                          uint8_t track_index,
                          base::TimeDelta timestamp,
                          bool is_key_frame) {
@@ -299,9 +300,10 @@ void WebmMuxer::AddFrame(scoped_ptr<std::string> encoded_data,
                     is_key_frame);
 }
 
-WebmMuxer::EncodedVideoFrame::EncodedVideoFrame(scoped_ptr<std::string> data,
-                                                base::TimeTicks timestamp,
-                                                bool is_keyframe)
+WebmMuxer::EncodedVideoFrame::EncodedVideoFrame(
+    std::unique_ptr<std::string> data,
+    base::TimeTicks timestamp,
+    bool is_keyframe)
     : data(std::move(data)), timestamp(timestamp), is_keyframe(is_keyframe) {}
 
 WebmMuxer::EncodedVideoFrame::~EncodedVideoFrame() {}

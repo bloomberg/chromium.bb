@@ -333,7 +333,7 @@ void CdmAdapter::Create(
     const std::string& key_system,
     const base::FilePath& cdm_path,
     const CdmConfig& cdm_config,
-    scoped_ptr<CdmAllocator> allocator,
+    std::unique_ptr<CdmAllocator> allocator,
     const CreateCdmFileIOCB& create_cdm_file_io_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -354,7 +354,7 @@ void CdmAdapter::Create(
       session_keys_change_cb, session_expiration_update_cb);
 
   // |cdm| ownership passed to the promise.
-  scoped_ptr<CdmInitializedPromise> cdm_created_promise(
+  std::unique_ptr<CdmInitializedPromise> cdm_created_promise(
       new CdmInitializedPromise(cdm_created_cb, cdm));
 
   cdm->Initialize(cdm_path, std::move(cdm_created_promise));
@@ -363,7 +363,7 @@ void CdmAdapter::Create(
 CdmAdapter::CdmAdapter(
     const std::string& key_system,
     const CdmConfig& cdm_config,
-    scoped_ptr<CdmAllocator> allocator,
+    std::unique_ptr<CdmAllocator> allocator,
     const CreateCdmFileIOCB& create_cdm_file_io_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -425,7 +425,7 @@ CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system,
 }
 
 void CdmAdapter::Initialize(const base::FilePath& cdm_path,
-                            scoped_ptr<media::SimpleCdmPromise> promise) {
+                            std::unique_ptr<media::SimpleCdmPromise> promise) {
   cdm_.reset(CreateCdmInstance(key_system_, cdm_path));
   if (!cdm_) {
     promise->reject(MediaKeys::INVALID_ACCESS_ERROR, 0,
@@ -438,8 +438,9 @@ void CdmAdapter::Initialize(const base::FilePath& cdm_path,
   promise->resolve();
 }
 
-void CdmAdapter::SetServerCertificate(const std::vector<uint8_t>& certificate,
-                                      scoped_ptr<SimpleCdmPromise> promise) {
+void CdmAdapter::SetServerCertificate(
+    const std::vector<uint8_t>& certificate,
+    std::unique_ptr<SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (certificate.size() < limits::kMinCertificateLength ||
@@ -458,7 +459,7 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
     SessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<NewSessionCdmPromise> promise) {
+    std::unique_ptr<NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
@@ -469,7 +470,7 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
 
 void CdmAdapter::LoadSession(SessionType session_type,
                              const std::string& session_id,
-                             scoped_ptr<NewSessionCdmPromise> promise) {
+                             std::unique_ptr<NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
@@ -479,7 +480,7 @@ void CdmAdapter::LoadSession(SessionType session_type,
 
 void CdmAdapter::UpdateSession(const std::string& session_id,
                                const std::vector<uint8_t>& response,
-                               scoped_ptr<SimpleCdmPromise> promise) {
+                               std::unique_ptr<SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
   DCHECK(!response.empty());
@@ -490,7 +491,7 @@ void CdmAdapter::UpdateSession(const std::string& session_id,
 }
 
 void CdmAdapter::CloseSession(const std::string& session_id,
-                              scoped_ptr<SimpleCdmPromise> promise) {
+                              std::unique_ptr<SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
 
@@ -499,7 +500,7 @@ void CdmAdapter::CloseSession(const std::string& session_id,
 }
 
 void CdmAdapter::RemoveSession(const std::string& session_id,
-                               scoped_ptr<SimpleCdmPromise> promise) {
+                               std::unique_ptr<SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!session_id.empty());
 
@@ -544,7 +545,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  scoped_ptr<DecryptedBlockImpl> decrypted_block(new DecryptedBlockImpl());
+  std::unique_ptr<DecryptedBlockImpl> decrypted_block(new DecryptedBlockImpl());
 
   ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
   cdm::Status status = cdm_->Decrypt(input_buffer, decrypted_block.get());
@@ -644,7 +645,7 @@ void CdmAdapter::DecryptAndDecodeAudio(
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  scoped_ptr<AudioFramesImpl> audio_frames(new AudioFramesImpl());
+  std::unique_ptr<AudioFramesImpl> audio_frames(new AudioFramesImpl());
 
   ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
   cdm::Status status =
@@ -678,7 +679,8 @@ void CdmAdapter::DecryptAndDecodeVideo(
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  scoped_ptr<VideoFrameImpl> video_frame = allocator_->CreateCdmVideoFrame();
+  std::unique_ptr<VideoFrameImpl> video_frame =
+      allocator_->CreateCdmVideoFrame();
 
   ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
   cdm::Status status =
@@ -906,7 +908,7 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 }
 
 bool CdmAdapter::AudioFramesDataToAudioFrames(
-    scoped_ptr<AudioFramesImpl> audio_frames,
+    std::unique_ptr<AudioFramesImpl> audio_frames,
     Decryptor::AudioFrames* result_frames) {
   const uint8_t* data = audio_frames->FrameBuffer()->Data();
   const size_t data_size = audio_frames->FrameBuffer()->Size();

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_log.h"
@@ -81,7 +82,7 @@ void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
 }
 
 void PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB(
-    scoped_ptr<MediaTracks> tracks) {
+    std::unique_ptr<MediaTracks> tracks) {
   CHECK(tracks);
 }
 
@@ -114,7 +115,7 @@ void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartInternal(
-    scoped_ptr<DataSource> data_source,
+    std::unique_ptr<DataSource> data_source,
     CdmContext* cdm_context,
     uint8_t test_type) {
   hashing_enabled_ = test_type & kHashed;
@@ -162,7 +163,7 @@ PipelineStatus PipelineIntegrationTestBase::StartWithFile(
     const std::string& filename,
     CdmContext* cdm_context,
     uint8_t test_type) {
-  scoped_ptr<FileDataSource> file_data_source(new FileDataSource());
+  std::unique_ptr<FileDataSource> file_data_source(new FileDataSource());
   base::FilePath file_path(GetTestDataFilePath(filename));
   CHECK(file_data_source->Initialize(file_path)) << "Is " << file_path.value()
                                                  << " missing?";
@@ -186,7 +187,7 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
 PipelineStatus PipelineIntegrationTestBase::Start(const uint8_t* data,
                                                   size_t size,
                                                   uint8_t test_type) {
-  return StartInternal(make_scoped_ptr(new MemoryDataSource(data, size)),
+  return StartInternal(base::WrapUnique(new MemoryDataSource(data, size)),
                        nullptr, test_type);
 }
 
@@ -270,7 +271,7 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
 }
 
 void PipelineIntegrationTestBase::CreateDemuxer(
-    scoped_ptr<DataSource> data_source) {
+    std::unique_ptr<DataSource> data_source) {
   data_source_ = std::move(data_source);
 
   Demuxer::MediaTracksUpdatedCB tracks_updated_cb =
@@ -278,7 +279,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
                  base::Unretained(this));
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
-  demuxer_ = scoped_ptr<Demuxer>(new FFmpegDemuxer(
+  demuxer_ = std::unique_ptr<Demuxer>(new FFmpegDemuxer(
       message_loop_.task_runner(), data_source_.get(),
       base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
                  base::Unretained(this)),
@@ -286,7 +287,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
 #endif
 }
 
-scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
+std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
   ScopedVector<VideoDecoder> video_decoders;
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new VpxVideoDecoder());
@@ -304,7 +305,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       message_loop_.task_runner()));
 
   // Disable frame dropping if hashing is enabled.
-  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+  std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       message_loop_.task_runner(), message_loop_.task_runner().get(),
       video_sink_.get(), std::move(video_decoders), false, nullptr,
       new MediaLog()));
@@ -331,7 +332,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
     hardware_config_.UpdateOutputConfig(out_params);
   }
 
-  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
+  std::unique_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       message_loop_.task_runner(),
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
@@ -344,7 +345,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       audio_sink_->StartAudioHashForTesting();
   }
 
-  scoped_ptr<RendererImpl> renderer_impl(
+  std::unique_ptr<RendererImpl> renderer_impl(
       new RendererImpl(message_loop_.task_runner(), std::move(audio_renderer),
                        std::move(video_renderer)));
 

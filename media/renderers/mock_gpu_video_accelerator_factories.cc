@@ -4,6 +4,7 @@
 
 #include "media/renderers/mock_gpu_video_accelerator_factories.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -92,15 +93,14 @@ bool MockGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
   return true;
 }
 
-scoped_ptr<gfx::GpuMemoryBuffer>
+std::unique_ptr<gfx::GpuMemoryBuffer>
 MockGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage /* usage */) {
   if (fail_to_allocate_gpu_memory_buffer_)
     return nullptr;
-  return make_scoped_ptr<gfx::GpuMemoryBuffer>(
-      new GpuMemoryBufferImpl(size, format));
+  return base::WrapUnique(new GpuMemoryBufferImpl(size, format));
 }
 
 void MockGpuVideoAcceleratorFactories::
@@ -108,19 +108,19 @@ void MockGpuVideoAcceleratorFactories::
   gpu_memory_buffers_in_use_by_window_server = in_use;
 }
 
-scoped_ptr<base::SharedMemory>
+std::unique_ptr<base::SharedMemory>
 MockGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   return nullptr;
 }
 
-scoped_ptr<VideoDecodeAccelerator>
+std::unique_ptr<VideoDecodeAccelerator>
 MockGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
-  return scoped_ptr<VideoDecodeAccelerator>(DoCreateVideoDecodeAccelerator());
+  return base::WrapUnique(DoCreateVideoDecodeAccelerator());
 }
 
-scoped_ptr<VideoEncodeAccelerator>
+std::unique_ptr<VideoEncodeAccelerator>
 MockGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
-  return scoped_ptr<VideoEncodeAccelerator>(DoCreateVideoEncodeAccelerator());
+  return base::WrapUnique(DoCreateVideoEncodeAccelerator());
 }
 
 bool MockGpuVideoAcceleratorFactories::ShouldUseGpuMemoryBuffersForVideoFrames()
@@ -148,10 +148,10 @@ class ScopedGLContextLockImpl
 };
 }  // namespace
 
-scoped_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock>
+std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock>
 MockGpuVideoAcceleratorFactories::GetGLContextLock() {
   DCHECK(gles2_);
-  return make_scoped_ptr(new ScopedGLContextLockImpl(this));
+  return base::WrapUnique(new ScopedGLContextLockImpl(this));
 }
 
 }  // namespace media

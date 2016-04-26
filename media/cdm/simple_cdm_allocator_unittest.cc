@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "media/base/video_frame.h"
@@ -64,7 +65,8 @@ TEST_F(SimpleCdmAllocatorTest, CreateCdmBuffer) {
 }
 
 TEST_F(SimpleCdmAllocatorTest, CreateCdmVideoFrame) {
-  scoped_ptr<VideoFrameImpl> video_frame = allocator_.CreateCdmVideoFrame();
+  std::unique_ptr<VideoFrameImpl> video_frame =
+      allocator_.CreateCdmVideoFrame();
   EXPECT_EQ(video_frame->FrameBuffer(), nullptr);
   video_frame->SetFrameBuffer(TestCdmBuffer::Create(100));
   EXPECT_NE(video_frame->FrameBuffer(), nullptr);
@@ -81,7 +83,8 @@ TEST_F(SimpleCdmAllocatorTest, TransformToVideoFrame) {
   size_t memory_needed = VideoFrame::AllocationSize(PIXEL_FORMAT_YV12, size);
 
   // Now create a VideoFrameImpl.
-  scoped_ptr<VideoFrameImpl> video_frame = allocator_.CreateCdmVideoFrame();
+  std::unique_ptr<VideoFrameImpl> video_frame =
+      allocator_.CreateCdmVideoFrame();
   EXPECT_EQ(video_frame->FrameBuffer(), nullptr);
 
   // Fill VideoFrameImpl as if it was a small video frame.

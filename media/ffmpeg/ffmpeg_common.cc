@@ -5,7 +5,6 @@
 #include "media/ffmpeg/ffmpeg_common.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"

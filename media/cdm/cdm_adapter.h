@@ -16,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_native_library.h"
 #include "base/threading/thread.h"
@@ -61,7 +60,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
       const std::string& key_system,
       const base::FilePath& cdm_path,
       const CdmConfig& cdm_config,
-      scoped_ptr<CdmAllocator> allocator,
+      std::unique_ptr<CdmAllocator> allocator,
       const CreateCdmFileIOCB& create_cdm_file_io_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
@@ -72,22 +71,22 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
 
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
-                            scoped_ptr<SimpleCdmPromise> promise) final;
+                            std::unique_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<NewSessionCdmPromise> promise) final;
+      std::unique_ptr<NewSessionCdmPromise> promise) final;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
-                   scoped_ptr<NewSessionCdmPromise> promise) final;
+                   std::unique_ptr<NewSessionCdmPromise> promise) final;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<SimpleCdmPromise> promise) final;
+                     std::unique_ptr<SimpleCdmPromise> promise) final;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<SimpleCdmPromise> promise) final;
+                    std::unique_ptr<SimpleCdmPromise> promise) final;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<SimpleCdmPromise> promise) final;
+                     std::unique_ptr<SimpleCdmPromise> promise) final;
   CdmContext* GetCdmContext() final;
 
   // CdmContext implementation.
@@ -161,7 +160,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
  private:
   CdmAdapter(const std::string& key_system,
              const CdmConfig& cdm_config,
-             scoped_ptr<CdmAllocator> allocator,
+             std::unique_ptr<CdmAllocator> allocator,
              const CreateCdmFileIOCB& create_cdm_file_io_cb,
              const SessionMessageCB& session_message_cb,
              const SessionClosedCB& session_closed_cb,
@@ -173,7 +172,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   // Load the CDM using |cdm_path| and initialize it. |promise| is resolved if
   // the CDM is successfully loaded and initialized, rejected otherwise.
   void Initialize(const base::FilePath& cdm_path,
-                  scoped_ptr<media::SimpleCdmPromise> promise);
+                  std::unique_ptr<media::SimpleCdmPromise> promise);
 
   // Create an instance of the |key_system| CDM contained in |cdm_path|.
   // Caller owns the returned pointer. On error (unable to load, does not
@@ -187,8 +186,9 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
 
   // Converts audio data stored in |audio_frames| into individual audio
   // buffers in |result_frames|. Returns true upon success.
-  bool AudioFramesDataToAudioFrames(scoped_ptr<AudioFramesImpl> audio_frames,
-                                    Decryptor::AudioFrames* result_frames);
+  bool AudioFramesDataToAudioFrames(
+      std::unique_ptr<AudioFramesImpl> audio_frames,
+      Decryptor::AudioFrames* result_frames);
 
   // Keep a reference to the CDM.
   base::ScopedNativeLibrary library_;
@@ -196,7 +196,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   // Used to keep track of promises while the CDM is processing the request.
   CdmPromiseAdapter cdm_promise_adapter_;
 
-  scoped_ptr<CdmWrapper> cdm_;
+  std::unique_ptr<CdmWrapper> cdm_;
   std::string key_system_;
   CdmConfig cdm_config_;
 
@@ -223,7 +223,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   int audio_samples_per_second_;
   ChannelLayout audio_channel_layout_;
 
-  scoped_ptr<CdmAllocator> allocator_;
+  std::unique_ptr<CdmAllocator> allocator_;
   CreateCdmFileIOCB create_cdm_file_io_cb_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

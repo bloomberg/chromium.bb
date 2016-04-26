@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/muxers/webm_muxer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/video_frame.h"
-#include "media/muxers/webm_muxer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,7 +110,7 @@ TEST_P(WebmMuxerTest, OnEncodedVideoTwoFrames) {
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedVideo(video_frame,
-                             make_scoped_ptr(new std::string(encoded_data)),
+                             base::WrapUnique(new std::string(encoded_data)),
                              base::TimeTicks::Now(), false /* keyframe */);
 
   // First time around WriteCallback() is pinged a number of times to write the
@@ -125,7 +126,7 @@ TEST_P(WebmMuxerTest, OnEncodedVideoTwoFrames) {
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedVideo(video_frame,
-                             make_scoped_ptr(new std::string(encoded_data)),
+                             base::WrapUnique(new std::string(encoded_data)),
                              base::TimeTicks::Now(), false /* keyframe */);
 
   // The second time around the callbacks should include a SimpleBlock header,
@@ -157,7 +158,7 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedAudio(audio_params,
-                             make_scoped_ptr(new std::string(encoded_data)),
+                             base::WrapUnique(new std::string(encoded_data)),
                              base::TimeTicks::Now());
 
   // First time around WriteCallback() is pinged a number of times to write the
@@ -173,7 +174,7 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedAudio(audio_params,
-                             make_scoped_ptr(new std::string(encoded_data)),
+                             base::WrapUnique(new std::string(encoded_data)),
                              base::TimeTicks::Now());
 
   // The second time around the callbacks should include a SimpleBlock header,
@@ -199,13 +200,13 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
       VideoFrame::CreateBlackFrame(frame_size);
   const std::string encoded_video("thisisanencodedvideopacket");
   webm_muxer_.OnEncodedVideo(video_frame,
-                             make_scoped_ptr(new std::string(encoded_video)),
+                             base::WrapUnique(new std::string(encoded_video)),
                              base::TimeTicks::Now(), true /* keyframe */);
   // A few encoded non key frames.
   const int kNumNonKeyFrames = 2;
   for (int i = 0; i < kNumNonKeyFrames; ++i) {
     webm_muxer_.OnEncodedVideo(video_frame,
-                               make_scoped_ptr(new std::string(encoded_video)),
+                               base::WrapUnique(new std::string(encoded_video)),
                                base::TimeTicks::Now(), false /* keyframe */);
   }
 
@@ -231,7 +232,7 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
                          AllOf(Not(Eq(encoded_video)), Not(Eq(encoded_audio)))))
       .Times(AnyNumber());
   webm_muxer_.OnEncodedAudio(audio_params,
-                             make_scoped_ptr(new std::string(encoded_audio)),
+                             base::WrapUnique(new std::string(encoded_audio)),
                              base::TimeTicks::Now());
 }
 

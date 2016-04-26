@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "media/midi/usb_midi_device.h"
@@ -86,7 +86,7 @@ class UsbMidiInputStreamTest : public ::testing::Test {
   TestUsbMidiDevice device1_;
   TestUsbMidiDevice device2_;
   MockDelegate delegate_;
-  scoped_ptr<UsbMidiInputStream> stream_;
+  std::unique_ptr<UsbMidiInputStream> stream_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UsbMidiInputStreamTest);

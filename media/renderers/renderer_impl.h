@@ -5,12 +5,12 @@
 #ifndef MEDIA_RENDERERS_RENDERER_IMPL_H_
 #define MEDIA_RENDERERS_RENDERER_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/clock.h"
@@ -41,8 +41,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // GetMediaTime() runs on the render main thread because it's part of JS sync
   // API.
   RendererImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-               scoped_ptr<AudioRenderer> audio_renderer,
-               scoped_ptr<VideoRenderer> video_renderer);
+               std::unique_ptr<AudioRenderer> audio_renderer,
+               std::unique_ptr<VideoRenderer> video_renderer);
 
   ~RendererImpl() final;
 
@@ -148,12 +148,12 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   PipelineStatusCB init_cb_;
   base::Closure flush_cb_;
 
-  scoped_ptr<AudioRenderer> audio_renderer_;
-  scoped_ptr<VideoRenderer> video_renderer_;
+  std::unique_ptr<AudioRenderer> audio_renderer_;
+  std::unique_ptr<VideoRenderer> video_renderer_;
 
   // Renderer-provided time source used to control playback.
   TimeSource* time_source_;
-  scoped_ptr<WallClockTimeSource> wall_clock_time_source_;
+  std::unique_ptr<WallClockTimeSource> wall_clock_time_source_;
   bool time_ticking_;
   double playback_rate_;
 

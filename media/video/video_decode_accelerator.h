@@ -335,8 +335,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
 namespace std {
 
-// Specialize std::default_delete so that scoped_ptr<VideoDecodeAccelerator>
-// uses "Destroy()" instead of trying to use the destructor.
+// Specialize std::default_delete so that
+// std::unique_ptr<VideoDecodeAccelerator> uses "Destroy()" instead of trying to
+// use the destructor.
 template <>
 struct MEDIA_EXPORT default_delete<media::VideoDecodeAccelerator> {
   void operator()(media::VideoDecodeAccelerator* vda) const;

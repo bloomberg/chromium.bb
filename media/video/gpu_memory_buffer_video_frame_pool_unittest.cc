@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
@@ -122,14 +123,14 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
+  std::unique_ptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
+  std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
   scoped_refptr<base::TestSimpleTaskRunner> media_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> copy_task_runner_;
   // GpuMemoryBufferVideoFramePool uses BindToCurrentLoop(), which requires
   // ThreadTaskRunnerHandle initialization.
-  scoped_ptr<base::ThreadTaskRunnerHandle> media_task_runner_handle_;
-  scoped_ptr<TestGLES2Interface> gles2_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> media_task_runner_handle_;
+  std::unique_ptr<TestGLES2Interface> gles2_;
 };
 
 void MaybeCreateHardwareFrameCallback(

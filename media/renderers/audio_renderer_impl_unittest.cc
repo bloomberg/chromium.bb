@@ -4,6 +4,7 @@
 
 #include "media/renderers/audio_renderer_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -299,7 +300,7 @@ class AudioRendererImplTest : public ::testing::Test {
   // to be consumed.
   bool ConsumeBufferedData(OutputFrames requested_frames,
                            uint32_t delay_frames) {
-    scoped_ptr<AudioBus> bus =
+    std::unique_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, requested_frames.value);
     int frames_read = 0;
     EXPECT_TRUE(sink_->Render(bus.get(), delay_frames, &frames_read));
@@ -363,7 +364,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   // Fixture members.
   base::MessageLoop message_loop_;
-  scoped_ptr<AudioRendererImpl> renderer_;
+  std::unique_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
   AudioHardwareConfig hardware_config_;
   base::SimpleTestTickClock* tick_clock_;
@@ -425,7 +426,7 @@ class AudioRendererImplTest : public ::testing::Test {
   AudioDecoder::OutputCB output_cb_;
   AudioDecoder::DecodeCB decode_cb_;
   base::Closure reset_cb_;
-  scoped_ptr<AudioTimestampHelper> next_timestamp_;
+  std::unique_ptr<AudioTimestampHelper> next_timestamp_;
 
   // Run during DecodeDecoder() to unblock WaitForPendingRead().
   base::Closure wait_for_pending_decode_cb_;
@@ -728,7 +729,7 @@ TEST_F(AudioRendererImplTest, RenderingDelayedForEarlyStartTime) {
   StartTicking();
 
   // Verify the first few buffers are silent.
-  scoped_ptr<AudioBus> bus =
+  std::unique_ptr<AudioBus> bus =
       AudioBus::Create(hardware_config_.GetOutputConfig());
   int frames_read = 0;
   for (int i = 0; i < std::floor(kBuffers); ++i) {

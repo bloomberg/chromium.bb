@@ -7,7 +7,7 @@
 #include "base/android/build_info.h"
 #include "base/android/context_utils.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "jni/MidiManagerAndroid_jni.h"
 #include "media/midi/midi_device_android.h"
@@ -24,8 +24,8 @@ MidiManager* MidiManager::Create() {
   if (sdk_version <= base::android::SDK_VERSION_LOLLIPOP_MR1 ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseAndroidMidiApi)) {
-    return new MidiManagerUsb(
-        scoped_ptr<UsbMidiDevice::Factory>(new UsbMidiDeviceFactoryAndroid));
+    return new MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory>(
+        new UsbMidiDeviceFactoryAndroid));
   }
 
   return new MidiManagerAndroid();
@@ -92,7 +92,7 @@ void MidiManagerAndroid::OnInitialized(
 
   for (jsize i = 0; i < length; ++i) {
     jobject raw_device = env->GetObjectArrayElement(devices, i);
-    AddDevice(make_scoped_ptr(new MidiDeviceAndroid(env, raw_device, this)));
+    AddDevice(base::WrapUnique(new MidiDeviceAndroid(env, raw_device, this)));
   }
   CompleteInitialization(Result::OK);
 }
@@ -100,7 +100,7 @@ void MidiManagerAndroid::OnInitialized(
 void MidiManagerAndroid::OnAttached(JNIEnv* env,
                                     const JavaParamRef<jobject>& caller,
                                     const JavaParamRef<jobject>& raw_device) {
-  AddDevice(make_scoped_ptr(new MidiDeviceAndroid(env, raw_device, this)));
+  AddDevice(base::WrapUnique(new MidiDeviceAndroid(env, raw_device, this)));
 }
 
 void MidiManagerAndroid::OnDetached(JNIEnv* env,
@@ -122,7 +122,7 @@ void MidiManagerAndroid::OnDetached(JNIEnv* env,
   }
 }
 
-void MidiManagerAndroid::AddDevice(scoped_ptr<MidiDeviceAndroid> device) {
+void MidiManagerAndroid::AddDevice(std::unique_ptr<MidiDeviceAndroid> device) {
   for (auto& port : device->input_ports()) {
     // We implicitly open input ports here, because there are no signal
     // from the renderer when to open.

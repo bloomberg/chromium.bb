@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "media/cdm/cdm_allocator.h"
@@ -21,7 +22,7 @@ class SimpleCdmAllocator : public CdmAllocator {
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
-  scoped_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
+  std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleCdmAllocator);

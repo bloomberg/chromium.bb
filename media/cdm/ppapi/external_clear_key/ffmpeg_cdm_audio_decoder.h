@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
@@ -65,8 +65,8 @@ class FFmpegCdmAudioDecoder {
   ClearKeyCdmHost* const host_;
 
   // FFmpeg structures owned by this object.
-  scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   // Audio format.
   int samples_per_second_;
@@ -76,7 +76,7 @@ class FFmpegCdmAudioDecoder {
   int av_sample_format_;
 
   // Used for computing output timestamps.
-  scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> output_timestamp_helper_;
   int bytes_per_frame_;
   base::TimeDelta last_input_timestamp_;
 

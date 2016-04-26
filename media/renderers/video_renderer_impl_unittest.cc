@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -70,7 +71,8 @@ class VideoRendererImplTest
         null_video_sink_.get(), std::move(decoders), true,
         nullptr,  // gpu_factories
         new MediaLog()));
-    renderer_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));
+    renderer_->SetTickClockForTesting(
+        std::unique_ptr<base::TickClock>(tick_clock_));
     null_video_sink_->set_tick_clock_for_testing(tick_clock_);
     time_source_.set_tick_clock_for_testing(tick_clock_);
 
@@ -410,7 +412,7 @@ class VideoRendererImplTest
 
  protected:
   // Fixture members.
-  scoped_ptr<VideoRendererImpl> renderer_;
+  std::unique_ptr<VideoRendererImpl> renderer_;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |renderer_|.
   NiceMock<MockVideoDecoder>* decoder_;    // Owned by |renderer_|.
   NiceMock<MockDemuxerStream> demuxer_stream_;
@@ -424,7 +426,7 @@ class VideoRendererImplTest
   StrictMock<MockCB> mock_cb_;
 
   // Must be destroyed before |renderer_| since they share |tick_clock_|.
-  scoped_ptr<NullVideoSink> null_video_sink_;
+  std::unique_ptr<NullVideoSink> null_video_sink_;
 
   PipelineStatistics last_pipeline_statistics_;
 
@@ -861,7 +863,7 @@ TEST_F(VideoRendererImplTest, FramesAreNotExpiredDuringPreroll) {
 class VideoRendererImplAsyncAddFrameReadyTest : public VideoRendererImplTest {
  public:
   VideoRendererImplAsyncAddFrameReadyTest() {
-    scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool(
+    std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool(
         new MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
     renderer_->SetGpuMemoryBufferVideoForTesting(
         std::move(gpu_memory_buffer_pool));

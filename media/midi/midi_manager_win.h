@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
@@ -68,7 +68,7 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
                          base::TimeTicks time) final;
 
  private:
-  scoped_ptr<MidiServiceWin> midi_service_;
+  std::unique_ptr<MidiServiceWin> midi_service_;
   DISALLOW_COPY_AND_ASSIGN(MidiManagerWin);
 };
 

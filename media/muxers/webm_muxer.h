@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
@@ -58,11 +58,11 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // Functions to add video and audio frames with |encoded_data.data()|
   // to WebM Segment.
   void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
-                      scoped_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
   void OnEncodedAudio(const media::AudioParameters& params,
-                      scoped_ptr<std::string> encoded_data,
+                      std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp);
 
   void Pause();
@@ -88,7 +88,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
                           mkvmuxer::int64 position) override;
 
   // Helper to simplify saving frames.
-  void AddFrame(scoped_ptr<std::string> encoded_data,
+  void AddFrame(std::unique_ptr<std::string> encoded_data,
                 uint8_t track_index,
                 base::TimeDelta timestamp,
                 bool is_key_frame);
@@ -110,7 +110,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   base::TimeDelta most_recent_timestamp_;
 
   // Variables to measure and accumulate, respectively, the time in pause state.
-  scoped_ptr<base::ElapsedTimer> elapsed_time_in_pause_;
+  std::unique_ptr<base::ElapsedTimer> elapsed_time_in_pause_;
   base::TimeDelta total_time_in_pause_;
 
   // TODO(ajose): Change these when support is added for multiple tracks.
@@ -130,19 +130,19 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // Hold on to all encoded video frames to dump them with and when audio is
   // received, if expected, since WebM headers can only be written once.
   struct EncodedVideoFrame {
-    EncodedVideoFrame(scoped_ptr<std::string> data,
+    EncodedVideoFrame(std::unique_ptr<std::string> data,
                       base::TimeTicks timestamp,
                       bool is_keyframe);
     ~EncodedVideoFrame();
 
-    scoped_ptr<std::string> data;
+    std::unique_ptr<std::string> data;
     base::TimeTicks timestamp;
     bool is_keyframe;
 
    private:
     DISALLOW_IMPLICIT_CONSTRUCTORS(EncodedVideoFrame);
   };
-  std::deque<scoped_ptr<EncodedVideoFrame>> encoded_frames_queue_;
+  std::deque<std::unique_ptr<EncodedVideoFrame>> encoded_frames_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebmMuxer);
 };

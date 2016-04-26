@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -161,16 +161,16 @@ class MidiManagerTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<FakeMidiManager> manager_;
+  std::unique_ptr<FakeMidiManager> manager_;
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerTest);
 };
 
 TEST_F(MidiManagerTest, StartAndEndSession) {
-  scoped_ptr<FakeMidiManagerClient> client;
+  std::unique_ptr<FakeMidiManagerClient> client;
   client.reset(new FakeMidiManagerClient);
 
   StartTheFirstSession(client.get());
@@ -180,7 +180,7 @@ TEST_F(MidiManagerTest, StartAndEndSession) {
 }
 
 TEST_F(MidiManagerTest, StartAndEndSessionWithError) {
-  scoped_ptr<FakeMidiManagerClient> client;
+  std::unique_ptr<FakeMidiManagerClient> client;
   client.reset(new FakeMidiManagerClient);
 
   StartTheFirstSession(client.get());
@@ -190,9 +190,9 @@ TEST_F(MidiManagerTest, StartAndEndSessionWithError) {
 }
 
 TEST_F(MidiManagerTest, StartMultipleSessions) {
-  scoped_ptr<FakeMidiManagerClient> client1;
-  scoped_ptr<FakeMidiManagerClient> client2;
-  scoped_ptr<FakeMidiManagerClient> client3;
+  std::unique_ptr<FakeMidiManagerClient> client1;
+  std::unique_ptr<FakeMidiManagerClient> client2;
+  std::unique_ptr<FakeMidiManagerClient> client3;
   client1.reset(new FakeMidiManagerClient);
   client2.reset(new FakeMidiManagerClient);
   client3.reset(new FakeMidiManagerClient);
@@ -223,7 +223,7 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
   EXPECT_TRUE(manager_->start_initialization_is_called_);
 
   // Push the last client that should be rejected for too many pending requests.
-  scoped_ptr<FakeMidiManagerClient> additional_client(
+  std::unique_ptr<FakeMidiManagerClient> additional_client(
       new FakeMidiManagerClient);
   manager_->start_initialization_is_called_ = false;
   manager_->StartSession(additional_client.get());
@@ -250,7 +250,7 @@ TEST_F(MidiManagerTest, TooManyPendingSessions) {
 TEST_F(MidiManagerTest, AbortSession) {
   // A client starting a session can be destructed while an asynchronous
   // initialization is performed.
-  scoped_ptr<FakeMidiManagerClient> client;
+  std::unique_ptr<FakeMidiManagerClient> client;
   client.reset(new FakeMidiManagerClient);
 
   StartTheFirstSession(client.get());
@@ -267,10 +267,10 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
   // SystemMonitor is needed on Windows.
   base::SystemMonitor system_monitor;
 
-  scoped_ptr<FakeMidiManagerClient> client;
+  std::unique_ptr<FakeMidiManagerClient> client;
   client.reset(new FakeMidiManagerClient);
 
-  scoped_ptr<MidiManager> manager(MidiManager::Create());
+  std::unique_ptr<MidiManager> manager(MidiManager::Create());
   manager->StartSession(client.get());
 
   Result result = client->WaitForResult();

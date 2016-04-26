@@ -277,12 +277,12 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
 }
 
 void VideoRendererImpl::SetTickClockForTesting(
-    scoped_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_.swap(tick_clock);
 }
 
 void VideoRendererImpl::SetGpuMemoryBufferVideoForTesting(
-    scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool) {
+    std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool) {
   gpu_memory_buffer_pool_.swap(gpu_memory_buffer_pool);
 }
 

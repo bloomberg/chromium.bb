@@ -105,7 +105,7 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
                               input_buffer.subsamples[i].cipher_bytes));
   }
 
-  scoped_ptr<media::DecryptConfig> decrypt_config(new media::DecryptConfig(
+  std::unique_ptr<media::DecryptConfig> decrypt_config(new media::DecryptConfig(
       std::string(reinterpret_cast<const char*>(input_buffer.key_id),
                   input_buffer.key_id_size),
       std::string(reinterpret_cast<const char*>(input_buffer.iv),
@@ -295,13 +295,11 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
     uint32_t init_data_size) {
   DVLOG(1) << __FUNCTION__;
 
-  scoped_ptr<media::NewSessionCdmPromise> promise(
+  std::unique_ptr<media::NewSessionCdmPromise> promise(
       new media::CdmCallbackPromise<std::string>(
-          base::Bind(&ClearKeyCdm::OnSessionCreated,
-                     base::Unretained(this),
+          base::Bind(&ClearKeyCdm::OnSessionCreated, base::Unretained(this),
                      promise_id),
-          base::Bind(&ClearKeyCdm::OnPromiseFailed,
-                     base::Unretained(this),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
   decryptor_->CreateSessionAndGenerateRequest(
       ConvertSessionType(session_type), ConvertInitDataType(init_data_type),
@@ -331,13 +329,11 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
   // Only allowed to successfully load this session once.
   DCHECK(session_id_for_emulated_loadsession_.empty());
 
-  scoped_ptr<media::NewSessionCdmPromise> promise(
+  std::unique_ptr<media::NewSessionCdmPromise> promise(
       new media::CdmCallbackPromise<std::string>(
-          base::Bind(&ClearKeyCdm::OnSessionLoaded,
-                     base::Unretained(this),
+          base::Bind(&ClearKeyCdm::OnSessionLoaded, base::Unretained(this),
                      promise_id),
-          base::Bind(&ClearKeyCdm::OnPromiseFailed,
-                     base::Unretained(this),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
   decryptor_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
@@ -356,11 +352,12 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
   if (web_session_str == std::string(kLoadableSessionId))
     web_session_str = session_id_for_emulated_loadsession_;
 
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-      base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
-                 promise_id),
-      base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
-                 promise_id)));
+  std::unique_ptr<media::SimpleCdmPromise> promise(
+      new media::CdmCallbackPromise<>(
+          base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
+                     promise_id),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                     promise_id)));
   decryptor_->UpdateSession(
       web_session_str, std::vector<uint8_t>(response, response + response_size),
       std::move(promise));
@@ -381,11 +378,12 @@ void ClearKeyCdm::CloseSession(uint32_t promise_id,
   if (web_session_str == std::string(kLoadableSessionId))
     web_session_str = session_id_for_emulated_loadsession_;
 
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-      base::Bind(
-          &ClearKeyCdm::OnPromiseResolved, base::Unretained(this), promise_id),
-      base::Bind(
-          &ClearKeyCdm::OnPromiseFailed, base::Unretained(this), promise_id)));
+  std::unique_ptr<media::SimpleCdmPromise> promise(
+      new media::CdmCallbackPromise<>(
+          base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
+                     promise_id),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                     promise_id)));
   decryptor_->CloseSession(web_session_str, std::move(promise));
 }
 
@@ -410,11 +408,12 @@ void ClearKeyCdm::RemoveSession(uint32_t promise_id,
     return;
   }
 
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-      base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
-                 promise_id),
-      base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
-                 promise_id)));
+  std::unique_ptr<media::SimpleCdmPromise> promise(
+      new media::CdmCallbackPromise<>(
+          base::Bind(&ClearKeyCdm::OnPromiseResolved, base::Unretained(this),
+                     promise_id),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                     promise_id)));
   decryptor_->RemoveSession(web_session_str, std::move(promise));
 }
 
@@ -694,10 +693,12 @@ void ClearKeyCdm::LoadLoadableSession() {
                                        sizeof(kLoadableSessionKey),
                                        kLoadableSessionKeyId,
                                        sizeof(kLoadableSessionKeyId) - 1);
-  scoped_ptr<media::SimpleCdmPromise> promise(new media::CdmCallbackPromise<>(
-      base::Bind(&ClearKeyCdm::OnLoadSessionUpdated, base::Unretained(this)),
-      base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
-                 promise_id_for_emulated_loadsession_)));
+  std::unique_ptr<media::SimpleCdmPromise> promise(
+      new media::CdmCallbackPromise<>(
+          base::Bind(&ClearKeyCdm::OnLoadSessionUpdated,
+                     base::Unretained(this)),
+          base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
+                     promise_id_for_emulated_loadsession_)));
   decryptor_->UpdateSession(
       session_id_for_emulated_loadsession_,
       std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()), std::move(promise));

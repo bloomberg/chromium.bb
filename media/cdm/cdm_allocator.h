@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace cdm {
@@ -29,7 +30,7 @@ class MEDIA_EXPORT CdmAllocator {
   virtual cdm::Buffer* CreateCdmBuffer(size_t capacity) = 0;
 
   // Returns a new VideoFrameImpl.
-  virtual scoped_ptr<VideoFrameImpl> CreateCdmVideoFrame() = 0;
+  virtual std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() = 0;
 
  protected:
   CdmAllocator();

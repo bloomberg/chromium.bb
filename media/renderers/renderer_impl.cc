@@ -31,8 +31,8 @@ static const int kDefaultVideoUnderflowThresholdMs = 3000;
 
 RendererImpl::RendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    scoped_ptr<AudioRenderer> audio_renderer,
-    scoped_ptr<VideoRenderer> video_renderer)
+    std::unique_ptr<AudioRenderer> audio_renderer,
+    std::unique_ptr<VideoRenderer> video_renderer)
     : state_(STATE_UNINITIALIZED),
       task_runner_(task_runner),
       audio_renderer_(std::move(audio_renderer)),

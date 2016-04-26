@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "jni/UsbMidiDeviceFactoryAndroid_jni.h"
@@ -20,7 +21,7 @@ namespace midi {
 
 namespace {
 
-typedef UsbMidiDevice::Factory::Callback Callback;
+using Callback = UsbMidiDevice::Factory::Callback;
 
 }  // namespace
 
@@ -77,7 +78,7 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceAttached(
     const JavaParamRef<jobject>& caller,
     const JavaParamRef<jobject>& device) {
   delegate_->OnDeviceAttached(
-      scoped_ptr<UsbMidiDevice>(new UsbMidiDeviceAndroid(device, delegate_)));
+      base::WrapUnique(new UsbMidiDeviceAndroid(device, delegate_)));
 }
 
 // Called from the Java world.

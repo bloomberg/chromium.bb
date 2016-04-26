@@ -15,7 +15,7 @@
 namespace media {
 namespace midi {
 
-MidiManagerUsb::MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> factory)
+MidiManagerUsb::MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory> factory)
     : device_factory_(std::move(factory)) {}
 
 MidiManagerUsb::~MidiManagerUsb() {
@@ -68,7 +68,7 @@ void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,
                                 time);
 }
 
-void MidiManagerUsb::OnDeviceAttached(scoped_ptr<UsbMidiDevice> device) {
+void MidiManagerUsb::OnDeviceAttached(std::unique_ptr<UsbMidiDevice> device) {
   int device_id = static_cast<int>(devices_.size());
   devices_.push_back(std::move(device));
   AddPorts(devices_.back(), device_id);

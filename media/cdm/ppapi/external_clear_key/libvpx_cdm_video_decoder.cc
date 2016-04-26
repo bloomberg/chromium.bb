@@ -5,7 +5,6 @@
 #include "media/cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/limits.h"
 
 // Include libvpx header files.

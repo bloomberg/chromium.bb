@@ -4,8 +4,9 @@
 
 #include "media/cdm/cenc_utils.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
 
@@ -38,7 +39,7 @@ static bool ReadAllPsshBoxes(
   // mp4::ProtectionSystemSpecificHeader doesn't validate the 'pssh' contents,
   // so this simply verifies that |input| only contains 'pssh' boxes and
   // nothing else.
-  scoped_ptr<mp4::BoxReader> input_reader(
+  std::unique_ptr<mp4::BoxReader> input_reader(
       mp4::BoxReader::ReadConcatentatedBoxes(input.data(), input.size()));
   std::vector<mp4::ProtectionSystemSpecificHeader> raw_pssh_boxes;
   if (!input_reader->ReadAllChildrenAndCheckFourCC(&raw_pssh_boxes))
@@ -50,7 +51,7 @@ static bool ReadAllPsshBoxes(
   // (due to unsupported version, for example), this is done one by one,
   // ignoring any boxes that can't be parsed.
   for (const auto& raw_pssh_box : raw_pssh_boxes) {
-    scoped_ptr<mp4::BoxReader> raw_pssh_reader(
+    std::unique_ptr<mp4::BoxReader> raw_pssh_reader(
         mp4::BoxReader::ReadConcatentatedBoxes(raw_pssh_box.raw_box.data(),
                                                raw_pssh_box.raw_box.size()));
     // ReadAllChildren() appends any successfully parsed box onto it's

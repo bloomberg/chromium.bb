@@ -94,7 +94,7 @@ class MIDIHDRDeleter {
   }
 };
 
-typedef scoped_ptr<MIDIHDR, MIDIHDRDeleter> ScopedMIDIHDR;
+using ScopedMIDIHDR = std::unique_ptr<MIDIHDR, MIDIHDRDeleter>;
 
 ScopedMIDIHDR CreateMIDIHDR(size_t size) {
   ScopedMIDIHDR header(new MIDIHDR);

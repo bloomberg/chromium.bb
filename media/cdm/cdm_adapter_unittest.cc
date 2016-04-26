@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_key_information.h"
@@ -84,7 +83,7 @@ class CdmAdapterTest : public testing::Test {
   void InitializeAndExpect(base::FilePath library_path,
                            ExpectedResult expected_result) {
     CdmConfig cdm_config;  // default settings of false are sufficient.
-    scoped_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
+    std::unique_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
     CdmAdapter::Create(
         helper_.KeySystemName(), library_path, cdm_config, std::move(allocator),
         base::Bind(&CdmAdapterTest::CreateCdmFileIO, base::Unretained(this)),
@@ -172,14 +171,15 @@ class CdmAdapterTest : public testing::Test {
 
   // Create a promise. |expected_result| is used to indicate how the promise
   // should be fulfilled.
-  scoped_ptr<SimpleCdmPromise> CreatePromise(ExpectedResult expected_result) {
+  std::unique_ptr<SimpleCdmPromise> CreatePromise(
+      ExpectedResult expected_result) {
     if (expected_result == SUCCESS) {
       EXPECT_CALL(*this, OnResolve());
     } else {
       EXPECT_CALL(*this, OnReject(_, _, IsNotEmpty()));
     }
 
-    scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
+    std::unique_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
         base::Bind(&CdmAdapterTest::OnResolve, base::Unretained(this)),
         base::Bind(&CdmAdapterTest::OnReject, base::Unretained(this))));
     return promise;
@@ -187,7 +187,7 @@ class CdmAdapterTest : public testing::Test {
 
   // Create a promise to be used when a new session is created.
   // |expected_result| is used to indicate how the promise should be fulfilled.
-  scoped_ptr<NewSessionCdmPromise> CreateSessionPromise(
+  std::unique_ptr<NewSessionCdmPromise> CreateSessionPromise(
       ExpectedResult expected_result) {
     if (expected_result == SUCCESS) {
       EXPECT_CALL(*this, OnResolveWithSession(_))
@@ -196,7 +196,7 @@ class CdmAdapterTest : public testing::Test {
       EXPECT_CALL(*this, OnReject(_, _, IsNotEmpty()));
     }
 
-    scoped_ptr<NewSessionCdmPromise> promise(
+    std::unique_ptr<NewSessionCdmPromise> promise(
         new CdmCallbackPromise<std::string>(
             base::Bind(&CdmAdapterTest::OnResolveWithSession,
                        base::Unretained(this)),

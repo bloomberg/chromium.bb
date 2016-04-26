@@ -8,6 +8,7 @@
 #include <poll.h>
 #include <stddef.h>
 #include <stdlib.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
@@ -397,8 +399,8 @@ MidiManagerAlsa::MidiPort::MidiPort(const std::string& path,
 MidiManagerAlsa::MidiPort::~MidiPort() = default;
 
 // Note: keep synchronized with the MidiPort::Match* methods.
-scoped_ptr<base::Value> MidiManagerAlsa::MidiPort::Value() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+std::unique_ptr<base::Value> MidiManagerAlsa::MidiPort::Value() const {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
 
   std::string type;
   switch (type_) {
@@ -532,9 +534,10 @@ MidiManagerAlsa::MidiPortStateBase::iterator
 MidiManagerAlsa::MidiPortStateBase::FindConnected(
     const MidiManagerAlsa::MidiPort& port) {
   // Exact match required for connected ports.
-  auto it = std::find_if(
-      ports_.begin(), ports_.end(),
-      [&port](scoped_ptr<MidiPort>& p) { return p->MatchConnected(port); });
+  auto it = std::find_if(ports_.begin(), ports_.end(),
+                         [&port](std::unique_ptr<MidiPort>& p) {
+                           return p->MatchConnected(port);
+                         });
   return it;
 }
 
@@ -558,9 +561,10 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
     // Pass 1. Match on path, id, midi_device, port_id.
     // This is the best possible match for hardware card-based clients.
     // This will also match the empty id correctly for devices without an id.
-    auto it = std::find_if(
-        ports_.begin(), ports_.end(),
-        [&port](scoped_ptr<MidiPort>& p) { return p->MatchCardPass1(port); });
+    auto it = std::find_if(ports_.begin(), ports_.end(),
+                           [&port](std::unique_ptr<MidiPort>& p) {
+                             return p->MatchCardPass1(port);
+                           });
     if (it != ports_.end())
       return it;
 
@@ -569,9 +573,10 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
       // This will give us a high-confidence match when a user moves a device to
       // another USB/Firewire/Thunderbolt/etc port, but only works if the device
       // has a hardware id.
-      it = std::find_if(
-          ports_.begin(), ports_.end(),
-          [&port](scoped_ptr<MidiPort>& p) { return p->MatchCardPass2(port); });
+      it = std::find_if(ports_.begin(), ports_.end(),
+                        [&port](std::unique_ptr<MidiPort>& p) {
+                          return p->MatchCardPass2(port);
+                        });
       if (it != ports_.end())
         return it;
     }
@@ -579,18 +584,20 @@ MidiManagerAlsa::MidiPortStateBase::FindDisconnected(
     // Else, we have a non-card-based client.
     // Pass 1. Match on client_id, port_id, client_name, port_name.
     // This will give us a reasonably good match.
-    auto it = std::find_if(
-        ports_.begin(), ports_.end(),
-        [&port](scoped_ptr<MidiPort>& p) { return p->MatchNoCardPass1(port); });
+    auto it = std::find_if(ports_.begin(), ports_.end(),
+                           [&port](std::unique_ptr<MidiPort>& p) {
+                             return p->MatchNoCardPass1(port);
+                           });
     if (it != ports_.end())
       return it;
 
     // Pass 2. Match on port_id, client_name, port_name.
     // This is weaker but similar to pass 2 in the hardware card-based clients
     // match.
-    it = std::find_if(
-        ports_.begin(), ports_.end(),
-        [&port](scoped_ptr<MidiPort>& p) { return p->MatchNoCardPass2(port); });
+    it = std::find_if(ports_.begin(), ports_.end(),
+                      [&port](std::unique_ptr<MidiPort>& p) {
+                        return p->MatchNoCardPass2(port);
+                      });
     if (it != ports_.end())
       return it;
   }
@@ -603,7 +610,8 @@ MidiManagerAlsa::MidiPortStateBase::MidiPortStateBase() = default;
 
 MidiManagerAlsa::MidiPortState::MidiPortState() = default;
 
-uint32_t MidiManagerAlsa::MidiPortState::push_back(scoped_ptr<MidiPort> port) {
+uint32_t MidiManagerAlsa::MidiPortState::push_back(
+    std::unique_ptr<MidiPort> port) {
   // Add the web midi index.
   uint32_t web_port_index = 0;
   switch (port->type()) {
@@ -628,7 +636,7 @@ void MidiManagerAlsa::AlsaSeqState::ClientStart(int client_id,
                                                 snd_seq_client_type_t type) {
   ClientExit(client_id);
   clients_.insert(std::make_pair(
-      client_id, make_scoped_ptr(new Client(client_name, type))));
+      client_id, base::WrapUnique(new Client(client_name, type))));
   if (IsCardClient(type, client_id))
     ++card_client_count_;
 }
@@ -655,7 +663,7 @@ void MidiManagerAlsa::AlsaSeqState::PortStart(
   auto it = clients_.find(client_id);
   if (it != clients_.end())
     it->second->AddPort(port_id,
-                        make_scoped_ptr(new Port(port_name, direction, midi)));
+                        base::WrapUnique(new Port(port_name, direction, midi)));
 }
 
 void MidiManagerAlsa::AlsaSeqState::PortExit(int client_id, int port_id) {
@@ -672,9 +680,9 @@ snd_seq_client_type_t MidiManagerAlsa::AlsaSeqState::ClientType(
   return it->second->type();
 }
 
-scoped_ptr<MidiManagerAlsa::TemporaryMidiPortState>
+std::unique_ptr<MidiManagerAlsa::TemporaryMidiPortState>
 MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
-  scoped_ptr<MidiManagerAlsa::TemporaryMidiPortState> midi_ports(
+  std::unique_ptr<MidiManagerAlsa::TemporaryMidiPortState> midi_ports(
       new TemporaryMidiPortState);
   auto card_it = alsa_cards.begin();
 
@@ -728,13 +736,13 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
         PortDirection direction = port->direction();
         if (direction == PortDirection::kInput ||
             direction == PortDirection::kDuplex) {
-          midi_ports->push_back(make_scoped_ptr(new MidiPort(
+          midi_ports->push_back(base::WrapUnique(new MidiPort(
               path, id, client_id, port_id, midi_device, client->name(),
               port->name(), manufacturer, version, MidiPort::Type::kInput)));
         }
         if (direction == PortDirection::kOutput ||
             direction == PortDirection::kDuplex) {
-          midi_ports->push_back(make_scoped_ptr(new MidiPort(
+          midi_ports->push_back(base::WrapUnique(new MidiPort(
               path, id, client_id, port_id, midi_device, client->name(),
               port->name(), manufacturer, version, MidiPort::Type::kOutput)));
         }
@@ -761,8 +769,9 @@ MidiManagerAlsa::AlsaSeqState::Client::Client(const std::string& name,
 
 MidiManagerAlsa::AlsaSeqState::Client::~Client() = default;
 
-void MidiManagerAlsa::AlsaSeqState::Client::AddPort(int addr,
-                                                    scoped_ptr<Port> port) {
+void MidiManagerAlsa::AlsaSeqState::Client::AddPort(
+    int addr,
+    std::unique_ptr<Port> port) {
   ports_[addr] = std::move(port);
 }
 
@@ -1153,7 +1162,7 @@ void MidiManagerAlsa::AddCard(udev_device* dev) {
   snd_ctl_close(handle);
 
   if (midi_count > 0) {
-    scoped_ptr<AlsaCard> card(
+    std::unique_ptr<AlsaCard> card(
         new AlsaCard(dev, name, longname, driver, midi_count));
     alsa_cards_.insert(std::make_pair(number, std::move(card)));
     alsa_card_midi_count_ += midi_count;

@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
@@ -76,9 +76,9 @@ class MEDIA_EXPORT VideoRendererImpl
   void StartPlayingFrom(base::TimeDelta timestamp) override;
   void OnTimeStateChanged(bool time_progressing) override;
 
-  void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
   void SetGpuMemoryBufferVideoForTesting(
-      scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
+      std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
   size_t frames_queued_for_testing() const {
     return algorithm_->frames_queued();
   }
@@ -188,10 +188,10 @@ class MEDIA_EXPORT VideoRendererImpl
   base::Lock lock_;
 
   // Provides video frames to VideoRendererImpl.
-  scoped_ptr<VideoFrameStream> video_frame_stream_;
+  std::unique_ptr<VideoFrameStream> video_frame_stream_;
 
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
-  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
+  std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 
   scoped_refptr<MediaLog> media_log_;
 
@@ -261,11 +261,11 @@ class MEDIA_EXPORT VideoRendererImpl
   int frames_decoded_;
   int frames_dropped_;
 
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Algorithm for selecting which frame to render; manages frames and all
   // timing related information.
-  scoped_ptr<VideoRendererAlgorithm> algorithm_;
+  std::unique_ptr<VideoRendererAlgorithm> algorithm_;
 
   // Indicates that Render() was called with |background_rendering| set to true,
   // so we've entered a background rendering mode where dropped frames are not

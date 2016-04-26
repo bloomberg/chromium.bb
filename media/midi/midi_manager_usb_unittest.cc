@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -166,7 +167,7 @@ class TestUsbMidiDeviceFactory : public UsbMidiDevice::Factory {
 class MidiManagerUsbForTesting : public MidiManagerUsb {
  public:
   explicit MidiManagerUsbForTesting(
-      scoped_ptr<UsbMidiDevice::Factory> device_factory)
+      std::unique_ptr<UsbMidiDevice::Factory> device_factory)
       : MidiManagerUsb(std::move(device_factory)) {}
   ~MidiManagerUsbForTesting() override {}
 
@@ -183,7 +184,8 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
 class MidiManagerUsbTest : public ::testing::Test {
  public:
   MidiManagerUsbTest() : message_loop_(new base::MessageLoop) {
-    scoped_ptr<TestUsbMidiDeviceFactory> factory(new TestUsbMidiDeviceFactory);
+    std::unique_ptr<TestUsbMidiDeviceFactory> factory(
+        new TestUsbMidiDeviceFactory);
     factory_ = factory.get();
     manager_.reset(new MidiManagerUsbForTesting(std::move(factory)));
   }
@@ -226,21 +228,21 @@ class MidiManagerUsbTest : public ::testing::Test {
   const MidiPortInfoList& input_ports() { return client_->input_ports_; }
   const MidiPortInfoList& output_ports() { return client_->output_ports_; }
 
-  scoped_ptr<MidiManagerUsbForTesting> manager_;
-  scoped_ptr<FakeMidiManagerClient> client_;
+  std::unique_ptr<MidiManagerUsbForTesting> manager_;
+  std::unique_ptr<FakeMidiManagerClient> client_;
   // Owned by manager_.
   TestUsbMidiDeviceFactory* factory_;
   Logger logger_;
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsbTest);
 };
 
 
 TEST_F(MidiManagerUsbTest, Initialize) {
-  scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
   uint8_t descriptors[] = {
       0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a, 0x2d, 0x75,
       0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02, 0x75, 0x00, 0x02, 0x01,
@@ -295,8 +297,8 @@ TEST_F(MidiManagerUsbTest, Initialize) {
 }
 
 TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
-  scoped_ptr<FakeUsbMidiDevice> device1(new FakeUsbMidiDevice(&logger_));
-  scoped_ptr<FakeUsbMidiDevice> device2(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device1(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device2(new FakeUsbMidiDevice(&logger_));
   uint8_t descriptors[] = {
       0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a, 0x2d, 0x75,
       0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02, 0x75, 0x00, 0x02, 0x01,
@@ -379,7 +381,7 @@ TEST_F(MidiManagerUsbTest, InitializeFail) {
 }
 
 TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
-  scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
   uint8_t descriptors[] = {0x04};
   device->SetDescriptors(ToVector(descriptors));
 
@@ -394,7 +396,7 @@ TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
 
 TEST_F(MidiManagerUsbTest, Send) {
   Initialize();
-  scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
   uint8_t descriptors[] = {
       0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a, 0x2d, 0x75,
       0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02, 0x75, 0x00, 0x02, 0x01,
@@ -437,7 +439,7 @@ TEST_F(MidiManagerUsbTest, Send) {
 }
 
 TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
-  scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
   uint8_t descriptors[] = {
       0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a, 0x2d, 0x75,
       0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02, 0x75, 0x00, 0x02, 0x01,
@@ -477,7 +479,7 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
 }
 
 TEST_F(MidiManagerUsbTest, Receive) {
-  scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
   uint8_t descriptors[] = {
       0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a, 0x2d, 0x75,
       0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02, 0x75, 0x00, 0x02, 0x01,
@@ -552,7 +554,8 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
   ASSERT_EQ(0u, jacks.size());
   EXPECT_EQ("", logger_.TakeLog());
 
-  scoped_ptr<FakeUsbMidiDevice> new_device(new FakeUsbMidiDevice(&logger_));
+  std::unique_ptr<FakeUsbMidiDevice> new_device(
+      new FakeUsbMidiDevice(&logger_));
   new_device->SetDescriptors(ToVector(descriptors));
   manager_->OnDeviceAttached(std::move(new_device));
 

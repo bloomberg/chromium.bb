@@ -22,9 +22,9 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_decoder.h"
@@ -194,8 +194,8 @@ class MEDIA_EXPORT AudioRendererImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_ptr<AudioSplicer> splicer_;
-  scoped_ptr<AudioBufferConverter> buffer_converter_;
+  std::unique_ptr<AudioSplicer> splicer_;
+  std::unique_ptr<AudioBufferConverter> buffer_converter_;
 
   // Whether or not we expect to handle config changes.
   bool expecting_config_changes_;
@@ -205,7 +205,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // may deadlock between |task_runner_| and the audio callback thread.
   scoped_refptr<media::AudioRendererSink> sink_;
 
-  scoped_ptr<AudioBufferStream> audio_buffer_stream_;
+  std::unique_ptr<AudioBufferStream> audio_buffer_stream_;
 
   // Interface to the hardware audio params.
   const AudioHardwareConfig& hardware_config_;
@@ -226,7 +226,7 @@ class MEDIA_EXPORT AudioRendererImpl
   base::Closure flush_cb_;
 
   // Overridable tick clock for testing.
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   // Memory usage of |algorithm_| recorded during the last
   // HandleSplicerBuffer_Locked() call.
@@ -242,7 +242,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Algorithm for scaling audio.
   double playback_rate_;
-  scoped_ptr<AudioRendererAlgorithm> algorithm_;
+  std::unique_ptr<AudioRendererAlgorithm> algorithm_;
 
   // Simple state tracking variable.
   State state_;
@@ -261,7 +261,7 @@ class MEDIA_EXPORT AudioRendererImpl
   bool received_end_of_stream_;
   bool rendered_end_of_stream_;
 
-  scoped_ptr<AudioClock> audio_clock_;
+  std::unique_ptr<AudioClock> audio_clock_;
 
   // The media timestamp to begin playback at after seeking. Set via
   // SetMediaTime().

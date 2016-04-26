@@ -47,7 +47,7 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   // This |decryption_key| becomes the latest until another insertion or
   // |session_id| is erased.
   void Insert(const std::string& session_id,
-              scoped_ptr<DecryptionKey> decryption_key);
+              std::unique_ptr<DecryptionKey> decryption_key);
 
   // Deletes the entry for |session_id| if present.
   void Erase(const std::string& session_id);
@@ -79,7 +79,7 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
 
 void AesDecryptor::SessionIdDecryptionKeyMap::Insert(
     const std::string& session_id,
-    scoped_ptr<DecryptionKey> decryption_key) {
+    std::unique_ptr<DecryptionKey> decryption_key) {
   KeyList::iterator it = Find(session_id);
   if (it != key_list_.end())
     Erase(it);
@@ -208,7 +208,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   // copy all encrypted subsamples to a contiguous buffer, decrypt them, then
   // copy the decrypted bytes over the encrypted bytes in the output.
   // TODO(strobe): attempt to reduce number of memory copies
-  scoped_ptr<uint8_t[]> encrypted_bytes(new uint8_t[total_encrypted_size]);
+  std::unique_ptr<uint8_t[]> encrypted_bytes(new uint8_t[total_encrypted_size]);
   CopySubsamples(subsamples, kSrcContainsClearBytes,
                  reinterpret_cast<const uint8_t*>(sample),
                  encrypted_bytes.get());
@@ -249,8 +249,9 @@ AesDecryptor::~AesDecryptor() {
   key_map_.clear();
 }
 
-void AesDecryptor::SetServerCertificate(const std::vector<uint8_t>& certificate,
-                                        scoped_ptr<SimpleCdmPromise> promise) {
+void AesDecryptor::SetServerCertificate(
+    const std::vector<uint8_t>& certificate,
+    std::unique_ptr<SimpleCdmPromise> promise) {
   promise->reject(
       NOT_SUPPORTED_ERROR, 0, "SetServerCertificate() is not supported.");
 }
@@ -259,7 +260,7 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
     SessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<NewSessionCdmPromise> promise) {
+    std::unique_ptr<NewSessionCdmPromise> promise) {
   std::string session_id(base::UintToString(next_session_id_++));
   valid_sessions_.insert(session_id);
 
@@ -318,7 +319,7 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
 
 void AesDecryptor::LoadSession(SessionType session_type,
                                const std::string& session_id,
-                               scoped_ptr<NewSessionCdmPromise> promise) {
+                               std::unique_ptr<NewSessionCdmPromise> promise) {
   // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
   // that do not support loadSession. See http://crbug.com/342481
   promise->reject(NOT_SUPPORTED_ERROR, 0, "LoadSession() is not supported.");
@@ -326,7 +327,7 @@ void AesDecryptor::LoadSession(SessionType session_type,
 
 void AesDecryptor::UpdateSession(const std::string& session_id,
                                  const std::vector<uint8_t>& response,
-                                 scoped_ptr<SimpleCdmPromise> promise) {
+                                 std::unique_ptr<SimpleCdmPromise> promise) {
   CHECK(!response.empty());
 
   // TODO(jrummell): Convert back to a DCHECK once prefixed EME is removed.
@@ -400,7 +401,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
 }
 
 void AesDecryptor::CloseSession(const std::string& session_id,
-                                scoped_ptr<SimpleCdmPromise> promise) {
+                                std::unique_ptr<SimpleCdmPromise> promise) {
   // Validate that this is a reference to an active session and then forget it.
   std::set<std::string>::iterator it = valid_sessions_.find(session_id);
   DCHECK(it != valid_sessions_.end());
@@ -414,7 +415,7 @@ void AesDecryptor::CloseSession(const std::string& session_id,
 }
 
 void AesDecryptor::RemoveSession(const std::string& session_id,
-                                 scoped_ptr<SimpleCdmPromise> promise) {
+                                 std::unique_ptr<SimpleCdmPromise> promise) {
   // AesDecryptor doesn't keep any persistent data, so this should be
   // NOT_REACHED().
   // TODO(jrummell): Make sure persistent session types are rejected.
@@ -535,7 +536,7 @@ void AesDecryptor::DeinitializeDecoder(StreamType stream_type) {
 bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
                                     const std::string& key_id,
                                     const std::string& key_string) {
-  scoped_ptr<DecryptionKey> decryption_key(new DecryptionKey(key_string));
+  std::unique_ptr<DecryptionKey> decryption_key(new DecryptionKey(key_string));
   if (!decryption_key->Init()) {
     DVLOG(1) << "Could not initialize decryption key.";
     return false;
@@ -549,7 +550,7 @@ bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
   }
 
   // |key_id| not found, so need to create new entry.
-  scoped_ptr<SessionIdDecryptionKeyMap> inner_map(
+  std::unique_ptr<SessionIdDecryptionKeyMap> inner_map(
       new SessionIdDecryptionKeyMap());
   inner_map->Insert(session_id, std::move(decryption_key));
   key_map_.add(key_id, std::move(inner_map));

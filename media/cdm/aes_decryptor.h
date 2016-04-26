@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
@@ -42,22 +42,22 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
 
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
-                            scoped_ptr<SimpleCdmPromise> promise) override;
+                            std::unique_ptr<SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<NewSessionCdmPromise> promise) override;
+      std::unique_ptr<NewSessionCdmPromise> promise) override;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
-                   scoped_ptr<NewSessionCdmPromise> promise) override;
+                   std::unique_ptr<NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<SimpleCdmPromise> promise) override;
+                     std::unique_ptr<SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<SimpleCdmPromise> promise) override;
+                    std::unique_ptr<SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<SimpleCdmPromise> promise) override;
+                     std::unique_ptr<SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
 
   // CdmContext implementation.
@@ -101,7 +101,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
     const std::string secret_;
 
     // The key used to decrypt the data.
-    scoped_ptr<crypto::SymmetricKey> decryption_key_;
+    std::unique_ptr<crypto::SymmetricKey> decryption_key_;
 
     DISALLOW_COPY_AND_ASSIGN(DecryptionKey);
   };
@@ -114,7 +114,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
 
   // Key ID <-> SessionIdDecryptionKeyMap map.
   typedef base::ScopedPtrHashMap<std::string,
-                                 scoped_ptr<SessionIdDecryptionKeyMap>>
+                                 std::unique_ptr<SessionIdDecryptionKeyMap>>
       KeyIdToSessionKeysMap;
 
   ~AesDecryptor() override;

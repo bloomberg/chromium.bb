@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
@@ -64,12 +64,14 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
   // VideoDecodeAccelerator interface.
-  virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator() = 0;
+  virtual std::unique_ptr<VideoDecodeAccelerator>
+  CreateVideoDecodeAccelerator() = 0;
 
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
   // VideoEncodeAccelerator interface.
-  virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator() = 0;
+  virtual std::unique_ptr<VideoEncodeAccelerator>
+  CreateVideoEncodeAccelerator() = 0;
 
   // Allocate & delete native textures.
   virtual bool CreateTextures(int32_t count,
@@ -81,7 +83,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
-  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
+  virtual std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;
@@ -92,10 +94,11 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // video frames are enabled.
   virtual VideoPixelFormat VideoFrameOutputFormat() = 0;
 
-  virtual scoped_ptr<ScopedGLContextLock> GetGLContextLock() = 0;
+  virtual std::unique_ptr<ScopedGLContextLock> GetGLContextLock() = 0;
 
   // Allocate & return a shared memory segment.
-  virtual scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) = 0;
+  virtual std::unique_ptr<base::SharedMemory> CreateSharedMemory(
+      size_t size) = 0;
 
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
