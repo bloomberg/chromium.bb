@@ -25,7 +25,6 @@
       "--refs",
       "+refs/change/1/2/333"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },

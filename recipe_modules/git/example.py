@@ -4,6 +4,7 @@
 
 DEPS = [
   'git',
+  'infra_paths',
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
@@ -19,7 +20,7 @@ def RunSteps(api):
   # useful for debugging git access issues that are reproducible only on bots.
   curl_trace_file = None
   if api.properties.get('use_curl_trace'):
-    curl_trace_file = api.path['slave_build'].join('curl_trace.log')
+    curl_trace_file = api.infra_paths['slave_build'].join('curl_trace.log')
 
   submodule_update_force = api.properties.get('submodule_update_force', False)
   submodule_update_recursive = api.properties.get('submodule_update_recursive',
@@ -80,7 +81,7 @@ def RunSteps(api):
 
   # Bundle the repository.
   api.git.bundle_create(
-        api.path['slave_build'].join('all.bundle'))
+        api.infra_paths['slave_build'].join('all.bundle'))
 
 
 def GenTests(api):

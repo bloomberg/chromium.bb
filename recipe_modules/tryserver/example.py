@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'infra_paths',
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
@@ -12,7 +13,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['slave_build']
+  api.path['checkout'] = api.infra_paths['slave_build']
   api.tryserver.maybe_apply_issue()
   api.tryserver.get_files_affected_by_patch()
 

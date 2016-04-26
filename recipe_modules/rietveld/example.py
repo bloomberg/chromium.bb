@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'infra_paths',
   'recipe_engine/path',
   'recipe_engine/properties',
   'recipe_engine/step',
@@ -10,7 +11,7 @@ DEPS = [
 ]
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['slave_build']
+  api.path['checkout'] = api.infra_paths['slave_build']
   api.rietveld.apply_issue('foo', 'bar', authentication='oauth2')
   api.rietveld.calculate_issue_root({'project': ['']})
 
