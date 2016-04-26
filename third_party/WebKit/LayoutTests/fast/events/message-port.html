@@ -18,7 +18,7 @@ var mainPort;
 var allTests;
 var currentTest = 0;
 
-function nextTest() 
+function nextTest()
 {
     var fun = "postMessage";
     var testFunNo = Math.floor(currentTest / 2);
@@ -38,7 +38,7 @@ function test(postMessageFun)
 {
     var channel = new MessageChannel;
 
-    window.frames[0][postMessageFun]("msg", [channel.port2], "*");
+    window.frames[0][postMessageFun]("msg", "*", [channel.port2]);
     mainPort = channel.port1;
     mainPort[postMessageFun]("ping");
     mainPort.onmessage = function(evt) {

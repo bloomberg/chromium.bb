@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'window.postMessage(message, transferables, targetOrigin)' is deprecated and will be removed in M54, around October 2016. Please use 'window.postMessage(message, targetOrigin, transferables)' instead. See https://www.chromestatus.com/features/5719033043222528 for more details.
 Test that the second argument of window.postMessage is ignored or triggers an error if it is not a message port. You should see PASS message '1' through '7', followed by 'done', with messages 4-7 received below.
 
 
