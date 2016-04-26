@@ -24,7 +24,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -64,19 +63,6 @@ const int kSwipeVerticalThresholdMultiplier = 3;
 // See ShouldIgnoreMouseEventAtLocation() for more details.
 const int kHeightOfDeadRegionAboveTopContainer = 10;
 
-// Returns the BubbleDelegateView corresponding to |maybe_bubble| if
-// |maybe_bubble| is a bubble. TODO(estade): remove this when all bubbles are
-// BubbleDialogDelegateViews, or create a common interface for the two bubble
-// types.
-views::BubbleDelegateView* AsBubbleDelegate(aura::Window* maybe_bubble) {
-  if (!maybe_bubble)
-    return nullptr;
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(maybe_bubble);
-  if (!widget)
-    return nullptr;
-  return widget->widget_delegate()->AsBubbleDelegate();
-}
-
 // Returns the BubbleDialogDelegateView corresponding to |maybe_bubble| if
 // |maybe_bubble| is a bubble.
 views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
@@ -90,10 +76,6 @@ views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
 }
 
 views::View* GetAnchorView(aura::Window* maybe_bubble) {
-  views::BubbleDelegateView* bubble = AsBubbleDelegate(maybe_bubble);
-  if (bubble)
-    return bubble->GetAnchorView();
-
   views::BubbleDialogDelegateView* bubble_dialog =
       AsBubbleDialogDelegate(maybe_bubble);
   return bubble_dialog ? bubble_dialog->GetAnchorView() : nullptr;
@@ -188,10 +170,8 @@ ImmersiveFullscreenController::BubbleObserver::BubbleObserver(
     : controller_(controller) {}
 
 ImmersiveFullscreenController::BubbleObserver::~BubbleObserver() {
-  for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
-       it != bubbles_.end(); ++it) {
-    (*it)->RemoveObserver(this);
-  }
+  for (aura::Window* bubble : bubbles_)
+    bubble->RemoveObserver(this);
 }
 
 void ImmersiveFullscreenController::BubbleObserver::StartObserving(
@@ -212,9 +192,8 @@ void ImmersiveFullscreenController::BubbleObserver::StopObserving(
 
 void ImmersiveFullscreenController::BubbleObserver::UpdateRevealedLock() {
   bool has_visible_bubble = false;
-  for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
-       it != bubbles_.end(); ++it) {
-    if ((*it)->IsVisible()) {
+  for (aura::Window* bubble : bubbles_) {
+    if (bubble->IsVisible()) {
       has_visible_bubble = true;
       break;
     }
@@ -237,16 +216,10 @@ void ImmersiveFullscreenController::BubbleObserver::UpdateRevealedLock() {
     // Currently, there is no nice way for bubbles to reposition themselves
     // whenever the anchor view moves. Tell the bubbles to reposition themselves
     // explicitly instead. The hidden bubbles are also repositioned because
-    // BubbleDelegateView does not reposition its widget as a result of a
+    // BubbleDialogDelegateView does not reposition its widget as a result of a
     // visibility change.
-    for (std::set<aura::Window*>::const_iterator it = bubbles_.begin();
-         it != bubbles_.end(); ++it) {
-      views::BubbleDelegateView* bubble = AsBubbleDelegate(*it);
-      if (bubble)
-        bubble->OnAnchorBoundsChanged();
-      else
-        AsBubbleDialogDelegate(*it)->OnAnchorBoundsChanged();
-    }
+    for (aura::Window* bubble : bubbles_)
+      AsBubbleDialogDelegate(bubble)->OnAnchorBoundsChanged();
   }
 }
 

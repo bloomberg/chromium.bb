@@ -71,7 +71,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   std::unique_ptr<views::View> CreateMainContentView();
 
-  // views::BubbleDelegateView
+  // views::BubbleDialogDelegateView
   void Init() override;
 
   SaveCardBubbleController* controller_;  // Weak reference.

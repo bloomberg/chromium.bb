@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -32,10 +31,6 @@ void WidgetDelegate::OnWorkAreaChanged() {
 }
 
 View* WidgetDelegate::GetInitiallyFocusedView() {
-  return nullptr;
-}
-
-BubbleDelegateView* WidgetDelegate::AsBubbleDelegate() {
   return nullptr;
 }
 

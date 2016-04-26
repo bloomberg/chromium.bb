@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"

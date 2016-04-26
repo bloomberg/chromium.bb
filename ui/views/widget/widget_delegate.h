@@ -20,7 +20,6 @@ class Rect;
 
 namespace views {
 class BubbleDialogDelegateView;
-class BubbleDelegateView;
 class ClientView;
 class DialogDelegate;
 class NonClientFrameView;
@@ -51,7 +50,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // NULL no view is focused.
   virtual View* GetInitiallyFocusedView();
 
-  virtual BubbleDelegateView* AsBubbleDelegate();
   virtual BubbleDialogDelegateView* AsBubbleDialogDelegate();
   virtual DialogDelegate* AsDialogDelegate();
 
