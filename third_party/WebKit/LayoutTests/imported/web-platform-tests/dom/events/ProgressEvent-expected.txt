@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS Default event values. 
-FAIL document.createEvent() should not work with ProgressEvent. assert_throws: function "function () {
-    document.createEvent("ProgressEvent")
-  }" did not throw
-Harness: the test ran to completion.
-

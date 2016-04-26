@@ -98,28 +98,28 @@ PASS Slicing test: slice (8,2).
 PASS Slicing test (8,3). 
 PASS Slicing test: slice (8,3). 
 PASS Invalid contentType ("ÿ") 
-FAIL Invalid contentType ("te(xt/plain") assert_equals: expected "" but got "te(xt/plain"
-FAIL Invalid contentType ("te)xt/plain") assert_equals: expected "" but got "te)xt/plain"
-FAIL Invalid contentType ("te<xt/plain") assert_equals: expected "" but got "te<xt/plain"
-FAIL Invalid contentType ("te>xt/plain") assert_equals: expected "" but got "te>xt/plain"
-FAIL Invalid contentType ("te@xt/plain") assert_equals: expected "" but got "te@xt/plain"
-FAIL Invalid contentType ("te,xt/plain") assert_equals: expected "" but got "te,xt/plain"
-FAIL Invalid contentType ("te;xt/plain") assert_equals: expected "" but got "te;xt/plain"
-FAIL Invalid contentType ("te:xt/plain") assert_equals: expected "" but got "te:xt/plain"
-FAIL Invalid contentType ("te\\xt/plain") assert_equals: expected "" but got "te\\xt/plain"
-FAIL Invalid contentType ("te\"xt/plain") assert_equals: expected "" but got "te\"xt/plain"
-FAIL Invalid contentType ("te/xt/plain") assert_equals: expected "" but got "te/xt/plain"
-FAIL Invalid contentType ("te[xt/plain") assert_equals: expected "" but got "te[xt/plain"
-FAIL Invalid contentType ("te]xt/plain") assert_equals: expected "" but got "te]xt/plain"
-FAIL Invalid contentType ("te?xt/plain") assert_equals: expected "" but got "te?xt/plain"
-FAIL Invalid contentType ("te=xt/plain") assert_equals: expected "" but got "te=xt/plain"
-FAIL Invalid contentType ("te{xt/plain") assert_equals: expected "" but got "te{xt/plain"
-FAIL Invalid contentType ("te}xt/plain") assert_equals: expected "" but got "te}xt/plain"
-FAIL Invalid contentType ("te xt/plain") assert_equals: expected "" but got "te xt/plain"
 PASS Invalid contentType ("te\txt/plain") 
 PASS Invalid contentType ("te\0xt/plain") 
 PASS Invalid contentType ("te\x1fxt/plain") 
 PASS Invalid contentType ("text/plain") 
+PASS Valid contentType ("te(xt/plain") 
+PASS Valid contentType ("te)xt/plain") 
+PASS Valid contentType ("te<xt/plain") 
+PASS Valid contentType ("te>xt/plain") 
+PASS Valid contentType ("te@xt/plain") 
+PASS Valid contentType ("te,xt/plain") 
+PASS Valid contentType ("te;xt/plain") 
+PASS Valid contentType ("te:xt/plain") 
+PASS Valid contentType ("te\\xt/plain") 
+PASS Valid contentType ("te\"xt/plain") 
+PASS Valid contentType ("te/xt/plain") 
+PASS Valid contentType ("te[xt/plain") 
+PASS Valid contentType ("te]xt/plain") 
+PASS Valid contentType ("te?xt/plain") 
+PASS Valid contentType ("te=xt/plain") 
+PASS Valid contentType ("te{xt/plain") 
+PASS Valid contentType ("te}xt/plain") 
+PASS Valid contentType ("te xt/plain") 
 FAIL Valid contentType ("TEXT/PLAIN") assert_equals: expected "text/plain" but got "TEXT/PLAIN"
 FAIL Valid contentType ("text/plain;charset = UTF-8") assert_equals: expected "text/plain;charset = utf-8" but got "text/plain;charset = UTF-8"
 FAIL Valid contentType ("text/plain;charset=UTF-8") assert_equals: expected "text/plain;charset=utf-8" but got "text/plain;charset=UTF-8"

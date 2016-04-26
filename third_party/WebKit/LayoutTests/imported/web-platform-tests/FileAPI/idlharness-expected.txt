@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 198: callback not yet supported
+CONSOLE MESSAGE: line 236: callback not yet supported
 This is a testharness.js-based test.
 PASS URL interface: operation createObjectURL(Blob) 
 FAIL URL interface: operation createFor(Blob) assert_own_property: interface object missing static operation expected property "createFor" missing

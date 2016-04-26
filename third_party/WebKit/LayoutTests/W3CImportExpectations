@@ -441,6 +441,8 @@ imported/web-platform-tests/html/semantics/embedded-content/the-video-element/vi
 imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/the-input-element/image01.html [ Skip ]
 imported/web-platform-tests/html/semantics/scripting-1/the-template-element [ Skip ]
+imported/web-platform-tests/html/semantics/tabular-data/the-table-element/tFoot.html [ Skip ]
+imported/web-platform-tests/html/semantics/tabular-data/the-table-element/tHead.html [ Skip ]
 imported/web-platform-tests/html/semantics/tabular-data/the-tbody-element/rows.html [ Skip ]
 imported/web-platform-tests/html/semantics/tabular-data/the-tfoot-element/rows.html [ Skip ]
 imported/web-platform-tests/html/semantics/tabular-data/the-thead-element/rows.html [ Skip ]
@@ -647,9 +649,6 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_009.htm [ Skip ]
 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_010.htm [ Skip ]
 
-# https://github.com/w3c/web-platform-tests/issues/1875  The test has a syntax error.
-imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ Skip ]
-
 # This test requires manual interventions.
 imported/web-platform-tests/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
 
@@ -766,3 +765,16 @@ imported/web-platform-tests/dom/nodes/MutationObserver-childList.html [ Skip ]
 
 # crbug.com/574461: update-w3c-deps imports .py file with x-bit cleared
 imported/web-platform-tests/dom/nodes/Document-createElement-namespace-tests/generate.py [ Skip ]
+
+# crbug.com/606875: New web animation web platform tests are failing.
+imported/web-platform-tests/web-animations/animation-effect-timing/easing.html [ Skip ]
+imported/web-platform-tests/web-animations/animation-effect-timing/fill.html [ Skip ]
+imported/web-platform-tests/web-animations/animation-model/animation-types/discrete-animation.html [ Skip ]
+imported/web-platform-tests/web-animations/animation-model/animation-types/not-animatable.html [ Skip ]
+imported/web-platform-tests/web-animations/animation/finished.html [ Skip ]
+imported/web-platform-tests/web-animations/animation/oncancel.html [ Skip ]
+imported/web-platform-tests/web-animations/animation/onfinish.html [ Skip ]
+
+# crbug.com/606900; Dispatching errors across iframes.
+imported/web-platform-tests/html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-1.html [ Skip ]
+imported/web-platform-tests/html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-2.html [ Skip ]

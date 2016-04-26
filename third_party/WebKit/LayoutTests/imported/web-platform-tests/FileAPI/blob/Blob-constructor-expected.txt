@@ -1,9 +1,10 @@
 This is a testharness.js-based test.
 PASS Blob interface object 
-PASS no-argument Blob constructor 
-PASS no-argument Blob constructor without 'new' 
-PASS no-argument Blob constructor without brackets 
-FAIL Passing non-objects, Dates and RegExps for blobParts should throw a TypeError. assert_throws: Should throw for argument undefined. function "function () {
+PASS Blob constructor with no arguments 
+PASS Blob constructor with no arguments, without 'new' 
+PASS Blob constructor without brackets 
+PASS Blob constructor with undefined as first argument 
+FAIL Passing non-objects, Dates and RegExps for blobParts should throw a TypeError. assert_throws: Should throw for argument object "[object Object]". function "function () {
       new Blob(arg);
     }" did not throw
 FAIL A plain object with @@iterator should be treated as a sequence for the blobParts argument. Failed to construct 'Blob': The 1st argument is neither an array, nor does it have indexed properties.

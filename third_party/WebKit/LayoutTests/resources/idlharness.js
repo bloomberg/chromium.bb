@@ -69,6 +69,44 @@ function minOverloadLength(overloads) {
     .reduce(function(m, n) { return Math.min(m, n); });
 }
 
+function throwOrReject(a_test, operation, fn, obj, args,  message, cb) {
+    if (operation.idlType.generic !== "Promise") {
+        assert_throws(new TypeError(), function() {
+            fn.apply(obj, args);
+        }, message);
+        cb();
+    } else {
+        try {
+            promise_rejects(a_test, new TypeError(), fn.apply(obj, args)).then(cb, cb);
+        } catch (e){
+            a_test.step(function() {
+                assert_unreached("Throws \"" + e + "\" instead of rejecting promise");
+                cb();
+            });
+        }
+    }
+}
+
+function awaitNCallbacks(n, cb, ctx) {
+    var counter = 0;
+    return function() {
+        counter++;
+        if (counter >= n) {
+            cb();
+        }
+    };
+}
+
+var fround = (function(){
+    if (Math.fround) return Math.fround;
+
+    var arr = new Float32Array(1);
+    return function fround(n) {
+        arr[0] = n;
+        return arr[0];
+    };
+})();
+
 /// IdlArray ///
 // Entry point
 self.IdlArray = function()
@@ -429,19 +467,42 @@ IdlArray.prototype.assert_type_is = function(value, type)
             return;
 
         case "float":
-        case "double":
+            assert_equals(typeof value, "number");
+            assert_equals(value, fround(value), "float rounded to 32-bit float should be itself");
+            assert_not_equals(value, Infinity);
+            assert_not_equals(value, -Infinity);
+            assert_not_equals(value, NaN);
+            return;
+
         case "DOMHighResTimeStamp":
+        case "double":
+            assert_equals(typeof value, "number");
+            assert_not_equals(value, Infinity);
+            assert_not_equals(value, -Infinity);
+            assert_not_equals(value, NaN);
+            return;
+
         case "unrestricted float":
+            assert_equals(typeof value, "number");
+            assert_equals(value, fround(value), "unrestricted float rounded to 32-bit float should be itself");
+            return;
+
         case "unrestricted double":
-            // TODO: distinguish these cases
             assert_equals(typeof value, "number");
             return;
 
         case "DOMString":
-        case "ByteString":
-        case "USVString":
-            // TODO: https://github.com/w3c/testharness.js/issues/92
             assert_equals(typeof value, "string");
+            return;
+
+        case "ByteString":
+            assert_equals(typeof value, "string");
+            assert_regexp_match(value, /^[\x00-\x7F]*$/);
+            return;
+
+        case "USVString":
+            assert_equals(typeof value, "string");
+            assert_regexp_match(value, /^([\x00-\ud7ff\ue000-\uffff]|[\ud800-\udbff][\udc00-\udfff])*$/);
             return;
 
         case "object":
@@ -544,8 +605,7 @@ IdlDictionary.prototype = Object.create(IdlObject.prototype);
 /// IdlInterface ///
 function IdlInterface(obj, is_callback) {
     /**
-     * obj is an object produced by the WebIDLParser.js "exception" or
-     * "interface" production, as appropriate.
+     * obj is an object produced by the WebIDLParser.js "interface" production.
      */
 
     /** Self-explanatory. */
@@ -555,9 +615,9 @@ function IdlInterface(obj, is_callback) {
     this.array = obj.array;
 
     /**
-     * An indicator of whether we should run tests on the (exception) interface
-     * object and (exception) interface prototype object.  Tests on members are
-     * controlled by .untested on each member, not this.
+     * An indicator of whether we should run tests on the interface object and
+     * interface prototype object. Tests on members are controlled by .untested
+     * on each member, not this.
      */
     this.untested = obj.untested;
 
@@ -944,12 +1004,12 @@ IdlInterface.prototype.test_self = function()
 IdlInterface.prototype.test_member_const = function(member)
 //@{
 {
+    if (!this.has_constants()) {
+        throw "Internal error: test_member_const called without any constants";
+    }
+
     test(function()
     {
-        if (this.is_callback() && !this.has_constants()) {
-            return;
-        }
-
         assert_own_property(self, this.name,
                             "self does not have own property " + format_value(this.name));
 
@@ -971,14 +1031,11 @@ IdlInterface.prototype.test_member_const = function(member)
         assert_true(desc.enumerable, "property is not enumerable");
         assert_false(desc.configurable, "property is configurable");
     }.bind(this), this.name + " interface: constant " + member.name + " on interface object");
+
     // "In addition, a property with the same characteristics must
     // exist on the interface prototype object."
     test(function()
     {
-        if (this.is_callback() && !this.has_constants()) {
-            return;
-        }
-
         assert_own_property(self, this.name,
                             "self does not have own property " + format_value(this.name));
 
@@ -1031,6 +1088,10 @@ IdlInterface.prototype.test_member_attribute = function(member)
                 "The prototype object must not have a property " +
                 format_value(member.name));
 
+            var getter = Object.getOwnPropertyDescriptor(self, member.name).get;
+            assert_equals(typeof(getter), "function",
+                          format_value(member.name) + " must have a getter");
+
             // Try/catch around the get here, since it can legitimately throw.
             // If it does, we obviously can't check for equality with direct
             // invocation of the getter.
@@ -1043,12 +1104,10 @@ IdlInterface.prototype.test_member_attribute = function(member)
                 gotValue = false;
             }
             if (gotValue) {
-                var getter = Object.getOwnPropertyDescriptor(self, member.name).get;
-                assert_equals(typeof(getter), "function",
-                              format_value(member.name) + " must have a getter");
                 assert_equals(propVal, getter.call(undefined),
                               "Gets on a global should not require an explicit this");
             }
+
             this.do_interface_attribute_asserts(self, member);
         } else {
             assert_true(member.name in self[this.name].prototype,
@@ -1072,9 +1131,17 @@ IdlInterface.prototype.test_member_attribute = function(member)
 IdlInterface.prototype.test_member_operation = function(member)
 //@{
 {
-    test(function()
+    var a_test = async_test(this.name + " interface: operation " + member.name +
+                            "(" + member.arguments.map(
+                                function(m) {return m.idlType.idlType; } )
+                            +")");
+    a_test.step(function()
     {
+        // This function tests WebIDL as of 2015-12-29.
+        // https://heycam.github.io/webidl/#es-operations
+
         if (this.is_callback() && !this.has_constants()) {
+            a_test.done();
             return;
         }
 
@@ -1084,45 +1151,51 @@ IdlInterface.prototype.test_member_operation = function(member)
         if (this.is_callback()) {
             assert_false("prototype" in self[this.name],
                          this.name + ' should not have a "prototype" property');
+            a_test.done();
             return;
         }
 
         assert_own_property(self[this.name], "prototype",
                             'interface "' + this.name + '" does not have own property "prototype"');
 
-        // "For each unique identifier of an operation defined on the
-        // interface, there must be a corresponding property on the
-        // interface prototype object (if it is a regular operation) or
-        // the interface object (if it is a static operation), unless
-        // the effective overload set for that identifier and operation
-        // and with an argument count of 0 (for the ECMAScript language
-        // binding) has no entries."
-        //
+        // "For each unique identifier of an exposed operation defined on the
+        // interface, there must exist a corresponding property, unless the
+        // effective overload set for that identifier and operation and with an
+        // argument count of 0 has no entries."
+
+        // TODO: Consider [Exposed].
+
+        // "The location of the property is determined as follows:"
         var memberHolderObject;
+        // "* If the operation is static, then the property exists on the
+        //    interface object."
         if (member["static"]) {
             assert_own_property(self[this.name], member.name,
                     "interface object missing static operation");
             memberHolderObject = self[this.name];
+        // "* Otherwise, [...] if the interface was declared with the [Global]
+        //    or [PrimaryGlobal] extended attribute, then the property exists
+        //    on every object that implements the interface."
         } else if (this.is_global()) {
             assert_own_property(self, member.name,
                     "global object missing non-static operation");
             memberHolderObject = self;
+        // "* Otherwise, the property exists solely on the interface’s
+        //    interface prototype object."
         } else {
             assert_own_property(self[this.name].prototype, member.name,
                     "interface prototype object missing non-static operation");
             memberHolderObject = self[this.name].prototype;
         }
-
-        this.do_member_operation_asserts(memberHolderObject, member);
-    }.bind(this), this.name + " interface: operation " + member.name +
-    "(" + member.arguments.map(function(m) { return m.idlType.idlType; }) +
-    ")");
+        this.do_member_operation_asserts(memberHolderObject, member, a_test);
+    }.bind(this));
 };
 
 //@}
-IdlInterface.prototype.do_member_operation_asserts = function(memberHolderObject, member)
+IdlInterface.prototype.do_member_operation_asserts = function(memberHolderObject, member, a_test)
 //@{
 {
+    var done = a_test.done.bind(a_test);
     var operationUnforgeable = member.isUnforgeable;
     var desc = Object.getOwnPropertyDescriptor(memberHolderObject, member.name);
     // "The property has attributes { [[Writable]]: B,
@@ -1166,12 +1239,15 @@ IdlInterface.prototype.do_member_operation_asserts = function(memberHolderObject
     // have to skip this test for anything that on the proto chain of "self",
     // since that does in fact have implicit-this behavior.
     if (!member["static"]) {
+        var cb;
         if (!this.is_global() &&
             memberHolderObject[member.name] != self[member.name])
         {
-            assert_throws(new TypeError(), function() {
-                memberHolderObject[member.name].apply(null, args);
-            }, "calling operation with this = null didn't throw TypeError");
+            cb = awaitNCallbacks(2, done);
+            throwOrReject(a_test, member, memberHolderObject[member.name], null, args,
+                          "calling operation with this = null didn't throw TypeError", cb);
+        } else {
+            cb = awaitNCallbacks(1, done);
         }
 
         // ". . . If O is not null and is also not a platform object
@@ -1179,9 +1255,10 @@ IdlInterface.prototype.do_member_operation_asserts = function(memberHolderObject
         //
         // TODO: Test a platform object that implements some other
         // interface.  (Have to be sure to get inheritance right.)
-        assert_throws(new TypeError(), function() {
-            memberHolderObject[member.name].apply({}, args);
-        }, "calling operation with this = {} didn't throw TypeError");
+        throwOrReject(a_test, member, memberHolderObject[member.name], {}, args,
+                      "calling operation with this = {} didn't throw TypeError", cb);
+    } else {
+        done();
     }
 }
 
@@ -1400,14 +1477,15 @@ IdlInterface.prototype.test_interface_of = function(desc, obj, exception, expect
                  member.name &&
                  member.isUnforgeable)
         {
-            test(function()
+            var a_test = async_test(this.name + " interface: " + desc + ' must have own property "' + member.name + '"');
+            a_test.step(function()
             {
                 assert_equals(exception, null, "Unexpected exception when evaluating object");
                 assert_equals(typeof obj, expected_typeof, "wrong typeof object");
                 assert_own_property(obj, member.name,
                                     "Doesn't have the unforgeable operation property");
-                this.do_member_operation_asserts(obj, member);
-            }.bind(this), this.name + " interface: " + desc + ' must have own property "' + member.name + '"');
+                this.do_member_operation_asserts(obj, member, a_test);
+            }.bind(this));
         }
         else if ((member.type == "const"
         || member.type == "attribute"
@@ -1460,7 +1538,10 @@ IdlInterface.prototype.test_interface_of = function(desc, obj, exception, expect
         // TODO: Test passing arguments of the wrong type.
         if (member.type == "operation" && member.name && member.arguments.length)
         {
-            test(function()
+            var a_test = async_test( this.name + " interface: calling " + member.name +
+            "(" + member.arguments.map(function(m) { return m.idlType.idlType; }) +
+            ") on " + desc + " with too few arguments must throw TypeError");
+            a_test.step(function()
             {
                 assert_equals(exception, null, "Unexpected exception when evaluating object");
                 assert_equals(typeof obj, expected_typeof, "wrong typeof object");
@@ -1480,17 +1561,16 @@ IdlInterface.prototype.test_interface_of = function(desc, obj, exception, expect
                     return m.type == "operation" && m.name == member.name;
                 }));
                 var args = [];
+                var cb = awaitNCallbacks(minLength, a_test.done.bind(a_test));
                 for (var i = 0; i < minLength; i++) {
-                    assert_throws(new TypeError(), function()
-                    {
-                        obj[member.name].apply(obj, args);
-                    }.bind(this), "Called with " + i + " arguments");
+                    throwOrReject(a_test, member, obj[member.name], obj, args,  "Called with " + i + " arguments", cb);
 
                     args.push(create_suitable_object(member.arguments[i].idlType));
                 }
-            }.bind(this), this.name + " interface: calling " + member.name +
-            "(" + member.arguments.map(function(m) { return m.idlType.idlType; }) +
-            ") on " + desc + " with too few arguments must throw TypeError");
+                if (minLength === 0) {
+                    cb();
+                }
+            }.bind(this));
         }
     }
 };

@@ -7,7 +7,6 @@ FAIL ease-in function Failed to execute 'getComputedStyle' on 'Window': paramete
 FAIL ease-in-out function Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
 FAIL ease-out function Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
 FAIL easing function which produces values greater than 1 Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
-FAIL easing function which produces negative values Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
 FAIL effect easing produces values greater than 1 with keyframe easing cubic-bezier(0, 0, 0, 0) Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
 FAIL effect easing produces values greater than 1 with keyframe easing cubic-bezier(1, 1, 1, 1) Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
 FAIL effect easing produces negative values 1 with keyframe easing cubic-bezier(0, 0, 0, 0) Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.

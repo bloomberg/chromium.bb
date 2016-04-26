@@ -1,4 +1,6 @@
 This is a testharness.js-based test.
+PASS The :read-write pseudo-class must not match input elements to which the readonly attribute does not apply 
+FAIL The :read-only pseudo-class must match input elements to which the readonly attribute does not apply assert_array_equals: lengths differ, expected 10 got 0
 FAIL The :read-write pseudo-class must match input elements to which the readonly attribute applies, and that are mutable assert_array_equals: lengths differ, expected 1 got 2
 PASS The :read-only pseudo-class must not match input elements to which the readonly attribute applies, and that are mutable 
 FAIL The :read-write pseudo-class must not match input elements after the readonly attribute has been added assert_array_equals: lengths differ, expected 0 got 1
