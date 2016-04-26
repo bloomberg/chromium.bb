@@ -2952,6 +2952,7 @@ interface ImageBitmap
     attribute @@toStringTag
     getter height
     getter width
+    method close
     method constructor
 interface ImageData
     attribute @@toStringTag

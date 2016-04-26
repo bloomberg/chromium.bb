@@ -392,6 +392,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter height
 [Worker]     getter width
+[Worker]     method close
 [Worker]     method constructor
 [Worker] interface ImageData
 [Worker]     attribute @@toStringTag
