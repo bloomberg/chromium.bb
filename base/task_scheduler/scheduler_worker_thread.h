@@ -53,9 +53,9 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   // Tasks from Sequences returned by |delegate|. |task_tracker| is used to
   // handle shutdown behavior of Tasks. Returns nullptr if creating the
   // underlying platform thread fails.
-  static std::unique_ptr<SchedulerWorkerThread> CreateSchedulerWorkerThread(
+  static std::unique_ptr<SchedulerWorkerThread> Create(
       ThreadPriority thread_priority,
-      Delegate* delegate,
+      std::unique_ptr<Delegate> delegate,
       TaskTracker* task_tracker);
 
   // Destroying a SchedulerWorkerThread in production is not allowed; it is
@@ -74,7 +74,7 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
 
  private:
   SchedulerWorkerThread(ThreadPriority thread_priority,
-                        Delegate* delegate,
+                        std::unique_ptr<Delegate> delegate,
                         TaskTracker* task_tracker);
 
   // PlatformThread::Delegate:
@@ -88,7 +88,7 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   // Event signaled to wake up this SchedulerWorkerThread.
   WaitableEvent wake_up_event_;
 
-  Delegate* const delegate_;
+  const std::unique_ptr<Delegate> delegate_;
   TaskTracker* const task_tracker_;
 
   // Synchronizes access to |should_exit_for_testing_|.

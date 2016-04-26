@@ -57,7 +57,7 @@ class TaskSchedulerThreadPoolImplTest
   TaskSchedulerThreadPoolImplTest() = default;
 
   void SetUp() override {
-    thread_pool_ = SchedulerThreadPoolImpl::CreateThreadPool(
+    thread_pool_ = SchedulerThreadPoolImpl::Create(
         ThreadPriority::NORMAL, kNumThreadsInThreadPool,
         Bind(&TaskSchedulerThreadPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),

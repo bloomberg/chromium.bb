@@ -134,18 +134,18 @@ SchedulerThreadPoolImpl::~SchedulerThreadPoolImpl() {
   DCHECK(join_for_testing_returned_.IsSignaled() || worker_threads_.empty());
 }
 
-std::unique_ptr<SchedulerThreadPoolImpl>
-SchedulerThreadPoolImpl::CreateThreadPool(
+std::unique_ptr<SchedulerThreadPoolImpl> SchedulerThreadPoolImpl::Create(
     ThreadPriority thread_priority,
     size_t max_threads,
     const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager) {
   std::unique_ptr<SchedulerThreadPoolImpl> thread_pool(
-      new SchedulerThreadPoolImpl(re_enqueue_sequence_callback, task_tracker,
-                                  delayed_task_manager));
-  if (thread_pool->Initialize(thread_priority, max_threads))
+      new SchedulerThreadPoolImpl(task_tracker, delayed_task_manager));
+  if (thread_pool->Initialize(thread_priority, max_threads,
+                              re_enqueue_sequence_callback)) {
     return thread_pool;
+  }
   return nullptr;
 }
 
@@ -299,32 +299,32 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
 }
 
 SchedulerThreadPoolImpl::SchedulerThreadPoolImpl(
-    const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
     : idle_worker_threads_stack_lock_(shared_priority_queue_.container_lock()),
       idle_worker_threads_stack_cv_for_testing_(
           idle_worker_threads_stack_lock_.CreateConditionVariable()),
       join_for_testing_returned_(true, false),
-      worker_thread_delegate_(
-          new SchedulerWorkerThreadDelegateImpl(this,
-                                                re_enqueue_sequence_callback)),
       task_tracker_(task_tracker),
       delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
 }
 
-bool SchedulerThreadPoolImpl::Initialize(ThreadPriority thread_priority,
-                                         size_t max_threads) {
+bool SchedulerThreadPoolImpl::Initialize(
+    ThreadPriority thread_priority,
+    size_t max_threads,
+    const ReEnqueueSequenceCallback& re_enqueue_sequence_callback) {
   AutoSchedulerLock auto_lock(idle_worker_threads_stack_lock_);
 
   DCHECK(worker_threads_.empty());
 
   for (size_t i = 0; i < max_threads; ++i) {
     std::unique_ptr<SchedulerWorkerThread> worker_thread =
-        SchedulerWorkerThread::CreateSchedulerWorkerThread(
-            thread_priority, worker_thread_delegate_.get(), task_tracker_);
+        SchedulerWorkerThread::Create(
+            thread_priority, WrapUnique(new SchedulerWorkerThreadDelegateImpl(
+                                 this, re_enqueue_sequence_callback)),
+            task_tracker_);
     if (!worker_thread)
       break;
     idle_worker_threads_stack_.Push(worker_thread.get());

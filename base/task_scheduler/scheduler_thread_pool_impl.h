@@ -51,7 +51,7 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
   // handle shutdown behavior of Tasks. |delayed_task_manager| handles Tasks
   // posted with a delay. Returns nullptr on failure to create a thread pool
   // with at least one thread.
-  static std::unique_ptr<SchedulerThreadPoolImpl> CreateThreadPool(
+  static std::unique_ptr<SchedulerThreadPoolImpl> Create(
       ThreadPriority thread_priority,
       size_t max_threads,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
@@ -80,11 +80,13 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
   class SchedulerWorkerThreadDelegateImpl;
 
   SchedulerThreadPoolImpl(
-      const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
       TaskTracker* task_tracker,
       DelayedTaskManager* delayed_task_manager);
 
-  bool Initialize(ThreadPriority thread_priority, size_t max_threads);
+  bool Initialize(
+      ThreadPriority thread_priority,
+      size_t max_threads,
+      const ReEnqueueSequenceCallback& re_enqueue_sequence_callback);
 
   // Wakes up the last thread from this thread pool to go idle, if any.
   void WakeUpOneThread();
@@ -114,9 +116,6 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
 
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
-
-  // Delegate for all worker threads in this pool.
-  std::unique_ptr<SchedulerWorkerThread::Delegate> worker_thread_delegate_;
 
   TaskTracker* const task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;

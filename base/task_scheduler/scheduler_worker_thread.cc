@@ -14,13 +14,13 @@
 namespace base {
 namespace internal {
 
-std::unique_ptr<SchedulerWorkerThread>
-SchedulerWorkerThread::CreateSchedulerWorkerThread(
+std::unique_ptr<SchedulerWorkerThread> SchedulerWorkerThread::Create(
     ThreadPriority thread_priority,
-    Delegate* delegate,
+    std::unique_ptr<Delegate> delegate,
     TaskTracker* task_tracker) {
   std::unique_ptr<SchedulerWorkerThread> worker_thread(
-      new SchedulerWorkerThread(thread_priority, delegate, task_tracker));
+      new SchedulerWorkerThread(thread_priority, std::move(delegate),
+                                task_tracker));
 
   if (worker_thread->thread_handle_.is_null())
     return nullptr;
@@ -45,10 +45,10 @@ void SchedulerWorkerThread::JoinForTesting() {
 }
 
 SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
-                                             Delegate* delegate,
+                                             std::unique_ptr<Delegate> delegate,
                                              TaskTracker* task_tracker)
     : wake_up_event_(false, false),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       task_tracker_(task_tracker) {
   DCHECK(delegate_);
   DCHECK(task_tracker_);

@@ -5,6 +5,7 @@
 #include "base/task_scheduler/scheduler_worker_thread_stack.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/scheduler_worker_thread.h"
 #include "base/task_scheduler/sequence.h"
@@ -34,14 +35,17 @@ class MockSchedulerWorkerThreadDelegate
 class TaskSchedulerWorkerThreadStackTest : public testing::Test {
  protected:
   void SetUp() override {
-    thread_a_ = SchedulerWorkerThread::CreateSchedulerWorkerThread(
-        ThreadPriority::NORMAL, &delegate_, &task_tracker_);
+    thread_a_ = SchedulerWorkerThread::Create(
+        ThreadPriority::NORMAL,
+        WrapUnique(new MockSchedulerWorkerThreadDelegate), &task_tracker_);
     ASSERT_TRUE(thread_a_);
-    thread_b_ = SchedulerWorkerThread::CreateSchedulerWorkerThread(
-        ThreadPriority::NORMAL, &delegate_, &task_tracker_);
+    thread_b_ = SchedulerWorkerThread::Create(
+        ThreadPriority::NORMAL,
+        WrapUnique(new MockSchedulerWorkerThreadDelegate), &task_tracker_);
     ASSERT_TRUE(thread_b_);
-    thread_c_ = SchedulerWorkerThread::CreateSchedulerWorkerThread(
-        ThreadPriority::NORMAL, &delegate_, &task_tracker_);
+    thread_c_ = SchedulerWorkerThread::Create(
+        ThreadPriority::NORMAL,
+        WrapUnique(new MockSchedulerWorkerThreadDelegate), &task_tracker_);
     ASSERT_TRUE(thread_c_);
   }
 
@@ -56,7 +60,6 @@ class TaskSchedulerWorkerThreadStackTest : public testing::Test {
   std::unique_ptr<SchedulerWorkerThread> thread_c_;
 
  private:
-  MockSchedulerWorkerThreadDelegate delegate_;
   TaskTracker task_tracker_;
 };
 
