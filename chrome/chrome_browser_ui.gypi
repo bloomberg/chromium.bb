@@ -2533,6 +2533,9 @@
       'browser/ui/views/website_settings/permissions_bubble_view.cc',
       'browser/ui/views/website_settings/permissions_bubble_view.h',
     ],
+    'chrome_browser_ui_views_extensions_sources': [
+      'browser/ui/views/extensions/extension_install_dialog_view.cc',
+    ],
     'chrome_browser_ui_views_extensions_non_mac_sources': [
       'browser/ui/views/extensions/bookmark_app_confirmation_view.cc',
       'browser/ui/views/extensions/bookmark_app_confirmation_view.h',
@@ -2546,7 +2549,6 @@
       'browser/ui/views/extensions/extension_dialog.h',
       'browser/ui/views/extensions/extension_dialog_observer.cc',
       'browser/ui/views/extensions/extension_dialog_observer.h',
-      'browser/ui/views/extensions/extension_install_dialog_view.cc',
       'browser/ui/views/extensions/extension_installed_bubble_view.cc',
       'browser/ui/views/extensions/extension_popup.cc',
       'browser/ui/views/extensions/extension_popup.h',
@@ -3089,6 +3091,7 @@
               'dependencies': [
                 '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
               ],
+              'sources': [ '<@(chrome_browser_ui_views_extensions_sources)' ]
             }],
           ],
         }],
