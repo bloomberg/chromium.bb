@@ -25,6 +25,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -92,6 +93,7 @@ import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
@@ -452,8 +454,13 @@ public class ChromeApplication extends ContentApplication {
 
         startApplicationActivityTracker();
 
-        DownloadController.setDownloadNotificationService(
-                DownloadManagerService.getDownloadManagerService(this));
+        // Add process check to diagnose http://crbug.com/606309. Remove this after the bug is
+        // fixed.
+        assert !CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE);
+        if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
+            DownloadController.setDownloadNotificationService(
+                    DownloadManagerService.getDownloadManagerService(this));
+        }
 
         if (ApiCompatibilityUtils.isPrintingSupported()) {
             mPrintingController = PrintingControllerFactory.create(getApplicationContext());
