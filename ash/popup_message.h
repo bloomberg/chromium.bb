@@ -13,7 +13,6 @@
 #include "ui/views/bubble/bubble_border.h"
 
 namespace views {
-class BubbleDelegateView;
 class Widget;
 }
 

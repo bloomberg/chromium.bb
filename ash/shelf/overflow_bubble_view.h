@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace ash {
 class ShelfView;
@@ -19,14 +19,15 @@ class OverflowBubbleViewTestAPI;
 
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
-class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
+class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView {
  public:
   OverflowBubbleView();
   ~OverflowBubbleView() override;
 
   void InitOverflowBubble(views::View* anchor, ShelfView* shelf_view);
 
-  // views::BubbleDelegateView overrides:
+  // views::BubbleDialogDelegateView overrides:
+  int GetDialogButtons() const override;
   gfx::Rect GetBubbleBounds() override;
 
  private:

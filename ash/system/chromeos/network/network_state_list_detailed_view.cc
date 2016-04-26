@@ -56,7 +56,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -123,12 +123,12 @@ bool PolicyProhibitsUnmanaged() {
 
 // A bubble which displays network info.
 class NetworkStateListDetailedView::InfoBubble
-    : public views::BubbleDelegateView {
+    : public views::BubbleDialogDelegateView {
  public:
   InfoBubble(views::View* anchor,
              views::View* content,
              NetworkStateListDetailedView* detailed_view)
-      : views::BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
+      : views::BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
     set_can_activate(false);
     set_parent_window(ash::Shell::GetContainer(
@@ -141,6 +141,9 @@ class NetworkStateListDetailedView::InfoBubble
   ~InfoBubble() override { detailed_view_->OnInfoBubbleDestroyed(); }
 
  private:
+  // BubbleDialogDelegateView:
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
+
   // Not owned.
   NetworkStateListDetailedView* detailed_view_;
 
@@ -739,7 +742,7 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
     return;
 
   info_bubble_ = new InfoBubble(info_icon_, CreateNetworkInfoView(), this);
-  views::BubbleDelegateView::CreateBubble(info_bubble_)->Show();
+  views::BubbleDialogDelegateView::CreateBubble(info_bubble_)->Show();
   info_bubble_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
 }
 

@@ -57,7 +57,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   set_parent_window(Shell::GetContainer(
       anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
       kShellWindowId_ShelfBubbleContainer));
-  views::BubbleDelegateView::CreateBubble(this);
+  views::BubbleDialogDelegateView::CreateBubble(this);
   AddChildView(shelf_view_);
 }
 
@@ -159,6 +159,10 @@ void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
   ScrollByYOffset(-event->y_offset());
   Layout();
   event->SetHandled();
+}
+
+int OverflowBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 gfx::Rect OverflowBubbleView::GetBubbleBounds() {

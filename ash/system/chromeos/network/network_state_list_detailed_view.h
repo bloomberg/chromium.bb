@@ -26,7 +26,7 @@ class NetworkListViewBase;
 }
 
 namespace views {
-class BubbleDelegateView;
+class BubbleDialogDelegateView;
 class ImageButton;
 }
 
@@ -138,7 +138,7 @@ class NetworkStateListDetailedView
   TrayPopupLabelButton* proxy_settings_;
 
   // A small bubble for displaying network info.
-  views::BubbleDelegateView* info_bubble_;
+  views::BubbleDialogDelegateView* info_bubble_;
 
   // WiFi scanning throbber.
   ThrobberView* scanning_throbber_;

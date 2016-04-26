@@ -4,7 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -18,10 +18,10 @@ struct BubbleConfig {
   views::BubbleBorder::Arrow arrow;
 };
 
-class ExampleBubbleDelegateView : public views::BubbleDelegateView {
+class ExampleBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
  public:
-  explicit ExampleBubbleDelegateView(const BubbleConfig& config);
-  ~ExampleBubbleDelegateView() override;
+  explicit ExampleBubbleDialogDelegateView(const BubbleConfig& config);
+  ~ExampleBubbleDialogDelegateView() override;
 
   void Init() override {
     SetLayoutManager(new views::FillLayout());
@@ -33,21 +33,21 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   base::string16 label_;
 };
 
-ExampleBubbleDelegateView::ExampleBubbleDelegateView(const BubbleConfig& config)
-    : BubbleDelegateView(config.anchor_view, config.arrow),
-      label_(config.label) {
-}
+ExampleBubbleDialogDelegateView::ExampleBubbleDialogDelegateView(
+    const BubbleConfig& config)
+    : BubbleDialogDelegateView(config.anchor_view, config.arrow),
+      label_(config.label) {}
 
-ExampleBubbleDelegateView::~ExampleBubbleDelegateView() {
-}
+ExampleBubbleDialogDelegateView::~ExampleBubbleDialogDelegateView() {}
 
 void CreatePointyBubble(views::View* anchor_view) {
   BubbleConfig config;
-  config.label = base::ASCIIToUTF16("PointyBubble");
+  config.label = base::ASCIIToUTF16("Pointy Dialog Bubble");
   config.anchor_view = anchor_view;
   config.arrow = views::BubbleBorder::TOP_LEFT;
-  ExampleBubbleDelegateView* bubble = new ExampleBubbleDelegateView(config);
-  views::BubbleDelegateView::CreateBubble(bubble)->Show();
+  ExampleBubbleDialogDelegateView* bubble =
+      new ExampleBubbleDialogDelegateView(config);
+  views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();
 }
 
 }  // namespace shell

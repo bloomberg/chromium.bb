@@ -15,7 +15,7 @@
 #include "ui/events/event_handler.h"
 
 namespace views {
-class BubbleDelegateView;
+class BubbleDialogDelegateView;
 class View;
 }
 
@@ -78,7 +78,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   ShelfView* shelf_view_;
   aura::Window* root_window_;
   ShelfLayoutManager* shelf_layout_manager_;
-  views::BubbleDelegateView* bubble_;
+  views::BubbleDialogDelegateView* bubble_;
 
   base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
 

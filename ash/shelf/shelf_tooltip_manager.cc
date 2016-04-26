@@ -17,7 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -46,12 +46,12 @@ const int kArrowOffsetTopBottom = 7;
 
 // The implementation of tooltip of the launcher.
 class ShelfTooltipManager::ShelfTooltipBubble
-    : public views::BubbleDelegateView {
+    : public views::BubbleDialogDelegateView {
  public:
   ShelfTooltipBubble(views::View* anchor,
                      views::BubbleBorder::Arrow arrow,
                      const base::string16& text)
-      : views::BubbleDelegateView(anchor, arrow) {
+      : views::BubbleDialogDelegateView(anchor, arrow) {
     gfx::Insets insets =
         gfx::Insets(kArrowOffsetTopBottom, kArrowOffsetLeftRight);
     // Adjust the anchor location for asymmetrical borders of shelf item.
@@ -59,7 +59,6 @@ class ShelfTooltipManager::ShelfTooltipBubble
       insets += anchor->border()->GetInsets();
 
     set_anchor_view_insets(insets);
-    set_close_on_esc(false);
     set_close_on_deactivate(false);
     set_can_activate(false);
     set_accept_events(false);
@@ -76,17 +75,18 @@ class ShelfTooltipManager::ShelfTooltipBubble
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetEnabledColor(kTooltipTextColor);
     AddChildView(label);
-    views::BubbleDelegateView::CreateBubble(this);
-    SizeToContents();
+    views::BubbleDialogDelegateView::CreateBubble(this);
   }
 
  private:
-  // views::View overrides:
+  // BubbleDialogDelegateView overrides:
   gfx::Size GetPreferredSize() const override {
-    const gfx::Size size = views::BubbleDelegateView::GetPreferredSize();
+    const gfx::Size size = BubbleDialogDelegateView::GetPreferredSize();
     return gfx::Size(std::min(size.width(), kTooltipMaxWidth),
                      std::max(size.height(), kTooltipMinHeight));
   }
+
+  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipBubble);
 };
