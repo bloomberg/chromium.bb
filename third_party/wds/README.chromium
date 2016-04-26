@@ -13,8 +13,9 @@ Modifications:
 - None
 
 To import a new snapshot of WDS:
-- Checkout the latest release tag: 'git checkout v1.0.0'.
+- Checkout the latest release tag: 'git checkout v1.1.0'.
 - Change the DEPS entry to the newly checked out commit.
 - Update generated files:
   'cmake . && make wds && mv libwds/rtsp/gen/* ../gen/'
+- Update 'wds.gyp' and 'BUILD.gn' files in 'wds' folder if needed.
 - Update this README to reflect the new version number.

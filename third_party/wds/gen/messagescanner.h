@@ -24,9 +24,13 @@
  * 02110-1301 USA
  */
 
+#include <stdint.h>
+
+#define YY_NO_UNISTD_H 1
 
 
-#line 30 "gen/messagescanner.h"
+
+#line 34 "gen/messagescanner.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -375,6 +379,6 @@ extern int message_lex \
 #undef YY_DECL
 #endif
 
-#line 379 "gen/messagescanner.h"
+#line 383 "gen/messagescanner.h"
 #undef message_IN_HEADER
 #endif /* message_HEADER_H */

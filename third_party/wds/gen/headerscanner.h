@@ -24,9 +24,13 @@
  * 02110-1301 USA
  */
 
+#include <stdint.h>
+
+#define YY_NO_UNISTD_H 1
 
 
-#line 30 "gen/headerscanner.h"
+
+#line 34 "gen/headerscanner.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -372,6 +376,6 @@ extern int header_lex \
 #undef YY_DECL
 #endif
 
-#line 376 "gen/headerscanner.h"
+#line 380 "gen/headerscanner.h"
 #undef header_IN_HEADER
 #endif /* header_HEADER_H */

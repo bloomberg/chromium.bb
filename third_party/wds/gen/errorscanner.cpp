@@ -20,9 +20,13 @@
  * 02110-1301 USA
  */
 
+#include <stdint.h>
+
+#define YY_NO_UNISTD_H 1
 
 
-#line 26 "gen/errorscanner.cpp"
+
+#line 30 "gen/errorscanner.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -673,7 +677,9 @@ static yyconst flex_int16_t yy_chk[572] =
 #define YY_RESTORE_YY_MORE_OFFSET
 
 #include <string>
+
 #include "parser.h"
+
 #define yyterminate() return(END)
 
 #define INITIAL 0

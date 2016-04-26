@@ -24,9 +24,13 @@
  * 02110-1301 USA
  */
 
+#include <stdint.h>
+
+#define YY_NO_UNISTD_H 1
 
 
-#line 30 "gen/errorscanner.h"
+
+#line 34 "gen/errorscanner.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -367,6 +371,6 @@ extern int error_lex \
 #undef YY_DECL
 #endif
 
-#line 371 "gen/errorscanner.h"
+#line 375 "gen/errorscanner.h"
 #undef error_IN_HEADER
 #endif /* error_HEADER_H */
