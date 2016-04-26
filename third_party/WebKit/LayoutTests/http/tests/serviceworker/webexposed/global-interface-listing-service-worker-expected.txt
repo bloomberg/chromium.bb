@@ -603,6 +603,7 @@ interface Request
     getter mode
     getter redirect
     getter referrer
+    getter referrerPolicy
     getter url
     method arrayBuffer
     method blob

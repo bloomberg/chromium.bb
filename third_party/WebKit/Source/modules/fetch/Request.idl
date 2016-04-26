@@ -16,6 +16,14 @@ enum RequestContext {
 enum RequestMode { "navigate", "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 enum RequestRedirect { "follow", "error", "manual" };
+enum ReferrerPolicy {
+    "",
+    "no-referrer",
+    "no-referrer-when-downgrade",
+    "origin",
+    "origin-when-cross-origin",
+    "unsafe-url"
+};
 
 [
     Constructor(RequestInfo input, optional Dictionary requestInitDict),
@@ -28,6 +36,7 @@ enum RequestRedirect { "follow", "error", "manual" };
     readonly attribute USVString url;
     [ImplementedAs=getHeaders] readonly attribute Headers headers;
     readonly attribute DOMString referrer;
+    readonly attribute ReferrerPolicy referrerPolicy;
     readonly attribute RequestMode mode;
     readonly attribute RequestCredentials credentials;
     readonly attribute RequestRedirect redirect;

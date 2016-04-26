@@ -36,7 +36,7 @@ FetchRequestData* FetchRequestData::create(ExecutionContext* executionContext, c
     if (webRequest.blobDataHandle())
         request->setBuffer(new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(executionContext, webRequest.blobDataHandle())));
     request->setContext(webRequest.requestContext());
-    request->setReferrer(Referrer(webRequest.referrerUrl().string(), ReferrerPolicyDefault));
+    request->setReferrer(Referrer(webRequest.referrerUrl().string(), static_cast<ReferrerPolicy>(webRequest.referrerPolicy())));
     request->setMode(webRequest.mode());
     request->setCredentials(webRequest.credentialsMode());
     request->setRedirect(webRequest.redirectMode());

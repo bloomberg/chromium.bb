@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<body>
+<script src = "/resources/testharness.js"></script>
+<script src = "/resources/testharness-helpers.js"></script>
+<script src = "/resources/testharnessreport.js"></script>
+<script src = "/serviceworker/resources/test-helpers.js"></script>
+<script src = "/fetch/resources/fetch-test-helpers.js"></script>
+<script src = "/fetch/resources/fetch-test-options.js"></script>
+<script>
+const SCRIPT = '/fetch/referrer/resources/echo-referrer.js';
+const SCOPE = location.href;
+
+const URL = BASE_ORIGIN + '/fetch/resources/echo';
+const REFERRER_SOURCE = location.href;
+
+promise_test(t => {
+    return navigator.serviceWorker.register(SCRIPT, {scope: SCOPE}).then(r => {
+        return r.ready;
+      }).then(() => {
+        if (navigator.serviceWorker.controller === null) {
+          location.reload();
+        }
+      });
+  });
+
+const TESTS = [
+  [URL, 'about:client',
+    '', REFERRER_SOURCE, 'no-referrer-when-downgrade'],
+  [URL, 'about:client', 'no-referrer',
+    '', 'no-referrer'],
+  [URL, 'about:client', 'no-referrer-when-downgrade',
+    REFERRER_SOURCE, 'no-referrer-when-downgrade'],
+  [URL, 'about:client', 'origin',
+    BASE_ORIGIN + '/', 'origin'],
+  [URL, 'about:client', 'origin-when-cross-origin',
+    REFERRER_SOURCE, 'origin-when-cross-origin'],
+  [URL, 'about:client', 'unsafe-url',
+    REFERRER_SOURCE, 'unsafe-url'],
+];
+
+for (let test of TESTS) {
+  let url = test[0];
+  let referrer = test[1];
+  let referrer_policy = test[2];
+  let expected_referrer = test[3];
+  let expected_referrer_policy = test[4];
+  promise_test(t => {
+      return fetch(url, {referrer: referrer, referrerPolicy: referrer_policy})
+        .then(res => res.text())
+        .then(text => {
+            assert_equals(text, JSON.stringify({
+              referrer: expected_referrer,
+              referrerPolicy: expected_referrer_policy,
+            }));
+          });
+    }, `url = ${url}, referrer = ${referrer}, policy = ${referrer_policy}`);
+}
+
+done();
+</script>
+</body>
+</html>

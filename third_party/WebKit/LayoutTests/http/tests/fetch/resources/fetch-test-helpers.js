@@ -218,18 +218,20 @@ function testBlockMixedContent(mode) {
 }
 
 function add_referrer_tests(tests) {
-  for (var test of tests) {
-    var url = test[0];
-    var referrer = test[1];
-    var expected = test[2];
-    promise_test(((url, referrer, expected, t) => {
-        var request = new Request(url, {referrer: referrer, mode: 'cors'});
+  for (let test of tests) {
+    let url = test[0];
+    let referrer = test[1];
+    let policy = test[2];
+    let expected = test[3];
+    promise_test(t => {
+        var request = new Request(url,
+          {referrer: referrer, referrerPolicy: policy, mode: 'cors'});
         return fetch(new Request(url, request)).then(res => {
             return res.json();
           }).then(json => {
             assert_equals(json.referrer, expected, 'referrer');
           });
-     }).bind(undefined, url, referrer, expected),
-     'referrer test: url = ' + url + ', referrer = ' + referrer);
+     },
+     `referrer test: url = ${url}, referrer = ${referrer}, policy = ${policy}`);
   }
 }

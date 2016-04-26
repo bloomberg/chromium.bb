@@ -18,6 +18,7 @@
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/Headers.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -44,6 +45,9 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     bool isReferrerStringSet = DictionaryHelper::get(options, "referrer", referrerString);
     areAnyMembersSet |= isReferrerStringSet;
     areAnyMembersSet |= DictionaryHelper::get(options, "integrity", integrity);
+    AtomicString referrerPolicyString;
+    bool isReferrerPolicySet = DictionaryHelper::get(options, "referrerPolicy", referrerPolicyString);
+    areAnyMembersSet |= isReferrerPolicySet;
 
     v8::Local<v8::Value> v8Body;
     bool isBodySet = DictionaryHelper::get(options, "body", v8Body);
@@ -63,6 +67,26 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         referrer = Referrer("about:client", ReferrerPolicyDefault);
         if (isReferrerStringSet)
             referrer.referrer = referrerString;
+        if (isReferrerPolicySet) {
+            if (referrerPolicyString == "") {
+                referrer.referrerPolicy = ReferrerPolicyDefault;
+            } else if (referrerPolicyString == "no-referrer") {
+                referrer.referrerPolicy = ReferrerPolicyNever;
+            } else if (referrerPolicyString == "no-referrer-when-downgrade") {
+                referrer.referrerPolicy = ReferrerPolicyNoReferrerWhenDowngrade;
+            } else if (referrerPolicyString == "origin") {
+                referrer.referrerPolicy = ReferrerPolicyOrigin;
+            } else if (referrerPolicyString == "origin-when-cross-origin") {
+                referrer.referrerPolicy = ReferrerPolicyOriginWhenCrossOrigin;
+            } else if (referrerPolicyString == "unsafe-url") {
+                referrer.referrerPolicy = ReferrerPolicyAlways;
+            } else if (referrerPolicyString == "no-referrer-when-downgrade-origin-when-cross-origin" && RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
+                referrer.referrerPolicy = ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+            } else {
+                exceptionState.throwTypeError("Invalid referrer policy");
+                return;
+            }
+        }
     }
 
     v8::Isolate* isolate = toIsolate(context);

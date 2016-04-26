@@ -603,6 +603,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter mode
 [Worker]     getter redirect
 [Worker]     getter referrer
+[Worker]     getter referrerPolicy
 [Worker]     getter url
 [Worker]     method arrayBuffer
 [Worker]     method blob

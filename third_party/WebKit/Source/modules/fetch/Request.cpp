@@ -16,6 +16,7 @@
 #include "modules/fetch/FetchManager.h"
 #include "modules/fetch/RequestInit.h"
 #include "platform/HTTPNames.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/Referrer.h"
@@ -141,9 +142,8 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // The following if-clause performs the following two steps:
     // - "If |init|'s referrer member is present, run these substeps:"
-    // - TODO(yhirano): Implement the following step:
-    //     "If |init|'s referrerPolicy member is present, set |request|'s
-    //     referrer policy to it."
+    //   "If |init|'s referrerPolicy member is present, set |request|'s
+    //    referrer policy to it."
     //
     // The condition "if any of |init|'s members are present"
     // (areAnyMembersSet) is used for the if-clause instead of conditions
@@ -156,7 +156,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         if (init.referrer.referrer.isEmpty()) {
             // "If |referrer| is the empty string, set |request|'s referrer to
             // "no-referrer" and terminate these substeps."
-            request->setReferrerString(FetchRequestData::noReferrerString());
+            request->setReferrerString(AtomicString(Referrer::noReferrer()));
         } else {
             // "Let |parsedReferrer| be the result of parsing |referrer| with
             // |baseURL|."
@@ -532,6 +532,29 @@ String Request::referrer() const
     ASSERT(FetchRequestData::noReferrerString() == AtomicString());
     ASSERT(FetchRequestData::clientReferrerString() == AtomicString("about:client"));
     return m_request->referrerString();
+}
+
+String Request::referrerPolicy() const
+{
+    switch (m_request->getReferrerPolicy()) {
+    case ReferrerPolicyAlways:
+        return "unsafe-url";
+    case ReferrerPolicyDefault:
+        return "";
+    case ReferrerPolicyNoReferrerWhenDowngrade:
+        return "no-referrer-when-downgrade";
+    case ReferrerPolicyNever:
+        return "no-referrer";
+    case ReferrerPolicyOrigin:
+        return "origin";
+    case ReferrerPolicyOriginWhenCrossOrigin:
+        return "origin-when-cross-origin";
+    case ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+        ASSERT(RuntimeEnabledFeatures::reducedReferrerGranularityEnabled());
+        return "no-referrer-when-downgrade-origin-when-cross-origin";
+    }
+    ASSERT_NOT_REACHED();
+    return String();
 }
 
 String Request::mode() const

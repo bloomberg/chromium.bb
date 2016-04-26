@@ -16,6 +16,8 @@ test(function() {
     assert_equals(request.method, 'GET', 'Request.method should match');
     assert_equals(request.referrer, 'about:client',
                   'Request.referrer should be about:client');
+    assert_equals(request.referrerPolicy, '',
+                  'Request.referrerPolicy should be empty');
     assert_true(request.headers instanceof Headers,
                 'Request.headers should be Headers');
 
@@ -397,6 +399,7 @@ test(function() {
 
 test(function() {
     assert_equals(new Request(URL).referrer, 'about:client');
+    assert_equals(new Request(URL).referrerPolicy, '');
   }, 'Request without RequestInit.');
 
 test(function() {
@@ -467,6 +470,37 @@ test(function() {
 
     assert_equals(new Request(URL, {referrer: referrer}).referrer, expected);
   }, 'Request with a relative referrer');
+
+test(() => {
+    assert_equals(new Request('/', {referrerPolicy: ''}).referrerPolicy, '');
+    assert_equals(new Request('/', {referrerPolicy: 'no-referrer'})
+        .referrerPolicy, 'no-referrer');
+    assert_equals(new Request('/',
+        {referrerPolicy: 'no-referrer-when-downgrade'}).referrerPolicy,
+        'no-referrer-when-downgrade');
+    assert_equals(new Request('/', {referrerPolicy: 'origin'})
+        .referrerPolicy, 'origin');
+    assert_equals(new Request('/', {referrerPolicy: 'origin-when-cross-origin'})
+        .referrerPolicy, 'origin-when-cross-origin');
+    assert_equals(new Request('/', {referrerPolicy: 'unsafe-url'})
+        .referrerPolicy, 'unsafe-url');
+    assert_throws(
+        {name: 'TypeError'},
+        () => new Request('/', {referrerPolicy: 'invalid'}),
+        'Setting invalid referrer policy should be thrown.');
+  }, 'Referrer policy settings');
+
+test(() => {
+    let r = new Request('/', {referrerPolicy: 'origin'});
+    assert_equals(r.referrerPolicy, 'origin', 'original policy');
+
+    assert_equals(new Request(r, {foo: 32}).referrerPolicy,
+        'origin', 'kept original policy');
+    assert_equals(new Request(r, {mode: 44}).referrerPolicy,
+        '', 'cleared policy');
+    assert_equals(new Request(r, {referrerPolicy: 'unsafe-url'}).referrerPolicy,
+        'unsafe-url', 'overriden policy');
+  }, 'Referrer policy should be cleared when any members are set');
 
 // Spec: https://fetch.spec.whatwg.org/#dom-request
 // Step 21:
