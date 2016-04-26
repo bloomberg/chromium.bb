@@ -194,7 +194,6 @@ svg/dom/SVGStyleElement/style-langspace.html
 svg/foreignObject/absolute-position-foreign-object-child-crash.html
 svg/foreignObject/fO-fixed-position-crash.html
 svg/in-html/svg-assert-failure-percentage.html
-svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml
 svg/stroke/zero-width-hang.html
 svg/text/tspan-getComputedTextLength.svg
 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg
