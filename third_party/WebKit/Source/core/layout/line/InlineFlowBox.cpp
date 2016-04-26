@@ -460,13 +460,15 @@ FontBaseline InlineFlowBox::dominantBaseline() const
 
 void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, int maxPositionTop, int maxPositionBottom)
 {
+    int originalMaxAscent = maxAscent;
+    int originalMaxDescent = maxDescent;
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
         // The computed lineheight needs to be extended for the
         // positioned elements
         if (curr->getLineLayoutItem().isOutOfFlowPositioned())
             continue; // Positioned placeholders don't affect calculations.
         if (curr->verticalAlign() == VerticalAlignTop || curr->verticalAlign() == VerticalAlignBottom) {
-            int lineHeight = curr->lineHeight();
+            int lineHeight = curr->lineHeight().round();
             if (curr->verticalAlign() == VerticalAlignTop) {
                 if (maxAscent + maxDescent < lineHeight)
                     maxDescent = lineHeight - maxAscent;
@@ -477,6 +479,8 @@ void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, i
 
             if (maxAscent + maxDescent >= std::max(maxPositionTop, maxPositionBottom))
                 break;
+            maxAscent = originalMaxAscent;
+            maxDescent = originalMaxDescent;
         }
 
         if (curr->isInlineFlowBox())
