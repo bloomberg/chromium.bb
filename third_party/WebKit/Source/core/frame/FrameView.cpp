@@ -1781,6 +1781,7 @@ void FrameView::layoutOrthogonalWritingModeRoots()
 void FrameView::scheduleRelayout()
 {
     ASSERT(m_frame->view() == this);
+    RELEASE_ASSERT(!isInPerformLayout());
 
     if (!m_layoutSchedulingEnabled)
         return;
@@ -1803,6 +1804,7 @@ void FrameView::scheduleRelayout()
 void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
 {
     ASSERT(m_frame->view() == this);
+    RELEASE_ASSERT(!isInPerformLayout());
 
     // FIXME: Should this call shouldScheduleLayout instead?
     if (!m_frame->document()->isActive())

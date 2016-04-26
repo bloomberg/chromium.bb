@@ -752,10 +752,12 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, SubtreeLay
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     ASSERT(!layouter || this != layouter->root());
-    // When we have a layouter, it means that we're in layout and we're marking
-    // a descendant as needing layout with the intention of visiting it during
-    // this layout. We shouldn't be scheduling it to be laid out later.
-    ASSERT(!scheduleRelayout || !layouter);
+    // When we're in layout, we're marking a descendant as needing layout with
+    // the intention of visiting it during this layout. We shouldn't be
+    // scheduling it to be laid out later.
+    // Also, scheduleRelayout() must not be called while iterating
+    // FrameView::m_layoutSubtreeRootList.
+    scheduleRelayout &= !frameView()->isInPerformLayout();
 
     LayoutObject* object = container();
     LayoutObject* last = this;
