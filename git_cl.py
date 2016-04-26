@@ -2175,6 +2175,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
 
+  def GetApprovingReviewers(self):
+    """Returns a list of reviewers approving the change.
+
+    Note: not necessarily committers.
+    """
+    raise NotImplementedError()
+
   def SubmitIssue(self, wait_for_merge=True):
     gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
                              wait_for_merge=wait_for_merge)
