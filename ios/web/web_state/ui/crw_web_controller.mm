@@ -1122,7 +1122,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)dealloc {
   DCHECK([NSThread isMainThread]);
   DCHECK(_isBeingDestroyed);  // 'close' must have been called already.
-  DCHECK(!self.webView);
+  DCHECK(!_webView);
   _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
   [[_webViewProxy scrollViewProxy] removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -1136,7 +1136,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)dismissKeyboard {
-  [self.webView endEditing:YES];
+  [_webView endEditing:YES];
   if ([self.nativeController respondsToSelector:@selector(dismissKeyboard)])
     [self.nativeController dismissKeyboard];
 }
@@ -1236,7 +1236,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)reinitializeWebViewAndReload:(BOOL)reload {
-  if (self.webView) {
+  if (_webView) {
     [self removeWebViewAllowingCachedReconstruction:NO];
     if (reload) {
       [self loadCurrentURLInWebView];
@@ -1311,7 +1311,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)checkLinkPresenceUnderGesture:(UIGestureRecognizer*)gestureRecognizer
                     completionHandler:(void (^)(BOOL))completionHandler {
-  CGPoint webViewPoint = [gestureRecognizer locationInView:self.webView];
+  CGPoint webViewPoint = [gestureRecognizer locationInView:_webView];
   base::WeakNSObject<CRWWebController> weakSelf(self);
   [self
       fetchDOMElementAtPoint:webViewPoint
@@ -1342,7 +1342,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   NSDictionary* info =
       [self contextMenuInfoForElement:_DOMElementForLastTouch.get()];
-  CGPoint point = [gestureRecognizer locationInView:self.webView];
+  CGPoint point = [gestureRecognizer locationInView:_webView];
 
   // Cancelling all touches has the intended side effect of suppressing the
   // system's context menu.
@@ -1350,7 +1350,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self.UIDelegate webController:self
                   runContextMenu:info
                          atPoint:point
-                          inView:self.webView];
+                          inView:_webView];
 }
 
 - (BOOL)supportsCustomContextMenu {
@@ -1414,7 +1414,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)atTop {
-  if (!self.webView)
+  if (!_webView)
     return YES;
   UIScrollView* scrollView = self.webScrollView;
   return scrollView.contentOffset.y == -scrollView.contentInset.top;
@@ -1422,7 +1422,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setShouldSuppressDialogs:(BOOL)shouldSuppressDialogs {
   _shouldSuppressDialogs = shouldSuppressDialogs;
-  if (self.webView) {
+  if (_webView) {
     NSString* const kSetSuppressDialogs = [NSString
         stringWithFormat:@"__gCrWeb.setSuppressGeolocationDialogs(%d);",
                          shouldSuppressDialogs];
@@ -1434,7 +1434,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel) << "Verification of the trustLevel state is mandatory";
-  if (self.webView) {
+  if (_webView) {
     GURL url([self webURLWithTrustLevel:trustLevel]);
     // Web views treat all about: URLs as the same origin, which makes it
     // possible for pages to document.write into about:<foo> pages, where <foo>
@@ -1553,7 +1553,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
   // The current back-forward list item MUST be in the WKWebView's back-forward
   // list to be valid.
-  WKBackForwardList* list = [self.webView backForwardList];
+  WKBackForwardList* list = [_webView backForwardList];
   return list.currentItem == item ||
          [list.forwardList indexOfObject:item] != NSNotFound ||
          [list.backList indexOfObject:item] != NSNotFound;
@@ -1656,7 +1656,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (UIView*)viewForPrinting {
   // TODO(ios): crbug.com/227944. Printing is not supported for native
   // controllers.
-  return self.webView;
+  return _webView;
 }
 
 - (void)registerLoadRequest:(const GURL&)URL {
@@ -1883,8 +1883,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   WKNavigationType navigationType =
       _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
                              : WKNavigationTypeOther;
-  holder->set_back_forward_list_item(
-      [self.webView backForwardList].currentItem);
+  holder->set_back_forward_list_item([_webView backForwardList].currentItem);
   holder->set_navigation_type(navigationType);
 
   // Only update the MIME type in the holder if there was MIME type information
@@ -2103,7 +2102,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // Don't reset the overlay flag if in preview mode.
     if (!_overlayPreviewMode)
       _usePlaceholderOverlay = NO;
-  } else if (_requireReloadOnDisplay && self.webView) {
+  } else if (_requireReloadOnDisplay && _webView) {
     _requireReloadOnDisplay = NO;
     [self addPlaceholderOverlay];
     [self loadCurrentURL];
@@ -2131,7 +2130,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // cancelled.
   _lastUserInteraction.reset();
   web::RecordAction(UserMetricsAction("Reload"));
-  if (self.webView) {
+  if (_webView) {
     web::NavigationItem* transientItem =
         _webStateImpl->GetNavigationManagerImpl().GetTransientItem();
     if (transientItem) {
@@ -2202,7 +2201,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Make sure any transitions that may have occurred have been seen and acted
   // on by the CRWWebController, so the history stack and state of the
   // CRWWebController is 100% up to date before the stack navigation starts.
-  if (self.webView) {
+  if (_webView) {
     [self injectWindowID];
   }
 
@@ -2272,7 +2271,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (_loadPhase != web::PAGE_LOADING)
     return;
 
-  DCHECK(self.webView);
+  DCHECK(_webView);
 
   const GURL currentURL([self currentURL]);
 
@@ -2372,7 +2371,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([_gestureRecognizers containsObject:recognizer])
     return;
 
-  [self.webView addGestureRecognizer:recognizer];
+  [_webView addGestureRecognizer:recognizer];
   [_gestureRecognizers addObject:recognizer];
 }
 
@@ -2380,7 +2379,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (![_gestureRecognizers containsObject:recognizer])
     return;
 
-  [self.webView removeGestureRecognizer:recognizer];
+  [_webView removeGestureRecognizer:recognizer];
   [_gestureRecognizers removeObject:recognizer];
 }
 
@@ -2389,7 +2388,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([_webViewToolbars containsObject:toolbarView])
     return;
   [_webViewToolbars addObject:toolbarView];
-  if (self.webView)
+  if (_webView)
     [_containerView addToolbar:toolbarView];
 }
 
@@ -2397,7 +2396,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (![_webViewToolbars containsObject:toolbarView])
     return;
   [_webViewToolbars removeObject:toolbarView];
-  if (self.webView)
+  if (_webView)
     [_containerView removeToolbar:toolbarView];
 }
 
@@ -2468,13 +2467,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)evaluateJavaScript:(NSString*)script
        stringResultHandler:(web::JavaScriptCompletion)handler {
   NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
-  web::EvaluateJavaScript(self.webView, safeScript, handler);
+  web::EvaluateJavaScript(_webView, safeScript, handler);
 }
 
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
   NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
-  web::ExecuteJavaScript(self.webView, safeScript, completionHandler);
+  web::ExecuteJavaScript(_webView, safeScript, completionHandler);
 }
 
 - (BOOL)scriptHasBeenInjectedForClass:(Class)JSInjectionManagerClass
@@ -2489,7 +2488,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // Every injection except windowID requires windowID check.
     if (JSInjectionManagerClass != [CRWJSWindowIdManager class])
       script = [self scriptByAddingWindowIDCheckForScript:script];
-    web::ExecuteJavaScript(self.webView, script, nil);
+    web::ExecuteJavaScript(_webView, script, nil);
   }
   [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
@@ -2498,7 +2497,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)evaluateUserJavaScript:(NSString*)script {
   [self setUserInteractionRegistered:YES];
-  web::ExecuteJavaScript(self.webView, script, nil);
+  web::ExecuteJavaScript(_webView, script, nil);
 }
 
 - (BOOL)respondToMessage:(base::DictionaryValue*)message
@@ -2631,7 +2630,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [scriptMessage.name isEqualToString:kScriptMessageName]) {
     return [self respondToMessage:command
                 userIsInteracting:[self userIsInteracting]
-                        originURL:net::GURLWithNSURL([self.webView URL])];
+                        originURL:net::GURLWithNSURL([_webView URL])];
   }
 
   NOTREACHED();
@@ -3290,7 +3289,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // The WebDelegate may instruct the CRWWebController to stop loading, and
   // instead instruct the next page to be loaded in an animation.
   GURL mainDocumentURL = net::GURLWithNSURL(request.mainDocumentURL);
-  DCHECK(self.webView);
+  DCHECK(_webView);
   if (![self shouldOpenURL:requestURL
            mainDocumentURL:mainDocumentURL
                linkClicked:isLinkClick]) {
@@ -3496,7 +3495,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self setDOMElementForLastTouch:nullptr];
   base::WeakNSObject<CRWWebController> weakSelf(self);
   [self
-      fetchDOMElementAtPoint:[touch locationInView:self.webView]
+      fetchDOMElementAtPoint:[touch locationInView:_webView]
            completionHandler:^(std::unique_ptr<base::DictionaryValue> element) {
              [weakSelf setDOMElementForLastTouch:std::move(element)];
            }];
@@ -3506,7 +3505,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   // Expect only _contextMenuRecognizer.
   DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
-  if (!self.webView || ![self supportsCustomContextMenu]) {
+  if (!_webView || ![self supportsCustomContextMenu]) {
     // Show the context menu iff currently displaying a web view.
     // Do nothing for native views.
     return NO;
@@ -3851,8 +3850,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // There are cases when resetting the contentView, above, may happen after
     // the web view has been created. Re-add it here, rather than
     // relying on a subsequent call to loadCurrentURLInWebView.
-    if (self.webView) {
-      [[self view] addSubview:self.webView];
+    if (_webView) {
+      [[self view] addSubview:_webView];
     }
   }
 }
@@ -3988,7 +3987,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (web::PageDisplayState)pageDisplayState {
   web::PageDisplayState displayState;
-  if (self.webView) {
+  if (_webView) {
     CGPoint scrollOffset = [self scrollPosition];
     displayState.scroll_state().set_offset_x(std::floor(scrollOffset.x));
     displayState.scroll_state().set_offset_y(std::floor(scrollOffset.y));
@@ -4007,7 +4006,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)setPageDisplayState:(web::PageDisplayState)displayState {
   if (!displayState.IsValid())
     return;
-  if (self.webView) {
+  if (_webView) {
     // Page state is restored after a page load completes.  If the user has
     // scrolled or changed the zoom scale while the page is still loading, don't
     // restore any state since it will confuse the user.
@@ -4055,7 +4054,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // - After zooming occurs in a UIWebView that's displaying a page with a hard-
   // coded viewport width, the zoom will not be updated upon rotation
   // ( crbug.com/485055 ).
-  if (!self.webView)
+  if (!_webView)
     return;
   web::NavigationItem* currentItem = self.currentNavItem;
   if (!currentItem)
@@ -4111,7 +4110,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)prepareToApplyWebViewScrollZoomScale {
-  id webView = self.webView;
+  id webView = _webView;
   if (![webView respondsToSelector:@selector(viewForZoomingInScrollView:)]) {
     return;
   }
@@ -4126,7 +4125,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)finishApplyingWebViewScrollZoomScale {
-  id webView = self.webView;
+  id webView = _webView;
   if ([webView respondsToSelector:@selector(scrollViewDidEndZooming:
                                                            withView:
                                                             atScale:)] &&
@@ -4181,7 +4180,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark Web Page Features
 
 - (void)fetchWebPageWidthWithCompletionHandler:(void (^)(CGFloat))handler {
-  if (!self.webView) {
+  if (!_webView) {
     handler(0);
     return;
   }
@@ -4437,8 +4436,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_SSLStatusUpdater setDelegate:self];
   }
   NSString* host = base::SysUTF8ToNSString(_documentURL.host());
-  NSArray* certChain = [self.webView certificateChain];
-  BOOL hasOnlySecureContent = [self.webView hasOnlySecureContent];
+  NSArray* certChain = [_webView certificateChain];
+  BOOL hasOnlySecureContent = [_webView hasOnlySecureContent];
   [_SSLStatusUpdater updateSSLStatusForNavigationItem:currentNavItem
                                          withCertHost:host
                                             certChain:certChain
@@ -4546,13 +4545,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // tests with fake web view, which cannot be added to view hierarchy.
     CHECK(_webUsageEnabled) << "Tried to create a web view while suspended!";
 
-    UIView* webView = self.webView;
-    DCHECK(webView);
+    DCHECK(_webView);
 
-    [webView setTag:kWebViewTag];
-    [webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                                 UIViewAutoresizingFlexibleHeight];
-    [webView setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
+    [_webView setTag:kWebViewTag];
+    [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                  UIViewAutoresizingFlexibleHeight];
+    [_webView setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
 
     // Create a dependency between the |webView| pan gesture and BVC side swipe
     // gestures. Note: This needs to be added before the longPress recognizers
@@ -4584,7 +4582,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_contextMenuRecognizer setMinimumPressDuration:kLongPressDurationSeconds];
     [_contextMenuRecognizer setAllowableMovement:kLongPressMoveDeltaPixels];
     [_contextMenuRecognizer setDelegate:self];
-    [webView addGestureRecognizer:_contextMenuRecognizer];
+    [_webView addGestureRecognizer:_contextMenuRecognizer];
     // Certain system gesture handlers are known to conflict with our context
     // menu handler, causing extra events to fire when the context menu is
     // active.
@@ -4599,13 +4597,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // brittle for future versions of iOS. If it does break the context menu
     // events may leak (regressing b/5310177), but the app will otherwise work.
     [CRWWebController requireGestureRecognizerToFail:_contextMenuRecognizer
-                                              inView:webView
+                                              inView:_webView
                                containingDescription:
                                    @"action=_highlightLongPressRecognized:"];
 
     // Add all additional gesture recognizers to the web view.
     for (UIGestureRecognizer* recognizer in _gestureRecognizers.get()) {
-      [webView addGestureRecognizer:recognizer];
+      [_webView addGestureRecognizer:recognizer];
     }
 
     _URLOnStartLoading = _defaultURL;
@@ -4614,7 +4612,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_containerView addToolbars:_webViewToolbars];
 
     base::scoped_nsobject<CRWWebViewContentView> webViewContentView(
-        [[CRWWebViewContentView alloc] initWithWebView:self.webView
+        [[CRWWebViewContentView alloc] initWithWebView:_webView
                                             scrollView:self.webScrollView]);
     [_containerView displayWebViewContentView:webViewContentView];
   }
@@ -4669,7 +4667,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)removeWebViewAllowingCachedReconstruction:(BOOL)allowCache {
-  if (!self.webView)
+  if (!_webView)
     return;
 
   SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
@@ -4682,7 +4680,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _expectedReconstructionURL = GURL();
 
   [self abortLoad];
-  [self.webView removeFromSuperview];
+  [_webView removeFromSuperview];
   [_containerView resetContent];
   [self setWebView:nil];
 }
@@ -4706,7 +4704,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (web::WebViewDocumentType)webViewDocumentType {
   // This happens during tests.
-  if (!self.webView) {
+  if (!_webView) {
     return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
   }
 
@@ -4715,7 +4713,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadRequest:(NSMutableURLRequest*)request {
-  _latestWKNavigation.reset([[self.webView loadRequest:request] retain]);
+  _latestWKNavigation.reset([[_webView loadRequest:request] retain]);
 }
 
 - (void)loadPOSTRequest:(NSMutableURLRequest*)request {
@@ -4741,10 +4739,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the transient content view.
   [self clearTransientContentView];
 
-  DLOG_IF(WARNING, !self.webView)
-      << "self.webView null while trying to load HTML";
+  DLOG_IF(WARNING, !_webView) << "_webView null while trying to load HTML";
   _loadPhase = web::LOAD_REQUESTED;
-  [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
+  [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
 }
 
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
@@ -4806,7 +4803,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // makes a shallow copy of the config inside init, so every WKWebView
   // owns a separate shallow copy of WKWebViewConfiguration.
   [child ensureWebViewCreatedWithConfiguration:configuration];
-  return [child webView];
+  return child.webView;
 }
 
 - (void)webViewDidClose:(WKWebView*)webView {
@@ -5070,7 +5067,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
-  DCHECK_EQ(self.webView, webView);
+  DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -5079,7 +5076,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // This is the point where the document's URL has actually changed, and
   // pending navigation information should be applied to state information.
-  [self setDocumentURL:net::GURLWithNSURL([self.webView URL])];
+  [self setDocumentURL:net::GURLWithNSURL([_webView URL])];
   DCHECK(_documentURL == _lastRegisteredRequestURL);
   self.webStateImpl->OnNavigationCommitted(_documentURL);
   [self commitPendingNavigationInfo];
@@ -5101,7 +5098,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Report cases where SSL cert is missing for a secure connection.
   if (_documentURL.SchemeIsCryptographic()) {
     scoped_refptr<net::X509Certificate> cert =
-        web::CreateCertFromChain([self.webView certificateChain]);
+        web::CreateCertFromChain([_webView certificateChain]);
     UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
                           cert);
   }
@@ -5231,7 +5228,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)webViewLoadingStateDidChange {
-  if ([self.webView isLoading]) {
+  if ([_webView isLoading]) {
     [self addActivityIndicatorTask];
   } else {
     [self clearActivityIndicatorTasks];
@@ -5263,11 +5260,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webViewURLDidChange {
   // TODO(stuartmorgan): Determine if there are any cases where this still
   // happens, and if so whether anything should be done when it does.
-  if (![self.webView URL]) {
+  if (![_webView URL]) {
     DVLOG(1) << "Received nil URL callback";
     return;
   }
-  GURL URL(net::GURLWithNSURL([self.webView URL]));
+  GURL URL(net::GURLWithNSURL([_webView URL]));
   // URL changes happen at three points:
   // 1) When a load starts; at this point, the load is provisional, and
   //    it should be ignored until it's committed, since the document/window
@@ -5294,17 +5291,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // spoof the origin. On a document-changing URL change, the
   // window.location.href will match the previous URL at this stage, not the web
   // view's current URL.
-  if (![self.webView isLoading]) {
+  if (![_webView isLoading]) {
     if (_documentURL == URL)
       return;
     [self URLDidChangeWithoutDocumentChange:URL];
   } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
-    [self.webView
+    [_webView
         evaluateJavaScript:@"window.location.href"
          completionHandler:^(id result, NSError* error) {
            // If the web view has gone away, or the location
            // couldn't be retrieved, abort.
-           if (!self.webView || ![result isKindOfClass:[NSString class]]) {
+           if (!_webView || ![result isKindOfClass:[NSString class]]) {
              return;
            }
            GURL JSURL([result UTF8String]);
@@ -5323,7 +5320,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
            // change occurs immediately after. Revisit heuristics to
            // prevent this.
            BOOL webViewURLMatchesNewURL =
-               net::GURLWithNSURL([self.webView URL]) == URL;
+               net::GURLWithNSURL([_webView URL]) == URL;
            // Check that the new URL is different from the current
            // document URL. If not, URL change should not be reported.
            BOOL URLDidChangeFromDocumentURL = URL != _documentURL;
@@ -5337,7 +5334,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
-  DCHECK([self.webView isLoading]);
+  DCHECK([_webView isLoading]);
   // If the origin changes, it can't be same-document.
   if (_documentURL.GetOrigin().is_empty() ||
       _documentURL.GetOrigin() != newURL.GetOrigin()) {
@@ -5356,7 +5353,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
-  DCHECK(newURL == net::GURLWithNSURL([self.webView URL]));
+  DCHECK(newURL == net::GURLWithNSURL([_webView URL]));
   DCHECK_EQ(_documentURL.host(), newURL.host());
   DCHECK(_documentURL != newURL);
 
@@ -5400,14 +5397,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadRequestForCurrentNavigationItem {
-  DCHECK(self.webView && !self.nativeController);
+  DCHECK(_webView && !self.nativeController);
   DCHECK([self currentSessionEntry]);
   // If a load is kicked off on a WKWebView with a frame whose size is {0, 0} or
   // that has a negative dimension for a size, rendering issues occur that
   // manifest in erroneous scrolling and tap handling (crbug.com/574996,
   // crbug.com/577793).
-  DCHECK_GT(CGRectGetWidth(self.webView.frame), 0.0);
-  DCHECK_GT(CGRectGetHeight(self.webView.frame), 0.0);
+  DCHECK_GT(CGRectGetWidth([_webView frame]), 0.0);
+  DCHECK_GT(CGRectGetHeight([_webView frame]), 0.0);
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
@@ -5457,10 +5454,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self registerLoadRequest:[self currentNavigationURL]
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
-    if ([self currentNavigationURL] == net::GURLWithNSURL([self.webView URL])) {
-      [self.webView reload];
+    if ([self currentNavigationURL] == net::GURLWithNSURL([_webView URL])) {
+      [_webView reload];
     } else {
-      [self.webView goToBackForwardListItem:holder->back_forward_list_item()];
+      [_webView goToBackForwardListItem:holder->back_forward_list_item()];
     }
   };
 
