@@ -13,8 +13,6 @@ crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
 
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure Pass ]
 
-crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
-
 crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
 crbug.com/420008 virtual/threaded/inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
 crbug.com/596940 inspector-protocol/runtime/runtime-execution-contexts-events.html [ Pass Timeout ]

@@ -765,9 +765,16 @@ function shouldHaveHadError(message)
 // that something is dead need to use this asynchronous collectGarbage
 // function.
 function asyncGC(callback) {
+    var documentsBefore = window.internals.numberOfLiveDocuments();
     GCController.collectAll();
     // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(callback, 0);
+    setTimeout(function () {
+        var documentsAfter = window.internals.numberOfLiveDocuments();
+        if (documentsAfter < documentsBefore)
+            asyncGC(callback);
+        else
+            callback();
+    }, 0);
 }
 
 function gc() {
