@@ -322,10 +322,7 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   SSLInfo ssl_info;
   // QUIC supports only secure urls.
   if (GetSSLInfo(&ssl_info) && ssl_info.cert.get()) {
-    if (port_selected) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTPS",
-                                  round_trip_handshakes, 0, 3, 4);
-    } else {
+    if (!port_selected) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTPS",
                                   round_trip_handshakes, 0, 3, 4);
       if (require_confirmation_) {

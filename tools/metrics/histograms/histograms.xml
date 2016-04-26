@@ -92621,7 +92621,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.QuicSession.ConnectRandomPort"/>
   <affected-histogram
       name="Net.QuicSession.ConnectRandomPortRequiringConfirmation"/>
-  <affected-histogram name="Net.QuicSession.ConnectSelectPort"/>
+  <affected-histogram name="Net.QuicSession.ConnectSelectPort">
+    <obsolete>
+      Deprecated 04/2016.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="Net.QuicSession.HandshakeRoundTrips"/>
 </histogram_suffixes>
 
