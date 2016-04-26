@@ -16,7 +16,7 @@ from xml.dom import minidom
 
 from util import build_utils
 
-
+_LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md' # pylint: disable=line-too-long
 _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                          '..', '..', '..'))
 
@@ -196,17 +196,12 @@ def _OnStaleMd5(lint_path, config_path, processed_config_path,
 
       _ProcessResultFile()
       msg = ('\nLint found %d new issues.\n'
-             ' - For full explanation refer to %s\n' %
+             ' - For full explanation, please refer to %s\n'
+             ' - For more information about lint and how to fix lint issues,'
+             ' please refer to %s\n' %
              (num_issues,
-              _RelativizePath(result_path)))
-      if config_path:
-        msg += (' - Wanna suppress these issues?\n'
-                '    1. Read comment in %s\n'
-                '    2. Run "python %s %s"\n' %
-                (_RelativizePath(config_path),
-                 _RelativizePath(os.path.join(_SRC_ROOT, 'build', 'android',
-                                              'lint', 'suppress.py')),
-                 _RelativizePath(result_path)))
+              _RelativizePath(result_path),
+              _LINT_MD_URL))
       if not silent:
         print >> sys.stderr, msg
       if can_fail_build:
