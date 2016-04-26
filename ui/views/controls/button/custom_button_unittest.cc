@@ -435,11 +435,12 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
             button()->state());
 }
 
-TEST_F(CustomButtonTest, InkDropAfterShowingContextMenu) {
+TEST_F(CustomButtonTest, HideInkDropWhenShowingContextMenu) {
   TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
   TestContextMenuController context_menu_controller;
   button()->set_context_menu_controller(&context_menu_controller);
+  button()->set_hide_ink_drop_when_showing_context_menu(true);
 
   ink_drop_delegate->SetHovered(true);
   ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
@@ -448,6 +449,22 @@ TEST_F(CustomButtonTest, InkDropAfterShowingContextMenu) {
 
   EXPECT_FALSE(ink_drop_delegate->is_hovered());
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->state());
+}
+
+TEST_F(CustomButtonTest, DontHideInkDropWhenShowingContextMenu) {
+  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+  TestContextMenuController context_menu_controller;
+  button()->set_context_menu_controller(&context_menu_controller);
+  button()->set_hide_ink_drop_when_showing_context_menu(false);
+
+  ink_drop_delegate->SetHovered(true);
+  ink_drop_delegate->OnAction(InkDropState::ACTION_PENDING);
+
+  button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
+
+  EXPECT_TRUE(ink_drop_delegate->is_hovered());
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop_delegate->state());
 }
 
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {

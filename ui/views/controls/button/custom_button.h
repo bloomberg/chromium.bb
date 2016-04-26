@@ -76,6 +76,12 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
     notify_action_ = notify_action;
   }
 
+  void set_hide_ink_drop_when_showing_context_menu(
+      bool hide_ink_drop_when_showing_context_menu) {
+    hide_ink_drop_when_showing_context_menu_ =
+        hide_ink_drop_when_showing_context_menu;
+  }
+
   void set_ink_drop_base_color(SkColor color) { ink_drop_base_color_ = color; }
 
   void SetHotTracked(bool is_hot_tracked);
@@ -196,6 +202,10 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // The animation action to trigger on the |ink_drop_delegate_| when the button
   // is clicked.
   InkDropState ink_drop_action_on_click_;
+
+  // When true, the ink drop ripple and hover will be hidden prior to showing
+  // the context menu.
+  bool hide_ink_drop_when_showing_context_menu_;
 
   // The color of the ripple and hover.
   SkColor ink_drop_base_color_;

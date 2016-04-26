@@ -341,7 +341,7 @@ void CustomButton::ShowContextMenu(const gfx::Point& p,
   // we won't get a mouse exited and reset state. Reset it now to be sure.
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
-  if (ink_drop_delegate_) {
+  if (hide_ink_drop_when_showing_context_menu_ && ink_drop_delegate_) {
     ink_drop_delegate_->SetHovered(false);
     ink_drop_delegate_->OnAction(InkDropState::HIDDEN);
   }
@@ -443,6 +443,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       notify_action_(NOTIFY_ON_RELEASE),
       has_ink_drop_action_on_click_(false),
       ink_drop_action_on_click_(InkDropState::ACTION_TRIGGERED),
+      hide_ink_drop_when_showing_context_menu_(true),
       ink_drop_base_color_(gfx::kPlaceholderColor),
       md_focus_ring_(nullptr) {
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);

@@ -177,6 +177,7 @@ void ToolbarView::Init() {
   back_ = new BackButton(
       browser_->profile(), this,
       new BackForwardMenuModel(browser_, BackForwardMenuModel::BACKWARD_MENU));
+  back_->set_hide_ink_drop_when_showing_context_menu(false);
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   back_->set_tag(IDC_BACK);
@@ -188,6 +189,7 @@ void ToolbarView::Init() {
   forward_ = new ToolbarButton(
       browser_->profile(), this,
       new BackForwardMenuModel(browser_, BackForwardMenuModel::FORWARD_MENU));
+  forward_->set_hide_ink_drop_when_showing_context_menu(false);
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   forward_->set_tag(IDC_FORWARD);
