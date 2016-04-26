@@ -507,8 +507,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 // Returns YES if the user interacted with the page recently.
 @property(nonatomic, readonly) BOOL userClickedRecently;
-// YES if the web process backing _wkWebView is believed to currently be dead.
-@property(nonatomic, assign) BOOL webProcessIsDead;
 // Returns whether the desktop user agent should be used when setting the user
 // agent.
 @property(nonatomic, readonly) BOOL useDesktopUserAgent;
@@ -573,8 +571,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config;
 // Sets the value of the webView property, and performs its basic setup.
 - (void)setWebView:(WKWebView*)webView;
-// Destroys the web view by setting webView property to nil.
-- (void)resetWebView;
 // Removes webView, optionally tracking the URL of the evicted
 // page for later cache-based reconstruction.
 - (void)removeWebViewAllowingCachedReconstruction:(BOOL)allowCache;
@@ -697,8 +693,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // the URL don't incorrectly trigger |-pageChanged| calls.
 - (void)setPushedOrReplacedURL:(const GURL&)URL
                    stateObject:(NSString*)stateObject;
-// Called before loading current URL in WebView.
-- (void)willLoadCurrentURLInWebView;
 - (BOOL)isLoaded;
 // Extracts the current page's viewport tag information and calls |completion|.
 // If the page has changed before the viewport tag is successfully extracted,
@@ -752,9 +746,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (web::Referrer)currentReferrer;
 // Asynchronously returns the referrer policy for the current page.
 - (void)queryPageReferrerPolicy:(void (^)(NSString*))responseHandler;
-// Returns the referrer policy for the given referrer policy string (as reported
-// from JS).
-- (web::ReferrerPolicy)referrerPolicyFromString:(const std::string&)policy;
 // Adds a new CRWSessionEntry with the given URL and state object to the history
 // stack. A state object is a serialized generic JavaScript object that contains
 // details of the UI's state for a given CRWSessionEntry/URL.
@@ -774,16 +765,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns whether the given navigation is triggered by a user link click.
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
 
-// Resets the set of script managers whose scripts have been injected into the
-// current page to an empty list.
-- (void)clearInjectedScriptManagers;
 // Inject windowID if not yet injected.
 - (void)injectWindowID;
-// Subclasses must call this method every time when web view has been created
-// or recreated. This method should not be called if a web view property has
-// changed (e.g. view's background color). Web controller adds |webView| to its
-// content view.
-- (void)webViewDidChange;
 // Creates a new opened by DOM window and returns its autoreleased web
 // controller.
 - (CRWWebController*)createChildWebController;
@@ -996,8 +979,6 @@ namespace {
 
 NSString* const kReferrerHeaderName = @"Referer";  // [sic]
 
-// Full screen experimental setting.
-
 // The long press detection duration must be shorter than the UIWebView's
 // long click gesture recognizer's minimum duration. That is 0.55s.
 // If our detection duration is shorter, our gesture recognizer will fire
@@ -1138,14 +1119,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setUIDelegate:(id<CRWWebUserInterfaceDelegate>)UIDelegate {
   _UIDelegate.reset(UIDelegate);
-}
-
-- (BOOL)webProcessIsDead {
-  return _webProcessIsDead;
-}
-
-- (void)setWebProcessIsDead:(BOOL)webProcessIsDead {
-  _webProcessIsDead = webProcessIsDead;
 }
 
 - (void)dealloc {
@@ -1533,12 +1506,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
        }];
 }
 
-- (web::ReferrerPolicy)referrerPolicyFromString:(const std::string&)policy {
-  // TODO(stuartmorgan): Remove this temporary bridge to the helper function
-  // once the referrer handling moves into the subclasses.
-  return web::ReferrerPolicyFromString(policy);
-}
-
 - (void)pushStateWithPageURL:(const GURL&)pageURL
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition {
@@ -1629,10 +1596,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return newEndURL;
 }
 
-- (void)clearInjectedScriptManagers {
-  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
-}
-
 - (void)injectWindowID {
   if (![_windowIDJSManager hasBeenInjected]) {
     // Default value for shouldSuppressDialogs is NO, so updating them only
@@ -1668,77 +1631,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       }
     }
   }
-}
-
-- (void)webViewDidChange {
-  CHECK(_webUsageEnabled) << "Tried to create a web view while suspended!";
-
-  UIView* webView = self.webView;
-  DCHECK(webView);
-
-  [webView setTag:kWebViewTag];
-  [webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                               UIViewAutoresizingFlexibleHeight];
-  [webView setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
-
-  // Create a dependency between the |webView| pan gesture and BVC side swipe
-  // gestures. Note: This needs to be added before the longPress recognizers
-  // below, or the longPress appears to deadlock the remaining recognizers,
-  // thereby breaking scroll.
-  NSSet* recognizers = [_swipeRecognizerProvider swipeRecognizers];
-  for (UISwipeGestureRecognizer* swipeRecognizer in recognizers) {
-    [self.webScrollView.panGestureRecognizer
-        requireGestureRecognizerToFail:swipeRecognizer];
-  }
-
-  // On iOS 4.x, there are two gesture recognizers on the UIWebView subclasses,
-  // that have a minimum tap threshold of 0.12s and 0.75s.
-  //
-  // My theory is that the shorter threshold recognizer performs the link
-  // highlight (grey highlight around links when it is tapped and held) while
-  // the longer threshold one pops up the context menu.
-  //
-  // To override the context menu, this recognizer needs to react faster than
-  // the 0.75s one. The below gesture recognizer is initialized with a
-  // detection duration a little lower than that (see
-  // kLongPressDurationSeconds). It also points the delegate to this class that
-  // allows simultaneously operate along with the other recognizers.
-  _contextMenuRecognizer.reset([[UILongPressGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(showContextMenu:)]);
-  [_contextMenuRecognizer setMinimumPressDuration:kLongPressDurationSeconds];
-  [_contextMenuRecognizer setAllowableMovement:kLongPressMoveDeltaPixels];
-  [_contextMenuRecognizer setDelegate:self];
-  [webView addGestureRecognizer:_contextMenuRecognizer];
-  // Certain system gesture handlers are known to conflict with our context
-  // menu handler, causing extra events to fire when the context menu is active.
-
-  // A number of solutions have been investigated. The lowest-risk solution
-  // appears to be to recurse through the web controller's recognizers, looking
-  // for fingerprints of the recognizers known to cause problems, which are then
-  // de-prioritized (below our own long click handler).
-  // Hunting for description fragments of system recognizers is undeniably
-  // brittle for future versions of iOS. If it does break the context menu
-  // events may leak (regressing b/5310177), but the app will otherwise work.
-  [CRWWebController
-      requireGestureRecognizerToFail:_contextMenuRecognizer
-                              inView:webView
-               containingDescription:@"action=_highlightLongPressRecognized:"];
-
-  // Add all additional gesture recognizers to the web view.
-  for (UIGestureRecognizer* recognizer in _gestureRecognizers.get()) {
-    [webView addGestureRecognizer:recognizer];
-  }
-
-  _URLOnStartLoading = _defaultURL;
-
-  // Add the web toolbars.
-  [_containerView addToolbars:_webViewToolbars];
-
-  base::scoped_nsobject<CRWWebViewContentView> webViewContentView(
-      [[CRWWebViewContentView alloc] initWithWebView:self.webView
-                                          scrollView:self.webScrollView]);
-  [_containerView displayWebViewContentView:webViewContentView];
 }
 
 - (CRWWebController*)createChildWebController {
@@ -1886,15 +1778,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
        }];
 }
 
-- (void)willLoadCurrentURLInWebView {
-  // TODO(stuartmorgan): Get a WKWebView version of the request ID verification
-  // code working for debug builds.
-}
-
 // Load the current URL in a web view, first ensuring the web view is visible.
 - (void)loadCurrentURLInWebView {
-  [self willLoadCurrentURLInWebView];
-
   // Clear the set of URLs opened in external applications.
   _openedApplicationURL.reset([[NSMutableSet alloc] init]);
 
@@ -4377,7 +4262,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   std::string referrerPolicy;
   element->GetString("referrerPolicy", &referrerPolicy);
   mutableInfo[web::kContextLinkReferrerPolicy] =
-      @([self referrerPolicyFromString:referrerPolicy]);
+      @(web::ReferrerPolicyFromString(referrerPolicy));
   if (title)
     mutableInfo[web::kContextTitle] = title;
   return [[mutableInfo copy] autorelease];
@@ -4433,7 +4318,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                    sourceURL:(GURL)sourceURL
               referrerPolicy:(const std::string&)referrerPolicyString {
   web::ReferrerPolicy referrerPolicy =
-      [self referrerPolicyFromString:referrerPolicyString];
+      web::ReferrerPolicyFromString(referrerPolicyString);
   web::Referrer referrer(sourceURL, referrerPolicy);
   NSString* const kWindowName = @"";  // obsoleted
   base::WeakNSObject<CRWWebController> weakSelf(self);
@@ -4663,10 +4548,81 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config {
   if (!_webView) {
     [self setWebView:[self createWebViewWithConfiguration:config]];
-    // Notify super class about created web view. -webViewDidChange is not
-    // called from -setWebView:scriptMessageRouter: as the latter used in unit
+    // The following is not called in -setWebView: as the latter used in unit
     // tests with fake web view, which cannot be added to view hierarchy.
-    [self webViewDidChange];
+    CHECK(_webUsageEnabled) << "Tried to create a web view while suspended!";
+
+    UIView* webView = self.webView;
+    DCHECK(webView);
+
+    [webView setTag:kWebViewTag];
+    [webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                 UIViewAutoresizingFlexibleHeight];
+    [webView setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
+
+    // Create a dependency between the |webView| pan gesture and BVC side swipe
+    // gestures. Note: This needs to be added before the longPress recognizers
+    // below, or the longPress appears to deadlock the remaining recognizers,
+    // thereby breaking scroll.
+    NSSet* recognizers = [_swipeRecognizerProvider swipeRecognizers];
+    for (UISwipeGestureRecognizer* swipeRecognizer in recognizers) {
+      [self.webScrollView.panGestureRecognizer
+          requireGestureRecognizerToFail:swipeRecognizer];
+    }
+
+    // On iOS 4.x, there are two gesture recognizers on the UIWebView
+    // subclasses,
+    // that have a minimum tap threshold of 0.12s and 0.75s.
+    //
+    // My theory is that the shorter threshold recognizer performs the link
+    // highlight (grey highlight around links when it is tapped and held) while
+    // the longer threshold one pops up the context menu.
+    //
+    // To override the context menu, this recognizer needs to react faster than
+    // the 0.75s one. The below gesture recognizer is initialized with a
+    // detection duration a little lower than that (see
+    // kLongPressDurationSeconds). It also points the delegate to this class
+    // that
+    // allows simultaneously operate along with the other recognizers.
+    _contextMenuRecognizer.reset([[UILongPressGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(showContextMenu:)]);
+    [_contextMenuRecognizer setMinimumPressDuration:kLongPressDurationSeconds];
+    [_contextMenuRecognizer setAllowableMovement:kLongPressMoveDeltaPixels];
+    [_contextMenuRecognizer setDelegate:self];
+    [webView addGestureRecognizer:_contextMenuRecognizer];
+    // Certain system gesture handlers are known to conflict with our context
+    // menu handler, causing extra events to fire when the context menu is
+    // active.
+
+    // A number of solutions have been investigated. The lowest-risk solution
+    // appears to be to recurse through the web controller's recognizers,
+    // looking
+    // for fingerprints of the recognizers known to cause problems, which are
+    // then
+    // de-prioritized (below our own long click handler).
+    // Hunting for description fragments of system recognizers is undeniably
+    // brittle for future versions of iOS. If it does break the context menu
+    // events may leak (regressing b/5310177), but the app will otherwise work.
+    [CRWWebController requireGestureRecognizerToFail:_contextMenuRecognizer
+                                              inView:webView
+                               containingDescription:
+                                   @"action=_highlightLongPressRecognized:"];
+
+    // Add all additional gesture recognizers to the web view.
+    for (UIGestureRecognizer* recognizer in _gestureRecognizers.get()) {
+      [webView addGestureRecognizer:recognizer];
+    }
+
+    _URLOnStartLoading = _defaultURL;
+
+    // Add the web toolbars.
+    [_containerView addToolbars:_webViewToolbars];
+
+    base::scoped_nsobject<CRWWebViewContentView> webViewContentView(
+        [[CRWWebViewContentView alloc] initWithWebView:self.webView
+                                            scrollView:self.webScrollView]);
+    [_containerView displayWebViewContentView:webViewContentView];
   }
 }
 
@@ -4714,12 +4670,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
-  [self clearInjectedScriptManagers];
+  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
   [self setDocumentURL:_defaultURL];
-}
-
-- (void)resetWebView {
-  [self setWebView:nil];
 }
 
 - (void)removeWebViewAllowingCachedReconstruction:(BOOL)allowCache {
@@ -4738,11 +4690,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self abortLoad];
   [self.webView removeFromSuperview];
   [_containerView resetContent];
-  [self resetWebView];
+  [self setWebView:nil];
 }
 
 - (void)webViewWebProcessDidCrash {
-  [self setWebProcessIsDead:YES];
+  _webProcessIsDead = YES;
 
   SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
   if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
@@ -5128,7 +5080,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _certVerificationErrors->Clear();
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
-  [self clearInjectedScriptManagers];
+  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
   [self injectWindowID];
 
   // This is the point where the document's URL has actually changed, and
@@ -5302,7 +5254,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webViewTitleDidChange {
   // WKWebView's title becomes empty when the web process dies; ignore that
   // update.
-  if (self.webProcessIsDead) {
+  if (_webProcessIsDead) {
     DCHECK_EQ([_webView title].length, 0U);
     return;
   }
@@ -5548,7 +5500,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)resetInjectedWebViewContentView {
-  [self resetWebView];
+  [self setWebView:nil];
   [self resetContainerView];
 }
 
@@ -5596,10 +5548,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)setWindowId:(NSString*)windowId {
   return [_windowIDJSManager setWindowId:windowId];
-}
-
-- (void)setURLOnStartLoading:(const GURL&)url {
-  _URLOnStartLoading = url;
 }
 
 - (void)simulateLoadRequestWithURL:(const GURL&)URL {
