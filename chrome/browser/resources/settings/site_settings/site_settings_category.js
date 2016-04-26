@@ -112,4 +112,20 @@ Polymer({
               this.categoryEnabled = enabled;
             }.bind(this));
   },
+
+  /**
+   * A handler for the Add Site button.
+   * @private
+   */
+  onAddSiteTap_: function() {
+    var dialog = document.createElement('add-site-dialog');
+    dialog.category = this.category;
+    this.shadowRoot.appendChild(dialog);
+
+    dialog.open();
+
+    dialog.addEventListener('iron-overlay-closed', function() {
+      dialog.remove();
+    });
+  },
 });

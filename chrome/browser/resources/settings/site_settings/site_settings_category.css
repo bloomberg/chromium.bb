@@ -13,3 +13,7 @@ settings-site-list {
 settings-site-list:last-of-type {
   border-bottom: none;
 }
+
+.button-container {
+  -webkit-margin-start: 18px;
+}

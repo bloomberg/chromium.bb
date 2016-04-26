@@ -765,6 +765,9 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
+      {"addSiteHeader", IDS_SETTINGS_ADD_SITE_HEADER},
+      {"addSiteLink", IDS_SETTINGS_ADD_SITE_LINK},
+      {"addSite", IDS_SETTINGS_ADD_SITE},
       {"embeddedOnHost", IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST},
       {"siteSettingsCategoryPageTitle", IDS_SETTINGS_SITE_SETTINGS_CATEGORY},
       {"siteSettingsCategoryAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},

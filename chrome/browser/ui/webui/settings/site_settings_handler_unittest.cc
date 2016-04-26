@@ -103,6 +103,25 @@ class SiteSettingsHandlerTest : public testing::Test {
     EXPECT_EQ(0U, exceptions->GetSize());
   }
 
+  void ValidatePattern(bool expected_validity, size_t expected_total_calls) {
+    EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ(kCallbackId, callback_id);
+
+    bool success = false;
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+    ASSERT_TRUE(success);
+
+    bool valid;
+    ASSERT_TRUE(data.arg3()->GetAsBoolean(&valid));
+    EXPECT_EQ(expected_validity, valid);
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
@@ -170,6 +189,25 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   // Verify the reset was successful.
   handler.HandleGetExceptionList(&listArgs);
   ValidateNoOrigin(4U);
+}
+
+TEST_F(SiteSettingsHandlerTest, Patterns) {
+  SiteSettingsHandler handler(profile());
+  handler.set_web_ui(web_ui());
+
+  base::ListValue args;
+  std::string pattern("[*.]google.com");
+  args.Append(new base::StringValue(kCallbackId));
+  args.Append(new base::StringValue(pattern));
+  handler.HandleIsPatternValid(&args);
+  ValidatePattern(true, 1U);
+
+  base::ListValue invalid;
+  std::string bad_pattern(";");
+  invalid.Append(new base::StringValue(kCallbackId));
+  invalid.Append(new base::StringValue(bad_pattern));
+  handler.HandleIsPatternValid(&invalid);
+  ValidatePattern(false, 2U);
 }
 
 }  // namespace settings

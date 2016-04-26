@@ -62,6 +62,10 @@ void SiteSettingsHandler::RegisterMessages() {
       "setCategoryPermissionForOrigin",
       base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForOrigin,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "isPatternValid",
+      base::Bind(&SiteSettingsHandler::HandleIsPatternValid,
+                 base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnGetUsageInfo(
@@ -255,6 +259,20 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
           ContentSettingsPattern::Wildcard() :
           ContentSettingsPattern::FromString(secondary_pattern),
       content_type, "", setting);
+}
+
+void SiteSettingsHandler::HandleIsPatternValid(
+    const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  std::string pattern_string;
+  CHECK(args->GetString(1, &pattern_string));
+
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString(pattern_string);
+  ResolveJavascriptCallback(
+      *callback_id, base::FundamentalValue(pattern.IsValid()));
 }
 
 }  // namespace settings

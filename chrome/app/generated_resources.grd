@@ -7824,6 +7824,15 @@ I don't think this site should be blocked!
       <message name="IDS_CONTENT_SETTING_CHANGED_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload
       </message>
+      <message name="IDS_SETTINGS_ADD_SITE_LINK" desc="Link text to show (to open the Add Site dialog)">
+        Add site
+      </message>
+      <message name="IDS_SETTINGS_ADD_SITE_HEADER" desc="Header for the Add Site dialog">
+        Add an exception for a site
+      </message>
+      <message name="IDS_SETTINGS_ADD_SITE" desc="The label for the input box for adding a site">
+        Site
+      </message>
 
       <message name="IDS_IMAGES_TAB_LABEL" desc="Label for Images tab on Content Settings dialog">
         Images
