@@ -7,6 +7,8 @@ PASS knee attribute has correct default value.
 PASS ratio attribute has correct default value.
 PASS attack attribute has correct default value.
 PASS release attribute has correct default value.
+PASS reduction attribute is a number.
+PASS reduction attribute has correct default value.
 PASS successfullyParsed is true
 
 TEST COMPLETE

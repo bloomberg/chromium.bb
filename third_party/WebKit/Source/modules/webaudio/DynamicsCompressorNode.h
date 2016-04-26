@@ -38,7 +38,15 @@ class DynamicsCompressor;
 
 class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
 public:
-    static PassRefPtr<DynamicsCompressorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
+    static PassRefPtr<DynamicsCompressorHandler> create(
+        AudioNode&,
+        float sampleRate,
+        AudioParamHandler& threshold,
+        AudioParamHandler& knee,
+        AudioParamHandler& ratio,
+        AudioParamHandler& attack,
+        AudioParamHandler& release);
+
     ~DynamicsCompressorHandler();
 
     // AudioHandler
@@ -46,8 +54,16 @@ public:
     void initialize() override;
     void clearInternalStateWhenDisabled() override;
 
+    float reductionValue() const { return m_reduction; }
 private:
-    DynamicsCompressorHandler(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
+    DynamicsCompressorHandler(
+        AudioNode&,
+        float sampleRate,
+        AudioParamHandler& threshold,
+        AudioParamHandler& knee,
+        AudioParamHandler& ratio,
+        AudioParamHandler& attack,
+        AudioParamHandler& release);
     double tailTime() const override;
     double latencyTime() const override;
 
@@ -55,7 +71,7 @@ private:
     RefPtr<AudioParamHandler> m_threshold;
     RefPtr<AudioParamHandler> m_knee;
     RefPtr<AudioParamHandler> m_ratio;
-    RefPtr<AudioParamHandler> m_reduction;
+    float m_reduction;
     RefPtr<AudioParamHandler> m_attack;
     RefPtr<AudioParamHandler> m_release;
 
@@ -71,7 +87,7 @@ public:
     AudioParam* threshold() const;
     AudioParam* knee() const;
     AudioParam* ratio() const;
-    AudioParam* reduction() const;
+    float reduction() const;
     AudioParam* attack() const;
     AudioParam* release() const;
 
@@ -82,7 +98,6 @@ private:
     Member<AudioParam> m_threshold;
     Member<AudioParam> m_knee;
     Member<AudioParam> m_ratio;
-    Member<AudioParam> m_reduction;
     Member<AudioParam> m_attack;
     Member<AudioParam> m_release;
 

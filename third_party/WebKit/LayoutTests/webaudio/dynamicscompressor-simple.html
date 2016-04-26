@@ -13,6 +13,7 @@
     <script>
       description("Test pre-emphasis in DynamicsCompressor is removed");
       var context;
+      var compressor;
       var sampleRate = 44100;
       var lengthInSeconds = 1;
       var renderedData;
@@ -43,15 +44,14 @@
                      + " (expected >= " + peakThreshold + ")");
         }
 
+        if (compressor.reduction)
+          testPassed("Reduction value changed as expected.")
+        else
+          testFailed("Reduction value is still the default value of 0.");
         finishJSTest();
       }
 
       function runTest() {
-        if (!window.testRunner) {
-          testRunner.dumpAsTest();
-          testRunner.waitUntilDone();
-        }
-
         window.jsTestIsAsync = true;
       
         context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
@@ -64,7 +64,7 @@
         osc.frequency.value = 15000;
         var gain = context.createGain();
         gain.gain.value = 1.5;
-        var compressor = context.createDynamicsCompressor();
+        compressor = context.createDynamicsCompressor();
         osc.connect(gain);
         gain.connect(compressor);
         compressor.connect(context.destination);
