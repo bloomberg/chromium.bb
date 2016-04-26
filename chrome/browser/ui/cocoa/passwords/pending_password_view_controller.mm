@@ -18,7 +18,8 @@
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 
-const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
+constexpr SkColor kWarmWelcomeColor =
+    SkColorSetARGBMacro(0xFF, 0x64, 0x64, 0x64);
 
 @implementation PendingPasswordViewController
 

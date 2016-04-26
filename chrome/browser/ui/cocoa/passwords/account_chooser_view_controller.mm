@@ -26,13 +26,12 @@
 
 namespace {
 
-// Maximum number of accounts displayed before vertical scrolling appears.
-const size_t kMaxAccounts = 3;
-
 // Returns height of one credential item.
-CGFloat CredentialHeight() {
-  return kAvatarImageSize + 2 * kVerticalAvatarMargin;
-}
+constexpr CGFloat kCredentialHeight =
+    kAvatarImageSize + 2 * kVerticalAvatarMargin;
+
+// Maximum number of accounts displayed before vertical scrolling appears.
+constexpr size_t kMaxAccounts = 3;
 
 }  // namespace
 
@@ -103,7 +102,7 @@ CGFloat CredentialHeight() {
 
   NSSize buttonsSize = NSMakeSize(
       kDesiredBubbleWidth,
-      std::min([credentialButtons_ count], kMaxAccounts) * CredentialHeight());
+      std::min([credentialButtons_ count], kMaxAccounts) * kCredentialHeight);
   base::scoped_nsobject<NSScrollView> scrollView = [[NSScrollView alloc]
       initWithFrame:NSMakeRect(0, 0, buttonsSize.width, buttonsSize.height)];
   [scrollView setHasVerticalScroller:[credentialButtons_ count] > kMaxAccounts
@@ -114,10 +113,10 @@ CGFloat CredentialHeight() {
   CGFloat curY = 0;
   base::scoped_nsobject<NSView> documentView([[NSView alloc]
       initWithFrame:NSMakeRect(0, 0, buttonWidth, [credentialButtons_ count] *
-                                                      CredentialHeight())]);
+                                                      kCredentialHeight)]);
   for (CredentialItemButton* button in credentialButtons_.get()) {
     [documentView addSubview:button];
-    [button setFrame:NSMakeRect(0, curY, buttonWidth, CredentialHeight())];
+    [button setFrame:NSMakeRect(0, curY, buttonWidth, kCredentialHeight)];
     curY = NSMaxY([button frame]);
   }
   [scrollView setDocumentView:documentView];
@@ -159,7 +158,7 @@ CGFloat CredentialHeight() {
 - (void)loadCredentialItems {
   base::scoped_nsobject<NSMutableArray> items([[NSMutableArray alloc] init]);
   PasswordDialogController* controller = self.bridge->GetDialogController();
-  NSRect rect = NSMakeRect(0, 0, kDesiredBubbleWidth, CredentialHeight());
+  NSRect rect = NSMakeRect(0, 0, kDesiredBubbleWidth, kCredentialHeight);
   for (const auto& form : controller->GetLocalForms()) {
     base::scoped_nsobject<CredentialItemButton> item(
         [[CredentialItemButton alloc]

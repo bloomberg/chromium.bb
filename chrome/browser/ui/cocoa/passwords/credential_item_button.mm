@@ -16,8 +16,8 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
-const CGFloat kFocusRingLineWidth = 2;
-const CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
+constexpr CGFloat kFocusRingLineWidth = 2;
+constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
 }  // namespace
 
 // Custom button cell that adds a left padding before the avatar, and a custom

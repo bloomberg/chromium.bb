@@ -39,8 +39,6 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 
 }  // namespace
 
-const int kAvatarImageSize = 32;
-
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
   gfx::Size size = skia_image.size();
   if (size.height() != size.width()) {

@@ -23,7 +23,7 @@
 #include "ui/gfx/font_list.h"
 
 namespace {
-const int kAutoSigninToastTimeoutSeconds = 3;
+constexpr int kAutoSigninToastTimeoutSeconds = 3;
 }  // namespace
 
 @interface AutoSigninViewController () {

@@ -16,8 +16,8 @@
 
 namespace {
 
-const char kDialogTitle[] = "Auto signin";
-const char kDialogText[] = "bla bla";
+constexpr char kDialogTitle[] = "Auto signin";
+constexpr char kDialogText[] = "bla bla";
 
 class PasswordDialogControllerMock : public PasswordDialogController {
  public:

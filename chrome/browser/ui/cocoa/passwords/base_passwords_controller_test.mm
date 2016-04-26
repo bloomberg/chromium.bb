@@ -12,7 +12,7 @@
 #include "content/public/test/web_contents_tester.h"
 
 namespace {
-const char kSiteOrigin[] = "http://example.com/login";
+constexpr char kSiteOrigin[] = "http://example.com/login";
 }
 
 using testing::Return;

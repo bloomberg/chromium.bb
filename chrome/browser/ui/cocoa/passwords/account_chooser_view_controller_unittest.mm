@@ -43,7 +43,7 @@
 
 namespace {
 
-const char kDialogTitle[] = "Choose an account";
+constexpr char kDialogTitle[] = "Choose an account";
 
 // Returns a PasswordForm with only a username.
 std::unique_ptr<autofill::PasswordForm> Credential(const char* username) {

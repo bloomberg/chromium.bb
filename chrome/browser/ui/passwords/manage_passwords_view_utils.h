@@ -27,7 +27,7 @@ enum class PasswordTittleType {
 class Profile;
 
 // The desired width and height in pixels for an account avatar.
-extern const int kAvatarImageSize;
+constexpr int kAvatarImageSize = 32;
 
 // Crops and scales |image_skia| to the desired size for an account avatar.
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
