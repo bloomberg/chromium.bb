@@ -1,0 +1,34 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_OFFLINE_PAGES_BACKGROUND_SCHEDULER_H_
+#define COMPONENTS_OFFLINE_PAGES_BACKGROUND_SCHEDULER_H_
+
+namespace offline_pages {
+
+// Interface of a class responsible for scheduling a task to initiate
+// processing of background offlining requests upon select system conditions
+// (such as having a network connection).
+class Scheduler {
+ public:
+  // Defines a set of system conditions to trigger background processing.
+  struct TriggerCondition {
+    // TODO(dougarnett): define network, battery, power conditions.
+  };
+
+  Scheduler() {}
+  virtual ~Scheduler() {}
+
+  // Ensures that the system has a task scheduled for |trigger_conditions|.
+  // This may overwrite any previous scheduled task with a new one for
+  // these conditions.
+  virtual void EnsureScheduled(const TriggerCondition& trigger_condition) = 0;
+
+  // Clears the currently scheduled task, if any.
+  virtual void ClearScheduled() = 0;
+};
+
+}  // namespace offline_pages
+
+#endif  // COMPONENTS_OFFLINE_PAGES_BACKGROUND_SCHEDULER_H_
