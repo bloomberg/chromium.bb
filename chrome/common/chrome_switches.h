@@ -124,6 +124,7 @@ extern const char kEnableFastUnload[];
 extern const char kEnableGoogleBrandedContextMenu[];
 #endif  // defined(GOOGLE_CHROME_BUILD)
 extern const char kEnableMaterialDesignExtensions[];
+extern const char kEnableMaterialDesignFeedback[];
 extern const char kEnableMaterialDesignPolicyPage[];
 extern const char kEnableNaCl[];
 extern const char kEnableNativeNotifications[];
@@ -394,6 +395,7 @@ extern const char kDisableInputImeAPI[];
 
 bool AboutInSettingsEnabled();
 bool MdExtensionsEnabled();
+bool MdFeedbackEnabled();
 bool MdPolicyPageEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();

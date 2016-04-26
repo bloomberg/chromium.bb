@@ -424,6 +424,9 @@ const char kEnableGoogleBrandedContextMenu[] =
 // Enables the Material Design version of chrome://extensions.
 const char kEnableMaterialDesignExtensions[] = "enable-md-extensions";
 
+// Enables the Material Design feedback form.
+const char kEnableMaterialDesignFeedback[] = "enable-md-feedback";
+
 // Enables the Material Design policy page at chrome://md-policy.
 const char kEnableMaterialDesignPolicyPage[]  = "enable-md-policy-page";
 
@@ -1307,6 +1310,11 @@ bool AboutInSettingsEnabled() {
 bool MdExtensionsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMaterialDesignExtensions);
+}
+
+bool MdFeedbackEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMaterialDesignFeedback);
 }
 
 bool MdPolicyPageEnabled() {

@@ -4981,6 +4981,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         If enabled, the chrome://extensions/ URL loads the Material Design extensions page.
       </message>
 
+      <!-- Material Design version of feedback form -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_FEEDBACK_NAME" desc="Name for the flag to enable the material design feedback UI.">
+        Enable Material Design feedback
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_FEEDBACK_DESCRIPTION" desc="Description for the flag to enable the material design feedback UI.">
+        If enabled, reporting an issue will load the Material Design feedback UI.
+      </message>
+
       <!-- Report URL to SafeSearch -->
       <message name="IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_NAME" desc="Name for the flag to enable reporting URLs to SafeSearch.">
         SafeSearch URLs reporting.
