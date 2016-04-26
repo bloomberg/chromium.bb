@@ -89,7 +89,6 @@
   http/tests/misc/webtiming-one-redirect.php [ Failure ]
   http/tests/misc/webtiming-two-redirects.php [ Failure ]
   http/tests/misc/window-dot-stop.html [ Failure ]
-  http/tests/misc/xhtml.php [ Failure ]
   http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
   http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
   http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
@@ -108,10 +107,8 @@
   http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-multiple-headers-conflict.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-deny.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html [ Failure ]
   http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
   http/tests/security/frame-loading-via-document-write.html [ Failure ]
   http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
@@ -121,7 +118,6 @@
   http/tests/security/upgrade-insecure-requests/https-header-auxiliary.html [ Failure ]
   http/tests/security/upgrade-insecure-requests/https-header-nested.html [ Failure ]
   http/tests/security/w3c/cross-origin-objects.html [ Crash Timeout Failure ]
-  http/tests/security/xssAuditor/anchor-url-dom-write-location2.html [ Failure ]
   http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
   http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
   http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
@@ -153,13 +149,10 @@
   bluetooth/requestDevice-sandboxed-iframe.html [ Timeout ]
   http/tests/appcache/fallback.html [ Timeout ]
   http/tests/appcache/top-frame-2.html [ Timeout ]
-  http/tests/download/basic-ascii.html [ Timeout ]
-  http/tests/download/literal-utf-8.html [ Timeout ]
   http/tests/fullscreen/fullscreenelement-different-origin.html [ Timeout ]
   http/tests/fullscreen/fullscreenelement-same-origin.html [ Timeout ]
   http/tests/history/back-to-post.html [ Timeout ]
   http/tests/inspector/extensions-network-redirect.html [ Timeout ]
-  http/tests/misc/redirect-to-about-blank.html [ Timeout ]
   http/tests/misc/window-open-then-write.html [ Timeout ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
@@ -180,7 +173,6 @@
   http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
   http/tests/security/mixedContent/nonwebby-scheme-in-iframe-allowed.https.html [ Timeout Failure ]
-  http/tests/security/redirect-BLOCKED-to-localURL.html [ Timeout ]
   virtual/android/fullscreen/exit-full-screen-iframe.html [ Timeout ]
   virtual/android/fullscreen/full-screen-fixed-pos-parent.html [ Timeout ]
   virtual/android/fullscreen/full-screen-frameset.html [ Timeout ]
@@ -270,8 +262,6 @@
 # Regressions: Unexpected timeouts (21)
   fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
   fast/history/history-replace-updates-current-item.html [ Timeout ]
-  fast/loader/onload-bad-scheme-for-frame.html [ Timeout ]
-  fast/loader/sandboxed-plugin-crash.html [ Timeout ]
   fullscreen/exit-full-screen-iframe.html [ Timeout ]
   fullscreen/full-screen-fixed-pos-parent.html [ Timeout ]
   fullscreen/full-screen-frameset.html [ Timeout ]
@@ -292,7 +282,6 @@
 
 # Regressions: Unexpected image and text failures (6)
   fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
-  http/tests/misc/location-replace-crossdomain.html [ Failure ]
   svg/dynamic-updates/SVGAElement-dom-href-attr.html [ Failure ]
   svg/dynamic-updates/SVGAElement-dom-target-attr.html [ Failure ]
   svg/dynamic-updates/SVGAElement-svgdom-href-prop.html [ Failure ]
@@ -330,7 +319,6 @@
 # Update on 16-4-8
 
 # Regressions: Unexpected text-only failures (3)
-  css3/fonts/font-style-matching-7.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 
@@ -343,20 +331,21 @@
   http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Timeout ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
 
-# Update on 16-4-12
-
-# Regressions: Unexpected text-only failures (1)
-  svg/filters/filter-refresh.svg [ Failure ]
-
-# Update on 16-4-13
-
-# Regressions: Unexpected text-only failures (3)
-  imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-currentIteration.html [ Failure ]
-  imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-progress.html [ Failure ]
-
 # Update on 16-4-14
 
 # Regressions: Unexpected text-only failures (2)
   http/tests/security/mixedContent/insecure-prefetch-in-main-frame.html [ Failure ]
   imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure ]
 
+# Update on 16-4-26
+
+# Regressions: Unexpected text-only failures (1)
+  http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
+
+# Regressions: Unexpected crashes ()
+  fast/events/before-unload-forbidden-navigation.html [ Crash ]
+  fast/forms/state-restore-skip-stateless.html [ Crash ]
+  fast/loader/document-destruction-within-unload.html [ Crash ]
+  http/tests/history/back-during-beforeunload.html [ Crash ]
+  http/tests/misc/timer-vs-loading.html [ Crash ]
+  virtual/trustedeventsdefaultaction/fast/events/before-unload-forbidden-navigation.html [ Crash ]

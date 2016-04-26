@@ -310,6 +310,7 @@
 -StreamsPrivateApiTest.Headers
 -StreamsPrivateApiTest.Navigate
 -StreamsPrivateApiTest.NavigateCrossSite
+-TabManagerTest.ProtectPDFPages
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
 -WebNavigationApiTest.Crash
