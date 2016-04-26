@@ -1630,9 +1630,9 @@ WebDataSourceImpl* WebLocalFrameImpl::provisionalDataSourceImpl() const
 
 void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
 {
-    DCHECK(!parent());
+    WebLocalFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
 
-    if (!m_textFinder || this != m_textFinder->activeMatchFrame())
+    if (this != mainFrameImpl->activeMatchFrame())
         return;
 
     if (Range* activeMatch = m_textFinder->activeMatch()) {
@@ -2084,9 +2084,20 @@ void WebLocalFrameImpl::willDetachParent()
     }
 }
 
-TextFinder* WebLocalFrameImpl::textFinder() const
+WebLocalFrameImpl* WebLocalFrameImpl::activeMatchFrame() const
 {
-    return m_textFinder;
+    DCHECK(!parent());
+
+    if (m_textFinder)
+        return m_textFinder->activeMatchFrame();
+    return 0;
+}
+
+Range* WebLocalFrameImpl::activeMatch() const
+{
+    if (m_textFinder)
+        return m_textFinder->activeMatch();
+    return 0;
 }
 
 TextFinder& WebLocalFrameImpl::ensureTextFinder()
