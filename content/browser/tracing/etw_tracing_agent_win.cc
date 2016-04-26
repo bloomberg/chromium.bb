@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tracing/etw_system_event_consumer_win.h"
+#include "content/browser/tracing/etw_tracing_agent_win.h"
 
 #include <stdint.h>
 
@@ -35,22 +35,22 @@ std::string GuidToString(const GUID& guid) {
 
 }  // namespace
 
-EtwSystemEventConsumer::EtwSystemEventConsumer()
+EtwTracingAgent::EtwTracingAgent()
     : thread_("EtwConsumerThread") {
 }
 
-EtwSystemEventConsumer::~EtwSystemEventConsumer() {
+EtwTracingAgent::~EtwTracingAgent() {
 }
 
-std::string EtwSystemEventConsumer::GetTracingAgentName() {
+std::string EtwTracingAgent::GetTracingAgentName() {
   return kETWTracingAgentName;
 }
 
-std::string EtwSystemEventConsumer::GetTraceEventLabel() {
+std::string EtwTracingAgent::GetTraceEventLabel() {
   return kETWTraceLabel;
 }
 
-void EtwSystemEventConsumer::StartAgentTracing(
+void EtwTracingAgent::StartAgentTracing(
     const base::trace_event::TraceConfig& trace_config,
     const StartAgentTracingCallback& callback) {
   // Activate kernel tracing.
@@ -65,7 +65,7 @@ void EtwSystemEventConsumer::StartAgentTracing(
   thread_.Start();
   thread_.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&EtwSystemEventConsumer::TraceAndConsumeOnThread,
+      base::Bind(&EtwTracingAgent::TraceAndConsumeOnThread,
                  base::Unretained(this)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -73,7 +73,7 @@ void EtwSystemEventConsumer::StartAgentTracing(
       base::Bind(callback, GetTracingAgentName(), true /* success */));
 }
 
-void EtwSystemEventConsumer::StopAgentTracing(
+void EtwTracingAgent::StopAgentTracing(
     const StopAgentTracingCallback& callback) {
   // Deactivate kernel tracing.
   if (!StopKernelSessionTracing()) {
@@ -82,12 +82,12 @@ void EtwSystemEventConsumer::StopAgentTracing(
 
   // Stop consuming and flush events.
   thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&EtwSystemEventConsumer::FlushOnThread,
+      base::Bind(&EtwTracingAgent::FlushOnThread,
                  base::Unretained(this),
                  callback));
 }
 
-void EtwSystemEventConsumer::OnStopSystemTracingDone(
+void EtwTracingAgent::OnStopSystemTracingDone(
     const StopAgentTracingCallback& callback,
     const scoped_refptr<base::RefCountedString>& result) {
 
@@ -98,7 +98,7 @@ void EtwSystemEventConsumer::OnStopSystemTracingDone(
   callback.Run(GetTracingAgentName(), GetTraceEventLabel(), result);
 }
 
-bool EtwSystemEventConsumer::StartKernelSessionTracing() {
+bool EtwTracingAgent::StartKernelSessionTracing() {
   // Enabled flags (tracing facilities).
   uint32_t enabled_flags = EVENT_TRACE_FLAG_IMAGE_LOAD |
                            EVENT_TRACE_FLAG_PROCESS | EVENT_TRACE_FLAG_THREAD |
@@ -139,23 +139,23 @@ bool EtwSystemEventConsumer::StartKernelSessionTracing() {
   return true;
 }
 
-bool EtwSystemEventConsumer::StopKernelSessionTracing() {
+bool EtwTracingAgent::StopKernelSessionTracing() {
   HRESULT hr = base::win::EtwTraceController::Stop(
       KERNEL_LOGGER_NAME, &properties_);
   return SUCCEEDED(hr);
 }
 
 // static
-EtwSystemEventConsumer* EtwSystemEventConsumer::GetInstance() {
-  return base::Singleton<EtwSystemEventConsumer>::get();
+EtwTracingAgent* EtwTracingAgent::GetInstance() {
+  return base::Singleton<EtwTracingAgent>::get();
 }
 
 // static
-void EtwSystemEventConsumer::ProcessEvent(EVENT_TRACE* event) {
-  EtwSystemEventConsumer::GetInstance()->AppendEventToBuffer(event);
+void EtwTracingAgent::ProcessEvent(EVENT_TRACE* event) {
+  EtwTracingAgent::GetInstance()->AppendEventToBuffer(event);
 }
 
-void EtwSystemEventConsumer::AddSyncEventToBuffer() {
+void EtwTracingAgent::AddSyncEventToBuffer() {
   // Sync the clocks.
   base::Time walltime = base::Time::NowFromSystemTime();
   base::TimeTicks now = base::TimeTicks::Now();
@@ -181,7 +181,7 @@ void EtwSystemEventConsumer::AddSyncEventToBuffer() {
   events_->Append(value.release());
 }
 
-void EtwSystemEventConsumer::AppendEventToBuffer(EVENT_TRACE* event) {
+void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
   using base::FundamentalValue;
 
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
@@ -213,7 +213,7 @@ void EtwSystemEventConsumer::AppendEventToBuffer(EVENT_TRACE* event) {
   events_->Append(value.release());
 }
 
-void EtwSystemEventConsumer::TraceAndConsumeOnThread() {
+void EtwTracingAgent::TraceAndConsumeOnThread() {
   // Create the events buffer.
   events_.reset(new base::ListValue());
 
@@ -227,7 +227,7 @@ void EtwSystemEventConsumer::TraceAndConsumeOnThread() {
   Close();
 }
 
-void EtwSystemEventConsumer::FlushOnThread(
+void EtwTracingAgent::FlushOnThread(
     const StopAgentTracingCallback& callback) {
   // Add the header information to the stream.
   std::unique_ptr<base::DictionaryValue> header(new base::DictionaryValue());
@@ -246,7 +246,7 @@ void EtwSystemEventConsumer::FlushOnThread(
       base::RefCountedString::TakeString(&output);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&EtwSystemEventConsumer::OnStopSystemTracingDone,
+      base::Bind(&EtwTracingAgent::OnStopSystemTracingDone,
                  base::Unretained(this),
                  callback,
                  result));

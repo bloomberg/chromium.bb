@@ -46,7 +46,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "content/browser/tracing/etw_system_event_consumer_win.h"
+#include "content/browser/tracing/etw_tracing_agent_win.h"
 #endif
 
 using base::trace_event::TraceLog;
@@ -279,7 +279,7 @@ bool TracingControllerImpl::StartTracing(
       ++pending_start_tracing_ack_count_;
     }
 #elif defined(OS_WIN)
-    EtwSystemEventConsumer::GetInstance()->StartAgentTracing(
+    EtwTracingAgent::GetInstance()->StartAgentTracing(
         trace_config,
         base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
                    base::Unretained(this)));
@@ -586,7 +586,7 @@ void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
     return;
   }
 #elif defined(OS_WIN)
-  auto etw_agent = EtwSystemEventConsumer::GetInstance();
+  auto etw_agent = EtwTracingAgent::GetInstance();
   if (agent_name == etw_agent->GetTracingAgentName()) {
     additional_tracing_agents_.push_back(etw_agent);
     return;

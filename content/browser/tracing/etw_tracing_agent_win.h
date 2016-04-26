@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TRACING_ETW_SYSTEM_EVENT_CONSUMER_WIN_H_
-#define CONTENT_BROWSER_TRACING_ETW_SYSTEM_EVENT_CONSUMER_WIN_H_
+#ifndef CONTENT_BROWSER_TRACING_ETW_TRACING_AGENT_H_
+#define CONTENT_BROWSER_TRACING_ETW_TRACING_AGENT_H_
 
 #include <memory>
 
@@ -23,8 +23,8 @@ struct DefaultSingletonTraits;
 
 namespace content {
 
-class EtwSystemEventConsumer
-    : public base::win::EtwTraceConsumerBase<EtwSystemEventConsumer>,
+class EtwTracingAgent
+    : public base::win::EtwTraceConsumerBase<EtwTracingAgent>,
       public base::trace_event::TracingAgent {
  public:
   // base::trace_event::TracingAgent implementation.
@@ -35,23 +35,23 @@ class EtwSystemEventConsumer
   void StopAgentTracing(const StopAgentTracingCallback& callback) override;
 
   // Retrieve the ETW consumer instance.
-  static EtwSystemEventConsumer* GetInstance();
+  static EtwTracingAgent* GetInstance();
 
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
-  friend struct base::DefaultSingletonTraits<EtwSystemEventConsumer>;
+  friend struct base::DefaultSingletonTraits<EtwTracingAgent>;
 
   // Constructor.
-  EtwSystemEventConsumer();
-  ~EtwSystemEventConsumer() override;
+  EtwTracingAgent();
+  ~EtwTracingAgent() override;
 
   void AddSyncEventToBuffer();
   void AppendEventToBuffer(EVENT_TRACE* event);
 
   // Static override of EtwTraceConsumerBase::ProcessEvent.
   // @param event the raw ETW event to process.
-  friend class base::win::EtwTraceConsumerBase<EtwSystemEventConsumer>;
+  friend class base::win::EtwTraceConsumerBase<EtwTracingAgent>;
   static void ProcessEvent(EVENT_TRACE* event);
 
   // Request the ETW trace controller to activate the kernel tracing.
@@ -75,9 +75,9 @@ class EtwSystemEventConsumer
   TRACEHANDLE session_handle_;
   base::win::EtwTraceProperties properties_;
 
-  DISALLOW_COPY_AND_ASSIGN(EtwSystemEventConsumer);
+  DISALLOW_COPY_AND_ASSIGN(EtwTracingAgent);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_TRACING_ETW_SYSTEM_EVENT_CONSUMER_WIN_H_
+#endif  // CONTENT_BROWSER_TRACING_ETW_TRACING_AGENT_H_
