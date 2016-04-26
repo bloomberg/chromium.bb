@@ -14,26 +14,6 @@
 var metrics = metricsBase;
 
 /**
- * Values for "VideoPlayer.CastAPIExtensionStaus" metrics.
- * @enum {number}
- */
-metrics.CAST_API_EXTENSION_STATUS = {
-  // Cast API extension is not loaded since the cast extension, which is requred
-  // by the cast API extension, is not installed or load failed.
-  SKIPPED: 0,
-  // Installation of Cast API extension is failed.
-  INSTALLATION_FAILED: 1,
-  // Load of Cast API extension is failed.
-  LOAD_FAILED: 2,
-  // Cast API extension is newly installed and loaded.
-  INSTALLED_AND_LOADED: 3,
-  // Cast API extension is loaded.
-  LOADED: 4,
-  // (sentinel)
-  MAX_VALUE: 5,
-};
-
-/**
  * Values for "VideoPlayer.PlayType" metrics.
  * @enum {number}
  */
@@ -54,21 +34,6 @@ metrics.hasValue_ = function(values, value) {
   return Object.keys(values).some(function(key) {
     return values[key] === value;
   });
-};
-
-/**
- * Record "VideoPlayer.CastAPIExtensionStatsu" metrics.
- * @param {metrics.CAST_API_EXTENSION_STATUS} status Status to be recorded.
- */
-metrics.recordCastAPIExtensionStatus = function(status) {
-  if (!metrics.hasValue_(metrics.CAST_API_EXTENSION_STATUS, status)) {
-    console.error('The given value "' + status + '" is invalid.');
-    return;
-  }
-
-  metrics.recordEnum('CastAPIExtensionStatus',
-                     status,
-                     metrics.CAST_API_EXTENSION_STATUS.MAX_VALUE);
 };
 
 /**

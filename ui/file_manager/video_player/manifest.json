@@ -28,7 +28,6 @@
     "metricsPrivate",
     "power",
     "storage",
-    "webstoreWidgetPrivate",
     "chrome://resources/",
     "chrome://theme/"
   ],
@@ -55,13 +54,6 @@
       ]
     }
   },
-  "import": [
-    // Google Cast API extension
-    {
-      "id": "mafeflapfdfljijmlienjedomfjfmhpd",
-      "minimum_version":  "14.507.0.31276"
-    }
-  ],
   "app": {
     "background": {
       "scripts": [
