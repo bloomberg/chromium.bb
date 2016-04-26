@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-<html>
-<head>
 <script>
     window.targetScaleFactor = 2;
 </script>
@@ -9,17 +7,11 @@
 <script>
     var imgWidth;
     addEventListener("load", function() {
-        // FIXME: clientWidth might be zero because of crbug.com/379155
         imgWidth = document.getElementById("foo").clientWidth;
         shouldBe('imgWidth', '33554431' /* blink::intMaxForLayoutUnit */);
     }, false);
 </script>
-</head>
-
-<body id="body">
-    <div>
-        This test passes if the image is displayed with infinite dimensions.
-    </div>
-    <img id="foo" srcset="resources/blue-100-px-square.png 0x">
-</body>
-</html>
+<div>
+    This test passes if the image is displayed with infinite dimensions.
+</div>
+<img id="foo" srcset="resources/blue-100-px-square.png 0x">

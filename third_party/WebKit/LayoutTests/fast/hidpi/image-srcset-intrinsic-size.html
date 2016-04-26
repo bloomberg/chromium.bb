@@ -1,5 +1,4 @@
-<html>
-<head>
+<!DOCTYPE html>
 <script>
     window.targetScaleFactor = 2;
 </script>
@@ -14,20 +13,15 @@
         shouldBe('document.getElementById("foo5").clientWidth', '200');
     }, false);
 </script>
-</head>
-
-<body id="body">
-    <div>
-        This test passes if the images are all displayed with appropriate dimensions.
-    </div>
-    <img id="foo" srcset="resources/blue-100-px-square.png 1x, resources/deleteButton.png 3x, resources/green-400-px-square.png 2x">
-    <br>
-    <img id="foo2" src="resources/green-400-px-square.png">
-    <br>
-    <img id="foo3" srcset="resources/srcset.svg 2x">
-    <br>
-    <img id="foo4" srcset="resources/blue-100-px-square.png 0.5x">
-    <br>
-    <img id="foo5" src="resources/srcset.svg">
-</body>
-</html>
+<div>
+    This test passes if the images are all displayed with appropriate dimensions.
+</div>
+<img id="foo" srcset="resources/blue-100-px-square.png 1x, resources/deleteButton.png 3x, resources/green-400-px-square.png 2x">
+<br>
+<img id="foo2" src="resources/green-400-px-square.png">
+<br>
+<img id="foo3" srcset="resources/srcset.svg 2x">
+<br>
+<img id="foo4" srcset="resources/blue-100-px-square.png 0.5x">
+<br>
+<img id="foo5" src="resources/srcset.svg">

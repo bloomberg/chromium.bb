@@ -1,31 +1,22 @@
-<html>
+<!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<head>
 <style>
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.0) {
-  #foo { background-color: red; }
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.1) {
-  #foo { background-color: blue; }
-}
-
+    @media only screen and (-webkit-min-device-pixel-ratio: 1.0) {
+        #foo { background-color: red; }
+    }
+    @media only screen and (-webkit-min-device-pixel-ratio: 1.1) {
+        #foo { background-color: blue; }
+    }
 </style>
-</head>
-<body id="body">
-    <div id=foo></div>
-</body>
+<div id=foo></div>
 <script>
-if (window.eventSender)
-  window.eventSender.zoomPageIn();
-
-test(function() {
-  var div = document.getElementById("foo");
-  var computedStyle = window.getComputedStyle(div, null);
-  assert_equals(computedStyle.getPropertyValue('background-color'),
-                'rgb(0, 0, 255)');
-}, "media query with zoom");
+    if (window.eventSender)
+        window.eventSender.zoomPageIn();
+    test(function() {
+        var div = document.getElementById("foo");
+        var computedStyle = window.getComputedStyle(div, null);
+        assert_equals(computedStyle.getPropertyValue('background-color'),
+                      'rgb(0, 0, 255)');
+    }, "media query with zoom");
 </script>
-</html>

@@ -1,5 +1,4 @@
-<html>
-<head>
+<!DOCTYPE html>
 <style>
     #foo {
         width:100px;
@@ -8,13 +7,8 @@
     }
 </style>
 <script>
-if (window.eventSender)
-  window.eventSender.zoomPageIn();
+    if (window.eventSender)
+        window.eventSender.zoomPageIn();
 </script>
-</head>
-
-<body>
-    <div>This test passes if the div below is a green square. </div>
-    <div id=foo></div>
-</body>
-</html>
+<div>This test passes if the div below is a green square.</div>
+<div id=foo></div>

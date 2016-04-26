@@ -1,5 +1,4 @@
-<html>
-<head>
+<!DOCTYPE html>
 <script src="resources/srcset-helper.js"></script>
 <script src="../../resources/js-test.js"></script>
 <script>
@@ -7,10 +6,5 @@
         shouldBeTrue('document.getElementById("foo").clientWidth==400');
     }, false);
 </script>
-</head>
-
-<body id="body">
-    <div>This test passes if this img tag below is a green square when scale factor is 2. It ensures that the selection algorithm does not change the behavior of the src attribute, even with a scale factor greater than 1</div>
-    <img id="foo" src="resources/green-400-px-square.png"></img>
-</body>
-</html>
+<div>This test passes if this img tag below is a green square when scale factor is 2. It ensures that the selection algorithm does not change the behavior of the src attribute, even with a scale factor greater than 1</div>
+<img id="foo" src="resources/green-400-px-square.png">
