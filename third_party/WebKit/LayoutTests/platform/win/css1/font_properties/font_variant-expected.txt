@@ -15,36 +15,36 @@ layer at (0,0) size 800x600
           text run at (0,32) width 0: " "
       LayoutBlockFlow {HR} at (0,95) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,113) size 784x18
-        LayoutText {#text} at (0,0) size 266x17
-          text run at (0,0) width 266: "This Paragraph should be in Small Caps."
+        LayoutText {#text} at (0,0) size 285x17
+          text run at (0,0) width 285: "This Paragraph should be in Small Caps."
       LayoutBlockFlow {P} at (0,147) size 784x18
-        LayoutText {#text} at (0,0) size 575x17
-          text run at (0,0) width 575: "This Paragraph should be in Small Caps, but the Last Word in the Sentence should be "
-        LayoutInline {SPAN} at (0,0) size 49x17
-          LayoutText {#text} at (574,0) size 49x17
-            text run at (574,0) width 49: "Normal"
-        LayoutText {#text} at (622,0) size 5x17
-          text run at (622,0) width 5: "."
-      LayoutTable {TABLE} at (0,181) size 649x88 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 647x86
-          LayoutTableRow {TR} at (0,0) size 647x26
-            LayoutTableCell {TD} at (0,0) size 647x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+        LayoutText {#text} at (0,0) size 615x17
+          text run at (0,0) width 615: "This Paragraph should be in Small Caps, but the Last Word in the Sentence should be "
+        LayoutInline {SPAN} at (0,0) size 50x17
+          LayoutText {#text} at (614,0) size 50x17
+            text run at (614,0) width 50: "Normal"
+        LayoutText {#text} at (663,0) size 5x17
+          text run at (663,0) width 5: "."
+      LayoutTable {TABLE} at (0,181) size 690x88 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 688x86
+          LayoutTableRow {TR} at (0,0) size 688x26
+            LayoutTableCell {TD} at (0,0) size 688x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               LayoutInline {STRONG} at (0,0) size 161x17
                 LayoutText {#text} at (4,4) size 161x17
                   text run at (4,4) width 161: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,26) size 647x60
+          LayoutTableRow {TR} at (0,26) size 688x60
             LayoutTableCell {TD} at (0,43) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,26) size 635x60 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow {P} at (4,4) size 627x18
-                LayoutText {#text} at (0,0) size 266x17
-                  text run at (0,0) width 266: "This Paragraph should be in Small Caps."
-              LayoutBlockFlow {P} at (4,38) size 627x18
-                LayoutText {#text} at (0,0) size 575x17
-                  text run at (0,0) width 575: "This Paragraph should be in Small Caps, but the Last Word in the Sentence should be "
-                LayoutInline {SPAN} at (0,0) size 49x17
-                  LayoutText {#text} at (574,0) size 49x17
-                    text run at (574,0) width 49: "Normal"
-                LayoutText {#text} at (622,0) size 5x17
-                  text run at (622,0) width 5: "."
+            LayoutTableCell {TD} at (12,26) size 676x60 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {P} at (4,4) size 668x18
+                LayoutText {#text} at (0,0) size 285x17
+                  text run at (0,0) width 285: "This Paragraph should be in Small Caps."
+              LayoutBlockFlow {P} at (4,38) size 668x18
+                LayoutText {#text} at (0,0) size 615x17
+                  text run at (0,0) width 615: "This Paragraph should be in Small Caps, but the Last Word in the Sentence should be "
+                LayoutInline {SPAN} at (0,0) size 50x17
+                  LayoutText {#text} at (614,0) size 50x17
+                    text run at (614,0) width 50: "Normal"
+                LayoutText {#text} at (663,0) size 5x17
+                  text run at (663,0) width 5: "."

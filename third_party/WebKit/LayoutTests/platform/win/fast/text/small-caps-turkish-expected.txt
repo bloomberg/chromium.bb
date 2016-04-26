@@ -49,8 +49,8 @@ layer at (0,0) size 800x390
         LayoutInline {SPAN} at (0,0) size 46x17
           LayoutText {#text} at (99,0) size 46x17
             text run at (99,0) width 46: "Isi\x{130} \x{130}s\x{131}I"
-        LayoutText {#text} at (144,0) size 9x17
-          text run at (144,0) width 9: " :"
+        LayoutText {#text} at (144,0) size 10x17
+          text run at (144,0) width 10: " :"
       LayoutBlockFlow {P} at (0,204) size 784x18
         LayoutText {#text} at (0,0) size 97x17
           text run at (0,0) width 97: "locale=az-AZ: "

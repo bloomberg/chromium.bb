@@ -22,34 +22,34 @@ layer at (0,0) size 800x533
         LayoutBR {BR} at (298,0) size 1x22
         LayoutText {#text} at (0,23) size 101x22
           text run at (0,23) width 101: "smallcaps: "
-        LayoutInline {SPAN} at (0,0) size 222x22
-          LayoutText {#text} at (100,23) size 222x22
-            text run at (100,23) width 222: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
-        LayoutBR {BR} at (321,23) size 1x22
+        LayoutInline {SPAN} at (0,0) size 237x22
+          LayoutText {#text} at (100,23) size 237x22
+            text run at (100,23) width 237: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
+        LayoutBR {BR} at (336,23) size 1x22
         LayoutText {#text} at (0,46) size 121x22
           text run at (0,46) width 121: "allsmallcaps: "
-        LayoutInline {SPAN} at (0,0) size 179x22
-          LayoutText {#text} at (120,46) size 179x22
-            text run at (120,46) width 179: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
-        LayoutBR {BR} at (298,46) size 1x22
+        LayoutInline {SPAN} at (0,0) size 209x22
+          LayoutText {#text} at (120,46) size 209x22
+            text run at (120,46) width 209: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
+        LayoutBR {BR} at (328,46) size 1x22
         LayoutText {#text} at (0,69) size 103x22
           text run at (0,69) width 103: "petitecaps: "
-        LayoutInline {SPAN} at (0,0) size 222x22
-          LayoutText {#text} at (102,69) size 222x22
-            text run at (102,69) width 222: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
-        LayoutBR {BR} at (323,69) size 1x22
+        LayoutInline {SPAN} at (0,0) size 237x22
+          LayoutText {#text} at (102,69) size 237x22
+            text run at (102,69) width 237: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
+        LayoutBR {BR} at (338,69) size 1x22
         LayoutText {#text} at (0,92) size 123x22
           text run at (0,92) width 123: "allpetitecaps: "
-        LayoutInline {SPAN} at (0,0) size 179x22
-          LayoutText {#text} at (122,92) size 179x22
-            text run at (122,92) width 179: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
-        LayoutBR {BR} at (300,92) size 1x22
+        LayoutInline {SPAN} at (0,0) size 209x22
+          LayoutText {#text} at (122,92) size 209x22
+            text run at (122,92) width 209: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
+        LayoutBR {BR} at (330,92) size 1x22
         LayoutText {#text} at (0,115) size 81x22
           text run at (0,115) width 81: "unicase: "
-        LayoutInline {SPAN} at (0,0) size 198x22
-          LayoutText {#text} at (80,115) size 198x22
-            text run at (80,115) width 198: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
-        LayoutBR {BR} at (277,115) size 1x22
+        LayoutInline {SPAN} at (0,0) size 242x22
+          LayoutText {#text} at (80,115) size 242x22
+            text run at (80,115) width 242: "Aa Bb Gg \x{394}\x{3B4} \x{393}\x{3B3} \x{3A3}\x{3C3} \x{411}\x{431} \x{424}\x{444}"
+        LayoutBR {BR} at (321,115) size 1x22
       LayoutBlockFlow {H3} at (0,304.17) size 760x27
         LayoutText {#text} at (0,0) size 445x26
           text run at (0,0) width 445: "Libertine (has native pcap and c2sc support)"

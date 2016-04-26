@@ -1,25 +1,27 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x414
-  LayoutBlockFlow {HTML} at (0,0) size 800x414
-    LayoutBlockFlow {BODY} at (8,18) size 784x378 [color=#000080]
-      LayoutBlockFlow {P} at (0,0) size 784x378
-        LayoutText {#text} at (0,17) size 747x74
-          text run at (0,17) width 747: "This text should be 18px sans-serif, in small-caps, italicized, and very light. There should be a"
-          text run at (0,71) width 228: "36px gap between each line. "
-        LayoutInline {SPAN} at (0,0) size 775x290 [color=#C0C0C0]
-          LayoutText {#text} at (227,71) size 775x290
-            text run at (227,71) width 508: "dummy text dummy text dummy text dummy text dummy text dummy "
-            text run at (734,71) width 35: "text"
-            text run at (0,125) width 507: "dummy text dummy text dummy text dummy text dummy text dummy "
-            text run at (507,125) width 268: "text dummy text dummy text dummy"
-            text run at (0,179) width 273: "text dummy text dummy text dummy "
-            text run at (273,179) width 489: "text dummy text dummy text dummy text dummy text dummy text"
-            text run at (0,233) width 52: "dummy "
-            text run at (52,233) width 546: "text dummy text dummy text dummy text dummy text dummy text dummy "
-            text run at (598,233) width 177: "text dummy text dummy"
-            text run at (0,287) width 364: "text dummy text dummy text dummy text dummy "
-            text run at (364,287) width 398: "text dummy text dummy text dummy text dummy text"
-            text run at (0,341) width 143: "dummy text dummy "
-            text run at (143,341) width 489: "text dummy text dummy text dummy text dummy text dummy text"
+layer at (0,0) size 800x522
+  LayoutBlockFlow {HTML} at (0,0) size 800x522
+    LayoutBlockFlow {BODY} at (8,18) size 784x486 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x486
+        LayoutText {#text} at (0,17) size 727x74
+          text run at (0,17) width 727: "This text should be 18px sans-serif, in small-caps, italicized, and very light. There"
+          text run at (0,71) width 361: "should be a 36px gap between each line. "
+        LayoutInline {SPAN} at (0,0) size 780x398 [color=#C0C0C0]
+          LayoutText {#text} at (360,71) size 780x398
+            text run at (360,71) width 420: "dummy text dummy text dummy text dummy text"
+            text run at (0,125) width 170: "dummy text dummy "
+            text run at (169,125) width 570: "text dummy text dummy text dummy text dummy text dummy text"
+            text run at (0,179) width 63: "dummy "
+            text run at (62,179) width 638: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (699,179) width 40: "text"
+            text run at (0,233) width 594: "dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (593,233) width 146: "text dummy text"
+            text run at (0,287) width 488: "dummy text dummy text dummy text dummy text dummy "
+            text run at (487,287) width 252: "text dummy text dummy text"
+            text run at (0,341) width 382: "dummy text dummy text dummy text dummy "
+            text run at (381,341) width 358: "text dummy text dummy text dummy text"
+            text run at (0,395) width 276: "dummy text dummy text dummy "
+            text run at (275,395) width 464: "text dummy text dummy text dummy text dummy text"
+            text run at (0,449) width 102: "dummy text"
         LayoutText {#text} at (0,0) size 0x0

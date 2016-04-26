@@ -30,10 +30,10 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (220,37) width 520: "If this precise combination does not occur, then the user agent has failed this test."
           text run at (0,55) width 678: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than one line."
       LayoutBlockFlow {P} at (0,288) size 769x72
-        LayoutText {#text} at (0,0) size 758x53
-          text run at (0,0) width 605: "The first line of this paragraph, and only that one, should be displayed in small-caps style. "
-          text run at (604,0) width 154: "Thus, if the first line is"
-          text run at (0,18) width 717: "not in small-caps style, OR if the entire paragraph turns out in small-caps, then the user agent has failed this test"
+        LayoutText {#text} at (0,0) size 769x53
+          text run at (0,0) width 651: "The first line of this paragraph, and only that one, should be displayed in small-caps style. "
+          text run at (650,0) width 119: "Thus, if the first"
+          text run at (0,18) width 759: "line is not in small-caps style, OR if the entire paragraph turns out in small-caps, then the user agent has failed this test"
           text run at (0,36) width 235: "(although the problem might be that "
         LayoutInline {CODE} at (0,0) size 81x16
           LayoutText {#text} at (234,38) size 81x16
@@ -69,15 +69,15 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,55) width 31: "test. "
                   text run at (30,55) width 678: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than one line."
               LayoutBlockFlow {P} at (4,163) size 747x72
-                LayoutText {#text} at (0,0) size 745x53
-                  text run at (0,0) width 605: "The first line of this paragraph, and only that one, should be displayed in small-caps style. "
-                  text run at (604,0) width 141: "Thus, if the first line"
-                  text run at (0,18) width 731: "is not in small-caps style, OR if the entire paragraph turns out in small-caps, then the user agent has failed this test"
-                  text run at (0,36) width 235: "(although the problem might be that "
+                LayoutText {#text} at (0,0) size 736x53
+                  text run at (0,0) width 651: "The first line of this paragraph, and only that one, should be displayed in small-caps style. "
+                  text run at (650,0) width 82: "Thus, if the"
+                  text run at (0,18) width 736: "first line is not in small-caps style, OR if the entire paragraph turns out in small-caps, then the user agent has failed"
+                  text run at (0,36) width 288: "this test (although the problem might be that "
                 LayoutInline {CODE} at (0,0) size 81x16
-                  LayoutText {#text} at (234,38) size 81x16
-                    text run at (234,38) width 81: "small-caps"
-                LayoutText {#text} at (314,36) size 732x35
-                  text run at (314,36) width 230: " is not supported by your browser). "
-                  text run at (543,36) width 189: "This is extra text included for"
-                  text run at (0,54) width 503: "the purposes of making the paragraph long enough to have more than one line."
+                  LayoutText {#text} at (287,38) size 81x16
+                    text run at (287,38) width 81: "small-caps"
+                LayoutText {#text} at (367,36) size 704x35
+                  text run at (367,36) width 230: " is not supported by your browser). "
+                  text run at (596,36) width 108: "This is extra text"
+                  text run at (0,54) width 585: "included for the purposes of making the paragraph long enough to have more than one line."

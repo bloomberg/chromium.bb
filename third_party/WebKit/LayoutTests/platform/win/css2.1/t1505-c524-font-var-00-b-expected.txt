@@ -4,12 +4,12 @@ layer at (0,0) size 800x84
   LayoutBlockFlow {HTML} at (0,0) size 800x84
     LayoutBlockFlow {BODY} at (8,16) size 784x52
       LayoutBlockFlow {P} at (0,0) size 784x18 [color=#000080]
-        LayoutText {#text} at (0,0) size 266x17
-          text run at (0,0) width 266: "This Paragraph should be in Small Caps."
+        LayoutText {#text} at (0,0) size 285x17
+          text run at (0,0) width 285: "This Paragraph should be in Small Caps."
       LayoutBlockFlow {P} at (0,34) size 784x18 [color=#000080]
-        LayoutText {#text} at (0,0) size 262x17
-          text run at (0,0) width 262: "This Sentence should be in Small Caps. "
+        LayoutText {#text} at (0,0) size 280x17
+          text run at (0,0) width 280: "This Sentence should be in Small Caps. "
         LayoutInline {SPAN} at (0,0) size 214x17
-          LayoutText {#text} at (261,0) size 214x17
-            text run at (261,0) width 214: "This Sentence should be Normal."
+          LayoutText {#text} at (279,0) size 214x17
+            text run at (279,0) width 214: "This Sentence should be Normal."
         LayoutText {#text} at (0,0) size 0x0

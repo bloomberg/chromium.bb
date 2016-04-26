@@ -80,11 +80,11 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,104) size 237x26
             LayoutTableCell {TD} at (0,104) size 119x26 [border: (1px solid #008000)] [r=4 c=0 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 101x22
-                text run at (2,2) width 101: "Lore\x{300}m ipsu\x{308}m"
+              LayoutText {#text} at (2,2) size 107x22
+                text run at (2,2) width 107: "Lore\x{300}m ipsu\x{308}m"
             LayoutTableCell {TD} at (119,104) size 118x26 [border: (1px solid #008000)] [r=4 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 101x22
-                text run at (2,2) width 101: "Lorem ipsum"
+              LayoutText {#text} at (2,2) size 107x22
+                text run at (2,2) width 107: "Lorem ipsum"
       LayoutBlockFlow {HR} at (0,243) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,261) size 784x18
         LayoutText {#text} at (0,0) size 283x17

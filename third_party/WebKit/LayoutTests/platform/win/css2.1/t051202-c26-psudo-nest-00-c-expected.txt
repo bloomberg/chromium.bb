@@ -51,37 +51,37 @@ layer at (0,0) size 800x454
         LayoutInline {<pseudo:first-letter>} at (0,0) size 33x36 [color=#00FFFF]
           LayoutTextFragment (anonymous) at (0,0) size 33x36
             text run at (0,0) width 33: "\"T"
-        LayoutTextFragment {#text} at (32,15) size 99x17
-          text run at (32,15) width 99: "est\": The first "
-        LayoutInline {STRONG} at (0,0) size 111x17
-          LayoutText {#text} at (130,15) size 111x17
-            text run at (130,15) width 111: "two characters"
-        LayoutText {#text} at (240,15) size 450x17
-          text run at (240,15) width 120: " in this paragraph "
-          text run at (359,15) width 331: "(a double-quote mark and a capital 'T') should be "
-        LayoutInline {STRONG} at (0,0) size 89x17
-          LayoutText {#text} at (689,15) size 89x17
-            text run at (689,15) width 45: "200% "
-            text run at (733,15) width 45: "bigger"
-        LayoutText {#text} at (0,37) size 223x17
-          text run at (0,37) width 223: "than the rest of the paragraph, and "
-        LayoutInline {STRONG} at (0,0) size 34x17
-          LayoutText {#text} at (222,37) size 34x17
-            text run at (222,37) width 34: "aqua"
-        LayoutText {#text} at (255,37) size 151x17
-          text run at (255,37) width 151: ". In addition, the entire "
+        LayoutTextFragment {#text} at (32,15) size 104x17
+          text run at (32,15) width 104: "est\": The first "
+        LayoutInline {STRONG} at (0,0) size 119x17
+          LayoutText {#text} at (135,15) size 119x17
+            text run at (135,15) width 119: "two characters"
+        LayoutText {#text} at (253,15) size 483x17
+          text run at (253,15) width 130: " in this paragraph "
+          text run at (382,15) width 354: "(a double-quote mark and a capital 'T') should be "
+        LayoutInline {STRONG} at (0,0) size 776x39
+          LayoutText {#text} at (735,15) size 776x39
+            text run at (735,15) width 41: "200%"
+            text run at (0,37) width 44: "bigger"
+        LayoutText {#text} at (43,37) size 227x17
+          text run at (43,37) width 227: " than the rest of the paragraph, and "
+        LayoutInline {STRONG} at (0,0) size 35x17
+          LayoutText {#text} at (269,37) size 35x17
+            text run at (269,37) width 35: "aqua"
+        LayoutText {#text} at (303,37) size 151x17
+          text run at (303,37) width 151: ". In addition, the entire "
         LayoutInline {STRONG} at (0,0) size 58x17
-          LayoutText {#text} at (405,37) size 58x17
-            text run at (405,37) width 34: "first "
-            text run at (438,37) width 25: "line"
-        LayoutText {#text} at (462,37) size 99x17
-          text run at (462,37) width 99: " should be in a "
-        LayoutInline {STRONG} at (0,0) size 163x17
-          LayoutText {#text} at (560,37) size 163x17
-            text run at (560,37) width 138: "small-caps font and "
-            text run at (697,37) width 26: "teal"
-        LayoutText {#text} at (722,37) size 738x35
-          text run at (722,37) width 5: "."
+          LayoutText {#text} at (453,37) size 58x17
+            text run at (453,37) width 33: "first "
+            text run at (485,37) width 26: "line"
+        LayoutText {#text} at (510,37) size 98x17
+          text run at (510,37) width 98: " should be in a "
+        LayoutInline {STRONG} at (0,0) size 164x17
+          LayoutText {#text} at (607,37) size 164x17
+            text run at (607,37) width 139: "small-caps font and "
+            text run at (745,37) width 26: "teal"
+        LayoutText {#text} at (770,37) size 775x35
+          text run at (770,37) width 5: "."
           text run at (0,55) width 323: "Remember that in order to ensure a complete test, "
           text run at (322,55) width 416: "the paragraph must be displayed on more than one line. (TEST2)"
       LayoutBlockFlow {P} at (0,342) size 784x54

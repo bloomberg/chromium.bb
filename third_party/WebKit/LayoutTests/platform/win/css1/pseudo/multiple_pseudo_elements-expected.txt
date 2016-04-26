@@ -1,8 +1,8 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1037
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1055
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
-  LayoutBlockFlow {HTML} at (0,0) size 785x1037
-    LayoutBlockFlow {BODY} at (8,8) size 769x1021 [bgcolor=#CCCCCC]
+layer at (0,0) size 785x1055 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1055
+    LayoutBlockFlow {BODY} at (8,8) size 769x1039 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x18
         LayoutInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
           LayoutTextFragment (anonymous) at (0,0) size 10x17
@@ -50,26 +50,25 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {<pseudo:first-letter>} at (0,0) size 76x62 [color=#800000]
           LayoutTextFragment (anonymous) at (0,1) size 76x62
             text run at (0,1) width 76: "\"W"
-        LayoutTextFragment {#text} at (75,37) size 768x80
-          text run at (75,37) width 336: "e should check for quotation support,\" it was said. "
-          text run at (410,37) width 358: "The first two characters in this paragraph-- a double-"
-          text run at (0,64) width 696: "quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon (dark red). "
-          text run at (695,64) width 60: "Note that"
-          text run at (0,82) width 708: "the inclusion of both the quotation mark and the 'W' in the first-letter style is not required under CSS1, but it is"
-          text run at (0,100) width 99: "recommended. "
-          text run at (98,100) width 463: "In addition, the entire first line should be in a small-caps font and green."
-      LayoutTable {TABLE} at (0,580) size 769x441 [border: (1px outset #808080)]
-        LayoutTableSection {TBODY} at (1,1) size 767x439
+        LayoutTextFragment {#text} at (75,37) size 766x80
+          text run at (75,37) width 362: "e should check for quotation support,\" it was said. "
+          text run at (436,37) width 330: "The first two characters in this paragraph-- a"
+          text run at (0,64) width 741: "double-quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon (dark red)."
+          text run at (0,82) width 757: "Note that the inclusion of both the quotation mark and the 'W' in the first-letter style is not required under CSS1, but it"
+          text run at (0,100) width 114: "is recommended. "
+          text run at (113,100) width 462: "In addition, the entire first line should be in a small-caps font and green."
+      LayoutTable {TABLE} at (0,580) size 769x459 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 767x457
           LayoutTableRow {TR} at (0,0) size 767x26
             LayoutTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
               LayoutInline {STRONG} at (0,0) size 161x17
                 LayoutText {#text} at (4,4) size 161x17
                   text run at (4,4) width 161: "TABLE Testing Section"
-          LayoutTableRow {TR} at (0,26) size 767x413
-            LayoutTableCell {TD} at (0,219) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+          LayoutTableRow {TR} at (0,26) size 767x431
+            LayoutTableCell {TD} at (0,228) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
-            LayoutTableCell {TD} at (12,26) size 755x413 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,26) size 755x431 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 747x54
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#800000]
                   LayoutTextFragment (anonymous) at (0,0) size 10x17
@@ -92,14 +91,16 @@ layer at (0,0) size 785x1037 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,165) width 124: "has failed this test. "
                   text run at (123,165) width 619: "Remember that in order to ensure a complete test, the paragraph must be displayed on more than"
                   text run at (0,183) width 56: "one line."
-              LayoutBlockFlow {P} at (4,291) size 747x118
+              LayoutBlockFlow {P} at (4,291) size 747x136
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 76x62 [color=#800000]
                   LayoutTextFragment (anonymous) at (0,1) size 76x62
                     text run at (0,1) width 76: "\"W"
-                LayoutTextFragment {#text} at (75,37) size 744x80
-                  text run at (75,37) width 336: "e should check for quotation support,\" it was said. "
-                  text run at (410,37) width 304: "The first two characters in this paragraph-- a"
-                  text run at (0,64) width 741: "double-quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and maroon (dark red)."
-                  text run at (0,82) width 744: "Note that the inclusion of both the quotation mark and the 'W' in the first-letter style is not required under CSS1, but"
-                  text run at (0,100) width 127: "it is recommended. "
-                  text run at (126,100) width 462: "In addition, the entire first line should be in a small-caps font and green."
+                LayoutTextFragment {#text} at (75,37) size 711x98
+                  text run at (75,37) width 362: "e should check for quotation support,\" it was said. "
+                  text run at (436,37) width 230: "The first two characters in this"
+                  text run at (0,64) width 706: "paragraph-- a double-quote mark and a capital 'W'-- should be 350% bigger than the rest of the paragraph, and"
+                  text run at (0,82) width 125: "maroon (dark red). "
+                  text run at (124,82) width 578: "Note that the inclusion of both the quotation mark and the 'W' in the first-letter style is not"
+                  text run at (0,100) width 293: "required under CSS1, but it is recommended. "
+                  text run at (292,100) width 419: "In addition, the entire first line should be in a small-caps font and"
+                  text run at (0,118) width 40: "green."

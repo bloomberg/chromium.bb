@@ -1,0 +1,25 @@
+layer at (0,0) size 800x600 scrollHeight 708
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x708 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x708
+    LayoutBlockFlow {BODY} at (8,18) size 784x672 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x672
+        LayoutText {#text} at (0,38) size 734x116
+          text run at (0,38) width 734: "This text should be 18px sans-serif, in small-caps and italicized. The lines should be one inch"
+          text run at (0,134) width 53: "apart. "
+        LayoutInline {SPAN} at (0,0) size 776x500 [color=#C0C0C0]
+          LayoutText {#text} at (52,134) size 776x500
+            text run at (52,134) width 508: "dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (559,134) width 217: "text dummy text dummy text"
+            text run at (0,230) width 325: "dummy text dummy text dummy text dummy "
+            text run at (325,230) width 450: "text dummy text dummy text dummy text dummy text dummy"
+            text run at (0,326) width 91: "text dummy "
+            text run at (91,326) width 546: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (637,326) width 125: "text dummy text"
+            text run at (0,422) width 416: "dummy text dummy text dummy text dummy text dummy "
+            text run at (416,422) width 359: "text dummy text dummy text dummy text dummy"
+            text run at (0,518) width 182: "text dummy text dummy "
+            text run at (182,518) width 546: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (728,518) width 34: "text"
+            text run at (0,614) width 450: "dummy text dummy text dummy text dummy text dummy text"
+        LayoutText {#text} at (0,0) size 0x0
