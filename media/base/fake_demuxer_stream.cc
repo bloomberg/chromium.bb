@@ -146,6 +146,11 @@ void FakeDemuxerStream::SeekToStart() {
   Initialize();
 }
 
+void FakeDemuxerStream::SeekToEndOfStream() {
+  num_configs_left_ = 0;
+  num_buffers_left_in_current_config_ = 0;
+}
+
 void FakeDemuxerStream::UpdateVideoDecoderConfig() {
   const gfx::Rect kVisibleRect(kStartWidth, kStartHeight);
   video_decoder_config_.Initialize(

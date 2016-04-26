@@ -210,12 +210,14 @@ template <DemuxerStream::Type StreamType>
 bool DecoderStream<StreamType>::CanDecodeMore() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  bool buffers_left = !(fallback_buffers_.empty() && decoding_eos_);
+
   // Limit total number of outputs stored in |ready_outputs_| and being decoded.
   // It only makes sense to saturate decoder completely when output queue is
   // empty.
   int num_decodes =
       static_cast<int>(ready_outputs_.size()) + pending_decode_requests_;
-  return !decoding_eos_ && num_decodes < GetMaxDecodeRequests();
+  return buffers_left && num_decodes < GetMaxDecodeRequests();
 }
 
 template <DemuxerStream::Type StreamType>

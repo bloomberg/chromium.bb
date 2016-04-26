@@ -768,6 +768,47 @@ TEST_P(VideoFrameStreamTest, FallbackDecoder_SelectedOnInitialDecodeError) {
   ReadAllFrames();
 }
 
+TEST_P(VideoFrameStreamTest, FallbackDecoder_EndOfStreamReachedBeforeFallback) {
+  // Only consider cases where there is a decoder delay. For test simplicity,
+  // omit the parallel case.
+  if (GetParam().decoding_delay == 0 || GetParam().parallel_decoding > 1)
+    return;
+
+  Initialize();
+  decoder1_->HoldDecode();
+  ReadOneFrame();
+
+  // One buffer should have already pulled from the demuxer stream. Set the next
+  // one to be an EOS.
+  demuxer_stream_->SeekToEndOfStream();
+
+  decoder1_->SatisfySingleDecode();
+  message_loop_.RunUntilIdle();
+
+  // |video_frame_stream_| should not have emited a frame.
+  EXPECT_TRUE(pending_read_);
+
+  // Pending buffers should contain a regular buffer and an EOS buffer.
+  EXPECT_EQ(video_frame_stream_->get_pending_buffers_size_for_testing(), 2);
+
+  decoder1_->SimulateError();
+  message_loop_.RunUntilIdle();
+
+  //  A frame should have been emited
+  EXPECT_FALSE(pending_read_);
+  EXPECT_EQ(last_read_status_, VideoFrameStream::OK);
+  EXPECT_FALSE(
+      frame_read_->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_GT(decoder2_->total_bytes_decoded(), 0);
+
+  ReadOneFrame();
+
+  EXPECT_FALSE(pending_read_);
+  EXPECT_EQ(0, video_frame_stream_->get_fallback_buffers_size_for_testing());
+  EXPECT_TRUE(
+      frame_read_->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+}
+
 TEST_P(VideoFrameStreamTest,
        FallbackDecoder_SelectedOnInitialDecodeError_Twice) {
   Initialize();
