@@ -21,10 +21,8 @@
 #define LayoutSVGResourceMarker_h
 
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/svg/SVGElement.h"
 #include "core/svg/SVGMarkerElement.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 
@@ -48,8 +46,8 @@ public:
 
     FloatPoint referencePoint() const;
     float angle() const;
-    SVGMarkerUnitsType markerUnits() const { return toSVGMarkerElement(element())->markerUnits()->currentValue()->enumValue(); }
-    SVGMarkerOrientType orientType() const { return toSVGMarkerElement(element())->orientType()->currentValue()->enumValue(); }
+    SVGMarkerUnitsType markerUnits() const;
+    SVGMarkerOrientType orientType() const;
 
     const FloatRect& viewport() const { return m_viewport; }
 

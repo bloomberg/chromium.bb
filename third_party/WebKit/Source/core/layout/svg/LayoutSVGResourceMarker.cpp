@@ -21,8 +21,6 @@
 
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 
-#include "core/layout/svg/LayoutSVGContainer.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -92,23 +90,29 @@ FloatPoint LayoutSVGResourceMarker::referencePoint() const
 
 float LayoutSVGResourceMarker::angle() const
 {
-    SVGMarkerElement* marker = toSVGMarkerElement(element());
-    ASSERT(marker);
+    ASSERT(element());
 
     float angle = -1;
-    if (marker->orientType()->currentValue()->enumValue() == SVGMarkerOrientAngle)
-        angle = marker->orientAngle()->currentValue()->value();
+    if (orientType() == SVGMarkerOrientAngle)
+        angle = toSVGMarkerElement(*element()).orientAngle()->currentValue()->value();
 
     return angle;
 }
 
+SVGMarkerUnitsType LayoutSVGResourceMarker::markerUnits() const
+{
+    return toSVGMarkerElement(element())->markerUnits()->currentValue()->enumValue();
+}
+
+SVGMarkerOrientType LayoutSVGResourceMarker::orientType() const
+{
+    return toSVGMarkerElement(element())->orientType()->currentValue()->enumValue();
+}
+
 AffineTransform LayoutSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
 {
-    SVGMarkerElement* marker = toSVGMarkerElement(element());
-    ASSERT(marker);
-
     float markerAngle = angle();
-    bool useStrokeWidth = marker->markerUnits()->currentValue()->enumValue() == SVGMarkerUnitsStrokeWidth;
+    bool useStrokeWidth = markerUnits() == SVGMarkerUnitsStrokeWidth;
 
     AffineTransform transform;
     transform.translate(origin.x(), origin.y());
