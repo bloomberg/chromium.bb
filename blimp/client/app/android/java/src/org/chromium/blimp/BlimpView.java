@@ -16,6 +16,7 @@ import android.view.WindowManager;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.session.BlimpClientSession;
+import org.chromium.ui.UiUtils;
 
 /**
  * A {@link View} that will visually represent the Blimp rendered content.  This {@link View} starts
@@ -95,6 +96,10 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
         if (mNativeBlimpViewPtr == 0) return false;
 
         int eventAction = event.getActionMasked();
+
+        // Close the IME. It might be open for typing URL into toolbar.
+        // TODO(shaktisahu): Detect if the IME was open and return immediately (crbug/606977)
+        UiUtils.hideKeyboard(this);
 
         if (!isValidTouchEventActionForNative(eventAction)) return false;
 
