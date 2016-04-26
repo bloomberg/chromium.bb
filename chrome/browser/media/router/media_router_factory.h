@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_FACTORY_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_FACTORY_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -31,14 +30,9 @@ class MediaRouterFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaRouterFactory>;
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterFactoryTest,
-                           OffTheRecordBrowserContextShutdown);
 
   MediaRouterFactory();
   ~MediaRouterFactory() override;
-
-  // Exposed for testing.
-  static MediaRouterFactory* GetMediaRouterFactoryForTest();
 
   // BrowserContextKeyedServiceFactory interface.
   content::BrowserContext* GetBrowserContextToUse(
