@@ -145,6 +145,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::FileDescriptorInfo* mappings,
       std::map<int, base::MemoryMappedFile::Region>* regions) override;
 #else
+  ::media::ScopedAudioManagerPtr CreateAudioManager(
+      ::media::AudioLogFactory* audio_log_factory) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

@@ -25,7 +25,6 @@ namespace media {
 
 class AudioInputStream;
 class AudioManager;
-class AudioManagerFactory;
 class AudioOutputStream;
 
 class MEDIA_EXPORT AudioManagerDeleter {
@@ -44,16 +43,6 @@ using ScopedAudioManagerPtr =
 // logged on Windows (this allows us to report driver hangs to Microsoft).
 class MEDIA_EXPORT AudioManager {
  public:
-  // This provides an alternative to the statically linked factory method used
-  // to create AudioManager. This is useful for dynamically-linked third
-  // party clients seeking to provide a platform-specific implementation of
-  // AudioManager. After this is called, all static AudioManager::Create*
-  // methods will return an instance of AudioManager provided by |factory|. This
-  // call may be made at most once per process, and before any calls to static
-  // AudioManager::Create* methods. This method takes ownership of |factory|,
-  // which must not be NULL.
-  static void SetFactory(AudioManagerFactory* factory);
-
   // Construct the audio manager; only one instance is allowed.
   // The returned instance must be deleted on AudioManager::GetTaskRunnner().
   //
@@ -70,18 +59,21 @@ class MEDIA_EXPORT AudioManager {
   // The manager will use |worker_task_runner| for heavyweight tasks.
   // The |worker_task_runner| may be the same as |task_runner|. This same
   // task runner is returned by GetWorkerTaskRunner.
-  //
-  // If |monitor_task_runner| is not NULL, a monitor will be scheduled on
-  // |monitor_task_runner| to monitor |task_runner|. See EnableHangMonitor().
   static ScopedAudioManagerPtr Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner,
       AudioLogFactory* audio_log_factory);
 
   // A convenience wrapper of AudioManager::Create for testing.
   // The given |task_runner| is shared for both audio io and heavyweight tasks.
   static ScopedAudioManagerPtr CreateForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Starts monitoring AudioManager task runner for hangs.
+  // Runs the monitor on the given |task_runner|, which must be different from
+  // AudioManager::GetTaskRunner to be meaningful.
+  // This must be called only after an AudioManager instance is created.
+  static void StartHangMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Enables non-crash dumps when audio thread hangs are detected.
@@ -99,10 +91,6 @@ class MEDIA_EXPORT AudioManager {
   // Returns the app name or an empty string if it is not set.
   static const std::string& GetGlobalAppName();
 #endif
-
-  // Should only be used for testing. Resets a previously-set
-  // AudioManagerFactory. The instance of AudioManager is not affected.
-  static void ResetFactoryForTesting();
 
   // Returns the pointer to the last created instance, or NULL if not yet
   // created. This is a utility method for the code outside of media directory,

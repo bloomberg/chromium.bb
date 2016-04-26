@@ -20,7 +20,6 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "media/audio/audio_manager_factory.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media_resources.h"
 #include "media/base/media_switches.h"
@@ -35,13 +34,6 @@ namespace {
 
 // The singleton instance of AudioManager. This is set when Create() is called.
 AudioManager* g_last_created = nullptr;
-
-// The singleton instance of AudioManagerFactory. This is only set if
-// SetFactory() is called. If it is set when Create() is called, its
-// CreateInstance() function is used to set |g_last_created|. Otherwise, the
-// linked implementation of media::CreateAudioManager is used to set
-// |g_last_created|.
-AudioManagerFactory* g_audio_manager_factory = nullptr;
 
 // Maximum number of failed pings to the audio thread allowed. A UMA will be
 // recorded once this count is reached; if enabled, a non-crash dump will be
@@ -73,9 +65,8 @@ class AudioManagerHelper : public base::PowerObserver {
       scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner) {
     CHECK(!monitor_task_runner_);
     CHECK(!audio_task_runner_);
-    CHECK(g_last_created);
     monitor_task_runner_ = std::move(monitor_task_runner);
-    audio_task_runner_ = g_last_created->GetTaskRunner();
+    audio_task_runner_ = AudioManager::Get()->GetTaskRunner();
     base::PowerMonitor::Get()->AddObserver(this);
 
     io_task_running_ = audio_task_running_ = true;
@@ -316,44 +307,14 @@ AudioManager::~AudioManager() {
 }
 
 // static
-void AudioManager::SetFactory(AudioManagerFactory* factory) {
-  CHECK(factory);
-  CHECK(!g_last_created);
-  CHECK(!g_audio_manager_factory);
-  g_audio_manager_factory = factory;
-}
-
-// static
-void AudioManager::ResetFactoryForTesting() {
-  if (g_audio_manager_factory) {
-    delete g_audio_manager_factory;
-    g_audio_manager_factory = nullptr;
-  }
-}
-
-// static
 ScopedAudioManagerPtr AudioManager::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner,
     AudioLogFactory* audio_log_factory) {
   DCHECK(task_runner);
   DCHECK(worker_task_runner);
-  ScopedAudioManagerPtr manager;
-  if (g_audio_manager_factory) {
-    manager = g_audio_manager_factory->CreateInstance(
-        std::move(task_runner), std::move(worker_task_runner),
-        audio_log_factory);
-  } else {
-    manager =
-        CreateAudioManager(std::move(task_runner),
-                           std::move(worker_task_runner), audio_log_factory);
-  }
-
-  if (monitor_task_runner)
-    g_helper.Pointer()->StartHangTimer(std::move(monitor_task_runner));
-
-  return manager;
+  return CreateAudioManager(std::move(task_runner),
+                            std::move(worker_task_runner), audio_log_factory);
 }
 
 // static
@@ -362,8 +323,18 @@ ScopedAudioManagerPtr AudioManager::CreateForTesting(
 #if defined(OS_WIN)
   g_helper.Pointer()->InitializeCOMForTesting();
 #endif
-  return Create(task_runner, task_runner, nullptr,
+  return Create(task_runner, task_runner,
                 g_helper.Pointer()->fake_log_factory());
+}
+
+// static
+void AudioManager::StartHangMonitor(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(AudioManager::Get());
+  DCHECK(task_runner);
+  DCHECK_NE(task_runner, AudioManager::Get()->GetTaskRunner());
+
+  g_helper.Pointer()->StartHangTimer(std::move(task_runner));
 }
 
 // static

@@ -102,6 +102,11 @@ bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
   return false;
 }
 
+media::ScopedAudioManagerPtr ContentBrowserClient::CreateAudioManager(
+    media::AudioLogFactory* audio_log_factory) {
+  return nullptr;
+}
+
 std::unique_ptr<media::CdmFactory> ContentBrowserClient::CreateCdmFactory() {
   return nullptr;
 }

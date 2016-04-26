@@ -1489,31 +1489,38 @@ void BrowserMainLoop::EndStartupTracing() {
 void BrowserMainLoop::CreateAudioManager() {
   DCHECK(!audio_thread_);
   DCHECK(!audio_manager_);
-  // TODO(alokp): Allow content embedders to override the default
-  // task runners by defining ContentBrowserClient::GetAudioTaskRunner.
-  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner;
-  scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner;
-  scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner;
-  audio_thread_.reset(new base::Thread("AudioThread"));
+
+  bool use_hang_monitor = true;
+  audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
+      MediaInternals::GetInstance());
+  if (!audio_manager_) {
+    audio_thread_.reset(new base::Thread("AudioThread"));
 #if defined(OS_WIN)
-  audio_thread_->init_com_with_mta(true);
+    audio_thread_->init_com_with_mta(true);
 #endif  // defined(OS_WIN)
-  CHECK(audio_thread_->Start());
+    CHECK(audio_thread_->Start());
 #if defined(OS_MACOSX)
-  // On Mac audio task runner must belong to the main thread.
-  // See http://crbug.com/158170.
-  // Since the audio thread is the UI thread, a hang monitor is not
-  // necessary or recommended.
-  audio_task_runner = base::ThreadTaskRunnerHandle::Get();
-  worker_task_runner = audio_thread_->task_runner();
+    // On Mac audio task runner must belong to the main thread.
+    // See http://crbug.com/158170.
+    // Since the audio thread is the UI thread, a hang monitor is not
+    // necessary or recommended.
+    use_hang_monitor = false;
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
+        base::ThreadTaskRunnerHandle::Get();
 #else
-  audio_task_runner = audio_thread_->task_runner();
-  worker_task_runner = audio_thread_->task_runner();
-  monitor_task_runner = io_thread_->task_runner();
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
+        audio_thread_->task_runner();
 #endif  // defined(OS_MACOSX)
-  audio_manager_ = media::AudioManager::Create(
-      std::move(audio_task_runner), std::move(worker_task_runner),
-      std::move(monitor_task_runner), MediaInternals::GetInstance());
+    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner =
+        audio_thread_->task_runner();
+    audio_manager_ = media::AudioManager::Create(std::move(audio_task_runner),
+                                                 std::move(worker_task_runner),
+                                                 MediaInternals::GetInstance());
+  }
+  CHECK(audio_manager_);
+
+  if (use_hang_monitor)
+    media::AudioManager::StartHangMonitor(io_thread_->task_runner());
 }
 
 }  // namespace content

@@ -24,6 +24,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -705,6 +706,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
       NavigationHandle* navigation_handle);
 
+  // Allows the embedder to provide its own AudioManager implementation.
+  // If this function returns nullptr, a default platform implementation
+  // will be used.
+  virtual media::ScopedAudioManagerPtr CreateAudioManager(
+      media::AudioLogFactory* audio_log_factory);
   // Creates and returns a factory used for creating CDM instances for playing
   // protected content.
   virtual std::unique_ptr<media::CdmFactory> CreateCdmFactory();

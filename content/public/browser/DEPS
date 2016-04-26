@@ -1,3 +1,6 @@
+include_rules = [
+  "+media/audio"  # For AudioManager.
+]
 specific_include_rules = {
   ".*\.cc": [
     "+content/browser",

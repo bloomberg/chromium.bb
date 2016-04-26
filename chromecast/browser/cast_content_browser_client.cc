@@ -32,6 +32,7 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/content/app/breakpad_linux.h"
@@ -426,6 +427,12 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 }
 
 #else
+::media::ScopedAudioManagerPtr CastContentBrowserClient::CreateAudioManager(
+    ::media::AudioLogFactory* audio_log_factory) {
+  return ::media::ScopedAudioManagerPtr(new media::CastAudioManager(
+      GetMediaTaskRunner(), GetMediaTaskRunner(), audio_log_factory,
+      media_pipeline_backend_manager()));
+}
 
 std::unique_ptr<::media::CdmFactory>
 CastContentBrowserClient::CreateCdmFactory() {

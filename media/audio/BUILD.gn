@@ -287,7 +287,6 @@ source_set("unittests") {
   sources = [
     "audio_input_controller_unittest.cc",
     "audio_input_unittest.cc",
-    "audio_manager_factory_unittest.cc",
     "audio_manager_unittest.cc",
     "audio_output_controller_unittest.cc",
     "audio_output_device_unittest.cc",

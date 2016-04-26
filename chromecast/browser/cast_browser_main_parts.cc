@@ -37,7 +37,6 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_features.h"
 #include "chromecast/common/platform_client_auth.h"
-#include "chromecast/media/audio/cast_audio_manager_factory.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/base/media_resource_tracker.h"
@@ -54,7 +53,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "media/audio/audio_manager.h"
 #include "media/base/media.h"
 #include "ui/compositor/compositor_switches.h"
 
@@ -347,11 +345,6 @@ int CastBrowserMainParts::PreCreateThreads() {
 
   // Hook for internal code
   cast_browser_process_->browser_client()->PreCreateThreads();
-
-  // AudioManager is created immediately after threads are created, requiring
-  // AudioManagerFactory to be set beforehand.
-  ::media::AudioManager::SetFactory(
-      new media::CastAudioManagerFactory(media_pipeline_backend_manager()));
 
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.

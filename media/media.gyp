@@ -1433,7 +1433,6 @@
         'sources': [
           'audio/audio_input_controller_unittest.cc',
           'audio/audio_input_unittest.cc',
-          'audio/audio_manager_factory_unittest.cc',
           'audio/audio_manager_unittest.cc',
           'audio/audio_output_controller_unittest.cc',
           'audio/audio_output_device_unittest.cc',

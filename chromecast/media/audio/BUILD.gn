@@ -6,8 +6,6 @@ source_set("audio") {
   sources = [
     "cast_audio_manager.cc",
     "cast_audio_manager.h",
-    "cast_audio_manager_factory.cc",
-    "cast_audio_manager_factory.h",
     "cast_audio_output_stream.cc",
     "cast_audio_output_stream.h",
   ]
