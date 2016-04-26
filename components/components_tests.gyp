@@ -409,6 +409,7 @@
     'offline_page_unittest_sources': [
       'offline_pages/offline_page_metadata_store_impl_unittest.cc',
       'offline_pages/offline_page_model_unittest.cc',
+      'offline_pages/snapshot_controller_unittest.cc',
     ],
     'omnibox_unittest_sources': [
       'omnibox/browser/answers_cache_unittest.cc',

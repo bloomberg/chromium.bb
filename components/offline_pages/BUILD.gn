@@ -18,6 +18,8 @@ static_library("offline_pages") {
     "offline_page_metadata_store_impl.h",
     "offline_page_model.cc",
     "offline_page_model.h",
+    "snapshot_controller.cc",
+    "snapshot_controller.h",
   ]
 
   deps = [
@@ -68,6 +70,7 @@ source_set("unit_tests") {
   sources = [
     "offline_page_metadata_store_impl_unittest.cc",
     "offline_page_model_unittest.cc",
+    "snapshot_controller_unittest.cc",
   ]
 
   deps = [
