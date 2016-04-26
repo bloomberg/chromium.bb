@@ -62,7 +62,6 @@ class GFX_EXPORT SkiaTextRenderer {
                            bool subpixel_rendering_suppressed);
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(SkScalar size);
-  void SetFontWithStyle(const Font& font, int font_style);
   void SetForegroundColor(SkColor foreground);
   void SetShader(sk_sp<SkShader> shader);
   // Sets underline metrics to use if the text will be drawn with an underline.
@@ -187,8 +186,8 @@ struct Line {
 };
 
 // Creates an SkTypeface from a font and a |gfx::Font::FontStyle|.
-// May return NULL.
-skia::RefPtr<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style);
+// May return null.
+sk_sp<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style);
 
 // Applies the given FontRenderParams to a Skia |paint|.
 void ApplyRenderParams(const FontRenderParams& params,

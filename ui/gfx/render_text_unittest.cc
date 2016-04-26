@@ -236,6 +236,61 @@ class TestRectangleBuffer {
   DISALLOW_COPY_AND_ASSIGN(TestRectangleBuffer);
 };
 
+// Helper to run the same test expectations on all RenderText backends.
+class RenderTextAllBackends {
+ public:
+  RenderTextAllBackends() : renderer_(&canvas_), current_(nullptr) {}
+
+  bool Advance() {
+    if (!current_) {
+      current_ = &render_text_harfbuzz_;
+      return true;
+    }
+#if defined(OS_MACOSX)
+    if (current_ == &render_text_harfbuzz_) {
+      current_ = &render_text_mac_;
+      return true;
+    }
+#endif
+
+    return false;
+  }
+
+  const char* GetName() const {
+    return current_ == &render_text_harfbuzz_ ? "Harfbuzz" : "Mac";
+  }
+
+  RenderText* operator->() {
+    return current_;
+  }
+
+  void DrawVisualText() {
+    test::RenderTextTestApi test_api(current_);
+    test_api.DrawVisualText(&renderer_);
+  }
+
+  void GetTextLogAndReset(std::vector<TestSkiaTextRenderer::TextLog>* log) {
+    renderer_.GetTextLogAndReset(log);
+  }
+
+  SkTypeface* GetTypeface() {
+    SkPaint& paint = test::RenderTextTestApi::GetRendererPaint(&renderer_);
+    return paint.getTypeface();
+  }
+
+ private:
+  Canvas canvas_;
+  TestSkiaTextRenderer renderer_;
+  RenderText* current_;
+
+  RenderTextHarfBuzz render_text_harfbuzz_;
+#if defined(OS_MACOSX)
+  RenderTextMac render_text_mac_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(RenderTextAllBackends);
+};
+
 }  // namespace
 
 using RenderTextTest = testing::Test;
@@ -3183,39 +3238,56 @@ TEST_F(RenderTextTest, Mac_ElidedText) {
 
 // Ensure color changes are picked up by the RenderText implementation.
 TEST_F(RenderTextTest, ColorChange) {
-  RenderTextHarfBuzz render_text_harfbuzz;
-#if defined(OS_MACOSX)
-  RenderTextMac render_text_mac;
-#endif
+  RenderTextAllBackends backend;
 
-  RenderText* backend[] = {
-    &render_text_harfbuzz,
-#if defined(OS_MACOSX)
-    &render_text_mac,
-#endif
-  };
-
-  Canvas canvas;
-  TestSkiaTextRenderer renderer(&canvas);
-
-  for (size_t i = 0; i < arraysize(backend); ++i) {
-    SCOPED_TRACE(testing::Message() << "backend: " << i);
-    test::RenderTextTestApi test_api(backend[i]);
-    backend[i]->SetText(ASCIIToUTF16("x"));
-    test_api.DrawVisualText(&renderer);
+  while (backend.Advance()) {
+    SCOPED_TRACE(testing::Message() << "backend: " << backend.GetName());
+    backend->SetText(ASCIIToUTF16("x"));
+    backend.DrawVisualText();
 
     std::vector<TestSkiaTextRenderer::TextLog> text_log;
-
-    renderer.GetTextLogAndReset(&text_log);
+    backend.GetTextLogAndReset(&text_log);
     EXPECT_EQ(1u, text_log.size());
     EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
 
-    backend[i]->SetColor(SK_ColorRED);
-    test_api.DrawVisualText(&renderer);
+    backend->SetColor(SK_ColorRED);
+    backend.DrawVisualText();
+    backend.GetTextLogAndReset(&text_log);
 
-    renderer.GetTextLogAndReset(&text_log);
     EXPECT_EQ(1u, text_log.size());
     EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  }
+}
+
+// Ensure style information propagates to the typeface on the text renderer.
+TEST_F(RenderTextTest, StylePropagated) {
+  RenderTextAllBackends backend;
+
+  // Default-constructed fonts on Mac are system fonts. These can have all kinds
+  // of weird weights and style, which are preserved by PlatformFontMac, but do
+  // not map simply to a SkTypeface::Style (the full details in SkFontStyle is
+  // needed). They also vary depending on the OS version, so set a known font.
+  gfx::FontList font_list(gfx::Font("Arial", 10));
+
+  while (backend.Advance()) {
+    SCOPED_TRACE(testing::Message() << "backend: " << backend.GetName());
+    backend->SetText(ASCIIToUTF16("x"));
+    backend->SetFontList(font_list);
+
+    backend.DrawVisualText();
+    EXPECT_EQ(SkTypeface::kNormal, backend.GetTypeface()->style());
+
+    backend->SetStyle(TextStyle::BOLD, true);
+    backend.DrawVisualText();
+    EXPECT_EQ(SkTypeface::kBold, backend.GetTypeface()->style());
+
+    backend->SetStyle(TextStyle::ITALIC, true);
+    backend.DrawVisualText();
+    EXPECT_EQ(SkTypeface::kBoldItalic, backend.GetTypeface()->style());
+
+    backend->SetStyle(TextStyle::BOLD, false);
+    backend.DrawVisualText();
+    EXPECT_EQ(SkTypeface::kItalic, backend.GetTypeface()->style());
   }
 }
 

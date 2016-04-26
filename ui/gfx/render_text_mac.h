@@ -69,6 +69,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
     std::vector<SkPoint> glyph_positions;
     SkScalar width;
     Font font;
+    sk_sp<SkTypeface> typeface;
     SkColor foreground;
     bool underline;
     bool strike;
