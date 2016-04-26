@@ -67,22 +67,22 @@ class RietveldApi(recipe_api.RecipeApi):
     if authentication == 'oauth2':
       step_result = self.m.python(
         'apply_issue',
-        self.m.path['depot_tools'].join('apply_issue.py'), [
+        self.m.infra_paths['depot_tools'].join('apply_issue.py'), [
           '-r', self.m.path['checkout'].join(*root_pieces),
           '-i', issue_number,
           '-p', self.m.properties['patchset'],
           '-s', rietveld_url,
-          '-E', self.m.path['build'].join('site_config',
-                                          '.rietveld_client_email'),
-          '-k', self.m.path['build'].join('site_config',
-                                          '.rietveld_secret_key')
+          '-E', self.m.infra_paths['build'].join(
+              'site_config', '.rietveld_client_email'),
+          '-k', self.m.infra_paths['build'].join(
+              'site_config', '.rietveld_secret_key')
           ],
         )
 
     else:
       step_result = self.m.python(
         'apply_issue',
-        self.m.path['depot_tools'].join('apply_issue.py'), [
+        self.m.infra_paths['depot_tools'].join('apply_issue.py'), [
           '-r', self.m.path['checkout'].join(*root_pieces),
           '-i', issue_number,
           '-p', self.m.properties['patchset'],

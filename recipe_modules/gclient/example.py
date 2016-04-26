@@ -4,6 +4,7 @@
 
 DEPS = [
   'gclient',
+  'infra_paths',
   'recipe_engine/path',
   'recipe_engine/properties',
 ]
@@ -81,7 +82,7 @@ def RunSteps(api):
   api.gclient.checkout(
       gclient_config=bl_cfg,
       with_branch_heads=True,
-      cwd=api.path['slave_build'].join('src', 'third_party'))
+      cwd=api.infra_paths['slave_build'].join('src', 'third_party'))
 
   api.gclient.break_locks()
 

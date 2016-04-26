@@ -19,15 +19,14 @@
       "--git-cache-dir",
       "[GIT_CACHE]",
       "--apply_issue_email_file",
-      "[BUILD]/site_config/.rietveld_client_email",
+      "[ROOT]/b/build/site_config/.rietveld_client_email",
       "--apply_issue_key_file",
-      "[BUILD]/site_config/.rietveld_secret_key",
+      "[ROOT]/b/build/site_config/.rietveld_secret_key",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
