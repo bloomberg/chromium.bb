@@ -1289,7 +1289,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Load cross-site page into iframe.
   GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
-  NavigateFrameToURL(root->child_at(0), url);
+  NavigateFrameToURL(child, url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(url, observer.last_navigation_url());
   EXPECT_EQ(
@@ -1320,7 +1320,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Load cross-site page into iframe.
   url = embedded_test_server()->GetURL("bar.com", "/title2.html");
-  NavigateFrameToURL(root->child_at(0), url);
+  NavigateFrameToURL(child, url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(url, observer.last_navigation_url());
   EXPECT_EQ(
@@ -1347,6 +1347,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "   +--Site A\n"
       "        +--Site A\n"
       "Where A = http://a.com/",
+      DepictFrameTree(root));
+
+  // Load cross-site page into iframe again.
+  url = embedded_test_server()->GetURL("f00.com", "/title3.html");
+  NavigateFrameToURL(child, url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, observer.last_navigation_url());
+  EXPECT_EQ(
+      " Site A ------------ proxies for D\n"
+      "   |--Site D ------- proxies for A\n"
+      "   +--Site A ------- proxies for D\n"
+      "        +--Site A -- proxies for D\n"
+      "Where A = http://a.com/\n"
+      "      D = http://f00.com/",
+      DepictFrameTree(root));
+
+  // Navigate the iframe itself to about:blank using a script executing in its
+  // own context. It should stay in the same SiteInstance as before, not the
+  // parent one.
+  std::string script(
+      "window.domAutomationController.send("
+      "window.location.href = 'about:blank');");
+  TestFrameNavigationObserver frame_observer(child);
+  EXPECT_TRUE(ExecuteScript(child->current_frame_host(), script));
+  frame_observer.Wait();
+  EXPECT_EQ(about_blank_url, child->current_url());
+
+  // Ensure that we have navigated using the top level process.
+  EXPECT_EQ(
+      " Site A ------------ proxies for D\n"
+      "   |--Site D ------- proxies for A\n"
+      "   +--Site A ------- proxies for D\n"
+      "        +--Site A -- proxies for D\n"
+      "Where A = http://a.com/\n"
+      "      D = http://f00.com/",
       DepictFrameTree(root));
 }
 
