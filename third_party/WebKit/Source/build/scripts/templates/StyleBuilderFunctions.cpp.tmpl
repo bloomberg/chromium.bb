@@ -460,12 +460,12 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
 {
     Vector<GridTrackSize> trackSizes;
     Vector<GridTrackSize> autoRepeatTrackSizes;
-    size_t autoRepeatInsertionPoint;
     NamedGridLinesMap namedGridLines;
     OrderedNamedGridLines orderedNamedGridLines;
     NamedGridLinesMap autoRepeatNamedGridLines;
     OrderedNamedGridLines autoRepeatOrderedNamedGridLines;
-    AutoRepeatType autoRepeatType;
+    AutoRepeatType autoRepeatType = ComputedStyle::initialGridAutoRepeatType();
+    size_t autoRepeatInsertionPoint = ComputedStyle::initialGridAutoRepeatInsertionPoint();
     StyleBuilderConverter::convertGridTrackList(*value, trackSizes, namedGridLines, orderedNamedGridLines, autoRepeatTrackSizes, autoRepeatNamedGridLines, autoRepeatOrderedNamedGridLines, autoRepeatInsertionPoint, autoRepeatType, state);
     const NamedGridAreaMap& namedGridAreas = state.style()->namedGridArea();
     if (!namedGridAreas.isEmpty())
@@ -473,13 +473,11 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     state.style()->setGridTemplate{{type}}s(trackSizes);
     state.style()->setNamedGrid{{type}}Lines(namedGridLines);
     state.style()->setOrderedNamedGrid{{type}}Lines(orderedNamedGridLines);
-    if (autoRepeatTrackSizes.size()) {
-        state.style()->setGridAutoRepeat{{type}}s(autoRepeatTrackSizes);
-        state.style()->setGridAutoRepeat{{type}}sInsertionPoint(autoRepeatInsertionPoint);
-        state.style()->setAutoRepeatNamedGrid{{type}}Lines(autoRepeatNamedGridLines);
-        state.style()->setAutoRepeatOrderedNamedGrid{{type}}Lines(autoRepeatOrderedNamedGridLines);
-        state.style()->setGridAutoRepeatType(autoRepeatType);
-    }
+    state.style()->setGridAutoRepeat{{type}}s(autoRepeatTrackSizes);
+    state.style()->setGridAutoRepeat{{type}}sInsertionPoint(autoRepeatInsertionPoint);
+    state.style()->setAutoRepeatNamedGrid{{type}}Lines(autoRepeatNamedGridLines);
+    state.style()->setAutoRepeatOrderedNamedGrid{{type}}Lines(autoRepeatOrderedNamedGridLines);
+    state.style()->setGridAutoRepeatType(autoRepeatType);
 }
 {% endmacro %}
 {{apply_grid_template('CSSPropertyGridTemplateColumns', 'Column')}}
