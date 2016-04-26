@@ -336,6 +336,8 @@
         'base/encryption_scheme.h',
         'base/key_system_info.cc',
         'base/key_system_info.h',
+        'base/key_system_properties.cc',
+        'base/key_system_properties.h',
         'base/key_systems.cc',
         'base/key_systems.h',
         'base/keyboard_event_counter.cc',

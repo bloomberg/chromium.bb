@@ -27,10 +27,9 @@ class MEDIA_EXPORT KeySystemProperties {
 
   // Returns the codecs supported by this key system.
   virtual SupportedCodecs GetSupportedCodecs() const = 0;
-#if defined(OS_ANDROID)
+
   // Returns the codecs with hardware-secure support in this key system.
-  virtual SupportedCodecs GetSupportedSecureCodecs() const = 0;
-#endif
+  virtual SupportedCodecs GetSupportedSecureCodecs() const;
 
   // Returns the configuration rule for supporting a robustness requirement.
   virtual EmeConfigRule GetRobustnessConfigRule(
@@ -53,11 +52,9 @@ class MEDIA_EXPORT KeySystemProperties {
   virtual EmeFeatureSupport GetDistinctiveIdentifierSupport() const = 0;
 
   // Returns whether AesDecryptor can be used for this key system.
-  virtual bool UseAesDecryptor() const = 0;
+  virtual bool UseAesDecryptor() const;
 
-#if defined(ENABLE_PEPPER_CDMS)
-  virtual std::string GetPepperType() const = 0;
-#endif
+  virtual std::string GetPepperType() const;
 };
 
 // TODO(halliwell): remove this before M52.  Replace with subclasses that

@@ -83,46 +83,63 @@ static EmeRobustness ConvertRobustness(const std::string& robustness) {
   return EmeRobustness::INVALID;
 }
 
-static void AddClearKey(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-  KeySystemInfo info;
-  info.key_system = kClearKeyKeySystem;
+class ClearKeyProperties : public KeySystemProperties {
+ public:
+  std::string GetKeySystemName() const override { return kClearKeyKeySystem; }
 
-  // On Android, Vorbis, VP8, AAC and AVC1 are supported in MediaCodec:
-  // http://developer.android.com/guide/appendix/media-formats.html
-  // VP9 support is device dependent.
+  bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override {
+#if defined(USE_PROPRIETARY_CODECS)
+    if (init_data_type == EmeInitDataType::CENC)
+      return true;
+#endif
+    return init_data_type == EmeInitDataType::WEBM ||
+           init_data_type == EmeInitDataType::KEYIDS;
+  }
 
-  info.supported_init_data_types =
-      kInitDataTypeMaskWebM | kInitDataTypeMaskKeyIds;
-  info.supported_codecs = EME_CODEC_WEBM_ALL;
+  SupportedCodecs GetSupportedCodecs() const override {
+    // On Android, Vorbis, VP8, AAC and AVC1 are supported in MediaCodec:
+    // http://developer.android.com/guide/appendix/media-formats.html
+    // VP9 support is device dependent.
+    SupportedCodecs codecs = EME_CODEC_WEBM_ALL;
 
 #if defined(OS_ANDROID)
-  // Temporarily disable VP9 support for Android.
-  // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
-  info.supported_codecs &= ~EME_CODEC_WEBM_VP9;
+    // Temporarily disable VP9 support for Android.
+    // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
+    codecs &= ~EME_CODEC_WEBM_VP9;
 
-  // Opus is not supported on Android yet. http://crbug.com/318436.
-  // TODO(sandersd): Check for platform support to set this bit.
-  info.supported_codecs &= ~EME_CODEC_WEBM_OPUS;
+    // Opus is not supported on Android yet. http://crbug.com/318436.
+    // TODO(sandersd): Check for platform support to set this bit.
+    codecs &= ~EME_CODEC_WEBM_OPUS;
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_init_data_types |= kInitDataTypeMaskCenc;
-  info.supported_codecs |= EME_CODEC_MP4_ALL;
+    codecs |= EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
-  info.max_audio_robustness = EmeRobustness::EMPTY;
-  info.max_video_robustness = EmeRobustness::EMPTY;
-  info.persistent_license_support = EmeSessionTypeSupport::NOT_SUPPORTED;
-  info.persistent_release_message_support =
-      EmeSessionTypeSupport::NOT_SUPPORTED;
-  info.persistent_state_support = EmeFeatureSupport::NOT_SUPPORTED;
-  info.distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
+    return codecs;
+  }
 
-  info.use_aes_decryptor = true;
-
-  key_systems->emplace_back(new InfoBasedKeySystemProperties(info));
-}
+  EmeConfigRule GetRobustnessConfigRule(
+      EmeMediaType media_type,
+      const std::string& requested_robustness) const override {
+    return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
+                                        : EmeConfigRule::NOT_SUPPORTED;
+  }
+  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+      const override {
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+  EmeFeatureSupport GetPersistentStateSupport() const override {
+    return EmeFeatureSupport::NOT_SUPPORTED;
+  }
+  EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return EmeFeatureSupport::NOT_SUPPORTED;
+  }
+  bool UseAesDecryptor() const override { return true; }
+};
 
 // Returns whether the |key_system| is known to Chromium and is thus likely to
 // be implemented in an interoperable way.
@@ -376,7 +393,7 @@ void KeySystemsImpl::UpdateSupportedKeySystems() {
     GetMediaClient()->AddSupportedKeySystems(&key_systems_properties);
 
   // Clear Key is always supported.
-  AddClearKey(&key_systems_properties);
+  key_systems_properties.emplace_back(new ClearKeyProperties());
 
   AddSupportedKeySystems(&key_systems_properties);
 }
@@ -505,6 +522,7 @@ bool InfoBasedKeySystemProperties::IsSupportedInitDataType(
     EmeInitDataType init_data_type) const {
   // Check |init_data_type|.
   InitDataTypeMask available_init_data_types = info_.supported_init_data_types;
+
   switch (init_data_type) {
     case EmeInitDataType::UNKNOWN:
       return false;

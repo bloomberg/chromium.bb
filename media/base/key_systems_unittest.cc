@@ -14,7 +14,6 @@
 
 #include "base/logging.h"
 #include "media/base/eme_constants.h"
-#include "media/base/key_system_info.h"
 #include "media/base/key_systems.h"
 #include "media/base/media.h"
 #include "media/base/media_client.h"
@@ -50,6 +49,63 @@ enum TestCodec {
 
 static_assert((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
               "test codec masks should only use invalid codec masks");
+
+class TestKeySystemProperties : public KeySystemProperties {
+ public:
+  bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override {
+    return init_data_type == EmeInitDataType::WEBM;
+  }
+  SupportedCodecs GetSupportedCodecs() const override {
+    return EME_CODEC_WEBM_ALL | TEST_CODEC_FOO_ALL;
+  }
+  EmeConfigRule GetRobustnessConfigRule(
+      EmeMediaType media_type,
+      const std::string& requested_robustness) const override {
+    return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
+                                        : EmeConfigRule::NOT_SUPPORTED;
+  }
+  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+      const override {
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+};
+
+class AesKeySystemProperties : public TestKeySystemProperties {
+ public:
+  AesKeySystemProperties(const std::string& name) : name_(name) {}
+
+  std::string GetKeySystemName() const override { return name_; }
+  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+  EmeFeatureSupport GetPersistentStateSupport() const override {
+    return EmeFeatureSupport::NOT_SUPPORTED;
+  }
+  EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return EmeFeatureSupport::NOT_SUPPORTED;
+  }
+  bool UseAesDecryptor() const override { return true; }
+
+ private:
+  std::string name_;
+};
+
+class ExternalKeySystemProperties : public TestKeySystemProperties {
+ public:
+  std::string GetKeySystemName() const override { return kExternal; }
+  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
+    return EmeSessionTypeSupport::SUPPORTED;
+  }
+  EmeFeatureSupport GetPersistentStateSupport() const override {
+    return EmeFeatureSupport::ALWAYS_ENABLED;
+  }
+  EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return EmeFeatureSupport::ALWAYS_ENABLED;
+  }
+  std::string GetPepperType() const override {
+    return "application/x-ppapi-external-cdm";
+  }
+};
 
 // Adapt IsSupportedKeySystemWithMediaMimeType() to the new API,
 // IsSupportedCodecCombination().
@@ -132,13 +188,6 @@ class TestMediaClient : public MediaClient {
   // test the key system update case.
   void DisableExternalKeySystemSupport();
 
- protected:
-  void AddUsesAesKeySystem(const std::string& name,
-                           std::vector<std::unique_ptr<KeySystemProperties>>*
-                               key_systems_properties);
-  void AddExternalKeySystem(std::vector<std::unique_ptr<KeySystemProperties>>*
-                                key_systems_properties);
-
  private:
   bool is_update_needed_;
   bool supports_external_key_system_;
@@ -167,10 +216,10 @@ void TestMediaClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   DCHECK(is_update_needed_);
 
-  AddUsesAesKeySystem(kUsesAes, key_systems);
+  key_systems->emplace_back(new AesKeySystemProperties(kUsesAes));
 
   if (supports_external_key_system_)
-    AddExternalKeySystem(key_systems);
+    key_systems->emplace_back(new ExternalKeySystemProperties());
 
   is_update_needed_ = false;
 }
@@ -188,44 +237,6 @@ void TestMediaClient::DisableExternalKeySystemSupport() {
   supports_external_key_system_ = false;
 }
 
-void TestMediaClient::AddUsesAesKeySystem(
-    const std::string& name,
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-  KeySystemInfo system;
-  system.key_system = name;
-  system.supported_codecs = EME_CODEC_WEBM_ALL;
-  system.supported_codecs |= TEST_CODEC_FOO_ALL;
-  system.supported_init_data_types = kInitDataTypeMaskWebM;
-  system.max_audio_robustness = EmeRobustness::EMPTY;
-  system.max_video_robustness = EmeRobustness::EMPTY;
-  system.persistent_license_support = EmeSessionTypeSupport::NOT_SUPPORTED;
-  system.persistent_release_message_support =
-      EmeSessionTypeSupport::NOT_SUPPORTED;
-  system.persistent_state_support = EmeFeatureSupport::NOT_SUPPORTED;
-  system.distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
-  system.use_aes_decryptor = true;
-  key_systems->emplace_back(new InfoBasedKeySystemProperties(system));
-}
-
-void TestMediaClient::AddExternalKeySystem(
-    std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
-  KeySystemInfo ext;
-  ext.key_system = kExternal;
-  ext.supported_codecs = EME_CODEC_WEBM_ALL;
-  ext.supported_codecs |= TEST_CODEC_FOO_ALL;
-  ext.supported_init_data_types = kInitDataTypeMaskWebM;
-  ext.max_audio_robustness = EmeRobustness::EMPTY;
-  ext.max_video_robustness = EmeRobustness::EMPTY;
-  ext.persistent_license_support = EmeSessionTypeSupport::SUPPORTED;
-  ext.persistent_release_message_support = EmeSessionTypeSupport::NOT_SUPPORTED;
-  ext.persistent_state_support = EmeFeatureSupport::ALWAYS_ENABLED;
-  ext.distinctive_identifier_support = EmeFeatureSupport::ALWAYS_ENABLED;
-#if defined(ENABLE_PEPPER_CDMS)
-  ext.pepper_type = "application/x-ppapi-external-cdm";
-#endif  // defined(ENABLE_PEPPER_CDMS)
-  key_systems->emplace_back(new InfoBasedKeySystemProperties(ext));
-}
-
 class PotentiallySupportedNamesTestMediaClient : public TestMediaClient {
   void AddSupportedKeySystems(std::vector<std::unique_ptr<KeySystemProperties>>*
                                   key_systems_properties) final;
@@ -234,11 +245,14 @@ class PotentiallySupportedNamesTestMediaClient : public TestMediaClient {
 void PotentiallySupportedNamesTestMediaClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) {
   // org.w3.clearkey is automatically registered.
-  AddUsesAesKeySystem("com.widevine.alpha", key_systems);
-  AddUsesAesKeySystem("org.chromium.externalclearkey", key_systems);
-  AddUsesAesKeySystem("org.chromium.externalclearkey.something", key_systems);
-  AddUsesAesKeySystem("com.chromecast.something", key_systems);
-  AddUsesAesKeySystem("x-something", key_systems);
+  key_systems->emplace_back(new AesKeySystemProperties("com.widevine.alpha"));
+  key_systems->emplace_back(
+      new AesKeySystemProperties("org.chromium.externalclearkey"));
+  key_systems->emplace_back(
+      new AesKeySystemProperties("org.chromium.externalclearkey.something"));
+  key_systems->emplace_back(
+      new AesKeySystemProperties("com.chromecast.something"));
+  key_systems->emplace_back(new AesKeySystemProperties("x-something"));
 }
 
 class KeySystemsPotentiallySupportedNamesTest : public testing::Test {
