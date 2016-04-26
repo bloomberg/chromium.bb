@@ -115,19 +115,24 @@ class ChromeCommitter(object):
     # Scores are based on passing builders.
     version_scores = {}
     for version in versions:
+      version_scores[version] = 0
+      failed_builders = []
       for builder in canaries:
         status = manifest_version.BuildSpecsManager.GetBuildStatus(
             builder, version, retries=0)
         if status:
           if status.Passed():
-            version_scores[version] = version_scores.get(version, 0) + 1
+            if version_scores[version] != -1:
+              version_scores[version] += 1
           elif status.Failed():
             # We don't consider builds with any reporting failures.
-            version_scores[version] = 0
-            break
+            failed_builders.append(builder)
+            version_scores[version] = -1
 
-      logging.info('Version %s had score %d', version,
-                   version_scores.get(version, 0))
+      if len(failed_builders) > 0:
+        logging.warning('Version: %s Failed builders: %s',
+                        version, ', '.join(failed_builders))
+      logging.info('Version: %s Score: %d', version, version_scores[version])
 
     # We want to get the version with the highest score. In case of a tie, we
     # want to choose the highest version.
