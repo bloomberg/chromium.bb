@@ -194,6 +194,13 @@ Tag: v1.0.6
 Revision: 33d5864e0557212eb530dbac280bfc4b4d923880
 Tree link: https://github.com/PolymerElements/iron-scroll-target-behavior/tree/v1.0.6
 
+Name: iron-scroll-threshold
+Version: 1.0.1
+Repository: git://github.com/PolymerElements/iron-scroll-threshold.git
+Tag: v1.0.1
+Revision: d09176cbef2e4cebb6c44754f7a2582b30f5ecf4
+Tree link: https://github.com/PolymerElements/iron-scroll-threshold/tree/v1.0.1
+
 Name: iron-selector
 Version: 1.4.0
 Repository: git://github.com/PolymerElements/iron-selector.git
