@@ -55,7 +55,7 @@
 #header-text {
   -webkit-padding-end: 4px;
   font-size: 1.175em;
-  margin: 8px 0 0 0;
+  margin: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -79,10 +79,10 @@ paper-icon-button {
 }
 
 #user-email-container {
-  -webkit-padding-start: 12px;
+  -webkit-padding-start: 8px;
   bottom: 0;
   font-size: 0.917em;
-  left: 0;
+  left: auto;
   padding-bottom: 12px;
   position: absolute;
 }
