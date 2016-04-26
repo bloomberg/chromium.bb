@@ -42,9 +42,6 @@ enum DirectWriteLoadFamilyResult {
 
 const char kFontKeyName[] = "font_key_name";
 
-const base::Feature kFileLoadingExperimentFeature{
-    "DirectWriteFontFileLoadingExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-
 void LogLoadFamilyResult(DirectWriteLoadFamilyResult result) {
   UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoadFamilyResult", result,
                             LOAD_FAMILY_MAX_VALUE);
@@ -487,16 +484,7 @@ HRESULT FontFileEnumerator::GetCurrentFontFile(IDWriteFontFile** file) {
     return E_FAIL;
   }
 
-  if (base::FeatureList::IsEnabled(kFileLoadingExperimentFeature)) {
-    TRACE_EVENT0("dwrite",
-                 "FontFileEnumerator::GetCurrentFontFile (directwrite)");
-    HRESULT hr = factory_->CreateFontFileReference(
-        file_names_[current_file_].c_str(), nullptr /* lastWriteTime*/, file);
-    DCHECK(SUCCEEDED(hr));
-    return hr;
-  }
-
-  TRACE_EVENT0("dwrite", "FontFileEnumerator::GetCurrentFontFile (memmap)");
+  TRACE_EVENT0("dwrite", "FontFileEnumerator::GetCurrentFontFile");
   // CreateCustomFontFileReference ends up calling
   // DWriteFontCollectionProxy::CreateStreamFromKey.
   HRESULT hr = factory_->CreateCustomFontFileReference(
