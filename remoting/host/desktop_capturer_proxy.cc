@@ -85,7 +85,8 @@ void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (capturer_) {
     capturer_->SetSharedMemoryFactory(
-        rtc_make_scoped_ptr(shared_memory_factory.release()));
+        rtc::scoped_ptr<webrtc::SharedMemoryFactory>(
+            shared_memory_factory.release()));
   }
 }
 

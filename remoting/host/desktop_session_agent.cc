@@ -143,7 +143,7 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
               buffer->size())));
     }
 
-    return rtc_make_scoped_ptr(buffer.release());
+    return rtc::scoped_ptr<webrtc::SharedMemory>(buffer.release());
   }
 
  private:
@@ -315,7 +315,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
   video_capturer_ = desktop_environment_->CreateVideoCapturer();
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
-      rtc_make_scoped_ptr(new SharedMemoryFactoryImpl(
+      rtc::scoped_ptr<webrtc::SharedMemoryFactory>(new SharedMemoryFactoryImpl(
           base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
