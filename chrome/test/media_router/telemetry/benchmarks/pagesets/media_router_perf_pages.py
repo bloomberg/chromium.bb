@@ -33,7 +33,16 @@ class CastDialogPage(media_router_page.CastPage):
         shared_page_state_class=shared_page_state_class)
 
   def RunPageInteractions(self, action_runner):
-     pass
+    # Wait for 5s after Chrome is opened in order to get consistent results.
+    action_runner.Wait(5)
+    with action_runner.CreateInteraction('OpenDialog'):
+      # Open dialog
+      action_runner.TapElement(selector='#start_session_button')
+      action_runner.Wait(5)
+      # Close media router dialog
+      for tab in action_runner.tab.browser.tabs:
+        if tab.url == 'chrome://media-router/':
+          self.CloseDialog(tab)
 
 
 class CastIdlePage(CastDialogPage):
