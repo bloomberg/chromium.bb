@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.media.MediaControlIntent;
 import android.support.v7.media.MediaItemMetadata;
 import android.support.v7.media.MediaItemStatus;
@@ -665,7 +666,14 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                 // update the position using the remote player's position
                 // duration can possibly be -1 if it's unknown, so cap to 0
                 long position = Math.min(Math.max(itemStatus.getContentPosition(), 0), duration);
-                long timestamp = itemStatus.getTimestamp();
+                // TODO(zqzhang): The GMS core currently uses SystemClock.uptimeMillis() as
+                // timestamp, which does not conform to the MediaRouter support library docs. See
+                // b/28378525 and
+                // http://developer.android.com/reference/android/support/v7/media/MediaItemStatus.html#getTimestamp().
+                // Override the timestamp with elapsedRealtime() by assuming the delay between the
+                // GMS core produces the MediaItemStatus and the code reaches here is short enough.
+                // long timestamp = itemStatus.getTimestamp();
+                long timestamp = SystemClock.elapsedRealtime();
                 notifyDurationUpdated(duration);
                 notifyPositionUpdated(position);
                 mPositionExtrapolator.onPositionInfoUpdated(duration, position, timestamp);
