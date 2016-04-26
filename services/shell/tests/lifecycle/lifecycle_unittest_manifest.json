@@ -5,8 +5,11 @@
   "capabilities": {
     "required": {
       "*": { "interfaces": [ "*" ] },
-      "mojo:shell": { "classes": [ "instance_name", "client_process" ], 
-                      "interfaces": [ "*" ] }
+      "mojo:shell": {
+        "classes": [ "shell:instance_name", 
+                     "shell:client_process" ],
+        "interfaces": [ "*" ]
+      }
     }
   }
 }

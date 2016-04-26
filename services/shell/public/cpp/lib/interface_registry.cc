@@ -35,8 +35,14 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
   auto iter = name_to_binder_.find(interface_name);
   InterfaceBinder* binder = iter != name_to_binder_.end() ? iter->second :
       default_binder_;
-  if (binder)
+  if (binder) {
     binder->BindInterface(connection_, interface_name, std::move(handle));
+  } else {
+    LOG(WARNING) << "Connection CapabilityFilter prevented binding to "
+                 << "interface: " << interface_name << " connection_name:"
+                 << connection_->GetConnectionName() << " remote_name:"
+                 << connection_->GetRemoteIdentity().name();
+  }
 }
 
 bool InterfaceRegistry::SetInterfaceBinderForName(
@@ -48,10 +54,6 @@ bool InterfaceRegistry::SetInterfaceBinderForName(
     name_to_binder_[interface_name] = binder;
     return true;
   }
-  LOG(WARNING) << "Connection CapabilityFilter prevented binding to interface: "
-               << interface_name << " connection_name:"
-               << connection_->GetConnectionName() << " remote_name:"
-               << connection_->GetRemoteIdentity().name();
   return false;
 }
 

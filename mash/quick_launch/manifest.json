@@ -3,7 +3,7 @@
   "name": "mojo:quick_launch",
   "display_name": "Quick Launch Bar",
   "capabilities": {
-    "provided": { "launchable": ["mash::mojom::Launchable"] },
+    "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
     "required": { "*": { "interfaces": [ "*" ] } }
   }
 }

@@ -22,7 +22,7 @@
           "shell::test::mojom::UserIdTest"
         ]
       },
-      "mojo:shell": { "classes": [ "instance_name", "user_id" ] }
+      "mojo:shell": { "classes": [ "shell:instance_name", "shell:user_id" ] }
     }
   }
 }

@@ -4,7 +4,7 @@
   "display_name": "Application Resolver",
   "capabilities": {
     "required": {
-      "mojo:shell": { "classes": [ "all_users" ] }      
+      "mojo:shell": { "classes": [ "shell:all_users" ] }      
     }
   }
 }

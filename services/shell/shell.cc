@@ -34,10 +34,10 @@ namespace {
 
 const char kCatalogName[] = "mojo:catalog";
 const char kShellName[] = "mojo:shell";
-const char kCapabilityClass_UserID[] = "user_id";
-const char kCapabilityClass_ClientProcess[] = "client_process";
-const char kCapabilityClass_InstanceName[] = "instance_name";
-const char kCapabilityClass_AllUsers[] = "all_users";
+const char kCapabilityClass_UserID[] = "shell:user_id";
+const char kCapabilityClass_ClientProcess[] = "shell:client_process";
+const char kCapabilityClass_InstanceName[] = "shell:instance_name";
+const char kCapabilityClass_AllUsers[] = "shell:all_users";
 
 void EmptyResolverCallback(mojom::ResolveResultPtr result) {}
 
@@ -150,18 +150,18 @@ class Shell::Instance : public mojom::Connector,
     params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                    identity_.user_id(), id_);
     uint32_t source_id = mojom::kInvalidInstanceID;
-    CapabilityRequest spec;
-    spec.interfaces.insert("*");
+    CapabilityRequest request;
+    request.interfaces.insert("*");
     Instance* source = shell_->GetExistingInstance(params->source());
     if (source) {
-      spec = GenerateCapabilityRequestForConnection(
+      request = GenerateCapabilityRequestForConnection(
           source->capability_spec_, identity_, capability_spec_);
       source_id = source->id();
     }
     shell_client_->AcceptConnection(
         mojom::Identity::From(params->source()), source_id,
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
-        mojom::CapabilityRequest::From(spec), params->target().name());
+        mojom::CapabilityRequest::From(request), params->target().name());
   }
 
   void StartWithClient(mojom::ShellClientPtr client) {
