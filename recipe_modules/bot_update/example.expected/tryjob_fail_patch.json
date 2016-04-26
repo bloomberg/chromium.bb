@@ -25,6 +25,7 @@
       "--revision",
       "src@HEAD"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -66,6 +67,7 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "Patch failure",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",

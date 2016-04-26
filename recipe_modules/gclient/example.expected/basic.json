@@ -8,6 +8,7 @@
       "--spec",
       "cache_dir = '[ROOT]/git_cache'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -31,6 +32,7 @@
       "--output-json",
       "/path/to/tmp/json"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -57,6 +59,7 @@
       "user.name",
       "local_bot"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -73,6 +76,7 @@
       "user.email",
       "local_bot@example.com"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -85,9 +89,9 @@
       "RECIPE_PACKAGE_REPO[depot_tools]/gclient.py",
       "config",
       "--spec",
-      "cache_dir = '[ROOT]/b/build/slave/cache_dir'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'WebKit', 'safesync_url': 'https://blink-status.appspot.com/lkgr', 'url': 'svn://svn.chromium.org/blink/trunk'}]"
+      "cache_dir = '[GIT_CACHE]'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'WebKit', 'safesync_url': 'https://blink-status.appspot.com/lkgr', 'url': 'svn://svn.chromium.org/blink/trunk'}]"
     ],
-    "cwd": "[CWD]/src/third_party",
+    "cwd": "[SLAVE_BUILD]/src/third_party",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -109,7 +113,7 @@
       "--output-json",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CWD]/src/third_party",
+    "cwd": "[SLAVE_BUILD]/src/third_party",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },
@@ -134,8 +138,9 @@
       "python",
       "-u",
       "\nimport os, sys\n\nbuild_path = sys.argv[1]\nif os.path.exists(build_path):\n  for (path, dir, files) in os.walk(build_path):\n    for cur_file in files:\n      if cur_file.endswith('index.lock'):\n        path_to_file = os.path.join(path, cur_file)\n        print 'deleting %s' % path_to_file\n        os.remove(path_to_file)\n",
-      "[CWD]"
+      "[SLAVE_BUILD]"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "cleanup index.lock",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@@@@",
@@ -159,6 +164,7 @@
       "RECIPE_PACKAGE_REPO[depot_tools]/gclient.py",
       "runhooks"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "env": {
       "PATH": "%(PATH)s:RECIPE_PACKAGE_REPO[depot_tools]"
     },

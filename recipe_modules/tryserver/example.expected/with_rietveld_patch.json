@@ -3,9 +3,9 @@
     "cmd": [
       "python",
       "-u",
-      "[ROOT]/b/depot_tools/apply_issue.py",
+      "[DEPOT_TOOLS]/apply_issue.py",
       "-r",
-      "[CWD]",
+      "[SLAVE_BUILD]",
       "-i",
       "12853011",
       "-p",
@@ -14,6 +14,7 @@
       "https://codereview.chromium.org",
       "--no-auth"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "apply_issue",
     "~followup_annotations": [
       "@@@STEP_LINK@Applied issue 12853011@https://codereview.chromium.org/12853011@@@"
@@ -26,7 +27,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[CWD]",
+    "cwd": "[SLAVE_BUILD]",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -42,6 +43,7 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "fail",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",

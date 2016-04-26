@@ -3,12 +3,13 @@
     "cmd": [
       "python",
       "-u",
-      "[ROOT]/b/build/scripts/slave/git_setup.py",
+      "[BUILD]/scripts/slave/git_setup.py",
       "--path",
-      "[TMP]/patch_tmp_1",
+      "[TMP_BASE]/patch_tmp_1",
       "--url",
       "http://patch.url/"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "patch git setup"
   },
   {
@@ -18,7 +19,7 @@
       "origin",
       "johndoe#123.diff"
     ],
-    "cwd": "[TMP]/patch_tmp_1",
+    "cwd": "[TMP_BASE]/patch_tmp_1",
     "name": "patch fetch"
   },
   {
@@ -29,7 +30,7 @@
       "-d",
       "-x"
     ],
-    "cwd": "[TMP]/patch_tmp_1",
+    "cwd": "[TMP_BASE]/patch_tmp_1",
     "name": "patch clean"
   },
   {
@@ -39,30 +40,32 @@
       "-f",
       "FETCH_HEAD"
     ],
-    "cwd": "[TMP]/patch_tmp_1",
+    "cwd": "[TMP_BASE]/patch_tmp_1",
     "name": "patch git checkout"
   },
   {
     "cmd": [
       "patch",
       "--dir",
-      "[CWD]",
+      "[SLAVE_BUILD]",
       "--force",
       "--forward",
       "--remove-empty-files",
       "--strip",
       "0",
       "--input",
-      "[TMP]/patch_tmp_1/patch.diff"
+      "[TMP_BASE]/patch_tmp_1/patch.diff"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "apply patch"
   },
   {
     "cmd": [
       "rm",
       "-rf",
-      "[TMP]/patch_tmp_1"
+      "[TMP_BASE]/patch_tmp_1"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "remove patch"
   },
   {
@@ -72,7 +75,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[CWD]/v8",
+    "cwd": "[SLAVE_BUILD]/v8",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -88,6 +91,7 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "fail",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",

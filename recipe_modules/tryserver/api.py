@@ -100,8 +100,7 @@ class TryserverApi(recipe_api.RecipeApi):
     patch_ref = self.m.properties['patch_ref']
 
     patch_dir = self.m.path.mkdtemp('patch')
-    git_setup_py = self.m.infra_paths['build'].join(
-        'scripts', 'slave', 'git_setup.py')
+    git_setup_py = self.m.path['build'].join('scripts', 'slave', 'git_setup.py')
     git_setup_args = ['--path', patch_dir, '--url', patch_repo_url]
     patch_path = patch_dir.join('patch.diff')
 

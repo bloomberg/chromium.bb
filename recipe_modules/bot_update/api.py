@@ -119,9 +119,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Point to the oauth2 auth files if specified.
     # These paths are where the bots put their credential files.
     if patch_oauth2:
-      email_file = self.m.infra_paths['build'].join(
+      email_file = self.m.path['build'].join(
           'site_config', '.rietveld_client_email')
-      key_file = self.m.infra_paths['build'].join(
+      key_file = self.m.path['build'].join(
           'site_config', '.rietveld_secret_key')
     else:
       email_file = key_file = None
@@ -276,7 +276,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       # first solution.
       if step_result.json.output['did_run']:
         co_root = step_result.json.output['root']
-        cwd = kwargs.get('cwd', self.m.infra_paths['slave_build'])
+        cwd = kwargs.get('cwd', self.m.path['slave_build'])
         if 'checkout' not in self.m.path:
           self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))
 

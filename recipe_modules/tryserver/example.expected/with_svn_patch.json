@@ -7,6 +7,7 @@
       "svn://checkout.url",
       "/path/to/tmp/diff"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "download patch",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@patch.diff@fake patch.diff content (line 1)@@@",
@@ -19,13 +20,14 @@
     "cmd": [
       "patch",
       "--dir",
-      "[CWD]",
+      "[SLAVE_BUILD]",
       "--force",
       "--forward",
       "--remove-empty-files",
       "--strip",
       "0"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "apply patch",
     "stdin": "fake patch.diff content (line 1)\nfake patch.diff content (line 2)\n"
   },
@@ -36,7 +38,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[CWD]",
+    "cwd": "[SLAVE_BUILD]",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -52,6 +54,7 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
+    "cwd": "[SLAVE_BUILD]",
     "name": "fail",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",
