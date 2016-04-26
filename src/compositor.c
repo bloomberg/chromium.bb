@@ -2735,6 +2735,28 @@ weston_surface_is_pending_viewport_source_valid(
 	return true;
 }
 
+static bool
+fixed_is_integer(wl_fixed_t v)
+{
+	return (v & 0xff) == 0;
+}
+
+static bool
+weston_surface_is_pending_viewport_dst_size_int(
+	const struct weston_surface *surface)
+{
+	const struct weston_buffer_viewport *vp =
+		&surface->pending.buffer_viewport;
+
+	if (vp->surface.width != -1) {
+		assert(vp->surface.width > 0 && vp->surface.height > 0);
+		return true;
+	}
+
+	return fixed_is_integer(vp->buffer.src_width) &&
+	       fixed_is_integer(vp->buffer.src_height);
+}
+
 /* Translate pending damage in buffer co-ordinates to surface
  * co-ordinates and union it with a pixman_region32_t.
  * This should only be called after the buffer is attached.
@@ -2880,6 +2902,16 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 		wl_resource_post_error(surface->viewport_resource,
 			WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
 			"wl_surface@%d has viewport source outside buffer",
+			wl_resource_get_id(resource));
+		return;
+	}
+
+	if (!weston_surface_is_pending_viewport_dst_size_int(surface)) {
+		assert(surface->viewport_resource);
+
+		wl_resource_post_error(surface->viewport_resource,
+			WP_VIEWPORT_ERROR_BAD_SIZE,
+			"wl_surface@%d viewport dst size not integer",
 			wl_resource_get_id(resource));
 		return;
 	}
