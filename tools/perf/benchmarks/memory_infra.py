@@ -22,9 +22,6 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
   is part of chrome tracing, and extracts it using timeline-based measurements.
   """
 
-  # Subclasses can override this to use TBMv2 instead of TBMv1.
-  TBM_VERSION = 1
-
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
         # TODO(perezju): Temporary workaround to disable periodic memory dumps.
@@ -40,19 +37,16 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     tbm_options = timeline_based_measurement.Options(
         overhead_level=trace_memory)
     tbm_options.config.enable_android_graphics_memtrack = True
-    if self.TBM_VERSION == 1:
-      # TBMv1 (see telemetry/telemetry/web_perf/metrics/memory_timeline.py
-      # in third_party/catapult).
-      tbm_options.SetLegacyTimelineBasedMetrics((
-          memory_timeline.MemoryTimelineMetric(),
-      ))
-    elif self.TBM_VERSION == 2:
-      # TBMv2 (see tracing/tracing/metrics/system_health/memory_metric.html
-      # in third_party/catapult).
-      tbm_options.SetTimelineBasedMetric('memoryMetric')
-    else:
-      raise Exception('Unrecognized TBM version: %s' % self.TBM_VERSION)
     return tbm_options
+
+  @classmethod
+  def HasTraceRerunDebugOption(cls):
+    return True
+
+  def SetupBenchmarkDefaultTraceRerunOptions(self, tbm_options):
+    tbm_options.SetLegacyTimelineBasedMetrics((
+        memory_timeline.MemoryTimelineMetric(),
+    ))
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
@@ -82,24 +76,6 @@ class MemoryHealthPlan(MemoryHealthQuick):
   @classmethod
   def Name(cls):
     return 'memory.memory_health_plan'
-
-
-@benchmark.Enabled('android')
-class TBMv2MemoryBenchmarkTop10Mobile(MemoryHealthQuick):
-  """Timeline based benchmark for the Memory Health Plan based on TBMv2.
-
-  This is a temporary benchmark to compare the new TBMv2 memory metric
-  (memory_metric.html) with the existing TBMv1 one (memory_timeline.py). Once
-  all issues associated with the TBMv2 metric are resolved, all memory
-  benchmarks (including the ones in this file) will switch to use it instead
-  of the TBMv1 metric and this temporary benchmark will be removed. See
-  crbug.com/60361.
-  """
-  TBM_VERSION = 2
-
-  @classmethod
-  def Name(cls):
-    return 'memory.top_10_mobile_tbmv2'
 
 
 # TODO(bashi): Workaround for http://crbug.com/532075
