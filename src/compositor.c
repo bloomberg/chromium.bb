@@ -1725,10 +1725,37 @@ fixed_round_up_to_int(wl_fixed_t f)
 }
 
 static void
+convert_size_by_transform_scale(int32_t *width_out, int32_t *height_out,
+				int32_t width, int32_t height,
+				uint32_t transform,
+				int32_t scale)
+{
+	assert(scale > 0);
+
+	switch (transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		*width_out = width / scale;
+		*height_out = height / scale;
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		*width_out = height / scale;
+		*height_out = width / scale;
+		break;
+	default:
+		assert(0 && "invalid transform");
+	}
+}
+
+static void
 weston_surface_calculate_size_from_buffer(struct weston_surface *surface)
 {
 	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
-	int32_t width, height;
 
 	if (!surface->buffer_ref.buffer) {
 		surface->width_from_buffer = 0;
@@ -1736,22 +1763,12 @@ weston_surface_calculate_size_from_buffer(struct weston_surface *surface)
 		return;
 	}
 
-	switch (vp->buffer.transform) {
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		width = surface->buffer_ref.buffer->height / vp->buffer.scale;
-		height = surface->buffer_ref.buffer->width / vp->buffer.scale;
-		break;
-	default:
-		width = surface->buffer_ref.buffer->width / vp->buffer.scale;
-		height = surface->buffer_ref.buffer->height / vp->buffer.scale;
-		break;
-	}
-
-	surface->width_from_buffer = width;
-	surface->height_from_buffer = height;
+	convert_size_by_transform_scale(&surface->width_from_buffer,
+					&surface->height_from_buffer,
+					surface->buffer_ref.buffer->width,
+					surface->buffer_ref.buffer->height,
+					vp->buffer.transform,
+					vp->buffer.scale);
 }
 
 static void
@@ -4168,30 +4185,13 @@ static void
 weston_output_transform_scale_init(struct weston_output *output, uint32_t transform, uint32_t scale)
 {
 	output->transform = transform;
+	output->native_scale = scale;
+	output->current_scale = scale;
 
-	switch (transform) {
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		/* Swap width and height */
-		output->width = output->current_mode->height;
-		output->height = output->current_mode->width;
-		break;
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	case WL_OUTPUT_TRANSFORM_180:
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		output->width = output->current_mode->width;
-		output->height = output->current_mode->height;
-		break;
-	default:
-		break;
-	}
-
-	output->native_scale = output->current_scale = scale;
-	output->width /= scale;
-	output->height /= scale;
+	convert_size_by_transform_scale(&output->width, &output->height,
+					output->current_mode->width,
+					output->current_mode->height,
+					transform, scale);
 }
 
 static void
