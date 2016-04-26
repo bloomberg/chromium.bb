@@ -1614,9 +1614,9 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         }
     }
 
-    LayoutUnit alignmentOffset = isForColumns ? m_columnPositions[0] - borderAndPaddingStart() : m_rowPositions[0] - borderAndPaddingBefore();
+    LayoutUnit alignmentOffset = isForColumns ? m_columnPositions[0] - borderAndPaddingLogicalLeft() : m_rowPositions[0] - borderAndPaddingBefore();
     if (isForColumns && !styleRef().isLeftToRightDirection())
-        alignmentOffset = contentLogicalWidth() - (m_columnPositions[m_columnPositions.size() - 1] - borderAndPaddingStart());
+        alignmentOffset = contentLogicalWidth() - (m_columnPositions[m_columnPositions.size() - 1] - borderAndPaddingLogicalLeft());
 
     if (!startIsAuto)
         start += alignmentOffset;
@@ -1705,7 +1705,7 @@ void LayoutGrid::populateGridPositions(GridSizingData& sizingData)
     ContentAlignmentData offset = computeContentPositionAndDistributionOffset(ForColumns, sizingData.freeSpaceForDirection(ForColumns), numberOfTracks);
     LayoutUnit trackGap = guttersSize(ForColumns, 2);
     m_columnPositions.resize(numberOfLines);
-    m_columnPositions[0] = borderAndPaddingStart() + offset.positionOffset;
+    m_columnPositions[0] = borderAndPaddingLogicalLeft() + offset.positionOffset;
     for (unsigned i = 0; i < nextToLastLine; ++i)
         m_columnPositions[i + 1] = m_columnPositions[i] + offset.distributionOffset + sizingData.columnTracks[i].baseSize() + trackGap;
     m_columnPositions[lastLine] = m_columnPositions[nextToLastLine] + sizingData.columnTracks[nextToLastLine].baseSize();
@@ -2125,9 +2125,9 @@ LayoutUnit LayoutGrid::translateRTLCoordinate(LayoutUnit coordinate) const
 {
     ASSERT(!styleRef().isLeftToRightDirection());
 
-    LayoutUnit alignmentOffset = m_columnPositions[0] - borderAndPaddingStart();
+    LayoutUnit alignmentOffset = m_columnPositions[0];
     LayoutUnit rightGridEdgePosition = m_columnPositions[m_columnPositions.size() - 1];
-    return borderAndPaddingLogicalLeft() + rightGridEdgePosition + alignmentOffset - coordinate;
+    return rightGridEdgePosition + alignmentOffset - coordinate;
 }
 
 LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSizingData& sizingData) const
