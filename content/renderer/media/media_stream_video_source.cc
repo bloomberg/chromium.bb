@@ -341,6 +341,7 @@ void MediaStreamVideoSource::AddTrack(
     case NEW: {
       // Tab capture and Screen capture needs the maximum requested height
       // and width to decide on the resolution.
+      // NOTE: Optional constraints are deliberately ignored.
       int max_requested_width = 0;
       if (constraints.basic().width.hasMax())
         max_requested_width = constraints.basic().width.max();
@@ -541,6 +542,8 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
                                      &min_aspect_ratio,
                                      &max_aspect_ratio);
       double max_frame_rate = 0.0f;
+      // Note: Optional and ideal constraints are ignored; this is
+      // purely a hard max limit.
       if (track.constraints.basic().frameRate.hasMax())
         max_frame_rate = track.constraints.basic().frameRate.max();
 
