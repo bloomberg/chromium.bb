@@ -388,7 +388,11 @@ template("jinja_template") {
   assert(defined(invoker.output))
 
   action(target_name) {
-    forward_variables_from(invoker, [ "visibility" ])
+    forward_variables_from(invoker,
+                           [
+                             "visibility",
+                             "deps",
+                           ])
 
     sources = [
       invoker.input,
