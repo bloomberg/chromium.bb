@@ -28,6 +28,7 @@
 
 import StringIO
 import optparse
+import os
 import sys
 import time
 import unittest
@@ -149,7 +150,8 @@ class AndroidCommandsTest(unittest.TestCase):
         self.assertEquals('adb -s 123456789ABCDEF0 shell ls -d /some_directory', self._mock_executive.last_command())
 
         android_commands.push('foo', 'bar')
-        self.assertEquals('adb -s 123456789ABCDEF0 push foo bar', self._mock_executive.last_command())
+        self.assertEquals('adb -s 123456789ABCDEF0 push %s bar' % os.path.realpath('foo'),
+                          self._mock_executive.last_command())
 
         android_commands.pull('bar', 'foo')
         self.assertEquals('adb -s 123456789ABCDEF0 pull bar foo', self._mock_executive.last_command())

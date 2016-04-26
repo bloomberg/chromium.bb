@@ -207,7 +207,8 @@ class AndroidCommands(object):
         return self.run(['shell', 'ls', '-d', full_path]).strip() == full_path
 
     def push(self, host_path, device_path, ignore_error=False):
-        return self.run(['push', host_path, device_path], ignore_error=ignore_error)
+        return self.run(['push', os.path.realpath(host_path), device_path],
+                        ignore_error=ignore_error)
 
     def pull(self, device_path, host_path, ignore_error=False):
         return self.run(['pull', device_path, host_path], ignore_error=ignore_error)
