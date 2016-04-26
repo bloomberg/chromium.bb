@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
 #include <memory>
 #include <string>
 #include <utility>
@@ -57,6 +58,8 @@ namespace {
 
 using testing::Each;
 using testing::Eq;
+
+const int32_t kBufferSize = SpdyHttpStream::kRequestBodyBufferSize;
 
 enum SpdyNetworkTransactionTestSSLType {
   // Request an https:// URL and use NPN (or ALPN) to negotiate SPDY during
@@ -6535,68 +6538,104 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
-  // Number of frames we need to send to zero out the window size: data
-  // frames plus SYN_STREAM plus the last data frame; also we need another
-  // data frame that we will send once the WINDOW_UPDATE is received,
-  // therefore +3.
-  size_t num_writes = initial_window_size / kMaxSpdyFrameChunkSize + 3;
-
-  // Calculate last frame's size; 0 size data frame is legal.
-  size_t last_frame_size = initial_window_size % kMaxSpdyFrameChunkSize;
+  // Number of upload data buffers we need to send to zero out the window size
+  // is the minimal number of upload buffers takes to be bigger than
+  // |initial_window_size|.
+  size_t num_upload_buffers =
+      ceil(static_cast<double>(initial_window_size) / kBufferSize);
+  // Each upload data buffer consists of |num_frames_in_one_upload_buffer|
+  // frames, each with |kMaxSpdyFrameChunkSize| bytes except the last frame,
+  // which has kBufferSize % kMaxSpdyChunkSize bytes.
+  size_t num_frames_in_one_upload_buffer =
+      ceil(static_cast<double>(kBufferSize) / kMaxSpdyFrameChunkSize);
 
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, initial_window_size + kUploadDataSize, LOWEST, NULL,
-      0));
+      GetDefaultUrl(), 1,
+      /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
+      LOWEST, NULL, 0));
 
   // Full frames.
   std::unique_ptr<SpdySerializedFrame> body1(spdy_util_.ConstructSpdyBodyFrame(
       1, content.c_str(), content.size(), false));
 
-  // Last frame to zero out the window size.
+  // Last frame in each upload data buffer.
   std::unique_ptr<SpdySerializedFrame> body2(spdy_util_.ConstructSpdyBodyFrame(
-      1, content.c_str(), last_frame_size, false));
+      1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
 
-  // Data frame to be sent once WINDOW_UPDATE frame is received.
-  std::unique_ptr<SpdySerializedFrame> body3(
+  // The very last frame before the stalled frames.
+  std::unique_ptr<SpdySerializedFrame> body3(spdy_util_.ConstructSpdyBodyFrame(
+      1, content.c_str(),
+      initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
+
+  // Data frames to be sent once WINDOW_UPDATE frame is received.
+
+  // If kBufferSize * num_upload_buffers > initial_window_size,
+  // we need one additional frame to send the rest of 'a'.
+  std::string last_body(kBufferSize * num_upload_buffers - initial_window_size,
+                        'a');
+  std::unique_ptr<SpdySerializedFrame> body4(spdy_util_.ConstructSpdyBodyFrame(
+      1, last_body.c_str(), last_body.size(), false));
+
+  // Also send a "hello!" after WINDOW_UPDATE.
+  std::unique_ptr<SpdySerializedFrame> body5(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
   // Fill in mock writes.
-  std::unique_ptr<MockWrite[]> writes(new MockWrite[num_writes]);
   size_t i = 0;
-  writes[i] = CreateMockWrite(*req, i);
-  for (i = 1; i < num_writes - 2; i++)
-    writes[i] = CreateMockWrite(*body1, i);
-  writes[i] = CreateMockWrite(*body2, i);
-  // The last write must not be attempted until after the WINDOW_UPDATES
-  // have been received.
-  writes[i + 1] = CreateMockWrite(*body3, i + 4, SYNCHRONOUS);
+  std::vector<MockWrite> writes;
+  writes.push_back(CreateMockWrite(*req, i++));
+  for (size_t j = 0; j < num_upload_buffers; j++) {
+    for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
+      if (k == num_frames_in_one_upload_buffer - 1 &&
+          kBufferSize % kMaxSpdyFrameChunkSize != 0) {
+        if (j == num_upload_buffers - 1 &&
+            (initial_window_size % kBufferSize != 0)) {
+          writes.push_back(CreateMockWrite(*body3, i++));
+        } else {
+          writes.push_back(CreateMockWrite(*body2, i++));
+        }
+      } else {
+        writes.push_back(CreateMockWrite(*body1, i++));
+      }
+    }
+  }
 
-  // Construct read frame, give enough space to upload the rest of the
-  // data.
+  // Fill in mock reads.
+  std::vector<MockRead> reads;
+  // Force a pause.
+  reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, i++));
+  // Construct read frame for window updates that gives enough space to upload
+  // the rest of the data.
   std::unique_ptr<SpdySerializedFrame> session_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(0, kUploadDataSize));
+      spdy_util_.ConstructSpdyWindowUpdate(0,
+                                           kUploadDataSize + last_body.size()));
   std::unique_ptr<SpdySerializedFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1,
+                                           kUploadDataSize + last_body.size()));
+
+  reads.push_back(CreateMockRead(*session_window_update, i++));
+  reads.push_back(CreateMockRead(*window_update, i++));
+
+  // Stalled frames which can be sent after receiving window updates.
+  if (last_body.size() > 0)
+    writes.push_back(CreateMockWrite(*body4, i++));
+  writes.push_back(CreateMockWrite(*body5, i++));
+
   std::unique_ptr<SpdySerializedFrame> reply(
       spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  MockRead reads[] = {
-      MockRead(ASYNC, ERR_IO_PENDING, i + 1),  // Force a pause
-      CreateMockRead(*session_window_update, i + 2),
-      CreateMockRead(*window_update, i + 3),
-      // Now the last write will occur.
-      CreateMockRead(*reply, i + 5),
-      CreateMockRead(*body2, i + 6),
-      CreateMockRead(*body3, i + 7),
-      MockRead(ASYNC, 0, i + 8)  // EOF
-  };
+  reads.push_back(CreateMockRead(*reply, i++));
+  reads.push_back(CreateMockRead(*body2, i++));
+  reads.push_back(CreateMockRead(*body5, i++));
+  reads.push_back(MockRead(ASYNC, 0, i++));  // EOF
 
-  SequencedSocketData data(reads, arraysize(reads), writes.get(), num_writes);
+  SequencedSocketData data(reads.data(), reads.size(), writes.data(),
+                           writes.size());
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  std::string upload_data_string(initial_window_size, 'a');
+  std::string upload_data_string(kBufferSize * num_upload_buffers, 'a');
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(base::WrapUnique(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size())));
@@ -6606,8 +6645,8 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   request.method = "POST";
   request.url = GURL(GetDefaultUrl());
   request.upload_data_stream = &upload_data_stream;
-  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), NULL);
+  NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
+                                     GetParam(), NULL);
   helper.AddData(&data);
   helper.RunPreTestSetup();
 
@@ -6623,10 +6662,17 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   ASSERT_TRUE(stream != NULL);
   ASSERT_TRUE(stream->stream() != NULL);
   EXPECT_EQ(0, stream->stream()->send_window_size());
-  // All the body data should have been read.
-  // TODO(satorux): This is because of the weirdness in reading the request
-  // body in OnSendBodyComplete(). See crbug.com/113107.
-  EXPECT_TRUE(upload_data_stream.IsEOF());
+  if (initial_window_size % kBufferSize != 0) {
+    // If it does not take whole number of full upload buffer to zero out
+    // initial window size, then the upload data is not at EOF, because the
+    // last read must be stalled.
+    EXPECT_FALSE(upload_data_stream.IsEOF());
+  } else {
+    // All the body data should have been read.
+    // TODO(satorux): This is because of the weirdness in reading the request
+    // body in OnSendBodyComplete(). See crbug.com/113107.
+    EXPECT_TRUE(upload_data_stream.IsEOF());
+  }
   // But the body is not yet fully sent (kUploadData is not yet sent)
   // since we're send-stalled.
   EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
@@ -6641,43 +6687,74 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
-
-  // Number of frames we need to send to zero out the window size: data
-  // frames plus SYN_STREAM plus the last data frame; also we need another
-  // data frame that we will send once the SETTING is received, therefore +3.
-  size_t num_writes = initial_window_size / kMaxSpdyFrameChunkSize + 3;
-
-  // Calculate last frame's size; 0 size data frame is legal.
-  size_t last_frame_size = initial_window_size % kMaxSpdyFrameChunkSize;
+  // Number of upload data buffers we need to send to zero out the window size
+  // is the minimal number of upload buffers takes to be bigger than
+  // |initial_window_size|.
+  size_t num_upload_buffers =
+      ceil(static_cast<double>(initial_window_size) / kBufferSize);
+  // Each upload data buffer consists of |num_frames_in_one_upload_buffer|
+  // frames, each with |kMaxSpdyFrameChunkSize| bytes except the last frame,
+  // which has kBufferSize % kMaxSpdyChunkSize bytes.
+  size_t num_frames_in_one_upload_buffer =
+      ceil(static_cast<double>(kBufferSize) / kMaxSpdyFrameChunkSize);
 
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, initial_window_size + kUploadDataSize, LOWEST, NULL,
-      0));
+      GetDefaultUrl(), 1,
+      /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
+      LOWEST, NULL, 0));
 
   // Full frames.
   std::unique_ptr<SpdySerializedFrame> body1(spdy_util_.ConstructSpdyBodyFrame(
       1, content.c_str(), content.size(), false));
 
-  // Last frame to zero out the window size.
+  // Last frame in each upload data buffer.
   std::unique_ptr<SpdySerializedFrame> body2(spdy_util_.ConstructSpdyBodyFrame(
-      1, content.c_str(), last_frame_size, false));
+      1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
 
-  // Data frame to be sent once SETTINGS frame is received.
-  std::unique_ptr<SpdySerializedFrame> body3(
+  // The very last frame before the stalled frames.
+  std::unique_ptr<SpdySerializedFrame> body3(spdy_util_.ConstructSpdyBodyFrame(
+      1, content.c_str(),
+      initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
+
+  // Data frames to be sent once WINDOW_UPDATE frame is received.
+
+  // If kBufferSize * num_upload_buffers > initial_window_size,
+  // we need one additional frame to send the rest of 'a'.
+  std::string last_body(kBufferSize * num_upload_buffers - initial_window_size,
+                        'a');
+  std::unique_ptr<SpdySerializedFrame> body4(spdy_util_.ConstructSpdyBodyFrame(
+      1, last_body.c_str(), last_body.size(), false));
+
+  // Also send a "hello!" after WINDOW_UPDATE.
+  std::unique_ptr<SpdySerializedFrame> body5(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
-  // Fill in mock reads/writes.
-  std::vector<MockRead> reads;
-  std::vector<MockWrite> writes;
+  // Fill in mock writes.
   size_t i = 0;
+  std::vector<MockWrite> writes;
   writes.push_back(CreateMockWrite(*req, i++));
-  while (i < num_writes - 2)
-    writes.push_back(CreateMockWrite(*body1, i++));
-  writes.push_back(CreateMockWrite(*body2, i++));
+  for (size_t j = 0; j < num_upload_buffers; j++) {
+    for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
+      if (k == num_frames_in_one_upload_buffer - 1 &&
+          kBufferSize % kMaxSpdyFrameChunkSize != 0) {
+        if (j == num_upload_buffers - 1 &&
+            (initial_window_size % kBufferSize != 0)) {
+          writes.push_back(CreateMockWrite(*body3, i++));
+        } else {
+          writes.push_back(CreateMockWrite(*body2, i++));
+        }
+      } else {
+        writes.push_back(CreateMockWrite(*body1, i++));
+      }
+    }
+  }
 
+  // Fill in mock reads.
+  std::vector<MockRead> reads;
+  // Force a pause.
   reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, i++));
 
   // Construct read frame for SETTINGS that gives enough space to upload the
@@ -6691,20 +6768,24 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   reads.push_back(CreateMockRead(*settings_frame_large, i++));
 
   std::unique_ptr<SpdySerializedFrame> session_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(0, kUploadDataSize));
+      spdy_util_.ConstructSpdyWindowUpdate(0,
+                                           last_body.size() + kUploadDataSize));
   reads.push_back(CreateMockRead(*session_window_update, i++));
 
   std::unique_ptr<SpdySerializedFrame> settings_ack(
       spdy_util_.ConstructSpdySettingsAck());
   writes.push_back(CreateMockWrite(*settings_ack, i++));
 
-  writes.push_back(CreateMockWrite(*body3, i++));
+  // Stalled frames which can be sent after |settings_ack|.
+  if (last_body.size() > 0)
+    writes.push_back(CreateMockWrite(*body4, i++));
+  writes.push_back(CreateMockWrite(*body5, i++));
 
   std::unique_ptr<SpdySerializedFrame> reply(
       spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   reads.push_back(CreateMockRead(*reply, i++));
   reads.push_back(CreateMockRead(*body2, i++));
-  reads.push_back(CreateMockRead(*body3, i++));
+  reads.push_back(CreateMockRead(*body5, i++));
   reads.push_back(MockRead(ASYNC, 0, i++));  // EOF
 
   // Force all writes to happen before any read, last write will not
@@ -6713,7 +6794,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
                            writes.size());
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  std::string upload_data_string(initial_window_size, 'a');
+  std::string upload_data_string(kBufferSize * num_upload_buffers, 'a');
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(base::WrapUnique(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size())));
@@ -6742,10 +6823,17 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   ASSERT_TRUE(stream->stream() != NULL);
   EXPECT_EQ(0, stream->stream()->send_window_size());
 
-  // All the body data should have been read.
-  // TODO(satorux): This is because of the weirdness in reading the request
-  // body in OnSendBodyComplete(). See crbug.com/113107.
-  EXPECT_TRUE(upload_data_stream.IsEOF());
+  if (initial_window_size % kBufferSize != 0) {
+    // If it does not take whole number of full upload buffer to zero out
+    // initial window size, then the upload data is not at EOF, because the
+    // last read must be stalled.
+    EXPECT_FALSE(upload_data_stream.IsEOF());
+  } else {
+    // All the body data should have been read.
+    // TODO(satorux): This is because of the weirdness in reading the request
+    // body in OnSendBodyComplete(). See crbug.com/113107.
+    EXPECT_TRUE(upload_data_stream.IsEOF());
+  }
   // But the body is not yet fully sent (kUploadData is not yet sent)
   // since we're send-stalled.
   EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
@@ -6765,44 +6853,75 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
-  // Number of frames we need to send to zero out the window size: data
-  // frames plus SYN_STREAM plus the last data frame; also we need another
-  // data frame that we will send once the SETTING is received, therefore +3.
-  size_t num_writes = initial_window_size / kMaxSpdyFrameChunkSize + 3;
-
-  // Calculate last frame's size; 0 size data frame is legal.
-  size_t last_frame_size = initial_window_size % kMaxSpdyFrameChunkSize;
+  // Number of upload data buffers we need to send to zero out the window size
+  // is the minimal number of upload buffers takes to be bigger than
+  // |initial_window_size|.
+  size_t num_upload_buffers =
+      ceil(static_cast<double>(initial_window_size) / kBufferSize);
+  // Each upload data buffer consists of |num_frames_in_one_upload_buffer|
+  // frames, each with |kMaxSpdyFrameChunkSize| bytes except the last frame,
+  // which has kBufferSize % kMaxSpdyChunkSize bytes.
+  size_t num_frames_in_one_upload_buffer =
+      ceil(static_cast<double>(kBufferSize) / kMaxSpdyFrameChunkSize);
 
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
-      GetDefaultUrl(), 1, initial_window_size + kUploadDataSize, LOWEST, NULL,
-      0));
+      GetDefaultUrl(), 1,
+      /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
+      LOWEST, NULL, 0));
 
   // Full frames.
   std::unique_ptr<SpdySerializedFrame> body1(spdy_util_.ConstructSpdyBodyFrame(
       1, content.c_str(), content.size(), false));
 
-  // Last frame to zero out the window size.
+  // Last frame in each upload data buffer.
   std::unique_ptr<SpdySerializedFrame> body2(spdy_util_.ConstructSpdyBodyFrame(
-      1, content.c_str(), last_frame_size, false));
+      1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
 
-  // Data frame to be sent once SETTINGS frame is received.
-  std::unique_ptr<SpdySerializedFrame> body3(
+  // The very last frame before the stalled frames.
+  std::unique_ptr<SpdySerializedFrame> body3(spdy_util_.ConstructSpdyBodyFrame(
+      1, content.c_str(),
+      initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
+
+  // Data frames to be sent once WINDOW_UPDATE frame is received.
+
+  // If kBufferSize * num_upload_buffers > initial_window_size,
+  // we need one additional frame to send the rest of 'a'.
+  std::string last_body(kBufferSize * num_upload_buffers - initial_window_size,
+                        'a');
+  std::unique_ptr<SpdySerializedFrame> body4(spdy_util_.ConstructSpdyBodyFrame(
+      1, last_body.c_str(), last_body.size(), false));
+
+  // Also send a "hello!" after WINDOW_UPDATE.
+  std::unique_ptr<SpdySerializedFrame> body5(
       spdy_util_.ConstructSpdyBodyFrame(1, true));
 
-  // Fill in mock reads/writes.
-  std::vector<MockRead> reads;
-  std::vector<MockWrite> writes;
+  // Fill in mock writes.
   size_t i = 0;
+  std::vector<MockWrite> writes;
   writes.push_back(CreateMockWrite(*req, i++));
-  while (i < num_writes - 2)
-    writes.push_back(CreateMockWrite(*body1, i++));
-  writes.push_back(CreateMockWrite(*body2, i++));
+  for (size_t j = 0; j < num_upload_buffers; j++) {
+    for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
+      if (k == num_frames_in_one_upload_buffer - 1 &&
+          kBufferSize % kMaxSpdyFrameChunkSize != 0) {
+        if (j == num_upload_buffers - 1 &&
+            (initial_window_size % kBufferSize != 0)) {
+          writes.push_back(CreateMockWrite(*body3, i++));
+        } else {
+          writes.push_back(CreateMockWrite(*body2, i++));
+        }
+      } else {
+        writes.push_back(CreateMockWrite(*body1, i++));
+      }
+    }
+  }
 
+  // Fill in mock reads.
+  std::vector<MockRead> reads;
+  // Force a pause.
   reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, i++));
-
   // Construct read frame for SETTINGS that makes the send_window_size
   // negative.
   SettingsMap new_settings;
@@ -6825,13 +6944,16 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
       spdy_util_.ConstructSpdySettingsAck());
   writes.push_back(CreateMockWrite(*settings_ack, i++));
 
-  writes.push_back(CreateMockWrite(*body3, i++));
+  // Stalled frames which can be sent after |settings_ack|.
+  if (last_body.size() > 0)
+    writes.push_back(CreateMockWrite(*body4, i++));
+  writes.push_back(CreateMockWrite(*body5, i++));
 
   std::unique_ptr<SpdySerializedFrame> reply(
       spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   reads.push_back(CreateMockRead(*reply, i++));
   reads.push_back(CreateMockRead(*body2, i++));
-  reads.push_back(CreateMockRead(*body3, i++));
+  reads.push_back(CreateMockRead(*body5, i++));
   reads.push_back(MockRead(ASYNC, 0, i++));  // EOF
 
   // Force all writes to happen before any read, last write will not
@@ -6840,7 +6962,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
                            writes.size());
 
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
-  std::string upload_data_string(initial_window_size, 'a');
+  std::string upload_data_string(kBufferSize * num_upload_buffers, 'a');
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(base::WrapUnique(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size())));
@@ -6869,13 +6991,17 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   ASSERT_TRUE(stream->stream() != NULL);
   EXPECT_EQ(0, stream->stream()->send_window_size());
 
-  // All the body data should have been read.
-  // TODO(satorux): This is because of the weirdness in reading the request
-  // body in OnSendBodyComplete(). See crbug.com/113107.
-  EXPECT_TRUE(upload_data_stream.IsEOF());
-  // But the body is not yet fully sent (kUploadData is not yet sent)
-  // since we're send-stalled.
-  EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
+  if (initial_window_size % kBufferSize != 0) {
+    // If it does not take whole number of full upload buffer to zero out
+    // initial window size, then the upload data is not at EOF, because the
+    // last read must be stalled.
+    EXPECT_FALSE(upload_data_stream.IsEOF());
+  } else {
+    // All the body data should have been read.
+    // TODO(satorux): This is because of the weirdness in reading the request
+    // body in OnSendBodyComplete(). See crbug.com/113107.
+    EXPECT_TRUE(upload_data_stream.IsEOF());
+  }
 
   // Read in WINDOW_UPDATE or SETTINGS frame.
   data.Resume();
