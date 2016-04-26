@@ -24,3 +24,4 @@ struct qcms_test_case {
 };
 
 void generate_source_uint8_t(unsigned char *src, const size_t length, const size_t pixel_size);
+float evaluate_parametric_curve(int type, const float params[], float r);

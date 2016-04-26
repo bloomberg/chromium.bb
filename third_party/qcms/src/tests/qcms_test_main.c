@@ -16,8 +16,9 @@ extern struct qcms_test_case qcms_test_tetra_clut_rgba_info;
 extern struct qcms_test_case qcms_test_munsell_info;
 extern struct qcms_test_case qcms_test_internal_srgb_info;
 extern struct qcms_test_case qcms_test_ntsc_gamut_info;
+extern struct qcms_test_case qcms_test_output_trc_info;
 
-struct qcms_test_case qcms_test[4];
+struct qcms_test_case qcms_test[5];
 #define TEST_CASES    (sizeof(qcms_test) / sizeof(qcms_test[0]))
 
 static void initialize_tests()
@@ -26,13 +27,14 @@ static void initialize_tests()
     qcms_test[1] = qcms_test_munsell_info;
     qcms_test[2] = qcms_test_internal_srgb_info;
     qcms_test[3] = qcms_test_ntsc_gamut_info;
+    qcms_test[4] = qcms_test_output_trc_info;
 }
 
 static void list_tests()
 {
     int i;
     printf("Available qcms tests:\n");
-        
+
     for (i = 0; i < TEST_CASES; ++i) {
         printf("\t%s\n", qcms_test[i].test_name);
     }
@@ -71,16 +73,6 @@ int enable_test(const char *args)
     }
 
     return 0;
-}
-
-void generate_source_uint8_t(unsigned char *src, const size_t length, const size_t pixel_size)
-{
-    size_t bytes = length * pixel_size;
-    size_t i;
-
-    for (i = 0; i < bytes; ++i) {
-        *src++ = rand() & 255;
-    }
 }
 
 int main(int argc, const char **argv)
