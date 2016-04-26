@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20000303 Stylable//EN"   "http://www.w3.org/TR/2000/03/WD-SVG-20000303/DTD/svg-20000303-stylable.dtd">
 <svg id="mainMap" preserveAspectRatio="xMidYMid meet" zoomAndPan="magnify" xmlns="http://www.w3.org/2000/svg" height="100%" width="100%" viewBox="0 1200 5750 2800" onload="init(evt)">
 <!--Note: This file is part of GeoGraphs Corp. SVG MapGen and SVG MapViewer System.
 It was produced by SGV MapGen (Version 1.0 Evaluation)from MapInfo MID/MIF or ESRI Shape Files.
