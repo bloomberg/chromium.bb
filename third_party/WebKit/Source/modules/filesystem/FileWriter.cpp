@@ -31,7 +31,6 @@
 #include "modules/filesystem/FileWriter.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/inspector/InspectorInstrumentation.h"

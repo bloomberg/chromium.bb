@@ -31,7 +31,6 @@
 #include "modules/filesystem/DirectoryReaderSync.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
 #include "modules/filesystem/EntriesCallback.h"

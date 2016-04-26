@@ -5,7 +5,6 @@
 #include "modules/mediasource/TrackDefault.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/VideoTrack.h"

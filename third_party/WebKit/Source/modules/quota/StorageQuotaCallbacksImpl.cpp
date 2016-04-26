@@ -31,7 +31,6 @@
 #include "modules/quota/StorageQuotaCallbacksImpl.h"
 
 #include "core/dom/DOMError.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/quota/StorageInfo.h"
 
 namespace blink {

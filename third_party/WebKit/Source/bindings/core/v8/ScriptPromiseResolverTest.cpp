@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>

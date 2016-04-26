@@ -31,7 +31,6 @@
 #include "modules/filesystem/DOMFileSystemSync.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/DOMFilePath.h"

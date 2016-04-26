@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/WebRTCDataChannelHandler.h"

@@ -31,7 +31,6 @@
 #include "modules/filesystem/LocalFileSystem.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/fileapi/FileError.h"

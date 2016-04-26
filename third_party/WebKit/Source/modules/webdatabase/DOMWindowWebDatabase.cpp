@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
