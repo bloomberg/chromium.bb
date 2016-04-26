@@ -29,6 +29,7 @@
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSSizeListInterpolationType.h"
 #include "core/animation/CSSTextIndentInterpolationType.h"
+#include "core/animation/CSSTransformInterpolationType.h"
 #include "core/animation/CSSTransformOriginInterpolationType.h"
 #include "core/animation/CSSTranslateInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
@@ -243,6 +244,9 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyBackdropFilter:
         case CSSPropertyWebkitFilter:
             applicableTypes->append(adoptPtr(new CSSFilterListInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyTransform:
+            applicableTypes->append(adoptPtr(new CSSTransformInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.

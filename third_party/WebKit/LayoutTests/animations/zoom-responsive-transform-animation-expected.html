@@ -15,6 +15,8 @@
 </style>
 <div id="container"></div>
 <script>
+internals.setZoomFactor(2);
+
 [
   'perspective(200px) translate3D(10px, 10px, 10px)',
   'matrix(0, 1, 1, 0, 10, 10)',
@@ -38,8 +40,6 @@
     {transform: transform},
   ], 1e8);
 });
-
-internals.setZoomFactor(2);
 
 // We must wait a frame to let compositor animations render.
 if (window.testRunner)

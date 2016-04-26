@@ -150,13 +150,13 @@
           [property]: to,
         });
       }
-      target.animate(keyframes, {
+      var animation = target.animate(keyframes, {
         fill: 'forwards',
         duration: 1,
         easing: createEasing(at),
-        delay: -0.5,
-        iterations: 0.5,
       });
+      animation.pause();
+      animation.currentTime = 0.5;
     },
     rebaseline: false,
   };

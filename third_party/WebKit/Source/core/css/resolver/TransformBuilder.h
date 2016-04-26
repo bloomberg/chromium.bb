@@ -43,7 +43,7 @@ class CSSValue;
 class TransformBuilder {
     STATIC_ONLY(TransformBuilder);
 public:
-    static void createTransformOperations(CSSValue& inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
+    static void createTransformOperations(const CSSValue& inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
 };
 
 } // namespace blink

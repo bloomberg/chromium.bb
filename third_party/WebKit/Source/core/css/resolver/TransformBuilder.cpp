@@ -79,7 +79,7 @@ static TransformOperation::OperationType getTransformOperationType(CSSValueID ty
     }
 }
 
-void TransformBuilder::createTransformOperations(CSSValue& inValue, const CSSToLengthConversionData& conversionData, TransformOperations& outOperations)
+void TransformBuilder::createTransformOperations(const CSSValue& inValue, const CSSToLengthConversionData& conversionData, TransformOperations& outOperations)
 {
     ASSERT(!outOperations.size());
     if (!inValue.isValueList()) {
