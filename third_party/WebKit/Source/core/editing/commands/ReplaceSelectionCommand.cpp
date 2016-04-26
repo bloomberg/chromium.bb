@@ -759,13 +759,21 @@ void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& ins
 
 VisiblePosition ReplaceSelectionCommand::positionAtEndOfInsertedContent() const
 {
-    // FIXME: Why is this hack here?  What's special about <select> tags?
+    // TODO(yosin): We should set |m_endOfInsertedContent| not in SELECT
+    // element, since contents of SELECT elements, e.g. OPTION, OPTGROUP, are
+    // not editable, or SELECT element is an atomic on editing.
     HTMLSelectElement* enclosingSelect = toHTMLSelectElement(enclosingElementWithTag(m_endOfInsertedContent, selectTag));
-    return createVisiblePosition(enclosingSelect ? lastPositionInOrAfterNode(enclosingSelect) : m_endOfInsertedContent);
+    if (enclosingSelect)
+        return createVisiblePosition(lastPositionInOrAfterNode(enclosingSelect));
+    if (m_endOfInsertedContent.isOrphan())
+        return VisiblePosition();
+    return createVisiblePosition(m_endOfInsertedContent);
 }
 
 VisiblePosition ReplaceSelectionCommand::positionAtStartOfInsertedContent() const
 {
+    if (m_startOfInsertedContent.isOrphan())
+        return VisiblePosition();
     return createVisiblePosition(m_startOfInsertedContent);
 }
 
