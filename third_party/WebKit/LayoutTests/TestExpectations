@@ -161,6 +161,7 @@ crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout 
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Failure Pass ]
 
+crbug.com/601209 fast/forms/placeholder-position.html [ NeedsManualRebaseline ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]

@@ -273,8 +273,21 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
     textBlockStyle->setOverflowWrap(NormalOverflowWrap);
     textBlockStyle->setTextOverflow(textShouldBeTruncated() ? TextOverflowEllipsis : TextOverflowClip);
 
+    int computedLineHeight = lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes);
     // Do not allow line-height to be smaller than our default.
-    if (textBlockStyle->fontSize() >= lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes) || !startStyle.logicalHeight().isIntrinsicOrAuto())
+    if (textBlockStyle->fontSize() >= computedLineHeight)
+        textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
+
+    // We'd like to remove line-height if it's unnecessary because
+    // overflow:scroll clips editing text by line-height.
+    Length logicalHeight = startStyle.logicalHeight();
+    // Here, we remove line-height if the INPUT fixed height is taller than the
+    // line-height.  It's not the precise condition because logicalHeight
+    // includes border and padding if box-sizing:border-box, and there are cases
+    // in which we don't want to remove line-height with percent or calculated
+    // length.
+    // TODO(tkent): This should be done during layout.
+    if (logicalHeight.hasPercent() || (logicalHeight.isFixed() && logicalHeight.getFloatValue() > computedLineHeight))
         textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
 
     textBlockStyle->setDisplay(BLOCK);
@@ -284,6 +297,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
         textBlockStyle->setTextSecurity(TSNONE);
 
     textBlockStyle->setOverflowX(OverflowScroll);
+    // overflow-y:visible doesn't work because overflow-x:scroll makes a layer.
     textBlockStyle->setOverflowY(OverflowScroll);
     RefPtr<ComputedStyle> noScrollbarStyle = ComputedStyle::create();
     noScrollbarStyle->setStyleType(PseudoIdScrollbar);
