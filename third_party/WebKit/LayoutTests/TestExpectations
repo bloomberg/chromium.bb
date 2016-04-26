@@ -1240,6 +1240,15 @@ crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ P
 crbug.com/587779 [ Linux Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
+crbug.com/475128 fast/images/imagemap-focus-ring-in-positioned-container.html [ NeedsManualRebaseline ]
+crbug.com/475128 fast/images/imagemap-focus-ring-with-paint-root-offset.html [ NeedsManualRebaseline ]
+crbug.com/475128 fast/images/imagemap-focus-ring-with-scale-transform.html [ NeedsManualRebaseline ]
+crbug.com/475128 fast/images/imagemap-focus-ring-zoom.html [ NeedsManualRebaseline ]
+crbug.com/475128 virtual/gpu-rasterization/fast/images/imagemap-focus-ring-in-positioned-container.html [ NeedsManualRebaseline ]
+crbug.com/475128 virtual/gpu-rasterization/fast/images/imagemap-focus-ring-with-paint-root-offset.html [ NeedsManualRebaseline ]
+crbug.com/475128 virtual/gpu-rasterization/fast/images/imagemap-focus-ring-with-scale-transform.html [ NeedsManualRebaseline ]
+crbug.com/475128 virtual/gpu-rasterization/fast/images/imagemap-focus-ring-zoom.html [ NeedsManualRebaseline ]
+
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]

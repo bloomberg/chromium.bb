@@ -48,7 +48,6 @@ using namespace HTMLNames;
 
 inline HTMLAreaElement::HTMLAreaElement(Document& document)
     : HTMLAnchorElement(areaTag, document)
-    , m_lastSize(-1, -1)
     , m_shape(Rect)
 {
 }
@@ -78,10 +77,10 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
             // 'shape' attribute is 'rect'.
             m_shape = Rect;
         }
-        invalidateCachedRegion();
+        invalidateCachedPath();
     } else if (name == coordsAttr) {
         m_coords = parseHTMLListOfFloatingPointNumbers(value.getString());
-        invalidateCachedRegion();
+        invalidateCachedPath();
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.
     } else {
@@ -89,88 +88,94 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
     }
 }
 
-void HTMLAreaElement::invalidateCachedRegion()
+void HTMLAreaElement::invalidateCachedPath()
 {
-    m_lastSize = LayoutSize(-1, -1);
+    m_path = nullptr;
 }
 
-bool HTMLAreaElement::pointInArea(LayoutPoint location, const LayoutSize& containerSize)
+bool HTMLAreaElement::pointInArea(const LayoutPoint& location, const LayoutObject* containerObject) const
 {
-    if (m_lastSize != containerSize) {
-        m_region = adoptPtr(new Path(getRegion(containerSize)));
-        m_lastSize = containerSize;
-    }
-
-    return m_region->contains(FloatPoint(location));
+    return getPath(containerObject).contains(FloatPoint(location));
 }
 
-Path HTMLAreaElement::computePath(const LayoutObject* obj) const
+LayoutRect HTMLAreaElement::computeAbsoluteRect(const LayoutObject* containerObject) const
 {
-    if (!obj)
-        return Path();
+    if (!containerObject)
+        return LayoutRect();
 
     // FIXME: This doesn't work correctly with transforms.
-    FloatPoint absPos = obj->localToAbsolute();
+    FloatPoint absPos = containerObject->localToAbsolute();
 
-    // Default should default to the size of the containing object.
-    LayoutSize size = m_lastSize;
-    if (m_shape == Default)
-        size = obj->absoluteClippedOverflowRect().size();
+    Path path = getPath(containerObject);
+    path.translate(toFloatSize(absPos));
+    return enclosingLayoutRect(path.boundingRect());
+}
 
-    Path p = getRegion(size);
-    float zoomFactor = obj->style()->effectiveZoom();
+Path HTMLAreaElement::getPath(const LayoutObject* containerObject) const
+{
+    if (!containerObject)
+        return Path();
+
+    // Always recompute for default shape because it depends on container object's size
+    // and is cheap.
+    if (m_shape == Default) {
+        Path path;
+        // No need to zoom because it is already applied in containerObject->borderBoxRect().
+        if (containerObject->isBox())
+            path.addRect(FloatRect(toLayoutBox(containerObject)->borderBoxRect()));
+        m_path = nullptr;
+        return path;
+    }
+
+    Path path;
+    if (m_path) {
+        path = *m_path;
+    } else {
+        if (m_coords.isEmpty())
+            return path;
+
+        switch (m_shape) {
+        case Poly:
+            if (m_coords.size() >= 6) {
+                int numPoints = m_coords.size() / 2;
+                path.moveTo(FloatPoint(clampCoordinate(m_coords[0]), clampCoordinate(m_coords[1])));
+                for (int i = 1; i < numPoints; ++i)
+                    path.addLineTo(FloatPoint(clampCoordinate(m_coords[i * 2]), clampCoordinate(m_coords[i * 2 + 1])));
+                path.closeSubpath();
+                path.setWindRule(RULE_EVENODD);
+            }
+            break;
+        case Circle:
+            if (m_coords.size() >= 3 && m_coords[2] > 0) {
+                float r = clampCoordinate(m_coords[2]);
+                path.addEllipse(FloatRect(clampCoordinate(m_coords[0]) - r, clampCoordinate(m_coords[1]) - r, 2 * r, 2 * r));
+            }
+            break;
+        case Rect:
+            if (m_coords.size() >= 4) {
+                float x0 = clampCoordinate(m_coords[0]);
+                float y0 = clampCoordinate(m_coords[1]);
+                float x1 = clampCoordinate(m_coords[2]);
+                float y1 = clampCoordinate(m_coords[3]);
+                path.addRect(FloatRect(x0, y0, x1 - x0, y1 - y0));
+            }
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+
+        // Cache the original path, not depending on containerObject.
+        m_path = adoptPtr(new Path(path));
+    }
+
+    // Zoom the path into coordinates of the container object.
+    float zoomFactor = containerObject->styleRef().effectiveZoom();
     if (zoomFactor != 1.0f) {
         AffineTransform zoomTransform;
         zoomTransform.scale(zoomFactor);
-        p.transform(zoomTransform);
+        path.transform(zoomTransform);
     }
-
-    p.translate(toFloatSize(absPos));
-    return p;
-}
-
-LayoutRect HTMLAreaElement::computeRect(const LayoutObject* obj) const
-{
-    return enclosingLayoutRect(computePath(obj).boundingRect());
-}
-
-Path HTMLAreaElement::getRegion(const LayoutSize& size) const
-{
-    if (m_coords.isEmpty() && m_shape != Default)
-        return Path();
-
-    Path path;
-    switch (m_shape) {
-    case Poly:
-        if (m_coords.size() >= 6) {
-            int numPoints = m_coords.size() / 2;
-            path.moveTo(FloatPoint(clampCoordinate(m_coords[0]), clampCoordinate(m_coords[1])));
-            for (int i = 1; i < numPoints; ++i)
-                path.addLineTo(FloatPoint(clampCoordinate(m_coords[i * 2]), clampCoordinate(m_coords[i * 2 + 1])));
-            path.closeSubpath();
-            path.setWindRule(RULE_EVENODD);
-        }
-        break;
-    case Circle:
-        if (m_coords.size() >= 3 && m_coords[2] > 0) {
-            float r = clampCoordinate(m_coords[2]);
-            path.addEllipse(FloatRect(clampCoordinate(m_coords[0]) - r, clampCoordinate(m_coords[1]) - r, 2 * r, 2 * r));
-        }
-        break;
-    case Rect:
-        if (m_coords.size() >= 4) {
-            float x0 = clampCoordinate(m_coords[0]);
-            float y0 = clampCoordinate(m_coords[1]);
-            float x1 = clampCoordinate(m_coords[2]);
-            float y1 = clampCoordinate(m_coords[3]);
-            path.addRect(FloatRect(x0, y0, x1 - x0, y1 - y0));
-        }
-        break;
-    case Default:
-        path.addRect(FloatRect(FloatPoint(0, 0), FloatSize(size)));
-        break;
-    }
-
     return path;
 }
 

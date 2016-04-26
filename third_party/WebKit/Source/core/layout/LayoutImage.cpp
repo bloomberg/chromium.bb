@@ -206,8 +206,7 @@ void LayoutImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
 {
     ASSERT(areaElement->imageElement() == node());
 
-    Path path = areaElement->computePath(this);
-    if (path.isEmpty())
+    if (areaElement->getPath(this).isEmpty())
         return;
 
     invalidatePaintAndMarkForLayoutIfNeeded();

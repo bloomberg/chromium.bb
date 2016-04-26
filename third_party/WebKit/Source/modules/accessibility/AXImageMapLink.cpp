@@ -118,7 +118,7 @@ LayoutRect AXImageMapLink::elementRect() const
     if (!layoutObject)
         return LayoutRect();
 
-    return area->computeRect(layoutObject);
+    return area->computeAbsoluteRect(layoutObject);
 }
 
 DEFINE_TRACE(AXImageMapLink)

@@ -47,13 +47,13 @@ HTMLMapElement::~HTMLMapElement()
 {
 }
 
-HTMLAreaElement* HTMLMapElement::areaForPoint(LayoutPoint location, const LayoutSize& containerSize)
+HTMLAreaElement* HTMLMapElement::areaForPoint(const LayoutPoint& location, const LayoutObject* containerObject)
 {
     HTMLAreaElement* defaultArea = nullptr;
     for (HTMLAreaElement& area : Traversal<HTMLAreaElement>::descendantsOf(*this)) {
         if (area.isDefault() && !defaultArea)
             defaultArea = &area;
-        else if (area.pointInArea(location, containerSize))
+        else if (area.pointInArea(location, containerObject))
             return &area;
     }
 

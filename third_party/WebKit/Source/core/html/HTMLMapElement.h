@@ -39,7 +39,7 @@ public:
 
     const AtomicString& getName() const { return m_name; }
 
-    HTMLAreaElement* areaForPoint(LayoutPoint, const LayoutSize& containerSize);
+    HTMLAreaElement* areaForPoint(const LayoutPoint&, const LayoutObject* containerObject);
 
     HTMLImageElement* imageElement();
     HTMLCollection* areas();

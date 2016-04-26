@@ -33,8 +33,6 @@ void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 
 void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    // TODO(wangxianzhu): In other places, we just paint focus ring if outline style is auto.
-    // We should also do that here to keep consistency.
     Document& document = m_layoutImage.document();
 
     if (paintInfo.isPrinting() || !document.frame()->selection().isFocusedAndActive())
@@ -51,26 +49,31 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo, const L
     // Even if the theme handles focus ring drawing for entire elements, it won't do it for
     // an area within an image, so we don't call LayoutTheme::themeDrawsFocusRing here.
 
-    Path path = areaElement.computePath(&m_layoutImage);
-    if (path.isEmpty())
-        return;
-
     const ComputedStyle& areaElementStyle = *areaElement.ensureComputedStyle();
     int outlineWidth = areaElementStyle.outlineWidth();
     if (!outlineWidth)
         return;
 
+    Path path = areaElement.getPath(&m_layoutImage);
+    if (path.isEmpty())
+        return;
+
+    LayoutPoint adjustedPaintOffset = paintOffset;
+    adjustedPaintOffset.moveBy(m_layoutImage.location());
+    path.translate(FloatSize(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
+
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutImage, DisplayItem::ImageAreaFocusRing))
         return;
 
-    IntRect focusRect = m_layoutImage.absoluteContentBox();
+    LayoutRect focusRect = m_layoutImage.contentBoxRect();
+    focusRect.moveBy(adjustedPaintOffset);
     LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage, DisplayItem::ImageAreaFocusRing, focusRect);
 
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
 
     paintInfo.context.save();
-    paintInfo.context.clip(focusRect);
+    paintInfo.context.clip(pixelSnappedIntRect(focusRect));
     paintInfo.context.drawFocusRing(path, outlineWidth,
         areaElementStyle.outlineOffset(),
         m_layoutImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));

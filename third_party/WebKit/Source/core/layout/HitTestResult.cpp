@@ -202,13 +202,7 @@ HTMLAreaElement* HitTestResult::imageAreaForImage() const
     if (!map)
         return nullptr;
 
-    LayoutBox* box = toLayoutBox(imageElement->layoutObject());
-    LayoutRect contentBox = box->contentBoxRect();
-    float scaleFactor = 1 / box->style()->effectiveZoom();
-    LayoutPoint location = localPoint();
-    location.scale(scaleFactor, scaleFactor);
-
-    return map->areaForPoint(location, contentBox.size());
+    return map->areaForPoint(localPoint(), imageElement->layoutObject());
 }
 
 void HitTestResult::setInnerNode(Node* n)
