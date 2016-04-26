@@ -6,6 +6,7 @@
 
 import collections
 import logging
+import operator
 import os
 import urlparse
 
@@ -26,6 +27,7 @@ class ContentClassificationLens(object):
     """
     self._trace = trace
     self._requests = trace.request_track.GetEvents()
+    self._requests_by_id = {r.request_id: r for r in self._requests}
     self._main_frame_id = trace.page_track.GetEvents()[0]['frame_id']
     self._frame_to_requests = collections.defaultdict(list)
     self._ad_requests = set()
@@ -44,15 +46,32 @@ class ContentClassificationLens(object):
     """Returns True iff the request matches one of the tracking_rules."""
     return request.request_id in self._tracking_requests
 
-  def IsAdFrame(self, frame_id, ratio):
-    """A Frame is an Ad frame if more than |ratio| of its requests are
-    ad-related, and is not the main frame."""
-    if frame_id == self._main_frame_id:
+  def IsAdOrTrackingFrame(self, frame_id):
+    """A Frame is an Ad frame if it's not the main frame and its main resource
+    is ad or tracking-related.
+    """
+    if (frame_id not in self._frame_to_requests
+        or frame_id == self._main_frame_id):
       return False
-    ad_requests_count = sum(r in self._ad_requests
-                            for r in self._frame_to_requests[frame_id])
-    frame_requests_count = len(self._frame_to_requests[frame_id])
-    return (float(ad_requests_count) / frame_requests_count) > ratio
+    frame_requests = [self._requests_by_id[request_id]
+                      for request_id in self._frame_to_requests[frame_id]]
+    sorted_frame_resources = sorted(
+        frame_requests, key=operator.attrgetter('start_msec'))
+    frame_main_resource = sorted_frame_resources[0]
+    return (frame_main_resource.request_id in self._ad_requests
+            or frame_main_resource.request_id in self._tracking_requests)
+
+  def AdAndTrackingRequests(self):
+    """Returns a list of requests linked to ads and tracking.
+
+    Returns the union of:
+    - Requests tagged as ad or tracking.
+    - Requests originating from an ad frame.
+    """
+    frame_ids = {r.frame_id for r in self._requests}
+    ad_frame_ids = filter(self.IsAdOrTrackingFrame, frame_ids)
+    return filter(lambda r: self.IsAdRequest(r) or self.IsTrackingRequest(r)
+                  or r.frame_id in ad_frame_ids, self._requests)
 
   @classmethod
   def WithRulesFiles(cls, trace, ad_rules_filename, tracking_rules_filename):

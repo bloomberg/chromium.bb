@@ -4,11 +4,12 @@
 
 """Descriptive metrics for Clovis.
 
-When executed as a script, shows a graph of the amount of data to download for
-a new visit to the same page, with a given time interval.
+When executed as a script, prints the amount of data attributed to Ads, and
+shows a graph of the amount of data to download for a new visit to the same
+page, with a given time interval.
 """
 
-
+import content_classification_lens
 from request_track import CachingPolicy
 
 
@@ -24,22 +25,33 @@ def _RequestTransferSize(request):
           'body': request.encoded_data_length}
 
 
-def TotalTransferSize(trace):
-  """Returns the total transfer size (uploaded, downloaded) from a trace.
+def _TransferSize(requests):
+  """Returns the total transfer size (uploaded, downloaded) of requests.
 
   This is an estimate as we assume:
   - 200s (for the size computation)
   - GET only.
+
+  Args:
+    requests: ([Request]) List of requests.
+
+  Returns:
+    (uploaded_bytes (int), downloaded_bytes (int))
   """
   uploaded_bytes = 0
   downloaded_bytes = 0
-  for request in trace.request_track.GetEvents():
+  for request in requests:
     request_bytes = _RequestTransferSize(request)
     uploaded_bytes += request_bytes['get'] + request_bytes['request_headers']
     downloaded_bytes += (len('HTTP/1.1 200 OK')
                          + request_bytes['response_headers']
                          + request_bytes['body'])
   return (uploaded_bytes, downloaded_bytes)
+
+
+def TotalTransferSize(trace):
+  """Returns the total transfer size (uploaded, downloaded) from a trace."""
+  return _TransferSize(trace.request_track.GetEvents())
 
 
 def TransferredDataRevisit(trace, after_time_s, assume_validation_ok=False):
@@ -74,6 +86,25 @@ def TransferredDataRevisit(trace, after_time_s, assume_validation_ok=False):
   return (uploaded_bytes, downloaded_bytes)
 
 
+def AdsAndTrackingTransferSize(trace, ad_rules_filename,
+                               tracking_rules_filename):
+  """Returns the transfer size attributed to ads and tracking.
+
+  Args:
+    trace: (LoadingTrace) a loading trace.
+    ad_rules_filename: (str) Path to an ad rules file.
+    tracking_rules_filename: (str) Path to a tracking rules file.
+
+  Returns:
+    (uploaded_bytes (int), downloaded_bytes (int))
+  """
+  content_lens = (
+      content_classification_lens.ContentClassificationLens.WithRulesFiles(
+          trace, ad_rules_filename, tracking_rules_filename))
+  requests = content_lens.AdAndTrackingRequests()
+  return _TransferSize(requests)
+
+
 def PlotTransferSizeVsTimeBetweenVisits(trace):
   times = [10, 60, 300, 600, 3600, 4 * 3600, 12 * 3600, 24 * 3600]
   labels = ['10s', '1m', '10m', '1h', '4h', '12h', '1d']
@@ -90,8 +121,14 @@ def PlotTransferSizeVsTimeBetweenVisits(trace):
   plt.show()
 
 
-def main(trace_filename):
+def main(trace_filename, ad_rules_filename, tracking_rules_filename):
   trace = loading_trace.LoadingTrace.FromJsonFile(trace_filename)
+  (_, ads_downloaded_bytes) = AdsAndTrackingTransferSize(
+      trace, ad_rules_filename, tracking_rules_filename)
+  (_, total_downloaded_bytes) = TotalTransferSize(trace)
+  print '%e bytes linked to Ads/Tracking (%.02f%%)' % (
+      ads_downloaded_bytes,
+      (100. * ads_downloaded_bytes) / total_downloaded_bytes)
   PlotTransferSizeVsTimeBetweenVisits(trace)
 
 
@@ -99,5 +136,9 @@ if __name__ == '__main__':
   import sys
   from matplotlib import pylab as plt
   import loading_trace
-
-  main(sys.argv[1])
+  if len(sys.argv) != 4:
+    print (
+        'Usage: %s trace_filename ad_rules_filename tracking_rules_filename'
+        % sys.argv[0])
+    sys.exit(0)
+  main(*sys.argv[1:])

@@ -14,14 +14,15 @@ import test_utils
 class ContentClassificationLensTestCase(unittest.TestCase):
   _DOCUMENT_URL = 'http://bla.com'
   _MAIN_FRAME_ID = '123.1'
-  _REQUEST = Request.FromJsonDict({'url': 'http://bla.com',
+  _REQUEST = Request.FromJsonDict({'url': _DOCUMENT_URL,
                                    'document_url': _DOCUMENT_URL,
                                    'request_id': '1234.1',
                                    'frame_id': _MAIN_FRAME_ID,
                                    'initiator': {'type': 'other'},
                                    'timestamp': 2,
                                    'status': 200,
-                                   'timing': {}})
+                                   'timing': {},
+                                   'resource_type': 'Document'})
   _PAGE_EVENTS = [{'method': 'Page.frameStartedLoading',
                    'frame_id': _MAIN_FRAME_ID},
                   {'method': 'Page.frameAttached',
@@ -74,19 +75,42 @@ class ContentClassificationLensTestCase(unittest.TestCase):
     self.assertFalse(lens.IsAdRequest(self._REQUEST))
     self.assertTrue(lens.IsTrackingRequest(self._REQUEST))
 
-  def testMainFrameIsNotAdFrame(self):
+  def testMainFrameIsNotAnAdFrame(self):
     trace = test_utils.LoadingTraceFromEvents(
-        [self._REQUEST] * 10, self._PAGE_EVENTS)
+        [self._REQUEST], self._PAGE_EVENTS)
     lens = ContentClassificationLens(trace, self._RULES, [])
-    self.assertFalse(lens.IsAdFrame(self._MAIN_FRAME_ID, .5))
+    self.assertFalse(lens.IsAdOrTrackingFrame(self._MAIN_FRAME_ID))
 
   def testAdFrame(self):
     request = copy.deepcopy(self._REQUEST)
+    request.request_id = '1234.2'
     request.frame_id = '123.123'
     trace = test_utils.LoadingTraceFromEvents(
-        [request] * 10 + [self._REQUEST] * 5, self._PAGE_EVENTS)
+        [self._REQUEST, request], self._PAGE_EVENTS)
     lens = ContentClassificationLens(trace, self._RULES, [])
-    self.assertTrue(lens.IsAdFrame(request.frame_id, .5))
+    self.assertTrue(lens.IsAdOrTrackingFrame(request.frame_id))
+
+  def testAdAndTrackingRequests(self):
+    ad_request = copy.deepcopy(self._REQUEST)
+    ad_request.request_id = '1234.2'
+    ad_request.frame_id = '123.123'
+    non_ad_request_non_ad_frame = copy.deepcopy(self._REQUEST)
+    non_ad_request_non_ad_frame.request_id = '1234.3'
+    non_ad_request_non_ad_frame.url = 'http://www.example.com'
+    non_ad_request_non_ad_frame.frame_id = '123.456'
+    non_ad_request_ad_frame = copy.deepcopy(self._REQUEST)
+    non_ad_request_ad_frame.request_id = '1234.4'
+    non_ad_request_ad_frame.url = 'http://www.example.com'
+    non_ad_request_ad_frame.frame_id = ad_request.frame_id
+
+    trace = test_utils.LoadingTraceFromEvents(
+        [self._REQUEST, ad_request, non_ad_request_non_ad_frame,
+         non_ad_request_ad_frame], self._PAGE_EVENTS)
+    lens = ContentClassificationLens(trace, self._RULES, [])
+    self.assertSetEqual(
+        set([self._REQUEST, ad_request, non_ad_request_ad_frame]),
+        set(lens.AdAndTrackingRequests()))
+
 
 class _MatcherTestCase(unittest.TestCase):
   _RULES_WITH_WHITELIST = ['/thisisanad.', '@@myadvertisingdomain.com/*',
