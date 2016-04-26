@@ -408,6 +408,8 @@ WebURLLoaderImpl::Context::Context(
       request_id_(-1) {}
 
 void WebURLLoaderImpl::Context::Cancel() {
+  TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Cancel", this,
+                         TRACE_EVENT_FLAG_FLOW_IN);
   if (resource_dispatcher_ && // NULL in unittest.
       request_id_ != -1) {
     resource_dispatcher_->Cancel(request_id_);
@@ -563,6 +565,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     return;
   }
 
+  TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
       request_info, request_body.get(),
       base::WrapUnique(new WebURLLoaderImpl::RequestPeerImpl(this)));
@@ -587,6 +591,10 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const ResourceResponseInfo& info) {
   if (!client_)
     return false;
+
+  TRACE_EVENT_WITH_FLOW0(
+      "loading", "WebURLLoaderImpl::Context::OnReceivedRedirect",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
   response.initialize();
@@ -622,6 +630,10 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     const ResourceResponseInfo& initial_info) {
   if (!client_)
     return;
+
+  TRACE_EVENT_WITH_FLOW0(
+      "loading", "WebURLLoaderImpl::Context::OnReceivedResponse",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   ResourceResponseInfo info = initial_info;
 
@@ -714,6 +726,10 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   if (!client_)
     return;
 
+  TRACE_EVENT_WITH_FLOW0(
+      "loading", "WebURLLoaderImpl::Context::OnReceivedData",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (ftp_listing_delegate_) {
     // The FTP listing delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
@@ -733,8 +749,12 @@ void WebURLLoaderImpl::Context::OnReceivedData(
 
 void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
     const char* data, int len) {
-  if (client_)
-    client_->didReceiveCachedMetadata(loader_, data, len);
+  if (!client_)
+    return;
+  TRACE_EVENT_WITH_FLOW0(
+      "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  client_->didReceiveCachedMetadata(loader_, data, len);
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
@@ -754,6 +774,10 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   body_stream_writer_.reset();
 
   if (client_) {
+    TRACE_EVENT_WITH_FLOW0(
+        "loading", "WebURLLoaderImpl::Context::OnCompletedRequest",
+        this, TRACE_EVENT_FLAG_FLOW_IN);
+
     if (error_code != net::OK) {
       client_->didFail(
           loader_,
@@ -1092,6 +1116,7 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
                                          WebURLError& error,
                                          WebData& data) {
+  TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
   context_->Start(request, &sync_load_response);
 
@@ -1117,6 +1142,8 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
 
 void WebURLLoaderImpl::loadAsynchronously(const WebURLRequest& request,
                                           WebURLLoaderClient* client) {
+  TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::loadAsynchronously",
+                         this, TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(!context_->client());
 
   context_->set_client(client);
