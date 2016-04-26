@@ -1019,6 +1019,9 @@ void NetworkQualityEstimator::QueryExternalEstimateProvider() {
       EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL);
   base::TimeDelta rtt;
   if (external_estimate_provider_->GetRTT(&rtt)) {
+    RecordExternalEstimateProviderMetrics(
+        EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE);
+    UMA_HISTOGRAM_TIMES("NQE.ExternalEstimateProvider.RTT", rtt);
     rtt_observations_.AddObservation(
         RttObservation(rtt, base::TimeTicks::Now(), EXTERNAL_ESTIMATE));
   }
@@ -1026,6 +1029,10 @@ void NetworkQualityEstimator::QueryExternalEstimateProvider() {
   int32_t downstream_throughput_kbps;
   if (external_estimate_provider_->GetDownstreamThroughputKbps(
           &downstream_throughput_kbps)) {
+    RecordExternalEstimateProviderMetrics(
+        EXTERNAL_ESTIMATE_PROVIDER_STATUS_DOWNLINK_BANDWIDTH_AVAILABLE);
+    UMA_HISTOGRAM_COUNTS("NQE.ExternalEstimateProvider.DownlinkBandwidth",
+                         downstream_throughput_kbps);
     downstream_throughput_kbps_observations_.AddObservation(
         ThroughputObservation(downstream_throughput_kbps,
                               base::TimeTicks::Now(), EXTERNAL_ESTIMATE));

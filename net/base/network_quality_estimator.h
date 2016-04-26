@@ -282,8 +282,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
                            TestLRUCacheMaximumSize);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestGetMedianRTTSince);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
-                           TestExternalEstimateProvider);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestExternalEstimateProviderMergeEstimates);
 
   class SocketWatcher;
@@ -591,6 +589,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED,
     EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL,
     EXTERNAL_ESTIMATE_PROVIDER_STATUS_CALLBACK,
+    EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE,
+    EXTERNAL_ESTIMATE_PROVIDER_STATUS_DOWNLINK_BANDWIDTH_AVAILABLE,
     EXTERNAL_ESTIMATE_PROVIDER_STATUS_BOUNDARY
   };
 

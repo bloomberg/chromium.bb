@@ -33159,6 +33159,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.ExternalEstimateProvider.DownlinkBandwidth" units="Kbps">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the estimate of the downlink bandwidth (in Kbps) provided by the
+    external estimate provided. Recorded every time the external estimate
+    provider provides a valid downlink bandwidth estimate to the network quality
+    estimator.
+  </summary>
+</histogram>
+
+<histogram name="NQE.ExternalEstimateProvider.RTT" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Records the estimate of the RTT provided by the external estimate provided.
+    Recorded every time the external estimate provider provides a valid RTT
+    estimate to the network quality estimator.
+  </summary>
+</histogram>
+
 <histogram name="NQE.ExternalEstimateProviderStatus"
     enum="NQEExternalEstimateProviderStatus">
   <owner>bengr@chromium.org</owner>
@@ -78769,6 +78790,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="External estimate provider was queried"/>
   <int value="3" label="Query to external estimate provider was successful"/>
   <int value="4" label="Callback received from external estimate provider"/>
+  <int value="5" label="RTT was available from the external estimate provider"/>
+  <int value="6"
+      label="Downlink bandwidth was available from the external estimate
+             provider"/>
 </enum>
 
 <enum name="NtpFollowAction" type="int">

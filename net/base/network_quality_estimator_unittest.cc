@@ -957,6 +957,7 @@ class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
 // Tests if the RTT value from external estimate provider is discarded if the
 // external estimate provider is invalid.
 TEST(NetworkQualityEstimatorTest, InvalidExternalEstimateProvider) {
+  base::HistogramTester histogram_tester;
   InvalidExternalEstimateProvider* invalid_external_estimate_provider =
       new InvalidExternalEstimateProvider();
   std::unique_ptr<ExternalEstimateProvider> external_estimate_provider(
@@ -970,6 +971,20 @@ TEST(NetworkQualityEstimatorTest, InvalidExternalEstimateProvider) {
   EXPECT_EQ(1U, invalid_external_estimate_provider->get_rtt_count());
   EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+  histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProviderStatus", 3);
+
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      1 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_AVAILABLE */, 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      2 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED */, 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      3 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL */, 1);
+  histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProvider.RTT", 0);
+  histogram_tester.ExpectTotalCount(
+      "NQE.ExternalEstimateProvider.DownlinkBandwidth", 0);
 }
 
 class TestExternalEstimateProvider : public ExternalEstimateProvider {
@@ -1054,6 +1069,7 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
 // Tests if the external estimate provider is called in the constructor and
 // on network change notification.
 TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
+  base::HistogramTester histogram_tester;
   TestExternalEstimateProvider* test_external_estimate_provider =
       new TestExternalEstimateProvider(base::TimeDelta::FromMilliseconds(1),
                                        100);
@@ -1067,6 +1083,32 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
   int32_t kbps;
   EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+
+  histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProviderStatus", 5);
+
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      1 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_AVAILABLE */, 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      2 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED */, 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      3 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL */, 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      5 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_RTT_AVAILABLE */, 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProviderStatus",
+      6 /* EXTERNAL_ESTIMATE_PROVIDER_STATUS_DOWNLINK_BANDWIDTH_AVAILABLE */,
+      1);
+  histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProvider.RTT", 1);
+  histogram_tester.ExpectBucketCount("NQE.ExternalEstimateProvider.RTT", 1, 1);
+
+  histogram_tester.ExpectTotalCount(
+      "NQE.ExternalEstimateProvider.DownlinkBandwidth", 1);
+  histogram_tester.ExpectBucketCount(
+      "NQE.ExternalEstimateProvider.DownlinkBandwidth", 100, 1);
 
   EXPECT_EQ(
       1U, test_external_estimate_provider->get_time_since_last_update_count());
