@@ -657,7 +657,7 @@ long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 }
 
 void RenderWidgetHostViewAndroid::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+    const TextInputState& params) {
   if (params.is_non_ime_change) {
     // Sends an acknowledgement to the renderer of a processed IME event.
     host_->Send(new InputMsg_ImeEventAck(host_->GetRoutingID()));

@@ -56,6 +56,7 @@
 #include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -1030,7 +1031,7 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewMac::TextInputStateChanged(
-const ViewHostMsg_TextInputState_Params& params) {
+    const TextInputState& params) {
   if (text_input_type_ != params.type
       || can_compose_inline_ != params.can_compose_inline) {
     text_input_type_ = params.type;

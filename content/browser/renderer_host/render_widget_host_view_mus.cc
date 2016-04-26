@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
+#include "content/common/text_input_state.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -187,7 +188,7 @@ void RenderWidgetHostViewMus::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewMus::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+    const TextInputState& params) {
   // TODO(fsamuel): Implement an IME mojo app.
 }
 

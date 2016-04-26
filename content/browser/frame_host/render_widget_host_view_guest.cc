@@ -347,7 +347,7 @@ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewGuest::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+    const TextInputState& params) {
   if (!guest_)
     return;
 

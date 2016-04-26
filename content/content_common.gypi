@@ -565,6 +565,8 @@
       'common/swapped_out_messages.cc',
       'common/swapped_out_messages.h',
       'common/text_input_client_messages.h',
+      'common/text_input_state.cc',
+      'common/text_input_state.h',
       'common/url_schemes.cc',
       'common/url_schemes.h',
       'common/user_agent.cc',

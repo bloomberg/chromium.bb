@@ -39,6 +39,7 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -1058,7 +1059,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
       || text_field_is_dirty_
 #endif
       ) {
-    ViewHostMsg_TextInputState_Params params;
+    TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
     params.flags = new_info.flags;

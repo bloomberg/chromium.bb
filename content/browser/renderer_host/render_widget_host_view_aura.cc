@@ -47,6 +47,7 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/overscroll_configuration.h"
@@ -875,7 +876,7 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewAura::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+    const TextInputState& params) {
   if (text_input_type_ != params.type ||
       text_input_mode_ != params.mode ||
       can_compose_inline_ != params.can_compose_inline ||

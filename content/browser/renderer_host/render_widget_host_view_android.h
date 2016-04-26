@@ -38,8 +38,6 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
-struct ViewHostMsg_TextInputState_Params;
-
 namespace cc {
 class CopyOutputResult;
 class Layer;
@@ -63,6 +61,7 @@ class RenderWidgetHostImpl;
 class SynchronousCompositorHost;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
+struct TextInputState;
 
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
@@ -109,8 +108,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   float GetTopControlsHeight() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) override;
+  void TextInputStateChanged(const TextInputState& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
