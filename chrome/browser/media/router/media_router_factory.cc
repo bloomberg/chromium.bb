@@ -62,6 +62,11 @@ MediaRouterFactory::MediaRouterFactory()
 MediaRouterFactory::~MediaRouterFactory() {
 }
 
+// static
+MediaRouterFactory* MediaRouterFactory::GetMediaRouterFactoryForTest() {
+  return &service_factory.Get();
+}
+
 content::BrowserContext* MediaRouterFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
