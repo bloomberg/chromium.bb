@@ -144,6 +144,7 @@
         'cast_common',
         'cast_net',
         '<(DEPTH)/media/media.gyp:media',
+        '<(DEPTH)/media/media.gyp:media_features',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/third_party/opus/opus.gyp:opus',
         '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',

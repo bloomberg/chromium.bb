@@ -154,6 +154,7 @@ source_set("sender") {
     ":common",
     ":net",
     "//media",
+    "//media:media_features",
     "//media:shared_memory_support",
     "//third_party/libvpx",
     "//third_party/opus",
