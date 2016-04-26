@@ -60,6 +60,7 @@ class ASH_EXPORT WmWindow {
   // Used for debugging.
   virtual void SetName(const std::string& name) = 0;
 
+  // See wm_shell_window_ids.h for list of known ids.
   virtual void SetShellWindowId(int id) = 0;
   virtual int GetShellWindowId() = 0;
   virtual WmWindow* GetChildByShellWindowId(int id) = 0;

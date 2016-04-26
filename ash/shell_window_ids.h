@@ -5,6 +5,8 @@
 #ifndef ASH_SHELL_WINDOW_IDS_H_
 #define ASH_SHELL_WINDOW_IDS_H_
 
+#include "ash/wm/common/wm_shell_window_ids.h"
+
 // Declarations of ids of special shell windows.
 
 namespace ash {
@@ -43,11 +45,19 @@ const int kShellWindowId_DefaultContainer = 6;
 // The container for top-level windows with the 'always-on-top' flag set.
 const int kShellWindowId_AlwaysOnTopContainer = 7;
 
-// The container for windows docked to either side of the desktop.
-const int kShellWindowId_DockedContainer = 8;
+// The container for windows docked to either side of the desktop. Shell id is
+// defined in wm_shell_window_ids.
+
+static_assert(kShellWindowId_AlwaysOnTopContainer + 1 ==
+                  kShellWindowId_DockedContainer,
+              "docked container must be immediately after always on top");
 
 // The container for the shelf.
 const int kShellWindowId_ShelfContainer = 9;
+
+static_assert(kShellWindowId_DockedContainer + 1 ==
+                  kShellWindowId_ShelfContainer,
+              "shelf container must be immediately after docked container");
 
 // The container for bubbles which float over the shelf.
 const int kShellWindowId_ShelfBubbleContainer = 10;
