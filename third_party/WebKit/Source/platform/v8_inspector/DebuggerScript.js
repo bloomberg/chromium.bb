@@ -685,8 +685,8 @@ DebuggerScript._buildScopeObject = function(scopeType, scopeObject)
         result = { __proto__: null };
         for (var j = 0; j < properties.length; j++) {
             var name = properties[j].name();
-            if (name.charAt(0) === ".")
-                continue; // Skip internal variables like ".arguments"
+            if (name.length === 0 || name.charAt(0) === ".")
+                continue; // Skip internal variables like ".arguments" and variables with empty name
             result[name] = properties[j].value_;
         }
         break;
