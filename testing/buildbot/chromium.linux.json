@@ -154,6 +154,19 @@
         "test": "cc_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 1200
+        },
+        "test": "chrome_public_test"
+      },
+      {
         "test": "components_browsertests"
       },
       {
@@ -227,9 +240,6 @@
     "instrumentation_tests": [
       {
         "test": "android_webview_test_apk"
-      },
-      {
-        "test": "chrome_public_test_apk"
       },
       {
         "test": "chrome_sync_shell_test_apk"
