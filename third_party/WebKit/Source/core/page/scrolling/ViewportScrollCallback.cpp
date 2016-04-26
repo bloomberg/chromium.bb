@@ -11,7 +11,7 @@
 #include "core/frame/TopControls.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -102,10 +102,10 @@ void ViewportScrollCallback::handleEvent(ScrollState* state)
 
 ScrollableArea* ViewportScrollCallback::getRootFrameViewport() const
 {
-    if (!m_document->layoutView())
+    if (m_document->layoutViewItem().isNull())
         return nullptr;
 
-    FrameView* frameView = m_document->layoutView()->frameView();
+    FrameView* frameView = m_document->layoutViewItem().frameView();
     if (!frameView)
         return nullptr;
 
