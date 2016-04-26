@@ -35,7 +35,7 @@ namespace blink {
 class LineLayoutState {
     STACK_ALLOCATED();
 public:
-    LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutFlowThread* flowThread)
+    LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom)
         : m_lastFloat(nullptr)
         , m_endLine(nullptr)
         , m_floatIndex(0)
@@ -46,7 +46,6 @@ public:
         , m_paintInvalidationLogicalTop(paintInvalidationLogicalTop)
         , m_paintInvalidationLogicalBottom(paintInvalidationLogicalBottom)
         , m_usesPaintInvalidationBounds(false)
-        , m_flowThread(flowThread)
     { }
 
     void markForFullLayout() { m_isFullLayout = true; }
@@ -94,8 +93,6 @@ public:
     LayoutUnit adjustedLogicalLineTop() const { return m_adjustedLogicalLineTop; }
     void setAdjustedLogicalLineTop(LayoutUnit value) { m_adjustedLogicalLineTop = value; }
 
-    LayoutFlowThread* flowThread() const { return m_flowThread; }
-
 private:
     Vector<LayoutBlockFlow::FloatWithRect> m_floats;
     FloatingObject* m_lastFloat;
@@ -117,8 +114,6 @@ private:
     LayoutUnit m_adjustedLogicalLineTop;
 
     bool m_usesPaintInvalidationBounds;
-
-    LayoutFlowThread* m_flowThread;
 };
 
 } // namespace blink

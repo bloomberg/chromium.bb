@@ -23,7 +23,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/BidiRunForLine.h"
 #include "core/layout/LayoutCounter.h"
-#include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
@@ -1540,13 +1539,10 @@ static bool isInlineWithOutlineAndContinuation(const LayoutObject& o)
 
 void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
 {
-    LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool clearLinesForPagination = firstLineBox() && flowThread && !flowThread->hasColumnSets();
-
     // Figure out if we should clear out our line boxes.
     // FIXME: Handle resize eventually!
-    bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren || clearLinesForPagination;
-    LineLayoutState layoutState(isFullLayout, paintInvalidationLogicalTop, paintInvalidationLogicalBottom, flowThread);
+    bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren;
+    LineLayoutState layoutState(isFullLayout, paintInvalidationLogicalTop, paintInvalidationLogicalBottom);
 
     if (isFullLayout) {
         // Ensure the old line boxes will be erased.
@@ -1805,35 +1801,31 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInl
 
 bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutState)
 {
+    if (!m_floatingObjects || !layoutState.endLine())
+        return true;
+
     LayoutUnit lineDelta = logicalHeight() - layoutState.endLineLogicalTop();
 
     bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
-    if (paginated && layoutState.flowThread()) {
+    if (paginated) {
         // Check all lines from here to the end, and see if the hypothetical new position for the lines will result
         // in a different available line width.
         for (RootInlineBox* lineBox = layoutState.endLine(); lineBox; lineBox = lineBox->nextRootBox()) {
-            if (paginated) {
-                // This isn't the real move we're going to do, so don't update the line box's pagination
-                // strut yet.
-                LayoutUnit oldPaginationStrut = lineBox->paginationStrut();
-                lineDelta -= oldPaginationStrut;
-                adjustLinePositionForPagination(*lineBox, lineDelta);
-                lineBox->setPaginationStrut(oldPaginationStrut);
-            }
+            // This isn't the real move we're going to do, so don't update the line box's pagination
+            // strut yet.
+            LayoutUnit oldPaginationStrut = lineBox->paginationStrut();
+            lineDelta -= oldPaginationStrut;
+            adjustLinePositionForPagination(*lineBox, lineDelta);
+            lineBox->setPaginationStrut(oldPaginationStrut);
         }
     }
-
-    if (!lineDelta || !m_floatingObjects)
+    if (!lineDelta)
         return true;
 
     // See if any floats end in the range along which we want to shift the lines vertically.
     LayoutUnit logicalTop = std::min(logicalHeight(), layoutState.endLineLogicalTop());
 
-    RootInlineBox* lastLine = layoutState.endLine();
-    while (RootInlineBox* nextLine = lastLine->nextRootBox())
-        lastLine = nextLine;
-
-    LayoutUnit logicalBottom = lastLine->lineBottomWithLeading() + absoluteValue(lineDelta);
+    LayoutUnit logicalBottom = lastRootBox()->lineBottomWithLeading() + absoluteValue(lineDelta);
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
