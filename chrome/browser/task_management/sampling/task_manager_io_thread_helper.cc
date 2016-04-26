@@ -59,7 +59,7 @@ void TaskManagerIoThreadHelper::OnRawBytesRead(const net::URLRequest& request,
     g_io_thread_helper->OnNetworkBytesRead(request, bytes_read);
 }
 
-TaskManagerIoThreadHelper::TaskManagerIoThreadHelper() {
+TaskManagerIoThreadHelper::TaskManagerIoThreadHelper() : weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
@@ -67,18 +67,14 @@ TaskManagerIoThreadHelper::~TaskManagerIoThreadHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
-// static
 void TaskManagerIoThreadHelper::OnMultipleBytesReadIO() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (!g_io_thread_helper)
-    return;
-
-  DCHECK(!g_io_thread_helper->bytes_read_buffer_.empty());
+  DCHECK(!bytes_read_buffer_.empty());
 
   std::vector<BytesReadParam>* bytes_read_buffer =
       new std::vector<BytesReadParam>();
-  g_io_thread_helper->bytes_read_buffer_.swap(*bytes_read_buffer);
+  bytes_read_buffer_.swap(*bytes_read_buffer);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -114,9 +110,9 @@ void TaskManagerIoThreadHelper::OnNetworkBytesRead(
     // delayed TaskManagerIoThreadHelper::OnMultipleBytesReadIO() process them
     // after one second from now.
     content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(TaskManagerIoThreadHelper::OnMultipleBytesReadIO),
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&TaskManagerIoThreadHelper::OnMultipleBytesReadIO,
+                   weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(1));
   }
 

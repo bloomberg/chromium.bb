@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace net {
 class URLRequest;
@@ -78,7 +79,7 @@ class TaskManagerIoThreadHelper {
 
   // We gather multiple notifications on the IO thread in one second before a
   // call is made to the following function to start the processing.
-  static void OnMultipleBytesReadIO();
+  void OnMultipleBytesReadIO();
 
   // This will update the task manager with the network bytes read.
   void OnNetworkBytesRead(const net::URLRequest& request, int64_t bytes_read);
@@ -86,6 +87,8 @@ class TaskManagerIoThreadHelper {
   // This buffer will be filled on IO thread with information about the number
   // of bytes read from URLRequests.
   std::vector<BytesReadParam> bytes_read_buffer_;
+
+  base::WeakPtrFactory<TaskManagerIoThreadHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerIoThreadHelper);
 };
