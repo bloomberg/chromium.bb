@@ -2708,10 +2708,10 @@ weston_surface_commit_subsurface_order(struct weston_surface *surface)
 }
 
 static void
-weston_surface_build_buffer_matrix(struct weston_surface *surface,
+weston_surface_build_buffer_matrix(const struct weston_surface *surface,
 				   struct weston_matrix *matrix)
 {
-	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
+	const struct weston_buffer_viewport *vp = &surface->buffer_viewport;
 	double src_width, src_height, dest_width, dest_height;
 
 	weston_matrix_init(matrix);
