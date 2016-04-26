@@ -33,23 +33,42 @@ class CONTENT_EXPORT V4L2ImageProcessor {
 
   // Initializes the processor to convert from |input_format| to |output_format|
   // and/or scale from |input_visible_size| to |output_visible_size|.
-  // Request the output buffers to be of at least |output_allocated_size|. The
-  // number of input buffers and output buffers will be |num_buffers|. Provided
-  // |error_cb| will be called if an error occurs. Return true if the requested
+  // Request the input buffers to be of at least |input_allocated_size| and the
+  // output buffers to be of at least |output_allocated_size|. The number of
+  // input buffers and output buffers will be |num_buffers|. Provided |error_cb|
+  // will be called if an error occurs. Return true if the requested
   // configuration is supported.
   bool Initialize(media::VideoPixelFormat input_format,
                   media::VideoPixelFormat output_format,
+                  v4l2_memory input_memory_type,
                   gfx::Size input_visible_size,
+                  gfx::Size input_allocated_size,
                   gfx::Size output_visible_size,
                   gfx::Size output_allocated_size,
                   int num_buffers,
                   const base::Closure& error_cb);
 
-  // Return a vector of dmabuf file descriptors, exported for V4L2 output buffer
-  // with |index|. The size of vector will be the number of planes of the
+  // Returns a vector of dmabuf file descriptors, exported for V4L2 output
+  // buffer with |index|. The size of vector will be the number of planes of the
   // buffer. Return an empty vector on failure.
   std::vector<base::ScopedFD> GetDmabufsForOutputBuffer(
       int output_buffer_index);
+
+  // Returns a vector of supported input formats in fourcc. This can be called
+  // before Initialize.
+  std::vector<uint32_t> GetSupportedInputFormats();
+
+  // Returns a vector of supported output formats in fourcc. This can be called
+  // before Initialize.
+  std::vector<uint32_t> GetSupportedOutputFormats();
+
+  // Gets the output allocated size and number of planes given |pixelformat|
+  // fourcc and visible size |size|. Return true if success. The adjusted coded
+  // size will be stored in |size| and the number of planes will be stored in
+  // |num_planes|. This can be called before Initialize.
+  bool TryOutputFormat(uint32_t pixelformat,
+                       gfx::Size* size,
+                       size_t* num_planes);
 
   // Returns input allocated size required by the processor to be fed with.
   gfx::Size input_allocated_size() const { return input_allocated_size_; }
@@ -141,6 +160,7 @@ class CONTENT_EXPORT V4L2ImageProcessor {
 
   media::VideoPixelFormat input_format_;
   media::VideoPixelFormat output_format_;
+  v4l2_memory input_memory_type_;
   uint32_t input_format_fourcc_;
   uint32_t output_format_fourcc_;
 

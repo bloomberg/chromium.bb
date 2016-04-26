@@ -320,10 +320,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     const gfx::Size& natural_size,
     const std::vector<int>& dmabuf_fds,
     base::TimeDelta timestamp) {
-#if defined(OS_CHROMEOS)
-  DCHECK_EQ(format, PIXEL_FORMAT_NV12);
-#endif
-
   const StorageType storage = STORAGE_DMABUFS;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
     LOG(DFATAL) << __FUNCTION__ << " Invalid config."

@@ -70,6 +70,9 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(
     case media::PIXEL_FORMAT_NV12:
       return V4L2_PIX_FMT_NV12M;
 
+    case media::PIXEL_FORMAT_MT21:
+      return V4L2_PIX_FMT_MT21;
+
     case media::PIXEL_FORMAT_I420:
       return V4L2_PIX_FMT_YUV420M;
 

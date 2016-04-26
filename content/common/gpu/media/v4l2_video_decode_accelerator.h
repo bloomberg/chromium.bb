@@ -25,6 +25,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "content/common/gpu/media/v4l2_device.h"
+#include "content/common/gpu/media/v4l2_image_processor.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -74,6 +75,16 @@ namespace content {
 // inoperable state for the duration of the wait for Pictures. So to prevent
 // subtle races (esp. if we get Reset() in the meantime), we block the decoder
 // thread while we wait for AssignPictureBuffers from the client.
+//
+// V4L2VideoDecodeAccelerator may use image processor to convert the output.
+// There are three cases:
+// Flush: V4L2VDA should wait until image processor returns all processed
+//   frames.
+// Reset: V4L2VDA doesn't need to wait for image processor. When image processor
+//   returns an old frame, drop it.
+// Resolution change: V4L2VDA destroy image processor when destroying output
+//   buffrers. We cannot drop any frame during resolution change. So V4L2VDA
+//   should destroy output buffers after image processor returns all the frames.
 class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     : public media::VideoDecodeAccelerator {
  public:
@@ -133,9 +144,10 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   };
 
   enum OutputRecordState {
-    kFree,      // Ready to be queued to the device.
-    kAtDevice,  // Held by device.
-    kAtClient,  // Held by client of V4L2VideoDecodeAccelerator.
+    kFree,         // Ready to be queued to the device.
+    kAtDevice,     // Held by device.
+    kAtProcessor,  // Held by image processor.
+    kAtClient,     // Held by client of V4L2VideoDecodeAccelerator.
   };
 
   enum BufferId {
@@ -166,6 +178,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
+    OutputRecord(OutputRecord&&) = default;
     ~OutputRecord();
     OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
@@ -173,6 +186,8 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     int32_t picture_id;     // picture buffer id as returned to PictureReady().
     bool cleared;           // Whether the texture is cleared and safe to render
                             // from. See TextureManager for details.
+    // Exported fds for image processor to import.
+    std::vector<base::ScopedFD> fds;
   };
 
   //
@@ -300,6 +315,10 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // Set input and output formats before starting decode.
   bool SetupFormats();
+  // Return a usable input format of image processor. Return 0 if not found.
+  uint32_t FindImageProcessorInputFormat();
+  // Return a usable output format of image processor. Return 0 if not found.
+  uint32_t FindImageProcessorOutputFormat();
 
   //
   // Methods run on child thread.
@@ -320,6 +339,13 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // Callback that indicates a picture has been cleared.
   void PictureCleared();
+
+  // Image processor returns a processed frame. Its id is |bitstream_buffer_id|
+  // and stored in |output_buffer_index| buffer of image processor.
+  void FrameProcessed(int32_t bitstream_buffer_id, int output_buffer_index);
+
+  // Image processor notifies an error.
+  void ImageProcessorError();
 
   // Our original calling task runner for the child thread.
   scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
@@ -458,6 +484,25 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   media::VideoCodecProfile video_profile_;
   // Chosen output format.
   uint32_t output_format_fourcc_;
+
+  // Image processor device, if one is in use.
+  scoped_refptr<V4L2Device> image_processor_device_;
+  // Image processor. Created and destroyed on child thread.
+  std::unique_ptr<V4L2ImageProcessor> image_processor_;
+
+  // The V4L2Device EGLImage is created from.
+  scoped_refptr<V4L2Device> egl_image_device_;
+  // The format of EGLImage.
+  uint32_t egl_image_format_fourcc_;
+  // The logical dimensions of EGLImage buffer in pixels.
+  gfx::Size egl_image_size_;
+  // Number of planes for EGLImage.
+  size_t egl_image_planes_count_;
+
+  // IDs of bitstream buffers sent to image processor to process. After a
+  // buffer is processed, it will sent to render if the id is in this
+  // queue. If the id is not in this queue, the buffer will be dropped.
+  std::queue<int> image_processor_bitstream_buffer_ids_;
 
   // Input format V4L2 fourccs this class supports.
   static const uint32_t supported_input_fourccs_[];

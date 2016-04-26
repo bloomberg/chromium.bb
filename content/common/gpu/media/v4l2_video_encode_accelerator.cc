@@ -12,7 +12,6 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
-#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -156,13 +155,30 @@ bool V4L2VideoEncodeAccelerator::Initialize(
 
     // Convert from input_format to device_input_format_, keeping the size
     // at visible_size_ and requiring the output buffers to be of at least
-    // input_allocated_size_.
+    // input_allocated_size_. Unretained is safe because |this| owns image
+    // processor and there will be no callbacks after processor destroys.
     if (!image_processor_->Initialize(
-            input_format, device_input_format_, visible_size_, visible_size_,
-            input_allocated_size_, kImageProcBufferCount,
+            input_format, device_input_format_, V4L2_MEMORY_USERPTR,
+            visible_size_, visible_size_, visible_size_, input_allocated_size_,
+            kImageProcBufferCount,
             base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                       weak_this_))) {
+                       base::Unretained(this)))) {
       LOG(ERROR) << "Failed initializing image processor";
+      return false;
+    }
+    // The output of image processor is the input of encoder. Output coded
+    // width of processor must be the same as input coded width of encoder.
+    // Output coded height of processor can be larger but not smaller than the
+    // input coded height of encoder. For example, suppose input size of encoder
+    // is 320x193. It is OK if the output of processor is 320x208.
+    if (image_processor_->output_allocated_size().width() !=
+            input_allocated_size_.width() ||
+        image_processor_->output_allocated_size().height() <
+            input_allocated_size_.height()) {
+      LOG(ERROR) << "Invalid image processor output coded size "
+                 << image_processor_->output_allocated_size().ToString()
+                 << ", encode input coded size is "
+                 << input_allocated_size_.ToString();
       return false;
     }
 
@@ -218,10 +234,13 @@ void V4L2VideoEncodeAccelerator::Encode(
     if (free_image_processor_output_buffers_.size() > 0) {
       int output_buffer_index = free_image_processor_output_buffers_.back();
       free_image_processor_output_buffers_.pop_back();
+      // Unretained is safe because |this| owns image processor and there will
+      // be no callbacks after processor destroys.
       image_processor_->Process(
           frame, output_buffer_index,
-          base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed, weak_this_,
-                     force_keyframe, frame->timestamp()));
+          base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                     base::Unretained(this), force_keyframe,
+                     frame->timestamp()));
     } else {
       ImageProcessorInputRecord record;
       record.frame = frame;

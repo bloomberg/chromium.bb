@@ -249,7 +249,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   std::vector<int> free_input_buffers_;
   // Mapping of int index to input buffer record.
   std::vector<InputRecord> input_buffer_map_;
-  enum v4l2_memory input_memory_type_;
+  v4l2_memory input_memory_type_;
 
   // Output queue state.
   bool output_streamon_;
