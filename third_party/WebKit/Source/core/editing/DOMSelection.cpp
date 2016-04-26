@@ -560,7 +560,7 @@ bool DOMSelection::isValidForPosition(Node* node) const
     DCHECK(m_frame);
     if (!node)
         return true;
-    return node->document() == m_frame->document();
+    return node->document() == m_frame->document() && node->inShadowIncludingDocument();
 }
 
 void DOMSelection::addConsoleError(const String& message)

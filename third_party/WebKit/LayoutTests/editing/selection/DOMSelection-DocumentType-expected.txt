@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
-PASS sel.collapse(docType) threw exception InvalidNodeTypeError: Failed to execute 'collapse' on 'Selection': The node provided is of type 'c'..
+PASS sel.anchorNode is null
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
 PASS sel.anchorNode is null
