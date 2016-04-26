@@ -459,6 +459,14 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
 
   std::unique_ptr<SharedMemoryRegion> shm(
       new SharedMemoryRegion(bitstream_buffer, true));
+
+  // Skip empty buffers.
+  if (bitstream_buffer.size() == 0) {
+    if (client_)
+      client_->NotifyEndOfBitstreamBuffer(bitstream_buffer.id());
+    return;
+  }
+
   RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
                                UNREADABLE_INPUT, );
 
@@ -681,11 +689,13 @@ void VaapiVideoDecodeAccelerator::Decode(
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "Buffer id",
                bitstream_buffer.id());
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
-      bitstream_buffer.id() >= 0 &&
-          base::SharedMemory::IsHandleValid(bitstream_buffer.handle()),
-      "Invalid bitstream_buffer, id: " << bitstream_buffer.id(),
-      INVALID_ARGUMENT, );
+  if (bitstream_buffer.id() < 0) {
+    if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+      base::SharedMemory::CloseHandle(bitstream_buffer.handle());
+    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    NotifyError(INVALID_ARGUMENT);
+    return;
+  }
 
   // We got a new input buffer from the client, map it and queue for later use.
   MapAndQueueNewInputBuffer(bitstream_buffer);

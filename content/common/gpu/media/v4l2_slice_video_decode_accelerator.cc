@@ -1262,6 +1262,11 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
   std::unique_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
       decode_client_, decode_task_runner_,
       new SharedMemoryRegion(bitstream_buffer, true), bitstream_buffer.id()));
+
+  // Skip empty buffer.
+  if (bitstream_buffer.size() == 0)
+    return;
+
   if (!bitstream_record->shm->Map()) {
     LOGF(ERROR) << "Could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);

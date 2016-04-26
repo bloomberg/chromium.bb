@@ -517,6 +517,11 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
       std::unique_ptr<SharedMemoryRegion>(
           new SharedMemoryRegion(bitstream_buffer, true)),
       bitstream_buffer.id()));
+
+  // Skip empty buffer.
+  if (bitstream_buffer.size() == 0)
+    return;
+
   if (!bitstream_record->shm->Map()) {
     LOG(ERROR) << "Decode(): could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);
