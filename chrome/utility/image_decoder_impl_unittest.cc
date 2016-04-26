@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "ipc/ipc_channel.h"
 #include "skia/public/type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,10 +58,17 @@ class Request {
   skia::mojom::BitmapPtr bitmap_;
 };
 
+class ImageDecoderImplTest : public testing::Test {
+ protected:
+  ~ImageDecoderImplTest() override {}
+
+  base::MessageLoop message_loop_;
+};
+
 }  // namespace
 
 // Test that DecodeImage() doesn't return image message > (max message size)
-TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
+TEST_F(ImageDecoderImplTest, DecodeImageSizeLimit) {
   // Using actual limit generates 14000 x 9400 images, which causes the test to
   // timeout.  We test with a smaller limit for efficiency.
   const size_t kTestMessageSize = IPC::Channel::kMaximumMessageSize / 1024;
@@ -106,7 +114,7 @@ TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
   }
 }
 
-TEST(ImageDecoderImplTest, DecodeImageFailed) {
+TEST_F(ImageDecoderImplTest, DecodeImageFailed) {
   ImageDecoderImpl decoder(IPC::Channel::kMaximumMessageSize);
 
   // The "jpeg" is just some "random" data;

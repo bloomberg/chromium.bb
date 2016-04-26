@@ -8,20 +8,18 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
-#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
-#include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 
 // This connects an interface implementation strongly to a pipe. When a
-// connection error is detected the implementation is deleted. Deleting the
-// connector also closes the pipe.
+// connection error is detected or the current message loop is destructed the
+// implementation is deleted.
 //
 // Example of an implementation that is always bound strongly to a pipe
 //
@@ -47,11 +45,13 @@ namespace mojo {
 // This class is thread hostile once it is bound to a message pipe. Until it is
 // bound, it may be bound or destroyed on any thread.
 template <typename Interface>
-class StrongBinding {
+class StrongBinding : public base::MessageLoop::DestructionObserver {
   MOVE_ONLY_TYPE_FOR_CPP_03(StrongBinding);
 
  public:
-  explicit StrongBinding(Interface* impl) : binding_(impl) {}
+  explicit StrongBinding(Interface* impl) : binding_(impl), observing_(true) {
+    base::MessageLoop::current()->AddDestructionObserver(this);
+  }
 
   StrongBinding(Interface* impl, ScopedMessagePipeHandle handle)
       : StrongBinding(impl) {
@@ -68,7 +68,7 @@ class StrongBinding {
     Bind(std::move(request));
   }
 
-  ~StrongBinding() {}
+  ~StrongBinding() override { StopObservingIfNecessary(); }
 
   void Bind(ScopedMessagePipeHandle handle) {
     DCHECK(!binding_.is_bound());
@@ -101,18 +101,31 @@ class StrongBinding {
     connection_error_handler_ = error_handler;
   }
 
-  Interface* impl() { return binding_.impl(); }
-  // Exposed for testing, should not generally be used.
-  internal::Router* internal_router() { return binding_.internal_router(); }
-
   void OnConnectionError() {
+    StopObservingIfNecessary();
     connection_error_handler_.Run();
     delete binding_.impl();
   }
 
+  // base::MessageLoop::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override {
+    StopObservingIfNecessary();
+    binding_.Close();
+    delete binding_.impl();
+  }
+
  private:
+  void StopObservingIfNecessary() {
+    if (observing_) {
+      observing_ = false;
+      base::MessageLoop::current()->RemoveDestructionObserver(this);
+    }
+  }
+
   Closure connection_error_handler_;
   Binding<Interface> binding_;
+  // Whether the object is observing message loop destruction.
+  bool observing_;
 };
 
 }  // namespace mojo
