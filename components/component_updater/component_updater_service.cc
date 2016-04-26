@@ -17,7 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -389,11 +389,11 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
 // The component update factory. Using the component updater as a singleton
 // is the job of the browser process.
 // TODO(sorin): consider making this a singleton.
-scoped_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
+std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
     const scoped_refptr<Configurator>& config) {
   DCHECK(config);
   auto update_client = update_client::UpdateClientFactory(config);
-  return scoped_ptr<ComponentUpdateService>(
+  return base::WrapUnique(
       new CrxUpdateService(config, std::move(update_client)));
 }
 

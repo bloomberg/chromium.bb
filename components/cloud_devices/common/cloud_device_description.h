@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_DEVICE_DESCRIPTION_H_
 #define COMPONENTS_CLOUD_DEVICES_COMMON_CLOUD_DEVICE_DESCRIPTION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -28,7 +28,7 @@ class CloudDeviceDescription {
 
   void Reset();
 
-  bool InitFromDictionary(scoped_ptr<base::DictionaryValue> root);
+  bool InitFromDictionary(std::unique_ptr<base::DictionaryValue> root);
   bool InitFromString(const std::string& json);
 
   std::string ToString() const;
@@ -52,7 +52,7 @@ class CloudDeviceDescription {
   base::ListValue* CreateListItem(const std::string& path);
 
  private:
-  scoped_ptr<base::DictionaryValue> root_;
+  std::unique_ptr<base::DictionaryValue> root_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudDeviceDescription);
 };

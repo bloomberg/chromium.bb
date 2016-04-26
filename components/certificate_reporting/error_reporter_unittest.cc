@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "crypto/curve25519.h"
 #include "net/url_request/certificate_report_sender.h"
@@ -74,7 +75,7 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   GURL https_url(kDummyHttpsReportUri);
   ErrorReporter https_reporter(https_url, server_public_key_,
                                kServerPublicKeyTestVersion,
-                               make_scoped_ptr(mock_report_sender));
+                               base::WrapUnique(mock_report_sender));
   https_reporter.SendExtendedReportingReport(kDummyReport);
   EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
@@ -86,7 +87,7 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
     GURL http_url(kDummyHttpReportUri);
     ErrorReporter http_reporter(http_url, server_public_key_,
                                 kServerPublicKeyTestVersion,
-                                make_scoped_ptr(http_mock_report_sender));
+                                base::WrapUnique(http_mock_report_sender));
     http_reporter.SendExtendedReportingReport(kDummyReport);
 
     EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);

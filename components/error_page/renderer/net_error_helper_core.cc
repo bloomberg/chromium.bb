@@ -194,7 +194,7 @@ std::string CreateRequestBody(
     const std::string& method,
     const std::string& error_param,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
-    scoped_ptr<base::DictionaryValue> params_dict) {
+    std::unique_ptr<base::DictionaryValue> params_dict) {
   // Set params common to all request types.
   params_dict->SetString("key", correction_params.api_key);
   params_dict->SetString("clientName", "chrome");
@@ -229,7 +229,7 @@ std::string CreateFixUrlRequestBody(
 
   // TODO(mmenke):  Investigate open sourcing the relevant protocol buffers and
   //                using those directly instead.
-  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetString("urlQuery", PrepareUrlForUpload(error.unreachableURL));
   return CreateRequestBody("linkdoctor.fixurl.fixurl", error_param,
                            correction_params, std::move(params));
@@ -244,7 +244,7 @@ std::string CreateClickTrackingUrlRequestBody(
   bool result = ShouldUseFixUrlServiceForError(error, &error_param);
   DCHECK(result);
 
-  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
 
   params->SetString("originalUrlQuery",
                     PrepareUrlForUpload(error.unreachableURL));
@@ -271,11 +271,11 @@ base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl) {
   return url_for_display;
 }
 
-scoped_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
+std::unique_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
     const std::string raw_response) {
   // TODO(mmenke):  Open source related protocol buffers and use them directly.
-  scoped_ptr<base::Value> parsed = base::JSONReader::Read(raw_response);
-  scoped_ptr<NavigationCorrectionResponse> response(
+  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(raw_response);
+  std::unique_ptr<NavigationCorrectionResponse> response(
       new NavigationCorrectionResponse());
   base::JSONValueConverter<NavigationCorrectionResponse> converter;
   if (!parsed || !converter.Convert(*parsed, response.get()))
@@ -289,7 +289,7 @@ void LogCorrectionTypeShown(int type_id) {
       kWebSearchQueryUMAId + 1);
 }
 
-scoped_ptr<ErrorPageParams> CreateErrorPageParams(
+std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
     const NavigationCorrectionResponse& response,
     const blink::WebURLError& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
@@ -299,9 +299,9 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
   base::string16 original_url_for_display =
       FormatURLForDisplay(SanitizeURL(GURL(error.unreachableURL)), is_rtl);
 
-  scoped_ptr<ErrorPageParams> params(new ErrorPageParams());
+  std::unique_ptr<ErrorPageParams> params(new ErrorPageParams());
   params->override_suggestions.reset(new base::ListValue());
-  scoped_ptr<base::ListValue> parsed_corrections(new base::ListValue());
+  std::unique_ptr<base::ListValue> parsed_corrections(new base::ListValue());
   for (ScopedVector<NavigationCorrection>::const_iterator it =
            response.corrections.begin();
        it != response.corrections.end(); ++it) {
@@ -448,10 +448,10 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // Navigation correction service paramers, which will be used in response to
   // certain types of network errors.  They are all stored here in case they
   // change over the course of displaying the error page.
-  scoped_ptr<NetErrorHelperCore::NavigationCorrectionParams>
+  std::unique_ptr<NetErrorHelperCore::NavigationCorrectionParams>
       navigation_correction_params;
 
-  scoped_ptr<NavigationCorrectionResponse> navigation_correction_response;
+  std::unique_ptr<NavigationCorrectionResponse> navigation_correction_response;
 
   // All the navigation corrections that have been clicked, for tracking
   // purposes.
@@ -709,10 +709,10 @@ void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
     delegate_->GenerateLocalizedErrorPage(
         error, is_failed_post,
         false /* No diagnostics dialogs allowed for subframes. */,
-        false /* No offline button provided in subframes */,
-        scoped_ptr<ErrorPageParams>(), &reload_button_in_page,
-        &show_saved_copy_button_in_page, &show_cached_copy_button_in_page,
-        &show_offline_pages_button_in_page, error_html);
+        false /* No offline button provided in subframes */, nullptr,
+        &reload_button_in_page, &show_saved_copy_button_in_page,
+        &show_cached_copy_button_in_page, &show_offline_pages_button_in_page,
+        error_html);
   }
 }
 
@@ -780,14 +780,11 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
 
   delegate_->GenerateLocalizedErrorPage(
       error, pending_error_page_info->was_failed_post,
-      can_show_network_diagnostics_dialog_,
-      HasOfflinePages(),
-      scoped_ptr<ErrorPageParams>(),
+      can_show_network_diagnostics_dialog_, HasOfflinePages(), nullptr,
       &pending_error_page_info->reload_button_in_page,
       &pending_error_page_info->show_saved_copy_button_in_page,
       &pending_error_page_info->show_cached_copy_button_in_page,
-      &pending_error_page_info->show_offline_pages_button_in_page,
-      error_html);
+      &pending_error_page_info->show_offline_pages_button_in_page, error_html);
 }
 
 void NetErrorHelperCore::UpdateErrorPage() {
@@ -832,7 +829,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
       ParseNavigationCorrectionResponse(corrections);
 
   std::string error_html;
-  scoped_ptr<ErrorPageParams> params;
+  std::unique_ptr<ErrorPageParams> params;
   if (pending_error_page_info_->navigation_correction_response) {
     // Copy navigation correction parameters used for the request, so tracking
     // requests can still be sent if the configuration changes.

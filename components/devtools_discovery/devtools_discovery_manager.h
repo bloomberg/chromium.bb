@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_DEVTOOLS_DISCOVERY_DEVTOOLS_DISCOVERY_MANAGER_H_
 #define COMPONENTS_DEVTOOLS_DISCOVERY_DEVTOOLS_DISCOVERY_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/devtools_discovery/devtools_target_descriptor.h"
 
@@ -24,19 +24,20 @@ class DevToolsDiscoveryManager {
     virtual DevToolsTargetDescriptor::List GetDescriptors() = 0;
   };
 
-  using CreateCallback = base::Callback<
-      scoped_ptr<DevToolsTargetDescriptor>(const GURL& url)>;
+  using CreateCallback =
+      base::Callback<std::unique_ptr<DevToolsTargetDescriptor>(
+          const GURL& url)>;
 
   // Returns single instance of this class. The instance is destroyed on the
   // browser main loop exit so this method MUST NOT be called after that point.
   static DevToolsDiscoveryManager* GetInstance();
 
-  void AddProvider(scoped_ptr<Provider> provider);
+  void AddProvider(std::unique_ptr<Provider> provider);
   void SetCreateCallback(const CreateCallback& callback);
 
   // Caller takes ownership of created descriptors.
   DevToolsTargetDescriptor::List GetDescriptors();
-  scoped_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
+  std::unique_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
 
  private:
   friend struct base::DefaultSingletonTraits<DevToolsDiscoveryManager>;

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/certificate_report_sender.h"
 #include "url/gurl.h"
 
@@ -44,7 +44,7 @@ class ErrorReporter {
       const GURL& upload_url,
       const uint8_t server_public_key[/* 32 */],
       const uint32_t server_public_key_version,
-      scoped_ptr<net::CertificateReportSender> certificate_report_sender);
+      std::unique_ptr<net::CertificateReportSender> certificate_report_sender);
 
   virtual ~ErrorReporter();
 
@@ -75,7 +75,7 @@ class ErrorReporter {
       std::string* decrypted_serialized_report);
 
  private:
-  scoped_ptr<net::CertificateReportSender> certificate_report_sender_;
+  std::unique_ptr<net::CertificateReportSender> certificate_report_sender_;
 
   const GURL upload_url_;
 

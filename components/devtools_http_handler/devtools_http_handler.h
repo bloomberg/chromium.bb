@@ -6,11 +6,11 @@
 #define COMPONENTS_DEVTOOLS_HTTP_HANDLER_DEVTOOLS_HTTP_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/devtools_discovery/devtools_target_descriptor.h"
 #include "net/http/http_status_code.h"
@@ -50,11 +50,11 @@ class DevToolsHttpHandler {
     virtual ~ServerSocketFactory() {}
 
     // Returns a new instance of ServerSocket or nullptr if an error occurred.
-    virtual scoped_ptr<net::ServerSocket> CreateForHttpServer();
+    virtual std::unique_ptr<net::ServerSocket> CreateForHttpServer();
 
     // Creates a named socket for reversed tethering implementation (used with
     // remote debugging, primarily for mobile).
-    virtual scoped_ptr<net::ServerSocket> CreateForTethering(
+    virtual std::unique_ptr<net::ServerSocket> CreateForTethering(
         std::string* out_name);
   };
 
@@ -67,7 +67,7 @@ class DevToolsHttpHandler {
   // port selected by the OS will be written to a well-known file in
   // the output directory.
   DevToolsHttpHandler(
-      scoped_ptr<ServerSocketFactory> server_socket_factory,
+      std::unique_ptr<ServerSocketFactory> server_socket_factory,
       const std::string& frontend_url,
       DevToolsHttpHandlerDelegate* delegate,
       const base::FilePath& active_port_output_directory,
@@ -86,7 +86,7 @@ class DevToolsHttpHandler {
       base::Thread* thread,
       ServerWrapper* server_wrapper,
       DevToolsHttpHandler::ServerSocketFactory* socket_factory,
-      scoped_ptr<net::IPEndPoint> ip_address);
+      std::unique_ptr<net::IPEndPoint> ip_address);
 
   void OnJsonRequest(int connection_id,
                      const net::HttpServerRequestInfo& info);
@@ -101,7 +101,7 @@ class DevToolsHttpHandler {
   void ServerStarted(base::Thread* thread,
                      ServerWrapper* server_wrapper,
                      ServerSocketFactory* socket_factory,
-                     scoped_ptr<net::IPEndPoint> ip_address);
+                     std::unique_ptr<net::IPEndPoint> ip_address);
 
   devtools_discovery::DevToolsTargetDescriptor* GetDescriptor(
       const std::string& target_id);
@@ -133,10 +133,10 @@ class DevToolsHttpHandler {
   std::string product_name_;
   std::string user_agent_;
   ServerWrapper* server_wrapper_;
-  scoped_ptr<net::IPEndPoint> server_ip_address_;
+  std::unique_ptr<net::IPEndPoint> server_ip_address_;
   typedef std::map<int, DevToolsAgentHostClientImpl*> ConnectionToClientMap;
   ConnectionToClientMap connection_to_client_;
-  const scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
+  const std::unique_ptr<DevToolsHttpHandlerDelegate> delegate_;
   ServerSocketFactory* socket_factory_;
   using DescriptorMap =
       std::map<std::string, devtools_discovery::DevToolsTargetDescriptor*>;

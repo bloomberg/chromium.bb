@@ -71,7 +71,7 @@ void BitmapUploader::SetColor(uint32_t color) {
 // Sets a bitmap.
 void BitmapUploader::SetBitmap(int width,
                                int height,
-                               scoped_ptr<std::vector<unsigned char>> data,
+                               std::unique_ptr<std::vector<unsigned char>> data,
                                Format format) {
   width_ = width;
   height_ = height;

@@ -4,10 +4,11 @@
 
 #include "components/captive_portal/captive_portal_detector.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -113,7 +114,7 @@ class CaptivePortalDetectorTest : public testing::Test,
 
  private:
   base::MessageLoop message_loop_;
-  scoped_ptr<CaptivePortalDetector> detector_;
+  std::unique_ptr<CaptivePortalDetector> detector_;
 };
 
 // Test that the CaptivePortalDetector returns the expected result

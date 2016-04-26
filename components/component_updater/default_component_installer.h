@@ -6,13 +6,14 @@
 #define COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -70,9 +71,10 @@ class ComponentInstallerTraits {
   // |version| is the version of the component.
   // |install_dir| is the path to the install directory for this version.
   // |manifest| is the manifest for this version of the component.
-  virtual void ComponentReady(const base::Version& version,
-                              const base::FilePath& install_dir,
-                              scoped_ptr<base::DictionaryValue> manifest) = 0;
+  virtual void ComponentReady(
+      const base::Version& version,
+      const base::FilePath& install_dir,
+      std::unique_ptr<base::DictionaryValue> manifest) = 0;
 
   // Returns the directory that the installer will place versioned installs of
   // the component into.
@@ -97,7 +99,7 @@ class ComponentInstallerTraits {
 class DefaultComponentInstaller : public update_client::CrxInstaller {
  public:
   DefaultComponentInstaller(
-      scoped_ptr<ComponentInstallerTraits> installer_traits);
+      std::unique_ptr<ComponentInstallerTraits> installer_traits);
 
   // Registers the component for update checks and installs.
   // The passed |callback| will be called once the initial check for installed
@@ -122,13 +124,13 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
   void StartRegistration(ComponentUpdateService* cus);
   void FinishRegistration(ComponentUpdateService* cus,
                           const base::Closure& callback);
-  void ComponentReady(scoped_ptr<base::DictionaryValue> manifest);
+  void ComponentReady(std::unique_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 
   base::Version current_version_;
   std::string current_fingerprint_;
-  scoped_ptr<base::DictionaryValue> current_manifest_;
-  scoped_ptr<ComponentInstallerTraits> installer_traits_;
+  std::unique_ptr<base::DictionaryValue> current_manifest_;
+  std::unique_ptr<ComponentInstallerTraits> installer_traits_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to post responses back to the main thread. Initialized on the main

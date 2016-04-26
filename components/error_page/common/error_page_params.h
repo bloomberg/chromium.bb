@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_NET_ERROR_COMMON_ERROR_PAGE_PARAMS_H_
 #define COMPONENTS_NET_ERROR_COMMON_ERROR_PAGE_PARAMS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -29,7 +29,7 @@ struct ErrorPageParams {
   // contains a "header" entry.  A "body" entry may optionally be specified.
   // JSTemplate evaluation will be applied when added to the DOM.  If NULL, the
   // default suggestions will be used.
-  scoped_ptr<base::ListValue> override_suggestions;
+  std::unique_ptr<base::ListValue> override_suggestions;
 
   // Prefix to prepend to search terms.  Search box is only shown if this is
   // a valid url.  The search terms will be appended to the end of this URL to

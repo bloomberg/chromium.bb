@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORT_H_
 #define COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORT_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class SSLInfo;
@@ -65,7 +65,7 @@ class ErrorReport {
   const std::string& hostname() const;
 
  private:
-  scoped_ptr<CertLoggerRequest> cert_report_;
+  std::unique_ptr<CertLoggerRequest> cert_report_;
 };
 
 }  // namespace certificate_reporting

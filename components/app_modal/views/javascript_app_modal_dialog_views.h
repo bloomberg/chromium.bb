@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_APP_MODAL_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
 #define COMPONENTS_APP_MODAL_VIEWS_JAVASCRIPT_APP_MODAL_DIALOG_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -52,7 +53,7 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
 
  private:
   // A pointer to the AppModalDialog that owns us.
-  scoped_ptr<JavaScriptAppModalDialog> parent_;
+  std::unique_ptr<JavaScriptAppModalDialog> parent_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;

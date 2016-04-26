@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_CONTROLLER_H_
 #define COMPONENTS_BUBBLE_BUBBLE_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/bubble/bubble_close_reason.h"
@@ -23,7 +24,7 @@ class RenderFrameHost;
 class BubbleController : public base::SupportsWeakPtr<BubbleController> {
  public:
   explicit BubbleController(BubbleManager* manager,
-                            scoped_ptr<BubbleDelegate> delegate);
+                            std::unique_ptr<BubbleDelegate> delegate);
   virtual ~BubbleController();
 
   // Calls CloseBubble on the associated BubbleManager.
@@ -59,8 +60,8 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
   void DoClose(BubbleCloseReason reason);
 
   BubbleManager* manager_;
-  scoped_ptr<BubbleDelegate> delegate_;
-  scoped_ptr<BubbleUi> bubble_ui_;
+  std::unique_ptr<BubbleDelegate> delegate_;
+  std::unique_ptr<BubbleUi> bubble_ui_;
 
   // Verify that functions that affect the UI are done on the same thread.
   base::ThreadChecker thread_checker_;

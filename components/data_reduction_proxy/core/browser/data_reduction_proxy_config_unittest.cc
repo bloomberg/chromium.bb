@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -1002,7 +1003,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
 
 // Tests if metrics for Lo-Fi accuracy are recorded properly.
 TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
-  scoped_ptr<base::SimpleTestTickClock> tick_clock(
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
       new base::SimpleTestTickClock());
 
   std::vector<base::TimeDelta> lofi_accuracy_recording_intervals;
@@ -1096,7 +1097,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
 // Tests if metrics for Lo-Fi accuracy are recorded properly at the specified
 // interval.
 TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
-  scoped_ptr<base::SimpleTestTickClock> tick_clock(
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
       new base::SimpleTestTickClock());
 
   std::vector<base::TimeDelta> lofi_accuracy_recording_intervals;

@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_DELEGATE_H_
 #define COMPONENTS_BUBBLE_BUBBLE_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/bubble/bubble_close_reason.h"
 
 class BubbleUi;
@@ -35,7 +35,7 @@ class BubbleDelegate {
 
   // Called by BubbleController to build the UI that will represent this bubble.
   // BubbleDelegate should not keep a reference to this newly created UI.
-  virtual scoped_ptr<BubbleUi> BuildBubbleUi() = 0;
+  virtual std::unique_ptr<BubbleUi> BuildBubbleUi() = 0;
 
   // Called to update an existing UI. This is the same BubbleUi that was created
   // in |BuildBubbleUi|.

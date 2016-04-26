@@ -4,10 +4,10 @@
 
 #include "components/data_use_measurement/content/data_use_measurement.h"
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "content/public/browser/resource_request_info.h"
@@ -48,7 +48,7 @@ class DataUseMeasurementTest : public testing::Test {
                                               0);
     socket_factory_->AddSocketDataProvider(&socket_data);
 
-    scoped_ptr<net::URLRequest> request(context_->CreateRequest(
+    std::unique_ptr<net::URLRequest> request(context_->CreateRequest(
         GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
     if (is_user_request) {
       request->SetUserData(
@@ -123,8 +123,8 @@ class DataUseMeasurementTest : public testing::Test {
 
   base::MessageLoopForIO loop_;
   DataUseMeasurement data_use_measurement_;
-  scoped_ptr<net::MockClientSocketFactory> socket_factory_;
-  scoped_ptr<net::TestURLRequestContext> context_;
+  std::unique_ptr<net::MockClientSocketFactory> socket_factory_;
+  std::unique_ptr<net::TestURLRequestContext> context_;
   const std::string kConnectionType = "NotCellular";
   bool is_data_use_forwarder_called_ = false;
 

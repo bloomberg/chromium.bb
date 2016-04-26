@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_
 #define COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -29,7 +30,7 @@ class ConstrainedWindowViewsClient;
 
 // Sets the ConstrainedWindowClient impl.
 void SetConstrainedWindowViewsClient(
-    scoped_ptr<ConstrainedWindowViewsClient> client);
+    std::unique_ptr<ConstrainedWindowViewsClient> client);
 
 // Update the position of dialog |widget| against |dialog_host|. This is used to
 // reposition widgets e.g. when the host dimensions change.

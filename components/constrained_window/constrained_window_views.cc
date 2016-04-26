@@ -105,7 +105,7 @@ void UpdateModalDialogPosition(views::Widget* widget,
 
 // static
 void SetConstrainedWindowViewsClient(
-    scoped_ptr<ConstrainedWindowViewsClient> new_client) {
+    std::unique_ptr<ConstrainedWindowViewsClient> new_client) {
   delete constrained_window_views_client;
   constrained_window_views_client = new_client.release();
 }

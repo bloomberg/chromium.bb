@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -190,7 +191,7 @@ class NetErrorHelperCoreTest : public testing::Test,
                                        auto_reload_enabled,
                                        auto_reload_visible_only,
                                        visible));
-    core_->set_timer_for_testing(scoped_ptr<base::Timer>(timer_));
+    core_->set_timer_for_testing(std::unique_ptr<base::Timer>(timer_));
   }
 
   NetErrorHelperCore* core() { return core_.get(); }
@@ -356,7 +357,7 @@ class NetErrorHelperCoreTest : public testing::Test,
                                   bool is_failed_post,
                                   bool can_show_network_diagnostics_dialog,
                                   bool has_offline_pages,
-                                  scoped_ptr<ErrorPageParams> params,
+                                  std::unique_ptr<ErrorPageParams> params,
                                   bool* reload_button_shown,
                                   bool* show_saved_copy_button_shown,
                                   bool* show_cached_copy_button_shown,
@@ -407,8 +408,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     // Check the body of the request.
 
     base::JSONReader reader;
-    scoped_ptr<base::Value> parsed_body(reader.Read(
-        navigation_correction_request_body));
+    std::unique_ptr<base::Value> parsed_body(
+        reader.Read(navigation_correction_request_body));
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -451,7 +452,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     // Check the body of the request.
 
     base::JSONReader reader;
-    scoped_ptr<base::Value> parsed_body(reader.Read(tracking_request_body));
+    std::unique_ptr<base::Value> parsed_body(
+        reader.Read(tracking_request_body));
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -465,7 +467,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::MockTimer* timer_;
 
-  scoped_ptr<NetErrorHelperCore> core_;
+  std::unique_ptr<NetErrorHelperCore> core_;
 
   GURL url_being_fetched_;
   std::string request_body_;
@@ -485,7 +487,7 @@ class NetErrorHelperCoreTest : public testing::Test,
   // UpdateErrorPage.  Mutable because GenerateLocalizedErrorPage is const.
   mutable bool last_can_show_network_diagnostics_dialog_;
   mutable bool last_has_offline_pages_;
-  mutable scoped_ptr<ErrorPageParams> last_error_page_params_;
+  mutable std::unique_ptr<ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
   int reload_bypassing_cache_count_;

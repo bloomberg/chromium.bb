@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/client_update_protocol/ecdsa.h"
+
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "components/client_update_protocol/ecdsa.h"
 #include "crypto/random.h"
 #include "crypto/secure_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +54,7 @@ class CupEcdsaTest : public testing::Test {
   Ecdsa& CUP() { return *cup_.get(); }
 
  private:
-  scoped_ptr<Ecdsa> cup_;
+  std::unique_ptr<Ecdsa> cup_;
 };
 
 TEST_F(CupEcdsaTest, SignRequest) {

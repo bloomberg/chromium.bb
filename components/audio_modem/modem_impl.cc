@@ -8,13 +8,14 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -227,8 +228,8 @@ void ModemImpl::SetTokenParams(AudioType type, const TokenParameters& params) {
 }
 
 // static
-scoped_ptr<Modem> Modem::Create() {
-  return make_scoped_ptr<Modem>(new ModemImpl);
+std::unique_ptr<Modem> Modem::Create() {
+  return base::WrapUnique<Modem>(new ModemImpl);
 }
 
 // Private functions.

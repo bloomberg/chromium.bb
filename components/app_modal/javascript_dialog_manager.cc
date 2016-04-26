@@ -79,12 +79,12 @@ JavaScriptDialogManager* JavaScriptDialogManager::GetInstance() {
 }
 
 void JavaScriptDialogManager::SetNativeDialogFactory(
-    scoped_ptr<JavaScriptNativeDialogFactory> factory) {
+    std::unique_ptr<JavaScriptNativeDialogFactory> factory) {
   native_dialog_factory_ = std::move(factory);
 }
 
 void JavaScriptDialogManager::SetExtensionsClient(
-    scoped_ptr<JavaScriptDialogExtensionsClient> extensions_client) {
+    std::unique_ptr<JavaScriptDialogExtensionsClient> extensions_client) {
   extensions_client_ = std::move(extensions_client);
 }
 

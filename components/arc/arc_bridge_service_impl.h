@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,7 @@ namespace arc {
 class ArcBridgeServiceImpl : public ArcBridgeService,
                              public ArcBridgeBootstrap::Delegate {
  public:
-  explicit ArcBridgeServiceImpl(scoped_ptr<ArcBridgeBootstrap> bootstrap);
+  explicit ArcBridgeServiceImpl(std::unique_ptr<ArcBridgeBootstrap> bootstrap);
   ~ArcBridgeServiceImpl() override;
 
   void SetDetectedAvailability(bool available) override;
@@ -55,7 +56,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // the ARC instance crashes. This is not called during shutdown.
   void OnChannelClosed();
 
-  scoped_ptr<ArcBridgeBootstrap> bootstrap_;
+  std::unique_ptr<ArcBridgeBootstrap> bootstrap_;
 
   // Mojo endpoints.
   mojo::Binding<mojom::ArcBridgeHost> binding_;

@@ -83,7 +83,7 @@ const int32_t kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
 class ServerWrapper : net::HttpServer::Delegate {
  public:
   ServerWrapper(base::WeakPtr<DevToolsHttpHandler> handler,
-                scoped_ptr<net::ServerSocket> socket,
+                std::unique_ptr<net::ServerSocket> socket,
                 const base::FilePath& frontend_dir,
                 bool bundles_resources);
 
@@ -117,13 +117,13 @@ class ServerWrapper : net::HttpServer::Delegate {
   void OnClose(int connection_id) override;
 
   base::WeakPtr<DevToolsHttpHandler> handler_;
-  scoped_ptr<net::HttpServer> server_;
+  std::unique_ptr<net::HttpServer> server_;
   base::FilePath frontend_dir_;
   bool bundles_resources_;
 };
 
 ServerWrapper::ServerWrapper(base::WeakPtr<DevToolsHttpHandler> handler,
-                             scoped_ptr<net::ServerSocket> socket,
+                             std::unique_ptr<net::ServerSocket> socket,
                              const base::FilePath& frontend_dir,
                              bool bundles_resources)
     : handler_(handler),
@@ -189,12 +189,11 @@ void TerminateOnUI(base::Thread* thread,
   }
 }
 
-void ServerStartedOnUI(
-    base::WeakPtr<DevToolsHttpHandler> handler,
-    base::Thread* thread,
-    ServerWrapper* server_wrapper,
-    DevToolsHttpHandler::ServerSocketFactory* socket_factory,
-    scoped_ptr<net::IPEndPoint> ip_address) {
+void ServerStartedOnUI(base::WeakPtr<DevToolsHttpHandler> handler,
+                       base::Thread* thread,
+                       ServerWrapper* server_wrapper,
+                       DevToolsHttpHandler::ServerSocketFactory* socket_factory,
+                       std::unique_ptr<net::IPEndPoint> ip_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (handler && thread && server_wrapper) {
     handler->ServerStarted(thread, server_wrapper, socket_factory,
@@ -213,9 +212,9 @@ void StartServerOnHandlerThread(
     bool bundles_resources) {
   DCHECK_EQ(thread->message_loop(), base::MessageLoop::current());
   ServerWrapper* server_wrapper = nullptr;
-  scoped_ptr<net::ServerSocket> server_socket =
+  std::unique_ptr<net::ServerSocket> server_socket =
       server_socket_factory->CreateForHttpServer();
-  scoped_ptr<net::IPEndPoint> ip_address(new net::IPEndPoint);
+  std::unique_ptr<net::IPEndPoint> ip_address(new net::IPEndPoint);
   if (server_socket) {
     server_wrapper = new ServerWrapper(handler, std::move(server_socket),
                                        frontend_dir, bundles_resources);
@@ -244,7 +243,8 @@ void StartServerOnFile(
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  scoped_ptr<base::Thread> thread(new base::Thread(kDevToolsHandlerThreadName));
+  std::unique_ptr<base::Thread> thread(
+      new base::Thread(kDevToolsHandlerThreadName));
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   if (thread->StartWithOptions(options)) {
@@ -329,15 +329,15 @@ static bool TimeComparator(const DevToolsTargetDescriptor* desc1,
 
 // DevToolsHttpHandler::ServerSocketFactory ----------------------------------
 
-scoped_ptr<net::ServerSocket>
+std::unique_ptr<net::ServerSocket>
 DevToolsHttpHandler::ServerSocketFactory::CreateForHttpServer() {
-  return scoped_ptr<net::ServerSocket>();
+  return nullptr;
 }
 
-scoped_ptr<net::ServerSocket>
+std::unique_ptr<net::ServerSocket>
 DevToolsHttpHandler::ServerSocketFactory::CreateForTethering(
     std::string* name) {
-  return scoped_ptr<net::ServerSocket>();
+  return nullptr;
 }
 
 // DevToolsHttpHandler -------------------------------------------------------
@@ -596,9 +596,9 @@ void DevToolsHttpHandler::OnJsonRequest(
                    net::UnescapeRule::PATH_SEPARATORS));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_ptr<DevToolsTargetDescriptor> descriptor =
-        devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
-            CreateNew(url);
+    std::unique_ptr<DevToolsTargetDescriptor> descriptor =
+        devtools_discovery::DevToolsDiscoveryManager::GetInstance()->CreateNew(
+            url);
     if (!descriptor) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
@@ -607,7 +607,7 @@ void DevToolsHttpHandler::OnJsonRequest(
       return;
     }
     std::string host = info.headers["host"];
-    scoped_ptr<base::DictionaryValue> dictionary(
+    std::unique_ptr<base::DictionaryValue> dictionary(
         SerializeDescriptor(*descriptor.get(), host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
     const std::string target_id = descriptor->GetId();
@@ -768,7 +768,7 @@ void DevToolsHttpHandler::OnClose(int connection_id) {
 }
 
 DevToolsHttpHandler::DevToolsHttpHandler(
-    scoped_ptr<ServerSocketFactory> server_socket_factory,
+    std::unique_ptr<ServerSocketFactory> server_socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
     const base::FilePath& output_directory,
@@ -801,7 +801,7 @@ void DevToolsHttpHandler::ServerStarted(
     base::Thread* thread,
     ServerWrapper* server_wrapper,
     ServerSocketFactory* socket_factory,
-    scoped_ptr<net::IPEndPoint> ip_address) {
+    std::unique_ptr<net::IPEndPoint> ip_address) {
   thread_ = thread;
   server_wrapper_ = server_wrapper;
   socket_factory_ = socket_factory;

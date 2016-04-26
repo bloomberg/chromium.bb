@@ -5,10 +5,12 @@
 #include "components/certificate_reporting/error_reporter.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "crypto/aead.h"
 #include "crypto/curve25519.h"
@@ -105,7 +107,7 @@ ErrorReporter::ErrorReporter(
     : ErrorReporter(upload_url,
                     kServerPublicKey,
                     kServerPublicKeyVersion,
-                    make_scoped_ptr(new net::CertificateReportSender(
+                    base::WrapUnique(new net::CertificateReportSender(
                         request_context,
                         cookies_preference))) {}
 
@@ -113,7 +115,7 @@ ErrorReporter::ErrorReporter(
     const GURL& upload_url,
     const uint8_t server_public_key[/* 32 */],
     const uint32_t server_public_key_version,
-    scoped_ptr<net::CertificateReportSender> certificate_report_sender)
+    std::unique_ptr<net::CertificateReportSender> certificate_report_sender)
     : certificate_report_sender_(std::move(certificate_report_sender)),
       upload_url_(upload_url),
       server_public_key_(server_public_key),

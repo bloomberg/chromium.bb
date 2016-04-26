@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_ARC_ARC_SERVICE_MANAGER_H_
 #define COMPONENTS_ARC_ARC_SERVICE_MANAGER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -29,7 +29,7 @@ class ArcServiceManager {
   ArcBridgeService* arc_bridge_service();
 
   // Adds a service to the managed services list.
-  void AddService(scoped_ptr<ArcService> service);
+  void AddService(std::unique_ptr<ArcService> service);
 
   // Gets the global instance of the ARC Service Manager. This can only be
   // called on the thread that this class was created on.
@@ -44,12 +44,12 @@ class ArcServiceManager {
   // Set ArcBridgeService instance for testing. Call before ArcServiceManager
   // creation. ArcServiceManager owns |arc_bridge_service|.
   static void SetArcBridgeServiceForTesting(
-      scoped_ptr<ArcBridgeService> arc_bridge_service);
+      std::unique_ptr<ArcBridgeService> arc_bridge_service);
 
  private:
   base::ThreadChecker thread_checker_;
-  scoped_ptr<ArcBridgeService> arc_bridge_service_;
-  std::vector<scoped_ptr<ArcService>> services_;
+  std::unique_ptr<ArcBridgeService> arc_bridge_service_;
+  std::vector<std::unique_ptr<ArcService>> services_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

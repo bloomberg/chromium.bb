@@ -24,7 +24,7 @@ DevToolsDiscoveryManager::~DevToolsDiscoveryManager() {
   STLDeleteElements(&providers_);
 }
 
-void DevToolsDiscoveryManager::AddProvider(scoped_ptr<Provider> provider) {
+void DevToolsDiscoveryManager::AddProvider(std::unique_ptr<Provider> provider) {
   providers_.push_back(provider.release());
 }
 
@@ -45,10 +45,10 @@ void DevToolsDiscoveryManager::SetCreateCallback(
   create_callback_ = callback;
 }
 
-scoped_ptr<DevToolsTargetDescriptor>
-DevToolsDiscoveryManager::CreateNew(const GURL& url) {
+std::unique_ptr<DevToolsTargetDescriptor> DevToolsDiscoveryManager::CreateNew(
+    const GURL& url) {
   if (create_callback_.is_null())
-    return scoped_ptr<DevToolsTargetDescriptor>();
+    return nullptr;
   return create_callback_.Run(url);
 }
 

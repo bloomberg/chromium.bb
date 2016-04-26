@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_
 #define COMPONENTS_APP_MODAL_JAVASCRIPT_DIALOG_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -28,13 +29,13 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
   // Sets the JavaScriptNativeDialogFactory used to create platform specific
   // dialog window instances.
   void SetNativeDialogFactory(
-      scoped_ptr<JavaScriptNativeDialogFactory> factory);
+      std::unique_ptr<JavaScriptNativeDialogFactory> factory);
 
   // JavaScript dialogs may be opened by an extensions/app, thus they need
   // access to extensions functionality. This sets a client interface to
   // access //extensions.
   void SetExtensionsClient(
-      scoped_ptr<JavaScriptDialogExtensionsClient> extensions_client);
+      std::unique_ptr<JavaScriptDialogExtensionsClient> extensions_client);
 
  private:
   friend struct base::DefaultSingletonTraits<JavaScriptDialogManager>;
@@ -81,8 +82,8 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
   // is a void* because the pointer is just a cookie and is never dereferenced.
   JavaScriptAppModalDialog::ExtraDataMap javascript_dialog_extra_data_;
 
-  scoped_ptr<JavaScriptNativeDialogFactory> native_dialog_factory_;
-  scoped_ptr<JavaScriptDialogExtensionsClient> extensions_client_;
+  std::unique_ptr<JavaScriptNativeDialogFactory> native_dialog_factory_;
+  std::unique_ptr<JavaScriptDialogExtensionsClient> extensions_client_;
 
   // Record a single create and close timestamp to track the time between
   // dialogs. (Since Javascript dialogs are modal, this is even accurate!)

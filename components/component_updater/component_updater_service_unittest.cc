@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/component_updater/component_updater_service.h"
+
 #include <limits>
 #include <string>
 #include <vector>
@@ -11,20 +13,18 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_client.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,11 +116,11 @@ class ComponentUpdaterTest : public testing::Test {
   base::RunLoop runloop_;
   base::Closure quit_closure_;
 
-  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
 
   scoped_refptr<TestConfigurator> config_;
   scoped_refptr<MockUpdateClient> update_client_;
-  scoped_ptr<ComponentUpdateService> component_updater_;
+  std::unique_ptr<ComponentUpdateService> component_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUpdaterTest);
 };
@@ -153,11 +153,10 @@ bool OnDemandTester::OnDemand(ComponentUpdateService* cus,
   return cus->GetOnDemandUpdater().OnDemandUpdate(id);
 }
 
-scoped_ptr<ComponentUpdateService> TestComponentUpdateServiceFactory(
+std::unique_ptr<ComponentUpdateService> TestComponentUpdateServiceFactory(
     const scoped_refptr<Configurator>& config) {
   DCHECK(config);
-  return scoped_ptr<ComponentUpdateService>(
-      new CrxUpdateService(config, new MockUpdateClient()));
+  return base::WrapUnique(new CrxUpdateService(config, new MockUpdateClient()));
 }
 
 ComponentUpdaterTest::ComponentUpdaterTest()

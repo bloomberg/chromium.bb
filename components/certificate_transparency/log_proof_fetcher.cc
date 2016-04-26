@@ -5,6 +5,7 @@
 #include "components/certificate_transparency/log_proof_fetcher.h"
 
 #include <iterator>
+#include <memory>
 
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
@@ -71,7 +72,7 @@ class LogFetcher : public net::URLRequest::Delegate {
   // After this method the LogFetcher is deleted and no longer safe to call.
   void InvokeFailureCallback(int net_error, int http_response_code);
 
-  scoped_ptr<net::URLRequest> url_request_;
+  std::unique_ptr<net::URLRequest> url_request_;
   const GURL request_url_;
   base::Closure success_callback_;
   FailureCallback failure_callback_;
@@ -235,7 +236,7 @@ class LogResponseHandler {
  protected:
   // Handle successful parsing of JSON by invoking HandleParsedJson, then
   // invoking the |done_callback_| with the returned Closure.
-  void OnJsonParseSuccess(scoped_ptr<base::Value> parsed_json);
+  void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
 
   // Handle failure to parse the JSON by invoking HandleJsonParseFailure, then
   // invoking the |done_callback_| with the returned Closure.
@@ -252,7 +253,7 @@ class LogResponseHandler {
 
   const std::string log_id_;
   LogProofFetcher::FetchFailedCallback failure_callback_;
-  scoped_ptr<LogFetcher> fetcher_;
+  std::unique_ptr<LogFetcher> fetcher_;
   DoneCallback done_callback_;
 
   base::WeakPtrFactory<LogResponseHandler> weak_factory_;
@@ -308,7 +309,7 @@ void LogResponseHandler::HandleNetFailure(int net_error,
 }
 
 void LogResponseHandler::OnJsonParseSuccess(
-    scoped_ptr<base::Value> parsed_json) {
+    std::unique_ptr<base::Value> parsed_json) {
   base::ResetAndReturn(&done_callback_).Run(HandleParsedJson(*parsed_json));
   // NOTE: |this| is not valid after the |done_callback_| is invoked.
 }

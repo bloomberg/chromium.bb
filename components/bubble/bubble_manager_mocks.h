@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_MANAGER_MOCKS_H_
 #define COMPONENTS_BUBBLE_BUBBLE_MANAGER_MOCKS_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -35,16 +36,16 @@ class MockBubbleDelegate : public BubbleDelegate {
   ~MockBubbleDelegate() override;
 
   // Default bubble shows UI and closes when asked to close.
-  static scoped_ptr<MockBubbleDelegate> Default();
+  static std::unique_ptr<MockBubbleDelegate> Default();
 
   // Stubborn bubble shows UI and doesn't want to close.
-  static scoped_ptr<MockBubbleDelegate> Stubborn();
+  static std::unique_ptr<MockBubbleDelegate> Stubborn();
 
   MOCK_CONST_METHOD1(ShouldClose, bool(BubbleCloseReason reason));
   MOCK_METHOD1(DidClose, void(BubbleCloseReason reason));
 
   // A scoped_ptr can't be returned in MOCK_METHOD.
-  scoped_ptr<BubbleUi> BuildBubbleUi() override {
+  std::unique_ptr<BubbleUi> BuildBubbleUi() override {
     return std::move(bubble_ui_);
   }
 
@@ -61,7 +62,7 @@ class MockBubbleDelegate : public BubbleDelegate {
   MOCK_CONST_METHOD0(OwningFrame, const content::RenderFrameHost*());
 
  private:
-  scoped_ptr<MockBubbleUi> bubble_ui_;
+  std::unique_ptr<MockBubbleUi> bubble_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBubbleDelegate);
 };

@@ -59,7 +59,7 @@ ArcImeService::~ArcImeService() {
 }
 
 void ArcImeService::SetImeBridgeForTesting(
-    scoped_ptr<ArcImeBridge> test_ime_bridge) {
+    std::unique_ptr<ArcImeBridge> test_ime_bridge) {
   ime_bridge_ = std::move(test_ime_bridge);
 }
 

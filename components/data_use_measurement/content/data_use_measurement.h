@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/data_use_tracker.h"
@@ -100,7 +100,7 @@ class DataUseMeasurement {
 
   // ApplicationStatusListener used to monitor whether the application is in the
   // foreground or in the background. It is owned by DataUseMeasurement.
-  scoped_ptr<base::android::ApplicationStatusListener> app_listener_;
+  std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMeasurement);

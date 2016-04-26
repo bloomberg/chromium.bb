@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUDIO_MODEM_PUBLIC_MODEM_H_
 #define COMPONENTS_AUDIO_MODEM_PUBLIC_MODEM_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 
 namespace audio_modem {
@@ -38,7 +38,7 @@ class Modem {
   virtual void SetTokenParams(AudioType type,
                               const TokenParameters& params) = 0;
 
-  static scoped_ptr<Modem> Create();
+  static std::unique_ptr<Modem> Create();
 };
 
 }  // namespace audio_modem

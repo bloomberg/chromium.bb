@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"

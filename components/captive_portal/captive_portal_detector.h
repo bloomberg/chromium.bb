@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
 #define COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "components/captive_portal/captive_portal_export.h"
@@ -94,7 +95,7 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
 
   DetectionCallback detection_callback_;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // Test time used by unit tests.
   base::Time time_for_testing_;

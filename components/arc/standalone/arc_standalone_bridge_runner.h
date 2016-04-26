@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_ARC_ARC_STANDALONE_BRIDGE_RUNNER_H_
 #define COMPONENTS_ARC_ARC_STANDALONE_BRIDGE_RUNNER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
@@ -28,7 +29,7 @@ class ArcStandaloneBridgeRunner {
 
  private:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   base::ThreadChecker thread_checker_;
   int exit_code_;
 

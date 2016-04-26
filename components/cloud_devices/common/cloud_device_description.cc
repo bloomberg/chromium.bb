@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/cloud_devices/common/cloud_device_description_consts.h"
 
@@ -27,7 +28,7 @@ void CloudDeviceDescription::Reset() {
 }
 
 bool CloudDeviceDescription::InitFromDictionary(
-    scoped_ptr<base::DictionaryValue> root) {
+    std::unique_ptr<base::DictionaryValue> root) {
   if (!root)
     return false;
   Reset();
@@ -38,12 +39,12 @@ bool CloudDeviceDescription::InitFromDictionary(
 }
 
 bool CloudDeviceDescription::InitFromString(const std::string& json) {
-  scoped_ptr<base::Value> parsed = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(json);
   base::DictionaryValue* description = NULL;
   if (!parsed || !parsed->GetAsDictionary(&description))
     return false;
   ignore_result(parsed.release());
-  return InitFromDictionary(make_scoped_ptr(description));
+  return InitFromDictionary(base::WrapUnique(description));
 }
 
 std::string CloudDeviceDescription::ToString() const {

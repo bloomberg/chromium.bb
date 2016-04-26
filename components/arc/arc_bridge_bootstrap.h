@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_BOOTSTRAP_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_BOOTSTRAP_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "components/arc/common/arc_bridge.mojom.h"
@@ -26,7 +27,7 @@ class ArcBridgeBootstrap {
   };
 
   // Creates a default instance of ArcBridgeBootstrap.
-  static scoped_ptr<ArcBridgeBootstrap> Create();
+  static std::unique_ptr<ArcBridgeBootstrap> Create();
   virtual ~ArcBridgeBootstrap();
 
   // This must be called before calling Start() or Stop(). |delegate| is owned

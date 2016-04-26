@@ -6,11 +6,11 @@
 #define COMPONENTS_ARC_TEST_FAKE_APP_INSTANCE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/arc/common/app.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -119,7 +119,7 @@ class FakeAppInstance : public mojom::AppInstance {
   void WaitForOnAppInstanceReady();
 
  private:
-  using TaskIdToInfo = std::map<int32_t, scoped_ptr<Request>>;
+  using TaskIdToInfo = std::map<int32_t, std::unique_ptr<Request>>;
   // Mojo endpoints.
   mojo::Binding<mojom::AppInstance> binding_;
   mojom::AppHost* app_host_;

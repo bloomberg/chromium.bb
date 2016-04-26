@@ -542,7 +542,8 @@ void AddGoogleCachedCopyButton(base::ListValue* suggestions_summary_list,
       suggestion->GetString("urlCorrection", &cache_url);
       int cache_tracking_id = -1;
       suggestion->GetInteger("trackingId", &cache_tracking_id);
-      scoped_ptr<base::DictionaryValue> cache_button(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> cache_button(
+          new base::DictionaryValue);
       cache_button->SetString(
             "msg",
             l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY));
@@ -837,16 +838,17 @@ std::string HttpErrorCodeToString(int error) {
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
 
-void LocalizedError::GetStrings(int error_code,
-                                const std::string& error_domain,
-                                const GURL& failed_url,
-                                bool is_post,
-                                bool stale_copy_in_cache,
-                                bool can_show_network_diagnostics_dialog,
-                                bool has_offline_pages,
-                                const std::string& locale,
-                                scoped_ptr<error_page::ErrorPageParams> params,
-                                base::DictionaryValue* error_strings) {
+void LocalizedError::GetStrings(
+    int error_code,
+    const std::string& error_domain,
+    const GURL& failed_url,
+    bool is_post,
+    bool stale_copy_in_cache,
+    bool can_show_network_diagnostics_dialog,
+    bool has_offline_pages,
+    const std::string& locale,
+    std::unique_ptr<error_page::ErrorPageParams> params,
+    base::DictionaryValue* error_strings) {
   webui::SetLoadTimeDataDefaults(locale, error_strings);
 
   // Grab the strings and settings that depend on the error type.  Init

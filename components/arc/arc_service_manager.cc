@@ -4,6 +4,7 @@
 
 #include "components/arc/arc_service_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_bootstrap.h"
@@ -44,16 +45,16 @@ ArcServiceManager::ArcServiceManager() {
         ArcBridgeBootstrap::Create()));
   }
 
-  AddService(make_scoped_ptr(new ArcAudioBridge(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcBluetoothBridge(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcAudioBridge(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcBluetoothBridge(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcClipboardBridge(arc_bridge_service())));
   AddService(
-      make_scoped_ptr(new ArcCrashCollectorBridge(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcImeService(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcIntentHelperBridge(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcMetricsService(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcNetHostImpl(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcPowerBridge(arc_bridge_service())));
+      base::WrapUnique(new ArcCrashCollectorBridge(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcImeService(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcIntentHelperBridge(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcMetricsService(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcNetHostImpl(arc_bridge_service())));
+  AddService(base::WrapUnique(new ArcPowerBridge(arc_bridge_service())));
 }
 
 ArcServiceManager::~ArcServiceManager() {
@@ -77,7 +78,7 @@ ArcBridgeService* ArcServiceManager::arc_bridge_service() {
   return arc_bridge_service_.get();
 }
 
-void ArcServiceManager::AddService(scoped_ptr<ArcService> service) {
+void ArcServiceManager::AddService(std::unique_ptr<ArcService> service) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   services_.emplace_back(std::move(service));
@@ -87,7 +88,7 @@ void ArcServiceManager::OnPrimaryUserProfilePrepared(
     const AccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  AddService(make_scoped_ptr(
+  AddService(base::WrapUnique(
       new ArcNotificationManager(arc_bridge_service(), account_id)));
 }
 
@@ -97,7 +98,7 @@ void ArcServiceManager::Shutdown() {
 
 //static
 void ArcServiceManager::SetArcBridgeServiceForTesting(
-    scoped_ptr<ArcBridgeService> arc_bridge_service) {
+    std::unique_ptr<ArcBridgeService> arc_bridge_service) {
   if (g_arc_bridge_service_for_testing) {
     delete g_arc_bridge_service_for_testing;
   }

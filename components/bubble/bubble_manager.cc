@@ -16,12 +16,13 @@ BubbleManager::~BubbleManager() {
   FinalizePendingRequests();
 }
 
-BubbleReference BubbleManager::ShowBubble(scoped_ptr<BubbleDelegate> bubble) {
+BubbleReference BubbleManager::ShowBubble(
+    std::unique_ptr<BubbleDelegate> bubble) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(manager_state_, ITERATING_BUBBLES);
   DCHECK(bubble);
 
-  scoped_ptr<BubbleController> controller(
+  std::unique_ptr<BubbleController> controller(
       new BubbleController(this, std::move(bubble)));
 
   BubbleReference bubble_ref = controller->AsWeakPtr();

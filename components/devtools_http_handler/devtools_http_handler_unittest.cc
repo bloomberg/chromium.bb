@@ -5,11 +5,14 @@
 #include "components/devtools_http_handler/devtools_http_handler.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,7 +50,7 @@ class DummyServerSocket : public net::ServerSocket {
     return net::OK;
   }
 
-  int Accept(scoped_ptr<net::StreamSocket>* socket,
+  int Accept(std::unique_ptr<net::StreamSocket>* socket,
              const net::CompletionCallback& callback) override {
     return net::ERR_IO_PENDING;
   }
@@ -71,10 +74,10 @@ class DummyServerSocketFactory
   }
 
  protected:
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
-    return scoped_ptr<net::ServerSocket>(new DummyServerSocket());
+    return base::WrapUnique(new DummyServerSocket());
   }
 
   base::Closure quit_closure_1_;
@@ -89,10 +92,10 @@ class FailingServerSocketFactory : public DummyServerSocketFactory {
   }
 
  private:
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
-    return scoped_ptr<net::ServerSocket>();
+    return nullptr;
   }
 };
 
@@ -126,12 +129,13 @@ class DevToolsHttpHandlerTest : public testing::Test {
 
 TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
   base::RunLoop run_loop, run_loop_2;
-  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
-  scoped_ptr<DevToolsHttpHandler> devtools_http_handler(new DevToolsHttpHandler(
-      std::move(factory), std::string(), new DummyDelegate(), base::FilePath(),
-      base::FilePath(), std::string(), std::string()));
+  std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
+      new DevToolsHttpHandler(std::move(factory), std::string(),
+                              new DummyDelegate(), base::FilePath(),
+                              base::FilePath(), std::string(), std::string()));
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
@@ -142,12 +146,13 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
 
 TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
   base::RunLoop run_loop, run_loop_2;
-  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new FailingServerSocketFactory(run_loop.QuitClosure(),
                                      run_loop_2.QuitClosure()));
-  scoped_ptr<DevToolsHttpHandler> devtools_http_handler(new DevToolsHttpHandler(
-      std::move(factory), std::string(), new DummyDelegate(), base::FilePath(),
-      base::FilePath(), std::string(), std::string()));
+  std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
+      new DevToolsHttpHandler(std::move(factory), std::string(),
+                              new DummyDelegate(), base::FilePath(),
+                              base::FilePath(), std::string(), std::string()));
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
@@ -165,12 +170,13 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   base::RunLoop run_loop, run_loop_2;
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
-  scoped_ptr<DevToolsHttpHandler> devtools_http_handler(new DevToolsHttpHandler(
-      std::move(factory), std::string(), new DummyDelegate(), temp_dir.path(),
-      base::FilePath(), std::string(), std::string()));
+  std::unique_ptr<DevToolsHttpHandler> devtools_http_handler(
+      new DevToolsHttpHandler(std::move(factory), std::string(),
+                              new DummyDelegate(), temp_dir.path(),
+                              base::FilePath(), std::string(), std::string()));
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();

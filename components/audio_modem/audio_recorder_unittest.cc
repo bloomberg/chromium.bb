@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -63,7 +64,7 @@ class TestAudioInputStream : public media::AudioInputStream {
   void SimulateRecording() {
     const int fpb = params_.frames_per_buffer();
     for (int i = 0; i < buffer_->frames() / fpb; ++i) {
-      scoped_ptr<media::AudioBus> source = media::AudioBus::Create(2, fpb);
+      std::unique_ptr<media::AudioBus> source = media::AudioBus::Create(2, fpb);
       buffer_->CopyPartialFramesTo(i * fpb, fpb, 0, source.get());
       callback_->OnData(this, source.get(), fpb, 1.0);
     }
@@ -71,7 +72,7 @@ class TestAudioInputStream : public media::AudioInputStream {
 
   AudioInputCallback* callback_;
   media::AudioParameters params_;
-  scoped_ptr<media::AudioBus> buffer_;
+  std::unique_ptr<media::AudioBus> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAudioInputStream);
 };
@@ -204,7 +205,7 @@ class AudioRecorderTest : public testing::Test {
 
   std::string received_samples_;
 
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 

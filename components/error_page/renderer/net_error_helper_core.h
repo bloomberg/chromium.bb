@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
 #define COMPONENTS_ERROR_PAGE_RENDERER_NET_ERROR_HELPER_CORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -64,7 +64,7 @@ class NetErrorHelperCore {
         bool is_failed_post,
         bool can_show_network_diagnostics_dialog,
         bool has_offline_pages,
-        scoped_ptr<ErrorPageParams> params,
+        std::unique_ptr<ErrorPageParams> params,
         bool* reload_button_shown,
         bool* show_saved_copy_button_shown,
         bool* show_cached_copy_button_shown,
@@ -200,7 +200,7 @@ class NetErrorHelperCore {
 
   bool ShouldSuppressErrorPage(FrameType frame_type, const GURL& url);
 
-  void set_timer_for_testing(scoped_ptr<base::Timer> timer) {
+  void set_timer_for_testing(std::unique_ptr<base::Timer> timer) {
     auto_reload_timer_.reset(timer.release());
   }
 
@@ -248,11 +248,11 @@ class NetErrorHelperCore {
 
   // Information for the provisional / "pre-provisional" error page.  NULL when
   // there's no page pending, or the pending page is not an error page.
-  scoped_ptr<ErrorPageInfo> pending_error_page_info_;
+  std::unique_ptr<ErrorPageInfo> pending_error_page_info_;
 
   // Information for the committed error page.  NULL when the committed page is
   // not an error page.
-  scoped_ptr<ErrorPageInfo> committed_error_page_info_;
+  std::unique_ptr<ErrorPageInfo> committed_error_page_info_;
 
   bool can_show_network_diagnostics_dialog_;
 
@@ -265,7 +265,7 @@ class NetErrorHelperCore {
   const bool auto_reload_visible_only_;
 
   // Timer used to wait for auto-reload attempts.
-  scoped_ptr<base::Timer> auto_reload_timer_;
+  std::unique_ptr<base::Timer> auto_reload_timer_;
 
   // True if the auto-reload timer would be running but is waiting for an
   // offline->online network transition.

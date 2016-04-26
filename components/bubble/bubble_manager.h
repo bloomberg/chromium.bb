@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_BUBBLE_BUBBLE_MANAGER_H_
 #define COMPONENTS_BUBBLE_BUBBLE_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -51,7 +52,7 @@ class BubbleManager {
 
   // Shows a specific bubble and returns a reference to it.
   // This reference should be used through the BubbleManager.
-  BubbleReference ShowBubble(scoped_ptr<BubbleDelegate> bubble);
+  BubbleReference ShowBubble(std::unique_ptr<BubbleDelegate> bubble);
 
   // Notify a bubble of an event that might trigger close.
   // Returns true if the bubble was actually closed.

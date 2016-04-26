@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -71,7 +72,7 @@ class AudioPlayerImpl final
   // Self-deleting object.
   media::AudioOutputStream* stream_;
 
-  scoped_ptr<media::AudioOutputStream> output_stream_for_testing_;
+  std::unique_ptr<media::AudioOutputStream> output_stream_for_testing_;
 
   // All fields below here are protected by this lock.
   base::Lock state_lock_;

@@ -4,6 +4,8 @@
 
 #include "components/constrained_window/constrained_window_views.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "ui/gfx/geometry/point.h"
@@ -80,7 +82,7 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
 
  private:
   DialogContents* contents_;
-  scoped_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
+  std::unique_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
   Widget* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViewsTest);

@@ -7,9 +7,10 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -44,9 +45,9 @@ class ServiceHelperTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<base::MessageLoopForIO> base_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<ServiceHelper> helper_;
+  std::unique_ptr<base::MessageLoopForIO> base_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<ServiceHelper> helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceHelperTest);

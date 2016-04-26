@@ -4,6 +4,7 @@
 
 #include "components/certificate_transparency/log_proof_fetcher.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -222,7 +223,7 @@ class LogProofFetcherTest : public ::testing::Test {
                                     kLogSchema,
                                     kLogHost,
                                     kLogPathPrefix)) {
-    scoped_ptr<LogGetResponseHandler> handler(new LogGetResponseHandler());
+    std::unique_ptr<LogGetResponseHandler> handler(new LogGetResponseHandler());
     handler_ = handler.get();
 
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
@@ -306,7 +307,7 @@ class LogProofFetcherTest : public ::testing::Test {
   base::RunLoop run_loop_;
   net::TestURLRequestContext context_;
   safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
-  scoped_ptr<LogProofFetcher> fetcher_;
+  std::unique_ptr<LogProofFetcher> fetcher_;
   const GURL log_url_;
   LogGetResponseHandler* handler_;
 };

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/arc/ime/arc_ime_service.h"
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
@@ -71,15 +73,15 @@ class ArcImeServiceTest : public testing::Test {
   ArcImeServiceTest() {}
 
  protected:
-  scoped_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
-  scoped_ptr<FakeInputMethod> fake_input_method_;
-  scoped_ptr<ArcImeService> instance_;
+  std::unique_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
+  std::unique_ptr<FakeInputMethod> fake_input_method_;
+  std::unique_ptr<ArcImeService> instance_;
 
  private:
   void SetUp() override {
     fake_arc_bridge_service_.reset(new FakeArcBridgeService);
     instance_.reset(new ArcImeService(fake_arc_bridge_service_.get()));
-    instance_->SetImeBridgeForTesting(make_scoped_ptr(new FakeArcImeBridge));
+    instance_->SetImeBridgeForTesting(base::WrapUnique(new FakeArcImeBridge));
 
     fake_input_method_.reset(new FakeInputMethod);
     instance_->SetInputMethodForTesting(fake_input_method_.get());

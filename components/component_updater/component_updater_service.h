@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/version.h"
 #include "components/update_client/update_client.h"
 #include "url/gurl.h"
@@ -151,7 +151,7 @@ class OnDemandUpdater {
 };
 
 // Creates the component updater.
-scoped_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
+std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
     const scoped_refptr<Configurator>& config);
 
 }  // namespace component_updater

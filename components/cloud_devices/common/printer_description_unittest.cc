@@ -4,6 +4,8 @@
 
 #include "components/cloud_devices/common/printer_description.h"
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
@@ -20,7 +22,7 @@ namespace printer {
 std::string NormalizeJson(const std::string& json) {
   std::string result = json;
   base::ReplaceChars(result, "'", "\"", &result);
-  scoped_ptr<base::Value> value = base::JSONReader::Read(result);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(result);
   DCHECK(value);
   base::JSONWriter::Write(*value, &result);
   return result;

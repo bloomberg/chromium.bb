@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_parameters.h"

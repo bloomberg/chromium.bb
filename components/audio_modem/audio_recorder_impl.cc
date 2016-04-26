@@ -25,7 +25,8 @@ namespace {
 
 const float kProcessIntervalMs = 500.0f;  // milliseconds.
 
-void AudioBusToString(scoped_ptr<media::AudioBus> source, std::string* buffer) {
+void AudioBusToString(std::unique_ptr<media::AudioBus> source,
+                      std::string* buffer) {
   buffer->resize(source->frames() * source->channels() * sizeof(float));
   float* buffer_view = reinterpret_cast<float*>(string_as_array(buffer));
 
@@ -40,7 +41,7 @@ void AudioBusToString(scoped_ptr<media::AudioBus> source, std::string* buffer) {
 // converts our samples to the required sample rate, interleaves the samples
 // and sends them to the whispernet decoder to process.
 void ProcessSamples(
-    scoped_ptr<media::AudioBus> bus,
+    std::unique_ptr<media::AudioBus> bus,
     const AudioRecorderImpl::RecordedSamplesCallback& callback) {
   std::string samples;
   AudioBusToString(std::move(bus), &samples);

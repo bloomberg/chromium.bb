@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_ARC_IME_ARC_IME_SERVICE_H_
 #define COMPONENTS_ARC_IME_ARC_IME_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -43,7 +44,7 @@ class ArcImeService : public ArcService,
   ~ArcImeService() override;
 
   // Injects the custom IPC bridge object for testing purpose only.
-  void SetImeBridgeForTesting(scoped_ptr<ArcImeBridge> test_ime_bridge);
+  void SetImeBridgeForTesting(std::unique_ptr<ArcImeBridge> test_ime_bridge);
 
   // Injects the custom IME for testing purpose only.
   void SetInputMethodForTesting(ui::InputMethod* test_input_method);
@@ -99,7 +100,7 @@ class ArcImeService : public ArcService,
  private:
   ui::InputMethod* GetInputMethod();
 
-  scoped_ptr<ArcImeBridge> ime_bridge_;
+  std::unique_ptr<ArcImeBridge> ime_bridge_;
   ui::TextInputType ime_type_;
   gfx::Rect cursor_rect_;
   bool has_composition_text_;

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/audio_modem/audio_recorder.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
@@ -87,12 +87,12 @@ class AudioRecorderImpl final
 
   // Outside of the ctor/Initialize method, only access the next variables on
   // the recording thread.
-  scoped_ptr<media::AudioBus> buffer_;
+  std::unique_ptr<media::AudioBus> buffer_;
   int total_buffer_frames_;
   int buffer_frame_index_;
 
-  scoped_ptr<media::AudioInputStream> input_stream_for_testing_;
-  scoped_ptr<media::AudioParameters> params_for_testing_;
+  std::unique_ptr<media::AudioInputStream> input_stream_for_testing_;
+  std::unique_ptr<media::AudioParameters> params_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRecorderImpl);
 };

@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -337,8 +338,8 @@ ArcBridgeBootstrap::ArcBridgeBootstrap() {}
 ArcBridgeBootstrap::~ArcBridgeBootstrap() {}
 
 // static
-scoped_ptr<ArcBridgeBootstrap> ArcBridgeBootstrap::Create() {
-  return make_scoped_ptr(new ArcBridgeBootstrapImpl());
+std::unique_ptr<ArcBridgeBootstrap> ArcBridgeBootstrap::Create() {
+  return base::WrapUnique(new ArcBridgeBootstrapImpl());
 }
 
 }  // namespace arc

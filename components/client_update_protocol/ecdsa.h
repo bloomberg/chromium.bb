@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 
 namespace client_update_protocol {
@@ -35,8 +35,8 @@ class Ecdsa {
   // |key_version| must be non-negative. |public_key| is expected to be a
   // DER-encoded ASN.1 SubjectPublicKeyInfo containing an ECDSA public key.
   // Returns a NULL pointer on failure.
-  static scoped_ptr<Ecdsa> Create(int key_version,
-                                  const base::StringPiece& public_key);
+  static std::unique_ptr<Ecdsa> Create(int key_version,
+                                       const base::StringPiece& public_key);
 
   // Generates freshness/authentication data for an outgoing ping.
   // |request_body| contains the body of the ping in UTF-8.  On return,

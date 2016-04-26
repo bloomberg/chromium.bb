@@ -360,7 +360,7 @@ void ArcBluetoothBridge::OnPoweredError(
 }
 
 void ArcBluetoothBridge::OnDiscoveryStarted(
-    scoped_ptr<BluetoothDiscoverySession> session) {
+    std::unique_ptr<BluetoothDiscoverySession> session) {
   if (!HasBluetoothInstance())
     return;
 

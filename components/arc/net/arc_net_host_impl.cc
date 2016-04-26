@@ -4,6 +4,7 @@
 
 #include "components/arc/net/arc_net_host_impl.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -88,7 +89,7 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
   // Retrieve list of nearby wifi networks
   chromeos::NetworkTypePattern network_pattern =
       chromeos::onc::NetworkTypePatternFromOncType(onc::network_type::kWiFi);
-  scoped_ptr<base::ListValue> network_properties_list =
+  std::unique_ptr<base::ListValue> network_properties_list =
       chromeos::network_util::TranslateNetworkListToONC(
           network_pattern, configured_only, visible_only,
           kGetNetworksListLimit);

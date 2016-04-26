@@ -11,7 +11,7 @@
 #include "components/bubble/bubble_ui.h"
 
 BubbleController::BubbleController(BubbleManager* manager,
-                                   scoped_ptr<BubbleDelegate> delegate)
+                                   std::unique_ptr<BubbleDelegate> delegate)
     : manager_(manager), delegate_(std::move(delegate)) {
   DCHECK(manager_);
   DCHECK(delegate_);

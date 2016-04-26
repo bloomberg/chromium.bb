@@ -38,7 +38,7 @@ ComponentInstallerTraits::~ComponentInstallerTraits() {
 }
 
 DefaultComponentInstaller::DefaultComponentInstaller(
-    scoped_ptr<ComponentInstallerTraits> installer_traits)
+    std::unique_ptr<ComponentInstallerTraits> installer_traits)
     : current_version_(kNullVersion),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   installer_traits_ = std::move(installer_traits);
@@ -117,10 +117,10 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   }
   current_version_ = version;
-  // TODO(ddorwin): Change the parameter to scoped_ptr<base::DictionaryValue>
+  // TODO(ddorwin): Change parameter to std::unique_ptr<base::DictionaryValue>
   // so we can avoid this DeepCopy.
   current_manifest_.reset(manifest.DeepCopy());
-  scoped_ptr<base::DictionaryValue> manifest_copy(
+  std::unique_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -162,7 +162,7 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
 
   base::FilePath latest_path;
   base::Version latest_version(kNullVersion);
-  scoped_ptr<base::DictionaryValue> latest_manifest;
+  std::unique_ptr<base::DictionaryValue> latest_manifest;
 
   std::vector<base::FilePath> older_paths;
   base::FileEnumerator file_enumerator(
@@ -184,7 +184,7 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
       continue;
     }
 
-    scoped_ptr<base::DictionaryValue> manifest =
+    std::unique_ptr<base::DictionaryValue> manifest =
         update_client::ReadManifest(path);
     if (!manifest || !installer_traits_->VerifyInstallation(*manifest, path)) {
       PLOG(ERROR) << "Failed to read manifest or verify installation for "
@@ -279,13 +279,13 @@ void DefaultComponentInstaller::FinishRegistration(
   if (!current_manifest_)
     return;
 
-  scoped_ptr<base::DictionaryValue> manifest_copy(
+  std::unique_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
   ComponentReady(std::move(manifest_copy));
 }
 
 void DefaultComponentInstaller::ComponentReady(
-    scoped_ptr<base::DictionaryValue> manifest) {
+    std::unique_ptr<base::DictionaryValue> manifest) {
   VLOG(1) << "Component ready, version " << current_version_.GetString()
           << " in " << GetInstallDirectory().value();
   installer_traits_->ComponentReady(current_version_, GetInstallDirectory(),

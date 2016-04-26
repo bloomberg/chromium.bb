@@ -23,7 +23,7 @@
 namespace arc {
 
 ArcBridgeServiceImpl::ArcBridgeServiceImpl(
-    scoped_ptr<ArcBridgeBootstrap> bootstrap)
+    std::unique_ptr<ArcBridgeBootstrap> bootstrap)
     : bootstrap_(std::move(bootstrap)),
       binding_(this),
       session_started_(false),

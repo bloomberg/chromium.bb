@@ -4,6 +4,8 @@
 
 #include "components/audio_modem/audio_player.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -23,7 +25,7 @@ namespace {
 class TestAudioOutputStream : public media::AudioOutputStream {
  public:
   using GatherSamplesCallback =
-      base::Callback<void(scoped_ptr<media::AudioBus>, int frames)>;
+      base::Callback<void(std::unique_ptr<media::AudioBus>, int frames)>;
   TestAudioOutputStream(int default_frame_count,
                         int max_frame_count,
                         GatherSamplesCallback gather_callback)
@@ -51,7 +53,7 @@ class TestAudioOutputStream : public media::AudioOutputStream {
     int frames = 0, total_frames = 0;
     do {
       // Call back into the player to get samples that it wants us to play.
-      scoped_ptr<media::AudioBus> dest =
+      std::unique_ptr<media::AudioBus> dest =
           media::AudioBus::Create(1, default_frame_count_);
       frames = callback_->OnMoreData(dest.get(), 0, 0);
       total_frames += frames;
@@ -124,7 +126,7 @@ class AudioPlayerTest : public testing::Test,
     buffer_.reset();
   }
 
-  void GatherSamples(scoped_ptr<media::AudioBus> bus, int frames) {
+  void GatherSamples(std::unique_ptr<media::AudioBus> bus, int frames) {
     if (!buffer_.get())
       return;
     bus->CopyPartialFramesTo(0, frames, buffer_index_, buffer_.get());
@@ -142,7 +144,7 @@ class AudioPlayerTest : public testing::Test,
 
   base::TestMessageLoop message_loop_;
   media::ScopedAudioManagerPtr audio_manager_;
-  scoped_ptr<media::AudioBus> buffer_;
+  std::unique_ptr<media::AudioBus> buffer_;
   int buffer_index_;
 
   // Deleted by calling Finalize() on the object.

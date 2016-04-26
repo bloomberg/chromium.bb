@@ -4,10 +4,11 @@
 
 #include "components/browser_watcher/window_hang_monitor_win.h"
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -209,7 +210,7 @@ class MonitoredProcessClient {
 
   // The thread that holds the message window.
   base::Thread message_window_thread_;
-  scoped_ptr<base::win::MessageWindow> message_window_;
+  std::unique_ptr<base::win::MessageWindow> message_window_;
 
   // Event used to hang the message window.
   base::WaitableEvent hang_event_;
@@ -318,7 +319,7 @@ class HangMonitorThread {
   // the WindowHangMonitor.
   base::WaitableEvent event_received_;
   // The WindowHangMonitor under test.
-  scoped_ptr<WindowHangMonitor> hang_monitor_;
+  std::unique_ptr<WindowHangMonitor> hang_monitor_;
   // The background thread.
   base::Thread thread_;
 

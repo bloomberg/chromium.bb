@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -143,7 +144,7 @@ class ArcBluetoothBridge
   void OnPoweredError(
       const mojo::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
   void OnDiscoveryStarted(
-      scoped_ptr<device::BluetoothDiscoverySession> session);
+      std::unique_ptr<device::BluetoothDiscoverySession> session);
   void OnDiscoveryStopped();
   void OnDiscoveryError();
   void OnPairing(mojom::BluetoothAddressPtr addr) const;
@@ -170,7 +171,7 @@ class ArcBluetoothBridge
   mojo::Binding<mojom::BluetoothHost> binding_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-  scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
+  std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_;

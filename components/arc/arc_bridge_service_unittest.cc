@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service_impl.h"
@@ -41,8 +44,8 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   ArcBridgeService::State state() const { return state_; }
 
  protected:
-  scoped_ptr<ArcBridgeServiceImpl> service_;
-  scoped_ptr<FakeArcBridgeInstance> instance_;
+  std::unique_ptr<ArcBridgeServiceImpl> service_;
+  std::unique_ptr<FakeArcBridgeInstance> instance_;
 
  private:
   void SetUp() override {
@@ -53,7 +56,7 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
 
     instance_.reset(new FakeArcBridgeInstance());
     service_.reset(new ArcBridgeServiceImpl(
-        make_scoped_ptr(new FakeArcBridgeBootstrap(instance_.get()))));
+        base::WrapUnique(new FakeArcBridgeBootstrap(instance_.get()))));
 
     service_->AddObserver(this);
   }

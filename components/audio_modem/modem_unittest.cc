@@ -4,6 +4,7 @@
 
 #include "components/audio_modem/public/modem.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -107,8 +108,8 @@ class ModemTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   // This order is important. The WhispernetClient needs to outlive the Modem.
-  scoped_ptr<WhispernetClient> client_;
-  scoped_ptr<ModemImpl> modem_;
+  std::unique_ptr<WhispernetClient> client_;
+  std::unique_ptr<ModemImpl> modem_;
 
   // These will be deleted by the Modem's destructor calling finalize on them.
   AudioPlayerStub* audible_player_;
