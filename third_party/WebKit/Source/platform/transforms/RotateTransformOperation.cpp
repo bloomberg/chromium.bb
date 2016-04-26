@@ -21,6 +21,8 @@
 
 #include "platform/transforms/RotateTransformOperation.h"
 
+#include "platform/animation/AnimationUtilities.h"
+
 namespace blink {
 
 bool RotateTransformOperation::operator==(const TransformOperation& other) const
@@ -48,8 +50,14 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
     if (!from)
         return RotateTransformOperation::create(Rotation(axis(), angle() * progress), m_type);
 
-    return RotateTransformOperation::create(
-        Rotation::slerp(toRotateTransformOperation(*from).m_rotation, m_rotation, progress), Rotate3D);
+    const RotateTransformOperation& fromRotate = toRotateTransformOperation(*from);
+    if (type() == Rotate3D) {
+        return RotateTransformOperation::create(
+            Rotation::slerp(fromRotate.m_rotation, m_rotation, progress), Rotate3D);
+    }
+
+    ASSERT(axis() == fromRotate.axis());
+    return RotateTransformOperation::create(Rotation(axis(), blink::blend(fromRotate.angle(), angle(), progress)), m_type);
 }
 
 bool RotateTransformOperation::canBlendWith(const TransformOperation& other) const
