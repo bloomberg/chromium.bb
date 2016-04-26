@@ -133,11 +133,6 @@ bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
   output_visible_size_ = output_visible_size;
   output_allocated_size_ = output_allocated_size;
 
-  input_planes_count_ = media::VideoFrame::NumPlanes(input_format);
-  DCHECK_LE(input_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
-  output_planes_count_ = media::VideoFrame::NumPlanes(output_format);
-  DCHECK_LE(output_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
-
   // Capabilities check.
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
@@ -169,8 +164,10 @@ bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
            << media::VideoPixelFormatToString(output_format)
            << ", input_visible_size: " << input_visible_size.ToString()
            << ", input_allocated_size: " << input_allocated_size_.ToString()
+           << ", input_planes_count: " << input_planes_count_
            << ", output_visible_size: " << output_visible_size.ToString()
-           << ", output_allocated_size: " << output_allocated_size_.ToString();
+           << ", output_allocated_size: " << output_allocated_size_.ToString()
+           << ", output_planes_count: " << output_planes_count_;
 
   return true;
 }
@@ -271,16 +268,10 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
   format.fmt.pix_mp.width = input_visible_size_.width();
   format.fmt.pix_mp.height = input_visible_size_.height();
   format.fmt.pix_mp.pixelformat = input_format_fourcc_;
-  format.fmt.pix_mp.num_planes = input_planes_count_;
-  for (size_t i = 0; i < input_planes_count_; ++i) {
-    format.fmt.pix_mp.plane_fmt[i].sizeimage =
-        media::VideoFrame::PlaneSize(input_format_, i, input_allocated_size_)
-            .GetArea();
-    format.fmt.pix_mp.plane_fmt[i].bytesperline =
-        base::checked_cast<__u32>(input_allocated_size_.width());
-  }
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
+  input_planes_count_ = format.fmt.pix_mp.num_planes;
+  DCHECK_LE(input_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
   input_allocated_size_ = V4L2Device::CodedSizeFromV4L2Format(format);
   DCHECK(gfx::Rect(input_allocated_size_).Contains(
       gfx::Rect(input_visible_size_)));
@@ -326,16 +317,10 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   format.fmt.pix_mp.width = output_allocated_size_.width();
   format.fmt.pix_mp.height = output_allocated_size_.height();
   format.fmt.pix_mp.pixelformat = output_format_fourcc_;
-  format.fmt.pix_mp.num_planes = output_planes_count_;
-  for (size_t i = 0; i < output_planes_count_; ++i) {
-    format.fmt.pix_mp.plane_fmt[i].sizeimage =
-        media::VideoFrame::PlaneSize(output_format_, i, output_allocated_size_)
-            .GetArea();
-    format.fmt.pix_mp.plane_fmt[i].bytesperline =
-        base::checked_cast<__u32>(output_allocated_size_.width());
-  }
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
+  output_planes_count_ = format.fmt.pix_mp.num_planes;
+  DCHECK_LE(output_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
   gfx::Size adjusted_allocated_size =
       V4L2Device::CodedSizeFromV4L2Format(format);
   DCHECK(gfx::Rect(adjusted_allocated_size).Contains(
