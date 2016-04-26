@@ -11,21 +11,21 @@ namespace blink {
 
 class WebContentSettingCallbacksPrivate : public RefCounted<WebContentSettingCallbacksPrivate> {
 public:
-    static PassRefPtr<WebContentSettingCallbacksPrivate> create(const PassOwnPtr<ContentSettingCallbacks>& callbacks)
+    static PassRefPtr<WebContentSettingCallbacksPrivate> create(PassOwnPtr<ContentSettingCallbacks> callbacks)
     {
-        return adoptRef(new WebContentSettingCallbacksPrivate(callbacks));
+        return adoptRef(new WebContentSettingCallbacksPrivate(std::move(callbacks)));
     }
 
     ContentSettingCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    WebContentSettingCallbacksPrivate(const PassOwnPtr<ContentSettingCallbacks>& callbacks) : m_callbacks(callbacks) { }
+    WebContentSettingCallbacksPrivate(PassOwnPtr<ContentSettingCallbacks> callbacks) : m_callbacks(std::move(callbacks)) { }
     OwnPtr<ContentSettingCallbacks> m_callbacks;
 };
 
-WebContentSettingCallbacks::WebContentSettingCallbacks(const PassOwnPtr<ContentSettingCallbacks>& callbacks)
+WebContentSettingCallbacks::WebContentSettingCallbacks(PassOwnPtr<ContentSettingCallbacks>&& callbacks)
 {
-    m_private = WebContentSettingCallbacksPrivate::create(callbacks);
+    m_private = WebContentSettingCallbacksPrivate::create(std::move(callbacks));
 }
 
 void WebContentSettingCallbacks::reset()

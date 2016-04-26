@@ -172,7 +172,7 @@ template <typename P> struct HashTraits<OwnPtr<P>> : SimpleClassHashTraits<OwnPt
     typedef typename OwnPtr<P>::PtrType PeekInType;
 
     typedef PassOwnPtr<P> PassInType;
-    static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = value; }
+    static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = std::move(value); }
 
     typedef PassOwnPtr<P> PassOutType;
     static PassOwnPtr<P> passOut(OwnPtr<P>& value) { return value.release(); }

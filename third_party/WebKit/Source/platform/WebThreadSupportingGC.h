@@ -35,22 +35,22 @@ public:
 
     void postTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task)
     {
-        m_thread->getWebTaskRunner()->postTask(location, task);
+        m_thread->getWebTaskRunner()->postTask(location, std::move(task));
     }
 
     void postDelayedTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task, long long delayMs)
     {
-        m_thread->getWebTaskRunner()->postDelayedTask(location, task, delayMs);
+        m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
     }
 
     void postTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
     {
-        m_thread->getWebTaskRunner()->postTask(location, task);
+        m_thread->getWebTaskRunner()->postTask(location, std::move(task));
     }
 
     void postDelayedTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task, long long delayMs)
     {
-        m_thread->getWebTaskRunner()->postDelayedTask(location, task, delayMs);
+        m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
     }
 
     bool isCurrentThread() const

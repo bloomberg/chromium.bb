@@ -45,21 +45,21 @@ namespace blink {
 
 class WebFileSystemCallbacksPrivate : public RefCounted<WebFileSystemCallbacksPrivate> {
 public:
-    static PassRefPtr<WebFileSystemCallbacksPrivate> create(const PassOwnPtr<AsyncFileSystemCallbacks>& callbacks)
+    static PassRefPtr<WebFileSystemCallbacksPrivate> create(PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
     {
-        return adoptRef(new WebFileSystemCallbacksPrivate(callbacks));
+        return adoptRef(new WebFileSystemCallbacksPrivate(std::move(callbacks)));
     }
 
     AsyncFileSystemCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    WebFileSystemCallbacksPrivate(const PassOwnPtr<AsyncFileSystemCallbacks>& callbacks) : m_callbacks(callbacks) { }
+    WebFileSystemCallbacksPrivate(PassOwnPtr<AsyncFileSystemCallbacks> callbacks) : m_callbacks(std::move(callbacks)) { }
     OwnPtr<AsyncFileSystemCallbacks> m_callbacks;
 };
 
-WebFileSystemCallbacks::WebFileSystemCallbacks(const PassOwnPtr<AsyncFileSystemCallbacks>& callbacks)
+WebFileSystemCallbacks::WebFileSystemCallbacks(PassOwnPtr<AsyncFileSystemCallbacks>&& callbacks)
 {
-    m_private = WebFileSystemCallbacksPrivate::create(callbacks);
+    m_private = WebFileSystemCallbacksPrivate::create(std::move(callbacks));
 }
 
 void WebFileSystemCallbacks::reset()

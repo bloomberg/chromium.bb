@@ -265,26 +265,26 @@ void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 
 void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, task);
+    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_workerThread->postTask(BLINK_FROM_HERE, task);
+    m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
     return true;
 }
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 {
     workerThread()->postTask(
-        BLINK_FROM_HERE, createCrossThreadTask(&connectTask, adoptPtr(webChannel)));
+        BLINK_FROM_HERE, createCrossThreadTask(&connectTask, passed(adoptPtr(webChannel))));
 }
 
 void WebSharedWorkerImpl::connectTask(PassOwnPtr<WebMessagePortChannel> channel, ExecutionContext* context)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
     MessagePort* port = MessagePort::create(*context);
-    port->entangle(channel);
+    port->entangle(std::move(channel));
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     ASSERT_WITH_SECURITY_IMPLICATION(workerGlobalScope->isSharedWorkerGlobalScope());
     workerGlobalScope->dispatchEvent(createConnectEvent(port));

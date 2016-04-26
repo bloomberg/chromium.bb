@@ -162,7 +162,7 @@ private:
     ClientMessageLoopAdapter(PassOwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
         : m_runningForDebugBreak(false)
         , m_runningForCreateWindow(false)
-        , m_messageLoop(messageLoop) { }
+        , m_messageLoop(std::move(messageLoop)) { }
 
     void run(LocalFrame* frame) override
     {
@@ -678,7 +678,7 @@ void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, PassOwnPtr<WebDevTools
 void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* rawDescriptor)
 {
     // rawDescriptor can't be a PassOwnPtr because interruptAndDispatch is a WebKit API function.
-    MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, adoptPtr(rawDescriptor)));
+    MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, passed(adoptPtr(rawDescriptor))));
 }
 
 bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)

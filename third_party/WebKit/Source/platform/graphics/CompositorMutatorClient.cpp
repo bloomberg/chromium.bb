@@ -37,7 +37,7 @@ base::Closure CompositorMutatorClient::TakeMutations()
 
 void CompositorMutatorClient::setMutationsForTesting(PassOwnPtr<CompositorMutations> mutations)
 {
-    m_mutations = mutations;
+    m_mutations = std::move(mutations);
 }
 
 } // namespace blink

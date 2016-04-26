@@ -42,7 +42,7 @@ namespace blink {
 class DOMActivityLoggerContainer : public V8DOMActivityLogger {
 public:
     explicit DOMActivityLoggerContainer(PassOwnPtr<WebDOMActivityLogger> logger)
-        : m_domActivityLogger(logger)
+        : m_domActivityLogger(std::move(logger))
     {
     }
 

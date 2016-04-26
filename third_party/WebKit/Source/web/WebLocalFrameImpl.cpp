@@ -496,7 +496,7 @@ class WebSuspendableTaskWrapper: public SuspendableTask {
 public:
     static PassOwnPtr<WebSuspendableTaskWrapper> create(PassOwnPtr<WebSuspendableTask> task)
     {
-        return adoptPtr(new WebSuspendableTaskWrapper(task));
+        return adoptPtr(new WebSuspendableTaskWrapper(std::move(task)));
     }
 
     void run() override
@@ -511,7 +511,7 @@ public:
 
 private:
     explicit WebSuspendableTaskWrapper(PassOwnPtr<WebSuspendableTask> task)
-        : m_task(task)
+        : m_task(std::move(task))
     {
     }
 

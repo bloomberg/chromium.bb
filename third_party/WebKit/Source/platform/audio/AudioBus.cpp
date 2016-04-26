@@ -63,7 +63,7 @@ AudioBus::AudioBus(unsigned numberOfChannels, size_t length, bool allocate)
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
         PassOwnPtr<AudioChannel> channel = allocate ? adoptPtr(new AudioChannel(length)) : adoptPtr(new AudioChannel(0, length));
-        m_channels.append(channel);
+        m_channels.append(std::move(channel));
     }
 
     m_layout = LayoutCanonical; // for now this is the only layout we define

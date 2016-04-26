@@ -29,7 +29,7 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebContentSettingCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebContentSettingCallbacks(const WTF::PassOwnPtr<ContentSettingCallbacks>&);
+    BLINK_PLATFORM_EXPORT WebContentSettingCallbacks(WTF::PassOwnPtr<ContentSettingCallbacks>&&);
 #endif
 
     BLINK_PLATFORM_EXPORT void doAllow();

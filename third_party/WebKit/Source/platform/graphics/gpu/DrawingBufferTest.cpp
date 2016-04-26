@@ -209,7 +209,7 @@ public:
     static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
     {
         OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
-        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(contextProvider, extensionsUtil.release(), preserve));
+        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(std::move(contextProvider), extensionsUtil.release(), preserve));
         bool wantDepthBuffer = false;
         bool wantStencilBuffer = false;
         bool multisampleExtensionSupported = false;
@@ -221,7 +221,7 @@ public:
     }
 
     DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(contextProvider, extensionsUtil, false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve)
+        : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve)
         , m_live(0)
     { }
 

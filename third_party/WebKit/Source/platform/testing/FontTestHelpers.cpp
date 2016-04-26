@@ -51,7 +51,7 @@ public:
 
 private:
     TestFontSelector(PassOwnPtr<FontCustomPlatformData> customPlatformData)
-    : m_customPlatformData(customPlatformData)
+        : m_customPlatformData(std::move(customPlatformData))
     {
     }
 

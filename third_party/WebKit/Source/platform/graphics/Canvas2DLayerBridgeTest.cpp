@@ -155,7 +155,7 @@ class Canvas2DLayerBridgeTest : public Test {
 public:
     PassRefPtr<Canvas2DLayerBridge> makeBridge(PassOwnPtr<FakeWebGraphicsContext3DProvider> provider, const IntSize& size, Canvas2DLayerBridge::AccelerationMode accelerationMode)
     {
-        return adoptRef(new Canvas2DLayerBridge(provider, size, 0, NonOpaque, accelerationMode));
+        return adoptRef(new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque, accelerationMode));
     }
 
 protected:

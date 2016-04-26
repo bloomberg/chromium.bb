@@ -77,7 +77,7 @@ void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* conte
         callbacks->onAllowed();
         return;
     }
-    webFrame->contentSettingsClient()->requestFileSystemAccessAsync(callbacks);
+    webFrame->contentSettingsClient()->requestFileSystemAccessAsync(std::move(callbacks));
 }
 
 LocalFileSystemClient::LocalFileSystemClient()

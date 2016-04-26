@@ -35,6 +35,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "wtf/Allocator.h"
+#include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/AtomicString.h"
 
@@ -119,8 +120,8 @@ public:
 
 template <>
 struct CrossThreadCopier<ResourceTimingInfo> {
-    typedef PassOwnPtr<CrossThreadResourceTimingInfoData> Type;
-    static Type copy(const ResourceTimingInfo& info) { return info.copyData(); }
+    typedef WTF::PassedWrapper<PassOwnPtr<CrossThreadResourceTimingInfoData>> Type;
+    static Type copy(const ResourceTimingInfo& info) { return passed(info.copyData()); }
 };
 
 } // namespace blink

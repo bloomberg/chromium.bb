@@ -332,7 +332,7 @@ void InspectorOverlay::setInspectMode(InspectorDOMAgent::SearchMode searchMode, 
     scheduleUpdate();
 
     if (searchMode != InspectorDOMAgent::NotSearching) {
-        m_inspectModeHighlightConfig = highlightConfig;
+        m_inspectModeHighlightConfig = std::move(highlightConfig);
     } else {
         m_hoveredNodeForInspectMode.clear();
         hideHighlight();
@@ -354,7 +354,7 @@ void InspectorOverlay::setInspectedNode(Node* node)
 void InspectorOverlay::highlightQuad(PassOwnPtr<FloatQuad> quad, const InspectorHighlightConfig& highlightConfig)
 {
     m_quadHighlightConfig = highlightConfig;
-    m_highlightQuad = quad;
+    m_highlightQuad = std::move(quad);
     m_omitTooltip = false;
     scheduleUpdate();
 }
@@ -556,7 +556,7 @@ void InspectorOverlay::evaluateInOverlay(const String& method, PassOwnPtr<protoc
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
     OwnPtr<protocol::ListValue> command = protocol::ListValue::create();
     command->pushValue(protocol::StringValue::create(method));
-    command->pushValue(argument);
+    command->pushValue(std::move(argument));
     toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 

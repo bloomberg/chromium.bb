@@ -84,9 +84,9 @@ static HashSet<WebEmbeddedWorkerImpl*>& runningWorkerInstances()
     return set;
 }
 
-WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient> client, PassOwnPtr<WebWorkerContentSettingsClientProxy> ContentSettingsClient)
-    : m_workerContextClient(client)
-    , m_contentSettingsClient(ContentSettingsClient)
+WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient> client, PassOwnPtr<WebWorkerContentSettingsClientProxy> contentSettingsClient)
+    : m_workerContextClient(std::move(client))
+    , m_contentSettingsClient(std::move(contentSettingsClient))
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_webView(nullptr)
     , m_mainFrame(nullptr)
@@ -236,7 +236,7 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
 
 void WebEmbeddedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, task);
+    m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
@@ -244,7 +244,7 @@ bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionCont
     if (m_askedToTerminate || !m_workerThread)
         return false;
 
-    m_workerThread->postTask(BLINK_FROM_HERE, task);
+    m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
     return !m_workerThread->terminated();
 }
 

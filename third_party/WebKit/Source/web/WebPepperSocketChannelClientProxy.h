@@ -38,7 +38,7 @@ public:
     }
     void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
     {
-        m_impl->didReceiveBinaryMessage(payload);
+        m_impl->didReceiveBinaryMessage(std::move(payload));
     }
     void didError() override
     {

@@ -159,7 +159,7 @@ public:
     }
 
     template <typename... IncomingParameters>
-    R operator()(PassOwnPtr<C> c, IncomingParameters&&... parameters)
+    R operator()(const PassOwnPtr<C>& c, IncomingParameters&&... parameters)
     {
         return (c.get()->*m_function)(std::forward<IncomingParameters>(parameters)...);
     }
