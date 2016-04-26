@@ -16,9 +16,9 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 
 /**
- * This is an AlertDialog asking the user to confirm that he wants to sign in to a managed account.
+ * This is a dialog asking the user to confirm that they want to sign in to a managed account.
  */
-class ConfirmManagedSigninFragment extends DialogFragment implements OnClickListener {
+public class ConfirmManagedSigninFragment extends DialogFragment implements OnClickListener {
     private static final String TAG = "ConfirmManagedSignin";
     private static final String KEY_MANAGEMENT_DOMAIN = "managementDomain";
 
