@@ -628,6 +628,10 @@ group("gn_only") {
     deps += [ "//mojo/common:mojo_common_perftests" ]
   }
 
+  if (!is_android && !is_ios) {
+    deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
+  }
+
   if (!is_android && !is_ios && !is_chromeos) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
   }
