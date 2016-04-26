@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/common/pref_names.h"
@@ -52,6 +54,9 @@ void DefaultBrowserHandler::RequestDefaultBrowserState(
 
 void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
   CHECK(!IsDisabledByPolicy(default_browser_policy_));
+
+  base::RecordAction(base::UserMetricsAction("Options_SetAsDefaultBrowser"));
+  UMA_HISTOGRAM_COUNTS("Settings.StartSetAsDefault", true);
 
   default_browser_worker_->StartSetAsDefault();
 
