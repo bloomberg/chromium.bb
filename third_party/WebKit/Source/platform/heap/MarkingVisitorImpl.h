@@ -44,7 +44,7 @@ protected:
         header->mark();
 
         if (callback)
-            ThreadHeap::mainThreadHeap()->pushTraceCallback(const_cast<void*>(objectPointer), callback);
+            ThreadHeap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
     }
 
     inline void mark(const void* objectPointer, TraceCallback callback)
@@ -58,7 +58,7 @@ protected:
     inline void registerDelayedMarkNoTracing(const void* objectPointer)
     {
         ASSERT(toDerived()->getMarkingMode() != Visitor::WeakProcessing);
-        ThreadHeap::mainThreadHeap()->pushPostMarkingCallback(const_cast<void*>(objectPointer), &markNoTracingCallback);
+        ThreadHeap::pushPostMarkingCallback(const_cast<void*>(objectPointer), &markNoTracingCallback);
     }
 
     inline void registerWeakMembers(const void* closure, const void* objectPointer, WeakCallback callback)
@@ -67,19 +67,19 @@ protected:
         // We don't want to run weak processings when taking a snapshot.
         if (toDerived()->getMarkingMode() == Visitor::SnapshotMarking)
             return;
-        ThreadHeap::mainThreadHeap()->pushThreadLocalWeakCallback(const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
+        ThreadHeap::pushThreadLocalWeakCallback(const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
     }
 
     inline void registerWeakTable(const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
     {
         ASSERT(toDerived()->getMarkingMode() != Visitor::WeakProcessing);
-        ThreadHeap::mainThreadHeap()->registerWeakTable(const_cast<void*>(closure), iterationCallback, iterationDoneCallback);
+        ThreadHeap::registerWeakTable(const_cast<void*>(closure), iterationCallback, iterationDoneCallback);
     }
 
 #if ENABLE(ASSERT)
     inline bool weakTableRegistered(const void* closure)
     {
-        return ThreadHeap::mainThreadHeap()->weakTableRegistered(closure);
+        return ThreadHeap::weakTableRegistered(closure);
     }
 #endif
 
@@ -117,7 +117,7 @@ protected:
         // We don't want to run weak processings when taking a snapshot.
         if (toDerived()->getMarkingMode() == Visitor::SnapshotMarking)
             return;
-        ThreadHeap::mainThreadHeap()->pushGlobalWeakCallback(cell, callback);
+        ThreadHeap::pushGlobalWeakCallback(cell, callback);
     }
 
 private:

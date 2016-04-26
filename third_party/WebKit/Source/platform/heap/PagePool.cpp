@@ -77,7 +77,12 @@ NO_SANITIZE_ADDRESS
 void OrphanedPagePool::decommitOrphanedPages()
 {
     ASSERT(ThreadState::current()->isInGC());
-    ASSERT(ThreadState::current()->heap().isAtSafePoint());
+
+#if ENABLE(ASSERT)
+    // No locking needed as all threads are at safepoints at this point in time.
+    for (ThreadState* state : ThreadState::attachedThreads())
+        ASSERT(state->isAtSafePoint());
+#endif
 
     for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
         PoolEntry* entry = m_pool[index];
@@ -96,7 +101,7 @@ void OrphanedPagePool::decommitOrphanedPages()
             } else {
                 page->~BasePage();
                 clearMemory(memory);
-                ThreadHeap::mainThreadHeap()->getFreePagePool()->addFreePage(index, memory);
+                ThreadHeap::getFreePagePool()->addFreePage(index, memory);
             }
 
             PoolEntry* deadEntry = entry;

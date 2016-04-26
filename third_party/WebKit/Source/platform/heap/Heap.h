@@ -107,7 +107,6 @@ class PLATFORM_EXPORT ProcessHeap {
     STATIC_ONLY(ProcessHeap);
 public:
     static void init();
-    static void shutdown();
 
     static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
@@ -116,7 +115,6 @@ public:
     static void decreaseTotalAllocatedObjectSize(size_t delta) { atomicSubtract(&s_totalAllocatedObjectSize, static_cast<long>(delta)); }
     static size_t totalAllocatedObjectSize() { return acquireLoad(&s_totalAllocatedObjectSize); }
     static void increaseTotalMarkedObjectSize(size_t delta) { atomicAdd(&s_totalMarkedObjectSize, static_cast<long>(delta)); }
-    static void decreaseTotalMarkedObjectSize(size_t delta) { atomicSubtract(&s_totalMarkedObjectSize, static_cast<long>(delta)); }
     static size_t totalMarkedObjectSize() { return acquireLoad(&s_totalMarkedObjectSize); }
     static void increaseTotalAllocatedSpace(size_t delta) { atomicAdd(&s_totalAllocatedSpace, static_cast<long>(delta)); }
     static void decreaseTotalAllocatedSpace(size_t delta) { atomicSubtract(&s_totalAllocatedSpace, static_cast<long>(delta)); }
@@ -124,7 +122,6 @@ public:
     static void resetHeapCounters();
 
 private:
-    static bool s_shutdownComplete;
     static bool s_isLowEndDevice;
     static size_t s_totalAllocatedSpace;
     static size_t s_totalAllocatedObjectSize;
@@ -174,21 +171,15 @@ private:
     double m_estimatedMarkingTimePerByte;
 };
 
-using ThreadStateSet = HashSet<ThreadState*>;
-
 class PLATFORM_EXPORT ThreadHeap {
+    STATIC_ONLY(ThreadHeap);
 public:
-    ThreadHeap();
-    ~ThreadHeap();
-
-    // Returns true for main thread's heap.
-    // TODO(keishi): Per-thread-heap will return false.
-    bool isMainThreadHeap() { return this == ThreadHeap::mainThreadHeap(); }
-    static ThreadHeap* mainThreadHeap() { return s_mainThreadHeap; }
+    static void init();
+    static void shutdown();
 
 #if ENABLE(ASSERT)
-    bool isAtSafePoint();
-    BasePage* findPageFromAddress(Address);
+    static BasePage* findPageFromAddress(Address);
+    static BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
 #endif
 
     template<typename T>
@@ -225,40 +216,6 @@ public:
         return isHeapObjectAlive(ptr);
     }
 
-    RecursiveMutex& threadAttachMutex() { return m_threadAttachMutex; }
-    const ThreadStateSet& threads() const { return m_threads; }
-    ThreadHeapStats& heapStats() { return m_stats; }
-    SafePointBarrier* safePointBarrier() { return m_safePointBarrier.get(); }
-    CallbackStack* markingStack() const { return m_markingStack.get(); }
-    CallbackStack* postMarkingCallbackStack() const { return m_postMarkingCallbackStack.get(); }
-    CallbackStack* globalWeakCallbackStack() const { return m_globalWeakCallbackStack.get(); }
-    CallbackStack* ephemeronStack() const { return m_ephemeronStack.get(); }
-
-    void attach(ThreadState*);
-    void detach(ThreadState*);
-    void lockThreadAttachMutex();
-    void unlockThreadAttachMutex();
-    bool park();
-    void resume();
-
-    void visitPersistentRoots(Visitor*);
-    void visitStackRoots(Visitor*);
-    void checkAndPark(ThreadState*, SafePointAwareMutexLocker*);
-    void enterSafePoint(ThreadState*);
-    void leaveSafePoint(ThreadState*, SafePointAwareMutexLocker*);
-
-    // Add a weak pointer callback to the weak callback work list.  General
-    // object pointer callbacks are added to a thread local weak callback work
-    // list and the callback is called on the thread that owns the object, with
-    // the closure pointer as an argument.  Most of the time, the closure and
-    // the containerObject can be the same thing, but the containerObject is
-    // constrained to be on the heap, since the heap is used to identify the
-    // correct thread.
-    void pushThreadLocalWeakCallback(void* closure, void* containerObject, WeakCallback);
-
-    static RecursiveMutex& allHeapsMutex();
-    static HashSet<ThreadHeap*>& allHeaps();
-
     // Is the finalizable GC object still alive, but slated for lazy sweeping?
     // If a lazy sweep is in progress, returns true if the object was found
     // to be not reachable during the marking phase, but it has yet to be swept
@@ -281,41 +238,47 @@ public:
     }
 
     // Push a trace callback on the marking stack.
-    void pushTraceCallback(void* containerObject, TraceCallback);
+    static void pushTraceCallback(void* containerObject, TraceCallback);
 
     // Push a trace callback on the post-marking callback stack.  These
     // callbacks are called after normal marking (including ephemeron
     // iteration).
-    void pushPostMarkingCallback(void*, TraceCallback);
+    static void pushPostMarkingCallback(void*, TraceCallback);
+
+    // Add a weak pointer callback to the weak callback work list.  General
+    // object pointer callbacks are added to a thread local weak callback work
+    // list and the callback is called on the thread that owns the object, with
+    // the closure pointer as an argument.  Most of the time, the closure and
+    // the containerObject can be the same thing, but the containerObject is
+    // constrained to be on the heap, since the heap is used to identify the
+    // correct thread.
+    static void pushThreadLocalWeakCallback(void* closure, void* containerObject, WeakCallback);
 
     // Similar to the more general pushThreadLocalWeakCallback, but cell
     // pointer callbacks are added to a static callback work list and the weak
     // callback is performed on the thread performing garbage collection.  This
     // is OK because cells are just cleared and no deallocation can happen.
-    void pushGlobalWeakCallback(void** cell, WeakCallback);
+    static void pushGlobalWeakCallback(void** cell, WeakCallback);
 
     // Pop the top of a marking stack and call the callback with the visitor
     // and the object.  Returns false when there is nothing more to do.
-    bool popAndInvokeTraceCallback(Visitor*);
+    static bool popAndInvokeTraceCallback(Visitor*);
 
     // Remove an item from the post-marking callback stack and call
     // the callback with the visitor and the object pointer.  Returns
     // false when there is nothing more to do.
-    bool popAndInvokePostMarkingCallback(Visitor*);
+    static bool popAndInvokePostMarkingCallback(Visitor*);
 
     // Remove an item from the weak callback work list and call the callback
     // with the visitor and the closure pointer.  Returns false when there is
     // nothing more to do.
-    bool popAndInvokeGlobalWeakCallback(Visitor*);
+    static bool popAndInvokeGlobalWeakCallback(Visitor*);
 
     // Register an ephemeron table for fixed-point iteration.
-    void registerWeakTable(void* containerObject, EphemeronCallback, EphemeronCallback);
+    static void registerWeakTable(void* containerObject, EphemeronCallback, EphemeronCallback);
 #if ENABLE(ASSERT)
-    bool weakTableRegistered(const void*);
+    static bool weakTableRegistered(const void*);
 #endif
-
-    BlinkGC::GCReason lastGCReason() { return m_lastGCReason; }
-    RegionTree* getRegionTree() { return m_regionTree.get(); }
 
     static inline size_t allocationSizeFromSize(size_t size)
     {
@@ -339,28 +302,30 @@ public:
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
 
-    void processMarkingStack(Visitor*);
-    void postMarkingProcessing(Visitor*);
-    void globalWeakProcessing(Visitor*);
+    static void processMarkingStack(Visitor*);
+    static void postMarkingProcessing(Visitor*);
+    static void globalWeakProcessing(Visitor*);
+    static void setForcePreciseGCForTesting();
 
-    void preGC();
-    void postGC(BlinkGC::GCType);
+    static void preGC();
+    static void postGC(BlinkGC::GCType);
 
     // Conservatively checks whether an address is a pointer in any of the
     // thread heaps.  If so marks the object pointed to as live.
-    Address checkAndMarkPointer(Visitor*, Address);
+    static Address checkAndMarkPointer(Visitor*, Address);
 
-    size_t objectPayloadSizeForTesting();
+    static size_t objectPayloadSizeForTesting();
 
-    void flushHeapDoesNotContainCache();
+    static void flushHeapDoesNotContainCache();
 
-    FreePagePool* getFreePagePool() { return m_freePagePool.get(); }
-    OrphanedPagePool* getOrphanedPagePool() { return m_orphanedPagePool.get(); }
+    static FreePagePool* getFreePagePool() { return s_freePagePool; }
+    static OrphanedPagePool* getOrphanedPagePool() { return s_orphanedPagePool; }
 
     // This look-up uses the region search tree and a negative contains cache to
     // provide an efficient mapping from arbitrary addresses to the containing
     // heap-page if one exists.
-    BasePage* lookupPageForAddress(Address);
+    static BasePage* lookup(Address);
+    static RegionTree* getRegionTree();
 
     static const GCInfo* gcInfo(size_t gcInfoIndex)
     {
@@ -372,33 +337,30 @@ public:
         return info;
     }
 
+    static ThreadHeapStats& heapStats();
+
+    static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
     static void reportMemoryUsageForTracing();
+    static BlinkGC::GCReason lastGCReason() { return s_lastGCReason; }
 
 private:
     // Reset counters that track live and allocated-since-last-GC sizes.
-    void resetHeapCounters();
+    static void resetHeapCounters();
 
     static int arenaIndexForObjectSize(size_t);
     static bool isNormalArenaIndex(int);
 
-    void decommitCallbackStacks();
+    static void decommitCallbackStacks();
 
-    RecursiveMutex m_threadAttachMutex;
-    ThreadStateSet m_threads;
-    ThreadHeapStats m_stats;
-    OwnPtr<RegionTree> m_regionTree;
-    OwnPtr<HeapDoesNotContainCache> m_heapDoesNotContainCache;
-    OwnPtr<SafePointBarrier> m_safePointBarrier;
-    OwnPtr<FreePagePool> m_freePagePool;
-    OwnPtr<OrphanedPagePool> m_orphanedPagePool;
-    OwnPtr<CallbackStack> m_markingStack;
-    OwnPtr<CallbackStack> m_postMarkingCallbackStack;
-    OwnPtr<CallbackStack> m_globalWeakCallbackStack;
-    OwnPtr<CallbackStack> m_ephemeronStack;
-    BlinkGC::GCReason m_lastGCReason;
-
-    static ThreadHeap* s_mainThreadHeap;
+    static CallbackStack* s_markingStack;
+    static CallbackStack* s_postMarkingCallbackStack;
+    static CallbackStack* s_globalWeakCallbackStack;
+    static CallbackStack* s_ephemeronStack;
+    static HeapDoesNotContainCache* s_heapDoesNotContainCache;
+    static FreePagePool* s_freePagePool;
+    static OrphanedPagePool* s_orphanedPagePool;
+    static BlinkGC::GCReason s_lastGCReason;
 
     friend class ThreadState;
 };
