@@ -41,7 +41,7 @@ bool FLAGS_quic_always_log_bugs_for_tests = true;
 
 // If true, a QUIC connection option with tag DHDT can be used to disable
 // HPACK\'s dynamic table.
-bool FLAGS_quic_disable_hpack_dynamic_table = false;
+bool FLAGS_quic_disable_hpack_dynamic_table = true;
 
 // If true, multipath is enabled for the connection.
 bool FLAGS_quic_enable_multipath = false;
