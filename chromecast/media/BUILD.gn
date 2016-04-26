@@ -49,7 +49,6 @@ test("cast_media_unittests") {
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
     "//chromecast/media/audio",
-    "//chromecast/media/base:message_loop",
     "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/ipc",

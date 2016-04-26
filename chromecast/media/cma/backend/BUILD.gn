@@ -25,6 +25,5 @@ source_set("backend") {
 
   deps = [
     "//base",
-    "//chromecast/media/base:message_loop",
   ]
 }

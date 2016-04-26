@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/cast_constants.h"
@@ -38,7 +39,6 @@
 #include "chromecast/chromecast_features.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
-#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_plane_controller.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
@@ -260,9 +260,16 @@ CastBrowserMainParts::~CastBrowserMainParts() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CastBrowserMainParts::GetMediaTaskRunner() const {
-  // TODO(alokp): Obtain task runner from a local thread or mojo media app.
-  return media::MediaMessageLoop::GetTaskRunner();
+CastBrowserMainParts::GetMediaTaskRunner() {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  if (!media_thread_) {
+    media_thread_.reset(new base::Thread("CastMediaThread"));
+    CHECK(media_thread_->Start());
+  }
+  return media_thread_->task_runner();
+#endif
 }
 
 #if !defined(OS_ANDROID)

@@ -4,25 +4,6 @@
 
 import("//chromecast/chromecast.gni")
 
-source_set("message_loop") {
-  sources = [
-    "media_message_loop.cc",
-    "media_message_loop.h",
-    "video_plane_controller.cc",
-    "video_plane_controller.h",
-  ]
-
-  public_deps = [
-    "//chromecast/public/media",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/media/base:libcast_media_1.0",
-    "//chromecast/public",
-  ]
-}
-
 source_set("key_systems") {
   sources = [
     "key_systems_common.cc",
@@ -53,11 +34,12 @@ source_set("base") {
     "media_codec_support.h",
     "media_resource_tracker.cc",
     "media_resource_tracker.h",
+    "video_plane_controller.cc",
+    "video_plane_controller.h",
   ]
 
   public_deps = [
     ":key_systems",
-    ":message_loop",
     "//chromecast/public/media",
   ]
 
