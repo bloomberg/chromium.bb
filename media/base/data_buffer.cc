@@ -15,7 +15,7 @@ DataBuffer::DataBuffer(int buffer_size)
   data_.reset(new uint8_t[buffer_size_]);
 }
 
-DataBuffer::DataBuffer(scoped_ptr<uint8_t[]> buffer, int buffer_size)
+DataBuffer::DataBuffer(std::unique_ptr<uint8_t[]> buffer, int buffer_size)
     : data_(std::move(buffer)),
       buffer_size_(buffer_size),
       data_size_(buffer_size) {

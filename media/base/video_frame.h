@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -527,8 +528,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   int32_t strides_[kMaxPlanes];
 
   // Array of data pointers to each plane.
-  // TODO(mcasas): we don't know on ctor if we own |data_| or not. After
-  // refactoring VideoFrame, change to scoped_ptr<uint8_t, AlignedFreeDeleter>.
+  // TODO(mcasas): we don't know on ctor if we own |data_| or not. Change
+  // to std::unique_ptr<uint8_t, AlignedFreeDeleter> after refactoring
+  // VideoFrame.
   uint8_t* data_[kMaxPlanes];
 
   // Native texture mailboxes, if this is a IsTexture() frame.

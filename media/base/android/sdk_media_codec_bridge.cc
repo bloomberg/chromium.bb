@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/android/build_info.h"
@@ -42,7 +43,7 @@ enum {
 };
 
 static ScopedJavaLocalRef<jintArray>
-ToJavaIntArray(JNIEnv* env, scoped_ptr<jint[]> native_array, int size) {
+ToJavaIntArray(JNIEnv* env, std::unique_ptr<jint[]> native_array, int size) {
   ScopedJavaLocalRef<jintArray> j_array(env, env->NewIntArray(size));
   env->SetIntArrayRegion(j_array.obj(), 0, size, native_array.get());
   return j_array;
@@ -186,8 +187,8 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
   // one subsample here just to be on the safe side.
   int new_subsamples_size = subsamples_size == 0 ? 1 : subsamples_size;
 
-  scoped_ptr<jint[]> native_clear_array(new jint[new_subsamples_size]);
-  scoped_ptr<jint[]> native_cypher_array(new jint[new_subsamples_size]);
+  std::unique_ptr<jint[]> native_clear_array(new jint[new_subsamples_size]);
+  std::unique_ptr<jint[]> native_cypher_array(new jint[new_subsamples_size]);
 
   if (subsamples_size == 0) {
     DCHECK(!subsamples);
@@ -348,7 +349,7 @@ AudioCodecBridge* AudioCodecBridge::Create(const AudioCodec& codec) {
   if (mime.empty())
     return nullptr;
 
-  scoped_ptr<AudioCodecBridge> bridge(new AudioCodecBridge(mime));
+  std::unique_ptr<AudioCodecBridge> bridge(new AudioCodecBridge(mime));
   if (!bridge->media_codec())
     return nullptr;
 
@@ -611,7 +612,7 @@ VideoCodecBridge* VideoCodecBridge::CreateDecoder(
   if (mime.empty())
     return nullptr;
 
-  scoped_ptr<VideoCodecBridge> bridge(
+  std::unique_ptr<VideoCodecBridge> bridge(
       new VideoCodecBridge(mime, is_secure, MEDIA_CODEC_DECODER));
   if (!bridge->media_codec())
     return nullptr;
@@ -645,7 +646,7 @@ VideoCodecBridge* VideoCodecBridge::CreateEncoder(const VideoCodec& codec,
   if (mime.empty())
     return nullptr;
 
-  scoped_ptr<VideoCodecBridge> bridge(
+  std::unique_ptr<VideoCodecBridge> bridge(
       new VideoCodecBridge(mime, false, MEDIA_CODEC_ENCODER));
   if (!bridge->media_codec())
     return nullptr;

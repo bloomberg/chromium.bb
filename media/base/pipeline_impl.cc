@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -62,7 +63,7 @@ PipelineImpl::~PipelineImpl() {
 }
 
 void PipelineImpl::Start(Demuxer* demuxer,
-                         scoped_ptr<Renderer> renderer,
+                         std::unique_ptr<Renderer> renderer,
                          const base::Closure& ended_cb,
                          const PipelineStatusCB& error_cb,
                          const PipelineStatusCB& seek_cb,
@@ -141,7 +142,7 @@ void PipelineImpl::Suspend(const PipelineStatusCB& suspend_cb) {
                                                weak_this_, suspend_cb));
 }
 
-void PipelineImpl::Resume(scoped_ptr<Renderer> renderer,
+void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
                           base::TimeDelta timestamp,
                           const PipelineStatusCB& seek_cb) {
   task_runner_->PostTask(
@@ -438,7 +439,7 @@ void PipelineImpl::DoStop(const PipelineStatusCB& done_cb) {
 
   // TODO(scherkus): Enforce that Renderer is only called on a single thread,
   // even for accessing media time http://crbug.com/370634
-  scoped_ptr<Renderer> renderer;
+  std::unique_ptr<Renderer> renderer;
   {
     base::AutoLock auto_lock(lock_);
     renderer.swap(renderer_);
@@ -683,7 +684,7 @@ void PipelineImpl::SuspendTask(const PipelineStatusCB& suspend_cb) {
       fns, base::Bind(&PipelineImpl::StateTransitionTask, weak_this_));
 }
 
-void PipelineImpl::ResumeTask(scoped_ptr<Renderer> renderer,
+void PipelineImpl::ResumeTask(std::unique_ptr<Renderer> renderer,
                               base::TimeDelta timestamp,
                               const PipelineStatusCB& seek_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -785,14 +786,14 @@ void PipelineImpl::RunEndedCallbackIfNeeded() {
   ended_cb_.Run();
 }
 
-scoped_ptr<TextRenderer> PipelineImpl::CreateTextRenderer() {
+std::unique_ptr<TextRenderer> PipelineImpl::CreateTextRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kEnableInbandTextTracks))
-    return scoped_ptr<media::TextRenderer>();
+    return nullptr;
 
-  return scoped_ptr<media::TextRenderer>(new media::TextRenderer(
+  return base::WrapUnique(new media::TextRenderer(
       task_runner_, base::Bind(&PipelineImpl::OnAddTextTrack, weak_this_)));
 }
 

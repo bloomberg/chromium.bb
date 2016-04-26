@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/multi_channel_resampler.h"
+
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_bus.h"
-#include "media/base/multi_channel_resampler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -118,7 +119,7 @@ class MultiChannelResamplerTest
  protected:
   int frames_;
   bool fill_junk_values_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
   int last_frame_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiChannelResamplerTest);

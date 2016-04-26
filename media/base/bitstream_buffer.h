@@ -82,7 +82,7 @@ class MEDIA_EXPORT BitstreamBuffer {
 
   // The following fields come from DecryptConfig.
   // TODO(timav): Try to DISALLOW_COPY_AND_ASSIGN and include these params as
-  // scoped_ptr<DecryptConfig> or explain why copy & assign is needed.
+  // std::unique_ptr<DecryptConfig> or explain why copy & assign is needed.
 
   std::string key_id_;                      // key ID.
   std::string iv_;                          // initialization vector

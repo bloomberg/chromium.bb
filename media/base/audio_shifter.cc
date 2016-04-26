@@ -77,10 +77,8 @@ class ClockSmoother {
 
 AudioShifter::AudioQueueEntry::AudioQueueEntry(
     base::TimeTicks target_playout_time_,
-    scoped_ptr<AudioBus> audio_) :
-    target_playout_time(target_playout_time_),
-    audio(audio_.release()) {
-}
+    std::unique_ptr<AudioBus> audio_)
+    : target_playout_time(target_playout_time_), audio(audio_.release()) {}
 
 AudioShifter::AudioQueueEntry::AudioQueueEntry(const AudioQueueEntry& other) =
     default;
@@ -111,7 +109,7 @@ AudioShifter::AudioShifter(base::TimeDelta max_buffer_size,
 
 AudioShifter::~AudioShifter() {}
 
-void AudioShifter::Push(scoped_ptr<AudioBus> input,
+void AudioShifter::Push(std::unique_ptr<AudioBus> input,
                         base::TimeTicks playout_time) {
   if (!queue_.empty()) {
     playout_time = input_clock_smoother_->Smooth(

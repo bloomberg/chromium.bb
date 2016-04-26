@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/base/audio_converter.h"
@@ -50,7 +50,8 @@ class MEDIA_EXPORT AudioRendererMixer
 
  private:
   // Maps input sample rate to the dedicated converter.
-  typedef std::map<int, scoped_ptr<LoopbackAudioConverter>> AudioConvertersMap;
+  using AudioConvertersMap =
+      std::map<int, std::unique_ptr<LoopbackAudioConverter>>;
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(AudioBus* audio_bus,

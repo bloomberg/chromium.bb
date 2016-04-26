@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "media/base/audio_bus.h"
@@ -41,8 +42,8 @@ class AudioShifterTest :
     input_rate_ = rate;
   }
 
-  scoped_ptr<AudioBus> CreateTestInput() {
-    scoped_ptr<AudioBus> input(AudioBus::Create(2, input_size_));
+  std::unique_ptr<AudioBus> CreateTestInput() {
+    std::unique_ptr<AudioBus> input(AudioBus::Create(2, input_size_));
     for (size_t i = 0; i < input_size_; i++) {
       input->channel(0)[i] = input->channel(1)[i] = input_sample_n_;
       input_sample_n_++;
@@ -146,8 +147,8 @@ class AudioShifterTest :
   base::TimeTicks time_to_push_;
   base::TimeTicks time_to_pull_;
   base::TimeTicks now_;
-  scoped_ptr<AudioBus> test_input_;
-  scoped_ptr<AudioBus> test_output_;
+  std::unique_ptr<AudioBus> test_input_;
+  std::unique_ptr<AudioBus> test_output_;
   std::vector<base::TimeTicks> silent_outputs_;
   std::vector<base::TimeTicks> skip_outputs_;
   std::vector<base::TimeTicks> marker_outputs_;

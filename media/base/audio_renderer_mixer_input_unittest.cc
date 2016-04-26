@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -99,10 +100,10 @@ class AudioRendererMixerInputTest : public testing::Test {
   virtual ~AudioRendererMixerInputTest() {}
 
   AudioParameters audio_parameters_;
-  scoped_ptr<AudioRendererMixer> mixers_[2];
+  std::unique_ptr<AudioRendererMixer> mixers_[2];
   scoped_refptr<AudioRendererMixerInput> mixer_input_;
-  scoped_ptr<FakeAudioRenderCallback> fake_callback_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<FakeAudioRenderCallback> fake_callback_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerInputTest);

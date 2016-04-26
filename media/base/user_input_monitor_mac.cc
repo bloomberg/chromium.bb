@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 
 namespace media {
 namespace {
@@ -51,10 +52,10 @@ void UserInputMonitorMac::StopMouseMonitoring() { NOTIMPLEMENTED(); }
 
 }  // namespace
 
-scoped_ptr<UserInputMonitor> UserInputMonitor::Create(
+std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& input_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return scoped_ptr<UserInputMonitor>(new UserInputMonitorMac());
+  return base::WrapUnique(new UserInputMonitorMac);
 }
 
 }  // namespace media

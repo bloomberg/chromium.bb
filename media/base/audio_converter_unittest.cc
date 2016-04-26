@@ -5,15 +5,16 @@
 // MSVC++ requires this to be set before any other includes to get M_PI.
 #define _USE_MATH_DEFINES
 
+#include "media/base/audio_converter.h"
+
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/base/audio_converter.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -171,23 +172,23 @@ class AudioConverterTest
   virtual ~AudioConverterTest() {}
 
   // Converter under test.
-  scoped_ptr<AudioConverter> converter_;
+  std::unique_ptr<AudioConverter> converter_;
 
   // Input and output parameters used for AudioConverter construction.
   AudioParameters input_parameters_;
   AudioParameters output_parameters_;
 
   // Destination AudioBus for AudioConverter output.
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   // AudioBus containing expected results for comparison with |audio_bus_|.
-  scoped_ptr<AudioBus> expected_audio_bus_;
+  std::unique_ptr<AudioBus> expected_audio_bus_;
 
   // Vector of all input callbacks used to drive AudioConverter::Convert().
   ScopedVector<FakeAudioRenderCallback> fake_callbacks_;
 
   // Parallel input callback which generates the expected output.
-  scoped_ptr<FakeAudioRenderCallback> expected_callback_;
+  std::unique_ptr<FakeAudioRenderCallback> expected_callback_;
 
   // Epsilon value with which to perform comparisons between |audio_bus_| and
   // |expected_audio_bus_|.
@@ -211,7 +212,7 @@ TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
 
   AudioConverter converter(input_parameters, output_parameters, false);
   FakeAudioRenderCallback callback(0.2);
-  scoped_ptr<AudioBus> audio_bus = AudioBus::Create(output_parameters);
+  std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(output_parameters);
   converter.AddInput(&callback);
   converter.Convert(audio_bus.get());
 

@@ -47,9 +47,9 @@ void AccurateTrimStart(int frames_to_trim,
 }
 
 // Returns an AudioBus whose frame buffer is backed by the provided AudioBuffer.
-scoped_ptr<AudioBus> CreateAudioBufferWrapper(
+std::unique_ptr<AudioBus> CreateAudioBufferWrapper(
     const scoped_refptr<AudioBuffer>& buffer) {
-  scoped_ptr<AudioBus> wrapper =
+  std::unique_ptr<AudioBus> wrapper =
       AudioBus::CreateWrapper(buffer->channel_count());
   wrapper->set_frames(buffer->frame_count());
   for (int ch = 0; ch < buffer->channel_count(); ++ch) {
@@ -375,7 +375,7 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   }
 
   scoped_refptr<AudioBuffer> crossfade_buffer;
-  scoped_ptr<AudioBus> pre_splice =
+  std::unique_ptr<AudioBus> pre_splice =
       ExtractCrossfadeFromPreSplice(&crossfade_buffer);
 
   // Crossfade the pre splice and post splice sections and transfer all relevant
@@ -418,7 +418,7 @@ void AudioSplicer::SetSpliceTimestamp(base::TimeDelta splice_timestamp) {
   have_all_pre_splice_buffers_ = false;
 }
 
-scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
+std::unique_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
     scoped_refptr<AudioBuffer>* crossfade_buffer) {
   DCHECK(crossfade_buffer);
   const AudioTimestampHelper& output_ts_helper =
@@ -441,7 +441,7 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
   DCHECK_GT(frames_to_crossfade, 0);
 
   int frames_read = 0;
-  scoped_ptr<AudioBus> output_bus;
+  std::unique_ptr<AudioBus> output_bus;
   while (pre_splice_sanitizer_->HasNextBuffer() &&
          frames_read < frames_to_crossfade) {
     scoped_refptr<AudioBuffer> preroll = pre_splice_sanitizer_->GetNextBuffer();
@@ -501,7 +501,7 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
 }
 
 void AudioSplicer::CrossfadePostSplice(
-    scoped_ptr<AudioBus> pre_splice_bus,
+    std::unique_ptr<AudioBus> pre_splice_bus,
     const scoped_refptr<AudioBuffer>& crossfade_buffer) {
   // Use the calculated timestamp and duration to ensure there's no extra gaps
   // or overlaps to process when adding the buffer to |output_sanitizer_|.
@@ -511,7 +511,8 @@ void AudioSplicer::CrossfadePostSplice(
 
   // AudioBuffer::ReadFrames() only allows output into an AudioBus, so wrap
   // our AudioBuffer in one so we can avoid extra data copies.
-  scoped_ptr<AudioBus> output_bus = CreateAudioBufferWrapper(crossfade_buffer);
+  std::unique_ptr<AudioBus> output_bus =
+      CreateAudioBufferWrapper(crossfade_buffer);
 
   // Extract crossfade section from the |post_splice_sanitizer_|.
   int frames_read = 0, frames_to_trim = 0;

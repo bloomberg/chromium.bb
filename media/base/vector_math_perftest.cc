@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/vector_math.h"
@@ -75,8 +76,8 @@ class VectorMathPerfTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<float, base::AlignedFreeDeleter> input_vector_;
-  scoped_ptr<float, base::AlignedFreeDeleter> output_vector_;
+  std::unique_ptr<float, base::AlignedFreeDeleter> input_vector_;
+  std::unique_ptr<float, base::AlignedFreeDeleter> output_vector_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorMathPerfTest);
 };

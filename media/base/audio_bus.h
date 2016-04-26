@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -31,26 +31,29 @@ class MEDIA_EXPORT AudioBus {
 
   // Creates a new AudioBus and allocates |channels| of length |frames|.  Uses
   // channels() and frames_per_buffer() from AudioParameters if given.
-  static scoped_ptr<AudioBus> Create(int channels, int frames);
-  static scoped_ptr<AudioBus> Create(const AudioParameters& params);
+  static std::unique_ptr<AudioBus> Create(int channels, int frames);
+  static std::unique_ptr<AudioBus> Create(const AudioParameters& params);
 
   // Creates a new AudioBus with the given number of channels, but zero length.
   // It's expected to be used with SetChannelData() and set_frames() to
   // wrap externally allocated memory.
-  static scoped_ptr<AudioBus> CreateWrapper(int channels);
+  static std::unique_ptr<AudioBus> CreateWrapper(int channels);
 
   // Creates a new AudioBus from an existing channel vector.  Does not transfer
   // ownership of |channel_data| to AudioBus; i.e., |channel_data| must outlive
   // the returned AudioBus.  Each channel must be aligned by kChannelAlignment.
-  static scoped_ptr<AudioBus> WrapVector(
-      int frames, const std::vector<float*>& channel_data);
+  static std::unique_ptr<AudioBus> WrapVector(
+      int frames,
+      const std::vector<float*>& channel_data);
 
   // Creates a new AudioBus by wrapping an existing block of memory.  Block must
   // be at least CalculateMemorySize() bytes in size.  |data| must outlive the
   // returned AudioBus.  |data| must be aligned by kChannelAlignment.
-  static scoped_ptr<AudioBus> WrapMemory(int channels, int frames, void* data);
-  static scoped_ptr<AudioBus> WrapMemory(const AudioParameters& params,
-                                         void* data);
+  static std::unique_ptr<AudioBus> WrapMemory(int channels,
+                                              int frames,
+                                              void* data);
+  static std::unique_ptr<AudioBus> WrapMemory(const AudioParameters& params,
+                                              void* data);
   static int CalculateMemorySize(const AudioParameters& params);
 
   // Calculates the required size for an AudioBus given the number of channels
@@ -130,7 +133,7 @@ class MEDIA_EXPORT AudioBus {
   void BuildChannelData(int channels, int aligned_frame, float* data);
 
   // Contiguous block of channel memory.
-  scoped_ptr<float, base::AlignedFreeDeleter> data_;
+  std::unique_ptr<float, base::AlignedFreeDeleter> data_;
 
   std::vector<float*> channel_data_;
   int frames_;

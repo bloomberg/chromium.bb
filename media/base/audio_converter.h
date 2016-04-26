@@ -19,10 +19,10 @@
 #define MEDIA_BASE_AUDIO_CONVERTER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -37,7 +37,7 @@ class MultiChannelResampler;
 // Converts audio data between two AudioParameters formats.  Sample usage:
 //   AudioParameters input(...), output(...);
 //   AudioConverter ac(input, output);
-//   scoped_ptr<AudioBus> output_audio_bus = AudioBus::Create(output);
+//   std::unique_ptr<AudioBus> output_audio_bus = AudioBus::Create(output);
 //   ac.AddInput(<AudioConverter::InputCallback* 1>);
 //   ac.AddInput(<AudioConverter::InputCallback* 2>);
 //   ac.Convert(output_audio_bus.get());
@@ -114,19 +114,19 @@ class MEDIA_EXPORT AudioConverter {
 
   // Used to buffer data between the client and the output device in cases where
   // the client buffer size is not the same as the output device buffer size.
-  scoped_ptr<AudioPullFifo> audio_fifo_;
+  std::unique_ptr<AudioPullFifo> audio_fifo_;
   int chunk_size_;
 
   // Handles resampling.
-  scoped_ptr<MultiChannelResampler> resampler_;
+  std::unique_ptr<MultiChannelResampler> resampler_;
 
   // Handles channel transforms.  |unmixed_audio_| is a temporary destination
   // for audio data before it goes into the channel mixer.
-  scoped_ptr<ChannelMixer> channel_mixer_;
-  scoped_ptr<AudioBus> unmixed_audio_;
+  std::unique_ptr<ChannelMixer> channel_mixer_;
+  std::unique_ptr<AudioBus> unmixed_audio_;
 
   // Temporary AudioBus destination for mixing inputs.
-  scoped_ptr<AudioBus> mixer_input_audio_bus_;
+  std::unique_ptr<AudioBus> mixer_input_audio_bus_;
 
   // Since resampling is expensive, figure out if we should downmix channels
   // before resampling.

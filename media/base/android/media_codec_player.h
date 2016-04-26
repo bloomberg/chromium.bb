@@ -5,9 +5,10 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_PLAYER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_PLAYER_H_
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
@@ -190,7 +191,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
       int player_id,
       base::WeakPtr<MediaPlayerManager> manager,
       const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
-      scoped_ptr<DemuxerAndroid> demuxer,
+      std::unique_ptr<DemuxerAndroid> demuxer,
       const GURL& frame_url,
       int media_session_id);
   ~MediaCodecPlayer() override;
@@ -344,9 +345,9 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Major components: demuxer, audio and video decoders.
-  scoped_ptr<DemuxerAndroid> demuxer_;
-  scoped_ptr<AudioMediaCodecDecoder> audio_decoder_;
-  scoped_ptr<VideoMediaCodecDecoder> video_decoder_;
+  std::unique_ptr<DemuxerAndroid> demuxer_;
+  std::unique_ptr<AudioMediaCodecDecoder> audio_decoder_;
+  std::unique_ptr<VideoMediaCodecDecoder> video_decoder_;
 
   // The state of the state machine.
   PlayerState state_;
@@ -386,7 +387,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   base::TimeDelta pending_seek_;
 
   // Data associated with a seek in progress.
-  scoped_ptr<SeekInfo> seek_info_;
+  std::unique_ptr<SeekInfo> seek_info_;
 
   // Configuration data for the manager, accessed on the UI thread.
   MediaMetadata metadata_cache_;
@@ -414,7 +415,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // Gathers and reports playback quality statistics to UMA.
   // Use pointer to enable replacement of this object for tests.
-  scoped_ptr<MediaStatistics> media_stat_;
+  std::unique_ptr<MediaStatistics> media_stat_;
 
   base::WeakPtr<MediaCodecPlayer> media_weak_this_;
   // NOTE: Weak pointers must be invalidated before all other member variables.

@@ -9,8 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/media_export.h"
@@ -72,7 +73,7 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
     inline void operator()(AMediaCodec* ptr) const { AMediaCodec_delete(ptr); }
   };
 
-  scoped_ptr<AMediaCodec, AMediaCodecDeleter> media_codec_;
+  std::unique_ptr<AMediaCodec, AMediaCodecDeleter> media_codec_;
 
   DISALLOW_COPY_AND_ASSIGN(NdkMediaCodecBridge);
 };

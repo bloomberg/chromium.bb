@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/audio_video_metadata_extractor.h"
+
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "build/build_config.h"
-#include "media/base/audio_video_metadata_extractor.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/file_data_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
+std::unique_ptr<AudioVideoMetadataExtractor> GetExtractor(
     const std::string& filename,
     bool extract_attached_images,
     bool expected_result,
@@ -23,7 +25,7 @@ scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
   FileDataSource source;
   EXPECT_TRUE(source.Initialize(GetTestDataFilePath(filename)));
 
-  scoped_ptr<AudioVideoMetadataExtractor> extractor(
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor(
       new AudioVideoMetadataExtractor);
   bool extracted = extractor->Extract(&source, extract_attached_images);
   EXPECT_EQ(expected_result, extracted);
@@ -51,7 +53,7 @@ TEST(AudioVideoMetadataExtractorTest, InvalidFile) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
-  scoped_ptr<AudioVideoMetadataExtractor> extractor =
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("9ch.ogg", true, true, 0, -1, -1);
   EXPECT_EQ("Processed by SoX", extractor->comment());
 
@@ -69,7 +71,7 @@ TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
-  scoped_ptr<AudioVideoMetadataExtractor> extractor =
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("sfx_u8.wav", true, true, 0, -1, -1);
   EXPECT_EQ("Lavf54.37.100", extractor->encoder());
   EXPECT_EQ("Amadeus Pro", extractor->encoded_by());
@@ -90,7 +92,7 @@ TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
-  scoped_ptr<AudioVideoMetadataExtractor> extractor =
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("bear-320x240-multitrack.webm", true, true, 2, 320, 240);
   EXPECT_EQ("Lavf53.9.0", extractor->encoder());
 
@@ -123,7 +125,7 @@ TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
 
 #if defined(USE_PROPRIETARY_CODECS)
 TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
-  scoped_ptr<AudioVideoMetadataExtractor> extractor =
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("90rotation.mp4", true, true, 0, 1920, 1080);
 
   EXPECT_EQ(90, extractor->rotation());
@@ -162,7 +164,7 @@ TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
-  scoped_ptr<AudioVideoMetadataExtractor> extractor =
+  std::unique_ptr<AudioVideoMetadataExtractor> extractor =
       GetExtractor("id3_png_test.mp3", true, true, 1, -1, -1);
 
   EXPECT_EQ("Airbag", extractor->title());

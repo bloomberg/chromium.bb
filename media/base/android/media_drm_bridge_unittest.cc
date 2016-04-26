@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/provision_fetcher.h"
@@ -47,8 +50,8 @@ namespace {
 // Mock ProvisionFetcher.
 class MockProvisionFetcher : public ProvisionFetcher {
  public:
-  static scoped_ptr<ProvisionFetcher> Create() {
-    return scoped_ptr<ProvisionFetcher>(new MockProvisionFetcher());
+  static std::unique_ptr<ProvisionFetcher> Create() {
+    return base::WrapUnique(new MockProvisionFetcher);
   }
 
   // ProvisionFetcher implementation.

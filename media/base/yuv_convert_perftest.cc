@@ -4,12 +4,13 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/cpu.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -63,8 +64,8 @@ class YUVConvertPerfTest : public testing::Test {
     CHECK_EQ(bytes_read, kYUV12Size);
   }
 
-  scoped_ptr<uint8_t[]> yuv_bytes_;
-  scoped_ptr<uint8_t[]> rgb_bytes_converted_;
+  std::unique_ptr<uint8_t[]> yuv_bytes_;
+  std::unique_ptr<uint8_t[]> rgb_bytes_converted_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(YUVConvertPerfTest);

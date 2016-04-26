@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_PIPELINE_H_
 #define MEDIA_BASE_PIPELINE_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
@@ -61,7 +63,7 @@ class MEDIA_EXPORT Pipeline {
   //                                   to decrypt the stream is not available.
   // It is an error to call this method after the pipeline has already started.
   virtual void Start(Demuxer* demuxer,
-                     scoped_ptr<Renderer> renderer,
+                     std::unique_ptr<Renderer> renderer,
                      const base::Closure& ended_cb,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& seek_cb,
@@ -103,7 +105,7 @@ class MEDIA_EXPORT Pipeline {
   //
   // It is an error to call this method if the pipeline has not finished
   // suspending.
-  virtual void Resume(scoped_ptr<Renderer> renderer,
+  virtual void Resume(std::unique_ptr<Renderer> renderer,
                       base::TimeDelta timestamp,
                       const PipelineStatusCB& seek_cb) = 0;
 

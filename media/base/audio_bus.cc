@@ -10,6 +10,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
@@ -153,39 +154,41 @@ AudioBus::AudioBus(int channels)
 
 AudioBus::~AudioBus() {}
 
-scoped_ptr<AudioBus> AudioBus::Create(int channels, int frames) {
-  return scoped_ptr<AudioBus>(new AudioBus(channels, frames));
+std::unique_ptr<AudioBus> AudioBus::Create(int channels, int frames) {
+  return base::WrapUnique(new AudioBus(channels, frames));
 }
 
-scoped_ptr<AudioBus> AudioBus::Create(const AudioParameters& params) {
-  return scoped_ptr<AudioBus>(new AudioBus(
-      params.channels(), params.frames_per_buffer()));
+std::unique_ptr<AudioBus> AudioBus::Create(const AudioParameters& params) {
+  return base::WrapUnique(
+      new AudioBus(params.channels(), params.frames_per_buffer()));
 }
 
-scoped_ptr<AudioBus> AudioBus::CreateWrapper(int channels) {
-  return scoped_ptr<AudioBus>(new AudioBus(channels));
+std::unique_ptr<AudioBus> AudioBus::CreateWrapper(int channels) {
+  return base::WrapUnique(new AudioBus(channels));
 }
 
-scoped_ptr<AudioBus> AudioBus::WrapVector(
-    int frames, const std::vector<float*>& channel_data) {
-  return scoped_ptr<AudioBus>(new AudioBus(frames, channel_data));
+std::unique_ptr<AudioBus> AudioBus::WrapVector(
+    int frames,
+    const std::vector<float*>& channel_data) {
+  return base::WrapUnique(new AudioBus(frames, channel_data));
 }
 
-scoped_ptr<AudioBus> AudioBus::WrapMemory(int channels, int frames,
-                                          void* data) {
+std::unique_ptr<AudioBus> AudioBus::WrapMemory(int channels,
+                                               int frames,
+                                               void* data) {
   // |data| must be aligned by AudioBus::kChannelAlignment.
   CHECK(IsAligned(data));
-  return scoped_ptr<AudioBus>(new AudioBus(
-      channels, frames, static_cast<float*>(data)));
+  return base::WrapUnique(
+      new AudioBus(channels, frames, static_cast<float*>(data)));
 }
 
-scoped_ptr<AudioBus> AudioBus::WrapMemory(const AudioParameters& params,
-                                          void* data) {
+std::unique_ptr<AudioBus> AudioBus::WrapMemory(const AudioParameters& params,
+                                               void* data) {
   // |data| must be aligned by AudioBus::kChannelAlignment.
   CHECK(IsAligned(data));
-  return scoped_ptr<AudioBus>(new AudioBus(
-      params.channels(), params.frames_per_buffer(),
-      static_cast<float*>(data)));
+  return base::WrapUnique(new AudioBus(params.channels(),
+                                       params.frames_per_buffer(),
+                                       static_cast<float*>(data)));
 }
 
 void AudioBus::SetChannelData(int channel, float* data) {

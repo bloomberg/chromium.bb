@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_PIPELINE_IMPL_H_
 #define MEDIA_BASE_PIPELINE_IMPL_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -84,7 +86,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
 
   // Pipeline implementation.
   void Start(Demuxer* demuxer,
-             scoped_ptr<Renderer> renderer,
+             std::unique_ptr<Renderer> renderer,
              const base::Closure& ended_cb,
              const PipelineStatusCB& error_cb,
              const PipelineStatusCB& seek_cb,
@@ -99,7 +101,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   double GetPlaybackRate() const override;
   void SetPlaybackRate(double playback_rate) override;
   void Suspend(const PipelineStatusCB& suspend_cb) override;
-  void Resume(scoped_ptr<Renderer> renderer,
+  void Resume(std::unique_ptr<Renderer> renderer,
               base::TimeDelta timestamp,
               const PipelineStatusCB& seek_cb) override;
   float GetVolume() const override;
@@ -165,7 +167,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   void SuspendTask(const PipelineStatusCB& suspend_cb);
 
   // Resumes the pipeline with a new renderer, and initializes it with a seek.
-  void ResumeTask(scoped_ptr<Renderer> renderer,
+  void ResumeTask(std::unique_ptr<Renderer> renderer,
                   base::TimeDelta timestamp,
                   const PipelineStatusCB& seek_sb);
 
@@ -200,7 +202,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   void OnTextRendererEnded();
   void RunEndedCallbackIfNeeded();
 
-  scoped_ptr<TextRenderer> CreateTextRenderer();
+  std::unique_ptr<TextRenderer> CreateTextRenderer();
 
   // Carries out adding a new text stream to the text renderer.
   void AddTextStreamTask(DemuxerStream* text_stream,
@@ -312,12 +314,12 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
 
   // Holds the initialized renderers. Used for setting the volume,
   // playback rate, and determining when playback has finished.
-  scoped_ptr<Renderer> renderer_;
-  scoped_ptr<TextRenderer> text_renderer_;
+  std::unique_ptr<Renderer> renderer_;
+  std::unique_ptr<TextRenderer> text_renderer_;
 
   PipelineStatistics statistics_;
 
-  scoped_ptr<SerialRunner> pending_callbacks_;
+  std::unique_ptr<SerialRunner> pending_callbacks_;
 
   // The CdmContext to be used to decrypt (and decode) encrypted stream in this
   // pipeline. It is set when SetCdm() succeeds on the renderer (or when

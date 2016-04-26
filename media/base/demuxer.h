@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
@@ -62,14 +62,15 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   // A new potentially encrypted stream has been parsed.
   // First parameter - The type of initialization data.
   // Second parameter - The initialization data associated with the stream.
-  typedef base::Callback<void(EmeInitDataType type,
-                              const std::vector<uint8_t>& init_data)>
-      EncryptedMediaInitDataCB;
+  using EncryptedMediaInitDataCB =
+      base::Callback<void(EmeInitDataType type,
+                          const std::vector<uint8_t>& init_data)>;
 
   // Notifies demuxer clients that media track configuration has been updated
   // (e.g. the inital stream metadata has been parsed successfully, or a new
   // init segment has been parsed successfully in MSE case).
-  typedef base::Callback<void(scoped_ptr<MediaTracks>)> MediaTracksUpdatedCB;
+  using MediaTracksUpdatedCB =
+      base::Callback<void(std::unique_ptr<MediaTracks>)>;
 
   Demuxer();
   ~Demuxer() override;

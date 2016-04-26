@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -58,7 +59,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     return false;
 
   AVPacket packet;
-  scoped_ptr<AVFrame, media::ScopedPtrAVFreeFrame> frame(av_frame_alloc());
+  std::unique_ptr<AVFrame, media::ScopedPtrAVFreeFrame> frame(av_frame_alloc());
   int result = 0;
 
   const base::TimeTicks deadline = base::TimeTicks::Now() +

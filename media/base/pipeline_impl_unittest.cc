@@ -5,6 +5,7 @@
 #include "media/base/pipeline_impl.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -165,9 +166,9 @@ class PipelineImplTest : public ::testing::Test {
     SetDemuxerExpectations(streams, base::TimeDelta::FromSeconds(10));
   }
 
-  scoped_ptr<StrictMock<MockDemuxerStream>> CreateStream(
+  std::unique_ptr<StrictMock<MockDemuxerStream>> CreateStream(
       DemuxerStream::Type type) {
-    scoped_ptr<StrictMock<MockDemuxerStream>> stream(
+    std::unique_ptr<StrictMock<MockDemuxerStream>> stream(
         new StrictMock<MockDemuxerStream>(type));
     return stream;
   }
@@ -237,7 +238,7 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void CreateTextStream() {
-    scoped_ptr<FakeTextTrackStream> text_stream(new FakeTextTrackStream());
+    std::unique_ptr<FakeTextTrackStream> text_stream(new FakeTextTrackStream());
     EXPECT_CALL(*text_stream, OnRead()).Times(AnyNumber());
     text_stream_ = std::move(text_stream);
   }
@@ -339,7 +340,7 @@ class PipelineImplTest : public ::testing::Test {
 
   void DoOnAddTextTrack(const TextTrackConfig& config,
                         const AddTextTrackDoneCB& done_cb) {
-    scoped_ptr<TextTrack> text_track(new MockTextTrack);
+    std::unique_ptr<TextTrack> text_track(new MockTextTrack);
     done_cb.Run(std::move(text_track));
   }
 
@@ -360,16 +361,16 @@ class PipelineImplTest : public ::testing::Test {
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
   base::MessageLoop message_loop_;
-  scoped_ptr<PipelineImpl> pipeline_;
+  std::unique_ptr<PipelineImpl> pipeline_;
 
-  scoped_ptr<StrictMock<MockDemuxer>> demuxer_;
-  scoped_ptr<StrictMock<MockRenderer>> scoped_renderer_;
+  std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;
+  std::unique_ptr<StrictMock<MockRenderer>> scoped_renderer_;
   StrictMock<MockRenderer>* renderer_;
   StrictMock<CallbackHelper> text_renderer_callbacks_;
   TextRenderer* text_renderer_;
-  scoped_ptr<StrictMock<MockDemuxerStream>> audio_stream_;
-  scoped_ptr<StrictMock<MockDemuxerStream>> video_stream_;
-  scoped_ptr<FakeTextTrackStream> text_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> audio_stream_;
+  std::unique_ptr<StrictMock<MockDemuxerStream>> video_stream_;
+  std::unique_ptr<FakeTextTrackStream> text_stream_;
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   StatisticsCB statistics_cb_;

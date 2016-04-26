@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_AUDIO_FIFO_H_
 #define MEDIA_BASE_AUDIO_FIFO_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_export.h"
@@ -43,7 +45,7 @@ class MEDIA_EXPORT AudioFifo {
 
  private:
   // The actual FIFO is an audio bus implemented as a ring buffer.
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   // Maximum number of elements the FIFO can contain.
   // This value is set by |frames| in the constructor.

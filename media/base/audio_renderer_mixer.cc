@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace media {
 
@@ -56,7 +57,7 @@ void AudioRendererMixer::AddMixerInput(const AudioParameters& input_params,
     if (converter == converters_.end()) {
       std::pair<AudioConvertersMap::iterator, bool> result =
           converters_.insert(std::make_pair(
-              input_sample_rate, make_scoped_ptr(
+              input_sample_rate, base::WrapUnique(
                                      // We expect all InputCallbacks to be
                                      // capable of handling arbitrary buffer
                                      // size requests, disabling FIFO.

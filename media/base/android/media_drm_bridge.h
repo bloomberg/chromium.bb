@@ -7,13 +7,14 @@
 
 #include <jni.h>
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/provision_fetcher.h"
@@ -45,7 +46,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
     SECURITY_LEVEL_3 = 3,
   };
 
-  using JavaObjectPtr = scoped_ptr<base::android::ScopedJavaGlobalRef<jobject>>;
+  using JavaObjectPtr =
+      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>>;
 
   using ResetCredentialsCB = base::Callback<void(bool)>;
 
@@ -99,22 +101,23 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // MediaKeys implementation.
   void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
-      scoped_ptr<media::SimpleCdmPromise> promise) override;
+      std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      scoped_ptr<media::NewSessionCdmPromise> promise) override;
-  void LoadSession(SessionType session_type,
-                   const std::string& session_id,
-                   scoped_ptr<media::NewSessionCdmPromise> promise) override;
+      std::unique_ptr<media::NewSessionCdmPromise> promise) override;
+  void LoadSession(
+      SessionType session_type,
+      const std::string& session_id,
+      std::unique_ptr<media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+                     std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
-                    scoped_ptr<media::SimpleCdmPromise> promise) override;
+                    std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& session_id,
-                     scoped_ptr<media::SimpleCdmPromise> promise) override;
+                     std::unique_ptr<media::SimpleCdmPromise> promise) override;
   CdmContext* GetCdmContext() override;
   void DeleteOnCorrectThread() const override;
 
@@ -311,7 +314,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   // The ProvisionFetcher that requests and receives provisioning data.
   // Non-null iff when a provision request is pending.
-  scoped_ptr<ProvisionFetcher> provision_fetcher_;
+  std::unique_ptr<ProvisionFetcher> provision_fetcher_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;

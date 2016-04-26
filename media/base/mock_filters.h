@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -42,7 +43,7 @@ class MockPipeline : public Pipeline {
   // interface by forwarding to these mock methods.
   MOCK_METHOD10(Start,
                 void(Demuxer*,
-                     scoped_ptr<Renderer>*,
+                     std::unique_ptr<Renderer>*,
                      const base::Closure&,
                      const PipelineStatusCB&,
                      const PipelineStatusCB&,
@@ -55,7 +56,7 @@ class MockPipeline : public Pipeline {
   MOCK_METHOD2(Seek, void(base::TimeDelta, const PipelineStatusCB&));
   MOCK_METHOD1(Suspend, void(const PipelineStatusCB&));
   MOCK_METHOD3(Resume,
-               void(scoped_ptr<Renderer>*,
+               void(std::unique_ptr<Renderer>*,
                     base::TimeDelta,
                     const PipelineStatusCB&));
 
@@ -81,7 +82,7 @@ class MockPipeline : public Pipeline {
  private:
   // Forwarding stubs (see comment above).
   void Start(Demuxer* demuxer,
-             scoped_ptr<Renderer> renderer,
+             std::unique_ptr<Renderer> renderer,
              const base::Closure& ended_cb,
              const PipelineStatusCB& error_cb,
              const PipelineStatusCB& seek_cb,
@@ -90,7 +91,7 @@ class MockPipeline : public Pipeline {
              const base::Closure& duration_change_cb,
              const AddTextTrackCB& add_text_track_cb,
              const base::Closure& waiting_for_decryption_key_cb) override;
-  void Resume(scoped_ptr<Renderer> renderer,
+  void Resume(std::unique_ptr<Renderer> renderer,
               base::TimeDelta timestamp,
               const PipelineStatusCB& seek_cb) override;
 

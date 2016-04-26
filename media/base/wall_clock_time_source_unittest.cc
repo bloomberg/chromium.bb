@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/wall_clock_time_source.h"
@@ -53,7 +55,7 @@ class WallClockTimeSourceTest : public testing::Test {
 
  protected:
   WallClockTimeSource time_source_;
-  scoped_ptr<base::SimpleTestTickClock> tick_clock_;
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(WallClockTimeSourceTest);
 };

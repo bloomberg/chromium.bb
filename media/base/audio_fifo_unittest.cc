@@ -4,6 +4,8 @@
 
 // TODO(henrika): add test which included |start_frame| in Consume() call.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "media/base/audio_fifo.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +41,8 @@ TEST_F(AudioFifoTest, Push) {
   AudioFifo fifo(kChannels, kMaxFrameCount);
   {
     SCOPED_TRACE("Push 50%");
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount / 2);
+    std::unique_ptr<AudioBus> bus =
+        AudioBus::Create(kChannels, kMaxFrameCount / 2);
     EXPECT_EQ(fifo.frames(), 0);
     fifo.Push(bus.get());
     EXPECT_EQ(fifo.frames(), bus->frames());
@@ -47,7 +50,7 @@ TEST_F(AudioFifoTest, Push) {
   }
   {
     SCOPED_TRACE("Push 100%");
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount);
+    std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount);
     EXPECT_EQ(fifo.frames(), 0);
     fifo.Push(bus.get());
     EXPECT_EQ(fifo.frames(), bus->frames());
@@ -61,13 +64,14 @@ TEST_F(AudioFifoTest, Consume) {
   static const int kMaxFrameCount = 128;
   AudioFifo fifo(kChannels, kMaxFrameCount);
   {
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount);
+    std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount);
     fifo.Push(bus.get());
     EXPECT_EQ(fifo.frames(), kMaxFrameCount);
   }
   {
     SCOPED_TRACE("Consume 50%");
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount / 2);
+    std::unique_ptr<AudioBus> bus =
+        AudioBus::Create(kChannels, kMaxFrameCount / 2);
     fifo.Consume(bus.get(), 0, bus->frames());
     EXPECT_TRUE(fifo.frames() == bus->frames());
     fifo.Push(bus.get());
@@ -75,7 +79,7 @@ TEST_F(AudioFifoTest, Consume) {
   }
   {
     SCOPED_TRACE("Consume 100%");
-    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount);
+    std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kMaxFrameCount);
     fifo.Consume(bus.get(), 0, bus->frames());
     EXPECT_EQ(fifo.frames(), 0);
     fifo.Push(bus.get());
@@ -92,7 +96,7 @@ TEST_F(AudioFifoTest, FramesInFifo) {
 
   // Fill up the FIFO and verify that the size grows as it should while adding
   // one audio frame each time.
-  scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, 1);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, 1);
   int n = 0;
   while (fifo.frames() < kMaxFrameCount) {
     fifo.Push(bus.get());
@@ -112,7 +116,7 @@ TEST_F(AudioFifoTest, FramesInFifo) {
   // during a sequence of Push/Consume calls which involves wrapping. We ensure
   // wrapping by selecting a buffer size which does divides the FIFO size
   // with a remainder of one.
-  scoped_ptr<AudioBus> bus2 =
+  std::unique_ptr<AudioBus> bus2 =
       AudioBus::Create(kChannels, (kMaxFrameCount / 4) - 1);
   const int frames_in_fifo = bus2->frames();
   fifo.Push(bus2.get());
@@ -133,7 +137,7 @@ TEST_F(AudioFifoTest, VerifyDataValues) {
   static const int kFifoFrameCount = 5 * kFrameCount;
 
   AudioFifo fifo(kChannels, kFifoFrameCount);
-  scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
   EXPECT_EQ(fifo.frames(), 0);
   EXPECT_EQ(bus->frames(), kFrameCount);
 

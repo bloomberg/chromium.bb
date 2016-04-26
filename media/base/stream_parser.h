@@ -10,13 +10,13 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
@@ -32,7 +32,7 @@ class TextTrackConfig;
 // Abstract interface for parsing media byte streams.
 class MEDIA_EXPORT StreamParser {
  public:
-  typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
+  using BufferQueue = std::deque<scoped_refptr<StreamParserBuffer>>;
 
   // Range of |TrackId| is dependent upon stream parsers. It is currently
   // the key for the buffer's text track config in the applicable
@@ -89,7 +89,7 @@ class MEDIA_EXPORT StreamParser {
   // Return value - True if the new configurations are accepted.
   //                False if the new configurations are not supported
   //                and indicates that a parsing error should be signalled.
-  typedef base::Callback<bool(scoped_ptr<MediaTracks>,
+  typedef base::Callback<bool(std::unique_ptr<MediaTracks>,
                               const TextTrackConfigMap&)>
       NewConfigCB;
 

@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 
@@ -29,7 +30,7 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   explicit DataBuffer(int buffer_size);
 
   // Assumes valid data of size |buffer_size|.
-  DataBuffer(scoped_ptr<uint8_t[]> buffer, int buffer_size);
+  DataBuffer(std::unique_ptr<uint8_t[]> buffer, int buffer_size);
 
   // Create a DataBuffer whose |data_| is copied from |data|.
   //
@@ -104,7 +105,7 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 
-  scoped_ptr<uint8_t[]> data_;
+  std::unique_ptr<uint8_t[]> data_;
   int buffer_size_;
   int data_size_;
 

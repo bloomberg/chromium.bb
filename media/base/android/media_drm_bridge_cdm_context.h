@@ -7,10 +7,11 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/player_tracker.h"
@@ -32,7 +33,8 @@ class MediaDrmBridge;
 class MEDIA_EXPORT MediaDrmBridgeCdmContext : public CdmContext,
                                               public PlayerTracker {
  public:
-  using JavaObjectPtr = scoped_ptr<base::android::ScopedJavaGlobalRef<jobject>>;
+  using JavaObjectPtr =
+      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>>;
 
   // Notification called when MediaCrypto object is ready.
   // Parameters:

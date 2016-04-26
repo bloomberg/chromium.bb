@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/user_input_monitor.h"
+
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "media/base/keyboard_event_counter.h"
-#include "media/base/user_input_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -53,7 +55,7 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 #endif  // defined(OS_LINUX)
 
   base::RunLoop run_loop;
-  scoped_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
+  std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
       message_loop.task_runner(), message_loop.task_runner());
 
   if (!monitor)

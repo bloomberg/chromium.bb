@@ -6,11 +6,12 @@
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_ANDROID_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/android/media_player_listener.h"
@@ -188,7 +189,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   GURL frame_url_;
 
   // Listener object that listens to all the media player events.
-  scoped_ptr<MediaPlayerListener> listener_;
+  std::unique_ptr<MediaPlayerListener> listener_;
 
   // Media session ID assigned to this player.
   int media_session_id_;

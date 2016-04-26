@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -56,7 +57,7 @@ class AudioPushFifoTest : public testing::TestWithParam<int> {
     const int num_iterations = GetNumPushTestIterations(input_chunk_size);
 
     int sample_value = 0;
-    const scoped_ptr<AudioBus> audio_bus =
+    const std::unique_ptr<AudioBus> audio_bus =
         AudioBus::Create(1, input_chunk_size);
 
     for (int i = 0; i < num_iterations; ++i) {
@@ -115,7 +116,7 @@ class AudioPushFifoTest : public testing::TestWithParam<int> {
     return begin + rand_offset;
   }
 
-  scoped_ptr<AudioPushFifo> fifo_;
+  std::unique_ptr<AudioPushFifo> fifo_;
   std::vector<OutputChunkResult> results_;
 
  private:
@@ -201,7 +202,7 @@ TEST_P(AudioPushFifoTest, PushArbitraryNumbersOfFramesAtATime) {
 
     // Create an AudioBus of a random length, populated with sample values.
     const int input_chunk_size = GetRandomInRange(1, 1920);
-    const scoped_ptr<AudioBus> audio_bus =
+    const std::unique_ptr<AudioBus> audio_bus =
         AudioBus::Create(1, input_chunk_size);
     for (int j = 0; j < audio_bus->frames(); ++j)
       audio_bus->channel(0)[j] = static_cast<float>(sample_value++);

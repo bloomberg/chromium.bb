@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "content/browser/media/session/media_session.h"
@@ -27,7 +29,7 @@ class MediaSessionDelegateAndroidBrowserTest : public ContentBrowserTest {};
 
 IN_PROC_BROWSER_TEST_F(MediaSessionDelegateAndroidBrowserTest,
                        MAYBE_OnAudioFocusChangeAfterDtorCrash) {
-  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+  std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());

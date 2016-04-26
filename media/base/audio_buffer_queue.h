@@ -8,7 +8,6 @@
 #include <deque>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/media_export.h"
 

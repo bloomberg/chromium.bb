@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -15,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decrypt_config.h"
@@ -138,7 +138,7 @@ class MEDIA_EXPORT DecoderBuffer
     return decrypt_config_.get();
   }
 
-  void set_decrypt_config(scoped_ptr<DecryptConfig> decrypt_config) {
+  void set_decrypt_config(std::unique_ptr<DecryptConfig> decrypt_config) {
     DCHECK(!end_of_stream());
     decrypt_config_ = std::move(decrypt_config);
   }
@@ -196,10 +196,10 @@ class MEDIA_EXPORT DecoderBuffer
   base::TimeDelta duration_;
 
   size_t size_;
-  scoped_ptr<uint8_t, base::AlignedFreeDeleter> data_;
+  std::unique_ptr<uint8_t, base::AlignedFreeDeleter> data_;
   size_t side_data_size_;
-  scoped_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
-  scoped_ptr<DecryptConfig> decrypt_config_;
+  std::unique_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
+  std::unique_ptr<DecryptConfig> decrypt_config_;
   DiscardPadding discard_padding_;
   base::TimeDelta splice_timestamp_;
   bool is_key_frame_;

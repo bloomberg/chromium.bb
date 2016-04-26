@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/fake_demuxer_stream.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/fake_demuxer_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -168,7 +170,7 @@ class FakeDemuxerStreamTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<FakeDemuxerStream> stream_;
+  std::unique_ptr<FakeDemuxerStream> stream_;
 
   DemuxerStream::Status status_;
   scoped_refptr<DecoderBuffer> buffer_;

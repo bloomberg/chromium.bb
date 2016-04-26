@@ -5,6 +5,7 @@
 #include "media/base/data_buffer.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -35,7 +36,7 @@ TEST(DataBufferTest, Constructor_NonZeroSize) {
 TEST(DataBufferTest, Constructor_ScopedArray) {
   // Data should be passed and both data and buffer size should be set.
   const int kSize = 8;
-  scoped_ptr<uint8_t[]> data(new uint8_t[kSize]);
+  std::unique_ptr<uint8_t[]> data(new uint8_t[kSize]);
   const uint8_t* kData = data.get();
 
   scoped_refptr<DataBuffer> buffer = new DataBuffer(std::move(data), kSize);

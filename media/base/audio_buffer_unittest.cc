@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
@@ -52,7 +53,7 @@ static void TrimRangeTest(SampleFormat sample_format) {
   EXPECT_EQ(timestamp, buffer->timestamp());
   EXPECT_EQ(duration, buffer->duration());
 
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
 
   // Verify all frames before trimming.
   buffer->ReadFrames(frames, 0, 0, bus.get());
@@ -214,7 +215,7 @@ TEST(AudioBufferTest, ReadU8) {
   scoped_refptr<AudioBuffer> buffer =
       MakeAudioBuffer<uint8_t>(kSampleFormatU8, channel_layout, channels,
                                kSampleRate, 128, 1, frames, start_time);
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
   VerifyBus(bus.get(), frames, 0, 1.0f / 127.0f);
 
@@ -233,7 +234,7 @@ TEST(AudioBufferTest, ReadS16) {
   scoped_refptr<AudioBuffer> buffer =
       MakeAudioBuffer<int16_t>(kSampleFormatS16, channel_layout, channels,
                                kSampleRate, 1, 1, frames, start_time);
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
   VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int16_t>::max(),
             1.0f / std::numeric_limits<int16_t>::max());
@@ -254,7 +255,7 @@ TEST(AudioBufferTest, ReadS32) {
   scoped_refptr<AudioBuffer> buffer =
       MakeAudioBuffer<int32_t>(kSampleFormatS32, channel_layout, channels,
                                kSampleRate, 1, 1, frames, start_time);
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
   VerifyBus(bus.get(), frames, 1.0f / std::numeric_limits<int32_t>::max(),
             1.0f / std::numeric_limits<int32_t>::max());
@@ -279,7 +280,7 @@ TEST(AudioBufferTest, ReadF32) {
                                                              1.0f,
                                                              frames,
                                                              start_time);
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(10, 0, 0, bus.get());
   VerifyBus(bus.get(), 10, 1, 1);
 
@@ -297,7 +298,7 @@ TEST(AudioBufferTest, ReadS16Planar) {
   scoped_refptr<AudioBuffer> buffer =
       MakeAudioBuffer<int16_t>(kSampleFormatPlanarS16, channel_layout, channels,
                                kSampleRate, 1, 1, frames, start_time);
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(10, 0, 0, bus.get());
   VerifyBus(bus.get(), 10, 1.0f / std::numeric_limits<int16_t>::max(),
             1.0f / std::numeric_limits<int16_t>::max());
@@ -340,7 +341,7 @@ TEST(AudioBufferTest, ReadF32Planar) {
   // Read all 100 frames from the buffer. F32 is planar, so ch[0] should be 1,
   // 2, 3, 4, ..., ch[1] should be 101, 102, 103, ..., and so on for all 4
   // channels.
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, 100);
   buffer->ReadFrames(frames, 0, 0, bus.get());
   VerifyBus(bus.get(), frames, 1, 1);
 
@@ -363,7 +364,7 @@ TEST(AudioBufferTest, EmptyBuffer) {
   EXPECT_FALSE(buffer->end_of_stream());
 
   // Read all 100 frames from the buffer. All data should be 0.
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(frames, 0, 0, bus.get());
   VerifyBus(bus.get(), frames, 0, 0);
 }
@@ -390,7 +391,7 @@ TEST(AudioBufferTest, Trim) {
   const int ten_ms_of_frames = kSampleRate / 100;
   const base::TimeDelta ten_ms = base::TimeDelta::FromMilliseconds(10);
 
-  scoped_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(channels, frames);
   buffer->ReadFrames(buffer->frame_count(), 0, 0, bus.get());
   VerifyBus(bus.get(), buffer->frame_count(), 0.0f, 1.0f);
 

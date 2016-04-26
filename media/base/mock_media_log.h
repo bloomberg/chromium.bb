@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_MOCK_MEDIA_LOG_H_
 #define MEDIA_BASE_MOCK_MEDIA_LOG_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -27,10 +28,10 @@ class MockMediaLog : public MediaLog {
 
   MOCK_METHOD1(DoAddEventLogString, void(const std::string& event));
 
-  // Trampoline method to workaround GMOCK problems with scoped_ptr<>.
+  // Trampoline method to workaround GMOCK problems with std::unique_ptr<>.
   // Also simplifies tests to be able to string match on the log string
   // representation on the added event.
-  void AddEvent(scoped_ptr<MediaLogEvent> event) override {
+  void AddEvent(std::unique_ptr<MediaLogEvent> event) override {
     DoAddEventLogString(MediaEventToLogString(*event));
   }
 

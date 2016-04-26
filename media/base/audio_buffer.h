@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
@@ -182,7 +182,7 @@ class MEDIA_EXPORT AudioBuffer
   base::TimeDelta duration_;
 
   // Contiguous block of channel data.
-  scoped_ptr<uint8_t, base::AlignedFreeDeleter> data_;
+  std::unique_ptr<uint8_t, base::AlignedFreeDeleter> data_;
   size_t data_size_;
 
   // For planar data, points to each channels data.

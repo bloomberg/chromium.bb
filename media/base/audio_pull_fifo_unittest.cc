@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -81,7 +83,7 @@ class AudioPullFifoTest
 
  protected:
   AudioPullFifo pull_fifo_;
-  scoped_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
   int fill_value_;
   int last_frame_delay_;
 

@@ -7,11 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -328,7 +329,7 @@ class MediaCodecDecoder {
   FrameStatistics* frame_statistics_;
 
   // Controls Android MediaCodec
-  scoped_ptr<MediaCodecBridge> media_codec_bridge_;
+  std::unique_ptr<MediaCodecBridge> media_codec_bridge_;
 
   // The queue of access units.
   AccessUnitQueue au_queue_;

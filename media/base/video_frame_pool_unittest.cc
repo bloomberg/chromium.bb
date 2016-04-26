@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "media/base/video_frame_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,7 +40,7 @@ class VideoFramePoolTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<VideoFramePool> pool_;
+  std::unique_ptr<VideoFramePool> pool_;
 };
 
 TEST_F(VideoFramePoolTest, FrameInitializedAndZeroed) {

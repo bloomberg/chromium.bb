@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
@@ -128,7 +129,7 @@ class SerialRunnerTest : public ::testing::Test {
 
   base::MessageLoop message_loop_;
   SerialRunner::Queue bound_fns_;
-  scoped_ptr<SerialRunner> runner_;
+  std::unique_ptr<SerialRunner> runner_;
 
   // Used to enforce calling stack guarantees of the API.
   bool inside_start_;

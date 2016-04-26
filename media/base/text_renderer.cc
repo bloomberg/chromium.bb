@@ -291,13 +291,14 @@ void TextRenderer::CueReady(
 }
 
 void TextRenderer::OnAddTextTrackDone(DemuxerStream* text_stream,
-                                      scoped_ptr<TextTrack> text_track) {
+                                      std::unique_ptr<TextTrack> text_track) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
   DCHECK(text_stream);
   DCHECK(text_track);
 
-  scoped_ptr<TextTrackState> state(new TextTrackState(std::move(text_track)));
+  std::unique_ptr<TextTrackState> state(
+      new TextTrackState(std::move(text_track)));
   text_track_state_map_[text_stream] = state.release();
   pending_eos_set_.insert(text_stream);
 
@@ -317,7 +318,7 @@ void TextRenderer::Read(
       &TextRenderer::BufferReady, weak_factory_.GetWeakPtr(), text_stream));
 }
 
-TextRenderer::TextTrackState::TextTrackState(scoped_ptr<TextTrack> tt)
+TextRenderer::TextTrackState::TextTrackState(std::unique_ptr<TextTrack> tt)
     : read_state(kReadIdle), text_track(std::move(tt)) {}
 
 TextRenderer::TextTrackState::~TextTrackState() {

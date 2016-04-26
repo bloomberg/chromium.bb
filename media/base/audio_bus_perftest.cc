@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -17,7 +18,7 @@ static const int kBenchmarkIterations = 20;
 template <typename T>
 void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
   const int frame_size = bus->frames() * bus->channels();
-  scoped_ptr<T[]> interleaved(new T[frame_size]);
+  std::unique_ptr<T[]> interleaved(new T[frame_size]);
   const int byte_size = sizeof(T);
 
   base::TimeTicks start = base::TimeTicks::Now();
@@ -43,7 +44,7 @@ void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
 
 // Benchmark the FromInterleaved() and ToInterleaved() methods.
 TEST(AudioBusPerfTest, Interleave) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(2, 48000 * 120);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(2, 48000 * 120);
   FakeAudioRenderCallback callback(0.2);
   callback.Render(bus.get(), 0, 0);
 

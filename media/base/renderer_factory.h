@@ -5,9 +5,10 @@
 #ifndef MEDIA_BASE_RENDERER_FACTORY_H_
 #define MEDIA_BASE_RENDERER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/renderer.h"
 #include "media/base/surface_manager.h"
@@ -33,7 +34,7 @@ class MEDIA_EXPORT RendererFactory {
   // GetMediaTime() could be called on any thread.
   // The created Renderer can use |audio_renderer_sink| to render audio and
   // |video_renderer_sink| to render video.
-  virtual scoped_ptr<Renderer> CreateRenderer(
+  virtual std::unique_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,

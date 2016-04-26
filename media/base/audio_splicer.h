@@ -5,9 +5,10 @@
 #ifndef MEDIA_BASE_AUDIO_SPLICER_H_
 #define MEDIA_BASE_AUDIO_SPLICER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
@@ -78,7 +79,7 @@ class MEDIA_EXPORT AudioSplicer {
   // |max_crossfade_duration_|.
   //
   // |pre_splice_sanitizer_| will be empty after this operation.
-  scoped_ptr<AudioBus> ExtractCrossfadeFromPreSplice(
+  std::unique_ptr<AudioBus> ExtractCrossfadeFromPreSplice(
       scoped_refptr<AudioBuffer>* crossfade_buffer);
 
   // Crossfades |pre_splice_bus->frames()| frames from
@@ -87,7 +88,7 @@ class MEDIA_EXPORT AudioSplicer {
   // |output_sanitizer_| along with all buffers in |post_splice_sanitizer_|.
   //
   // |post_splice_sanitizer_| will be empty after this operation.
-  void CrossfadePostSplice(scoped_ptr<AudioBus> pre_splice_bus,
+  void CrossfadePostSplice(std::unique_ptr<AudioBus> pre_splice_bus,
                            const scoped_refptr<AudioBuffer>& crossfade_buffer);
 
   // Reset the splice and splice end timestamps.
@@ -111,9 +112,9 @@ class MEDIA_EXPORT AudioSplicer {
   // |pre_splice_sanitizer_| is not constructed until the first splice frame is
   // encountered.  At which point it is constructed based on the timestamp state
   // of |output_sanitizer_|.  It is destructed once the splice is finished.
-  scoped_ptr<AudioStreamSanitizer> output_sanitizer_;
-  scoped_ptr<AudioStreamSanitizer> pre_splice_sanitizer_;
-  scoped_ptr<AudioStreamSanitizer> post_splice_sanitizer_;
+  std::unique_ptr<AudioStreamSanitizer> output_sanitizer_;
+  std::unique_ptr<AudioStreamSanitizer> pre_splice_sanitizer_;
+  std::unique_ptr<AudioStreamSanitizer> post_splice_sanitizer_;
 
   // Whether all buffers which should go into |pre_splice_sanitizer_| have been
   // received.  If true, buffers should now be put in |post_splice_sanitizer_|.

@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_TASK_RUNNER_H_
 #define MEDIA_BASE_ANDROID_MEDIA_TASK_RUNNER_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_export.h"
 

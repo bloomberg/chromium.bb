@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -111,16 +112,16 @@ class AudioBusTest : public testing::Test {
 
 // Verify basic Create(...) method works as advertised.
 TEST_F(AudioBusTest, Create) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
   VerifyParams(bus.get());
   VerifyChannelData(bus.get());
 }
 
 // Verify Create(...) using AudioParameters works as advertised.
 TEST_F(AudioBusTest, CreateUsingAudioParameters) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(AudioParameters(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate, 32,
-      kFrameCount));
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(
+      AudioParameters(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
+                      kSampleRate, 32, kFrameCount));
   VerifyParams(bus.get());
   VerifyChannelData(bus.get());
 }
@@ -133,7 +134,7 @@ TEST_F(AudioBusTest, WrapVector) {
         sizeof(*data_[i]) * kFrameCount, AudioBus::kChannelAlignment)));
   }
 
-  scoped_ptr<AudioBus> bus = AudioBus::WrapVector(kFrameCount, data_);
+  std::unique_ptr<AudioBus> bus = AudioBus::WrapVector(kFrameCount, data_);
   VerifyParams(bus.get());
   VerifyChannelData(bus.get());
 }
@@ -144,7 +145,7 @@ TEST_F(AudioBusTest, WrapMemory) {
       AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate, 32,
       kFrameCount);
   int data_size = AudioBus::CalculateMemorySize(params);
-  scoped_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
+  std::unique_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
       base::AlignedAlloc(data_size, AudioBus::kChannelAlignment)));
 
   // Fill the memory with a test value we can check for after wrapping.
@@ -152,7 +153,7 @@ TEST_F(AudioBusTest, WrapMemory) {
   std::fill(
       data.get(), data.get() + data_size / sizeof(*data.get()), kTestValue);
 
-  scoped_ptr<AudioBus> bus = AudioBus::WrapMemory(params, data.get());
+  std::unique_ptr<AudioBus> bus = AudioBus::WrapMemory(params, data.get());
   // Verify the test value we filled prior to wrapping.
   for (int i = 0; i < bus->channels(); ++i)
     VerifyValue(bus->channel(i), bus->frames(), kTestValue);
@@ -172,8 +173,8 @@ TEST_F(AudioBusTest, CopyTo) {
   AudioParameters params(
       AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate, 32,
       kFrameCount);
-  scoped_ptr<AudioBus> bus1 = AudioBus::Create(kChannels, kFrameCount);
-  scoped_ptr<AudioBus> bus2 = AudioBus::Create(params);
+  std::unique_ptr<AudioBus> bus1 = AudioBus::Create(kChannels, kFrameCount);
+  std::unique_ptr<AudioBus> bus2 = AudioBus::Create(params);
 
   {
     SCOPED_TRACE("Created");
@@ -194,10 +195,9 @@ TEST_F(AudioBusTest, CopyTo) {
   {
     SCOPED_TRACE("Wrapped Memory");
     // Try a copy to an AudioBus wrapping a memory block.
-    scoped_ptr<float, base::AlignedFreeDeleter> data(
-        static_cast<float*>(base::AlignedAlloc(
-            AudioBus::CalculateMemorySize(params),
-            AudioBus::kChannelAlignment)));
+    std::unique_ptr<float, base::AlignedFreeDeleter> data(static_cast<float*>(
+        base::AlignedAlloc(AudioBus::CalculateMemorySize(params),
+                           AudioBus::kChannelAlignment)));
 
     bus2 = AudioBus::WrapMemory(params, data.get());
     CopyTest(bus1.get(), bus2.get());
@@ -206,7 +206,7 @@ TEST_F(AudioBusTest, CopyTo) {
 
 // Verify Zero() and ZeroFrames(...) utility methods work as advertised.
 TEST_F(AudioBusTest, Zero) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
 
   // Fill the bus with dummy data.
   for (int i = 0; i < bus->channels(); ++i)
@@ -273,10 +273,10 @@ static const int kTestVectorChannels = arraysize(kTestVectorResult);
 
 // Verify FromInterleaved() deinterleaves audio in supported formats correctly.
 TEST_F(AudioBusTest, FromInterleaved) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(
-      kTestVectorChannels, kTestVectorFrames);
-  scoped_ptr<AudioBus> expected = AudioBus::Create(
-      kTestVectorChannels, kTestVectorFrames);
+  std::unique_ptr<AudioBus> bus =
+      AudioBus::Create(kTestVectorChannels, kTestVectorFrames);
+  std::unique_ptr<AudioBus> expected =
+      AudioBus::Create(kTestVectorChannels, kTestVectorFrames);
   for (int ch = 0; ch < kTestVectorChannels; ++ch) {
     memcpy(expected->channel(ch), kTestVectorResult[ch],
            kTestVectorFrames * sizeof(*expected->channel(ch)));
@@ -316,10 +316,10 @@ TEST_F(AudioBusTest, FromInterleavedPartial) {
   static const int kPartialFrames = 2;
   ASSERT_LE(kPartialStart + kPartialFrames, kTestVectorFrames);
 
-  scoped_ptr<AudioBus> bus = AudioBus::Create(
-      kTestVectorChannels, kTestVectorFrames);
-  scoped_ptr<AudioBus> expected = AudioBus::Create(
-      kTestVectorChannels, kTestVectorFrames);
+  std::unique_ptr<AudioBus> bus =
+      AudioBus::Create(kTestVectorChannels, kTestVectorFrames);
+  std::unique_ptr<AudioBus> expected =
+      AudioBus::Create(kTestVectorChannels, kTestVectorFrames);
   expected->Zero();
   for (int ch = 0; ch < kTestVectorChannels; ++ch) {
     memcpy(expected->channel(ch) + kPartialStart,
@@ -336,8 +336,8 @@ TEST_F(AudioBusTest, FromInterleavedPartial) {
 
 // Verify ToInterleaved() interleaves audio in suported formats correctly.
 TEST_F(AudioBusTest, ToInterleaved) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(
-      kTestVectorChannels, kTestVectorFrames);
+  std::unique_ptr<AudioBus> bus =
+      AudioBus::Create(kTestVectorChannels, kTestVectorFrames);
   // Fill the bus with our test vector.
   for (int ch = 0; ch < bus->channels(); ++ch) {
     memcpy(bus->channel(ch), kTestVectorResult[ch],
@@ -382,8 +382,8 @@ TEST_F(AudioBusTest, ToInterleavedPartial) {
   static const int kPartialFrames = 2;
   ASSERT_LE(kPartialStart + kPartialFrames, kTestVectorFrames);
 
-  scoped_ptr<AudioBus> expected = AudioBus::Create(
-      kTestVectorChannels, kTestVectorFrames);
+  std::unique_ptr<AudioBus> expected =
+      AudioBus::Create(kTestVectorChannels, kTestVectorFrames);
   for (int ch = 0; ch < kTestVectorChannels; ++ch) {
     memcpy(expected->channel(ch), kTestVectorResult[ch],
            kTestVectorFrames * sizeof(*expected->channel(ch)));
@@ -398,7 +398,7 @@ TEST_F(AudioBusTest, ToInterleavedPartial) {
 }
 
 TEST_F(AudioBusTest, Scale) {
-  scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
+  std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
 
   // Fill the bus with dummy data.
   static const float kFillValue = 1;

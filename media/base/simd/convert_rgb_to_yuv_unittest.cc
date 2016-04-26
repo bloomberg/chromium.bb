@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/simd/convert_rgb_to_yuv.h"
+
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/cpu.h"
-#include "base/memory/scoped_ptr.h"
-#include "media/base/simd/convert_rgb_to_yuv.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -58,10 +60,10 @@ TEST(YUVConvertTest, MAYBE_SideBySideRGB) {
 
   for (int size = 3; size <= 4; ++size) {
     // Create the output buffers.
-    scoped_ptr<uint8_t[]> rgb(new uint8_t[kWidth * size]);
-    scoped_ptr<uint8_t[]> y(new uint8_t[kWidth]);
-    scoped_ptr<uint8_t[]> u(new uint8_t[kWidth / 2]);
-    scoped_ptr<uint8_t[]> v(new uint8_t[kWidth / 2]);
+    std::unique_ptr<uint8_t[]> rgb(new uint8_t[kWidth * size]);
+    std::unique_ptr<uint8_t[]> y(new uint8_t[kWidth]);
+    std::unique_ptr<uint8_t[]> u(new uint8_t[kWidth / 2]);
+    std::unique_ptr<uint8_t[]> v(new uint8_t[kWidth / 2]);
 
     // Choose the function that converts from RGB pixels to YUV ones.
     void (*convert)(const uint8_t*, uint8_t*, uint8_t*, uint8_t*, int, int, int,

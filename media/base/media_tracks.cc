@@ -5,6 +5,7 @@
 #include "media/base/media_tracks.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/video_decoder_config.h"
 
@@ -21,7 +22,7 @@ void MediaTracks::AddAudioTrack(const AudioDecoderConfig& config,
                                 const std::string& language) {
   DCHECK(config.IsValidConfig());
   CHECK(audio_configs_.find(id) == audio_configs_.end());
-  scoped_ptr<MediaTrack> track = make_scoped_ptr(
+  std::unique_ptr<MediaTrack> track = base::WrapUnique(
       new MediaTrack(MediaTrack::Audio, id, kind, label, language));
   tracks_.push_back(std::move(track));
   audio_configs_[id] = config;
@@ -34,7 +35,7 @@ void MediaTracks::AddVideoTrack(const VideoDecoderConfig& config,
                                 const std::string& language) {
   DCHECK(config.IsValidConfig());
   CHECK(video_configs_.find(id) == video_configs_.end());
-  scoped_ptr<MediaTrack> track = make_scoped_ptr(
+  std::unique_ptr<MediaTrack> track = base::WrapUnique(
       new MediaTrack(MediaTrack::Video, id, kind, label, language));
   tracks_.push_back(std::move(track));
   video_configs_[id] = config;

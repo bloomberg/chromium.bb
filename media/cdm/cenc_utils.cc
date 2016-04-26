@@ -5,6 +5,7 @@
 #include "media/cdm/cenc_utils.h"
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
 

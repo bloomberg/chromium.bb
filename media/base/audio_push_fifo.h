@@ -5,9 +5,10 @@
 #ifndef MEDIA_BASE_AUDIO_PUSH_FIFO_H_
 #define MEDIA_BASE_AUDIO_PUSH_FIFO_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_bus.h"
 #include "media/base/media_export.h"
 
@@ -62,7 +63,7 @@ class MEDIA_EXPORT AudioPushFifo final {
   int frames_per_buffer_;
 
   // Queue of frames pending for delivery.
-  scoped_ptr<AudioBus> audio_queue_;
+  std::unique_ptr<AudioBus> audio_queue_;
   int queued_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPushFifo);

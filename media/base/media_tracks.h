@@ -6,11 +6,11 @@
 #define MEDIA_BASE_MEDIA_TRACKS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/media_track.h"
 
@@ -21,7 +21,7 @@ class VideoDecoderConfig;
 
 class MEDIA_EXPORT MediaTracks {
  public:
-  typedef std::vector<scoped_ptr<MediaTrack>> MediaTracksCollection;
+  using MediaTracksCollection = std::vector<std::unique_ptr<MediaTrack>>;
 
   MediaTracks();
   ~MediaTracks();

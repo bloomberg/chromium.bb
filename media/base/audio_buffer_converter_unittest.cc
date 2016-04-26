@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/audio_buffer_converter.h"
+
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "media/base/audio_buffer.h"
-#include "media/base/audio_buffer_converter.h"
 #include "media/base/sinc_resampler.h"
 #include "media/base/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,7 +82,7 @@ class AudioBufferConverterTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<AudioBufferConverter> audio_buffer_converter_;
+  std::unique_ptr<AudioBufferConverter> audio_buffer_converter_;
 
   int input_frames_;
   double expected_output_frames_;

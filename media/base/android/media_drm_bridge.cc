@@ -345,7 +345,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
 
 void MediaDrmBridge::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__ << "(" << certificate.size() << " bytes)";
 
@@ -366,7 +366,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
     SessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
@@ -422,7 +422,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 void MediaDrmBridge::LoadSession(
     SessionType session_type,
     const std::string& session_id,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
@@ -433,7 +433,7 @@ void MediaDrmBridge::LoadSession(
 void MediaDrmBridge::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
@@ -448,8 +448,9 @@ void MediaDrmBridge::UpdateSession(
                                     j_response.obj(), promise_id);
 }
 
-void MediaDrmBridge::CloseSession(const std::string& session_id,
-                                  scoped_ptr<media::SimpleCdmPromise> promise) {
+void MediaDrmBridge::CloseSession(
+    const std::string& session_id,
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
@@ -464,7 +465,7 @@ void MediaDrmBridge::CloseSession(const std::string& session_id,
 
 void MediaDrmBridge::RemoveSession(
     const std::string& session_id,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 

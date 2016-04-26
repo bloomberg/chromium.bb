@@ -5,11 +5,12 @@
 #ifndef MEDIA_BASE_SINC_RESAMPLER_H_
 #define MEDIA_BASE_SINC_RESAMPLER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
 
@@ -134,12 +135,12 @@ class MEDIA_EXPORT SincResampler {
   // Contains kKernelOffsetCount kernels back-to-back, each of size kKernelSize.
   // The kernel offsets are sub-sample shifts of a windowed sinc shifted from
   // 0.0 to 1.0 sample.
-  scoped_ptr<float[], base::AlignedFreeDeleter> kernel_storage_;
-  scoped_ptr<float[], base::AlignedFreeDeleter> kernel_pre_sinc_storage_;
-  scoped_ptr<float[], base::AlignedFreeDeleter> kernel_window_storage_;
+  std::unique_ptr<float[], base::AlignedFreeDeleter> kernel_storage_;
+  std::unique_ptr<float[], base::AlignedFreeDeleter> kernel_pre_sinc_storage_;
+  std::unique_ptr<float[], base::AlignedFreeDeleter> kernel_window_storage_;
 
   // Data from the source is copied into this buffer for each processing pass.
-  scoped_ptr<float[], base::AlignedFreeDeleter> input_buffer_;
+  std::unique_ptr<float[], base::AlignedFreeDeleter> input_buffer_;
 
   // Pointers to the various regions inside |input_buffer_|.  See the diagram at
   // the top of the .cc file for more information.

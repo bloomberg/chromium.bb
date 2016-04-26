@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/base/decoder_factory.h"
@@ -97,7 +98,7 @@ ScopedVector<VideoDecoder> DefaultRendererFactory::CreateVideoDecoders(
   return video_decoders;
 }
 
-scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
+std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     AudioRendererSink* audio_renderer_sink,
@@ -105,7 +106,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const RequestSurfaceCB& request_surface_cb) {
   DCHECK(audio_renderer_sink);
 
-  scoped_ptr<AudioRenderer> audio_renderer(
+  std::unique_ptr<AudioRenderer> audio_renderer(
       new AudioRendererImpl(media_task_runner, audio_renderer_sink,
                             CreateAudioDecoders(media_task_runner),
                             audio_hardware_config_, media_log_));
@@ -114,12 +115,12 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   if (!get_gpu_factories_cb_.is_null())
     gpu_factories = get_gpu_factories_cb_.Run();
 
-  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+  std::unique_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       media_task_runner, worker_task_runner, video_renderer_sink,
       CreateVideoDecoders(media_task_runner, request_surface_cb, gpu_factories),
       true, gpu_factories, media_log_));
 
-  return scoped_ptr<Renderer>(new RendererImpl(
+  return base::WrapUnique(new RendererImpl(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer)));
 }
 

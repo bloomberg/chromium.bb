@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "media/base/media_export.h"
@@ -45,7 +46,7 @@ class MEDIA_EXPORT UserInputMonitor {
   // Creates a platform-specific instance of UserInputMonitor.
   // |io_task_runner| is the task runner for an IO thread.
   // |ui_task_runner| is the task runner for a UI thread.
-  static scoped_ptr<UserInputMonitor> Create(
+  static std::unique_ptr<UserInputMonitor> Create(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 

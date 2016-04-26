@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/big_endian.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace media {
 

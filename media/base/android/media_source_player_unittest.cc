@@ -5,12 +5,13 @@
 #include "media/base/android/media_source_player.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/android/audio_decoder_job.h"
@@ -166,7 +167,7 @@ class MediaSourcePlayerTest : public testing::Test {
                 &manager_,
                 base::Bind(&MockMediaPlayerManager::OnDecorderResourcesReleased,
                            base::Unretained(&manager_)),
-                scoped_ptr<DemuxerAndroid>(demuxer_),
+                base::WrapUnique(demuxer_),
                 GURL(),
                 kDefaultMediaSessionId),
         decoder_callback_hook_executed_(false),

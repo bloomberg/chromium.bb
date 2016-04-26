@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/video_util.h"
+
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -46,9 +48,9 @@ class VideoUtilTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<uint8_t[]> y_plane_;
-  scoped_ptr<uint8_t[]> u_plane_;
-  scoped_ptr<uint8_t[]> v_plane_;
+  std::unique_ptr<uint8_t[]> y_plane_;
+  std::unique_ptr<uint8_t[]> u_plane_;
+  std::unique_ptr<uint8_t[]> v_plane_;
 
   int height_;
   int y_stride_;
@@ -234,7 +236,7 @@ class VideoUtilRotationTest
   uint8_t* dest_plane() { return dest_.get(); }
 
  private:
-  scoped_ptr<uint8_t[]> dest_;
+  std::unique_ptr<uint8_t[]> dest_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoUtilRotationTest);
 };

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -55,7 +56,7 @@ static void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
   VLOG(0) << "File is encrypted.";
 }
 
-static void OnMediaTracksUpdated(scoped_ptr<MediaTracks> tracks) {
+static void OnMediaTracksUpdated(std::unique_ptr<MediaTracks> tracks) {
   VLOG(0) << "Got media tracks info, tracks = " << tracks->tracks().size();
 }
 

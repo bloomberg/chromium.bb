@@ -5,7 +5,6 @@
 #include "media/base/mock_filters.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -19,7 +18,7 @@ MockPipeline::MockPipeline() {}
 MockPipeline::~MockPipeline() {}
 
 void MockPipeline::Start(Demuxer* demuxer,
-                         scoped_ptr<Renderer> renderer,
+                         std::unique_ptr<Renderer> renderer,
                          const base::Closure& ended_cb,
                          const PipelineStatusCB& error_cb,
                          const PipelineStatusCB& seek_cb,
@@ -33,7 +32,7 @@ void MockPipeline::Start(Demuxer* demuxer,
         waiting_for_decryption_key_cb);
 }
 
-void MockPipeline::Resume(scoped_ptr<Renderer> renderer,
+void MockPipeline::Resume(std::unique_ptr<Renderer> renderer,
                           base::TimeDelta timestamp,
                           const PipelineStatusCB& seek_cb) {
   Resume(&renderer, timestamp, seek_cb);

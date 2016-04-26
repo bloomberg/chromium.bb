@@ -9,10 +9,10 @@
 namespace media {
 
 #ifdef DISABLE_USER_INPUT_MONITOR
-scoped_ptr<UserInputMonitor> UserInputMonitor::Create(
+std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return scoped_ptr<UserInputMonitor>();
+  return nullptr;
 }
 #endif  // DISABLE_USER_INPUT_MONITOR
 

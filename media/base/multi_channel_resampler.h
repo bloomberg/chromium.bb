@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "media/base/sinc_resampler.h"
 
@@ -72,11 +72,11 @@ class MEDIA_EXPORT MultiChannelResampler {
   ScopedVector<SincResampler> resamplers_;
 
   // Buffers for audio data going into SincResampler from ReadCB.
-  scoped_ptr<AudioBus> resampler_audio_bus_;
+  std::unique_ptr<AudioBus> resampler_audio_bus_;
 
   // To avoid a memcpy() on the first channel we create a wrapped AudioBus where
   // the first channel points to the |destination| provided to ProvideInput().
-  scoped_ptr<AudioBus> wrapped_resampler_audio_bus_;
+  std::unique_ptr<AudioBus> wrapped_resampler_audio_bus_;
 
   // The number of output frames that have successfully been processed during
   // the current Resample() call.

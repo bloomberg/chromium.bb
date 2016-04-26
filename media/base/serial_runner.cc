@@ -88,9 +88,10 @@ SerialRunner::SerialRunner(const Queue& bound_fns,
 
 SerialRunner::~SerialRunner() {}
 
-scoped_ptr<SerialRunner> SerialRunner::Run(
-    const Queue& bound_fns, const PipelineStatusCB& done_cb) {
-  scoped_ptr<SerialRunner> callback_series(
+std::unique_ptr<SerialRunner> SerialRunner::Run(
+    const Queue& bound_fns,
+    const PipelineStatusCB& done_cb) {
+  std::unique_ptr<SerialRunner> callback_series(
       new SerialRunner(bound_fns, done_cb));
   return callback_series;
 }

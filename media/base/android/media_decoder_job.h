@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_MEDIA_DECODER_JOB_H_
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -161,7 +162,7 @@ class MediaDecoderJob {
 
   bool need_to_reconfig_decoder_job_;
 
-  scoped_ptr<MediaCodecBridge> media_codec_bridge_;
+  std::unique_ptr<MediaCodecBridge> media_codec_bridge_;
 
  private:
   friend class MediaSourcePlayerTest;

@@ -5,18 +5,19 @@
 // MSVC++ requires this to be set before any other includes to get M_PI.
 #define _USE_MATH_DEFINES
 
+#include "media/base/audio_renderer_mixer.h"
+
 #include <stddef.h>
 
 #include <cmath>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "media/base/mock_audio_renderer_sink.h"
@@ -332,15 +333,15 @@ class AudioRendererMixerTest
   virtual ~AudioRendererMixerTest() {}
 
   scoped_refptr<MockAudioRendererSink> sink_;
-  scoped_ptr<AudioRendererMixer> mixer_;
+  std::unique_ptr<AudioRendererMixer> mixer_;
   AudioRendererSink::RenderCallback* mixer_callback_;
   std::vector<AudioParameters> input_parameters_;
   AudioParameters output_parameters_;
-  scoped_ptr<AudioBus> audio_bus_;
-  scoped_ptr<AudioBus> expected_audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> expected_audio_bus_;
   std::vector< scoped_refptr<AudioRendererMixerInput> > mixer_inputs_;
   ScopedVector<FakeAudioRenderCallback> fake_callbacks_;
-  scoped_ptr<FakeAudioRenderCallback> expected_callback_;
+  std::unique_ptr<FakeAudioRenderCallback> expected_callback_;
   double epsilon_;
   bool half_fill_;
 

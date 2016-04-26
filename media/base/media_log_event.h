@@ -6,6 +6,7 @@
 #define MEDIA_BASE_MEDIA_LOG_EVENT_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/time/time.h"
 #include "base/values.h"
@@ -22,7 +23,7 @@ struct MediaLogEvent {
   MediaLogEvent& operator=(const MediaLogEvent& event) {
     id = event.id;
     type = event.type;
-    scoped_ptr<base::DictionaryValue> event_copy(event.params.DeepCopy());
+    std::unique_ptr<base::DictionaryValue> event_copy(event.params.DeepCopy());
     params.Swap(event_copy.get());
     time = event.time;
     return *this;

@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/single_thread_task_runner.h"
@@ -375,11 +376,10 @@ void UserInputMonitorLinux::StopMouseMonitoring() {
 
 }  // namespace
 
-scoped_ptr<UserInputMonitor> UserInputMonitor::Create(
+std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return scoped_ptr<UserInputMonitor>(
-      new UserInputMonitorLinux(io_task_runner));
+  return base::WrapUnique(new UserInputMonitorLinux(io_task_runner));
 }
 
 }  // namespace media

@@ -5,6 +5,7 @@
 #include "media/base/text_renderer.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -100,7 +101,7 @@ class TextRendererTest : public testing::Test {
     // here so we can inspect them.  They get removed from our cache when the
     // text renderer deallocates them.
     text_tracks_.push_back(new FakeTextTrack(destroy_cb, config));
-    scoped_ptr<TextTrack> text_track(text_tracks_.back());
+    std::unique_ptr<TextTrack> text_track(text_tracks_.back());
     done_cb.Run(std::move(text_track));
   }
 
@@ -210,7 +211,7 @@ class TextRendererTest : public testing::Test {
   typedef std::vector<FakeTextTrack*> TextTracks;
   TextTracks text_tracks_;
 
-  scoped_ptr<TextRenderer> text_renderer_;
+  std::unique_ptr<TextRenderer> text_renderer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextRendererTest);

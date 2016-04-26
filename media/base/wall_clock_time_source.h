@@ -6,7 +6,6 @@
 #define MEDIA_BASE_WALL_CLOCK_TIME_SOURCE_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/default_tick_clock.h"
 #include "media/base/media_export.h"

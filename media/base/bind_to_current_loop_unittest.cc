@@ -4,6 +4,7 @@
 
 #include "media/base/bind_to_current_loop.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/free_deleter.h"
@@ -17,17 +18,17 @@ void BoundBoolSet(bool* var, bool val) {
   *var = val;
 }
 
-void BoundBoolSetFromScopedPtr(bool* var, scoped_ptr<bool> val) {
+void BoundBoolSetFromScopedPtr(bool* var, std::unique_ptr<bool> val) {
   *var = *val;
 }
 
 void BoundBoolSetFromScopedPtrFreeDeleter(
     bool* var,
-    scoped_ptr<bool, base::FreeDeleter> val) {
+    std::unique_ptr<bool, base::FreeDeleter> val) {
   *var = *val;
 }
 
-void BoundBoolSetFromScopedArray(bool* var, scoped_ptr<bool[]> val) {
+void BoundBoolSetFromScopedArray(bool* var, std::unique_ptr<bool[]> val) {
   *var = val[0];
 }
 
@@ -70,7 +71,7 @@ TEST_F(BindToCurrentLoopTest, Bool) {
 
 TEST_F(BindToCurrentLoopTest, BoundScopedPtrBool) {
   bool bool_val = false;
-  scoped_ptr<bool> scoped_ptr_bool(new bool(true));
+  std::unique_ptr<bool> scoped_ptr_bool(new bool(true));
   base::Closure cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedPtr, &bool_val, base::Passed(&scoped_ptr_bool)));
   cb.Run();
@@ -81,9 +82,9 @@ TEST_F(BindToCurrentLoopTest, BoundScopedPtrBool) {
 
 TEST_F(BindToCurrentLoopTest, PassedScopedPtrBool) {
   bool bool_val = false;
-  scoped_ptr<bool> scoped_ptr_bool(new bool(true));
-  base::Callback<void(scoped_ptr<bool>)> cb = BindToCurrentLoop(base::Bind(
-      &BoundBoolSetFromScopedPtr, &bool_val));
+  std::unique_ptr<bool> scoped_ptr_bool(new bool(true));
+  base::Callback<void(std::unique_ptr<bool>)> cb =
+      BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedPtr, &bool_val));
   cb.Run(std::move(scoped_ptr_bool));
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
@@ -92,7 +93,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedPtrBool) {
 
 TEST_F(BindToCurrentLoopTest, BoundScopedArrayBool) {
   bool bool_val = false;
-  scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
+  std::unique_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
   base::Closure cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedArray, &bool_val,
@@ -105,10 +106,10 @@ TEST_F(BindToCurrentLoopTest, BoundScopedArrayBool) {
 
 TEST_F(BindToCurrentLoopTest, PassedScopedArrayBool) {
   bool bool_val = false;
-  scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
+  std::unique_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
-  base::Callback<void(scoped_ptr<bool[]>)> cb = BindToCurrentLoop(base::Bind(
-      &BoundBoolSetFromScopedArray, &bool_val));
+  base::Callback<void(std::unique_ptr<bool[]>)> cb =
+      BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedArray, &bool_val));
   cb.Run(std::move(scoped_array_bool));
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
@@ -117,7 +118,7 @@ TEST_F(BindToCurrentLoopTest, PassedScopedArrayBool) {
 
 TEST_F(BindToCurrentLoopTest, BoundScopedPtrFreeDeleterBool) {
   bool bool_val = false;
-  scoped_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
+  std::unique_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
   *scoped_ptr_free_deleter_bool = true;
   base::Closure cb = BindToCurrentLoop(base::Bind(
@@ -131,12 +132,12 @@ TEST_F(BindToCurrentLoopTest, BoundScopedPtrFreeDeleterBool) {
 
 TEST_F(BindToCurrentLoopTest, PassedScopedPtrFreeDeleterBool) {
   bool bool_val = false;
-  scoped_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
+  std::unique_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
   *scoped_ptr_free_deleter_bool = true;
-  base::Callback<void(scoped_ptr<bool, base::FreeDeleter>)> cb =
-      BindToCurrentLoop(base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter,
-      &bool_val));
+  base::Callback<void(std::unique_ptr<bool, base::FreeDeleter>)> cb =
+      BindToCurrentLoop(
+          base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter, &bool_val));
   cb.Run(std::move(scoped_ptr_free_deleter_bool));
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();

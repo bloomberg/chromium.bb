@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "media/base/android/media_codec_decoder.h"
@@ -87,7 +88,7 @@ class AudioMediaCodecDecoder : public MediaCodecDecoder {
   base::TimeDelta base_timestamp_;
 
   // Object to calculate the current audio timestamp for A/V sync.
-  scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> audio_timestamp_helper_;
 
   // Reports current playback time to the callee.
   SetTimeCallback update_current_time_cb_;

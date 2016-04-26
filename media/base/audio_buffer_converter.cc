@@ -193,7 +193,7 @@ void AudioBufferConverter::ConvertIfPossible() {
                                 output_params_.channels(),
                                 output_params_.sample_rate(),
                                 request_frames);
-  scoped_ptr<AudioBus> output_bus =
+  std::unique_ptr<AudioBus> output_bus =
       AudioBus::CreateWrapper(output_buffer->channel_count());
 
   int frames_remaining = request_frames;

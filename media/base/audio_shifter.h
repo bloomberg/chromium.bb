@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <deque>
+#include <memory>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/multi_channel_resampler.h"
@@ -74,7 +74,7 @@ class MEDIA_EXPORT AudioShifter {
   // the samples will be buffered until the approperiate time. If
   // playout_time is in the past, everything will still work, and we'll
   // try to keep the buffring to a minimum.
-  void Push(scoped_ptr<AudioBus> input, base::TimeTicks playout_time);
+  void Push(std::unique_ptr<AudioBus> input, base::TimeTicks playout_time);
 
   // Fills out |output| with samples. Tries to stretch/shrink the audio
   // to compensate for drift between input and output.
@@ -88,7 +88,7 @@ private:
 
   struct AudioQueueEntry {
     AudioQueueEntry(base::TimeTicks target_playout_time_,
-                    scoped_ptr<AudioBus> audio_);
+                    std::unique_ptr<AudioBus> audio_);
     AudioQueueEntry(const AudioQueueEntry& other);
     ~AudioQueueEntry();
     base::TimeTicks target_playout_time;
@@ -106,8 +106,8 @@ private:
 
   // The clock smoothers are used to smooth out timestamps
   // and adjust for drift and inaccurate clocks.
-  scoped_ptr<ClockSmoother> input_clock_smoother_;
-  scoped_ptr<ClockSmoother> output_clock_smoother_;
+  std::unique_ptr<ClockSmoother> input_clock_smoother_;
+  std::unique_ptr<ClockSmoother> output_clock_smoother_;
 
   // Are we currently outputting data?
   bool running_;

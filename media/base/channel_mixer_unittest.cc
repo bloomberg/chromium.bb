@@ -6,6 +6,7 @@
 #define _USE_MATH_DEFINES
 
 #include <cmath>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -41,10 +42,10 @@ TEST(ChannelMixerTest, ConstructAllPossibleLayouts) {
       SCOPED_TRACE(base::StringPrintf(
           "Input Layout: %d, Output Layout: %d", input_layout, output_layout));
       ChannelMixer mixer(input_layout, output_layout);
-      scoped_ptr<AudioBus> input_bus = AudioBus::Create(
-          ChannelLayoutToChannelCount(input_layout), kFrames);
-      scoped_ptr<AudioBus> output_bus = AudioBus::Create(
-          ChannelLayoutToChannelCount(output_layout), kFrames);
+      std::unique_ptr<AudioBus> input_bus =
+          AudioBus::Create(ChannelLayoutToChannelCount(input_layout), kFrames);
+      std::unique_ptr<AudioBus> output_bus =
+          AudioBus::Create(ChannelLayoutToChannelCount(output_layout), kFrames);
       for (int ch = 0; ch < input_bus->channels(); ++ch)
         std::fill(input_bus->channel(ch), input_bus->channel(ch) + kFrames, 1);
 
@@ -104,7 +105,8 @@ class ChannelMixerTest : public testing::TestWithParam<ChannelMixerTestData> {};
 TEST_P(ChannelMixerTest, Mixing) {
   ChannelLayout input_layout = GetParam().input_layout;
   int input_channels = GetParam().input_channels;
-  scoped_ptr<AudioBus> input_bus = AudioBus::Create(input_channels, kFrames);
+  std::unique_ptr<AudioBus> input_bus =
+      AudioBus::Create(input_channels, kFrames);
   AudioParameters input_audio(AudioParameters::AUDIO_PCM_LINEAR, input_layout,
                               AudioParameters::kAudioCDSampleRate, 16, kFrames);
   if (input_layout == CHANNEL_LAYOUT_DISCRETE)
@@ -112,7 +114,8 @@ TEST_P(ChannelMixerTest, Mixing) {
 
   ChannelLayout output_layout = GetParam().output_layout;
   int output_channels = GetParam().output_channels;
-  scoped_ptr<AudioBus> output_bus = AudioBus::Create(output_channels, kFrames);
+  std::unique_ptr<AudioBus> output_bus =
+      AudioBus::Create(output_channels, kFrames);
   AudioParameters output_audio(AudioParameters::AUDIO_PCM_LINEAR, output_layout,
                                AudioParameters::kAudioCDSampleRate, 16,
                                kFrames);

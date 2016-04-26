@@ -5,6 +5,8 @@
 #ifndef MEDIA_RENDERERS_DEFAULT_RENDERER_FACTORY_H_
 #define MEDIA_RENDERERS_DEFAULT_RENDERER_FACTORY_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -33,7 +35,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
                          const AudioHardwareConfig& audio_hardware_config);
   ~DefaultRendererFactory() final;
 
-  scoped_ptr<Renderer> CreateRenderer(
+  std::unique_ptr<Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       AudioRendererSink* audio_renderer_sink,

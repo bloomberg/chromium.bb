@@ -5,10 +5,10 @@
 #ifndef MEDIA_BASE_PROVISION_FETCHER_H
 #define MEDIA_BASE_PROVISION_FETCHER_H
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -35,7 +35,7 @@ class MEDIA_EXPORT ProvisionFetcher {
                         const ResponseCB& response_cb) = 0;
 };
 
-using CreateFetcherCB = base::Callback<scoped_ptr<ProvisionFetcher>()>;
+using CreateFetcherCB = base::Callback<std::unique_ptr<ProvisionFetcher>()>;
 
 }  // namespace media
 

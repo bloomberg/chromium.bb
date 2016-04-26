@@ -5,11 +5,13 @@
 #include "media/base/android/media_codec_player.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 #include "media/base/android/demuxer_android.h"
 #include "media/base/android/media_codec_util.h"
@@ -348,12 +350,12 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   void SetDemuxerDeletedCallback(base::Closure cb) { demuxer_deleted_cb_ = cb; }
 
   // Sets the audio data factory.
-  void SetAudioFactory(scoped_ptr<AudioFactory> factory) {
+  void SetAudioFactory(std::unique_ptr<AudioFactory> factory) {
     audio_factory_ = std::move(factory);
   }
 
   // Sets the video data factory.
-  void SetVideoFactory(scoped_ptr<VideoFactory> factory) {
+  void SetVideoFactory(std::unique_ptr<VideoFactory> factory) {
     video_factory_ = std::move(factory);
   }
 
@@ -390,9 +392,9 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   base::MessageLoop* ui_message_loop_;
   DemuxerAndroidClient* client_;
 
-  scoped_ptr<DemuxerConfigs> pending_configs_;
-  scoped_ptr<AudioFactory> audio_factory_;
-  scoped_ptr<VideoFactory> video_factory_;
+  std::unique_ptr<DemuxerConfigs> pending_configs_;
+  std::unique_ptr<AudioFactory> audio_factory_;
+  std::unique_ptr<VideoFactory> video_factory_;
 
   base::TimeDelta audio_preroll_interval_;
   base::TimeDelta video_preroll_interval_;
@@ -513,7 +515,7 @@ void MockDemuxerAndroid::PostConfigs(const DemuxerConfigs& configs) {
   if (client_)
     client_->OnDemuxerConfigsAvailable(configs);
   else
-    pending_configs_ = scoped_ptr<DemuxerConfigs>(new DemuxerConfigs(configs));
+    pending_configs_ = base::WrapUnique(new DemuxerConfigs(configs));
 }
 
 void MockDemuxerAndroid::PostInternalConfigs() {
@@ -570,8 +572,8 @@ class MediaCodecPlayerTest : public testing::Test {
   bool StartVideoPlayback(base::TimeDelta duration, const char* test_name);
 
   // Helper method that starts audio and video streams.
-  bool StartAVPlayback(scoped_ptr<AudioFactory> audio_factory,
-                       scoped_ptr<VideoFactory> video_factory,
+  bool StartAVPlayback(std::unique_ptr<AudioFactory> audio_factory,
+                       std::unique_ptr<VideoFactory> video_factory,
                        uint32_t flags,
                        const char* test_name);
 
@@ -579,8 +581,8 @@ class MediaCodecPlayerTest : public testing::Test {
   // The preroll is achieved by setting significant video preroll interval
   // so video will have to catch up with audio. To make room for this interval
   // the Start() command is preceded by SeekTo().
-  bool StartAVSeekAndPreroll(scoped_ptr<AudioFactory> audio_factory,
-                             scoped_ptr<VideoFactory> video_factory,
+  bool StartAVSeekAndPreroll(std::unique_ptr<AudioFactory> audio_factory,
+                             std::unique_ptr<VideoFactory> video_factory,
                              base::TimeDelta seek_position,
                              uint32_t flags,
                              const char* test_name);
@@ -644,7 +646,7 @@ void MediaCodecPlayerTest::CreatePlayer() {
       manager_.GetWeakPtr(),
       base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
                  base::Unretained(&manager_)),
-      scoped_ptr<MockDemuxerAndroid>(demuxer_), GURL(), kDefaultMediaSessionId);
+      base::WrapUnique(demuxer_), GURL(), kDefaultMediaSessionId);
 
   DCHECK(player_);
 }
@@ -711,8 +713,7 @@ bool MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration,
                                               const char* test_name) {
   const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
 
-  demuxer_->SetVideoFactory(
-      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
 
   CreatePlayer();
 
@@ -749,8 +750,8 @@ bool MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration,
 }
 
 bool MediaCodecPlayerTest::StartAVPlayback(
-    scoped_ptr<AudioFactory> audio_factory,
-    scoped_ptr<VideoFactory> video_factory,
+    std::unique_ptr<AudioFactory> audio_factory,
+    std::unique_ptr<VideoFactory> video_factory,
     uint32_t flags,
     const char* test_name) {
   demuxer_->SetAudioFactory(std::move(audio_factory));
@@ -807,8 +808,8 @@ bool MediaCodecPlayerTest::StartAVPlayback(
 }
 
 bool MediaCodecPlayerTest::StartAVSeekAndPreroll(
-    scoped_ptr<AudioFactory> audio_factory,
-    scoped_ptr<VideoFactory> video_factory,
+    std::unique_ptr<AudioFactory> audio_factory,
+    std::unique_ptr<VideoFactory> video_factory,
     base::TimeDelta seek_position,
     uint32_t flags,
     const char* test_name) {
@@ -944,8 +945,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioPlayTillCompletion) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(2000);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
 
   CreatePlayer();
 
@@ -979,8 +979,7 @@ TEST_F(MediaCodecPlayerTest, AudioNoPermission) {
 
   manager_.SetPlaybackAllowed(false);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
 
   CreatePlayer();
 
@@ -1027,8 +1026,7 @@ TEST_F(MediaCodecPlayerTest, VideoNoPermission) {
 
   manager_.SetPlaybackAllowed(false);
 
-  demuxer_->SetVideoFactory(
-      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
 
   CreatePlayer();
 
@@ -1061,8 +1059,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekAfterStop) {
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
 
   CreatePlayer();
 
@@ -1121,8 +1118,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekThenPlay) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
 
   CreatePlayer();
 
@@ -1156,8 +1152,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekThenPlayThenConfig) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
 
   CreatePlayer();
 
@@ -1198,8 +1193,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekWhilePlaying) {
   // short period of time (200 ms).
   base::TimeDelta duration = base::TimeDelta::FromSeconds(10);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
 
   CreatePlayer();
 
@@ -1486,8 +1480,7 @@ TEST_F(MediaCodecPlayerTest, VideoPrerollAfterSeek) {
   // Tell demuxer to make the first frame 100ms earlier than the seek request.
   demuxer_->SetVideoPrerollInterval(base::TimeDelta::FromMilliseconds(100));
 
-  demuxer_->SetVideoFactory(
-      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
 
   CreatePlayer();
   SetVideoSurface();
@@ -1544,8 +1537,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollAudioWaitsForVideo) {
   base::TimeDelta preroll_intvl = base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   demuxer_->SetVideoPrerollInterval(preroll_intvl);
 
@@ -1593,8 +1586,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollReleaseAndRestart) {
   base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
   base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   demuxer_->SetVideoPrerollInterval(preroll_intvl);
 
@@ -1667,8 +1660,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollStopAndRestart) {
   base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
   base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   demuxer_->SetVideoPrerollInterval(preroll_intvl);
 
@@ -1763,10 +1756,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollVideoEndsWhilePrerolling) {
 
   demuxer_->SetVideoPrerollInterval(video_preroll_intvl);
 
-  demuxer_->SetAudioFactory(
-      scoped_ptr<AudioFactory>(new AudioFactory(audio_duration)));
-  demuxer_->SetVideoFactory(
-      scoped_ptr<VideoFactory>(new VideoFactory(video_duration)));
+  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(audio_duration)));
+  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(video_duration)));
 
   CreatePlayer();
   SetVideoSurface();
@@ -1841,8 +1832,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_VideoConfigChangeWhilePlaying) {
   base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  demuxer_->SetVideoFactory(
-      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
 
   demuxer_->video_factory()->RequestConfigChange(config_change_position);
 
@@ -1911,8 +1901,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVVideoConfigChangeWhilePlaying) {
 
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   video_factory->RequestConfigChange(config_change_position);
 
@@ -1957,8 +1947,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVAudioConfigChangeWhilePlaying) {
 
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   audio_factory->RequestConfigChange(config_change_position);
 
@@ -2002,8 +1992,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVSimultaneousConfigChange_1) {
 
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   audio_factory->RequestConfigChange(config_change_audio);
   video_factory->RequestConfigChange(config_change_video);
@@ -2050,8 +2040,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVSimultaneousConfigChange_2) {
 
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   audio_factory->RequestConfigChange(config_change_audio);
   video_factory->RequestConfigChange(config_change_video);
@@ -2096,8 +2086,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVAudioEndsAcrossVideoConfigChange) {
 
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(audio_duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(video_duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(audio_duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(video_duration));
 
   video_factory->RequestConfigChange(config_change_video);
 
@@ -2146,8 +2136,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVVideoEndsAcrossAudioConfigChange) {
 
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(audio_duration));
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(video_duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(audio_duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(video_duration));
 
   audio_factory->RequestConfigChange(config_change_audio);
 
@@ -2189,9 +2179,9 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollAcrossVideoConfigChange) {
 
   demuxer_->SetVideoPrerollInterval(video_preroll_intvl);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
 
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
   video_factory->RequestConfigChange(config_change_position);
 
   ASSERT_TRUE(StartAVSeekAndPreroll(
@@ -2238,10 +2228,10 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollAcrossAudioConfigChange) {
 
   demuxer_->SetAudioPrerollInterval(audio_preroll_intvl);
 
-  scoped_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
+  std::unique_ptr<AudioFactory> audio_factory(new AudioFactory(duration));
   audio_factory->RequestConfigChange(config_change_position);
 
-  scoped_ptr<VideoFactory> video_factory(new VideoFactory(duration));
+  std::unique_ptr<VideoFactory> video_factory(new VideoFactory(duration));
 
   ASSERT_TRUE(StartAVSeekAndPreroll(
       std::move(audio_factory), std::move(video_factory), seek_position,

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/decoder_buffer.h"
+
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "media/base/decoder_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -116,7 +118,7 @@ TEST(DecoderBufferTest, DecryptConfig) {
   DecryptConfig decrypt_config(kKeyId, kIv, subsamples);
 
   buffer->set_decrypt_config(
-      make_scoped_ptr(new DecryptConfig(kKeyId, kIv, subsamples)));
+      base::WrapUnique(new DecryptConfig(kKeyId, kIv, subsamples)));
 
   EXPECT_TRUE(buffer->decrypt_config());
   EXPECT_TRUE(buffer->decrypt_config()->Matches(decrypt_config));

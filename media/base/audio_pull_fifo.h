@@ -5,9 +5,10 @@
 #ifndef MEDIA_BASE_AUDIO_PULL_FIFO_H_
 #define MEDIA_BASE_AUDIO_PULL_FIFO_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -54,7 +55,7 @@ class MEDIA_EXPORT AudioPullFifo {
   const ReadCB read_cb_;
 
   // Temporary audio bus to hold the data from the producer.
-  scoped_ptr<AudioBus> fifo_;
+  std::unique_ptr<AudioBus> fifo_;
   int fifo_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPullFifo);

@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -81,7 +82,7 @@ class AudioDecoderJob : public MediaDecoderJob {
   base::TimeDelta base_timestamp_;
 
   // Object to calculate the current audio timestamp for A/V sync.
-  scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> audio_timestamp_helper_;
 
   // The time limit for the next frame to avoid underrun.
   base::TimeTicks next_frame_time_limit_;

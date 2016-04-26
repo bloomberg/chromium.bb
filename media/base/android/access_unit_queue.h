@@ -10,7 +10,6 @@
 #include <list>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 
