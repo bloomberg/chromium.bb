@@ -189,7 +189,6 @@ void ChildProcessHost::DoLaunch(
     MachBroker* mach_broker = MachBroker::GetInstance();
     base::AutoLock locker(mach_broker->GetLock());
 #endif
-    LOG(WARNING) << "PATH: " << app_path_.value();
     child_process_ = base::LaunchProcess(*child_command_line, options);
 #if defined(OS_MACOSX)
     mach_broker->ExpectPid(child_process_.Handle());

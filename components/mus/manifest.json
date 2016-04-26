@@ -3,8 +3,15 @@
   "name": "mojo:mus",
   "display_name": "UI Service",
   "capabilities": {
+    "provided": {
+      "app": [
+        "mus::mojom::DisplayManager",
+        "mus::mojom::Gpu",
+        "mus::mojom::WindowTreeFactory"
+      ]
+    },
     "required": {
-      "*": { "interfaces": [ "*" ] },
+      "*": { "classes": [ "app" ] },
       "mojo:shell": { "classes": [ "shell:all_users" ] }
     }
   }

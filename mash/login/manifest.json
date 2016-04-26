@@ -4,7 +4,9 @@
   "display_name": "Login",
   "capabilities": {
     "required": {
-      "*": { "interfaces": [ "*" ] },
+      "*": { "classes": [ "app" ] },
+      "mojo:mash_init": { "interfaces": [ "mash::init::mojom::Init" ] },
+      "mojo:mus": { "interfaces": [ "mus::mojom::UserAccessManager" ] },
       "mojo:shell":  { "classes":  ["shell:all_users"] }
     }
   }

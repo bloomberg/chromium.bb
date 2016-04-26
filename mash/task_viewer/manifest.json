@@ -3,7 +3,13 @@
   "name": "mojo:task_viewer",
   "display_name": "Task Viewer",
   "capabilities": {
-    "provided": { "launchable": ["mash::mojom::Launchable"] },
-    "required": { "*": { "interfaces": [ "*" ] } }
+    "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
+    "required": {
+      "*": { "classes": [ "app" ] },
+      "mojo:catalog": {
+        "interfaces": [ "catalog::mojom::Catalog" ]
+      },
+      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] }
+    }
   }
 }

@@ -62,18 +62,26 @@ CapabilitySpec GetPermissiveCapabilities() {
 
 CapabilityRequest GetCapabilityRequest(const CapabilitySpec& source_spec,
                                        const Identity& target) {
+  CapabilityRequest request;
+
   // Start by looking for specs specific to the supplied identity.
   auto it = source_spec.required.find(target.name());
-  if (it != source_spec.required.end())
-    return it->second;
+  if (it != source_spec.required.end()) {
+    std::copy(it->second.classes.begin(), it->second.classes.end(),
+              std::inserter(request.classes, request.classes.begin()));
+    std::copy(it->second.interfaces.begin(), it->second.interfaces.end(),
+              std::inserter(request.interfaces, request.interfaces.begin()));
+  }
 
-  // Fall back to looking for a wildcard rule.
+  // Apply wild card rules too.
   it = source_spec.required.find("*");
-  if (it != source_spec.required.end())
-    return it->second;
-
-  // Finally, nothing is allowed.
-  return CapabilityRequest();
+  if (it != source_spec.required.end()) {
+    std::copy(it->second.classes.begin(), it->second.classes.end(),
+              std::inserter(request.classes, request.classes.begin()));
+    std::copy(it->second.interfaces.begin(), it->second.interfaces.end(),
+              std::inserter(request.interfaces, request.interfaces.begin()));
+  }
+  return request;
 }
 
 CapabilityRequest GenerateCapabilityRequestForConnection(

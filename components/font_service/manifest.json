@@ -1,5 +1,15 @@
 {
+  "manifest_version": 1,
   "name": "mojo:font_service",
   "display_name": "Font Service",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "provided": {
+      "app": [
+        "font_service::FontService"
+      ]
+    },
+    "required": {
+      "*": { "classes": [ "app" ] }
+    }
+  }
 }

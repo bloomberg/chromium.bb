@@ -1,5 +1,14 @@
 {
+  "manifest_version":  1,
   "name": "mojo:mus_ws_unittests_app",
   "display_name": "Mus Window Server Unittests",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:mus": {
+        "classes": [ "app" ],
+        "interfaces":  [ "mus::mojom::WindowTreeHostFactory" ]
+      }
+    }
+  }
 }

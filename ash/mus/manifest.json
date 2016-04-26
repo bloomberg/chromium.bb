@@ -1,5 +1,16 @@
 {
+  "manifest_version":  1,
   "name": "mojo:ash_sysui",
   "display_name": "System UI",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "classes": [ "app" ] },
+      "mojo:desktop_wm": {
+        "interfaces": [
+          "mash::wm::mojom::ShelfLayout",
+          "mash::wm::mojom::UserWindowController"
+        ]
+      }
+    }
+  }
 }

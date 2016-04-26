@@ -4,7 +4,8 @@
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
     "required": {
-      "*": { "interfaces":  ["*"] }
+      "*": { "classes": [ "app" ] },
+      "mojo:mash_session": { "interfaces": [ "mash::session::mojom::Session" ] }
     }
   }
 }

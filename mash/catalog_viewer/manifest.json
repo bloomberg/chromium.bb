@@ -4,6 +4,9 @@
   "display_name": "Catalog Viewer",
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
-    "required": { "*": { "interfaces": [ "*" ] } }
+    "required": {
+      "*": { "classes": [ "app" ] },
+      "mojo:catalog": { "interfaces": [ "catalog::mojom::Catalog" ] }
+    }
   }
 }

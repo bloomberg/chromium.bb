@@ -1,5 +1,12 @@
 {
+  "manifest_version":  1,
   "name": "exe:content_renderer",
   "display_name": "Content Renderer",
-  "capabilities": { "mojo:mus": [ "mus::mojom::Gpu" ] }
+  "capabilities": {
+    "required": {
+      "mojo:mus": {
+        "interfaces":  [ "mus::mojom::Gpu" ]
+      }
+    }
+  }
 }

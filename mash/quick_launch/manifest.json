@@ -4,6 +4,9 @@
   "display_name": "Quick Launch Bar",
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
-    "required": { "*": { "interfaces": [ "*" ] } }
+    "required": {
+      "*": { "classes": [ "app", "mash:launchable" ] },
+      "mojo:catalog": { "interfaces": [ "catalog::mojom::Catalog" ] }
+    }
   }
 }
