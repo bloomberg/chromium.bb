@@ -12,6 +12,13 @@
 namespace internal {
 // Exposed for tests.
 extern const char kHistogramFromGWSFirstTextPaint[];
+extern const char kHistogramFromGWSAbortStopBeforePaint[];
+extern const char kHistogramFromGWSAbortStopBeforeCommit[];
+extern const char kHistogramFromGWSAbortCloseBeforePaint[];
+extern const char kHistogramFromGWSAbortCloseBeforeCommit[];
+extern const char kHistogramFromGWSAbortNewNavigationBeforePaint[];
+extern const char kHistogramFromGWSAbortUnknownNavigationBeforeCommit[];
+
 }  // namespace internal
 
 // FromGWSPageLoadMetricsLogger is a peer class to
@@ -25,9 +32,8 @@ class FromGWSPageLoadMetricsLogger {
  public:
   FromGWSPageLoadMetricsLogger() {}
 
-  void set_previously_committed_url(const GURL& url) {
-    previously_committed_url_ = url;
-  }
+  void SetPreviouslyCommittedUrl(const GURL& url);
+  void SetProvisionalUrl(const GURL& url);
 
   void set_navigation_initiated_via_link(bool navigation_initiated_via_link) {
     navigation_initiated_via_link_ = navigation_initiated_via_link;
@@ -42,6 +48,7 @@ class FromGWSPageLoadMetricsLogger {
   static bool IsGoogleSearchResultUrl(const GURL& url);
   static bool IsGoogleRedirectorUrl(const GURL& url);
   static bool IsGoogleSearchRedirectorUrl(const GURL& url);
+  bool ShouldLogMetrics(const GURL& url);
 
   // Whether the given query string contains the given component. The query
   // parameter should contain the query string of a URL (the portion following
@@ -58,21 +65,25 @@ class FromGWSPageLoadMetricsLogger {
   static bool QueryContainsComponentPrefix(const base::StringPiece query,
                                            const base::StringPiece component);
 
-  // Whether metrics should be logged based on state provided via setters and
-  // the given committed_url.
-  bool ShouldLogMetrics(const GURL& committed_url) const;
-
  private:
-  GURL previously_committed_url_;
+  bool previously_committed_url_is_search_results_ = false;
+  bool previously_committed_url_is_search_redirector_ = false;
   bool navigation_initiated_via_link_ = false;
+  bool provisional_url_is_search_results_or_google_redirector_ = false;
+
+  static bool IsUrlFromGWS(const GURL& url);
 
   // Common helper for QueryContainsComponent and QueryContainsComponentPrefix.
   static bool QueryContainsComponentHelper(const base::StringPiece query,
                                            const base::StringPiece component,
                                            bool component_is_prefix);
 
-  void LogMetrics(const page_load_metrics::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& extra_info);
+  void LogCommittedMetrics(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
+  void LogProvisionalMetrics(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
 
   DISALLOW_COPY_AND_ASSIGN(FromGWSPageLoadMetricsLogger);
 };

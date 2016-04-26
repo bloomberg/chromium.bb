@@ -10,6 +10,7 @@
 
 namespace {
 const char kExampleUrl[] = "http://www.example.com/";
+const char kGoogleSearchResultsUrl[] = "https://www.google.com/webhp?q=d";
 }  // namespace
 
 class FromGWSPageLoadMetricsObserverTest
@@ -18,6 +19,11 @@ class FromGWSPageLoadMetricsObserverTest
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         base::WrapUnique(new FromGWSPageLoadMetricsObserver()));
+  }
+  void SimulateTimingWithoutPaint() {
+    page_load_metrics::PageLoadTiming timing;
+    timing.navigation_start = base::Time::FromDoubleT(1);
+    SimulateTimingUpdate(timing);
   }
 };
 
@@ -350,6 +356,171 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
       timing.first_text_paint.InMilliseconds(), 1);
 }
 
+TEST_F(FromGWSPageLoadMetricsObserverTest, UnknownNavigationBeforeCommit) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  StartNavigation(GURL("http://example.test"));
+
+  // Simulate the user performing another navigation before commit.
+  StartNavigation(GURL("https://www.example.com"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortUnknownNavigationBeforeCommit, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, NewNavigationBeforePaint) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("http://example.test"));
+  SimulateTimingWithoutPaint();
+  // Simulate the user performing another navigation before paint.
+  NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortNewNavigationBeforePaint, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, StopBeforeCommit) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  StartNavigation(GURL("http://example.test"));
+  // Simulate the user pressing the stop button.
+  web_contents()->Stop();
+  // Now close the tab. This will trigger logging for the prior navigation which
+  // was stopped above.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforeCommit, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, StopBeforeCommitNonSearch) {
+  NavigateAndCommit(GURL("http://google.com"));
+  StartNavigation(GURL("http://example.test"));
+  // Simulate the user pressing the stop button.
+  web_contents()->Stop();
+  // Now close the tab. This will trigger logging for the prior navigation which
+  // was stopped above.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforeCommit, 0);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, StopBeforeCommitSearchToSearch) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  StartNavigation(GURL("http://www.google.com/webhp?q=5"));
+  // Simulate the user pressing the stop button.
+  web_contents()->Stop();
+  // Now close the tab. This will trigger logging for the prior navigation which
+  // was stopped above.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforeCommit, 0);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, StopBeforePaint) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("http://example.test"));
+  SimulateTimingWithoutPaint();
+  // Simulate the user pressing the stop button.
+  web_contents()->Stop();
+  // Now close the tab. This will trigger logging for the prior navigation which
+  // was stopped above.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforePaint, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, StopBeforeCommitAndBeforePaint) {
+  // Commit the first navigation.
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingWithoutPaint();
+  // Now start a second navigation, but don't commit it.
+  StartNavigation(GURL("https://www.google.com"));
+  // Simulate the user pressing the stop button. This should cause us to record
+  // stop metrics for the FromGWS committed load, too.
+  web_contents()->Stop();
+  // Simulate closing the tab.
+  DeleteContents();
+  // The second navigation was not from GWS.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforeCommit, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforePaint, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, CloseBeforeCommit) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  StartNavigation(GURL("https://example.test"));
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeCommit, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, CloseBeforePaint) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingWithoutPaint();
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforePaint, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest,
+       AbortCloseBeforeCommitAndBeforePaint) {
+  // Commit the first navigation.
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingWithoutPaint();
+  // Now start a second navigation, but don't commit it.
+  StartNavigation(GURL("https://example.test2"));
+  // Simulate closing the tab.
+  DeleteContents();
+  // The second navigation was not from GWS.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforeCommit, 0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforePaint, 1);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest,
+       AbortStopBeforeCommitAndCloseBeforePaint) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  StartNavigation(GURL("https://example.test"));
+  // Simulate the user pressing the stop button.
+  web_contents()->Stop();
+  NavigateAndCommit(GURL("https://example.test2"));
+  SimulateTimingWithoutPaint();
+  // Simulate closing the tab.
+  DeleteContents();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortStopBeforeCommit, 1);
+  // The second navigation was from GWS, as GWS was the last committed URL.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortCloseBeforePaint, 1);
+}
+
+// TODO(bmcquade, csharrison): add tests for reload, back/forward, and other
+// aborts.
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, NoAbortNewNavigationFromAboutURL) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  NavigateAndCommit(GURL("about:blank"));
+  NavigateAndCommit(GURL("https://www.example.com"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortNewNavigationBeforePaint, 0);
+}
+
+TEST_F(FromGWSPageLoadMetricsObserverTest, NoAbortNewNavigationAfterPaint) {
+  NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.first_paint = base::TimeDelta::FromMicroseconds(1);
+  PopulateRequiredTimingFields(&timing);
+  NavigateAndCommit(GURL("https://example.test"));
+  SimulateTimingUpdate(timing);
+  NavigateAndCommit(GURL("https://example.test2"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSAbortNewNavigationBeforePaint, 0);
+}
+
 TEST_F(FromGWSPageLoadMetricsLoggerTest, IsGoogleSearchHostname) {
   struct {
     bool expected_result;
@@ -527,31 +698,39 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, Basic) {
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NoPreviousPage) {
   FromGWSPageLoadMetricsLogger logger;
-  logger.set_previously_committed_url(GURL());
+  logger.SetPreviouslyCommittedUrl(GURL());
   logger.set_navigation_initiated_via_link(true);
   ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationNotInitiatedViaLink) {
   FromGWSPageLoadMetricsLogger logger;
-  logger.set_previously_committed_url(
+  logger.SetPreviouslyCommittedUrl(
       GURL("https://www.google.com/search?q=test"));
   logger.set_navigation_initiated_via_link(false);
   ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
 }
 
-TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearchToSearch) {
+TEST_F(FromGWSPageLoadMetricsLoggerTest,
+       ProvisionalFromGWSNotInitiatedViaLink) {
   FromGWSPageLoadMetricsLogger logger;
-  logger.set_previously_committed_url(
+  logger.SetProvisionalUrl(
       GURL("https://www.google.com/search?q=test"));
-  logger.set_navigation_initiated_via_link(true);
-  ASSERT_FALSE(
-      logger.ShouldLogMetrics(GURL("https://www.google.com/search?q=test")));
+  logger.set_navigation_initiated_via_link(false);
+  ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
+}
+
+TEST_F(FromGWSPageLoadMetricsLoggerTest,
+       ProvisionalNotFromGWSNotInitiatedViaLink) {
+  FromGWSPageLoadMetricsLogger logger;
+  logger.SetProvisionalUrl(GURL("https://example.test/"));
+  logger.set_navigation_initiated_via_link(false);
+  ASSERT_FALSE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
 }
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearch) {
   FromGWSPageLoadMetricsLogger logger;
-  logger.set_previously_committed_url(
+  logger.SetPreviouslyCommittedUrl(
       GURL("https://www.google.com/search?q=test"));
   logger.set_navigation_initiated_via_link(true);
   ASSERT_TRUE(logger.ShouldLogMetrics(GURL(kExampleUrl)));
@@ -559,7 +738,7 @@ TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearch) {
 
 TEST_F(FromGWSPageLoadMetricsLoggerTest, NavigationFromSearchRedirector) {
   FromGWSPageLoadMetricsLogger logger;
-  logger.set_previously_committed_url(
+  logger.SetPreviouslyCommittedUrl(
       GURL("https://www.google.com/url?source=web"));
   logger.set_navigation_initiated_via_link(true);
   ASSERT_TRUE(logger.ShouldLogMetrics(GURL(kExampleUrl)));

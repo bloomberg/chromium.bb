@@ -91815,6 +91815,27 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstBackground"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsAbortClients" separator="."
+    ordering="prefix">
+  <suffix name="Clients.FromGWS2"
+      label="PageLoadMetrics that are a result of a navigation from a Google
+             web search"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.Close.AfterCommit.BeforePaint"/>
+  <affected-histogram name="PageLoad.AbortTiming.Close.BeforeCommit"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.ForwardBackNavigation.AfterCommit.BeforePaint"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.NewNavigation.AfterCommit.BeforePaint"/>
+  <affected-histogram name="PageLoad.AbortTiming.Other.BeforeCommit"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.Reload.AfterCommit.BeforePaint"/>
+  <affected-histogram name="PageLoad.AbortTiming.Stop.AfterCommit.BeforePaint"/>
+  <affected-histogram name="PageLoad.AbortTiming.Stop.BeforeCommit"/>
+  <affected-histogram
+      name="PageLoad.AbortTiming.UnknownNavigation.BeforeCommit"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClients" separator="."
     ordering="prefix">
   <suffix name="Clients.FromGWS"
