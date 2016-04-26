@@ -1649,8 +1649,12 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited, bool recursive) c
         children.append(ownedChild);
 
     for (AXObject* child : children) {
-        // Skip hidden children
-        if (child->isInertOrAriaHidden())
+        // Don't recurse into children that are explicitly marked as aria-hidden.
+        // Note that we don't call isInertOrAriaHidden because that would return true
+        // if any ancestor is hidden, but we need to be able to compute the accessible
+        // name of object inside hidden subtrees (for example, if aria-labelledby points
+        // to an object that's hidden).
+        if (equalIgnoringCase(child->getAttribute(aria_hiddenAttr), "true"))
             continue;
 
         // If we're going between two layoutObjects that are in separate LayoutBoxes, add
