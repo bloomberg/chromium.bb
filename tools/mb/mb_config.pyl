@@ -139,8 +139,7 @@
         'swarming_gyp_clang_official_release_bot_minimal_symbols_x64',
       'CrWinGoma': 'gyp_release_bot_minimal_symbols_x86',
       'CrWinGoma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
-      'ClangToTAndroidASan':
-        'android_clang_tot_asan_gn_debug_bot_minimal_symbols',
+      'ClangToTAndroidASan': 'android_clang_tot_asan',
       'ClangToTAndroidASan tester': 'none',
       'ClangToTLinux':
         'swarming_gyp_clang_tot_linux_dump_symbols_shared_release',
@@ -895,8 +894,9 @@
       'android', 'blink_logging', 'gyp', 'debug_static_bot', 'arm64',
     ],
 
-    'android_clang_tot_asan_gn_debug_bot_minimal_symbols': [
-      'android', 'clang_tot', 'asan', 'gn', 'debug_bot_minimal_symbols',
+    'android_clang_tot_asan': [
+      'android_without_codecs', 'clang_tot', 'asan', 'gn',
+      'shared', 'debug', 'minimal_symbols',
     ],
 
     'android_clang_asan_findbugs_gyp_debug_bot_minimal_symbols': [
