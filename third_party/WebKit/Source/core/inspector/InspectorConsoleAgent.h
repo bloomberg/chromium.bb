@@ -49,8 +49,7 @@ public:
     void restore() final;
 
     void addMessageToConsole(ConsoleMessage*);
-    void clearAllMessages();
-    void consoleMessagesCleared();
+    virtual void consoleMessagesCleared();
 
 protected:
     void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);

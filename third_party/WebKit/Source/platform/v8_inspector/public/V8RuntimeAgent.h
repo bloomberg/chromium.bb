@@ -9,7 +9,6 @@
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-#include "wtf/Functional.h"
 
 #include <v8.h>
 
@@ -29,10 +28,8 @@ public:
     virtual ~V8RuntimeAgent() { }
 
     // Embedder API.
-    using ClearConsoleCallback = Function<void()>;
-    virtual void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) = 0;
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) = 0;
-    // FIXME: remove when console.table moves into V8 inspector.
+    // FIXME: remove when InspectorConsoleAgent moves into V8 inspector.
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) = 0;
     virtual v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* objectGroup = nullptr) = 0;
     virtual void disposeObjectGroup(const String16&) = 0;

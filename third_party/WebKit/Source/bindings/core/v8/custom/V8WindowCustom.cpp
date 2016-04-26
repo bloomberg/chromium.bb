@@ -260,7 +260,7 @@ static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, co
     v8::Local<v8::Object> global = context->Global();
     v8::Local<v8::Value> scopeExtensionValue;
 
-    if (v8Call(global->Get(context, V8Debugger::scopeExtensionSymbol(isolate)), scopeExtensionValue)) {
+    if (v8Call(global->GetPrivate(context, V8Debugger::scopeExtensionPrivate(isolate)), scopeExtensionValue)) {
         v8::Local<v8::Value> value;
         if (scopeExtensionValue->IsObject() && v8Call(scopeExtensionValue->ToObject(isolate)->Get(context, name), value)) {
             if (isMethod) {

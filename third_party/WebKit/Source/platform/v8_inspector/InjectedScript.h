@@ -86,6 +86,7 @@ public:
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
+    v8::Local<v8::Value> lastEvaluationResult() const;
 
     class Scope {
     public:
@@ -110,12 +111,12 @@ public:
     private:
         void cleanup();
         V8DebuggerImpl::PauseOnExceptionsState setPauseOnExceptionsState(V8DebuggerImpl::PauseOnExceptionsState);
-        v8::MaybeLocal<v8::Object> installGlobalObjectExtension(V8FunctionCall&);
+        bool installGlobalObjectExtension(v8::Local<v8::Object>);
 
         v8::HandleScope m_handleScope;
         v8::TryCatch m_tryCatch;
         v8::Local<v8::Context> m_context;
-        v8::Local<v8::Symbol> m_extensionSymbol;
+        v8::Local<v8::Private> m_extensionPrivate;
         v8::MaybeLocal<v8::Object> m_global;
         bool m_ignoreExceptionsAndMuteConsole;
         V8DebuggerImpl::PauseOnExceptionsState m_previousPauseOnExceptionsState;
@@ -160,14 +161,15 @@ public:
 private:
     InjectedScript(InspectedContext*, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>);
     bool canAccessInspectedWindow() const;
-    v8::Local<v8::Value> lastEvaluationResult() const;
     v8::Local<v8::Value> v8Value() const;
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
+    v8::MaybeLocal<v8::Object> commandLineAPI(ErrorString*);
 
     InspectedContext* m_context;
     v8::Global<v8::Value> m_value;
     v8::Global<v8::Value> m_lastEvaluationResult;
     OwnPtr<InjectedScriptNative> m_native;
+    v8::Global<v8::Object> m_commandLineAPI;
 };
 
 } // namespace blink

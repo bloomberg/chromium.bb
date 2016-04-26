@@ -80,7 +80,6 @@ void PageConsoleAgent::disable(ErrorString* errorString)
 
 void PageConsoleAgent::clearMessages(ErrorString* errorString)
 {
-    m_inspectorDOMAgent->releaseDanglingNodes();
     messageStorage()->clear(m_inspectedFrames->root()->document());
 }
 
@@ -111,6 +110,12 @@ void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorPro
             sendConsoleMessageToFrontend(message, false);
         }
     }
+}
+
+void PageConsoleAgent::consoleMessagesCleared()
+{
+    m_inspectorDOMAgent->releaseDanglingNodes();
+    InspectorConsoleAgent::consoleMessagesCleared();
 }
 
 void PageConsoleAgent::enableStackCapturingIfNeeded()

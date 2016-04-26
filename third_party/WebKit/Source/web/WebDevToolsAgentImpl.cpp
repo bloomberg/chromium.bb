@@ -436,7 +436,6 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_pageAgent = pageAgent;
     m_session->append(pageAgent);
 
-    runtimeAgent->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, pageConsoleAgent));
     m_tracingAgent->setLayerTreeId(m_layerTreeId);
     m_resourceAgent->setHostId(hostId);
 

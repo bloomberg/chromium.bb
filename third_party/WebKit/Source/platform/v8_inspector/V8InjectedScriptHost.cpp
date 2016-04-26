@@ -43,12 +43,6 @@ inline void v8SetReturnValue(const CallbackInfo& info, bool value)
 
 }
 
-void V8InjectedScriptHost::clearConsoleMessagesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    InjectedScriptHost* impl = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    impl->clearConsoleMessages();
-}
-
 void V8InjectedScriptHost::inspectedObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
@@ -222,75 +216,6 @@ void V8InjectedScriptHost::inspectCallback(const v8::FunctionCallbackInfo<v8::Va
     host->inspectImpl(toProtocolValue(context, info[0]), toProtocolValue(context, info[1]));
 }
 
-static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& info, String16* scriptId, int* lineNumber, int* columnNumber)
-{
-    if (info.Length() < 1 || !info[0]->IsFunction())
-        return false;
-    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(info[0]);
-    *lineNumber = function->GetScriptLineNumber();
-    *columnNumber = function->GetScriptColumnNumber();
-    if (*lineNumber == v8::Function::kLineOffsetNotFound || *columnNumber == v8::Function::kLineOffsetNotFound)
-        return false;
-    *scriptId = String16::number(function->ScriptId());
-    return true;
-}
-
-void V8InjectedScriptHost::debugFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    String16 scriptId;
-    int lineNumber;
-    int columnNumber;
-    if (!getFunctionLocation(info, &scriptId, &lineNumber, &columnNumber))
-        return;
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    host->debugFunction(scriptId, lineNumber, columnNumber);
-}
-
-void V8InjectedScriptHost::undebugFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    String16 scriptId;
-    int lineNumber;
-    int columnNumber;
-    if (!getFunctionLocation(info, &scriptId, &lineNumber, &columnNumber))
-        return;
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    host->undebugFunction(scriptId, lineNumber, columnNumber);
-}
-
-void V8InjectedScriptHost::monitorFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    String16 scriptId;
-    int lineNumber;
-    int columnNumber;
-    if (!getFunctionLocation(info, &scriptId, &lineNumber, &columnNumber))
-        return;
-
-    v8::Local<v8::Value> name;
-    if (info.Length() > 0 && info[0]->IsFunction()) {
-        v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(info[0]);
-        name = function->GetName();
-        if (!name->IsString() || !v8::Local<v8::String>::Cast(name)->Length())
-            name = function->GetInferredName();
-    }
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    host->monitorFunction(scriptId, lineNumber, columnNumber, toProtocolStringWithTypeCheck(name));
-}
-
-void V8InjectedScriptHost::unmonitorFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    String16 scriptId;
-    int lineNumber;
-    int columnNumber;
-    if (!getFunctionLocation(info, &scriptId, &lineNumber, &columnNumber))
-        return;
-
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.GetIsolate()->GetCurrentContext(), info.Holder());
-    host->unmonitorFunction(scriptId, lineNumber, columnNumber);
-}
-
 void V8InjectedScriptHost::callFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 2 || info.Length() > 3 || !info[0]->IsFunction()) {
@@ -359,33 +284,9 @@ void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value
     info.GetReturnValue().Set(id);
 }
 
-v8::Local<v8::Symbol> V8Debugger::scopeExtensionSymbol(v8::Isolate* isolate)
+v8::Local<v8::Private> V8Debugger::scopeExtensionPrivate(v8::Isolate* isolate)
 {
-    return v8::Symbol::ForApi(isolate, toV8StringInternalized(isolate, "scopeExtension"));
-}
-
-bool V8Debugger::isCommandLineAPIMethod(const String16& name)
-{
-    DEFINE_STATIC_LOCAL(protocol::HashSet<String16>, methods, ());
-    if (methods.size() == 0) {
-        const char* members[] = { "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
-            "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
-            "debug", "undebug", "monitor", "unmonitor", "table", "$_" };
-        for (size_t i = 0; i < sizeof(members) / sizeof(const char*); ++i)
-            methods.add(members[i]);
-    }
-    return methods.find(name) != methods.end();
-}
-
-bool V8Debugger::isCommandLineAPIGetter(const String16& name)
-{
-    DEFINE_STATIC_LOCAL(protocol::HashSet<String16>, getters, ());
-    if (getters.size() == 0) {
-        const char* members[] = { "$0", "$1", "$2", "$3", "$4" };
-        for (size_t i = 0; i < sizeof(members) / sizeof(const char*); ++i)
-            getters.add(members[i]);
-    }
-    return getters.find(name) != getters.end();
+    return v8::Private::ForApi(isolate, toV8StringInternalized(isolate, "V8Debugger#scopeExtension"));
 }
 
 bool V8Debugger::isRemoteObjectAPIMethod(const String16& name)
@@ -400,7 +301,6 @@ char className[] = "V8InjectedScriptHost";
 using InjectedScriptHostWrapper = InspectorWrapper<InjectedScriptHost, hiddenPropertyName, className>;
 
 const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMethods[] = {
-    {"clearConsoleMessages", V8InjectedScriptHost::clearConsoleMessagesCallback},
     {"inspect", V8InjectedScriptHost::inspectCallback},
     {"inspectedObject", V8InjectedScriptHost::inspectedObjectCallback},
     {"internalConstructorName", V8InjectedScriptHost::internalConstructorNameCallback},
@@ -410,10 +310,6 @@ const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMetho
     {"collectionEntries", V8InjectedScriptHost::collectionEntriesCallback},
     {"getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback},
     {"getEventListeners", V8InjectedScriptHost::getEventListenersCallback},
-    {"debugFunction", V8InjectedScriptHost::debugFunctionCallback},
-    {"undebugFunction", V8InjectedScriptHost::undebugFunctionCallback},
-    {"monitorFunction", V8InjectedScriptHost::monitorFunctionCallback},
-    {"unmonitorFunction", V8InjectedScriptHost::unmonitorFunctionCallback},
     {"callFunction", V8InjectedScriptHost::callFunctionCallback},
     {"suppressWarningsAndCallFunction", V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback},
     {"setNonEnumProperty", V8InjectedScriptHost::setNonEnumPropertyCallback},

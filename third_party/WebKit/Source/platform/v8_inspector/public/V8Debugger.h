@@ -49,7 +49,7 @@ public:
     virtual PassOwnPtr<V8InspectorSession> connect(int contextGroupId) = 0;
     virtual bool isPaused() = 0;
 
-    static v8::Local<v8::Symbol> scopeExtensionSymbol(v8::Isolate*);
+    static v8::Local<v8::Private> scopeExtensionPrivate(v8::Isolate*);
     static bool isCommandLineAPIMethod(const String16& name);
     static bool isCommandLineAPIGetter(const String16& name);
     static bool isRemoteObjectAPIMethod(const String16& name);

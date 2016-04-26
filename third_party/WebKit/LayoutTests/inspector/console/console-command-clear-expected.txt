@@ -8,5 +8,5 @@ console-command-clear.html:9 one
 console-command-clear.html:10 two
 console-command-clear.html:11 three
 === After clear ===
-undefined
+VM:1 Console was cleared
 

@@ -98,12 +98,6 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
     sendConsoleMessageToFrontend(consoleMessage, true);
 }
 
-void InspectorConsoleAgent::clearAllMessages()
-{
-    ErrorString error;
-    clearMessages(&error);
-}
-
 void InspectorConsoleAgent::consoleMessagesCleared()
 {
     m_runtimeAgent->disposeObjectGroup("console");

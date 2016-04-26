@@ -62,12 +62,6 @@ public:
 
     void inspectImpl(PassOwnPtr<protocol::Value> objectToInspect, PassOwnPtr<protocol::Value> hints);
 
-    void clearConsoleMessages();
-    void debugFunction(const String16& scriptId, int lineNumber, int columnNumber);
-    void undebugFunction(const String16& scriptId, int lineNumber, int columnNumber);
-    void monitorFunction(const String16& scriptId, int lineNumber, int columnNumber, const String16& functionName);
-    void unmonitorFunction(const String16& scriptId, int lineNumber, int columnNumber);
-
     V8DebuggerImpl* debugger() { return m_debugger; }
 
     // FIXME: store this template in per isolate data

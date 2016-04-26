@@ -60,6 +60,8 @@ public:
     void workerTerminated(WorkerInspectorProxy*);
     void workerConsoleAgentEnabled(WorkerInspectorProxy*);
 
+    void consoleMessagesCleared() override;
+
 protected:
     ConsoleMessageStorage* messageStorage() override;
 

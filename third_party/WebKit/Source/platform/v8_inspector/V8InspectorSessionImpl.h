@@ -56,10 +56,6 @@ public:
     V8HeapProfilerAgent* heapProfilerAgent() override;
     V8ProfilerAgent* profilerAgent() override;
     V8RuntimeAgent* runtimeAgent() override;
-
-    void setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback) { m_clearConsoleCallback = callback; }
-    V8RuntimeAgent::ClearConsoleCallback* clearConsoleCallback() { return m_clearConsoleCallback.get(); }
-
 private:
     V8InspectorSessionImpl(V8DebuggerImpl*, int contextGroupId);
 
@@ -74,8 +70,6 @@ private:
     OwnPtr<V8DebuggerAgentImpl> m_debuggerAgent;
     OwnPtr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
     OwnPtr<V8ProfilerAgentImpl> m_profilerAgent;
-
-    OwnPtr<V8RuntimeAgent::ClearConsoleCallback> m_clearConsoleCallback;
 };
 
 } // namespace blink

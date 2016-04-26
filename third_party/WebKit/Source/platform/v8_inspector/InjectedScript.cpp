@@ -39,6 +39,7 @@
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8Compat.h"
+#include "platform/v8_inspector/V8Console.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8FunctionCall.h"
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
@@ -377,6 +378,21 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
     }
 }
 
+v8::MaybeLocal<v8::Object> InjectedScript::commandLineAPI(ErrorString* errorString)
+{
+    v8::Isolate* isolate = m_context->isolate();
+    if (m_commandLineAPI.IsEmpty()) {
+        V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "installCommandLineAPI");
+        function.appendArgument(V8Console::createCommandLineAPI(m_context));
+        bool hadException = false;
+        v8::Local<v8::Value> extension = function.call(hadException, false);
+        if (hasInternalError(errorString, hadException || extension.IsEmpty() || !extension->IsObject()))
+            return v8::MaybeLocal<v8::Object>();
+        m_commandLineAPI.Reset(isolate, extension.As<v8::Object>());
+    }
+    return m_commandLineAPI.Get(m_context->isolate());
+}
+
 InjectedScript::Scope::Scope(ErrorString* errorString, V8DebuggerImpl* debugger, int contextGroupId)
     : m_errorString(errorString)
     , m_debugger(debugger)
@@ -409,11 +425,10 @@ bool InjectedScript::Scope::initialize()
 bool InjectedScript::Scope::installCommandLineAPI()
 {
     ASSERT(m_injectedScript && !m_context.IsEmpty());
-    V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "commandLineAPI");
     v8::Local<v8::Object> extensionObject;
-    if (!installGlobalObjectExtension(function).ToLocal(&extensionObject))
+    if (!m_injectedScript->commandLineAPI(m_errorString).ToLocal(&extensionObject))
         return false;
-    return extensionObject->Set(m_context, toV8StringInternalized(m_context->GetIsolate(), "$_"), m_injectedScript->lastEvaluationResult()).FromMaybe(false);
+    return installGlobalObjectExtension(extensionObject);
 }
 
 bool InjectedScript::Scope::installRemoteObjectAPI(const String16& objectGroupName)
@@ -421,29 +436,27 @@ bool InjectedScript::Scope::installRemoteObjectAPI(const String16& objectGroupNa
     ASSERT(m_injectedScript && !m_context.IsEmpty());
     V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "remoteObjectAPI");
     function.appendArgument(objectGroupName);
-    v8::Local<v8::Object> extensionObject;
-    return installGlobalObjectExtension(function).ToLocal(&extensionObject);
-}
-
-v8::MaybeLocal<v8::Object> InjectedScript::Scope::installGlobalObjectExtension(V8FunctionCall& function)
-{
     bool hadException = false;
     v8::Local<v8::Value> extension = function.call(hadException, false);
     if (hadException || extension.IsEmpty() || !extension->IsObject()) {
         *m_errorString = "Internal error";
-        return v8::MaybeLocal<v8::Object>();
+        return false;
     }
+    v8::Local<v8::Object> extensionObject = extension.As<v8::Object>();
+    return installGlobalObjectExtension(extensionObject);
+}
 
+bool InjectedScript::Scope::installGlobalObjectExtension(v8::Local<v8::Object> extension)
+{
     ASSERT(m_global.IsEmpty());
-    m_extensionSymbol = V8Debugger::scopeExtensionSymbol(m_debugger->isolate());
+    m_extensionPrivate = V8Debugger::scopeExtensionPrivate(m_debugger->isolate());
     v8::Local<v8::Object> global = m_context->Global();
-    if (!global->Set(m_context, m_extensionSymbol, extension).FromMaybe(false)) {
+    if (!global->SetPrivate(m_context, m_extensionPrivate, extension).FromMaybe(false)) {
         *m_errorString = "Internal error";
-        return v8::MaybeLocal<v8::Object>();
+        return false;
     }
-
     m_global = global;
-    return extension.As<v8::Object>();
+    return true;
 }
 
 void InjectedScript::Scope::ignoreExceptionsAndMuteConsole()
@@ -469,7 +482,7 @@ void InjectedScript::Scope::cleanup()
     v8::Local<v8::Object> global;
     if (m_global.ToLocal(&global)) {
         ASSERT(!m_context.IsEmpty());
-        global->Delete(m_context, m_extensionSymbol);
+        global->DeletePrivate(m_context, m_extensionPrivate);
         m_global = v8::MaybeLocal<v8::Object>();
     }
     if (!m_context.IsEmpty()) {

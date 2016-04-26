@@ -607,11 +607,46 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @return {!CommandLineAPI}
+     * @param {!Object} nativeCommandLineAPI
+     * @return {!Object}
      */
-    commandLineAPI: function()
+    installCommandLineAPI: function(nativeCommandLineAPI)
     {
-        return new CommandLineAPI(this._commandLineAPIImpl);
+        // NOTE: This list contains only not native Command Line API methods. For full list: V8Console.
+        // NOTE: Argument names of these methods will be printed in the console, so use pretty names!
+        var members = [ "$", "$$", "$x", "monitorEvents", "unmonitorEvents", "inspect", "copy", "getEventListeners" ];
+        var commandLineAPIImpl = this._commandLineAPIImpl;
+        for (var member of members)
+            nativeCommandLineAPI[member] = bind(commandLineAPIImpl[member], commandLineAPIImpl);
+        for (var i = 0; i < 5; ++i) {
+            var member = "$" + i;
+            nativeCommandLineAPI[member] = bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i);
+        }
+        var functionToStringMap = new Map([
+            ["$",          "function $(selector, [startNode]) { [Command Line API] }"],
+            ["$$",         "function $$(selector, [startNode]) { [Command Line API] }"],
+            ["$x",         "function $x(xpath, [startNode]) { [Command Line API] }"],
+            ["dir",        "function dir(value) { [Command Line API] }"],
+            ["dirxml",     "function dirxml(value) { [Command Line API] }"],
+            ["keys",       "function keys(object) { [Command Line API] }"],
+            ["values",     "function values(object) { [Command Line API] }"],
+            ["inspect",    "function inspect(object) { [Command Line API] }"],
+            ["copy",       "function copy(value) { [Command Line API] }"],
+            ["clear",      "function clear() { [Command Line API] }"],
+            ["debug",      "function debug(function) { [Command Line API] }"],
+            ["undebug",    "function undebug(function) { [Command Line API] }"],
+            ["monitor",    "function monitor(function) { [Command Line API] }"],
+            ["unmonitor",  "function unmonitor(function) { [Command Line API] }"],
+            ["table",      "function table(data, [columns]) { [Command Line API] }"],
+            ["profile",    "function profile(title) { [Command Line API] }"],
+            ["profileEnd", "function profileEnd(title) { [Command Line API] }"],
+            ["monitorEvents",   "function monitorEvents(object, [types]) { [Command Line API] }"],
+            ["unmonitorEvents", "function unmonitorEvents(object, [types]) { [Command Line API] }"],
+            ["getEventListeners", "function getEventListeners(node) { [Command Line API] }"]
+        ]);
+        for (let entry of functionToStringMap)
+            nativeCommandLineAPI[entry[0]].toString = (() => entry[1]);
+        return nativeCommandLineAPI;
     },
 
     /**
@@ -1136,60 +1171,6 @@ InjectedScript.RemoteObject.prototype = {
 
 /**
  * @constructor
- * @param {!CommandLineAPIImpl} commandLineAPIImpl
- */
-function CommandLineAPI(commandLineAPIImpl)
-{
-    /**
-     * @param {string} name The name of the method for which a toString method should be generated.
-     * @return {function():string}
-     */
-    function customToStringMethod(name)
-    {
-        return function()
-        {
-            var funcArgsSyntax = "";
-            try {
-                var funcSyntax = "" + commandLineAPIImpl[name];
-                funcSyntax = funcSyntax.replace(/\n/g, " ");
-                funcSyntax = funcSyntax.replace(/^function[^\(]*\(([^\)]*)\).*$/, "$1");
-                funcSyntax = funcSyntax.replace(/\s*,\s*/g, ", ");
-                funcSyntax = funcSyntax.replace(/\bopt_(\w+)\b/g, "[$1]");
-                funcArgsSyntax = funcSyntax.trim();
-            } catch (e) {
-            }
-            return "function " + name + "(" + funcArgsSyntax + ") { [Command Line API] }";
-        };
-    }
-
-    for (var i = 0; i < CommandLineAPI.members_.length; ++i) {
-        var member = CommandLineAPI.members_[i];
-        this[member] = bind(commandLineAPIImpl[member], commandLineAPIImpl);
-        this[member].toString = customToStringMethod(member);
-    }
-
-    for (var i = 0; i < 5; ++i) {
-        var member = "$" + i;
-        this[member] = bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i);
-    }
-    this.__proto__ = null;
-}
-
-// NOTE: Please keep the list of API methods below synchronized to that in WebInspector.RuntimeModel
-// and V8InjectedScriptHost!
-// NOTE: Argument names of these methods will be printed in the console, so use pretty names!
-/**
- * @type {!Array.<string>}
- * @const
- */
-CommandLineAPI.members_ = [
-    "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
-    "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
-    "debug", "undebug", "monitor", "unmonitor", "table"
-];
-
-/**
- * @constructor
  */
 function CommandLineAPIImpl()
 {
@@ -1256,57 +1237,6 @@ CommandLineAPIImpl.prototype = {
     },
 
     /**
-     * @return {*}
-     */
-    dir: function(var_args)
-    {
-        return InjectedScriptHost.callFunction(inspectedGlobalObject.console.dir, inspectedGlobalObject.console, slice(arguments));
-    },
-
-    /**
-     * @return {*}
-     */
-    dirxml: function(var_args)
-    {
-        return InjectedScriptHost.callFunction(inspectedGlobalObject.console.dirxml, inspectedGlobalObject.console, slice(arguments));
-    },
-
-    /**
-     * @return {!Array.<string>}
-     */
-    keys: function(object)
-    {
-        return Object.keys(object);
-    },
-
-    /**
-     * @return {!Array.<*>}
-     */
-    values: function(object)
-    {
-        var result = [];
-        for (var key in object)
-            push(result, object[key]);
-        return result;
-    },
-
-    /**
-     * @return {*}
-     */
-    profile: function(opt_title)
-    {
-        return InjectedScriptHost.callFunction(inspectedGlobalObject.console.profile, inspectedGlobalObject.console, slice(arguments));
-    },
-
-    /**
-     * @return {*}
-     */
-    profileEnd: function(opt_title)
-    {
-        return InjectedScriptHost.callFunction(inspectedGlobalObject.console.profileEnd, inspectedGlobalObject.console, slice(arguments));
-    },
-
-    /**
      * @param {!Object} object
      * @param {!Array.<string>|string=} opt_types
      */
@@ -1363,11 +1293,6 @@ CommandLineAPIImpl.prototype = {
         InjectedScriptHost.inspect(remoteObject, hints);
     },
 
-    clear: function()
-    {
-        InjectedScriptHost.clearConsoleMessages();
-    },
-
     /**
      * @param {!Node} node
      * @return {!Object|undefined}
@@ -1414,31 +1339,6 @@ CommandLineAPIImpl.prototype = {
             }
         }
         return result;
-    },
-
-    debug: function(fn)
-    {
-        InjectedScriptHost.debugFunction(fn);
-    },
-
-    undebug: function(fn)
-    {
-        InjectedScriptHost.undebugFunction(fn);
-    },
-
-    monitor: function(fn)
-    {
-        InjectedScriptHost.monitorFunction(fn);
-    },
-
-    unmonitor: function(fn)
-    {
-        InjectedScriptHost.unmonitorFunction(fn);
-    },
-
-    table: function(data, opt_columns)
-    {
-        InjectedScriptHost.callFunction(inspectedGlobalObject.console.table, inspectedGlobalObject.console, slice(arguments));
     },
 
     /**

@@ -383,11 +383,6 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     m_session->changeInstrumentationCounter(-1);
 }
 
-void V8RuntimeAgentImpl::setClearConsoleCallback(PassOwnPtr<V8RuntimeAgent::ClearConsoleCallback> callback)
-{
-    m_session->setClearConsoleCallback(callback);
-}
-
 PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;

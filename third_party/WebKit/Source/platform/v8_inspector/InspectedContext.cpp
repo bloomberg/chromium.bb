@@ -45,7 +45,7 @@ InspectedContext::InspectedContext(V8DebuggerImpl* debugger, const V8ContextInfo
     v8::Isolate* isolate = m_debugger->isolate();
     v8::Local<v8::Object> global = info.context->Global();
     v8::Local<v8::Object> console;
-    if (!V8Console::create(info.context, this, info.hasMemoryOnConsole).ToLocal(&console))
+    if (!V8Console::createConsole(this, info.hasMemoryOnConsole).ToLocal(&console))
         return;
     if (!global->Set(info.context, toV8StringInternalized(isolate, "console"), console).FromMaybe(false))
         return;
