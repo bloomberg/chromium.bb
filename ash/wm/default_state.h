@@ -8,6 +8,7 @@
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 namespace wm {

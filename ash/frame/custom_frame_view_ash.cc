@@ -15,6 +15,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
@@ -64,21 +65,25 @@ class CustomFrameViewAshWindowStateDelegate
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_ = window_state;
     window_state_->AddObserver(this);
-    window_state_->aura_window()->AddObserver(this);
+    GetAuraWindow()->AddObserver(this);
   }
   ~CustomFrameViewAshWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
-      window_state_->aura_window()->RemoveObserver(this);
+      GetAuraWindow()->RemoveObserver(this);
     }
   }
  private:
+  aura::Window* GetAuraWindow() {
+    return ash::wm::WmWindowAura::GetAuraWindow(window_state_->window());
+  }
+
   // Overridden from ash::wm::WindowStateDelegate:
   bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
     bool enter_fullscreen = !window_state->IsFullscreen();
     if (enter_fullscreen) {
-      window_state->aura_window()->SetProperty(aura::client::kShowStateKey,
-                                               ui::SHOW_STATE_FULLSCREEN);
+      GetAuraWindow()->SetProperty(aura::client::kShowStateKey,
+                                   ui::SHOW_STATE_FULLSCREEN);
     } else {
       window_state->Restore();
     }
@@ -92,7 +97,7 @@ class CustomFrameViewAshWindowStateDelegate
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
-    window_state_->aura_window()->RemoveObserver(this);
+    GetAuraWindow()->RemoveObserver(this);
     window_state_ = NULL;
   }
   // Overridden from ash::wm::WindowStateObserver:

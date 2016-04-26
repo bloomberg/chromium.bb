@@ -469,6 +469,10 @@ void WmWindowAura::Deactivate() {
   DeactivateWindow(window_);
 }
 
+void WmWindowAura::SetFullscreen() {
+  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+}
+
 void WmWindowAura::Maximize() {
   return window_->SetProperty(aura::client::kShowStateKey,
                               ui::SHOW_STATE_MAXIMIZED);

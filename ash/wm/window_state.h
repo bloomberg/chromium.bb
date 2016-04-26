@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/wm_types.h"
 #include "ash/wm/drag_details.h"
 #include "base/gtest_prod_util.h"
@@ -81,13 +80,6 @@ class ASH_EXPORT WindowState {
 
   // Call GetWindowState() to instantiate this class.
   ~WindowState();
-
-  // TODO(sky): remove these. They are temporary until converted to common
-  // types.
-  aura::Window* aura_window() { return WmWindowAura::GetAuraWindow(window_); }
-  const aura::Window* aura_window() const {
-    return WmWindowAura::GetAuraWindow(window_);
-  }
 
   WmWindow* window() { return window_; }
   const WmWindow* window() const { return window_; }

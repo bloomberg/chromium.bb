@@ -173,6 +173,8 @@ class ASH_EXPORT WmWindow {
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
 
+  virtual void SetFullscreen() = 0;
+
   virtual void Maximize() = 0;
   virtual void Minimize() = 0;
   virtual void Unminimize() = 0;

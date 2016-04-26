@@ -9,6 +9,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_state_util.h"
 #include "ash/wm/common/wm_event.h"
@@ -36,7 +37,8 @@ LockWindowState::~LockWindowState() {
 
 void LockWindowState::OnWMEvent(wm::WindowState* window_state,
                                 const wm::WMEvent* event) {
-  aura::Window* window = window_state->aura_window();
+  aura::Window* window =
+      ash::wm::WmWindowAura::GetAuraWindow(window_state->window());
   gfx::Rect bounds = window->bounds();
 
   switch (event->type()) {
@@ -134,8 +136,7 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
       return;
 
     current_state_type_ = target_state;
-    ::wm::SetWindowVisibilityAnimationType(
-        window_state->aura_window(),
+    window_state->window()->SetVisibilityAnimationType(
         wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     window_state->window()->Hide();
     if (window_state->IsActive())
@@ -156,9 +157,9 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
   UpdateBounds(window_state);
   window_state->NotifyPostStateTypeChange(old_state_type);
 
-  if ((window_state->aura_window()->TargetVisibility() ||
+  if ((window_state->window()->GetTargetVisibility() ||
        old_state_type == wm::WINDOW_STATE_TYPE_MINIMIZED) &&
-      !window_state->aura_window()->layer()->visible()) {
+      !window_state->window()->GetLayer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window_state->window()->Show();
@@ -195,8 +196,8 @@ void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
       keyboard_controller->keyboard_visible()) {
     keyboard_bounds = keyboard_controller->current_keyboard_bounds();
   }
-  gfx::Rect bounds =
-      ScreenUtil::GetShelfDisplayBoundsInRoot(window_state->aura_window());
+  gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInRoot(
+      ash::wm::WmWindowAura::GetAuraWindow(window_state->window()));
 
   bounds.set_height(bounds.height() - keyboard_bounds.height());
 

@@ -5,6 +5,7 @@
 #ifndef ASH_WM_COMMON_WM_WINDOW_TRACKER_H_
 #define ASH_WM_COMMON_WM_WINDOW_TRACKER_H_
 
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "ui/base/window_tracker_template.h"
 

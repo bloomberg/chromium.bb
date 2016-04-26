@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
 #include "ash/shell.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"

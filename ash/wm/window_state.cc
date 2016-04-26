@@ -6,19 +6,14 @@
 
 #include <utility>
 
-#include "ash/ash_switches.h"
-#include "ash/root_window_controller.h"
-#include "ash/screen_util.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
-#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

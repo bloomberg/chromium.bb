@@ -116,6 +116,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool IsActive() const override;
   void Activate() override;
   void Deactivate() override;
+  void SetFullscreen() override;
   void Maximize() override;
   void Minimize() override;
   void Unminimize() override;

@@ -10,6 +10,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
@@ -47,12 +48,14 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
     // control.
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_->AddObserver(this);
-    window_state_->aura_window()->AddObserver(this);
+    ash::wm::WmWindowAura::GetAuraWindow(window_state_->window())
+        ->AddObserver(this);
   }
   ~NativeAppWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
-      window_state_->aura_window()->RemoveObserver(this);
+      ash::wm::WmWindowAura::GetAuraWindow(window_state_->window())
+          ->RemoveObserver(this);
     }
   }
 
@@ -94,7 +97,8 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
-    window_state_->aura_window()->RemoveObserver(this);
+    ash::wm::WmWindowAura::GetAuraWindow(window_state_->window())
+        ->RemoveObserver(this);
     window_state_ = NULL;
   }
 

@@ -7,6 +7,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/common/root_window_finder.h"
 #include "ash/wm/common/window_positioning_utils.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ui/base/hit_test.h"

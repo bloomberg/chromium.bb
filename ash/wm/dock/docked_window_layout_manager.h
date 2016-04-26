@@ -27,7 +27,6 @@ class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
 class Shelf;
-class WorkspaceController;
 
 namespace wm {
 class WmRootWindowController;
@@ -59,8 +58,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Minimum width of the docked windows area.
   static const int kMinDockWidth;
 
-  DockedWindowLayoutManager(wm::WmWindow* dock_container,
-                            WorkspaceController* workspace_controller);
+  explicit DockedWindowLayoutManager(wm::WmWindow* dock_container);
   ~DockedWindowLayoutManager() override;
 
   // Returns the DockedWindowLayoutManager in the specified hierarchy. This
@@ -271,8 +269,6 @@ class ASH_EXPORT DockedWindowLayoutManager
   // The shelf to respond to alignment changes.
   Shelf* shelf_;
 
-  // Workspace controller that can be checked for fullscreen mode.
-  WorkspaceController* workspace_controller_;
   // Tracks if any window in the same root window is in fullscreen mode.
   bool in_fullscreen_;
   // Current width of the dock.

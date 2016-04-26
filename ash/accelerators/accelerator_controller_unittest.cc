@@ -23,6 +23,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/lock_state_controller.h"

@@ -21,6 +21,7 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"

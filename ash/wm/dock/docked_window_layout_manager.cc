@@ -15,10 +15,10 @@
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
@@ -405,8 +405,7 @@ class DockedWindowLayoutManager::ShelfWindowObserver
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager public implementation:
 DockedWindowLayoutManager::DockedWindowLayoutManager(
-    wm::WmWindow* dock_container,
-    WorkspaceController* workspace_controller)
+    wm::WmWindow* dock_container)
     : dock_container_(dock_container),
       root_window_controller_(dock_container->GetRootWindowController()),
       in_layout_(false),
@@ -414,8 +413,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       is_dragged_window_docked_(false),
       is_dragged_from_dock_(false),
       shelf_(nullptr),
-      workspace_controller_(workspace_controller),
-      in_fullscreen_(workspace_controller_->GetWindowState() ==
+      in_fullscreen_(root_window_controller_->GetWorkspaceWindowState() ==
                      wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
       alignment_(DOCKED_ALIGNMENT_NONE),
@@ -777,7 +775,7 @@ void DockedWindowLayoutManager::OnWorkAreaChanged() {
 
 void DockedWindowLayoutManager::OnFullscreenStateChanged(bool is_fullscreen) {
   // Entering fullscreen mode (including immersive) hides docked windows.
-  in_fullscreen_ = workspace_controller_->GetWindowState() ==
+  in_fullscreen_ = root_window_controller_->GetWorkspaceWindowState() ==
                    wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
   {
     // prevent Relayout from getting called multiple times during this

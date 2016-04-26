@@ -16,6 +16,7 @@
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/dock/docked_window_resizer.h"

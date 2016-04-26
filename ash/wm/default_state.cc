@@ -5,7 +5,6 @@
 #include "ash/wm/default_state.h"
 
 #include "ash/shell_window_ids.h"
-#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_positioning_utils.h"
@@ -14,12 +13,11 @@
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -43,7 +41,7 @@ bool IsMinimizedWindowState(const WindowStateType state_type) {
 void MoveToDisplayForRestore(WindowState* window_state) {
   if (!window_state->HasRestoreBounds())
     return;
-  const gfx::Rect& restore_bounds = window_state->GetRestoreBoundsInScreen();
+  const gfx::Rect restore_bounds = window_state->GetRestoreBoundsInScreen();
 
   // Move only if the restore bounds is outside of
   // the display. There is no information about in which

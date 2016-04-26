@@ -4,7 +4,6 @@
 
 #include "ash/wm/common/root_window_finder.h"
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_window.h"
 #include "ui/gfx/display.h"

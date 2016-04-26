@@ -60,6 +60,7 @@
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ash/wm/aura/wm_globals_aura.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/root_window_finder.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/lock_state_controller.h"

@@ -812,8 +812,7 @@ void RootWindowController::InitLayoutManagers() {
   // Create Docked windows layout manager
   wm::WmWindow* docked_container =
       wm::WmWindowAura::Get(GetContainer(kShellWindowId_DockedContainer));
-  docked_layout_manager_ =
-      new DockedWindowLayoutManager(docked_container, workspace_controller());
+  docked_layout_manager_ = new DockedWindowLayoutManager(docked_container);
   docked_container->SetLayoutManager(base::WrapUnique(docked_layout_manager_));
 
   // Installs SnapLayoutManager to containers who set the
