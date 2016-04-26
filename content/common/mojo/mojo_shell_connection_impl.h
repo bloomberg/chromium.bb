@@ -39,13 +39,14 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   // command line. This must only be called once.
   void BindToRequestFromCommandLine();
 
+  // TODO(rockot): Remove this. http://crbug.com/594852.
+  shell::ShellConnection* shell_connection() { return shell_connection_.get(); }
+
  private:
   friend class MojoShellConnection;
 
   explicit MojoShellConnectionImpl(bool external);
   ~MojoShellConnectionImpl() override;
-
-  void WaitForShellIfNecessary();
 
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,

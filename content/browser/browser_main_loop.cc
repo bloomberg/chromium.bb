@@ -298,7 +298,17 @@ static void SetUpGLibLogHandler() {
                       NULL);
   }
 }
-#endif
+#endif  // defined(USE_GLIB)
+
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+void WaitForMojoShellInitialize() {
+  // TODO(rockot): Remove this. http://crbug.com/594852.
+  base::RunLoop wait_loop;
+  MojoShellConnectionImpl::Get()->shell_connection()->set_initialize_handler(
+      wait_loop.QuitClosure());
+  wait_loop.Run();
+}
+#endif  // defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
 
 void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
@@ -1190,6 +1200,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     MojoShellConnection* mojo_shell_connection = MojoShellConnection::Get();
     if (mojo_shell_connection) {
+      // TODO(rockot): Remove the blocking wait for init.
+      // http://crbug.com/594852.
+      WaitForMojoShellInitialize();
       views::WindowManagerConnection::Create(
           mojo_shell_connection->GetConnector(),
           mojo_shell_connection->GetIdentity());

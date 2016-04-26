@@ -853,12 +853,6 @@ const char kValidateInputEventStream[] = "validate-input-event-stream";
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 
-// Forces processes to wait for Mojo shell connection initialization before
-// proceeding with main thread startup.
-//
-// TODO(rockot): Remove this. http://crbug.com/594852.
-const char kWaitForMojoShell[]              = "wait-for-mojo-shell";
-
 // The prefix used when starting the zygote process. (i.e. 'gdb --args')
 const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 

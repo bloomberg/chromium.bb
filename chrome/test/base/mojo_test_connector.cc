@@ -87,7 +87,6 @@ class BackgroundTestState {
                const std::string& instance,
                base::TestLauncher::LaunchOptions* test_launch_options) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
-    command_line->AppendSwitch(switches::kWaitForMojoShell);
     command_line->AppendSwitch(switches::kChildProcess);
     mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
     mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
@@ -218,38 +217,18 @@ class MojoTestState : public content::TestState {
 
 }  // namespace
 
-class MojoTestConnector::NativeRunnerDelegateImpl
-    : public shell::NativeRunnerDelegate {
- public:
-  NativeRunnerDelegateImpl() {}
-  ~NativeRunnerDelegateImpl() override {}
-
- private:
-  // shell::NativeRunnerDelegate:
-  void AdjustCommandLineArgumentsForTarget(
-      const shell::Identity& target,
-      base::CommandLine* command_line) override {
-    if (target.name() == "exe:chrome")
-      command_line->AppendSwitch(switches::kWaitForMojoShell);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
-};
-
 // static
 const char MojoTestConnector::kTestSwitch[] = "is_test";
 
 MojoTestConnector::MojoTestConnector() {}
 
 shell::mojom::ShellClientRequest MojoTestConnector::Init() {
-  native_runner_delegate_.reset(new NativeRunnerDelegateImpl);
   std::unique_ptr<shell::BackgroundShell::InitParams> init_params(
       new shell::BackgroundShell::InitParams);
   init_params->catalog_store = BuildTestCatalogStore();
   // When running in single_process mode chrome initializes the edk.
   init_params->init_edk = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       content::kSingleProcessTestsFlag);
-  init_params->native_runner_delegate = native_runner_delegate_.get();
   background_shell_.Init(std::move(init_params));
   return background_shell_.CreateShellClientRequest(kTestRunnerName);
 }

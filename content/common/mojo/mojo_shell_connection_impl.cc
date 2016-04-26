@@ -39,13 +39,6 @@ bool IsRunningInMojoShell() {
              mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch);
 }
 
-bool ShouldWaitForShell() {
-  return mojo_shell_connection_factory ||
-         (IsRunningInMojoShell() &&
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWaitForMojoShell));
-}
-
 // static
 bool MojoShellConnectionImpl::CreateUsingFactory() {
   if (mojo_shell_connection_factory) {
@@ -74,8 +67,6 @@ void MojoShellConnection::Create(shell::mojom::ShellClientRequest request,
   lazy_tls_ptr.Pointer()->Set(connection);
   connection->shell_connection_.reset(
       new shell::ShellConnection(connection, std::move(request)));
-  if (is_external)
-    connection->WaitForShellIfNecessary();
 }
 
 // static
@@ -95,7 +86,6 @@ void MojoShellConnectionImpl::BindToRequestFromCommandLine() {
   DCHECK(!shell_connection_);
   shell_connection_.reset(new shell::ShellConnection(
       this, shell::GetShellClientRequestFromCommandLine()));
-  WaitForShellIfNecessary();
 }
 
 MojoShellConnectionImpl::MojoShellConnectionImpl(bool external)
@@ -103,15 +93,6 @@ MojoShellConnectionImpl::MojoShellConnectionImpl(bool external)
 
 MojoShellConnectionImpl::~MojoShellConnectionImpl() {
   STLDeleteElements(&listeners_);
-}
-
-void MojoShellConnectionImpl::WaitForShellIfNecessary() {
-  // TODO(rockot): Remove this. http://crbug.com/594852.
-  if (ShouldWaitForShell()) {
-    base::RunLoop wait_loop;
-    shell_connection_->set_initialize_handler(wait_loop.QuitClosure());
-    wait_loop.Run();
-  }
 }
 
 void MojoShellConnectionImpl::Initialize(shell::Connector* connector,

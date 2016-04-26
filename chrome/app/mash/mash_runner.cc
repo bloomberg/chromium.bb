@@ -148,7 +148,6 @@ class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
   void AdjustCommandLineArgumentsForTarget(
       const shell::Identity& target,
       base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kWaitForMojoShell);
     if (target.name() != "exe:chrome") {
       if (target.name() == "exe:chrome_mash")
         ChangeChromeMashToChrome(command_line);

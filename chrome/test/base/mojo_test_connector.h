@@ -46,9 +46,6 @@ class MojoTestConnector {
       base::TestLauncher::LaunchOptions* test_launch_options);
 
  private:
-  class NativeRunnerDelegateImpl;
-
-  std::unique_ptr<NativeRunnerDelegateImpl> native_runner_delegate_;
   shell::BackgroundShell background_shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestConnector);
