@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/process/process.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -58,7 +59,7 @@ mojom::ShellClientPtr InProcessNativeRunner::Start(
 #endif
   thread_.reset(new base::DelegateSimpleThread(this, thread_name));
   thread_->Start();
-  pid_available_callback.Run(base::kNullProcessId);
+  pid_available_callback.Run(base::Process::Current().Pid());
 
   return client;
 }
