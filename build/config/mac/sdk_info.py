@@ -7,8 +7,8 @@ import subprocess
 import sys
 
 # This script prints information about the build system, the operating
-# system and the iOS SDK (depending on the platform "iphonesimulator"
-# or "iphoneos" generally).
+# system and the iOS or Mac SDK (depending on the platform "iphonesimulator",
+# "iphoneos" or "macosx" generally).
 #
 # In the GYP build, this is done inside GYP itself based on the SDKROOT
 # variable.
@@ -37,15 +37,15 @@ def FillSDKPathAndVersion(settings, platform):
   """Fills the SDK path and version for |platform| into |settings|."""
   lines = subprocess.check_output(['xcodebuild', '-version', '-sdk',
       platform, 'Path', 'SDKVersion', 'ProductBuildVersion']).splitlines()
-  settings['ios_sdk_path'] = lines[0]
-  settings['ios_sdk_version'] = lines[1]
-  settings['ios_sdk_build'] = lines[2]
+  settings['sdk_path'] = lines[0]
+  settings['sdk_version'] = lines[1]
+  settings['sdk_build'] = lines[2]
 
 
 if __name__ == '__main__':
   if len(sys.argv) != 2:
     sys.stderr.write(
-        'usage: %s [iphoneos|iphonesimulator]\n' %
+        'usage: %s [iphoneos|iphonesimulator|macosx]\n' %
         os.path.basename(sys.argv[0]))
     sys.exit(1)
 

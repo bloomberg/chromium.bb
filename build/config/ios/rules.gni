@@ -5,6 +5,29 @@
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/mac/rules.gni")
 
+template("ios_info_plist") {
+  info_plist(target_name) {
+    extra_substitutions = []
+    if (defined(invoker.extra_substitutions)) {
+      extra_substitutions = invoker.extra_substitutions
+    }
+    extra_substitutions += [
+      "IOS_DEPLOYMENT_TARGET=$ios_deployment_target",
+      "IOS_PLATFORM_BUILD=$ios_platform_build",
+      "IOS_PLATFORM_NAME=$ios_sdk_name",
+      "IOS_PLATFORM_VERSION=$ios_sdk_version",
+      "IOS_SDK_BUILD=$ios_sdk_build",
+      "IOS_SDK_NAME=$ios_sdk_name$ios_sdk_version",
+      "IOS_SUPPORTED_PLATFORM=$ios_sdk_platform",
+    ]
+    plist_templates = [
+      "//build/config/ios/BuildInfo.plist",
+      invoker.info_plist,
+    ]
+    forward_variables_from(invoker, [ "executable_name" ])
+  }
+}
+
 # TODO(crbug.com/297668): refactor this template to extract common behaviour
 # between OS X and iOS bundle generation, then create a generic "app" template
 # that forward to "executable" on all platform except iOS/OS X.
@@ -45,40 +68,13 @@ template("ios_app_bundle") {
   _generate_info_plist = target_name + "_generate_info_plist"
   _bundle_data_info_plist = target_name + "_bundle_data_info_plist"
 
-  action(_generate_info_plist) {
-    visibility = [ ":$_bundle_data_info_plist" ]
-    script = "//build/config/ios/ios_gen_plist.py"
-    sources = [
-      "//build/config/ios/BuildInfo.plist",
-      invoker.info_plist,
-    ]
-    outputs = [
-      "$target_gen_dir/$target_name/Info.plist",
-    ]
-    extra_args = []
-    if (defined(invoker.extra_substitutions)) {
-      foreach(substitution, invoker.extra_substitutions) {
-        extra_args += [ "-s=$substitution" ]
-      }
-    }
-    response_file_contents =
-        extra_args + [
-          "-s=BUILD_MACHINE_OS_BUILD=$machine_os_build",
-          "-s=EXECUTABLE_NAME=$_output_name",
-          "-s=GCC_VERSION=com.apple.compilers.llvm.clang.1_0",
-          "-s=IOS_DEPLOYMENT_TARGET=$ios_deployment_target",
-          "-s=IOS_PLATFORM_BUILD=$ios_platform_build",
-          "-s=IOS_PLATFORM_NAME=$ios_sdk_name",
-          "-s=IOS_PLATFORM_VERSION=$ios_sdk_version",
-          "-s=IOS_SDK_BUILD=$ios_sdk_build",
-          "-s=IOS_SDK_NAME=$ios_sdk_name$ios_sdk_version",
-          "-s=IOS_SUPPORTED_PLATFORM=$ios_sdk_platform",
-          "-s=PRODUCT_NAME=$_output_name",
-          "-s=XCODE_BUILD=$xcode_build",
-          "-s=XCODE_VERSION=$xcode_version",
-          "-o=" + rebase_path(outputs[0], root_out_dir),
-        ] + rebase_path(sources, root_out_dir)
-    args = [ "@{{response_file_name}}" ]
+  ios_info_plist(_generate_info_plist) {
+    executable_name = _output_name
+    forward_variables_from(invoker,
+                           [
+                             "extra_substitutions",
+                             "info_plist",
+                           ])
   }
 
   bundle_data(_bundle_data_info_plist) {

@@ -5,7 +5,88 @@
 import("//build/toolchain/toolchain.gni")
 import("//build/config/mac/mac_sdk.gni")
 
-# This is used as the base template for both iOS and Mac frameworks..
+# The base template used to generate Info.plist files for iOS and Mac apps and
+# frameworks.
+#
+# Arguments
+#
+#     plist_templates:
+#         string array, paths to plist files which will be used for the bundle.
+#
+#     executable_name:
+#         string, name of the generated target used for the product
+#         and executable name as specified in the output Info.plist.
+#
+#     extra_substitutions:
+#         (optional) string array, 'key=value' pairs for extra fields which are
+#         specified in a source Info.plist template.
+template("info_plist") {
+  assert(defined(invoker.plist_templates),
+         "A list of template plist files must be specified for $target_name")
+  assert(defined(invoker.executable_name),
+         "The executable_name must be specified for $target_name")
+  executable_name = invoker.executable_name
+
+  action(target_name) {
+    script = "//build/config/mac/gen_plist.py"
+    sources = invoker.plist_templates
+    outputs = [
+      "$target_gen_dir/$target_name.plist",
+    ]
+    extra_args = []
+    if (defined(invoker.extra_substitutions)) {
+      foreach(substitution, invoker.extra_substitutions) {
+        extra_args += [ "-s=$substitution" ]
+      }
+    }
+    response_file_contents =
+        extra_args + [
+          "-s=BUILD_MACHINE_OS_BUILD=$machine_os_build",
+          "-s=EXECUTABLE_NAME=$executable_name",
+          "-s=GCC_VERSION=com.apple.compilers.llvm.clang.1_0",
+          "-s=PRODUCT_NAME=$executable_name",
+          "-s=XCODE_BUILD=$xcode_build",
+          "-s=XCODE_VERSION=$xcode_version",
+          "-o=" + rebase_path(outputs[0], root_build_dir),
+        ] + rebase_path(sources, root_build_dir)
+    args = [ "@{{response_file_name}}" ]
+  }
+}
+
+# Generates Info.plist files for Mac apps and frameworks.
+#
+# Arguments
+#
+#     info_plist:
+#         string, the path to an plist file that will be included in the final
+#         Info.plist generated.
+#
+#     executable_name:
+#         string, name of the generated target used for the product
+#         and executable name as specified in the output Info.plist.
+#
+#     extra_substitutions:
+#         (optional) string array, 'key=value' pairs for extra fields which are
+#         specified in a source Info.plist template.
+template("mac_info_plist") {
+  info_plist(target_name) {
+    extra_substitutions = []
+    if (defined(invoker.extra_substitutions)) {
+      extra_substitutions = invoker.extra_substitutions
+    }
+    extra_substitutions += [
+      "MAC_SDK_BUILD=$mac_sdk_build",
+      "MAC_SDK_NAME=$mac_sdk_name$mac_sdk_version",
+    ]
+    plist_templates = [
+      "//build/config/mac/BuildInfo.plist",
+      invoker.info_plist,
+    ]
+    forward_variables_from(invoker, [ "executable_name" ])
+  }
+}
+
+# This is used as the base template for both iOS and Mac frameworks.
 #
 # By default, the bundle target this template generates does not link the
 # resulting framework into anything that depends on it. If a dependency wants
@@ -98,7 +179,7 @@ template("framework_bundle") {
     _output_name = invoker.output_name
   }
 
-  # If the framework is unversionned, the final _target_name will be the
+  # If the framework is unversioned, the final _target_name will be the
   # create_bundle(_framework_target), otherwise an action with the name
   # _target_name will depends on the the create_bundle() in order to prepare
   # the versioned directory structure.
@@ -342,17 +423,24 @@ template("mac_framework_bundle") {
 
   _info_plist_target = target_name + "_info_plist"
 
-  # TODO(rsesek): Process Info.plist variables.
+  mac_info_plist(_info_plist_target) {
+    executable_name = target_name
+    if (defined(invoker.output_name)) {
+      executable_name = invoker.output_name
+    }
+    forward_variables_from(invoker, [ "info_plist" ])
+  }
 
   _info_plist_bundle_data = _info_plist_target + "_bundle_data"
 
   bundle_data(_info_plist_bundle_data) {
     forward_variables_from(invoker, [ "testonly" ])
-    sources = [
-      invoker.info_plist,
-    ]
+    sources = get_target_outputs(":$_info_plist_target")
     outputs = [
       "{{bundle_root_dir}}/Info.plist",
+    ]
+    public_deps = [
+      ":$_info_plist_target",
     ]
   }
 
@@ -420,18 +508,22 @@ template("mac_app_bundle") {
 
   _info_plist_target = target_name + "_info_plist"
 
-  # TODO(rsesek): Process Info.plist variables.
+  mac_info_plist(_info_plist_target) {
+    executable_name = _output_name
+    forward_variables_from(invoker, [ "info_plist" ])
+  }
 
   _info_plist_bundle_data = _info_plist_target + "_bundle_data"
 
   bundle_data(_info_plist_bundle_data) {
     forward_variables_from(invoker, [ "testonly" ])
     visibility = [ ":$_target_name" ]
-    sources = [
-      invoker.info_plist,
-    ]
+    sources = get_target_outputs(":$_info_plist_target")
     outputs = [
       "{{bundle_root_dir}}/Info.plist",
+    ]
+    public_deps = [
+      ":$_info_plist_target",
     ]
   }
 

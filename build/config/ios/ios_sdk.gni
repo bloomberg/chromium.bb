@@ -34,10 +34,11 @@ if (ios_sdk_path == "") {
     ios_sdk_name = "iphoneos"
     ios_sdk_platform = "iPhoneOS"
   }
-  _ios_sdk_result = exec_script("ios_sdk.py", [ ios_sdk_name ], "scope")
-  ios_sdk_path = _ios_sdk_result.ios_sdk_path
-  ios_sdk_version = _ios_sdk_result.ios_sdk_version
-  ios_sdk_build = _ios_sdk_result.ios_sdk_build
+  _ios_sdk_result =
+      exec_script("//build/config/mac/sdk_info.py", [ ios_sdk_name ], "scope")
+  ios_sdk_path = _ios_sdk_result.sdk_path
+  ios_sdk_version = _ios_sdk_result.sdk_version
+  ios_sdk_build = _ios_sdk_result.sdk_build
   xcode_version = _ios_sdk_result.xcode_version
   xcode_build = _ios_sdk_result.xcode_build
   machine_os_build = _ios_sdk_result.machine_os_build
@@ -66,7 +67,7 @@ if (ios_enable_code_signing) {
   if (ios_code_signing_identity == "") {
     print("Tried to prepare a device build without specifying a code signing")
     print("identity and could not detect one automatically either.")
-    print("TIP: Simulator builds dont require code signing...")
+    print("TIP: Simulator builds don't require code signing...")
     assert(false)
   }
 }
