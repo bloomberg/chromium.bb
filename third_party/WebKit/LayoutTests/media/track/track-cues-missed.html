@@ -1,80 +1,59 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that events are triggered for missed (skipped) cues during normal playback.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/missed-cues.vtt" default>
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var testTrack = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-            var videoCanPlayThrough = false;
-            var trackLoaded = false;
+    video.src = findMediaFile("video", "../content/test");
+    
+    video.onended = t.step_func_done();
 
-            var currentCue;
-            var cueCount;
-            var testTrack;
+    video.oncanplaythrough = t.step_func(function() {
+        video.oncanplaythrough = null;
+        video.currentTime = 5.00;
+        runTests();
+    });
 
-            function runTests()
-            {
-                if (!trackLoaded || !videoCanPlayThrough)
-                    return;
+    testTrack.onload = t.step_func(runTests);
 
-                testTrack = document.getElementById("testTrack");
-                testExpected("testTrack.track.cues.length", 7);
+    var cueCount;
+    var eventCount = 0;
+    function runTests() {
+        eventCount++;
 
-                for (cueCount = 2; cueCount < testTrack.track.cues.length; cueCount++) {
-                    var cue = testTrack.track.cues[cueCount];
+        if(eventCount != 2)
+            return;
 
-                    cue.addEventListener('enter', cueEnteredOrExited);
-                    cue.addEventListener('exit', cueEnteredOrExited);
-                }
+        assert_equals(testTrack.track.cues.length, 7);
 
-                cueCount = 3;
-                run("video.play()");
-            }
+        for (cueCount = 2; cueCount < testTrack.track.cues.length; cueCount++) {
+            var cue = testTrack.track.cues[cueCount];
 
-            function cueEnteredOrExited()
-            {
-                consoleWrite("");
-                consoleWrite("EVENT(" + event.type + ")");
+            cue.onenter = t.step_func(cueEnteredOrExited);
+            cue.onexit = t.step_func(cueEnteredOrExited);
+        }
 
-                currentCue = event.target;
-                testExpected("testTrack.track.cues.getCueById(cueCount).text", currentCue.text, "==");
-                testExpected("currentCue.id", cueCount);
+        // Test events for missed cues, which are cues with ids
+        // from 3 to 7 in the file captions-webvtt/missed-cues.vtt.
+        cueCount = 3;
+        video.play();
+    }
 
-                if (event.type == 'exit') {
-                    cueCount++;
-                }
-            }
+    function cueEnteredOrExited() {
+        var currentCue = event.target;
+        assert_equals(testTrack.track.cues.getCueById(cueCount).text, currentCue.text);
+        assert_equals(currentCue.id, cueCount.toString());
 
-            waitForEvent('ended', endTest);
+        if (event.type == "exit")
+            cueCount++;
+    }
 
-            waitForEventOnce('canplaythrough', function() {
-                video.currentTime = 5.00;
-                videoCanPlayThrough = true;
-
-                runTests();
-            });
-
-            function loaded()
-            {
-                trackLoaded = true;
-
-                runTests();
-            };
-
-            function bodyLoaded()
-            {
-                findMediaElement();
-                video.src = findMediaFile("video", "../content/test");
-            }
-        </script>
-    </head>
-    <body onload="bodyLoaded()">
-        <p>Tests that events are triggered for missed (skipped) cues during normal playback.</p>
-        <video controls>
-            <track id="testTrack" src="captions-webvtt/missed-cues.vtt" onload="loaded()" default>
-        </video>
-    </body>
-</html>
+});
+</script>

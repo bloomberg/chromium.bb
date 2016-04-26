@@ -1,90 +1,39 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that TextTrack's cues are indexed and updated in order during video playback. Test uses the cuechange event.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/cues-chrono-order.vtt" kind="captions" default>
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var testTrack = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
+    video.src = findMediaFile("video", "../content/test");
+    video.oncanplaythrough = t.step_func(attemptTests);
 
-        <script>
+    function attemptTests() {
+        assert_equals(testTrack.track.cues.length, 3);
+        testTrack.oncuechange = t.step_func(cueChangedFromTrackElement);
+        video.play();
+    }
 
-        var cueChangeCount = 0;
-        var currentCue;
-        var testTrack;
-
-        var trackLoaded = false;
-        var videoCanPlayThrough = false;
-
-        function attemptTests()
-        {
-            if (!trackLoaded || !videoCanPlayThrough)
-                return;
-
-            testTrack = document.getElementById("testTrack");
-            testExpected("testTrack.track.cues.length", 3);
-            testTrack.addEventListener('cuechange', cueChangedFromTrackElement);
-            testTrack.track.addEventListener('cuechange', cueChangedFromTextTrack);
-            run("video.play()");
-            consoleWrite("");
+    var currentCueIndex;
+    var cueChangeCount = 0;
+    function cueChangedFromTrackElement() {
+        currentCueIndex = Math.floor(cueChangeCount / 2);
+        currentCue = event.target.track.cues[currentCueIndex];
+        if (cueChangeCount % 2 == 0) {
+            // Cue entered.
+            assert_equals(currentCue, testTrack.track.activeCues[0]);
+            assert_equals(currentCue.id, (currentCueIndex + 1).toString());
         }
 
-        function cueChangedFromTextTrack()
-        {
-            consoleWrite("EVENT(cuechange) from TextTrack");
-        }
-
-        function cueChangedFromTrackElement()
-        {
-            consoleWrite("EVENT(cuechange) from &lt;track&gt;");
-
-            currentCueIndex = Math.floor(cueChangeCount / 2);
-            currentCue = event.target.track.cues[currentCueIndex];
-            checkCue();
-
-            ++cueChangeCount;
-            if (cueChangeCount == testTrack.track.cues.length * 2)
-                endTest();
-        }
-
-        function checkCue()
-        {
-            if (cueChangeCount % 2 == 0) {
-                consoleWrite("Cue entered");
-                testExpected(currentCue, testTrack.track.activeCues[0]);
-                testExpected("currentCue.id", currentCueIndex + 1);
-            } else
-                consoleWrite("Cue exited");
-            consoleWrite("");
-        }
-
-        waitForEvent('canplaythrough',
-            function ()
-            {
-                videoCanPlayThrough = true;
-                attemptTests();
-            }
-        );
-
-        function loaded()
-        {
-            trackLoaded = true;
-            attemptTests();
-        }
-
-        function start()
-        {
-            findMediaElement();
-            video.src = findMediaFile("video", "../content/test");
-        }
-
-        </script>
-    </head>
-    <body onload="start()">
-        <p>Tests that TextTrack's cues are indexed and updated in order during video playback. Test uses the cuechange event.</p>
-        <video controls>
-            <track id="testTrack" src="captions-webvtt/cues-chrono-order.vtt" kind="captions" onload="loaded()" default>
-        </video>
-    </body>
-</html>
+        ++cueChangeCount;
+        if (cueChangeCount == testTrack.track.cues.length * 2)
+            t.done();
+    }
+});
+</script>
