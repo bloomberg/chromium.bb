@@ -10,6 +10,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../media.gyp:media',
+        '../../media.gyp:media_features',
         '../../../base/base.gyp:base',
         '../../../gpu/gpu.gyp:gpu_ipc_common',
         '../../../ipc/ipc.gyp:ipc',
@@ -38,6 +39,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../media.gyp:media',
+        '../../media.gyp:media_features',
         '../../../base/base.gyp:base',
         '../../../gpu/gpu.gyp:gpu_ipc_common',
         '../../../ipc/ipc.gyp:ipc',
