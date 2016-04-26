@@ -22,6 +22,9 @@ template("_gen_isolate") {
 
   action(target_name) {
     script = "//testing/generate_isolate.py"
+    inputs = [
+      _runtime_deps_file,
+    ]
     outputs = [
       invoker.output,
     ]
