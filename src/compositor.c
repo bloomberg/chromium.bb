@@ -2670,6 +2670,71 @@ weston_surface_build_buffer_matrix(const struct weston_surface *surface,
 	weston_matrix_scale(matrix, vp->buffer.scale, vp->buffer.scale, 1);
 }
 
+/**
+ * Compute a + b > c while being safe to overflows.
+ */
+static bool
+fixed_sum_gt(wl_fixed_t a, wl_fixed_t b, wl_fixed_t c)
+{
+	return (int64_t)a + (int64_t)b > (int64_t)c;
+}
+
+static bool
+weston_surface_is_pending_viewport_source_valid(
+	const struct weston_surface *surface)
+{
+	const struct weston_surface_state *pend = &surface->pending;
+	const struct weston_buffer_viewport *vp = &pend->buffer_viewport;
+	int width_from_buffer = 0;
+	int height_from_buffer = 0;
+	wl_fixed_t w;
+	wl_fixed_t h;
+
+	/* If viewport source rect is not set, it is always ok. */
+	if (vp->buffer.src_width == wl_fixed_from_int(-1))
+		return true;
+
+	if (pend->newly_attached) {
+		if (pend->buffer) {
+			convert_size_by_transform_scale(&width_from_buffer,
+							&height_from_buffer,
+							pend->buffer->width,
+							pend->buffer->height,
+							vp->buffer.transform,
+							vp->buffer.scale);
+		} else {
+			/* No buffer: viewport is irrelevant. */
+			return true;
+		}
+	} else {
+		width_from_buffer = surface->width_from_buffer;
+		height_from_buffer = surface->height_from_buffer;
+	}
+
+	assert((width_from_buffer == 0) == (height_from_buffer == 0));
+	assert(width_from_buffer >= 0 && height_from_buffer >= 0);
+
+	/* No buffer: viewport is irrelevant. */
+	if (width_from_buffer == 0 || height_from_buffer == 0)
+		return true;
+
+	/* overflow checks for wl_fixed_from_int() */
+	if (width_from_buffer > wl_fixed_to_int(INT32_MAX))
+		return false;
+	if (height_from_buffer > wl_fixed_to_int(INT32_MAX))
+		return false;
+
+	w = wl_fixed_from_int(width_from_buffer);
+	h = wl_fixed_from_int(height_from_buffer);
+
+	if (fixed_sum_gt(vp->buffer.src_x, vp->buffer.src_width, w))
+		return false;
+	if (fixed_sum_gt(vp->buffer.src_y, vp->buffer.src_height, h))
+		return false;
+
+	return true;
+}
+
 /* Translate pending damage in buffer co-ordinates to surface
  * co-ordinates and union it with a pixman_region32_t.
  * This should only be called after the buffer is attached.
@@ -2808,6 +2873,16 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
 	struct weston_subsurface *sub = weston_surface_to_subsurface(surface);
+
+	if (!weston_surface_is_pending_viewport_source_valid(surface)) {
+		assert(surface->viewport_resource);
+
+		wl_resource_post_error(surface->viewport_resource,
+			WP_VIEWPORT_ERROR_OUT_OF_BUFFER,
+			"wl_surface@%d has viewport source outside buffer",
+			wl_resource_get_id(resource));
+		return;
+	}
 
 	if (sub) {
 		weston_subsurface_commit(sub);
