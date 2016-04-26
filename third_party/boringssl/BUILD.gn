@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build_overrides/build.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("BUILD.generated.gni")
 import("BUILD.generated_tests.gni")
@@ -131,50 +132,52 @@ create_tests("boringssl_tests") {
   ]
 }
 
-test("boringssl_unittests") {
-  deps = [
-    ":boringssl_tests",
-    "//base",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//testing/gtest",
-  ]
-  sources = [
-    "boringssl_unittest.cc",
-  ]
-}
-
-# The same as boringssl, but builds with BORINGSSL_UNSAFE_FUZZER_MODE.
-component("boringssl_fuzzer") {
-  visibility = [ ":*" ]  # Only targets in this file can depend on this.
-
-  sources = all_sources
-  deps = [
-    ":boringssl_asm",
-  ]
-
-  public_configs = [
-    ":external_config",
-    ":fuzzer_config",
-  ]
-  configs += [ ":internal_config" ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  if (is_nacl) {
-    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
-  }
-}
-
-foreach(fuzzer, fuzzers) {
-  fuzzer_test("boringssl_${fuzzer}_fuzzer") {
-    sources = [
-      "src/fuzz/${fuzzer}.cc",
-    ]
+if (build_with_chromium) {
+  test("boringssl_unittests") {
     deps = [
-      ":boringssl_fuzzer",
+      ":boringssl_tests",
+      "//base",
+      "//base/test:run_all_unittests",
+      "//base/test:test_support",
+      "//testing/gtest",
     ]
-    seed_corpus = "src/fuzz/${fuzzer}_corpus"
+    sources = [
+      "boringssl_unittest.cc",
+    ]
+  }
+
+  # The same as boringssl, but builds with BORINGSSL_UNSAFE_FUZZER_MODE.
+  component("boringssl_fuzzer") {
+    visibility = [ ":*" ]  # Only targets in this file can depend on this.
+
+    sources = all_sources
+    deps = [
+      ":boringssl_asm",
+    ]
+
+    public_configs = [
+      ":external_config",
+      ":fuzzer_config",
+    ]
+    configs += [ ":internal_config" ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    if (is_nacl) {
+      deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
+    }
+  }
+
+  foreach(fuzzer, fuzzers) {
+    fuzzer_test("boringssl_${fuzzer}_fuzzer") {
+      sources = [
+        "src/fuzz/${fuzzer}.cc",
+      ]
+      deps = [
+        ":boringssl_fuzzer",
+      ]
+      seed_corpus = "src/fuzz/${fuzzer}_corpus"
+    }
   }
 }
