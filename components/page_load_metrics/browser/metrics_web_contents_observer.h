@@ -112,7 +112,7 @@ class PageLoadTracker {
   // the constructor.
   PageLoadTracker(bool in_foreground,
                   PageLoadMetricsEmbedderInterface* embedder_interface,
-                  PageLoadTracker* const currently_committed_load_or_null,
+                  const GURL& currently_committed_url,
                   content::NavigationHandle* navigation_handle,
                   int aborted_chain_size,
                   int aborted_chain_size_same_url);
@@ -292,6 +292,9 @@ class MetricsWebContentsObserver
   std::vector<std::unique_ptr<PageLoadTracker>> aborted_provisional_loads_;
 
   std::unique_ptr<PageLoadTracker> committed_load_;
+
+  // Has the MWCO observed at least one navigation?
+  bool has_navigated_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };

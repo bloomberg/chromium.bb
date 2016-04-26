@@ -12,8 +12,6 @@
 
 namespace page_load_metrics {
 
-class PageLoadMetricsObservable;
-
 // This enum represents how a page load ends. If the action occurs before the
 // page load finishes (or reaches some point like first paint), then we consider
 // the load to be aborted.
