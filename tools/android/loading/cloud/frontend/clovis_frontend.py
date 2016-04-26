@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import flask
-from google.appengine.api import (app_identity, taskqueue)
-from oauth2client.client import GoogleCredentials
 import logging
 import os
 import sys
+
+import flask
+from google.appengine.api import (app_identity, taskqueue)
+from oauth2client.client import GoogleCredentials
 
 from common.clovis_task import ClovisTask
 import common.google_instance_helper
