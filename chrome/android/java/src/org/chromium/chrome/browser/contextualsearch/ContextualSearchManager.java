@@ -371,14 +371,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     /**
-     * Called when the orientation of the device changes.
-     */
-    public void onOrientationChange() {
-        if (!mIsInitialized) return;
-        mSearchPanel.onOrientationChanged();
-    }
-
-    /**
      * Shows the Contextual Search UX.
      * Calls back into onGetContextualSearchQueryResponse.
      * @param stateChangeReason The reason explaining the change of state.

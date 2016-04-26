@@ -172,6 +172,16 @@ abstract class OverlayPanelBase {
      */
     protected abstract int getControlContainerHeightResource();
 
+    /**
+     * Handles when the Panel's container view size changes.
+     * @param width The new width of the Panel's container view.
+     * @param height The new height of the Panel's container view.
+     * @param hasChangedPanelLayout Whether the Panel's layout has changed
+     *                              between full and narrow-width.
+     */
+    protected abstract void handleSizeChanged(float width, float height,
+                                              boolean hasChangedPanelLayout);
+
     // ============================================================================================
     // Layout Integration
     // ============================================================================================
@@ -192,37 +202,38 @@ abstract class OverlayPanelBase {
      * @param height The new width in dp.
      */
     public void onSizeChanged(float width, float height) {
+        if (width == mLayoutWidth && height == mLayoutHeight) return;
+
+        float previousLayoutWidth = mLayoutWidth;
+
         mLayoutWidth = width;
         mLayoutHeight = height;
 
         mMaximumWidth = calculateOverlayPanelWidth();
         mMaximumHeight = getPanelHeightFromState(PanelState.MAXIMIZED);
 
-        // If the panel is closed, the height and offsets aren't changing. In a few tests, we get
-        // calls to onSizeChanged() when the panel isn't fully initialized, which causes the tests
-        // to fail if we try to call setPanelHeight().
-        if (mPanelState != PanelState.UNDEFINED && mPanelState != PanelState.CLOSED) {
-            setPanelHeight(getPanelHeightFromState(getPanelState()));
-            mOffsetX = calculateOverlayPanelX();
-            mOffsetY = calculateOverlayPanelY();
-        }
+        boolean wasFullWidthSizePanel = doesMatchFullWidthCriteria(previousLayoutWidth);
+        boolean hasChangedPanelLayout = isFullWidthSizePanel() != wasFullWidthSizePanel;
+
+        handleSizeChanged(width, height, hasChangedPanelLayout);
     }
 
     /**
      * @return Whether the Panel is in full width size.
      */
     protected boolean isFullWidthSizePanel() {
-        if (mOverrideIsFullWidthSizePanelForTesting) {
-            return mIsFullWidthSizePanelForTesting;
-        }
-        return getFullscreenWidth() <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
+        return doesMatchFullWidthCriteria(getFullscreenWidth());
     }
 
     /**
-     * @return Whether the narrow version of the Panel is supported, in any orientation.
+     * @param containerWidth The width of the panel's container.
+     * @return Whether the given width matches the criteria required for a full width Panel.
      */
-    protected boolean isNarrowSizePanelSupported() {
-        return !isFullWidthSizePanel() || getTabHeight() > SMALL_PANEL_WIDTH_THRESHOLD_DP;
+    private boolean doesMatchFullWidthCriteria(float containerWidth) {
+        if (mOverrideIsFullWidthSizePanelForTesting) {
+            return mIsFullWidthSizePanelForTesting;
+        }
+        return containerWidth <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
     }
 
     /**

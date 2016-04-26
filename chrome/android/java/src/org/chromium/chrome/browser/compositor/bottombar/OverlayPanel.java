@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandl
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewClient;
@@ -290,7 +291,19 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.RESUMED || newState == ActivityState.STOPPED
+        boolean isMultiWindowMode = MultiWindowUtils.getInstance().isLegacyMultiWindow(mActivity)
+                || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+
+        // In multi-window mode the activity that was interacted with last is resumed and
+        // all others are paused. We should not close Contextual Search in this case,
+        // because the activity may be visible even though it is paused.
+        if (isMultiWindowMode
+                && (newState == ActivityState.PAUSED || newState == ActivityState.RESUMED)) {
+            return;
+        }
+
+        if (newState == ActivityState.RESUMED
+                || newState == ActivityState.STOPPED
                 || newState == ActivityState.DESTROYED) {
             closePanel(StateChangeReason.UNKNOWN, false);
         }
@@ -526,27 +539,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     public boolean supportsContextualSearchLayout() {
         return true;
-    }
-
-    /**
-     * Handles the device orientation change.
-     */
-    public void onOrientationChanged() {
-        if (isNarrowSizePanelSupported()) {
-            // TODO(pedrosimonetti): We cannot preserve the panel when rotating from/to a
-            // narrow version of the Panel because the Content is resized before the Panel
-            // gets a notification of the resize.
-            closePanel(StateChangeReason.UNKNOWN, false);
-        } else {
-            updatePanelForOrientationChange();
-        }
-    }
-
-    /**
-     * Updates the Panel so it preserves its state when the orientation changes.
-     */
-    protected void updatePanelForOrientationChange() {
-        resizePanelToState(getPanelState(), StateChangeReason.UNKNOWN);
     }
 
     // ============================================================================================

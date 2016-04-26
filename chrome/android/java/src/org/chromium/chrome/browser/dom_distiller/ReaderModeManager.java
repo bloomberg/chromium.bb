@@ -503,15 +503,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     }
 
     /**
-     * Orientation change event handler. Simply close the panel.
-     */
-    public void onOrientationChange() {
-        if (mReaderModePanel != null) {
-            mReaderModePanel.onOrientationChanged();
-        }
-    }
-
-    /**
      * Open a link from the panel in a new tab.
      * @param url The URL to load.
      */

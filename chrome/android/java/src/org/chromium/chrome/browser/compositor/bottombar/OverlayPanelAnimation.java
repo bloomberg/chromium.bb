@@ -71,21 +71,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      */
     private final LayoutUpdateHost mUpdateHost;
 
-    /**
-     * Whether the panel's close animation is running.
-     */
-    private boolean mIsAnimatingPanelClosing;
-
-    /**
-     * Whether the panel's expand animation is running.
-     */
-    private boolean mIsAnimatingPanelExpanding;
-
-    /**
-     * The reason for the panel expanding.
-     */
-    private StateChangeReason mPanelExpansionStateChangeReason;
-
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -118,8 +103,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * @param reason The reason for the change of panel state.
      */
     protected void expandPanel(StateChangeReason reason) {
-        mIsAnimatingPanelExpanding = true;
-        mPanelExpansionStateChangeReason = reason;
         animatePanelToState(PanelState.EXPANDED, reason);
     }
 
@@ -147,35 +130,57 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
 
     @Override
     protected void closePanel(StateChangeReason reason, boolean animate) {
-        // If close without animation is called while the panel is already animating closed, cancel
-        // the animation and finish closing immediately.
-        if (mIsAnimatingPanelClosing) {
-            if (!animate) {
-                cancelAnimation(this, Property.PANEL_HEIGHT);
-            } else {
-                return;
-            }
-        }
-
         if (animate) {
-            mIsAnimatingPanelClosing = true;
-            animatePanelToState(PanelState.CLOSED, reason);
+            // Only animates the closing action if not doing that already.
+            if (mAnimatingState != PanelState.CLOSED) {
+                animatePanelToState(PanelState.CLOSED, reason);
+            }
         } else {
             resizePanelToState(PanelState.CLOSED, reason);
         }
     }
 
     @Override
-    public void onSizeChanged(float width, float height) {
-        super.onSizeChanged(width, height);
-        // In fullscreen, when the panel is opened the bottom Android controls show causing
-        // a call to onSizeChanged(). Since the screen size changes, the height of the panel
-        // needs to be recalculated. If the expansion animation is running, cancel it and start
-        // a new one, so that the panel ends up in the right position.
-        if (mIsAnimatingPanelExpanding) {
-            cancelHeightAnimation();
-            expandPanel(mPanelExpansionStateChangeReason);
+    protected void handleSizeChanged(float width, float height, boolean hasChangedPanelLayout) {
+        if (!isShowing()) return;
+
+        // TODO(pedrosimonetti): Cannot preserve panel when its layout changes (crbug.com/568351)
+        // (full vs narrow-width) due to an activity size change. The panel provides
+        // different desired MeasureSpecs when full-width vs narrow-width
+        // (See {@link OverlayPanel#createNewOverlayPanelContentInternal()}).
+        // When the activity is resized, ContentViewClient asks for the MeasureSpecs
+        // before the panel is notified of the size change, resulting in the panel's
+        // ContentView being laid out incorrectly.
+        if (hasChangedPanelLayout) {
+            // TODO(pedrosimonetti): Find solution that does not require async handling.
+            // NOTE(pedrosimonetti): Should close the Panel asynchronously because
+            // we might be in the middle of laying out the CompositorViewHolder
+            // View. See {@link CompositorViewHolder#onLayout()}. Closing the Panel
+            // has the effect of destroying the Views used by the Panel (which are
+            // children of the CompositorViewHolder), and if we do that synchronously
+            // it will cause a crash in {@link FrameLayout#layoutChildren()}.
+            mContainerView.getHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    closePanel(StateChangeReason.UNKNOWN, false);
+                }
+            });
+        } else {
+            if (mAnimatingState != PanelState.UNDEFINED) {
+                // If the size changes when an animation is happening, then we need to restart the
+                // animation, because the size of the Panel might have changed as well.
+                animatePanelToState(mAnimatingState, mAnimatingStateReason);
+            } else {
+                updatePanelForSizeChange();
+            }
         }
+    }
+
+    /**
+     * Updates the Panel so it preserves its state when the size changes.
+     */
+    protected void updatePanelForSizeChange() {
+        resizePanelToState(getPanelState(), StateChangeReason.UNKNOWN);
     }
 
     /**
@@ -411,9 +416,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * Called when layout-specific actions are needed after the animation finishes.
      */
     protected void onAnimationFinished() {
-        mIsAnimatingPanelClosing = false;
-        mIsAnimatingPanelExpanding = false;
-
         // If animating to a particular PanelState, and after completing
         // resizing the Panel to its desired state, then the Panel's state
         // should be updated. This method also is called when an animation

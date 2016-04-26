@@ -1317,10 +1317,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void onOrientationChange(int orientation) {
-        // TODO(mdjones): Orientation change for panels should not be handled here. The event
-        // should probably be passed to the OverlayPanelManager.
-        if (mContextualSearchManager != null) mContextualSearchManager.onOrientationChange();
-        if (mReaderModeManager != null) mReaderModeManager.onOrientationChange();
         if (mToolbarManager != null) mToolbarManager.onOrientationChange();
     }
 

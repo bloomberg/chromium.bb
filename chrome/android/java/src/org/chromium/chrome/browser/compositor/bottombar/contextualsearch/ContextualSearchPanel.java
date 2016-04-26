@@ -590,7 +590,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    protected void updatePanelForOrientationChange() {
+    protected void updatePanelForSizeChange() {
         if (getPromoControl().isVisible()) {
             getPromoControl().invalidate(true);
         }
@@ -602,7 +602,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         updateBasePageSelectionYPx(0.f);
         updateBasePageTargetY();
 
-        super.updatePanelForOrientationChange();
+        super.updatePanelForSizeChange();
     }
 
     // ============================================================================================
