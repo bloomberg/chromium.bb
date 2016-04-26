@@ -370,8 +370,6 @@ _arm_internal_release_boards = frozenset([
     'smaug-cheets',
     'smaug-kasan',
     'storm',
-    'veyron_brain',
-    'veyron_danger',
     'veyron_fievel',
     'veyron_gus',
     'veyron_jaq',
@@ -382,7 +380,6 @@ _arm_internal_release_boards = frozenset([
     'veyron_minnie-cheets',
     'veyron_pinky',
     'veyron_rialto',
-    'veyron_romy',
     'veyron_shark',
     'veyron_speedy',
     'veyron_tiger',
@@ -2550,12 +2547,6 @@ def GetConfig():
   )
 
   site_config.Add(
-      'veyron_romy-release', _release,
-      _base_configs['veyron_romy'],
-      vm_tests=[],
-  )
-
-  site_config.Add(
       'whirlwind-release', _release,
       _base_configs['whirlwind'],
       dev_installer_prebuilts=True,
@@ -2868,9 +2859,7 @@ def GetConfig():
   )
 
   _AddGroupConfig(
-      'veyron-c', 'veyron_brain', (
-          'veyron_danger',
-          'veyron_mickey',
+      'veyron-c', 'veyron_mickey', (
           'veyron_tiger',
       ),
       important=False,
@@ -2878,7 +2867,6 @@ def GetConfig():
 
   _AddGroupConfig(
       'veyron-d', 'veyron_shark', (
-          'veyron_romy',
           'veyron_minnie-cheets',
           'veyron_fievel',
       ),

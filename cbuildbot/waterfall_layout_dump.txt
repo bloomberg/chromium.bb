@@ -201,14 +201,11 @@ tricky-paladin
   veyron_minnie-release
   veyron_rialto-release
 [veyron-c-release-group]
-  veyron_brain-release
-  veyron_danger-release
   veyron_mickey-release
   veyron_tiger-release
 [veyron-d-release-group]
   veyron_fievel-release
   veyron_minnie-cheets-release
-  veyron_romy-release
   veyron_shark-release
 [veyron-release-group]
   veyron_jerry-release
