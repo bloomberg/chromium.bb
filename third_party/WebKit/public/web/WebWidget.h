@@ -94,7 +94,9 @@ public:
     // warranted before painting again).
     virtual void paint(WebCanvas*, const WebRect& viewPort) { }
 
-    virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) { }
+    // Similar to paint() but ignores compositing decisions, squashing all
+    // contents of the WebWidget into the output given to the WebCanvas.
+    virtual void paintIgnoringCompositing(WebCanvas*, const WebRect&) {}
 
     // Run layout and paint of all pending document changes asynchronously.
     // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback

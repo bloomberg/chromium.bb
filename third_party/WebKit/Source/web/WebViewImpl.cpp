@@ -2030,13 +2030,11 @@ void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)
 }
 
 #if OS(ANDROID)
-void WebViewImpl::paintCompositedDeprecated(WebCanvas* canvas, const WebRect& rect)
+void WebViewImpl::paintIgnoringCompositing(WebCanvas* canvas, const WebRect& rect)
 {
-    // Note: This method exists on OS(ANDROID) and will hopefully be
-    //       removed once the link disambiguation feature renders using
-    //       the compositor.
+    // This is called on a composited WebViewImpl, but we will ignore it,
+    // producing all possible content of the WebViewImpl into the WebCanvas.
     DCHECK(isAcceleratedCompositingActive());
-
     PageWidgetDelegate::paintIgnoringCompositing(*m_page, canvas, rect, *m_page->deprecatedLocalMainFrame());
 }
 #endif

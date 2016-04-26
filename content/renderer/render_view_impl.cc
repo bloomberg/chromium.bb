@@ -3169,9 +3169,7 @@ bool RenderViewImpl::didTapMultipleTargets(
                          -zoom_rect.y() * device_scale_factor_);
 
         DCHECK(webwidget_->isAcceleratedCompositingActive());
-        // TODO(aelias): The disambiguation popup should be composited so we
-        // don't have to call this method.
-        webwidget_->paintCompositedDeprecated(&canvas, zoom_rect);
+        webwidget_->paintIgnoringCompositing(&canvas, zoom_rect);
       }
 
       gfx::Rect zoom_rect_in_screen =

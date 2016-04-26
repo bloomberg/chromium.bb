@@ -47,7 +47,6 @@ public:
     void beginFrame(double lastFrameTimeMonotonic) override;
     void updateAllLifecyclePhases() override;
     void paint(WebCanvas*, const WebRect& viewPort) override;
-    void paintCompositedDeprecated(WebCanvas*, const WebRect&) override;
     void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     void themeChanged() override;

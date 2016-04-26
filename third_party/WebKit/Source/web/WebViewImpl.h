@@ -115,7 +115,7 @@ public:
     void updateAllLifecyclePhases() override;
     void paint(WebCanvas*, const WebRect&) override;
 #if OS(ANDROID)
-    void paintCompositedDeprecated(WebCanvas*, const WebRect&) override;
+    void paintIgnoringCompositing(WebCanvas*, const WebRect&) override;
 #endif
     void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;

@@ -76,11 +76,6 @@ void WebViewFrameWidget::paint(WebCanvas* canvas, const WebRect& viewPort)
     return m_webView->paint(canvas, viewPort);
 }
 
-void WebViewFrameWidget::paintCompositedDeprecated(WebCanvas* canvas, const WebRect& viewPort)
-{
-    return m_webView->paintCompositedDeprecated(canvas, viewPort);
-}
-
 void WebViewFrameWidget::layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback* callback)
 {
     return m_webView->layoutAndPaintAsync(callback);
