@@ -6,6 +6,7 @@
 
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 #include "core/EventTypeNames.h"
+#include "core/css/CSSPaintImageGenerator.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
@@ -16,6 +17,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
+#include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
@@ -42,6 +44,7 @@ void ModulesInitializer::initialize()
     IndexedDBNames::init();
     AXObjectCache::init(AXObjectCacheImpl::create);
     DraggedIsolatedFileSystem::init(DraggedIsolatedFileSystemImpl::prepareForDataObject);
+    CSSPaintImageGenerator::init(CSSPaintImageGeneratorImpl::create);
 
     CoreInitializer::initialize();
 

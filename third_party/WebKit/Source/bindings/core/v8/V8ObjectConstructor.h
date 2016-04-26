@@ -32,6 +32,7 @@
 #define V8ObjectConstructor_h
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 
 #include <v8.h>
@@ -74,7 +75,7 @@ private:
     v8::MicrotasksScope m_microtaskSuppression;
 };
 
-class V8ObjectConstructor {
+class CORE_EXPORT V8ObjectConstructor {
     STATIC_ONLY(V8ObjectConstructor);
 public:
     static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*, v8::Local<v8::Function>);

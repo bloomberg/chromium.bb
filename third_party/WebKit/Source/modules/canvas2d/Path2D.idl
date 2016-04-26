@@ -32,7 +32,7 @@
     Constructor,
     Constructor(Path2D path),
     Constructor(DOMString text),
-    Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures),
+    Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures, PaintWorklet CSSPaintAPI),
 ] interface Path2D {
 
     [RuntimeEnabled=ExperimentalCanvasFeatures] void addPath(Path2D path, optional SVGMatrix? transform);

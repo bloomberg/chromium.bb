@@ -10,6 +10,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerScriptLoader.h"
+#include "modules/ModulesExport.h"
 #include "modules/worklet/WorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
 
@@ -19,7 +20,7 @@ class ExecutionContext;
 class ScriptPromiseResolver;
 class WorkerScriptLoader;
 
-class Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
+class MODULES_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Worklet);
     WTF_MAKE_NONCOPYABLE(Worklet);

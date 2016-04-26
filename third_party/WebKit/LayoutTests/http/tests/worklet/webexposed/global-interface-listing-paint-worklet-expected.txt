@@ -25,6 +25,10 @@ CONSOLE MESSAGE: line 137:     method setInt8
 CONSOLE MESSAGE: line 137:     method setUint16
 CONSOLE MESSAGE: line 137:     method setUint32
 CONSOLE MESSAGE: line 137:     method setUint8
+CONSOLE MESSAGE: line 137: interface Geometry
+CONSOLE MESSAGE: line 137:     getter height
+CONSOLE MESSAGE: line 137:     getter width
+CONSOLE MESSAGE: line 137:     method constructor
 CONSOLE MESSAGE: line 137: interface PaintRenderingContext2D
 CONSOLE MESSAGE: line 137:     getter currentTransform
 CONSOLE MESSAGE: line 137:     getter fillStyle
@@ -93,6 +97,18 @@ CONSOLE MESSAGE: line 137:     setter shadowOffsetY
 CONSOLE MESSAGE: line 137:     setter strokeStyle
 CONSOLE MESSAGE: line 137: interface PaintWorkletGlobalScope : WorkletGlobalScope
 CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface Path2D
+CONSOLE MESSAGE: line 137:     method addPath
+CONSOLE MESSAGE: line 137:     method arc
+CONSOLE MESSAGE: line 137:     method arcTo
+CONSOLE MESSAGE: line 137:     method bezierCurveTo
+CONSOLE MESSAGE: line 137:     method closePath
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method ellipse
+CONSOLE MESSAGE: line 137:     method lineTo
+CONSOLE MESSAGE: line 137:     method moveTo
+CONSOLE MESSAGE: line 137:     method quadraticCurveTo
+CONSOLE MESSAGE: line 137:     method rect
 CONSOLE MESSAGE: line 137: interface ReadableStream
 CONSOLE MESSAGE: line 137:     getter locked
 CONSOLE MESSAGE: line 137:     method cancel

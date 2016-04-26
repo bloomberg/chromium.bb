@@ -9,10 +9,12 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/ModulesExport.h"
 #include "modules/worklet/WorkletGlobalScope.h"
+#include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
 
 class CSSPaintDefinition;
+class CSSPaintImageGeneratorImpl;
 class ExceptionState;
 
 class MODULES_EXPORT PaintWorkletGlobalScope : public WorkletGlobalScope {
@@ -26,6 +28,7 @@ public:
     void registerPaint(const String& name, const ScriptValue& ctor, ExceptionState&);
 
     CSSPaintDefinition* findDefinition(const String& name);
+    void addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -34,6 +37,13 @@ private:
 
     typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
     DefinitionMap m_paintDefinitions;
+
+    // The map of CSSPaintImageGeneratorImpl which are waiting for a
+    // CSSPaintDefinition to be registered. The global scope is expected to
+    // outlive the generators hence are held onto with a WeakMember.
+    typedef HeapHashSet<WeakMember<CSSPaintImageGeneratorImpl>> GeneratorHashSet;
+    typedef HeapHashMap<String, Member<GeneratorHashSet>> PendingGeneratorMap;
+    PendingGeneratorMap m_pendingGenerators;
 };
 
 DEFINE_TYPE_CASTS(PaintWorkletGlobalScope, ExecutionContext, context, context->isPaintWorkletGlobalScope(), context.isPaintWorkletGlobalScope());

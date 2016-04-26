@@ -28,6 +28,21 @@ PaintWorklet::~PaintWorklet()
 {
 }
 
+WorkletGlobalScope* PaintWorklet::workletGlobalScope() const
+{
+    return m_paintWorkletGlobalScope.get();
+}
+
+CSSPaintDefinition* PaintWorklet::findDefinition(const String& name)
+{
+    return m_paintWorkletGlobalScope->findDefinition(name);
+}
+
+void PaintWorklet::addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl* generator)
+{
+    return m_paintWorkletGlobalScope->addPendingGenerator(name, generator);
+}
+
 DEFINE_TRACE(PaintWorklet)
 {
     visitor->trace(m_paintWorkletGlobalScope);

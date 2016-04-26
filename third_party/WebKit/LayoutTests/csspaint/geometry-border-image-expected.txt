@@ -1,0 +1,15 @@
+CONSOLE MESSAGE: line 26: The worklet should log: 'width: 100, height: 100'
+CONSOLE MESSAGE: line 6: width: 100, height: 100
+CONSOLE MESSAGE: line 26: The worklet should log: 'width: 220, height: 220'
+CONSOLE MESSAGE: line 6: width: 220, height: 220
+CONSOLE MESSAGE: line 26: The worklet should log: 'width: 90, height: 90'
+CONSOLE MESSAGE: line 6: width: 90, height: 90
+CONSOLE MESSAGE: line 26: The worklet should log: 'width: 80, height: 120'
+CONSOLE MESSAGE: line 6: width: 80, height: 120
+CONSOLE MESSAGE: line 26: The worklet should log: 'width: 140, height: 140'
+CONSOLE MESSAGE: line 6: width: 140, height: 140
+CONSOLE MESSAGE: line 26: The worklet should log: 'width: 120, height: 120'
+CONSOLE MESSAGE: line 6: width: 120, height: 120
+This tests the geometry information in the paint callback.
+
+See the devtools console for test output.

@@ -4,12 +4,12 @@
 
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
+#include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 
 namespace blink {
 
@@ -105,6 +105,17 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
 
     CSSPaintDefinition* definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint);
     m_paintDefinitions.set(name, definition);
+
+    // Set the definition on any pending generators.
+    GeneratorHashSet* set = m_pendingGenerators.get(name);
+    if (set) {
+        for (const auto& generator : *set) {
+            if (generator) {
+                generator->setDefinition(definition);
+            }
+        }
+    }
+    m_pendingGenerators.remove(name);
 }
 
 CSSPaintDefinition* PaintWorkletGlobalScope::findDefinition(const String& name)
@@ -112,9 +123,18 @@ CSSPaintDefinition* PaintWorkletGlobalScope::findDefinition(const String& name)
     return m_paintDefinitions.get(name);
 }
 
+void PaintWorkletGlobalScope::addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl* generator)
+{
+    Member<GeneratorHashSet>& set = m_pendingGenerators.add(name, nullptr).storedValue->value;
+    if (!set)
+        set = new GeneratorHashSet;
+    set->add(generator);
+}
+
 DEFINE_TRACE(PaintWorkletGlobalScope)
 {
     visitor->trace(m_paintDefinitions);
+    visitor->trace(m_pendingGenerators);
     WorkletGlobalScope::trace(visitor);
 }
 

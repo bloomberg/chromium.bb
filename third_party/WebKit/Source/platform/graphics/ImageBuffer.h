@@ -37,6 +37,7 @@
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -135,6 +136,8 @@ public:
 
     PassRefPtr<SkImage> newSkImageSnapshot(AccelerationHint, SnapshotReason) const;
     PassRefPtr<Image> newImageSnapshot(AccelerationHint = PreferNoAcceleration, SnapshotReason = SnapshotReasonUnknown) const;
+
+    PassRefPtr<SkPicture> getPicture() { return m_surface->getPicture(); }
 
     void draw(GraphicsContext&, const FloatRect&, const FloatRect*, SkXfermode::Mode);
 

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<style>
+    #output {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+    }
+</style>
+</head>
+<body>
+<div id="output"></div>
+
+<script id="code" type="text/worklet">
+registerPaint('green', class {
+    paint(ctx, geom) {
+        ctx.fillStyle = 'green';
+        ctx.fillRect(0, 0, geom.width, geom.height);
+    }
+});
+</script>
+
+<script>
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+}
+
+var el = document.getElementById('output');
+el.style.backgroundImage = 'paint(green)';
+
+var blob = new Blob([document.getElementById('code').textContent]);
+paintWorklet.import(URL.createObjectURL(blob)).then(function() {
+    runAfterLayoutAndPaint(function() {
+        if (window.testRunner) {
+            testRunner.notifyDone();
+        }
+    });
+});
+</script>
+</body>
+</html>

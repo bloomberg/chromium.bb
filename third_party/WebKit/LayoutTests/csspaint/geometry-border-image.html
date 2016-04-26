@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="resources/test-runner-geometry-logging.js"></script>
+<style>
+    div {
+        border: solid 0;
+        border-image: paint(logging-green);
+        border-image-slice: 0 fill;
+        background-color: red;
+    }
+</style>
+<script>
+function runTest() {
+    testRunnerGeometryLogging([{
+        func: function(el) {
+            el.style.width = '100px';
+            el.style.height = '100px';
+        },
+        expected: {width: 100, height: 100},
+    }, {
+        func: function(el) {
+            el.style.width = '200px';
+            el.style.height = '200px';
+            el.style.borderWidth = '10px';
+        },
+        expected: {width: 220, height: 220},
+    }, {
+        func: function(el) {
+            el.style.width = '50px';
+            el.style.height = '50px';
+            el.style.borderImageOutset = '20px';
+        },
+        expected: {width: 90, height: 90},
+    }, {
+        func: function(el) {
+            el.style.width = '60px';
+            el.style.height = '100px';
+            el.style.borderImageOutset = '10px';
+        },
+        expected: {width: 80, height: 120},
+    }, {
+        func: function(el) {
+            el.style.width = '100px';
+            el.style.height = '100px';
+            el.style.borderWidth = '10px';
+            el.style.borderImageOutset = '10px';
+        },
+        expected: {width: 140, height: 140},
+    }, {
+        func: function(el) {
+            el.style.width = '100px';
+            el.style.height = '100px';
+            el.style.borderImageOutset = '10px';
+            if (window.internals)
+                window.internals.setPageScaleFactor(2);
+        },
+        expected: {width: 120, height: 120},
+    }]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>This tests the geometry information in the paint callback.</p>
+<p>See the devtools console for test output.</p>
+</body>
+</html>

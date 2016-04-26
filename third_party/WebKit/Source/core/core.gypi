@@ -1183,6 +1183,8 @@
             'css/CSSMediaRule.h',
             'css/CSSNamespaceRule.cpp',
             'css/CSSNamespaceRule.h',
+            'css/CSSPaintImageGenerator.cpp',
+            'css/CSSPaintImageGenerator.h',
             'css/CSSPaintValue.cpp',
             'css/CSSPaintValue.h',
             'css/CSSPageRule.cpp',

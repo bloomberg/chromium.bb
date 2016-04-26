@@ -7,6 +7,7 @@
 
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSImageGeneratorValue.h"
+#include "core/css/CSSPaintImageGenerator.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -39,7 +40,31 @@ public:
 private:
     explicit CSSPaintValue(CSSCustomIdentValue* name);
 
+    class Observer final : public CSSPaintImageGenerator::Observer {
+        WTF_MAKE_NONCOPYABLE(Observer);
+    public:
+        explicit Observer(CSSPaintValue* ownerValue)
+            : m_ownerValue(ownerValue)
+        {
+        }
+
+        ~Observer() override { }
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            visitor->trace(m_ownerValue);
+            CSSPaintImageGenerator::Observer::trace(visitor);
+        }
+
+        void paintImageGeneratorReady() final;
+    private:
+        Member<CSSPaintValue> m_ownerValue;
+    };
+
+    void paintImageGeneratorReady();
+
     Member<CSSCustomIdentValue> m_name;
+    Member<CSSPaintImageGenerator> m_generator;
+    Member<Observer> m_paintImageGeneratorObserver;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, isPaintValue());
