@@ -39,7 +39,7 @@
           ],
           'xcode_settings': {
             'WRAPPER_EXTENSION': 'xctest',
-            'TEST_HOST': '$(CONFIGURATION_BUILD_DIR)/<(test_host)',
+            'TEST_HOST': '${BUILT_PRODUCTS_DIR}/<(test_host)',
             'BUNDLE_LOADER': '$(TEST_HOST)',
             'conditions':[
               ['"<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"', {
@@ -58,16 +58,6 @@
               'XCTest.framework',
             ],
           },
-          'postbuilds': [
-            {
-              'postbuild_name': 'Copy xctest to TEST_HOST',
-              'action': [
-                'ditto',
-                '${BUILT_PRODUCTS_DIR}/ios_web_shell_test.xctest',
-                '${BUILT_PRODUCTS_DIR}/<(test_host_name).app/PlugIns/ios_web_shell_test.xctest',
-              ],
-            },
-          ],
         },
       ],
     }, { # GENERATOR == ninja or GENERATOR_FLAVOR == ninja
