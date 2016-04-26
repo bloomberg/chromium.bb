@@ -21,9 +21,5 @@ per-file ChildProcessConnection*.java=mariakhomenko@chromium.org
 per-file ChildProcessLauncher.java=jaekyun@chromium.org
 per-file ChildProcessLauncher.java=mariakhomenko@chromium.org
 
-# Mojo related
-per-file ServiceRegistrar.java=ppi@chromium.org
-per-file ServiceRegistry.java=ppi@chromium.org
-
 # BackgroundSync related
 per-file BackgroundSync*.java=jkarlin@chromium.org

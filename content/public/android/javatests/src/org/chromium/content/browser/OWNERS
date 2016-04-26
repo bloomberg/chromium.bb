@@ -19,9 +19,6 @@ per-file BindingManagerImplTest.java=mariakhomenko@chromium.org
 per-file ChildProcessLauncherTest.java=jaekyun@chromium.org
 per-file ChildProcessLauncherTest.java=mariakhomenko@chromium.org
 
-# Mojo related
-per-file ServiceRegistryTest.java=ppi@chromium.org
-
 # Java Bridge
 per-file JavaBridge*=michaelbai@chromium.org
 per-file JavaBridge*=torne@chromium.org
