@@ -1639,9 +1639,17 @@ static bool PointIsClippedByAncestorClipNode(
       gfx::Rect combined_clip_in_target_space =
           gfx::ToEnclosingRect(clip_node->data.combined_clip_in_target_space);
 
-      if (!PointHitsRect(screen_space_point, transform_node->data.to_screen,
-                         combined_clip_in_target_space, NULL))
+      const LayerImpl* target_layer =
+          layer->layer_tree_impl()->LayerById(transform_node->owner_id);
+      DCHECK(transform_node->id == 0 || target_layer->render_surface());
+      gfx::Transform surface_screen_space_transform =
+          transform_node->id == 0
+              ? gfx::Transform()
+              : SurfaceScreenSpaceTransform(target_layer, transform_tree);
+      if (!PointHitsRect(screen_space_point, surface_screen_space_transform,
+                         combined_clip_in_target_space, NULL)) {
         return true;
+      }
     }
     const LayerImpl* clip_node_owner =
         layer->layer_tree_impl()->LayerById(clip_node->owner_id);
@@ -1674,8 +1682,9 @@ static bool PointHitsLayer(const LayerImpl* layer,
                            const ClipTree& clip_tree) {
   gfx::Rect content_rect(layer->bounds());
   if (!PointHitsRect(screen_space_point, layer->ScreenSpaceTransform(),
-                     content_rect, distance_to_intersection))
+                     content_rect, distance_to_intersection)) {
     return false;
+  }
 
   // At this point, we think the point does hit the layer, but we need to walk
   // up the parents to ensure that the layer was not clipped in such a way

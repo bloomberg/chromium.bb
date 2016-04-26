@@ -1895,6 +1895,94 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
   EXPECT_EQ(456, result_layer->id());
 }
 
+TEST_F(LayerTreeImplTest,
+       HitCheckingTouchHandlerRegionsForClippedLayerWithDeviceScale) {
+  // The layer's device_scale_factor and page_scale_factor should scale the
+  // content rect and we should be able to hit the touch handler region by
+  // scaling the points accordingly.
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl().active_tree(), 1);
+
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  // Set the bounds of the root layer big enough to fit the child when scaled.
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  std::unique_ptr<LayerImpl> surface =
+      LayerImpl::Create(host_impl().active_tree(), 2);
+  SetLayerPropertiesForTesting(surface.get(), identity_matrix, transform_origin,
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  {
+    std::unique_ptr<LayerImpl> clipping_layer =
+        LayerImpl::Create(host_impl().active_tree(), 123);
+    // This layer is positioned, and hit testing should correctly know where the
+    // layer is located.
+    gfx::PointF position(25.f, 20.f);
+    gfx::Size bounds(50, 50);
+    SetLayerPropertiesForTesting(clipping_layer.get(), identity_matrix,
+                                 transform_origin, position, bounds, true,
+                                 false, false);
+    clipping_layer->SetMasksToBounds(true);
+
+    std::unique_ptr<LayerImpl> child =
+        LayerImpl::Create(host_impl().active_tree(), 456);
+    Region touch_handler_region(gfx::Rect(0, 0, 300, 300));
+    position = gfx::PointF(-50.f, -50.f);
+    bounds = gfx::Size(300, 300);
+    SetLayerPropertiesForTesting(child.get(), identity_matrix, transform_origin,
+                                 position, bounds, true, false, false);
+    child->SetDrawsContent(true);
+    child->SetTouchEventHandlerRegion(touch_handler_region);
+    clipping_layer->AddChild(std::move(child));
+    surface->AddChild(std::move(clipping_layer));
+    root->AddChild(std::move(surface));
+  }
+
+  float device_scale_factor = 3.f;
+  float page_scale_factor = 1.f;
+  float max_page_scale_factor = 1.f;
+  gfx::Size scaled_bounds_for_root = gfx::ScaleToCeiledSize(
+      root->bounds(), device_scale_factor * page_scale_factor);
+  host_impl().SetViewportSize(scaled_bounds_for_root);
+
+  host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
+  host_impl().active_tree()->SetRootLayer(std::move(root));
+  host_impl().active_tree()->SetViewportLayersFromIds(Layer::INVALID_ID, 1, 1,
+                                                      Layer::INVALID_ID);
+  host_impl().active_tree()->BuildPropertyTreesForTesting();
+  host_impl().active_tree()->PushPageScaleFromMainThread(
+      page_scale_factor, page_scale_factor, max_page_scale_factor);
+  host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+
+  // Sanity check the scenario we just created.
+  ASSERT_EQ(2u, RenderSurfaceLayerList().size());
+
+  // Hit checking for a point outside the layer should return a null pointer.
+  // Despite the child layer being very large, it should be clipped to the root
+  // layer's bounds.
+  gfx::PointF test_point(24.f, 24.f);
+  test_point =
+      gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
+  LayerImpl* result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point);
+  EXPECT_FALSE(result_layer);
+
+  // Hit checking for a point inside the touch event handler region should
+  // return the child layer.
+  test_point = gfx::PointF(25.f, 25.f);
+  test_point =
+      gfx::ScalePoint(test_point, device_scale_factor * page_scale_factor);
+  result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          test_point);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(456, result_layer->id());
+}
+
 TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
   gfx::Transform identity_matrix;
   gfx::Point3F transform_origin;
