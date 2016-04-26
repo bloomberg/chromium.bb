@@ -35,7 +35,7 @@ class CastDialogPage(media_router_page.CastPage):
   def RunPageInteractions(self, action_runner):
     # Wait for 5s after Chrome is opened in order to get consistent results.
     action_runner.Wait(5)
-    with action_runner.CreateInteraction('OpenDialog'):
+    with action_runner.CreateInteraction('LaunchDialog'):
       # Open dialog
       action_runner.TapElement(selector='#start_session_button')
       action_runner.Wait(5)
