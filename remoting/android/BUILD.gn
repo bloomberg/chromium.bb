@@ -160,6 +160,7 @@ shared_library("remoting_host_jni") {
     "//google_apis",
     "//remoting/base",
     "//remoting/host",
+    "//remoting/host/it2me:common",
     "//remoting/protocol",
   ]
   sources = [
@@ -184,10 +185,12 @@ android_apk("remoting_host_apk") {
   android_manifest = "host/AndroidManifest.xml"
   native_libs = [ "libremoting_host_jni.so" ]
   java_files = [
-    "host/src/org/chromium/chromoting/host/RemotingApplication.java",
     "host/src/org/chromium/chromoting/host/MainActivity.java",
+    "host/src/org/chromium/chromoting/host/RemotingApplication.java",
     "host/src/org/chromium/chromoting/host/jni/Host.java",
+    "java/src/org/chromium/chromoting/base/OAuthTokenFetcher.java",
   ]
+
   deps = [
     ":remoting_host_apk_resources",
     ":remoting_host_jni",
@@ -195,5 +198,7 @@ android_apk("remoting_host_apk") {
     "//net/android:net_java",
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
+    google_play_services_library,
+    google_play_services_resources,
   ]
 }

@@ -39,4 +39,16 @@ public class Host {
     }
 
     private native void nativeDestroy(long nativeJniHost);
+
+    public void connect(String userName, String authToken) {
+        nativeConnect(mNativeJniHost, userName, authToken);
+    }
+
+    private native void nativeConnect(long nativeJniHost, String userName, String authToken);
+
+    public void disconnect() {
+        nativeDisconnect(mNativeJniHost);
+    }
+
+    private native void nativeDisconnect(long nativeJniHost);
 }
