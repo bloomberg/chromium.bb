@@ -2231,6 +2231,11 @@
               # no need to load it dynamically.
               'clang_dynlib_flags%': '',
             }],
+            ['(OS=="android" or OS=="linux") and chromecast==0 and chromeos==0', {
+              'clang_plugin_check_ipc_arg': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-ipc',
+            }, {
+              'clang_plugin_check_ipc_arg': '',
+            }],
           ],
           'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates '
           '-Xclang -plugin-arg-find-bad-constructs -Xclang follow-macro-expansion '
@@ -2239,7 +2244,7 @@
         # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':
           '<(clang_dynlib_flags)'
-          '-Xclang -add-plugin -Xclang find-bad-constructs <(clang_plugin_args)',
+          '-Xclang -add-plugin -Xclang find-bad-constructs <(clang_plugin_args) <(clang_plugin_check_ipc_arg)',
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,

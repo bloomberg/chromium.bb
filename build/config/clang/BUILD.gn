@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("clang.gni")
+import("//build/config/chromecast_build.gni")
 
 config("find_bad_constructs") {
   if (clang_use_chrome_plugins) {
@@ -49,6 +50,15 @@ config("find_bad_constructs") {
       "-Xclang",
       "check-implicit-copy-ctors",
     ]
+
+    if ((is_linux || is_android) && !is_chromeos && !is_chromecast) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-find-bad-constructs",
+        "-Xclang",
+        "check-ipc",
+      ]
+    }
   }
 }
 
