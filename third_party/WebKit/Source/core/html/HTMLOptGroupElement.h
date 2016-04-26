@@ -55,6 +55,7 @@ private:
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
     void attach(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
+    bool matchesEnabledPseudoClass() const override;
 
     // <optgroup> might not have a layoutObject so we manually manage a cached style.
     void updateNonComputedStyle();

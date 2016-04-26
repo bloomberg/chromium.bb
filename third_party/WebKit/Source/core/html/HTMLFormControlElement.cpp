@@ -359,6 +359,11 @@ bool HTMLFormControlElement::isDisabledFormControl() const
     return m_ancestorDisabledState == AncestorDisabledStateDisabled;
 }
 
+bool HTMLFormControlElement::matchesEnabledPseudoClass() const
+{
+    return !isDisabledFormControl();
+}
+
 bool HTMLFormControlElement::isRequired() const
 {
     return fastHasAttribute(requiredAttr);

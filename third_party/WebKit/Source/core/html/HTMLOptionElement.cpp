@@ -120,6 +120,11 @@ bool HTMLOptionElement::matchesDefaultPseudoClass() const
     return fastHasAttribute(selectedAttr);
 }
 
+bool HTMLOptionElement::matchesEnabledPseudoClass() const
+{
+    return !isDisabledFormControl();
+}
+
 String HTMLOptionElement::displayLabel() const
 {
     Document& document = this->document();

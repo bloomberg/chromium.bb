@@ -823,11 +823,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
             return true;
         return element.active();
     case CSSSelector::PseudoEnabled:
-        if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
-            return !element.isDisabledFormControl();
-        if (isHTMLAnchorElement(element) || isHTMLAreaElement(element))
-            return element.isLink();
-        break;
+        return element.matchesEnabledPseudoClass();
     case CSSSelector::PseudoFullPageMedia:
         return element.document().isMediaDocument();
     case CSSSelector::PseudoDefault:

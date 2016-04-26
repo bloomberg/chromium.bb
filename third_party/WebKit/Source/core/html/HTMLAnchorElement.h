@@ -92,6 +92,7 @@ protected:
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     bool supportsFocus() const override;
+    bool matchesEnabledPseudoClass() const override;
 
 private:
     bool shouldHaveFocusAppearance() const final;

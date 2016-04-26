@@ -68,6 +68,8 @@ public:
 
     bool isDisabledFormControl() const override;
 
+    bool matchesEnabledPseudoClass() const override;
+
     bool isEnumeratable() const override { return false; }
 
     bool isRequired() const;

@@ -63,6 +63,11 @@ bool HTMLOutputElement::isDisabledFormControl() const
     return false;
 }
 
+bool HTMLOutputElement::matchesEnabledPseudoClass() const
+{
+    return false;
+}
+
 bool HTMLOutputElement::supportsFocus() const
 {
     return HTMLElement::supportsFocus();

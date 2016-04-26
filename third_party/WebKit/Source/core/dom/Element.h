@@ -472,6 +472,7 @@ public:
     LayoutObject* pseudoElementLayoutObject(PseudoId) const;
 
     virtual bool matchesDefaultPseudoClass() const { return false; }
+    virtual bool matchesEnabledPseudoClass() const { return false; }
     virtual bool matchesReadOnlyPseudoClass() const { return false; }
     virtual bool matchesReadWritePseudoClass() const { return false; }
     virtual bool matchesValidityPseudoClasses() const { return false; }

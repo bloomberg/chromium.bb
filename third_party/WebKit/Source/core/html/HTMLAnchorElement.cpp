@@ -67,6 +67,11 @@ bool HTMLAnchorElement::supportsFocus() const
     return isLink() || HTMLElement::supportsFocus();
 }
 
+bool HTMLAnchorElement::matchesEnabledPseudoClass() const
+{
+    return isLink();
+}
+
 bool HTMLAnchorElement::shouldHaveFocusAppearance() const
 {
     return !m_wasFocusedByMouse || HTMLElement::supportsFocus();

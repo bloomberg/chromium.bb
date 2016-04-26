@@ -106,6 +106,11 @@ bool HTMLOptGroupElement::supportsFocus() const
     return HTMLElement::supportsFocus();
 }
 
+bool HTMLOptGroupElement::matchesEnabledPseudoClass() const
+{
+    return !isDisabledFormControl();
+}
+
 void HTMLOptGroupElement::updateNonComputedStyle()
 {
     m_style = originalStyleForLayoutObject();
