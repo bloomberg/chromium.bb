@@ -587,7 +587,7 @@ int rdp_implant_listener(struct rdp_backend *b, freerdp_listener* instance)
 }
 
 
-static void
+static FREERDP_CB_RET_TYPE
 rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 {
 	context->item.peer = client;
@@ -598,15 +598,32 @@ rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 #else
 	context->rfx_context = rfx_context_new(TRUE);
 #endif
+	if (!context->rfx_context) {
+		FREERDP_CB_RETURN(FALSE);
+	}
+
 	context->rfx_context->mode = RLGR3;
 	context->rfx_context->width = client->settings->DesktopWidth;
 	context->rfx_context->height = client->settings->DesktopHeight;
 	rfx_context_set_pixel_format(context->rfx_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 
 	context->nsc_context = nsc_context_new();
+	if (!context->nsc_context)
+		goto out_error_nsc;
+
 	nsc_context_set_pixel_format(context->nsc_context, RDP_PIXEL_FORMAT_B8G8R8A8);
 
 	context->encode_stream = Stream_New(NULL, 65536);
+	if (!context->encode_stream)
+		goto out_error_stream;
+
+	FREERDP_CB_RETURN(TRUE);
+
+out_error_nsc:
+	rfx_context_free(context->rfx_context);
+out_error_stream:
+	nsc_context_free(context->nsc_context);
+	FREERDP_CB_RETURN(FALSE);
 }
 
 static void
