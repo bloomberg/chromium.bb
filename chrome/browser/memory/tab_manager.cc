@@ -71,10 +71,12 @@ namespace {
 // value.
 const int kAdjustmentIntervalSeconds = 10;
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 // For each period of this length record a statistic to indicate whether or not
 // the user experienced a low memory event. If this interval is changed,
 // Tabs.Discard.DiscardInLastMinute must be replaced with a new statistic.
 const int kRecentTabDiscardIntervalSeconds = 60;
+#endif
 
 // If there has been no priority adjustment in this interval, assume the
 // machine was suspended and correct the timing statistics.
@@ -198,6 +200,10 @@ void TabManager::Start() {
                         TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
                         this, &TabManager::UpdateTimerCallback);
   }
+
+  // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
+  // discarded.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   if (!recent_tab_discard_timer_.IsRunning()) {
     recent_tab_discard_timer_.Start(
         FROM_HERE, TimeDelta::FromSeconds(kRecentTabDiscardIntervalSeconds),
@@ -215,6 +221,7 @@ void TabManager::Start() {
       OnMemoryPressure(level);
     }
   }
+#endif
 }
 
 void TabManager::Stop() {

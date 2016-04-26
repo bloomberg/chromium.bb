@@ -1249,7 +1249,7 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 
 // Start the tab manager here so that we give the most amount of time for the
 // other services to start up before we start adjusting the oom priority.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   g_browser_process->GetTabManager()->Start();
 #endif
 }

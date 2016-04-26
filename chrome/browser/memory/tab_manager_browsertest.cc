@@ -28,7 +28,7 @@
 
 using content::OpenURLParams;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 namespace memory {
 
@@ -38,7 +38,7 @@ class TabManagerTest : public InProcessBrowserTest {
   // by turning on the corresponding experiment as some tests assume this
   // behavior it turned on.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_LINUX)
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     features::kAutomaticTabDiscarding.name);
 #endif
@@ -181,6 +181,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_TRUE(chrome::CanGoForward(browser()));
 }
 
+// On Linux, memory pressure listener is not implemented yet.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
@@ -230,6 +233,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   }
   EXPECT_TRUE(tab_manager->recent_tab_discard());
 }
+
+#endif
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
