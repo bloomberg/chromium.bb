@@ -13,17 +13,15 @@
 
 namespace blink {
 
-RunSegmenter::RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation runOrientation, FontVariant variant)
+RunSegmenter::RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation runOrientation)
     : m_bufferSize(bufferSize)
-    , m_candidateRange({ 0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase })
+    , m_candidateRange({ 0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationKeep, FontFallbackPriority::Text })
     , m_scriptRunIterator(adoptPtr(new ScriptRunIterator(buffer, bufferSize)))
     , m_orientationIterator(runOrientation == FontOrientation::VerticalMixed ? adoptPtr(new OrientationIterator(buffer, bufferSize, runOrientation)) : nullptr)
-    , m_smallCapsIterator(variant == FontVariantSmallCaps ? adoptPtr(new SmallCapsIterator(buffer, bufferSize)) : nullptr)
     , m_symbolsIterator(adoptPtr(new SymbolsIterator(buffer, bufferSize)))
     , m_lastSplit(0)
     , m_scriptRunIteratorPosition(0)
     , m_orientationIteratorPosition(runOrientation == FontOrientation::VerticalMixed ? 0 : m_bufferSize)
-    , m_smallCapsIteratorPosition(variant == FontVariantSmallCaps ? 0 : m_bufferSize)
     , m_symbolsIteratorPosition(0)
     , m_atEnd(false)
 {
@@ -50,16 +48,6 @@ void RunSegmenter::consumeOrientationIteratorPastLastSplit()
     }
 }
 
-void RunSegmenter::consumeSmallCapsIteratorPastLastSplit()
-{
-    if (m_smallCapsIterator && m_smallCapsIteratorPosition <= m_lastSplit && m_smallCapsIteratorPosition < m_bufferSize) {
-        while (m_smallCapsIterator->consume(&m_smallCapsIteratorPosition, &m_candidateRange.smallCapsBehavior)) {
-            if (m_smallCapsIteratorPosition > m_lastSplit)
-                return;
-        }
-    }
-}
-
 void RunSegmenter::consumeSymbolsIteratorPastLastSplit()
 {
     ASSERT(m_symbolsIterator);
@@ -78,30 +66,20 @@ bool RunSegmenter::consume(RunSegmenterRange* nextRange)
 
     consumeScriptIteratorPastLastSplit();
     consumeOrientationIteratorPastLastSplit();
-    consumeSmallCapsIteratorPastLastSplit();
     consumeSymbolsIteratorPastLastSplit();
 
     if (m_scriptRunIteratorPosition <= m_orientationIteratorPosition
-        && m_scriptRunIteratorPosition <= m_smallCapsIteratorPosition
         && m_scriptRunIteratorPosition <= m_symbolsIteratorPosition) {
         m_lastSplit = m_scriptRunIteratorPosition;
     }
 
     if (m_orientationIteratorPosition <= m_scriptRunIteratorPosition
-        && m_orientationIteratorPosition <= m_smallCapsIteratorPosition
         && m_orientationIteratorPosition <= m_symbolsIteratorPosition) {
         m_lastSplit = m_orientationIteratorPosition;
     }
 
-    if (m_smallCapsIteratorPosition <= m_scriptRunIteratorPosition
-        && m_smallCapsIteratorPosition <= m_orientationIteratorPosition
-        && m_smallCapsIteratorPosition <= m_symbolsIteratorPosition) {
-        m_lastSplit = m_smallCapsIteratorPosition;
-    }
-
     if (m_symbolsIteratorPosition <= m_scriptRunIteratorPosition
-        && m_symbolsIteratorPosition <= m_orientationIteratorPosition
-        && m_symbolsIteratorPosition <= m_smallCapsIteratorPosition) {
+        && m_symbolsIteratorPosition <= m_orientationIteratorPosition) {
         m_lastSplit = m_symbolsIteratorPosition;
     }
 

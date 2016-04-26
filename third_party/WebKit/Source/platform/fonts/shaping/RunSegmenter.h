@@ -34,18 +34,16 @@ public:
         unsigned end;
         UScriptCode script;
         OrientationIterator::RenderOrientation renderOrientation;
-        SmallCapsIterator::SmallCapsBehavior smallCapsBehavior;
         FontFallbackPriority fontFallbackPriority;
     };
 
-    RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation, FontVariant);
+    RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation);
 
     bool consume(RunSegmenterRange*);
 
 private:
 
     void consumeOrientationIteratorPastLastSplit();
-    void consumeSmallCapsIteratorPastLastSplit();
     void consumeScriptIteratorPastLastSplit();
     void consumeSymbolsIteratorPastLastSplit();
 
@@ -53,12 +51,10 @@ private:
     RunSegmenterRange m_candidateRange;
     OwnPtr<ScriptRunIterator> m_scriptRunIterator;
     OwnPtr<OrientationIterator> m_orientationIterator;
-    OwnPtr<SmallCapsIterator> m_smallCapsIterator;
     OwnPtr<SymbolsIterator> m_symbolsIterator;
     unsigned m_lastSplit;
     unsigned m_scriptRunIteratorPosition;
     unsigned m_orientationIteratorPosition;
-    unsigned m_smallCapsIteratorPosition;
     unsigned m_symbolsIteratorPosition;
     bool m_atEnd;
 };

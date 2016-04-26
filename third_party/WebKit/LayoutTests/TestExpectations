@@ -1007,6 +1007,7 @@ crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-cent
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 
+crbug.com/587094 [ Mac10.9 ] fast/text/font-features/caps-native-synthesis.html [ NeedsManualRebaseline ]
 
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]

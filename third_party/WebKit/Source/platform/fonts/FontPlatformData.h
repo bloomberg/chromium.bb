@@ -38,6 +38,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontRenderStyle.h"
+#include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"

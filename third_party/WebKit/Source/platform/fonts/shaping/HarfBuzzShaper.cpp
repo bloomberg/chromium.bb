@@ -36,6 +36,7 @@
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "platform/fonts/opentype/OpenTypeCapsSupport.h"
 #include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/RunSegmenter.h"
@@ -213,6 +214,8 @@ void HarfBuzzShaper::setFontFeatures()
     if (!settings)
         return;
 
+    // TODO(drott): crbug.com/450619 Implement feature resolution instead of
+    // just appending the font-feature-settings.
     unsigned numFeatures = settings->size();
     for (unsigned i = 0; i < numFeatures; ++i) {
         hb_feature_t feature;
@@ -223,7 +226,61 @@ void HarfBuzzShaper::setFontFeatures()
         feature.end = static_cast<unsigned>(-1);
         m_features.append(feature);
     }
+
+    DLOG(ERROR) << "features size: " << m_features.size();
 }
+
+HarfBuzzShaper::CapsFeatureSettingsScopedOverlay::CapsFeatureSettingsScopedOverlay(
+    FeaturesVector& features,
+    FontDescription::FontVariantCaps variantCaps)
+    : m_features(features)
+    , m_countFeatures(0)
+{
+    overlayCapsFeatures(variantCaps);
+}
+
+void HarfBuzzShaper::CapsFeatureSettingsScopedOverlay::overlayCapsFeatures(
+    FontDescription::FontVariantCaps variantCaps)
+{
+    static hb_feature_t smcp = createFeature('s', 'm', 'c', 'p', 1);
+    static hb_feature_t pcap = createFeature('p', 'c', 'a', 'p', 1);
+    static hb_feature_t c2sc = createFeature('c', '2', 's', 'c', 1);
+    static hb_feature_t c2pc = createFeature('c', '2', 'p', 'c', 1);
+    static hb_feature_t unic = createFeature('u', 'n', 'i', 'c', 1);
+    static hb_feature_t titl = createFeature('t', 'i', 't', 'l', 1);
+    if (variantCaps == FontDescription::SmallCaps
+        || variantCaps == FontDescription::AllSmallCaps) {
+        prependCounting(smcp);
+        if (variantCaps == FontDescription::AllSmallCaps) {
+            prependCounting(c2sc);
+        }
+    }
+    if (variantCaps == FontDescription::PetiteCaps
+        || variantCaps == FontDescription::AllPetiteCaps) {
+        prependCounting(pcap);
+        if (variantCaps == FontDescription::AllPetiteCaps) {
+            prependCounting(c2pc);
+        }
+    }
+    if (variantCaps == FontDescription::Unicase) {
+        prependCounting(unic);
+    }
+    if (variantCaps == FontDescription::TitlingCaps) {
+        prependCounting(titl);
+    }
+}
+
+void HarfBuzzShaper::CapsFeatureSettingsScopedOverlay::prependCounting(const hb_feature_t& feature)
+{
+    m_features.prepend(feature);
+    m_countFeatures++;
+}
+
+HarfBuzzShaper::CapsFeatureSettingsScopedOverlay::~CapsFeatureSettingsScopedOverlay()
+{
+    m_features.remove(0, m_countFeatures);
+}
+
 
 // A port of hb_icu_script_to_script because harfbuzz on CrOS is built
 // without hb-icu. See http://crbug.com/356929
@@ -440,6 +497,28 @@ void HarfBuzzShaper::appendToHolesQueue(HolesQueueItemAction action,
     m_holesQueue.append(HolesQueueItem(action, startIndex, numCharacters));
 }
 
+void HarfBuzzShaper::prependHolesQueue(HolesQueueItemAction action,
+    unsigned startIndex,
+    unsigned numCharacters)
+{
+    m_holesQueue.prepend(HolesQueueItem(action, startIndex, numCharacters));
+}
+
+void HarfBuzzShaper::splitUntilNextCaseChange(HolesQueueItem& currentQueueItem, SmallCapsIterator::SmallCapsBehavior& smallCapsBehavior)
+{
+    unsigned numCharactersUntilCaseChange = 0;
+    SmallCapsIterator smallCapsIterator(
+        m_normalizedBuffer.get() + currentQueueItem.m_startIndex,
+        currentQueueItem.m_numCharacters);
+    smallCapsIterator.consume(&numCharactersUntilCaseChange, &smallCapsBehavior);
+    if (numCharactersUntilCaseChange > 0 && numCharactersUntilCaseChange < currentQueueItem.m_numCharacters) {
+        prependHolesQueue(HolesQueueRange,
+            currentQueueItem.m_startIndex + numCharactersUntilCaseChange,
+            currentQueueItem.m_numCharacters - numCharactersUntilCaseChange);
+        currentQueueItem.m_numCharacters = numCharactersUntilCaseChange;
+    }
+}
+
 PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 {
     RefPtr<ShapeResult> result = ShapeResult::create(m_font,
@@ -450,19 +529,30 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
     const String& localeString = fontDescription.locale();
     CString locale = localeString.latin1();
     const hb_language_t language = hb_language_from_string(locale.data(), locale.length());
+    FontDescription::FontVariantCaps requestedCaps = fontDescription.variantCaps();
+
+    // TODO(drott): crbug.com/585746 We need to to implement the font-variant
+    // shorthand to map correctly to font-variant-subproperties. This adapter
+    // code here activates small caps processing when either font-variant:
+    // small-caps is specified in the older CSS syntax, or when
+    // font-variant-caps: is specifying a non CapsNormal value.
+    if (requestedCaps == FontDescription::CapsNormal
+        && fontDescription.variant() == FontVariantSmallCaps)
+        requestedCaps = FontDescription::SmallCaps;
+
+    bool needsCapsHandling = requestedCaps != FontDescription::CapsNormal;
+    OpenTypeCapsSupport capsSupport;
 
     RunSegmenter::RunSegmenterRange segmentRange = {
         0,
         0,
         USCRIPT_INVALID_CODE,
         OrientationIterator::OrientationInvalid,
-        SmallCapsIterator::SmallCapsSameCase,
         FontFallbackPriority::Invalid };
     RunSegmenter runSegmenter(
         m_normalizedBuffer.get(),
         m_normalizedBufferLength,
-        m_font->getFontDescription().orientation(),
-        fontDescription.variant());
+        m_font->getFontDescription().orientation());
 
     Vector<UChar32> fallbackCharsHint;
 
@@ -509,11 +599,19 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 continue;
             }
 
-            // TODO crbug.com/522964: Only use smallCapsFontData when the font does not support true smcp.  The spec
-            // says: "To match the surrounding text, a font may provide alternate glyphs for caseless characters when
-            // these features are enabled but when a user agent simulates small capitals, it must not attempt to
-            // simulate alternates for codepoints which are considered caseless."
-            const SimpleFontData* smallcapsAdjustedFont = segmentRange.smallCapsBehavior == SmallCapsIterator::SmallCapsUppercaseNeeded
+            SmallCapsIterator::SmallCapsBehavior smallCapsBehavior = SmallCapsIterator::SmallCapsSameCase;
+            if (needsCapsHandling) {
+                capsSupport = OpenTypeCapsSupport(currentFont->platformData().harfBuzzFace(),
+                    requestedCaps,
+                    ICUScriptToHBScript(segmentRange.script));
+                if (capsSupport.needsRunCaseSplitting())
+                    splitUntilNextCaseChange(currentQueueItem, smallCapsBehavior);
+            }
+
+            ASSERT(currentQueueItem.m_numCharacters);
+
+            const SimpleFontData* smallcapsAdjustedFont = needsCapsHandling
+                && capsSupport.needsSyntheticFont(smallCapsBehavior)
                 ? currentFont->smallCapsFontData(fontDescription).get()
                 : currentFont;
 
@@ -524,9 +622,11 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 m_font->getFontDescription().orientation(),
                 segmentRange.renderOrientation);
 
-            CaseMapIntend caseMapIntend =
-                m_font->getFontDescription().variant() == FontVariantSmallCaps
-                ? CaseMapIntend::UpperCase : CaseMapIntend::KeepSameCase;
+            CaseMapIntend caseMapIntend = CaseMapIntend::KeepSameCase;
+            if (needsCapsHandling) {
+                caseMapIntend = capsSupport.needsCaseChange(smallCapsBehavior);
+            }
+
             CaseMappingHarfBuzzBufferFiller(
                 caseMapIntend,
                 harfBuzzBuffer.get(),
@@ -534,6 +634,8 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 m_normalizedBufferLength,
                 currentQueueItem.m_startIndex,
                 currentQueueItem.m_numCharacters);
+
+            CapsFeatureSettingsScopedOverlay capsOverlay(m_features, capsSupport.fontFeatureToUse(smallCapsBehavior));
 
             if (!shapeRange(harfBuzzBuffer.get(),
                 currentQueueItem.m_startIndex,
