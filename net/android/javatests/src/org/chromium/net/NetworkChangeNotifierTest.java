@@ -185,8 +185,6 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         @Override
         public void onNetworkConnect(int netId, int connectionType) {
             ThreadUtils.assertOnUiThread();
-            assertEquals(mLastChangeSeen, ChangeType.NONE);
-            assertEquals(mLastNetIdSeen, NetId.INVALID);
             mLastChangeSeen = ChangeType.CONNECT;
             mLastNetIdSeen = netId;
         }
@@ -194,8 +192,6 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         @Override
         public void onNetworkSoonToDisconnect(int netId) {
             ThreadUtils.assertOnUiThread();
-            assertEquals(mLastChangeSeen, ChangeType.NONE);
-            assertEquals(mLastNetIdSeen, NetId.INVALID);
             mLastChangeSeen = ChangeType.SOON_TO_DISCONNECT;
             mLastNetIdSeen = netId;
         }
@@ -203,8 +199,6 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         @Override
         public void onNetworkDisconnect(int netId) {
             ThreadUtils.assertOnUiThread();
-            assertEquals(mLastChangeSeen, ChangeType.NONE);
-            assertEquals(mLastNetIdSeen, NetId.INVALID);
             mLastChangeSeen = ChangeType.DISCONNECT;
             mLastNetIdSeen = netId;
         }
@@ -212,8 +206,6 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         @Override
         public void updateActiveNetworkList(int[] activeNetIds) {
             ThreadUtils.assertOnUiThread();
-            assertEquals(mLastChangeSeen, ChangeType.NONE);
-            assertEquals(mLastNetIdSeen, NetId.INVALID);
             mLastChangeSeen = ChangeType.PURGE_LIST;
             if (activeNetIds.length >= 1) {
                 mLastNetIdSeen = activeNetIds[0];
@@ -306,12 +298,14 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     }
 
     /**
-     * Tests that the receiver registers for connectivity intents during construction.
+     * Tests that the receiver registers for connectivity
+     * broadcasts during construction when the registration policy dictates.
      */
     @UiThreadTest
     @MediumTest
     @Feature({"Android-AppBase"})
-    public void testNetworkChangeNotifierRegistersInConstructor() throws InterruptedException {
+    public void testNetworkChangeNotifierRegistersWhenPolicyDictates()
+            throws InterruptedException {
         Context context = getInstrumentation().getTargetContext();
 
         NetworkChangeNotifierAutoDetect.Observer observer =
@@ -326,6 +320,16 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
                 });
 
         assertTrue(receiver.isReceiverRegisteredForTesting());
+
+        receiver = new NetworkChangeNotifierAutoDetect(
+                observer, context, new RegistrationPolicyApplicationStatus() {
+                    @Override
+                    int getApplicationState() {
+                        return ApplicationState.HAS_PAUSED_ACTIVITIES;
+                    }
+                });
+
+        assertFalse(receiver.isReceiverRegisteredForTesting());
     }
 
     /**
@@ -596,6 +600,73 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
                 getInstrumentation().getTargetContext(), new RegistrationPolicyAlwaysRegister());
         ncn.getNetworksAndTypes();
         ncn.getDefaultNetId();
+    }
+
+    /**
+     * Tests that NetworkChangeNotifierAutoDetect query-able APIs return expected
+     * values from the inserted mock ConnectivityManager.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testQueryableAPIsReturnExpectedValuesFromMockDelegate() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+
+        NetworkChangeNotifierAutoDetect.Observer observer =
+                new TestNetworkChangeNotifierAutoDetectObserver();
+
+        NetworkChangeNotifierAutoDetect ncn = new NetworkChangeNotifierAutoDetect(
+                observer, context, new RegistrationPolicyApplicationStatus() {
+                    @Override
+                    int getApplicationState() {
+                        return ApplicationState.HAS_PAUSED_ACTIVITIES;
+                    }
+                });
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            assertEquals(0, ncn.getNetworksAndTypes().length);
+            assertEquals(NetId.INVALID, ncn.getDefaultNetId());
+            return;
+        }
+
+        // Insert a mocked dummy implementation for the ConnectivityDelegate.
+        ncn.setConnectivityManagerDelegateForTests(new ConnectivityManagerDelegate() {
+            public final Network[] mNetworks =
+                    new Network[] {netIdToNetwork(111), netIdToNetwork(333)};
+
+            @Override
+            Network[] getAllNetworks() {
+                return mNetworks;
+            }
+
+            @Override
+            int getDefaultNetId() {
+                return Integer.parseInt(mNetworks[1].toString());
+            }
+
+            @Override
+            boolean hasInternetCapability(Network network) {
+                return true;
+            }
+
+            @Override
+            public NetworkState getNetworkState(Network network) {
+                return new NetworkState(false, -1, -1);
+            }
+        });
+
+        // Verify that the mock delegate connectivity manager is being used
+        // by the network change notifier auto-detector.
+        assertEquals(333, ncn.getDefaultNetId());
+
+        // The api {@link NetworkChangeNotifierAutoDetect#getNetworksAndTypes()}
+        // returns an array of a repeated sequence of: (NetID, ConnectionType).
+        // There are 4 entries in the array, two for each network.
+        assertEquals(4, ncn.getNetworksAndTypes().length);
+        assertEquals(111, ncn.getNetworksAndTypes()[0]);
+        assertEquals(ConnectionType.CONNECTION_NONE, ncn.getNetworksAndTypes()[1]);
+        assertEquals(333, ncn.getNetworksAndTypes()[2]);
+        assertEquals(ConnectionType.CONNECTION_NONE, ncn.getNetworksAndTypes()[3]);
     }
 
     /**
