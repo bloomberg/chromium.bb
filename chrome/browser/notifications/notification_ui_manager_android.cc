@@ -62,7 +62,7 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaBitmaps(
 // the class.
 static void InitializeNotificationUIManager(JNIEnv* env,
                                             const JavaParamRef<jclass>& clazz) {
-  g_browser_process->notification_ui_manager();
+  g_browser_process->notification_platform_bridge();
 }
 
 // static
