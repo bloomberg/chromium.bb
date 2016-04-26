@@ -126,7 +126,6 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBuffer, SharedBufferTest, h) {
   WriteMessageWithHandles(other_child, "", &dupe, 1);
 
   EXPECT_EQ("quit", ReadMessage(h));
-  WriteMessage(h, "ok");
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
@@ -143,7 +142,6 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
   WriteToBuffer(b, 0, message);
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
   EXPECT_EQ("quit", ReadMessage(h));
-  WriteMessage(h, "ok");
 }
 
 #if defined(OS_ANDROID)
@@ -171,10 +169,8 @@ TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChildToChild) {
       ReadMessageWithHandles(h0, &b, 1);
 
       WriteMessage(h1, "quit");
-      EXPECT_EQ("ok", ReadMessage(h1));
     END_CHILD()
     WriteMessage(h0, "quit");
-    EXPECT_EQ("ok", ReadMessage(h0));
   END_CHILD()
 
   // The second child should have written this message.
@@ -197,8 +193,6 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassBufferParent, SharedBufferTest,
 
     EXPECT_EQ("quit", ReadMessage(parent));
     WriteMessage(child, "quit");
-    EXPECT_EQ("ok", ReadMessage(child));
-    WriteMessage(parent, "ok");
   END_CHILD()
 }
 
@@ -212,8 +206,6 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent, SharedBufferTest,
 
     EXPECT_EQ("quit", ReadMessage(parent));
     WriteMessage(child, "quit");
-    EXPECT_EQ("ok", ReadMessage(child));
-    WriteMessage(parent, "ok");
   END_CHILD()
 }
 
@@ -245,10 +237,8 @@ TEST_F(SharedBufferTest, MAYBE_PassHandleBetweenCousins) {
       ReadMessageWithHandles(child1, &b, 1);
 
       WriteMessage(child2, "quit");
-      EXPECT_EQ("ok", ReadMessage(child2));
     END_CHILD()
     WriteMessage(child1, "quit");
-    EXPECT_EQ("ok", ReadMessage(child1));
   END_CHILD()
 
   // The second grandchild should have written this message.
