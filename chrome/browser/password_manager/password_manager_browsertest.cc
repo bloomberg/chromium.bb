@@ -2936,10 +2936,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       "mypassword");
 }
 
-// TODO(crbug.com/605174) Enable the test again once this is merged to M50.
-IN_PROC_BROWSER_TEST_F(
-    PasswordManagerBrowserTestBase,
-    DISABLED_SkipZeroClickNotToggledAfterSuccessfulSubmissionWithAPI) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       SkipZeroClickNotToggledAfterSuccessfulSubmissionWithAPI)
+{
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // Save credentials with 'skip_zero_click'
   scoped_refptr<password_manager::TestPasswordStore> password_store =
