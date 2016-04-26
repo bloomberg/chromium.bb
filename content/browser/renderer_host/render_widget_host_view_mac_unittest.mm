@@ -417,6 +417,31 @@ TEST_F(RenderWidgetHostViewMacTest, FilterNonPrintableCharacter) {
   host->ShutdownAndDestroyWidget(true);
 }
 
+// Test that invalid |keyCode| shouldn't generate key events.
+// https://crbug.com/601964
+TEST_F(RenderWidgetHostViewMacTest, InvalidKeyCode) {
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  process_host->Init();
+  MockRenderWidgetHostDelegate delegate;
+  int32_t routing_id = process_host->GetNextRoutingID();
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+
+  // Simulate "Convert" key on JIS PC keyboard, will generate a |NSFlagsChanged|
+  // NSEvent with |keyCode| == 0xFF.
+  process_host->sink().ClearMessages();
+  EXPECT_EQ(0U, process_host->sink().message_count());
+  [view->cocoa_view() keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                                   0xFF, 0, NSFlagsChanged, 0)];
+  EXPECT_EQ(0U, process_host->sink().message_count());
+
+  // Clean up.
+  host->ShutdownAndDestroyWidget(true);
+}
+
 TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   const base::string16 kDummyString = base::UTF8ToUTF16("hogehoge");
   const size_t kDummyOffset = 0;
