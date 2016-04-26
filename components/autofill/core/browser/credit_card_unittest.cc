@@ -340,6 +340,7 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
+  // |a| should be updated with the information from |b|.
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
   EXPECT_EQ("https://www.example.org", a.origin());
   EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
@@ -347,6 +348,8 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Try again, but with no name set for |b|.
+  // |a| should be updated with |b|'s expiration date and keep its original
+  // name.
   a = original_card;
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, base::string16());
 
@@ -370,7 +373,51 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
+  // Try again, but with using an expired verified original card.
+  // |a| should not be updated because the name on the cards are not identical.
+  a = original_card;
+  a.set_origin("Chrome settings");
+  a.SetExpirationYear(2010);
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
+            a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2010"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, but with using identical name on the cards.
+  // |a|'s expiration date should be updated.
+  a = original_card;
+  a.set_origin("Chrome settings");
+  a.SetExpirationYear(2010);
+  a.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, but with |b| being expired.
+  // |a|'s expiration date should not be updated.
+  a = original_card;
+  a.set_origin("Chrome settings");
+  a.SetExpirationYear(2010);
+  a.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
+  b.SetExpirationYear(2009);
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2010"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Put back |b|'s initial expiration date.
+  b.SetExpirationYear(2019);
+
   // Try again, but with only the new card having a verified origin.
+  // |a| should be updated.
   a = original_card;
   b.set_origin("Chrome settings");
 
@@ -381,6 +428,7 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Try again, with both cards having a verified origin.
+  // |a| should be updated.
   a = original_card;
   a.set_origin("Chrome Autofill dialog");
   b.set_origin("Chrome settings");
