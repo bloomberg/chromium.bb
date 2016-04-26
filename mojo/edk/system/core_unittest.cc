@@ -721,11 +721,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   MojoHandle h_passed[2];
-  MojoCreateMessagePipeOptions options;
-  options.struct_size = sizeof(MojoCreateMessagePipeOptions);
-  options.flags = MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_TRANSFERABLE;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(&options, &h_passed[0], &h_passed[1]));
+            core()->CreateMessagePipe(nullptr, &h_passed[0], &h_passed[1]));
 
   // Make sure that |h_passed[]| work properly.
   ASSERT_EQ(MOJO_RESULT_OK,
