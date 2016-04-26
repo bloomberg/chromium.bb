@@ -225,6 +225,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            '../chrome/tools/crash_service/caps/caps.gyp:*',
             '../chrome_elf/chrome_elf.gyp:*',
             '../courgette/courgette.gyp:*',
             '../rlz/rlz.gyp:*',
