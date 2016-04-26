@@ -27,16 +27,16 @@
 
 namespace mojo {
 
-using blink::mojom::wtf::CurrencyAmount;
-using blink::mojom::wtf::CurrencyAmountPtr;
-using blink::mojom::wtf::PaymentDetails;
-using blink::mojom::wtf::PaymentDetailsPtr;
-using blink::mojom::wtf::PaymentItem;
-using blink::mojom::wtf::PaymentItemPtr;
-using blink::mojom::wtf::PaymentOptions;
-using blink::mojom::wtf::PaymentOptionsPtr;
-using blink::mojom::wtf::ShippingOption;
-using blink::mojom::wtf::ShippingOptionPtr;
+using blink::mojom::blink::CurrencyAmount;
+using blink::mojom::blink::CurrencyAmountPtr;
+using blink::mojom::blink::PaymentDetails;
+using blink::mojom::blink::PaymentDetailsPtr;
+using blink::mojom::blink::PaymentItem;
+using blink::mojom::blink::PaymentItemPtr;
+using blink::mojom::blink::PaymentOptions;
+using blink::mojom::blink::PaymentOptionsPtr;
+using blink::mojom::blink::ShippingOption;
+using blink::mojom::blink::ShippingOptionPtr;
 
 template <>
 struct TypeConverter<CurrencyAmountPtr, blink::CurrencyAmount> {
@@ -178,7 +178,7 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
     scriptState->domWindow()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
     m_paymentProvider.set_connection_error_handler(sameThreadBindForMojo(&PaymentRequest::OnError, this));
     m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
-    m_paymentProvider->Show(std::move(m_supportedMethods), mojom::wtf::PaymentDetails::From(m_details), mojom::wtf::PaymentOptions::From(m_options), m_stringifiedData.isNull() ? "" : m_stringifiedData);
+    m_paymentProvider->Show(std::move(m_supportedMethods), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options), m_stringifiedData.isNull() ? "" : m_stringifiedData);
 
     m_showResolver = ScriptPromiseResolver::create(scriptState);
     return m_showResolver->promise();
@@ -303,7 +303,7 @@ void PaymentRequest::contextDestroyed()
     cleanUp();
 }
 
-void PaymentRequest::OnShippingAddressChange(mojom::wtf::ShippingAddressPtr address)
+void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr address)
 {
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
@@ -339,7 +339,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shippingOptionId)
     getExecutionContext()->getEventQueue()->enqueueEvent(event);
 }
 
-void PaymentRequest::OnPaymentResponse(mojom::wtf::PaymentResponsePtr response)
+void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response)
 {
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);

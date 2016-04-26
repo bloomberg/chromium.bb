@@ -20,7 +20,7 @@
 #include "platform/mojo/MojoHelper.h"
 #include "wtf/Assertions.h"
 
-namespace usb = device::usb::wtf;
+namespace usb = device::usb::blink;
 
 namespace blink {
 

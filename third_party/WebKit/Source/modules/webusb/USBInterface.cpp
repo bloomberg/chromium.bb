@@ -5,7 +5,7 @@
 #include "modules/webusb/USBInterface.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/webusb/USBAlternateInterface.h"
 #include "modules/webusb/USBConfiguration.h"
 #include "modules/webusb/USBDevice.h"
@@ -37,7 +37,7 @@ USBInterface::USBInterface(const USBDevice* device, size_t configurationIndex, s
     ASSERT(m_interfaceIndex < m_device->info().configurations[m_configurationIndex]->interfaces.size());
 }
 
-const device::usb::wtf::InterfaceInfo& USBInterface::info() const
+const device::usb::blink::InterfaceInfo& USBInterface::info() const
 {
     return *m_device->info().configurations[m_configurationIndex]->interfaces[m_interfaceIndex];
 }

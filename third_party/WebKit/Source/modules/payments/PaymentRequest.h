@@ -16,7 +16,7 @@
 #include "modules/payments/PaymentOptions.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/payments/payment_request.mojom-wtf.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "wtf/Compiler.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -30,7 +30,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ShippingAddress;
 
-class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::wtf::PaymentRequestClient), public PaymentCompleter, public ContextLifecycleObserver {
+class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::blink::PaymentRequestClient), public PaymentCompleter, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest)
     WTF_MAKE_NONCOPYABLE(PaymentRequest);
@@ -66,10 +66,10 @@ private:
     // LifecycleObserver:
     void contextDestroyed() override;
 
-    // mojom::wtf::PaymentRequestClient:
-    void OnShippingAddressChange(mojom::wtf::ShippingAddressPtr) override;
+    // mojom::blink::PaymentRequestClient:
+    void OnShippingAddressChange(mojom::blink::ShippingAddressPtr) override;
     void OnShippingOptionChange(const String& shippingOptionId) override;
-    void OnPaymentResponse(mojom::wtf::PaymentResponsePtr) override;
+    void OnPaymentResponse(mojom::blink::PaymentResponsePtr) override;
     void OnError() override;
     void OnComplete() override;
 
@@ -84,8 +84,8 @@ private:
     String m_shippingOption;
     Member<ScriptPromiseResolver> m_showResolver;
     Member<ScriptPromiseResolver> m_completeResolver;
-    mojom::wtf::PaymentRequestPtr m_paymentProvider;
-    mojo::Binding<mojom::wtf::PaymentRequestClient> m_clientBinding;
+    mojom::blink::PaymentRequestPtr m_paymentProvider;
+    mojo::Binding<mojom::blink::PaymentRequestClient> m_clientBinding;
 };
 
 } // namespace blink

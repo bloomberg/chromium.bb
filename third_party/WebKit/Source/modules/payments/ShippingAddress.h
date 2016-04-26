@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/payments/payment_request.mojom-wtf.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -20,7 +20,7 @@ class MODULES_EXPORT ShippingAddress final : public GarbageCollectedFinalized<Sh
     WTF_MAKE_NONCOPYABLE(ShippingAddress);
 
 public:
-    explicit ShippingAddress(mojom::wtf::ShippingAddressPtr);
+    explicit ShippingAddress(mojom::blink::ShippingAddressPtr);
     virtual ~ShippingAddress();
 
     const String& regionCode() const { return m_regionCode; }

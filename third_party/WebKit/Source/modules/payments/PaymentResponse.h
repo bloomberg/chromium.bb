@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/payments/payment_request.mojom-wtf.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
@@ -25,7 +25,7 @@ class MODULES_EXPORT PaymentResponse final : public GarbageCollectedFinalized<Pa
     WTF_MAKE_NONCOPYABLE(PaymentResponse);
 
 public:
-    PaymentResponse(mojom::wtf::PaymentResponsePtr, PaymentCompleter*);
+    PaymentResponse(mojom::blink::PaymentResponsePtr, PaymentCompleter*);
     virtual ~PaymentResponse();
 
     const String& methodName() const { return m_methodName; }

@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "platform/heap/Handle.h"
 #include "wtf/BitVector.h"
 #include "wtf/Vector.h"
@@ -28,15 +28,15 @@ class USBDevice
     USING_GARBAGE_COLLECTED_MIXIN(USBDevice);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static USBDevice* create(device::usb::wtf::DeviceInfoPtr deviceInfo, device::usb::wtf::DevicePtr device, ExecutionContext* context)
+    static USBDevice* create(device::usb::blink::DeviceInfoPtr deviceInfo, device::usb::blink::DevicePtr device, ExecutionContext* context)
     {
         return new USBDevice(std::move(deviceInfo), std::move(device), context);
     }
 
-    explicit USBDevice(device::usb::wtf::DeviceInfoPtr, device::usb::wtf::DevicePtr, ExecutionContext*);
+    explicit USBDevice(device::usb::blink::DeviceInfoPtr, device::usb::blink::DevicePtr, ExecutionContext*);
     virtual ~USBDevice();
 
-    const device::usb::wtf::DeviceInfo& info() const { return *m_deviceInfo; }
+    const device::usb::blink::DeviceInfo& info() const { return *m_deviceInfo; }
     bool isInterfaceClaimed(size_t configurationIndex, size_t interfaceIndex) const;
     size_t selectedAlternateInterface(size_t interfaceIndex) const;
 
@@ -90,10 +90,10 @@ private:
     bool ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseResolver*) const;
     bool ensureEndpointAvailable(bool inTransfer, uint8_t endpointNumber, ScriptPromiseResolver*) const;
     bool anyInterfaceChangeInProgress() const;
-    device::usb::wtf::ControlTransferParamsPtr convertControlTransferParameters(const USBControlTransferParameters&, ScriptPromiseResolver*) const;
+    device::usb::blink::ControlTransferParamsPtr convertControlTransferParameters(const USBControlTransferParameters&, ScriptPromiseResolver*) const;
     void setEndpointsForInterface(size_t interfaceIndex, bool set);
 
-    void asyncOpen(ScriptPromiseResolver*, device::usb::wtf::OpenDeviceError);
+    void asyncOpen(ScriptPromiseResolver*, device::usb::blink::OpenDeviceError);
     void asyncClose(ScriptPromiseResolver*);
     void onDeviceOpenedOrClosed(bool);
     void asyncSelectConfiguration(size_t configurationIndex, ScriptPromiseResolver*, bool success);
@@ -102,19 +102,19 @@ private:
     void asyncReleaseInterface(size_t interfaceIndex, ScriptPromiseResolver*, bool success);
     void onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex);
     void asyncSelectAlternateInterface(size_t interfaceIndex, size_t alternateIndex, ScriptPromiseResolver*, bool success);
-    void asyncControlTransferIn(ScriptPromiseResolver*, device::usb::wtf::TransferStatus, mojo::WTFArray<uint8_t>);
-    void asyncControlTransferOut(unsigned, ScriptPromiseResolver*, device::usb::wtf::TransferStatus);
+    void asyncControlTransferIn(ScriptPromiseResolver*, device::usb::blink::TransferStatus, mojo::WTFArray<uint8_t>);
+    void asyncControlTransferOut(unsigned, ScriptPromiseResolver*, device::usb::blink::TransferStatus);
     void asyncClearHalt(ScriptPromiseResolver*, bool success);
-    void asyncTransferIn(ScriptPromiseResolver*, device::usb::wtf::TransferStatus, mojo::WTFArray<uint8_t>);
-    void asyncTransferOut(unsigned, ScriptPromiseResolver*, device::usb::wtf::TransferStatus);
-    void asyncIsochronousTransferIn(ScriptPromiseResolver*, mojo::WTFArray<uint8_t>, mojo::WTFArray<device::usb::wtf::IsochronousPacketPtr>);
-    void asyncIsochronousTransferOut(ScriptPromiseResolver*, mojo::WTFArray<device::usb::wtf::IsochronousPacketPtr>);
+    void asyncTransferIn(ScriptPromiseResolver*, device::usb::blink::TransferStatus, mojo::WTFArray<uint8_t>);
+    void asyncTransferOut(unsigned, ScriptPromiseResolver*, device::usb::blink::TransferStatus);
+    void asyncIsochronousTransferIn(ScriptPromiseResolver*, mojo::WTFArray<uint8_t>, mojo::WTFArray<device::usb::blink::IsochronousPacketPtr>);
+    void asyncIsochronousTransferOut(ScriptPromiseResolver*, mojo::WTFArray<device::usb::blink::IsochronousPacketPtr>);
     void asyncReset(ScriptPromiseResolver*, bool success);
 
     void onConnectionError();
 
-    device::usb::wtf::DeviceInfoPtr m_deviceInfo;
-    device::usb::wtf::DevicePtr m_device;
+    device::usb::blink::DeviceInfoPtr m_deviceInfo;
+    device::usb::blink::DevicePtr m_device;
     HeapHashSet<Member<ScriptPromiseResolver>> m_deviceRequests;
     bool m_opened;
     bool m_deviceStateChangeInProgress;

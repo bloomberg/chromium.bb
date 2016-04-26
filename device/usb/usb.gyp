@@ -156,7 +156,6 @@
       'type': 'static_library',
       'sources': [ '<@(mojom_files)' ],
       'variables': {
-        'mojom_variant': 'wtf',
         'for_blink': 'true',
       },
       'includes': [

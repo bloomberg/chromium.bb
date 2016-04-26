@@ -203,6 +203,6 @@ mojom("android_mojo_bindings") {
 group("generate_mojo_bindings") {
   deps = [
     ":mojo_bindings__generator",
-    ":mojo_bindings_wtf__generator",
+    ":mojo_bindings_blink__generator",
   ]
 }

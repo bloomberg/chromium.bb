@@ -6,11 +6,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/webusb/USBAlternateInterface.h"
 
-using device::usb::wtf::EndpointType;
-using device::usb::wtf::TransferDirection;
+using device::usb::blink::EndpointType;
+using device::usb::blink::TransferDirection;
 
 namespace blink {
 
@@ -72,9 +72,9 @@ USBEndpoint::USBEndpoint(const USBAlternateInterface* alternate, size_t endpoint
     ASSERT(m_endpointIndex < m_alternate->info().endpoints.size());
 }
 
-const device::usb::wtf::EndpointInfo& USBEndpoint::info() const
+const device::usb::blink::EndpointInfo& USBEndpoint::info() const
 {
-    const device::usb::wtf::AlternateInterfaceInfo& alternateInfo = m_alternate->info();
+    const device::usb::blink::AlternateInterfaceInfo& alternateInfo = m_alternate->info();
     ASSERT(m_endpointIndex < alternateInfo.endpoints.size());
     return *alternateInfo.endpoints[m_endpointIndex];
 }

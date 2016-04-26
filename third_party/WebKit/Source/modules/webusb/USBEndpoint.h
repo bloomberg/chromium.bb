@@ -6,7 +6,7 @@
 #define USBEndpoint_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
@@ -24,7 +24,7 @@ public:
 
     USBEndpoint(const USBAlternateInterface*, size_t endpointIndex);
 
-    const device::usb::wtf::EndpointInfo& info() const;
+    const device::usb::blink::EndpointInfo& info() const;
 
     uint8_t endpointNumber() const { return info().endpoint_number; }
     String direction() const;

@@ -58,7 +58,7 @@ private:
 
 TEST_F(PaymentResponseTest, DataCopiedOver)
 {
-    mojom::wtf::PaymentResponsePtr input = mojom::wtf::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
@@ -72,7 +72,7 @@ TEST_F(PaymentResponseTest, DataCopiedOver)
 
 TEST_F(PaymentResponseTest, CompleteCalled)
 {
-    mojom::wtf::PaymentResponsePtr input = mojom::wtf::PaymentResponse::New();
+    mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;

@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
 #include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
-#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-wtf.h"
+#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,11 +74,11 @@ class ChromiumRectServiceImpl : public RectService {
 };
 
 // This implements the generated Blink variant of RectService.
-class BlinkRectServiceImpl : public wtf::RectService {
+class BlinkRectServiceImpl : public blink::RectService {
  public:
   BlinkRectServiceImpl() {}
 
-  // mojo::test::wtf::RectService:
+  // mojo::test::blink::RectService:
   void AddRect(const RectBlink& r) override {
     if (r.computeArea() > largest_rect_.computeArea()) {
       largest_rect_.setX(r.x());
@@ -106,19 +106,19 @@ class StructTraitsTest : public testing::Test,
   void BindToChromiumService(RectServiceRequest request) {
     chromium_bindings_.AddBinding(&chromium_service_, std::move(request));
   }
-  void BindToChromiumService(wtf::RectServiceRequest request) {
+  void BindToChromiumService(blink::RectServiceRequest request) {
     chromium_bindings_.AddBinding(
         &chromium_service_,
         ConvertInterfaceRequest<RectService>(std::move(request)));
   }
 
-  void BindToBlinkService(wtf::RectServiceRequest request) {
+  void BindToBlinkService(blink::RectServiceRequest request) {
     blink_bindings_.AddBinding(&blink_service_, std::move(request));
   }
   void BindToBlinkService(RectServiceRequest request) {
     blink_bindings_.AddBinding(
         &blink_service_,
-        ConvertInterfaceRequest<wtf::RectService>(std::move(request)));
+        ConvertInterfaceRequest<blink::RectService>(std::move(request)));
   }
 
   TraitsTestServicePtr GetTraitsTestProxy() {
@@ -139,7 +139,7 @@ class StructTraitsTest : public testing::Test,
   BindingSet<RectService> chromium_bindings_;
 
   BlinkRectServiceImpl blink_service_;
-  BindingSet<wtf::RectService> blink_bindings_;
+  BindingSet<blink::RectService> blink_bindings_;
 
   BindingSet<TraitsTestService> traits_test_bindings_;
 };
@@ -183,7 +183,7 @@ TEST_F(StructTraitsTest, ChromiumToBlinkService) {
 }
 
 TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
-  wtf::RectServicePtr blink_proxy;
+  blink::RectServicePtr blink_proxy;
   BindToBlinkService(GetProxy(&blink_proxy));
   {
     base::RunLoop loop;
@@ -196,7 +196,7 @@ TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
 }
 
 TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
-  wtf::RectServicePtr blink_proxy;
+  blink::RectServicePtr blink_proxy;
   BindToChromiumService(GetProxy(&blink_proxy));
   {
     base::RunLoop loop;

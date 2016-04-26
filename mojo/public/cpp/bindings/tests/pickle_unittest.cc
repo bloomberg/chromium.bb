@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/tests/pickled_struct_blink.h"
 #include "mojo/public/cpp/bindings/tests/pickled_struct_chromium.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
-#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-wtf.h"
+#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,18 +82,18 @@ class ChromiumPicklePasserImpl : public PicklePasser {
 };
 
 // This implements the generated Blink variant of PicklePasser.
-class BlinkPicklePasserImpl : public wtf::PicklePasser {
+class BlinkPicklePasserImpl : public blink::PicklePasser {
  public:
   BlinkPicklePasserImpl() {}
 
-  // mojo::test::wtf::PicklePasser:
+  // mojo::test::blink::PicklePasser:
   void PassPickle(const PickledStructBlink& pickle,
                   const PassPickleCallback& callback) override {
     callback.Run(pickle);
   }
 
   void PassPickleContainer(
-      wtf::PickleContainerPtr container,
+      blink::PickleContainerPtr container,
       const PassPickleContainerCallback& callback) override {
     callback.Run(std::move(container));
   }
@@ -125,13 +125,13 @@ class PickleTest : public testing::Test {
     return proxy;
   }
 
-  template <typename ProxyType = wtf::PicklePasser>
+  template <typename ProxyType = blink::PicklePasser>
   InterfacePtr<ProxyType> ConnectToBlinkService() {
     InterfacePtr<ProxyType> proxy;
     InterfaceRequest<ProxyType> request = GetProxy(&proxy);
     blink_bindings_.AddBinding(
         &blink_service_,
-        ConvertInterfaceRequest<wtf::PicklePasser>(std::move(request)));
+        ConvertInterfaceRequest<blink::PicklePasser>(std::move(request)));
     return proxy;
   }
 
@@ -140,7 +140,7 @@ class PickleTest : public testing::Test {
   ChromiumPicklePasserImpl chromium_service_;
   BindingSet<PicklePasser> chromium_bindings_;
   BlinkPicklePasserImpl blink_service_;
-  BindingSet<wtf::PicklePasser> blink_bindings_;
+  BindingSet<blink::PicklePasser> blink_bindings_;
 };
 
 }  // namespace
@@ -203,7 +203,7 @@ TEST_F(PickleTest, BlinkProxyToBlinkService) {
 }
 
 TEST_F(PickleTest, BlinkProxyToChromiumService) {
-  auto blink_proxy = ConnectToChromiumService<wtf::PicklePasser>();
+  auto blink_proxy = ConnectToChromiumService<blink::PicklePasser>();
   {
     base::RunLoop loop;
     blink_proxy->PassPickle(

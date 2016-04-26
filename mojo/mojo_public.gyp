@@ -419,7 +419,6 @@
       'target_name': 'mojo_public_test_interfaces_mojom_blink',
       'type': 'none',
       'variables': {
-        'mojom_variant': 'wtf',
         'for_blink': 'true',
         'mojom_typemaps': [
           'public/cpp/bindings/tests/rect_blink.typemap',
@@ -498,7 +497,6 @@
       'target_name': 'mojo_public_test_wtf_types_blink',
       'type': 'static_library',
       'variables': {
-        'mojom_variant': 'wtf',
         'for_blink': 'true',
       },
       'sources': [

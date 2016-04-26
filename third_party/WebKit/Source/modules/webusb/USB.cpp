@@ -9,7 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webusb/USBConnectionEvent.h"
 #include "modules/webusb/USBDevice.h"
@@ -20,7 +20,7 @@
 #include "public/platform/ServiceRegistry.h"
 #include "wtf/Functional.h"
 
-namespace usb = device::usb::wtf;
+namespace usb = device::usb::blink;
 
 namespace blink {
 namespace {

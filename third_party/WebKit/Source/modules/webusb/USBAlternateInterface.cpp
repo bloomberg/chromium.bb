@@ -34,9 +34,9 @@ USBAlternateInterface::USBAlternateInterface(const USBInterface* interface, size
     ASSERT(m_alternateIndex < m_interface->info().alternates.size());
 }
 
-const device::usb::wtf::AlternateInterfaceInfo& USBAlternateInterface::info() const
+const device::usb::blink::AlternateInterfaceInfo& USBAlternateInterface::info() const
 {
-    const device::usb::wtf::InterfaceInfo& interfaceInfo = m_interface->info();
+    const device::usb::blink::InterfaceInfo& interfaceInfo = m_interface->info();
     ASSERT(m_alternateIndex < interfaceInfo.alternates.size());
     return *interfaceInfo.alternates[m_alternateIndex];
 }

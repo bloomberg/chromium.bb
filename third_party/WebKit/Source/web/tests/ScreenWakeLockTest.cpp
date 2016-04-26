@@ -25,8 +25,8 @@
 namespace {
 
 using blink::ScreenWakeLock;
-using blink::mojom::wtf::WakeLockService;
-using blink::mojom::wtf::WakeLockServiceRequest;
+using blink::mojom::blink::WakeLockService;
+using blink::mojom::blink::WakeLockServiceRequest;
 
 // This class allows connecting service requests to a MockWakeLockService.
 class MockServiceRegistry : public blink::ServiceRegistry {

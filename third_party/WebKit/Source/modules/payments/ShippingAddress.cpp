@@ -6,7 +6,7 @@
 
 namespace blink {
 
-ShippingAddress::ShippingAddress(mojom::wtf::ShippingAddressPtr address)
+ShippingAddress::ShippingAddress(mojom::blink::ShippingAddressPtr address)
     : m_regionCode(address->region_code)
     , m_addressLine(address->address_line.PassStorage())
     , m_administrativeArea(address->administrative_area)

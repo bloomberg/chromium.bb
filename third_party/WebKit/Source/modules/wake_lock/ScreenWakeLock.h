@@ -8,7 +8,7 @@
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "modules/ModulesExport.h"
-#include "public/platform/modules/wake_lock/wake_lock_service.mojom-wtf.h"
+#include "public/platform/modules/wake_lock/wake_lock_service.mojom-blink.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -48,7 +48,7 @@ private:
     static ScreenWakeLock* fromScreen(Screen&);
     void notifyService();
 
-    mojom::wtf::WakeLockServicePtr m_service;
+    mojom::blink::WakeLockServicePtr m_service;
     bool m_keepAwake;
 };
 

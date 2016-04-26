@@ -5,7 +5,7 @@
 #include "modules/webusb/USBConfiguration.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "modules/webusb/USBDevice.h"
 #include "modules/webusb/USBInterface.h"
 
@@ -45,7 +45,7 @@ size_t USBConfiguration::index() const
     return m_configurationIndex;
 }
 
-const device::usb::wtf::ConfigurationInfo& USBConfiguration::info() const
+const device::usb::blink::ConfigurationInfo& USBConfiguration::info() const
 {
     return *m_device->info().configurations[m_configurationIndex];
 }

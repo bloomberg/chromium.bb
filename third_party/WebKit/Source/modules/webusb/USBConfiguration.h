@@ -6,7 +6,7 @@
 #define USBConfiguration_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "device/usb/public/interfaces/device.mojom-wtf.h"
+#include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ public:
 
     const USBDevice* device() const;
     size_t index() const;
-    const device::usb::wtf::ConfigurationInfo& info() const;
+    const device::usb::blink::ConfigurationInfo& info() const;
 
     uint8_t configurationValue() const { return info().configuration_value; }
     String configurationName() const { return info().configuration_name; }

@@ -8,37 +8,41 @@
   ],
   'variables': {
     'variables': {
-      'mojom_variant%': 'none',
-      'for_blink%': 'false',
+      'variables': {
+        'for_blink%': 'false',
+      },
+      'for_blink%': '<(for_blink)',
+      'conditions': [
+        ['for_blink=="true"', {
+          'mojom_output_languages%': 'c++',
+          'mojom_variant%': 'blink',
+          'mojom_generator_wtf_arg%': [
+            '--for_blink',
+          ],
+          'wtf_dependencies%': [
+            '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings_wtf_support',
+            '<(DEPTH)/third_party/WebKit/Source/wtf/wtf.gyp:wtf',
+          ],
+        }, {
+          'mojom_output_languages%': 'c++,javascript,java',
+          'mojom_variant%': 'none',
+          'mojom_generator_wtf_arg%': [],
+          'wtf_dependencies%': [],
+        }],
+      ],
     },
-    'mojom_variant%': '<(mojom_variant)',
-    'mojom_typemaps%': [],
     'for_blink%': '<(for_blink)',
+    'mojom_variant%': '<(mojom_variant)',
+    'mojom_generator_wtf_arg%': '<(mojom_generator_wtf_arg)',
+    'wtf_dependencies%': '<(wtf_dependencies)',
+    'mojom_output_languages%': '<(mojom_output_languages)',
+    'mojom_typemaps%': [],
     'mojom_base_output_dir':
         '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
     'mojom_generated_outputs': [
       '<!@(python <(DEPTH)/mojo/public/tools/bindings/mojom_list_outputs.py --basedir <(mojom_base_output_dir) --variant <(mojom_variant) <@(_sources))',
     ],
     'generated_typemap_file': '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(_target_name)_type_mappings',
-    'conditions': [
-      ['mojom_variant=="none"', {
-        'mojom_output_languages%': 'c++,javascript,java',
-      }, {
-        'mojom_output_languages%': 'c++',
-      }],
-      ['for_blink=="true"', {
-        'mojom_generator_wtf_arg%': [
-          '--for_blink',
-        ],
-        'wtf_dependencies%': [
-          '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings_wtf_support',
-          '<(DEPTH)/third_party/WebKit/Source/wtf/wtf.gyp:wtf',
-        ],
-      }, {
-        'mojom_generator_wtf_arg%': [],
-        'wtf_dependencies%': [],
-      }],
-    ],
   },
   'actions': [
     {

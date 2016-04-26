@@ -12,7 +12,7 @@ namespace {
 
 TEST(ShippingAddressTest, ValuesAreCopiedOver)
 {
-    mojom::wtf::ShippingAddressPtr input = mojom::wtf::ShippingAddress::New();
+    mojom::blink::ShippingAddressPtr input = mojom::blink::ShippingAddress::New();
     input->region_code = "US";
     input->address_line = mojo::WTFArray<WTF::String>::New(3);
     input->address_line[0] = "340 Main St";
@@ -47,7 +47,7 @@ TEST(ShippingAddressTest, ValuesAreCopiedOver)
 
 TEST(ShippingAddressTest, IgnoreScriptCodeWithEmptyLanguageCode)
 {
-    mojom::wtf::ShippingAddressPtr input = mojom::wtf::ShippingAddress::New();
+    mojom::blink::ShippingAddressPtr input = mojom::blink::ShippingAddress::New();
     input->script_code = "Latn";
 
     ShippingAddress output(std::move(input));
@@ -57,7 +57,7 @@ TEST(ShippingAddressTest, IgnoreScriptCodeWithEmptyLanguageCode)
 
 TEST(ShippingAddressTest, NoHyphenWithEmptyScriptCode)
 {
-    mojom::wtf::ShippingAddressPtr input = mojom::wtf::ShippingAddress::New();
+    mojom::blink::ShippingAddressPtr input = mojom::blink::ShippingAddress::New();
     input->language_code = "en";
 
     ShippingAddress output(std::move(input));

@@ -47,10 +47,10 @@ component("modules") {
   deps = [
     ":make_modules_generated",
     "//device/battery:mojo_bindings",
-    "//device/usb/public/interfaces:interfaces_wtf",
+    "//device/usb/public/interfaces:interfaces_blink",
     "//mojo/public/c/system:for_component",
     "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/public:mojo_bindings_wtf",
+    "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/icu",
     "//third_party/sqlite",
     "//third_party/zlib",
