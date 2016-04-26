@@ -17,6 +17,7 @@
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_resource_getter.h"
 #include "media/base/timestamp_constants.h"
+#include "net/base/escape.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -65,8 +66,11 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
   CHECK(env);
   ScopedJavaLocalRef<jstring> j_url_string;
   if (url_.is_valid()) {
+    // Escape the URL to make it safe to use. Don't escape existing escape
+    // sequences though.
+    std::string escaped_url = net::EscapeExternalHandlerValue(url_.spec());
     // Create a Java String for the URL.
-    j_url_string = ConvertUTF8ToJavaString(env, url_.spec());
+    j_url_string = ConvertUTF8ToJavaString(env, escaped_url);
   }
   ScopedJavaLocalRef<jstring> j_frame_url_string;
   GURL frameUrl = GetLocalPlayer()->frame_url();

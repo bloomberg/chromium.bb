@@ -231,7 +231,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
      * @param startPositionMillis from which to start playing.
      */
     private void playUri(@Nullable final String preferredTitle, final long startPositionMillis) {
-        RecordCastAction.castMediaType(MediaUrlResolver.getMediaType(mLocalVideoUri.toString()));
+        RecordCastAction.castMediaType(MediaUrlResolver.getMediaType(mLocalVideoUri));
         installBroadcastReceivers();
 
         // If the session is already started (meaning we are casting a video already), we simply

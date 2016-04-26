@@ -82280,6 +82280,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Malformed or empty Url"/>
   <int value="2" label="No CORS header when required"/>
   <int value="3" label="CORS header incompatible with Chromecast"/>
+  <int value="4" label="The response code indicated failure"/>
+  <int value="5" label="IO exception while fetching the url"/>
+  <int value="6" label="Unknown media type"/>
 </enum>
 
 <enum name="RendererType" type="int">
