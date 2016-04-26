@@ -1512,15 +1512,20 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
         && mev.innerNode()->canParticipateInFlatTree() && m_clickNode->canParticipateInFlatTree()
         && !(selectionController().hasExtendedSelection() && isLinkSelection(mev));
     if (shouldDispatchClickEvent) {
+        Node* clickTargetNode = nullptr;
         // Updates distribution because a 'mouseup' event listener can make the
         // tree dirty at dispatchMouseEvent() invocation above.
         // Unless distribution is updated, commonAncestor would hit ASSERT.
-        // Both m_clickNode and mev.innerNode() don't need to be updated
-        // because commonAncestor() will exit early if their documents are different.
-        m_clickNode->updateDistribution();
-        if (Node* clickTargetNode = mev.innerNode()->commonAncestor(
-            *m_clickNode, parentForClickEvent)) {
-
+        if (m_clickNode == mev.innerNode()) {
+            clickTargetNode = m_clickNode;
+            clickTargetNode->updateDistribution();
+        } else if (m_clickNode->document() == mev.innerNode()->document()) {
+            m_clickNode->updateDistribution();
+            mev.innerNode()->updateDistribution();
+            clickTargetNode = mev.innerNode()->commonAncestor(
+                *m_clickNode, parentForClickEvent);
+        }
+        if (clickTargetNode) {
             // Dispatch mouseup directly w/o calling updateMouseEventTargetNodeAndSendEvents
             // because the mouseup dispatch above has already updated it
             // correctly. Moreover, clickTargetNode is different from
