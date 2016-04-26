@@ -61,8 +61,8 @@ Animation::Animation(std::unique_ptr<AnimationCurve> curve,
       suspended_(false),
       is_controlling_instance_(false),
       is_impl_only_(false),
-      affects_active_observers_(true),
-      affects_pending_observers_(true) {}
+      affects_active_elements_(true),
+      affects_pending_elements_(true) {}
 
 Animation::~Animation() {
   if (run_state_ == RUNNING || run_state_ == PAUSED)

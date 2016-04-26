@@ -230,7 +230,7 @@ void AnimationHost::RegisterPlayerForLayer(int layer_id,
 
   if (element_animations->animation_host() != this) {
     element_animations->SetAnimationHost(this);
-    element_animations->InitValueObservations();
+    element_animations->InitAffectedElementTypes();
   }
 
   element_animations->AddPlayer(player);
@@ -247,7 +247,7 @@ void AnimationHost::UnregisterPlayerForLayer(int layer_id,
   element_animations->RemovePlayer(player);
 
   if (element_animations->IsEmpty()) {
-    element_animations->ClearValueObservations();
+    element_animations->ClearAffectedElementTypes();
     UnregisterElementAnimations(element_animations.get());
     element_animations->SetAnimationHost(nullptr);
   }

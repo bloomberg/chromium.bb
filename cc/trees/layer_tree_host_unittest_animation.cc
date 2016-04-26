@@ -1068,25 +1068,25 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
     switch (layer_tree_host()->source_frame_number()) {
       case 0:
         EXPECT_TRUE(
-            player_->element_animations()->needs_active_value_observations());
+            player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
-            player_->element_animations()->needs_pending_value_observations());
+            player_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
       case 1:
         layer_->RemoveFromParent();
         EXPECT_FALSE(
-            player_->element_animations()->needs_active_value_observations());
+            player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
-            player_->element_animations()->needs_pending_value_observations());
+            player_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
         layer_tree_host()->root_layer()->AddChild(layer_);
         EXPECT_TRUE(
-            player_->element_animations()->needs_active_value_observations());
+            player_->element_animations()->has_element_in_active_list());
         EXPECT_FALSE(
-            player_->element_animations()->needs_pending_value_observations());
+            player_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
     }
@@ -1100,18 +1100,18 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_TRUE(player_impl->element_animations()
-                        ->needs_active_value_observations());
+        EXPECT_TRUE(
+            player_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
         break;
       case 1:
-        EXPECT_FALSE(player_impl->element_animations()
-                         ->needs_active_value_observations());
+        EXPECT_FALSE(
+            player_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
-        EXPECT_TRUE(player_impl->element_animations()
-                        ->needs_active_value_observations());
+        EXPECT_TRUE(
+            player_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
         EndTest();
         break;

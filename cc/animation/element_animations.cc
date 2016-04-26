@@ -30,12 +30,12 @@ ElementAnimations::ElementAnimations()
       animation_host_(),
       layer_id_(),
       is_active_(false),
-      needs_active_value_observations_(false),
-      needs_pending_value_observations_(false),
+      has_element_in_active_list_(false),
+      has_element_in_pending_list_(false),
       needs_to_start_animations_(false),
       scroll_offset_animation_was_interrupted_(false),
-      potentially_animating_transform_for_active_observers_(false),
-      potentially_animating_transform_for_pending_observers_(false) {}
+      potentially_animating_transform_for_active_elements_(false),
+      potentially_animating_transform_for_pending_elements_(false) {}
 
 ElementAnimations::~ElementAnimations() {}
 
@@ -47,7 +47,7 @@ void ElementAnimations::SetLayerId(int layer_id) {
   layer_id_ = layer_id;
 }
 
-void ElementAnimations::InitValueObservations() {
+void ElementAnimations::InitAffectedElementTypes() {
   DCHECK(layer_id_);
   DCHECK(animation_host_);
 
@@ -56,24 +56,24 @@ void ElementAnimations::InitValueObservations() {
   DCHECK(animation_host_->mutator_host_client());
   if (animation_host_->mutator_host_client()->IsLayerInTree(
           layer_id_, LayerTreeType::ACTIVE)) {
-    set_needs_active_value_observations(true);
+    set_has_element_in_active_list(true);
   }
   if (animation_host_->mutator_host_client()->IsLayerInTree(
           layer_id_, LayerTreeType::PENDING)) {
-    set_needs_pending_value_observations(true);
+    set_has_element_in_pending_list(true);
   }
 }
 
-void ElementAnimations::ClearValueObservations() {
+void ElementAnimations::ClearAffectedElementTypes() {
   DCHECK(animation_host_);
 
-  if (needs_active_value_observations())
+  if (has_element_in_active_list())
     OnTransformIsPotentiallyAnimatingChanged(LayerTreeType::ACTIVE, false);
-  set_needs_active_value_observations(false);
+  set_has_element_in_active_list(false);
 
-  if (needs_pending_value_observations())
+  if (has_element_in_pending_list())
     OnTransformIsPotentiallyAnimatingChanged(LayerTreeType::PENDING, false);
-  set_needs_pending_value_observations(false);
+  set_has_element_in_pending_list(false);
 
   animation_host_->DidDeactivateElementAnimations(this);
   UpdateActivation(FORCE_ACTIVATION);
@@ -83,18 +83,18 @@ void ElementAnimations::LayerRegistered(int layer_id, LayerTreeType tree_type) {
   DCHECK_EQ(layer_id_, layer_id);
 
   if (tree_type == LayerTreeType::ACTIVE)
-    set_needs_active_value_observations(true);
+    set_has_element_in_active_list(true);
   else
-    set_needs_pending_value_observations(true);
+    set_has_element_in_pending_list(true);
 }
 
 void ElementAnimations::LayerUnregistered(int layer_id,
                                           LayerTreeType tree_type) {
   DCHECK_EQ(this->layer_id(), layer_id);
   if (tree_type == LayerTreeType::ACTIVE)
-    set_needs_active_value_observations(false);
+    set_has_element_in_active_list(false);
   else
-    set_needs_pending_value_observations(false);
+    set_has_element_in_pending_list(false);
 }
 
 void ElementAnimations::AddPlayer(AnimationPlayer* player) {
@@ -146,7 +146,7 @@ void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
 
 void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
   DCHECK(!monotonic_time.is_null());
-  if (!needs_active_value_observations() && !needs_pending_value_observations())
+  if (!has_element_in_active_list() && !has_element_in_pending_list())
     return;
 
   if (needs_to_start_animations_)
@@ -224,10 +224,10 @@ void ElementAnimations::AccumulatePropertyUpdates(
 
 void ElementAnimations::UpdateState(bool start_ready_animations,
                                     AnimationEvents* events) {
-  if (!needs_active_value_observations())
+  if (!has_element_in_active_list())
     return;
 
-  // Animate hasn't been called, this happens if an observer has been added
+  // Animate hasn't been called, this happens if an element has been added
   // between the Commit and Draw phases.
   if (last_tick_time_ == base::TimeTicks())
     return;
@@ -251,19 +251,19 @@ void ElementAnimations::UpdateState(bool start_ready_animations,
 void ElementAnimations::ActivateAnimations() {
   bool changed_transform_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
-    if (animations_[i]->affects_active_observers() !=
-            animations_[i]->affects_pending_observers() &&
+    if (animations_[i]->affects_active_elements() !=
+            animations_[i]->affects_pending_elements() &&
         animations_[i]->target_property() == TargetProperty::TRANSFORM)
       changed_transform_animation = true;
-    animations_[i]->set_affects_active_observers(
-        animations_[i]->affects_pending_observers());
+    animations_[i]->set_affects_active_elements(
+        animations_[i]->affects_pending_elements());
   }
-  auto affects_no_observers = [](const std::unique_ptr<Animation>& animation) {
-    return !animation->affects_active_observers() &&
-           !animation->affects_pending_observers();
+  auto affects_no_elements = [](const std::unique_ptr<Animation>& animation) {
+    return !animation->affects_active_elements() &&
+           !animation->affects_pending_elements();
   };
   animations_.erase(std::remove_if(animations_.begin(), animations_.end(),
-                                   affects_no_observers),
+                                   affects_no_elements),
                     animations_.end());
   scroll_offset_animation_was_interrupted_ = false;
   UpdateActivation(NORMAL_ACTIVATION);
@@ -343,16 +343,16 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
 
 void ElementAnimations::NotifyAnimationPropertyUpdate(
     const AnimationEvent& event) {
-  bool notify_active_observers = true;
-  bool notify_pending_observers = true;
+  bool notify_active_elements = true;
+  bool notify_pending_elements = true;
   switch (event.target_property) {
     case TargetProperty::OPACITY:
-      NotifyObserversOpacityAnimated(event.opacity, notify_active_observers,
-                                     notify_pending_observers);
+      NotifyClientOpacityAnimated(event.opacity, notify_active_elements,
+                                  notify_pending_elements);
       break;
     case TargetProperty::TRANSFORM:
-      NotifyObserversTransformAnimated(event.transform, notify_active_observers,
-                                       notify_pending_observers);
+      NotifyClientTransformAnimated(event.transform, notify_active_elements,
+                                    notify_pending_elements);
       break;
     default:
       NOTREACHED();
@@ -433,16 +433,16 @@ bool ElementAnimations::HasAnimationThatAffectsScale() const {
 }
 
 bool ElementAnimations::HasOnlyTranslationTransforms(
-    LayerTreeType observer_type) const {
+    LayerTreeType tree_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((observer_type == LayerTreeType::ACTIVE &&
-         !animations_[i]->affects_active_observers()) ||
-        (observer_type == LayerTreeType::PENDING &&
-         !animations_[i]->affects_pending_observers()))
+    if ((tree_type == LayerTreeType::ACTIVE &&
+         !animations_[i]->affects_active_elements()) ||
+        (tree_type == LayerTreeType::PENDING &&
+         !animations_[i]->affects_pending_elements()))
       continue;
 
     const TransformAnimationCurve* transform_animation_curve =
@@ -469,7 +469,7 @@ bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool ElementAnimations::AnimationStartScale(LayerTreeType observer_type,
+bool ElementAnimations::AnimationStartScale(LayerTreeType tree_type,
                                             float* start_scale) const {
   *start_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -477,10 +477,10 @@ bool ElementAnimations::AnimationStartScale(LayerTreeType observer_type,
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((observer_type == LayerTreeType::ACTIVE &&
-         !animations_[i]->affects_active_observers()) ||
-        (observer_type == LayerTreeType::PENDING &&
-         !animations_[i]->affects_pending_observers()))
+    if ((tree_type == LayerTreeType::ACTIVE &&
+         !animations_[i]->affects_active_elements()) ||
+        (tree_type == LayerTreeType::PENDING &&
+         !animations_[i]->affects_pending_elements()))
       continue;
 
     bool forward_direction = true;
@@ -506,7 +506,7 @@ bool ElementAnimations::AnimationStartScale(LayerTreeType observer_type,
   return true;
 }
 
-bool ElementAnimations::MaximumTargetScale(LayerTreeType observer_type,
+bool ElementAnimations::MaximumTargetScale(LayerTreeType tree_type,
                                            float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -514,10 +514,10 @@ bool ElementAnimations::MaximumTargetScale(LayerTreeType observer_type,
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((observer_type == LayerTreeType::ACTIVE &&
-         !animations_[i]->affects_active_observers()) ||
-        (observer_type == LayerTreeType::PENDING &&
-         !animations_[i]->affects_pending_observers()))
+    if ((tree_type == LayerTreeType::ACTIVE &&
+         !animations_[i]->affects_active_elements()) ||
+        (tree_type == LayerTreeType::PENDING &&
+         !animations_[i]->affects_pending_elements()))
       continue;
 
     bool forward_direction = true;
@@ -560,7 +560,7 @@ void ElementAnimations::PushNewAnimationsToImplThread(
              ->ToScrollOffsetAnimationCurve()
              ->HasSetInitialValue()) {
       gfx::ScrollOffset current_scroll_offset;
-      if (element_animations_impl->needs_active_value_observations()) {
+      if (element_animations_impl->has_element_in_active_list()) {
         current_scroll_offset =
             element_animations_impl->ScrollOffsetForAnimation();
       } else {
@@ -578,7 +578,7 @@ void ElementAnimations::PushNewAnimationsToImplThread(
     std::unique_ptr<Animation> to_add(
         animations_[i]->CloneAndInitialize(initial_run_state));
     DCHECK(!to_add->needs_synchronized_start_time());
-    to_add->set_affects_active_observers(false);
+    to_add->set_affects_active_elements(false);
     element_animations_impl->AddAnimation(std::move(to_add));
   }
 }
@@ -597,13 +597,13 @@ void ElementAnimations::RemoveAnimationsCompletedOnMainThread(
     ElementAnimations* element_animations_impl) const {
   bool removed_transform_animation = false;
   // Animations removed on the main thread should no longer affect pending
-  // observers, and should stop affecting active observers after the next call
+  // elements, and should stop affecting active elements after the next call
   // to ActivateAnimations. If already WAITING_FOR_DELETION, they can be removed
   // immediately.
   auto& animations = element_animations_impl->animations_;
   for (const auto& animation : animations) {
     if (IsCompleted(animation.get(), this)) {
-      animation->set_affects_pending_observers(false);
+      animation->set_affects_pending_elements(false);
       if (animation->target_property() == TargetProperty::TRANSFORM)
         removed_transform_animation = true;
     }
@@ -611,7 +611,7 @@ void ElementAnimations::RemoveAnimationsCompletedOnMainThread(
   auto affects_active_only_and_is_waiting_for_deletion =
       [](const std::unique_ptr<Animation>& animation) {
         return animation->run_state() == Animation::WAITING_FOR_DELETION &&
-               !animation->affects_pending_observers();
+               !animation->affects_pending_elements();
       };
   animations.erase(
       std::remove_if(animations.begin(), animations.end(),
@@ -638,23 +638,22 @@ void ElementAnimations::PushPropertiesToImplThread(
 void ElementAnimations::StartAnimations(base::TimeTicks monotonic_time) {
   DCHECK(needs_to_start_animations_);
   needs_to_start_animations_ = false;
-  // First collect running properties affecting each type of observer.
-  TargetProperties blocked_properties_for_active_observers;
-  TargetProperties blocked_properties_for_pending_observers;
+  // First collect running properties affecting each type of element.
+  TargetProperties blocked_properties_for_active_elements;
+  TargetProperties blocked_properties_for_pending_elements;
   std::vector<size_t> animations_waiting_for_target;
 
   animations_waiting_for_target.reserve(animations_.size());
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->run_state() == Animation::STARTING ||
         animations_[i]->run_state() == Animation::RUNNING) {
-      if (animations_[i]->affects_active_observers()) {
-        blocked_properties_for_active_observers[animations_[i]
-                                                    ->target_property()] = true;
+      if (animations_[i]->affects_active_elements()) {
+        blocked_properties_for_active_elements[animations_[i]
+                                                   ->target_property()] = true;
       }
-      if (animations_[i]->affects_pending_observers()) {
-        blocked_properties_for_pending_observers[animations_[i]
-                                                     ->target_property()] =
-            true;
+      if (animations_[i]->affects_pending_elements()) {
+        blocked_properties_for_pending_elements[animations_[i]
+                                                    ->target_property()] = true;
       }
     } else if (animations_[i]->run_state() ==
                Animation::WAITING_FOR_TARGET_AVAILABILITY) {
@@ -674,25 +673,24 @@ void ElementAnimations::StartAnimations(base::TimeTicks monotonic_time) {
     if (animation_waiting_for_target->run_state() ==
         Animation::WAITING_FOR_TARGET_AVAILABILITY) {
       TargetProperties enqueued_properties;
-      bool affects_active_observers =
-          animation_waiting_for_target->affects_active_observers();
-      bool affects_pending_observers =
-          animation_waiting_for_target->affects_pending_observers();
+      bool affects_active_elements =
+          animation_waiting_for_target->affects_active_elements();
+      bool affects_pending_elements =
+          animation_waiting_for_target->affects_pending_elements();
       enqueued_properties[animation_waiting_for_target->target_property()] =
           true;
       for (size_t j = animation_index + 1; j < animations_.size(); ++j) {
         if (animation_waiting_for_target->group() == animations_[j]->group()) {
           enqueued_properties[animations_[j]->target_property()] = true;
-          affects_active_observers |=
-              animations_[j]->affects_active_observers();
-          affects_pending_observers |=
-              animations_[j]->affects_pending_observers();
+          affects_active_elements |= animations_[j]->affects_active_elements();
+          affects_pending_elements |=
+              animations_[j]->affects_pending_elements();
         }
       }
 
       // Check to see if intersection of the list of properties affected by
       // the group and the list of currently blocked properties is null, taking
-      // into account the type(s) of observers affected by the group. In any
+      // into account the type(s) of elements affected by the group. In any
       // case, the group's target properties need to be added to the lists of
       // blocked properties.
       bool null_intersection = true;
@@ -701,17 +699,17 @@ void ElementAnimations::StartAnimations(base::TimeTicks monotonic_time) {
       for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
            property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
         if (enqueued_properties[property]) {
-          if (affects_active_observers) {
-            if (blocked_properties_for_active_observers[property])
+          if (affects_active_elements) {
+            if (blocked_properties_for_active_elements[property])
               null_intersection = false;
             else
-              blocked_properties_for_active_observers[property] = true;
+              blocked_properties_for_active_elements[property] = true;
           }
-          if (affects_pending_observers) {
-            if (blocked_properties_for_pending_observers[property])
+          if (affects_pending_elements) {
+            if (blocked_properties_for_pending_elements[property])
               null_intersection = false;
             else
-              blocked_properties_for_pending_observers[property] = true;
+              blocked_properties_for_pending_elements[property] = true;
           }
         }
       }
@@ -738,7 +736,7 @@ void ElementAnimations::PromoteStartedAnimations(base::TimeTicks monotonic_time,
                                                  AnimationEvents* events) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->run_state() == Animation::STARTING &&
-        animations_[i]->affects_active_observers()) {
+        animations_[i]->affects_active_elements()) {
       animations_[i]->SetRunState(Animation::RUNNING, monotonic_time);
       if (!animations_[i]->has_set_start_time() &&
           !animations_[i]->needs_synchronized_start_time())
@@ -900,7 +898,7 @@ void ElementAnimations::MarkAnimationsForDeletion(
     }
   }
   if (marked_animations_for_deletions)
-    NotifyObserversAnimationWaitingForDeletion();
+    NotifyClientAnimationWaitingForDeletion();
 }
 
 void ElementAnimations::MarkAbortedAnimationsForDeletion(
@@ -954,9 +952,9 @@ void ElementAnimations::TickAnimations(base::TimeTicks monotonic_time) {
               animations_[i]->curve()->ToTransformAnimationCurve();
           const gfx::Transform transform =
               transform_animation_curve->GetValue(trimmed);
-          NotifyObserversTransformAnimated(
-              transform, animations_[i]->affects_active_observers(),
-              animations_[i]->affects_pending_observers());
+          NotifyClientTransformAnimated(
+              transform, animations_[i]->affects_active_elements(),
+              animations_[i]->affects_pending_elements());
           break;
         }
 
@@ -965,9 +963,9 @@ void ElementAnimations::TickAnimations(base::TimeTicks monotonic_time) {
               animations_[i]->curve()->ToFloatAnimationCurve();
           const float opacity = std::max(
               std::min(float_animation_curve->GetValue(trimmed), 1.0f), 0.f);
-          NotifyObserversOpacityAnimated(
-              opacity, animations_[i]->affects_active_observers(),
-              animations_[i]->affects_pending_observers());
+          NotifyClientOpacityAnimated(
+              opacity, animations_[i]->affects_active_elements(),
+              animations_[i]->affects_pending_elements());
           break;
         }
 
@@ -976,9 +974,9 @@ void ElementAnimations::TickAnimations(base::TimeTicks monotonic_time) {
               animations_[i]->curve()->ToFilterAnimationCurve();
           const FilterOperations filter =
               filter_animation_curve->GetValue(trimmed);
-          NotifyObserversFilterAnimated(
-              filter, animations_[i]->affects_active_observers(),
-              animations_[i]->affects_pending_observers());
+          NotifyClientFilterAnimated(
+              filter, animations_[i]->affects_active_elements(),
+              animations_[i]->affects_pending_elements());
           break;
         }
 
@@ -992,9 +990,9 @@ void ElementAnimations::TickAnimations(base::TimeTicks monotonic_time) {
               animations_[i]->curve()->ToScrollOffsetAnimationCurve();
           const gfx::ScrollOffset scroll_offset =
               scroll_offset_animation_curve->GetValue(trimmed);
-          NotifyObserversScrollOffsetAnimated(
-              scroll_offset, animations_[i]->affects_active_observers(),
-              animations_[i]->affects_pending_observers());
+          NotifyClientScrollOffsetAnimated(
+              scroll_offset, animations_[i]->affects_active_elements(),
+              animations_[i]->affects_pending_elements());
           break;
         }
       }
@@ -1021,94 +1019,94 @@ void ElementAnimations::UpdateActivation(UpdateActivationType type) {
   }
 }
 
-void ElementAnimations::NotifyObserversOpacityAnimated(
+void ElementAnimations::NotifyClientOpacityAnimated(
     float opacity,
-    bool notify_active_observers,
-    bool notify_pending_observers) {
-  if (notify_active_observers && needs_active_value_observations())
+    bool notify_active_elements,
+    bool notify_pending_elements) {
+  if (notify_active_elements && has_element_in_active_list())
     OnOpacityAnimated(LayerTreeType::ACTIVE, opacity);
-  if (notify_pending_observers && needs_pending_value_observations())
+  if (notify_pending_elements && has_element_in_pending_list())
     OnOpacityAnimated(LayerTreeType::PENDING, opacity);
 }
 
-void ElementAnimations::NotifyObserversTransformAnimated(
+void ElementAnimations::NotifyClientTransformAnimated(
     const gfx::Transform& transform,
-    bool notify_active_observers,
-    bool notify_pending_observers) {
-  if (notify_active_observers && needs_active_value_observations())
+    bool notify_active_elements,
+    bool notify_pending_elements) {
+  if (notify_active_elements && has_element_in_active_list())
     OnTransformAnimated(LayerTreeType::ACTIVE, transform);
-  if (notify_pending_observers && needs_pending_value_observations())
+  if (notify_pending_elements && has_element_in_pending_list())
     OnTransformAnimated(LayerTreeType::PENDING, transform);
 }
 
-void ElementAnimations::NotifyObserversFilterAnimated(
+void ElementAnimations::NotifyClientFilterAnimated(
     const FilterOperations& filters,
-    bool notify_active_observers,
-    bool notify_pending_observers) {
-  if (notify_active_observers && needs_active_value_observations())
+    bool notify_active_elements,
+    bool notify_pending_elements) {
+  if (notify_active_elements && has_element_in_active_list())
     OnFilterAnimated(LayerTreeType::ACTIVE, filters);
-  if (notify_pending_observers && needs_pending_value_observations())
+  if (notify_pending_elements && has_element_in_pending_list())
     OnFilterAnimated(LayerTreeType::PENDING, filters);
 }
 
-void ElementAnimations::NotifyObserversScrollOffsetAnimated(
+void ElementAnimations::NotifyClientScrollOffsetAnimated(
     const gfx::ScrollOffset& scroll_offset,
-    bool notify_active_observers,
-    bool notify_pending_observers) {
-  if (notify_active_observers && needs_active_value_observations())
+    bool notify_active_elements,
+    bool notify_pending_elements) {
+  if (notify_active_elements && has_element_in_active_list())
     OnScrollOffsetAnimated(LayerTreeType::ACTIVE, scroll_offset);
-  if (notify_pending_observers && needs_pending_value_observations())
+  if (notify_pending_elements && has_element_in_pending_list())
     OnScrollOffsetAnimated(LayerTreeType::PENDING, scroll_offset);
 }
 
-void ElementAnimations::NotifyObserversAnimationWaitingForDeletion() {
+void ElementAnimations::NotifyClientAnimationWaitingForDeletion() {
   OnAnimationWaitingForDeletion();
 }
 
-void ElementAnimations::NotifyObserversTransformIsPotentiallyAnimatingChanged(
-    bool notify_active_observers,
-    bool notify_pending_observers) {
-  if (notify_active_observers && needs_active_value_observations())
+void ElementAnimations::NotifyClientTransformIsPotentiallyAnimatingChanged(
+    bool notify_active_elements,
+    bool notify_pending_elements) {
+  if (notify_active_elements && has_element_in_active_list())
     OnTransformIsPotentiallyAnimatingChanged(
         LayerTreeType::ACTIVE,
-        potentially_animating_transform_for_active_observers_);
-  if (notify_pending_observers && needs_pending_value_observations())
+        potentially_animating_transform_for_active_elements_);
+  if (notify_pending_elements && has_element_in_pending_list())
     OnTransformIsPotentiallyAnimatingChanged(
         LayerTreeType::PENDING,
-        potentially_animating_transform_for_pending_observers_);
+        potentially_animating_transform_for_pending_elements_);
 }
 
 void ElementAnimations::UpdatePotentiallyAnimatingTransform() {
-  bool was_potentially_animating_transform_for_active_observers =
-      potentially_animating_transform_for_active_observers_;
-  bool was_potentially_animating_transform_for_pending_observers =
-      potentially_animating_transform_for_pending_observers_;
+  bool was_potentially_animating_transform_for_active_elements =
+      potentially_animating_transform_for_active_elements_;
+  bool was_potentially_animating_transform_for_pending_elements =
+      potentially_animating_transform_for_pending_elements_;
 
-  potentially_animating_transform_for_active_observers_ = false;
-  potentially_animating_transform_for_pending_observers_ = false;
+  potentially_animating_transform_for_active_elements_ = false;
+  potentially_animating_transform_for_pending_elements_ = false;
 
   for (const auto& animation : animations_) {
     if (!animation->is_finished() &&
         animation->target_property() == TargetProperty::TRANSFORM) {
-      potentially_animating_transform_for_active_observers_ |=
-          animation->affects_active_observers();
-      potentially_animating_transform_for_pending_observers_ |=
-          animation->affects_pending_observers();
+      potentially_animating_transform_for_active_elements_ |=
+          animation->affects_active_elements();
+      potentially_animating_transform_for_pending_elements_ |=
+          animation->affects_pending_elements();
     }
   }
 
-  bool changed_for_active_observers =
-      was_potentially_animating_transform_for_active_observers !=
-      potentially_animating_transform_for_active_observers_;
-  bool changed_for_pending_observers =
-      was_potentially_animating_transform_for_pending_observers !=
-      potentially_animating_transform_for_pending_observers_;
+  bool changed_for_active_elements =
+      was_potentially_animating_transform_for_active_elements !=
+      potentially_animating_transform_for_active_elements_;
+  bool changed_for_pending_elements =
+      was_potentially_animating_transform_for_pending_elements !=
+      potentially_animating_transform_for_pending_elements_;
 
-  if (!changed_for_active_observers && !changed_for_pending_observers)
+  if (!changed_for_active_elements && !changed_for_pending_elements)
     return;
 
-  NotifyObserversTransformIsPotentiallyAnimatingChanged(
-      changed_for_active_observers, changed_for_pending_observers);
+  NotifyClientTransformIsPotentiallyAnimatingChanged(
+      changed_for_active_elements, changed_for_pending_elements);
 }
 
 bool ElementAnimations::HasActiveAnimation() const {
@@ -1121,14 +1119,14 @@ bool ElementAnimations::HasActiveAnimation() const {
 
 bool ElementAnimations::IsPotentiallyAnimatingProperty(
     TargetProperty::Type target_property,
-    LayerTreeType observer_type) const {
+    LayerTreeType tree_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->target_property() == target_property) {
-      if ((observer_type == LayerTreeType::ACTIVE &&
-           animations_[i]->affects_active_observers()) ||
-          (observer_type == LayerTreeType::PENDING &&
-           animations_[i]->affects_pending_observers()))
+      if ((tree_type == LayerTreeType::ACTIVE &&
+           animations_[i]->affects_active_elements()) ||
+          (tree_type == LayerTreeType::PENDING &&
+           animations_[i]->affects_pending_elements()))
         return true;
     }
   }
@@ -1137,15 +1135,15 @@ bool ElementAnimations::IsPotentiallyAnimatingProperty(
 
 bool ElementAnimations::IsCurrentlyAnimatingProperty(
     TargetProperty::Type target_property,
-    LayerTreeType observer_type) const {
+    LayerTreeType tree_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->InEffect(last_tick_time_) &&
         animations_[i]->target_property() == target_property) {
-      if ((observer_type == LayerTreeType::ACTIVE &&
-           animations_[i]->affects_active_observers()) ||
-          (observer_type == LayerTreeType::PENDING &&
-           animations_[i]->affects_pending_observers()))
+      if ((tree_type == LayerTreeType::ACTIVE &&
+           animations_[i]->affects_active_elements()) ||
+          (tree_type == LayerTreeType::PENDING &&
+           animations_[i]->affects_pending_elements()))
         return true;
     }
   }

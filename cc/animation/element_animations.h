@@ -51,8 +51,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   const AnimationHost* animation_host() const { return animation_host_; }
   void SetAnimationHost(AnimationHost* host);
 
-  void InitValueObservations();
-  void ClearValueObservations();
+  void InitAffectedElementTypes();
+  void ClearAffectedElementTypes();
 
   void LayerRegistered(int layer_id, LayerTreeType tree_type);
   void LayerUnregistered(int layer_id, LayerTreeType tree_type);
@@ -84,8 +84,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   void UpdateState(bool start_ready_animations, AnimationEvents* events);
 
-  // Make animations affect active observers if and only if they affect
-  // pending observers. Any animations that no longer affect any observers
+  // Make animations affect active elements if and only if they affect
+  // pending elements. Any animations that no longer affect any elements
   // are deleted.
   void ActivateAnimations();
 
@@ -105,14 +105,14 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   // Returns true if there is an animation that is either currently animating
   // the given property or scheduled to animate this property in the future, and
-  // that affects the given observer type.
+  // that affects the given tree type.
   bool IsPotentiallyAnimatingProperty(TargetProperty::Type target_property,
-                                      LayerTreeType observer_type) const;
+                                      LayerTreeType tree_type) const;
 
   // Returns true if there is an animation that is currently animating the given
-  // property and that affects the given observer type.
+  // property and that affects the given tree type.
   bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
-                                    LayerTreeType observer_type) const;
+                                    LayerTreeType tree_type) const;
 
   void NotifyAnimationStarted(const AnimationEvent& event);
   void NotifyAnimationFinished(const AnimationEvent& event);
@@ -120,20 +120,18 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
   void NotifyAnimationTakeover(const AnimationEvent& event);
 
-  bool needs_active_value_observations() const {
-    return needs_active_value_observations_;
+  bool has_element_in_active_list() const {
+    return has_element_in_active_list_;
   }
-  bool needs_pending_value_observations() const {
-    return needs_pending_value_observations_;
+  bool has_element_in_pending_list() const {
+    return has_element_in_pending_list_;
   }
 
-  void set_needs_active_value_observations(
-      bool needs_active_value_observations) {
-    needs_active_value_observations_ = needs_active_value_observations;
+  void set_has_element_in_active_list(bool has_element_in_active_list) {
+    has_element_in_active_list_ = has_element_in_active_list;
   }
-  void set_needs_pending_value_observations(
-      bool needs_pending_value_observations) {
-    needs_pending_value_observations_ = needs_pending_value_observations;
+  void set_has_element_in_pending_list(bool has_element_in_pending_list) {
+    has_element_in_pending_list_ = has_element_in_pending_list;
   }
 
   bool HasFilterAnimationThatInflatesBounds() const;
@@ -150,20 +148,19 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool HasAnimationThatAffectsScale() const;
 
-  bool HasOnlyTranslationTransforms(LayerTreeType observer_type) const;
+  bool HasOnlyTranslationTransforms(LayerTreeType tree_type) const;
 
   bool AnimationsPreserveAxisAlignment() const;
 
   // Sets |start_scale| to the maximum of starting animation scale along any
   // dimension at any destination in active animations. Returns false if the
   // starting scale cannot be computed.
-  bool AnimationStartScale(LayerTreeType observer_type,
-                           float* start_scale) const;
+  bool AnimationStartScale(LayerTreeType tree_type, float* start_scale) const;
 
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.
-  bool MaximumTargetScale(LayerTreeType observer_type, float* max_scale) const;
+  bool MaximumTargetScale(LayerTreeType tree_type, float* max_scale) const;
 
   // When a scroll animation is removed on the main thread, its compositor
   // thread counterpart continues producing scroll deltas until activation.
@@ -211,25 +208,24 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   enum UpdateActivationType { NORMAL_ACTIVATION, FORCE_ACTIVATION };
   void UpdateActivation(UpdateActivationType type);
 
-  void NotifyObserversOpacityAnimated(float opacity,
-                                      bool notify_active_observers,
-                                      bool notify_pending_observers);
-  void NotifyObserversTransformAnimated(const gfx::Transform& transform,
-                                        bool notify_active_observers,
-                                        bool notify_pending_observers);
-  void NotifyObserversFilterAnimated(const FilterOperations& filter,
-                                     bool notify_active_observers,
-                                     bool notify_pending_observers);
-  void NotifyObserversScrollOffsetAnimated(
-      const gfx::ScrollOffset& scroll_offset,
-      bool notify_active_observers,
-      bool notify_pending_observers);
+  void NotifyClientOpacityAnimated(float opacity,
+                                   bool notify_active_elements,
+                                   bool notify_pending_elements);
+  void NotifyClientTransformAnimated(const gfx::Transform& transform,
+                                     bool notify_active_elements,
+                                     bool notify_pending_elements);
+  void NotifyClientFilterAnimated(const FilterOperations& filter,
+                                  bool notify_active_elements,
+                                  bool notify_pending_elements);
+  void NotifyClientScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset,
+                                        bool notify_active_elements,
+                                        bool notify_pending_elements);
 
-  void NotifyObserversAnimationWaitingForDeletion();
+  void NotifyClientAnimationWaitingForDeletion();
 
-  void NotifyObserversTransformIsPotentiallyAnimatingChanged(
-      bool notify_active_observers,
-      bool notify_pending_observers);
+  void NotifyClientTransformIsPotentiallyAnimatingChanged(
+      bool notify_active_elements,
+      bool notify_pending_elements);
 
   void UpdatePotentiallyAnimatingTransform();
 
@@ -270,8 +266,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   base::TimeTicks last_tick_time_;
 
-  bool needs_active_value_observations_;
-  bool needs_pending_value_observations_;
+  bool has_element_in_active_list_;
+  bool has_element_in_pending_list_;
 
   // Only try to start animations when new animations are added or when the
   // previous attempt at starting animations failed to start all animations.
@@ -279,8 +275,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool scroll_offset_animation_was_interrupted_;
 
-  bool potentially_animating_transform_for_active_observers_;
-  bool potentially_animating_transform_for_pending_observers_;
+  bool potentially_animating_transform_for_active_elements_;
+  bool potentially_animating_transform_for_pending_elements_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };
