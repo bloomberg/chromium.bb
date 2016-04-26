@@ -578,12 +578,20 @@ group("both_gn_and_gyp") {
   } else if (!is_android && !is_ios) {
     deps += [ "//breakpad:symupload($host_toolchain)" ]
   }
+
   if (is_chromecast) {
     deps += [ "//chromecast:cast_shell" ]
   }
 
   if (is_mac) {  # TODO(GYP) || is_ios
     deps += [ "//media/cast:cast_h264_vt_encoder_unittests" ]
+  }
+
+  if (is_mac || is_win) {
+    deps += [
+      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+      "//third_party/crashpad/crashpad/tools:crashpad_database_util",
+    ]
   }
 
   if (use_openh264) {
