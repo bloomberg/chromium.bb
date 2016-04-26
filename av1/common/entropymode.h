@@ -97,6 +97,7 @@ typedef struct frame_contexts {
 #if CONFIG_DAALA_EC
   uint16_t
       switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];
+  uint16_t intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
 #endif
 } FRAME_CONTEXT;
 
@@ -175,6 +176,10 @@ void av1_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
                                         unsigned int (*ct_8x8p)[2]);
 
 extern const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)];
+#if CONFIG_DAALA_EC
+extern int av1_ext_tx_ind[TX_TYPES];
+extern int av1_ext_tx_inv[TX_TYPES];
+#endif
 
 static INLINE int av1_ceil_log2(int n) {
   int i = 1, p = 2;
