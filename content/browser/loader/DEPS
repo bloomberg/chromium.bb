@@ -1,0 +1,43 @@
+# The core loading code in this directory is being transitioned into a separate
+# Mojo networking service. See http://crbug.com/598073. The first stage is to
+# decouple the code that will be moved from the rest of content. These rules
+# help ensure that we don't add more includes, and can progressively reduce the
+# code's dependencies.
+#
+# For each file, the first section shows includes that are allowed (i.e. because
+# they are for files that will be moving as well). The second section, separated
+# by a comment, lists files that we will have to decouple.
+specific_include_rules = {
+  "resource_buffer*\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/resource_buffer.h",
+    "+content/common/content_export.h",
+  ],
+  "resource_handler\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/resource_handler.h",
+    "+content/browser/loader/resource_request_info_impl.h",
+    "+content/common/content_export.h",
+  ],
+  "resource_request_info_impl\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/global_routing_id.h",
+    "+content/browser/loader/resource_handler.h",
+    "+content/browser/loader/resource_message_filter.h",
+    "+content/browser/loader/resource_request_info_impl.h",
+    "+content/common/content_export.h",
+    "+content/public/browser/global_request_id.h",
+    "+content/public/browser/resource_request_info.h",
+    "+content/public/common/referrer.h",
+    "+content/public/common/resource_type.h",
+
+    # TODO: these all have to be removed.
+    "+content/browser/frame_host/frame_tree_node.h",
+    "+content/browser/web_contents/web_contents_impl.h",
+    "+content/common/net/url_request_service_worker_data.h",
+    "+content/common/net/url_request_user_data.h",
+    "+content/public/browser/browser_thread.h",    
+    "+content/public/common/browser_side_navigation_policy.h",
+    "+content/public/common/process_type.h",
+  ],
+}
