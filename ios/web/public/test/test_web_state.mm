@@ -103,6 +103,10 @@ bool TestWebState::IsLoading() const {
   return false;
 }
 
+double TestWebState::GetLoadingProgress() const {
+  return 0.0;
+}
+
 bool TestWebState::IsBeingDestroyed() const {
   return false;
 }

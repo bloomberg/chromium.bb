@@ -1659,6 +1659,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _webView;
 }
 
+- (double)loadingProgress {
+  return [_webView estimatedProgress];
+}
+
 - (void)registerLoadRequest:(const GURL&)URL {
   // Get the navigation type from the last main frame load request, and try to
   // map that to a PageTransition.

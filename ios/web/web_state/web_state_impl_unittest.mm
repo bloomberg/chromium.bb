@@ -594,5 +594,14 @@ TEST_F(WebStateTest, ScriptExecution) {
   EXPECT_EQ("bar", string_result);
 }
 
+// Tests loading progress.
+TEST_F(WebStateTest, LoadingProgress) {
+  EXPECT_FLOAT_EQ(0.0, web_state_->GetLoadingProgress());
+  LoadHtml("<html></html>");
+  base::test::ios::WaitUntilCondition(^bool() {
+    return web_state_->GetLoadingProgress() == 1.0;
+  });
+}
+
 }  // namespace
 }  // namespace web

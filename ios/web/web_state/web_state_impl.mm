@@ -198,6 +198,10 @@ bool WebStateImpl::IsLoading() const {
   return is_loading_;
 }
 
+double WebStateImpl::GetLoadingProgress() const {
+  return [web_controller_ loadingProgress];
+}
+
 bool WebStateImpl::IsBeingDestroyed() const {
   return is_being_destroyed_;
 }

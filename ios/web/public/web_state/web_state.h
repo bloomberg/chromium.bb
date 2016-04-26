@@ -151,6 +151,10 @@ class WebState : public base::SupportsUserData {
   // Returns true if the current page is loading.
   virtual bool IsLoading() const = 0;
 
+  // The fraction of the page load that has completed as a number between 0.0
+  // (nothing loaded) and 1.0 (fully loaded).
+  virtual double GetLoadingProgress() const = 0;
+
   // Whether this instance is in the process of being destroyed.
   virtual bool IsBeingDestroyed() const = 0;
 

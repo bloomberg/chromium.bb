@@ -98,6 +98,10 @@ class WebStateImpl;
 // Returns the current page loading phase.
 @property(nonatomic, readonly) web::LoadPhase loadPhase;
 
+// The fraction of the page load that has completed as a number between 0.0
+// (nothing loaded) and 1.0 (fully loaded).
+@property(nonatomic, readonly) double loadingProgress;
+
 // Returns whether the page can navigate backwards or forwards.
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;

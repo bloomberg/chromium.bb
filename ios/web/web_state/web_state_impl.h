@@ -233,6 +233,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool ContentIsHTML() const override;
   const base::string16& GetTitle() const override;
   bool IsLoading() const override;
+  double GetLoadingProgress() const override;
   bool IsBeingDestroyed() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
