@@ -197,14 +197,17 @@ static void truncateForSrcLikeAttribute(String& decodedSnippet)
     // the first comma, and the the first /*, //, or <!-- may introduce a comment. Also,
     // DATA URLs may use the same string literal tricks as with script content itself.
     // In either case, content following this may come from the page and may be ignored
-    // when the script is executed.
+    // when the script is executed. Also, any of these characters may now be represented
+    // by the (enlarged) set of html5 entities.
     // For simplicity, we don't differentiate based on URL scheme, and stop at the first
-    // # or ?, the third slash, or the first slash, <, ', or " once a comma is seen.
+    // & (since it might be part of an entity for any of the subsequent punctuation), the
+    // first # or ?, the third slash, or the first slash, <, ', or " once a comma is seen.
     int slashCount = 0;
     bool commaSeen = false;
     for (size_t currentLength = 0; currentLength < decodedSnippet.length(); ++currentLength) {
         UChar currentChar = decodedSnippet[currentLength];
-        if (currentChar == '?'
+        if (currentChar == '&'
+            || currentChar == '?'
             || currentChar == '#'
             || ((currentChar == '/' || currentChar == '\\') && (commaSeen || ++slashCount > 2))
             || (currentChar == '<' && commaSeen)
