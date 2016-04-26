@@ -70,6 +70,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
       send_path_id_in_packet_(false),
       next_packet_number_length_(PACKET_1BYTE_PACKET_NUMBER),
+      have_diversification_nonce_(false),
       max_packet_length_(0),
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
       packet_size_(0),
@@ -135,6 +136,13 @@ void QuicPacketCreator::StopSendingVersion() {
   }
 }
 
+void QuicPacketCreator::SetDiversificationNonce(
+    const DiversificationNonce nonce) {
+  DCHECK(!have_diversification_nonce_);
+  have_diversification_nonce_ = true;
+  memcpy(&diversification_nonce_, nonce, sizeof(diversification_nonce_));
+}
+
 void QuicPacketCreator::UpdatePacketNumberLength(
     QuicPacketNumber least_packet_awaited_by_peer,
     QuicPacketCount max_packets_in_flight) {
@@ -178,10 +186,12 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
     QuicConnectionIdLength connection_id_length,
     bool include_version,
     bool include_path_id,
+    bool include_diversification_nonce,
     QuicPacketNumberLength packet_number_length,
     QuicStreamOffset offset) {
   return GetPacketHeaderSize(connection_id_length, include_version,
-                             include_path_id, packet_number_length) +
+                             include_path_id, include_diversification_nonce,
+                             packet_number_length) +
          // Assumes this is a stream with a single lone packet.
          QuicFramer::GetMinStreamFrameSize(1u, offset, true);
 }
@@ -192,10 +202,11 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                           QuicStreamOffset offset,
                                           bool fin,
                                           QuicFrame* frame) {
-  DCHECK_GT(max_packet_length_,
-            StreamFramePacketOverhead(connection_id_length_, kIncludeVersion,
-                                      kIncludePathId,
-                                      PACKET_6BYTE_PACKET_NUMBER, offset));
+  DCHECK_GT(
+      max_packet_length_,
+      StreamFramePacketOverhead(connection_id_length_, kIncludeVersion,
+                                kIncludePathId, IncludeNonceInPublicHeader(),
+                                PACKET_6BYTE_PACKET_NUMBER, offset));
 
   MaybeUpdatePacketNumberLength();
 
@@ -389,7 +400,7 @@ size_t QuicPacketCreator::PacketSize() {
   packet_.packet_number_length = next_packet_number_length_;
   packet_size_ = GetPacketHeaderSize(
       connection_id_length_, send_version_in_packet_, send_path_id_in_packet_,
-      packet_.packet_number_length);
+      IncludeNonceInPublicHeader(), packet_.packet_number_length);
   return packet_size_;
 }
 
@@ -481,7 +492,12 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   header->public_header.multipath_flag = send_path_id_in_packet_;
   header->public_header.reset_flag = false;
   header->public_header.version_flag = send_version_in_packet_;
-  header->fec_flag = false;
+  if (IncludeNonceInPublicHeader()) {
+    DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
+    header->public_header.nonce = &diversification_nonce_;
+  } else {
+    header->public_header.nonce = nullptr;
+  }
   header->path_id = packet_.path_id;
   header->packet_number = ++packet_.packet_number;
   header->public_header.packet_number_length = packet_.packet_number_length;
@@ -593,6 +609,11 @@ void QuicPacketCreator::SetCurrentPath(
   send_path_id_in_packet_ = packet_.path_id != kDefaultPathId ? true : false;
   // Switching path needs to update packet number length.
   UpdatePacketNumberLength(least_packet_awaited_by_peer, max_packets_in_flight);
+}
+
+bool QuicPacketCreator::IncludeNonceInPublicHeader() {
+  return have_diversification_nonce_ &&
+         packet_.encryption_level == ENCRYPTION_INITIAL;
 }
 
 }  // namespace net

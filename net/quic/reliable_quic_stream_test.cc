@@ -165,9 +165,10 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
 TEST_F(ReliableQuicStreamTest, WriteAllData) {
   Initialize(kShouldProcessData);
 
-  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
-                          PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER, 0u);
+  size_t length =
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+              PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+              !kIncludeDiversificationNonce, PACKET_6BYTE_PACKET_NUMBER, 0u);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(kTestStreamId, _, _, _, _))
@@ -237,9 +238,10 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   Initialize(kShouldProcessData);
 
   EXPECT_FALSE(HasWriteBlockedStreams());
-  size_t length = 1 + QuicPacketCreator::StreamFramePacketOverhead(
-                          PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
-                          !kIncludePathId, PACKET_6BYTE_PACKET_NUMBER, 0u);
+  size_t length =
+      1 + QuicPacketCreator::StreamFramePacketOverhead(
+              PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion, !kIncludePathId,
+              !kIncludeDiversificationNonce, PACKET_6BYTE_PACKET_NUMBER, 0u);
   connection_->SetMaxPacketLength(length);
 
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))

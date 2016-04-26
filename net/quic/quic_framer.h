@@ -264,6 +264,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicConnectionIdLength connection_id_length,
       bool includes_version,
       bool includes_path_id,
+      bool includes_diversification_nonce,
       QuicPacketNumberLength packet_number_length);
 
   // Serializes a packet containing |frames| into |buffer|.
@@ -554,6 +555,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // The time delta computed for the last timestamp frame. This is relative to
   // the creation_time.
   QuicTime::Delta last_timestamp_;
+  // The diversification nonce from the last received packet.
+  DiversificationNonce last_nonce_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };

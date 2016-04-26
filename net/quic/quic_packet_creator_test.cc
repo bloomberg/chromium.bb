@@ -62,19 +62,15 @@ struct TestParams {
 // Constructs various test permutations.
 vector<TestParams> GetTestParams() {
   vector<TestParams> params;
-  QuicConnectionIdLength max = PACKET_8BYTE_CONNECTION_ID;
+  constexpr QuicConnectionIdLength kMax = PACKET_8BYTE_CONNECTION_ID;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
-    params.push_back(TestParams(all_supported_versions[i], true, max));
-    params.push_back(TestParams(all_supported_versions[i], false, max));
+    params.push_back(TestParams(all_supported_versions[i], true, kMax));
+    params.push_back(TestParams(all_supported_versions[i], false, kMax));
   }
   params.push_back(
       TestParams(all_supported_versions[0], true, PACKET_0BYTE_CONNECTION_ID));
-  params.push_back(
-      TestParams(all_supported_versions[0], true, PACKET_1BYTE_CONNECTION_ID));
-  params.push_back(
-      TestParams(all_supported_versions[0], true, PACKET_4BYTE_CONNECTION_ID));
-  params.push_back(TestParams(all_supported_versions[0], true, max));
+  params.push_back(TestParams(all_supported_versions[0], true, kMax));
   return params;
 }
 
@@ -185,6 +181,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   size_t GetPacketHeaderOverhead() {
     return GetPacketHeaderSize(
         creator_.connection_id_length(), kIncludeVersion, !kIncludePathId,
+        !kIncludeDiversificationNonce,
         QuicPacketCreatorPeer::NextPacketNumberLength(&creator_));
   }
 
@@ -819,8 +816,8 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
       client_framer_.version(),
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
       QuicPacketCreatorPeer::SendPathIdInPacket(&creator_),
-      creator_.connection_id_length(), PACKET_1BYTE_PACKET_NUMBER,
-      &payload_length));
+      !kIncludeDiversificationNonce, creator_.connection_id_length(),
+      PACKET_1BYTE_PACKET_NUMBER, &payload_length));
   QuicFrame frame;
   const string too_long_payload(payload_length * 2, 'a');
   QuicIOVector io_vector(MakeIOVector(too_long_payload));
@@ -848,7 +845,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
                     creator_.connection_id_length(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                     QuicPacketCreatorPeer::SendPathIdInPacket(&creator_),
-                    PACKET_1BYTE_PACKET_NUMBER),
+                    !kIncludeDiversificationNonce, PACKET_1BYTE_PACKET_NUMBER),
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
@@ -889,7 +886,8 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
                 GetPacketHeaderSize(
                     creator_.connection_id_length(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                    /*include_path_id=*/false, PACKET_1BYTE_PACKET_NUMBER),
+                    /*include_path_id=*/false, !kIncludeDiversificationNonce,
+                    PACKET_1BYTE_PACKET_NUMBER),
             creator_.BytesFree());
 }
 

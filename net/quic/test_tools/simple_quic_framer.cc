@@ -164,6 +164,10 @@ SimpleQuicFramer::SimpleQuicFramer()
 SimpleQuicFramer::SimpleQuicFramer(const QuicVersionVector& supported_versions)
     : framer_(supported_versions, QuicTime::Zero(), Perspective::IS_SERVER) {}
 
+SimpleQuicFramer::SimpleQuicFramer(const QuicVersionVector& supported_versions,
+                                   Perspective perspective)
+    : framer_(supported_versions, QuicTime::Zero(), perspective) {}
+
 SimpleQuicFramer::~SimpleQuicFramer() {}
 
 bool SimpleQuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {

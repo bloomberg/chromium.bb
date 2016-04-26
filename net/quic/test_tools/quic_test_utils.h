@@ -150,6 +150,7 @@ bool DecodeHexString(const StringPiece& hex, std::string* bytes);
 size_t GetPacketLengthForOneStream(QuicVersion version,
                                    bool include_version,
                                    bool include_path_id,
+                                   bool include_diversification_nonce,
                                    QuicConnectionIdLength connection_id_length,
                                    QuicPacketNumberLength packet_number_length,
                                    size_t* payload_length);

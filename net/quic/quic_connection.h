@@ -548,6 +548,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // takes ownership of |encrypter|.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
 
+  // SetNonceForPublicHeader sets the nonce that will be transmitted in the
+  // public header of each packet encrypted at the initial encryption level
+  // decrypted. This should only be called on the server side.
+  void SetDiversificationNonce(const DiversificationNonce nonce);
+
   // SetDefaultEncryptionLevel sets the encryption level that will be applied
   // to new packets.
   void SetDefaultEncryptionLevel(EncryptionLevel level);

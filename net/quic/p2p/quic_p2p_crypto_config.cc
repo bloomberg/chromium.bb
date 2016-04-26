@@ -30,8 +30,8 @@ bool QuicP2PCryptoConfig::GetNegotiatedParameters(
   if (!CryptoUtils::DeriveKeys(
           out_params->forward_secure_premaster_secret, out_params->aead,
           out_params->client_nonce, out_params->server_nonce, hkdf_input,
-          perspective, &out_params->forward_secure_crypters,
-          &out_params->subkey_secret)) {
+          perspective, CryptoUtils::Diversification::Never(),
+          &out_params->forward_secure_crypters, &out_params->subkey_secret)) {
     return false;
   }
 

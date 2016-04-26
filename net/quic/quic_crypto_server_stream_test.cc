@@ -384,11 +384,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
         server_stream());
   }
 
-  if (AsyncStrikeRegisterVerification()) {
-    EXPECT_EQ(1, client_stream()->num_sent_client_hellos());
-  } else {
-    EXPECT_EQ(2, client_stream()->num_sent_client_hellos());
-  }
+  EXPECT_EQ(1, client_stream()->num_sent_client_hellos());
 }
 
 TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {

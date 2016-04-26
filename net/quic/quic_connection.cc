@@ -624,6 +624,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
 void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   last_decrypted_packet_level_ = level;
   last_packet_decrypted_ = true;
+
   // If this packet was foward-secure encrypted and the forward-secure encrypter
   // is not being used, start using it.
   if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
@@ -1840,6 +1841,11 @@ void QuicConnection::SetEncrypter(EncryptionLevel level,
             sent_packet_manager_.EstimateMaxPacketsInFlight(
                 max_packet_length());
   }
+}
+
+void QuicConnection::SetDiversificationNonce(const DiversificationNonce nonce) {
+  DCHECK_EQ(Perspective::IS_SERVER, perspective_);
+  packet_generator_.SetDiversificationNonce(nonce);
 }
 
 void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {

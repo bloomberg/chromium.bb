@@ -141,6 +141,15 @@ class TaggingDecrypter : public QuicDecrypter {
 
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
+  bool SetPreliminaryKey(StringPiece key) override {
+    QUIC_BUG << "should not be called";
+    return false;
+  }
+
+  bool SetDiversificationNonce(DiversificationNonce key) override {
+    return true;
+  }
+
   bool DecryptPacket(QuicPathId path_id,
                      QuicPacketNumber packet_number,
                      StringPiece associated_data,
@@ -3430,7 +3439,8 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   size_t payload_length;
   size_t length = GetPacketLengthForOneStream(
       connection_.version(), kIncludeVersion, !kIncludePathId,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, &payload_length);
+      !kIncludeDiversificationNonce, PACKET_8BYTE_CONNECTION_ID,
+      PACKET_1BYTE_PACKET_NUMBER, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -3451,10 +3461,11 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
   // offset 0, and 2 for non-zero offsets up through 16K. Increase
   // max_packet_length by 2 so that subsequent packets containing subsequent
   // stream frames with non-zero offets will fit within the packet length.
-  size_t length = 2 + GetPacketLengthForOneStream(
-                          connection_.version(), kIncludeVersion,
-                          !kIncludePathId, PACKET_8BYTE_CONNECTION_ID,
-                          PACKET_1BYTE_PACKET_NUMBER, &payload_length);
+  size_t length =
+      2 + GetPacketLengthForOneStream(
+              connection_.version(), kIncludeVersion, !kIncludePathId,
+              !kIncludeDiversificationNonce, PACKET_8BYTE_CONNECTION_ID,
+              PACKET_1BYTE_PACKET_NUMBER, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -3480,30 +3491,8 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   // we see in this test, due to the non-truncated connection id.
   size_t non_truncated_packet_size = writer_->last_packet_size();
 
-  // Change to a 4 byte connection id.
-  QuicConfig config;
-  QuicConfigPeer::SetReceivedBytesForConnectionId(&config, 4);
-  connection_.SetFromConfig(config);
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  EXPECT_EQ(payload.size(),
-            connection_.SendStreamDataWithString(3, payload, 0, !kFin, nullptr)
-                .bytes_consumed);
-  // Verify that we have 8 fewer bytes than in the non-truncated case.  The
-  // first packet got 4 bytes of extra payload due to the truncation, and the
-  // headers here are also 4 byte smaller.
-  EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 8);
-
-  // Change to a 1 byte connection id.
-  QuicConfigPeer::SetReceivedBytesForConnectionId(&config, 1);
-  connection_.SetFromConfig(config);
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  EXPECT_EQ(payload.size(),
-            connection_.SendStreamDataWithString(3, payload, 0, !kFin, nullptr)
-                .bytes_consumed);
-  // Just like above, we save 7 bytes on payload, and 7 on truncation.
-  EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 7 * 2);
-
   // Change to a 0 byte connection id.
+  QuicConfig config;
   QuicConfigPeer::SetReceivedBytesForConnectionId(&config, 0);
   connection_.SetFromConfig(config);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
