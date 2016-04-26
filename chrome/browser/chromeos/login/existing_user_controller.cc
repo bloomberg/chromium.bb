@@ -45,6 +45,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -66,6 +67,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -742,7 +744,9 @@ void ExistingUserController::OnPasswordChangeDetected() {
 
   // If the password change happens after an online auth, do a TokenHandle check
   // to find out whether the user password is really changed or not.
-  if (auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION) {
+  // TODO(xiyuan): Remove channel restriction. See http://crbug.com/585530
+  if (chrome::GetChannel() <= version_info::Channel::DEV &&
+      auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION) {
     token_handle_util_.reset(new TokenHandleUtil);
     if (token_handle_util_->HasToken(last_login_attempt_account_id_)) {
       token_handle_util_->CheckToken(
