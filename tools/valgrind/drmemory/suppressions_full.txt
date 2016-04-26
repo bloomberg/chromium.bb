@@ -1350,23 +1350,6 @@ name=http://crbug.com/57266 (2)
 *!vp8_*
 
 LEAK
-name=http://crbug.com/70062
-*!PR_Calloc
-*!PR_NewLock
-...
-*!InitSessionCacheLocks
-*!initSessionCacheLocksLazily
-*!PR_CallOnce
-*!ssl_InitSessionCacheLocks
-*!lock_cache
-*!ssl_LookupSID
-*!ssl2_BeginClientHandshake
-*!ssl_Do1stHandshake
-*!SSL_ForceHandshake
-*!net::SSL*SocketNSS::DoHandshake
-*!net::SSL*SocketNSS::DoHandshakeLoop
-
-LEAK
 name=http://crbug.com/74417 a
 *!replace_operator_new
 *!disk_cache::BackendImpl::CreateEntryImpl
@@ -1405,13 +1388,6 @@ LEAK
 name=http://crbug.com/80550 (2)
 ...
 *!RenderWidgetHost::WasRestored
-
-LEAK
-name=http://crbug.com/87612
-...
-*!SSL_ConfigSecureServer
-*!net::SSLServerSocketNSS::InitializeSSLOptions
-*!net::SSLServerSocketNSS::Handshake
 
 LEAK
 name=http://crbug.com/88640
