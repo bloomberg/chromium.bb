@@ -779,6 +779,9 @@ const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";
 // chrome process started. (See ProcessSingleton for more details.)
 const char kOriginalProcessStartTime[]      = "original-process-start-time";
 
+// Overrides the default public key for checking origin trial tokens.
+const char kOriginTrialPublicKey[] = "origin-trial-public-key";
+
 // Packages an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
 

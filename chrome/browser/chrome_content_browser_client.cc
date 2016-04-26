@@ -1643,6 +1643,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
+      switches::kOriginTrialPublicKey,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,

@@ -91,6 +91,10 @@ class ChromeContentClient : public content::ContentClient {
   bool IsSupplementarySiteIsolationModeEnabled() override;
   base::StringPiece GetOriginTrialPublicKey() override;
 
+  OriginTrialKeyManager* origin_trial_key_manager() {
+    return &origin_trial_key_manager_;
+  }
+
  private:
   OriginTrialKeyManager origin_trial_key_manager_;
 };

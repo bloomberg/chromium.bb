@@ -630,6 +630,12 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 #endif
 
+  if (command_line.HasSwitch(switches::kOriginTrialPublicKey)) {
+    chrome_content_client_.origin_trial_key_manager()
+        ->SetPublicKeyFromASCIIString(
+            command_line.GetSwitchValueASCII(switches::kOriginTrialPublicKey));
+  }
+
   content::SetContentClient(&chrome_content_client_);
 
   return false;
