@@ -986,14 +986,10 @@ config("default_warnings") {
       cflags += [
         # TODO(thakis): Enable this, crbug.com/507717
         "-Wno-shift-negative-value",
-      ]
 
-      if (llvm_force_head_revision) {
-        cflags += [
-          # TODO(thakis): https://crbug.com/604888
-          "-Wno-undefined-var-template",
-        ]
-      }
+        # TODO(thakis): https://crbug.com/604888
+        "-Wno-undefined-var-template",
+      ]
     }
   }
 }
