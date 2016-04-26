@@ -281,17 +281,25 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
 }
 
 // Test developerPrivate.packDirectory.
-// http://crbug.com/527228 flaky.
-// This test was flaky likely due to previously calling ResetThreadBundle,
-// however it is still flaky after removing ResetThreadBundle call.
-TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivatePackFunction) {
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
+  // Use a temp dir isolating the extension dir and its generated files.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath root_path = data_dir().AppendASCII("good_unpacked");
-  base::FilePath crx_path = data_dir().AppendASCII("good_unpacked.crx");
-  base::FilePath pem_path = data_dir().AppendASCII("good_unpacked.pem");
+  ASSERT_TRUE(base::CopyDirectory(root_path, temp_dir.path(), true));
+
+  base::FilePath temp_root_path = temp_dir.path().Append(root_path.BaseName());
+  base::FilePath crx_path = temp_dir.path().AppendASCII("good_unpacked.crx");
+  base::FilePath pem_path = temp_dir.path().AppendASCII("good_unpacked.pem");
+
+  EXPECT_FALSE(base::PathExists(crx_path))
+      << "crx should not exist before the test is run!";
+  EXPECT_FALSE(base::PathExists(pem_path))
+      << "pem should not exist before the test is run!";
 
   // First, test a directory that should pack properly.
   base::ListValue pack_args;
-  pack_args.AppendString(root_path.AsUTF8Unsafe());
+  pack_args.AppendString(temp_root_path.AsUTF8Unsafe());
   EXPECT_TRUE(TestPackExtensionFunction(
       pack_args, api::developer_private::PACK_STATUS_SUCCESS, 0));
 
@@ -320,9 +328,6 @@ TEST_F(DeveloperPrivateApiUnitTest, DISABLED_DeveloperPrivatePackFunction) {
   EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the flags argument.
   EXPECT_TRUE(TestPackExtensionFunction(
       pack_args, api::developer_private::PACK_STATUS_ERROR, 0));
-
-  base::DeleteFile(crx_path, false);
-  base::DeleteFile(pem_path, false);
 }
 
 // Test developerPrivate.choosePath.
