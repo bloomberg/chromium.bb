@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_export.h"
@@ -40,8 +42,8 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   // A function that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific mock into the BCKSF system.
-  typedef scoped_ptr<KeyedService>(*TestingFactoryFunction)(
-      content::BrowserContext* context);
+  using TestingFactoryFunction =
+      std::unique_ptr<KeyedService> (*)(content::BrowserContext* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the KeyedService when requested.  |factory| can be NULL to signal that
@@ -130,7 +132,7 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
       user_prefs::PrefRegistrySyncable* registry) {}
 
   // KeyedServiceFactory:
-  scoped_ptr<KeyedService> BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       base::SupportsUserData* context) const final;
   bool IsOffTheRecord(base::SupportsUserData* context) const final;
 

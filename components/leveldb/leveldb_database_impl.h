@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
 #define COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -19,8 +20,8 @@ class MojoEnv;
 class LevelDBDatabaseImpl : public LevelDBDatabase {
  public:
   LevelDBDatabaseImpl(leveldb::LevelDBDatabaseRequest request,
-                      scoped_ptr<leveldb::Env> environment,
-                      scoped_ptr<leveldb::DB> db);
+                      std::unique_ptr<leveldb::Env> environment,
+                      std::unique_ptr<leveldb::DB> db);
   ~LevelDBDatabaseImpl() override;
 
   // Overridden from LevelDBDatabase:
@@ -62,8 +63,8 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
                               const IteratorSeekToFirstCallback& callback);
 
   mojo::StrongBinding<LevelDBDatabase> binding_;
-  scoped_ptr<leveldb::Env> environment_;
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::Env> environment_;
+  std::unique_ptr<leveldb::DB> db_;
 
   std::map<uint64_t, const Snapshot*> snapshot_map_;
 

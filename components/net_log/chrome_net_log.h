@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_NET_LOG_CHROME_NET_LOG_H_
 #define COMPONENTS_NET_LOG_CHROME_NET_LOG_H_
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/log/net_log.h"
 
 namespace base {
@@ -49,9 +49,9 @@ class ChromeNetLog : public net::NetLog {
       const std::string& channel_string);
 
  private:
-  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
-  scoped_ptr<NetLogTempFile> net_log_temp_file_;
-  scoped_ptr<net::TraceNetLogObserver> trace_net_log_observer_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<NetLogTempFile> net_log_temp_file_;
+  std::unique_ptr<net::TraceNetLogObserver> trace_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);
 };

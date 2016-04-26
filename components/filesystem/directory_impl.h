@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -29,7 +30,7 @@ class DirectoryImpl : public Directory {
   // when this object is destroyed.
   DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                 base::FilePath directory_path,
-                scoped_ptr<base::ScopedTempDir> temp_dir,
+                std::unique_ptr<base::ScopedTempDir> temp_dir,
                 scoped_refptr<LockTable> lock_table);
   ~DirectoryImpl() override;
 
@@ -72,7 +73,7 @@ class DirectoryImpl : public Directory {
  private:
   mojo::StrongBinding<Directory> binding_;
   base::FilePath directory_path_;
-  scoped_ptr<base::ScopedTempDir> temp_dir_;
+  std::unique_ptr<base::ScopedTempDir> temp_dir_;
   scoped_refptr<LockTable> lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);

@@ -4,6 +4,7 @@
 
 #include "components/feedback/feedback_uploader_delegate.h"
 
+#include <memory>
 #include <sstream>
 
 #include "base/logging.h"
@@ -32,7 +33,7 @@ FeedbackUploaderDelegate::~FeedbackUploaderDelegate() {}
 
 void FeedbackUploaderDelegate::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  scoped_ptr<const net::URLFetcher> source_scoper(source);
+  std::unique_ptr<const net::URLFetcher> source_scoper(source);
 
   std::stringstream error_stream;
   int response_code = source->GetResponseCode();

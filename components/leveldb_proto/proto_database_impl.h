@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_IMPL_H_
 #define COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
@@ -46,8 +47,9 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
             const base::FilePath& database_dir,
             const typename ProtoDatabase<T>::InitCallback& callback) override;
   void UpdateEntries(
-      scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-      scoped_ptr<KeyVector> keys_to_remove,
+      std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
+          entries_to_save,
+      std::unique_ptr<KeyVector> keys_to_remove,
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
@@ -56,7 +58,7 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
 
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(
-      scoped_ptr<LevelDB> database,
+      std::unique_ptr<LevelDB> database,
       const base::FilePath& database_dir,
       const typename ProtoDatabase<T>::InitCallback& callback);
 
@@ -66,7 +68,7 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   // Used to run blocking tasks in-order.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  scoped_ptr<LevelDB> db_;
+  std::unique_ptr<LevelDB> db_;
   base::FilePath database_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoDatabaseImpl);
@@ -90,7 +92,7 @@ void RunUpdateCallback(
 template <typename T>
 void RunLoadCallback(const typename ProtoDatabase<T>::LoadCallback& callback,
                      const bool* success,
-                     scoped_ptr<std::vector<T>> entries) {
+                     std::unique_ptr<std::vector<T>> entries) {
   callback.Run(*success, std::move(entries));
 }
 
@@ -120,8 +122,8 @@ inline void DestroyFromTaskRunner(const base::FilePath& database_dir,
 template <typename T>
 void UpdateEntriesFromTaskRunner(
     LevelDB* database,
-    scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    scoped_ptr<KeyVector> keys_to_remove,
+    std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
+    std::unique_ptr<KeyVector> keys_to_remove,
     bool* success) {
   DCHECK(success);
 
@@ -179,7 +181,7 @@ void ProtoDatabaseImpl<T>::Init(
     const typename ProtoDatabase<T>::InitCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   database_dir_ = database_dir;
-  InitWithDatabase(make_scoped_ptr(new LevelDB(client_name)), database_dir,
+  InitWithDatabase(base::WrapUnique(new LevelDB(client_name)), database_dir,
                    callback);
 }
 
@@ -206,7 +208,7 @@ void ProtoDatabaseImpl<T>::Destroy(
 
 template <typename T>
 void ProtoDatabaseImpl<T>::InitWithDatabase(
-    scoped_ptr<LevelDB> database,
+    std::unique_ptr<LevelDB> database,
     const base::FilePath& database_dir,
     const typename ProtoDatabase<T>::InitCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -222,8 +224,8 @@ void ProtoDatabaseImpl<T>::InitWithDatabase(
 
 template <typename T>
 void ProtoDatabaseImpl<T>::UpdateEntries(
-    scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    scoped_ptr<KeyVector> keys_to_remove,
+    std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
+    std::unique_ptr<KeyVector> keys_to_remove,
     const typename ProtoDatabase<T>::UpdateCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
@@ -241,7 +243,7 @@ void ProtoDatabaseImpl<T>::LoadEntries(
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
 
-  scoped_ptr<std::vector<T> > entries(new std::vector<T>());
+  std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
   // Get this pointer before entries is base::Passed() so we can use it below.
   std::vector<T>* entries_ptr = entries.get();
 

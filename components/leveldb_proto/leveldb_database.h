@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_LEVELDB_DATABASE_H_
 #define COMPONENTS_LEVELDB_PROTO_LEVELDB_DATABASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_collision_warner.h"
 
@@ -52,8 +52,8 @@ class LevelDB {
 
   // The declaration order of these members matters: |db_| depends on |env_| and
   // therefore has to be destructed first.
-  scoped_ptr<leveldb::Env> env_;
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::Env> env_;
+  std::unique_ptr<leveldb::DB> db_;
   base::HistogramBase* open_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDB);

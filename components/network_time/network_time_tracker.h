@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 #define COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -33,8 +34,8 @@ class NetworkTimeTracker {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  NetworkTimeTracker(scoped_ptr<base::Clock> clock,
-                     scoped_ptr<base::TickClock> tick_clock,
+  NetworkTimeTracker(std::unique_ptr<base::Clock> clock,
+                     std::unique_ptr<base::TickClock> tick_clock,
                      PrefService* pref_service);
   ~NetworkTimeTracker();
 
@@ -64,8 +65,8 @@ class NetworkTimeTracker {
   // The |Clock| and |TickClock| are used to sanity-check one another, allowing
   // the NetworkTimeTracker to notice e.g. suspend/resume events and clock
   // resets.
-  scoped_ptr<base::Clock> clock_;
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   PrefService* pref_service_;
 

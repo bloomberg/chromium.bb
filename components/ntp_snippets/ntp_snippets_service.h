@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -43,12 +44,12 @@ class NTPSnippetsServiceObserver;
 // Stores and vends fresh content data for the NTP.
 class NTPSnippetsService : public KeyedService {
  public:
-  using NTPSnippetStorage = std::vector<scoped_ptr<NTPSnippet>>;
+  using NTPSnippetStorage = std::vector<std::unique_ptr<NTPSnippet>>;
   using const_iterator =
       InnerIterator<NTPSnippetStorage::const_iterator, const NTPSnippet>;
 
   // Callbacks for JSON parsing.
-  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
   using ParseJSONCallback = base::Callback<
       void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
@@ -62,7 +63,7 @@ class NTPSnippetsService : public KeyedService {
                      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
-                     scoped_ptr<NTPSnippetsFetcher> snippets_fetcher,
+                     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
                      const ParseJSONCallback& parse_json_callback);
   ~NTPSnippetsService() override;
 
@@ -135,7 +136,7 @@ class NTPSnippetsService : public KeyedService {
                             const std::string& status);
 
   void OnJsonParsed(const std::string& snippets_json,
-                    scoped_ptr<base::Value> parsed);
+                    std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& snippets_json, const std::string& error);
 
   // Expects a top-level dictionary containing a "recos" list, which will be
@@ -189,13 +190,14 @@ class NTPSnippetsService : public KeyedService {
   // update to the set of snippets.
   using SuggestionsSubscription =
       suggestions::SuggestionsService::ResponseCallbackList::Subscription;
-  scoped_ptr<SuggestionsSubscription> suggestions_service_subscription_;
+  std::unique_ptr<SuggestionsSubscription> suggestions_service_subscription_;
 
   // The snippets fetcher.
-  scoped_ptr<NTPSnippetsFetcher> snippets_fetcher_;
+  std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
 
   // The subscription to the snippets fetcher.
-  scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
+  std::unique_ptr<
+      NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
       snippets_fetcher_subscription_;
 
   std::string last_fetch_status_;

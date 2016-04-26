@@ -52,10 +52,11 @@ void BrowserContextDependencyManager::DestroyBrowserContextServices(
   DependencyManager::DestroyContextServices(context);
 }
 
-scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
+std::unique_ptr<
+    base::CallbackList<void(content::BrowserContext*)>::Subscription>
 BrowserContextDependencyManager::
-RegisterWillCreateBrowserContextServicesCallbackForTesting(
-    const base::Callback<void(content::BrowserContext*)>& callback) {
+    RegisterWillCreateBrowserContextServicesCallbackForTesting(
+        const base::Callback<void(content::BrowserContext*)>& callback) {
   return will_create_browser_context_services_callbacks_.Add(callback);
 }
 

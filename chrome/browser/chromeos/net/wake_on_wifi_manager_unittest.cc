@@ -18,7 +18,7 @@ using testing::StrictMock;
 namespace chromeos {
 namespace {
 
-scoped_ptr<KeyedService> BuildFakeGCMProfileService(
+std::unique_ptr<KeyedService> BuildFakeGCMProfileService(
     content::BrowserContext* context) {
   return gcm::FakeGCMProfileService::Build(static_cast<Profile*>(context));
 }

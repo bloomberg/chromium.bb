@@ -6,13 +6,14 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -75,14 +76,14 @@ class NetLogTempFileTest : public ::testing::Test {
   }
 
   std::string GetStateString() const {
-    scoped_ptr<base::DictionaryValue> dict(net_log_temp_file_->GetState());
+    std::unique_ptr<base::DictionaryValue> dict(net_log_temp_file_->GetState());
     std::string state;
     EXPECT_TRUE(dict->GetString("state", &state));
     return state;
   }
 
   std::string GetLogTypeString() const {
-    scoped_ptr<base::DictionaryValue> dict(net_log_temp_file_->GetState());
+    std::unique_ptr<base::DictionaryValue> dict(net_log_temp_file_->GetState());
     std::string log_type;
     EXPECT_TRUE(dict->GetString("logType", &log_type));
     return log_type;
@@ -108,7 +109,7 @@ class NetLogTempFileTest : public ::testing::Test {
     std::string log;
     ASSERT_TRUE(ReadFileToString(net_export_log_, &log));
     base::JSONReader reader;
-    scoped_ptr<base::Value> json = base::JSONReader::Read(log);
+    std::unique_ptr<base::Value> json = base::JSONReader::Read(log);
     EXPECT_TRUE(json);
   }
 
@@ -172,10 +173,10 @@ class NetLogTempFileTest : public ::testing::Test {
                                   "LOG_BYTES");
   }
 
-  scoped_ptr<ChromeNetLog> net_log_;
+  std::unique_ptr<ChromeNetLog> net_log_;
   // |net_log_temp_file_| is initialized after |net_log_| so that it can stop
   // obvserving on destruction.
-  scoped_ptr<TestNetLogTempFile> net_log_temp_file_;
+  std::unique_ptr<TestNetLogTempFile> net_log_temp_file_;
   base::FilePath net_export_log_;
 
  private:

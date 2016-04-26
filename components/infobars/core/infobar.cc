@@ -16,7 +16,7 @@
 
 namespace infobars {
 
-InfoBar::InfoBar(scoped_ptr<InfoBarDelegate> delegate)
+InfoBar::InfoBar(std::unique_ptr<InfoBarDelegate> delegate)
     : owner_(NULL),
       delegate_(std::move(delegate)),
       container_(NULL),

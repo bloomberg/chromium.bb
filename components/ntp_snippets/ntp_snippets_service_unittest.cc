@@ -4,8 +4,11 @@
 
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
+#include <memory>
+
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -95,7 +98,7 @@ void ParseJson(
     const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
     const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
-  scoped_ptr<base::Value> value = json_reader.ReadToValue(json);
+  std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
   bool success = !!value;
   EXPECT_EQ(expect_success, success);
   if (value) {
@@ -143,7 +146,7 @@ class NTPSnippetsServiceTest : public testing::Test {
     service_.reset(new NTPSnippetsService(
         pref_service_.get(), nullptr, task_runner, std::string("fr"),
         scheduler_.get(),
-        make_scoped_ptr(new NTPSnippetsFetcher(
+        base::WrapUnique(new NTPSnippetsFetcher(
             task_runner, std::move(request_context_getter), true)),
         base::Bind(&ParseJson, true)));
     if (enabled)
@@ -166,9 +169,9 @@ class NTPSnippetsServiceTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<NTPSnippetsService> service_;
-  scoped_ptr<MockScheduler> scheduler_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<NTPSnippetsService> service_;
+  std::unique_ptr<MockScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };

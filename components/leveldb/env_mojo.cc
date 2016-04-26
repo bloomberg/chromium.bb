@@ -6,6 +6,8 @@
 
 #include <errno.h>
 
+#include <memory>
+
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -362,7 +364,7 @@ Status MojoEnv::GetTestDirectory(std::string* path) {
 
 Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewLogger", "fname", fname);
-  scoped_ptr<base::File> f(new base::File(thread_->OpenFileHandle(
+  std::unique_ptr<base::File> f(new base::File(thread_->OpenFileHandle(
       dir_, mojo::String::From(fname),
       filesystem::kCreateAlways | filesystem::kFlagWrite)));
   if (!f->IsValid()) {

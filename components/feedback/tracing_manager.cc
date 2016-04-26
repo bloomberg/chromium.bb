@@ -96,7 +96,7 @@ void TracingManager::StartTracing() {
 }
 
 void TracingManager::OnTraceDataCollected(
-    scoped_ptr<const base::DictionaryValue> metadata,
+    std::unique_ptr<const base::DictionaryValue> metadata,
     base::RefCountedString* trace_data) {
   if (!current_trace_id_)
     return;
@@ -125,10 +125,10 @@ void TracingManager::OnTraceDataCollected(
 }
 
 // static
-scoped_ptr<TracingManager> TracingManager::Create() {
+std::unique_ptr<TracingManager> TracingManager::Create() {
   if (g_tracing_manager)
-    return scoped_ptr<TracingManager>();
-  return scoped_ptr<TracingManager>(new TracingManager());
+    return std::unique_ptr<TracingManager>();
+  return std::unique_ptr<TracingManager>(new TracingManager());
 }
 
 TracingManager* TracingManager::Get() {

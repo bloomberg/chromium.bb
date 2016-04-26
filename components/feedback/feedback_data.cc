@@ -45,7 +45,7 @@ void FeedbackData::OnFeedbackPageDataComplete() {
 }
 
 void FeedbackData::SetAndCompressSystemInfo(
-    scoped_ptr<FeedbackData::SystemLogsMap> sys_info) {
+    std::unique_ptr<FeedbackData::SystemLogsMap> sys_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (trace_id_ != 0) {
@@ -71,7 +71,7 @@ void FeedbackData::SetAndCompressSystemInfo(
 }
 
 void FeedbackData::SetAndCompressHistograms(
-    scoped_ptr<std::string> histograms) {
+    std::unique_ptr<std::string> histograms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!histograms.get())
@@ -88,7 +88,7 @@ void FeedbackData::SetAndCompressHistograms(
 }
 
 void FeedbackData::AttachAndCompressFileData(
-    scoped_ptr<std::string> attached_filedata) {
+    std::unique_ptr<std::string> attached_filedata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!attached_filedata.get() || attached_filedata->empty())
@@ -114,7 +114,7 @@ void FeedbackData::OnGetTraceData(
   if (manager)
     manager->DiscardTraceData(trace_id);
 
-  scoped_ptr<std::string> data(new std::string);
+  std::unique_ptr<std::string> data(new std::string);
   data->swap(trace_data->data());
 
   AddFile(kTraceFilename, std::move(data));

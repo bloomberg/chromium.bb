@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_TESTING_FAKE_DB_H_
 #define COMPONENTS_LEVELDB_PROTO_TESTING_FAKE_DB_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/leveldb_proto/proto_database.h"
 
 namespace leveldb_proto {
@@ -33,8 +33,9 @@ class FakeDB : public ProtoDatabase<T> {
             const base::FilePath& database_dir,
             const typename ProtoDatabase<T>::InitCallback& callback) override;
   void UpdateEntries(
-      scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-      scoped_ptr<std::vector<std::string>> keys_to_remove,
+      std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
+          entries_to_save,
+      std::unique_ptr<std::vector<std::string>> keys_to_remove,
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
@@ -54,7 +55,7 @@ class FakeDB : public ProtoDatabase<T> {
  private:
   static void RunLoadCallback(
       const typename ProtoDatabase<T>::LoadCallback& callback,
-      scoped_ptr<typename std::vector<T>> entries,
+      std::unique_ptr<typename std::vector<T>> entries,
       bool success);
 
   base::FilePath dir_;
@@ -82,8 +83,8 @@ void FakeDB<T>::Init(const char* client_name,
 
 template <typename T>
 void FakeDB<T>::UpdateEntries(
-    scoped_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    scoped_ptr<std::vector<std::string>> keys_to_remove,
+    std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
+    std::unique_ptr<std::vector<std::string>> keys_to_remove,
     const typename ProtoDatabase<T>::UpdateCallback& callback) {
   for (const auto& pair : *entries_to_save)
     (*db_)[pair.first] = pair.second;
@@ -97,7 +98,7 @@ void FakeDB<T>::UpdateEntries(
 template <typename T>
 void FakeDB<T>::LoadEntries(
     const typename ProtoDatabase<T>::LoadCallback& callback) {
-  scoped_ptr<std::vector<T>> entries(new std::vector<T>());
+  std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
   for (const auto& pair : *db_)
     entries->push_back(pair.second);
 
@@ -137,7 +138,7 @@ void FakeDB<T>::UpdateCallback(bool success) {
 template <typename T>
 void FakeDB<T>::RunLoadCallback(
     const typename ProtoDatabase<T>::LoadCallback& callback,
-    scoped_ptr<typename std::vector<T>> entries,
+    std::unique_ptr<typename std::vector<T>> entries,
     bool success) {
   callback.Run(success, std::move(entries));
 }

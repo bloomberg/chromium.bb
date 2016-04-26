@@ -4,13 +4,13 @@
 
 #include "components/favicon/core/favicon_handler.h"
 
-#include<set>
-#include<vector>
-
 #include <stddef.h>
 
+#include <memory>
+#include <set>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -130,7 +130,7 @@ class DownloadHandler {
   };
 
   FaviconHandler* favicon_handler_;
-  scoped_ptr<Download> download_;
+  std::unique_ptr<Download> download_;
   bool callback_invoked_;
 
   // The icon URLs for which the download should fail.
@@ -369,8 +369,8 @@ class TestFaviconHandler : public FaviconHandler {
   // FaviconHandler.
   int download_id_;
 
-  scoped_ptr<DownloadHandler> download_handler_;
-  scoped_ptr<HistoryRequestHandler> history_handler_;
+  std::unique_ptr<DownloadHandler> download_handler_;
+  std::unique_ptr<HistoryRequestHandler> history_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFaviconHandler);
 };
@@ -482,7 +482,7 @@ class FaviconHandlerTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<ui::test::ScopedSetSupportedScaleFactors>
+  std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       scoped_set_supported_scale_factors_;
   DISALLOW_COPY_AND_ASSIGN(FaviconHandlerTest);
 };
@@ -1016,7 +1016,7 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   download_handler->Reset();
 
   // Simulates getting the icon from history.
-  scoped_ptr<HistoryRequestHandler> handler;
+  std::unique_ptr<HistoryRequestHandler> handler;
   handler.reset(new HistoryRequestHandler(
       page_url, latest_icon_url, favicon_base::TOUCH_ICON, callback));
   SetFaviconRawBitmapResult(latest_icon_url,

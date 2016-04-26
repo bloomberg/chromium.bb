@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
 #define COMPONENTS_NET_LOG_NET_LOG_TEMP_FILE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/log/net_log.h"
 
@@ -157,7 +157,7 @@ class NetLogTempFile {
 
   // |write_to_file_observer_| watches the NetLog event stream, and
   // sends all entries to the file created in StartNetLog().
-  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
 
   // The |chrome_net_log_| is owned by the browser process, cached here to avoid
   // using global (g_browser_process).

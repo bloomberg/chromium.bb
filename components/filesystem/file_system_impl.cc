@@ -5,6 +5,8 @@
 #include "components/filesystem/file_system_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -12,7 +14,6 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
@@ -37,7 +38,7 @@ void FileSystemImpl::OpenTempDirectory(
     mojo::InterfaceRequest<Directory> directory,
     const OpenTempDirectoryCallback& callback) {
   // Set only if the |DirectoryImpl| will own a temporary directory.
-  scoped_ptr<base::ScopedTempDir> temp_dir(new base::ScopedTempDir);
+  std::unique_ptr<base::ScopedTempDir> temp_dir(new base::ScopedTempDir);
   CHECK(temp_dir->CreateUniqueTempDir());
 
   base::FilePath path = temp_dir->path();
@@ -49,7 +50,7 @@ void FileSystemImpl::OpenTempDirectory(
 void FileSystemImpl::OpenPersistentFileSystem(
     mojo::InterfaceRequest<Directory> directory,
     const OpenPersistentFileSystemCallback& callback) {
-  scoped_ptr<base::ScopedTempDir> temp_dir;
+  std::unique_ptr<base::ScopedTempDir> temp_dir;
   base::FilePath path = persistent_dir_;
   if (!base::PathExists(path))
     base::CreateDirectory(path);

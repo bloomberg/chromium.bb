@@ -1687,7 +1687,8 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
 TEST_F(DownloadProtectionServiceTest,
        TestDownloadItemDestroyedDuringWhitelistCheck) {
   net::TestURLFetcherFactory factory;
-  scoped_ptr<content::MockDownloadItem> item(new content::MockDownloadItem);
+  std::unique_ptr<content::MockDownloadItem> item(
+      new content::MockDownloadItem);
   PrepareBasicDownloadItem(
     item.get(),
     {"http://www.evil.com/bla.exe"},  // url_chain

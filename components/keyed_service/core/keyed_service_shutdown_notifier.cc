@@ -10,7 +10,7 @@ KeyedServiceShutdownNotifier::KeyedServiceShutdownNotifier() {
 KeyedServiceShutdownNotifier::~KeyedServiceShutdownNotifier() {
 }
 
-scoped_ptr<base::CallbackList<void()>::Subscription>
+std::unique_ptr<base::CallbackList<void()>::Subscription>
 KeyedServiceShutdownNotifier::Subscribe(const base::Closure& callback) {
   return callback_list_.Add(callback);
 }

@@ -17,7 +17,7 @@
 namespace metrics_services_manager {
 
 MetricsServicesManager::MetricsServicesManager(
-    scoped_ptr<MetricsServicesManagerClient> client)
+    std::unique_ptr<MetricsServicesManagerClient> client)
     : client_(std::move(client)), may_upload_(false), may_record_(false) {
   DCHECK(client_);
 }

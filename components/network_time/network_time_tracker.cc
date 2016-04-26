@@ -49,9 +49,10 @@ void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
                                    new base::DictionaryValue());
 }
 
-NetworkTimeTracker::NetworkTimeTracker(scoped_ptr<base::Clock> clock,
-                                       scoped_ptr<base::TickClock> tick_clock,
-                                       PrefService* pref_service)
+NetworkTimeTracker::NetworkTimeTracker(
+    std::unique_ptr<base::Clock> clock,
+    std::unique_ptr<base::TickClock> tick_clock,
+    PrefService* pref_service)
     : clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service) {

@@ -35,7 +35,7 @@ void InfoBarManager::Observer::OnManagerShuttingDown(InfoBarManager* manager) {
 
 // InfoBarManager --------------------------------------------------------------
 
-InfoBar* InfoBarManager::AddInfoBar(scoped_ptr<InfoBar> infobar) {
+InfoBar* InfoBarManager::AddInfoBar(std::unique_ptr<InfoBar> infobar) {
   DCHECK(infobar);
   if (!infobars_enabled_)
     return NULL;
@@ -67,7 +67,7 @@ void InfoBarManager::RemoveAllInfoBars(bool animate) {
 }
 
 InfoBar* InfoBarManager::ReplaceInfoBar(InfoBar* old_infobar,
-                                        scoped_ptr<InfoBar> new_infobar) {
+                                        std::unique_ptr<InfoBar> new_infobar) {
   DCHECK(old_infobar);
   if (!infobars_enabled_)
     return AddInfoBar(std::move(new_infobar));  // Deletes the infobar.

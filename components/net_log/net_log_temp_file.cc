@@ -186,7 +186,7 @@ void NetLogTempFile::StartNetLog(LogType log_type) {
   log_type_ = log_type;
   state_ = STATE_LOGGING;
 
-  scoped_ptr<base::Value> constants(
+  std::unique_ptr<base::Value> constants(
       ChromeNetLog::GetConstants(command_line_string_, channel_string_));
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
   write_to_file_observer_->set_capture_mode(GetCaptureModeForLogType(log_type));

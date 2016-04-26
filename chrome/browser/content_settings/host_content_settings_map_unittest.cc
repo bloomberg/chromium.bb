@@ -99,10 +99,9 @@ class TesterForType {
       const std::string& url_str) {
     GURL url(url_str);
     content_settings::SettingInfo setting_info;
-    scoped_ptr<base::Value> result =
+    std::unique_ptr<base::Value> result =
         host_content_settings_map_->GetWebsiteSetting(
-            url, url, content_type_, std::string(),
-            &setting_info);
+            url, url, content_type_, std::string(), &setting_info);
     return setting_info.source;
   };
 

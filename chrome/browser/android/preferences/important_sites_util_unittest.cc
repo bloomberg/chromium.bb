@@ -33,9 +33,10 @@ namespace {
 const size_t kNumImportantSites = 5;
 base::FilePath g_temp_history_dir;
 
-scoped_ptr<KeyedService> BuildTestHistoryService(
+std::unique_ptr<KeyedService> BuildTestHistoryService(
     content::BrowserContext* context) {
-  scoped_ptr<history::HistoryService> service(new history::HistoryService());
+  std::unique_ptr<history::HistoryService> service(
+      new history::HistoryService());
   service->Init(history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
   return std::move(service);
 }

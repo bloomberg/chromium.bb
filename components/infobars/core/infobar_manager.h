@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/infobars/core/infobar_delegate.h"
 
@@ -57,7 +57,7 @@ class InfoBarManager {
   // immediately without being added.
   //
   // Returns the infobar if it was successfully added.
-  InfoBar* AddInfoBar(scoped_ptr<InfoBar> infobar);
+  InfoBar* AddInfoBar(std::unique_ptr<InfoBar> infobar);
 
   // Removes the specified |infobar|.  This in turn may close immediately or
   // animate closed; at the end the infobar will delete itself.
@@ -80,7 +80,7 @@ class InfoBarManager {
   //
   // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
   InfoBar* ReplaceInfoBar(InfoBar* old_infobar,
-                          scoped_ptr<InfoBar> new_infobar);
+                          std::unique_ptr<InfoBar> new_infobar);
 
   // Returns the number of infobars for this tab.
   size_t infobar_count() const { return infobars_.size(); }
@@ -101,8 +101,8 @@ class InfoBarManager {
   virtual int GetActiveEntryID() = 0;
 
   // Returns a confirm infobar that owns |delegate|.
-  virtual scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate> delegate) = 0;
+  virtual std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate> delegate) = 0;
 
   // Opens a URL according to the specified |disposition|.
   virtual void OpenURL(const GURL& url, WindowOpenDisposition disposition) = 0;

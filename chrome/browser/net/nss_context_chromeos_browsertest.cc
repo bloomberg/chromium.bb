@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/nss_context.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -147,7 +149,7 @@ class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
 
  private:
   bool finished_ = false;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   DISALLOW_COPY_AND_ASSIGN(UserAddingFinishObserver);
 };
 

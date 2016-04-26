@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/feedback/proto/common.pb.h"
 #include "components/feedback/proto/dom.pb.h"
@@ -34,8 +35,11 @@ const char kArbitraryMimeType[] = "application/octet-stream";
 // with the report. This method only converts those logs that we want in
 // the compressed zip file sent with the report, hence it ignores any logs
 // below the size threshold of what we want compressed.
-std::string* LogsToString(const FeedbackCommon::SystemLogsMap& sys_info) {
-  std::string* syslogs_string = new std::string;
+// TODO(dcheng): This should probably just take advantage of string's move
+// constructor.
+std::unique_ptr<std::string> LogsToString(
+    const FeedbackCommon::SystemLogsMap& sys_info) {
+  std::unique_ptr<std::string> syslogs_string(new std::string);
   for (FeedbackCommon::SystemLogsMap::const_iterator it = sys_info.begin();
        it != sys_info.end();
        ++it) {
@@ -90,7 +94,7 @@ void AddAttachment(userfeedback::ExtensionSubmit* feedback_data,
 }  // namespace
 
 FeedbackCommon::AttachedFile::AttachedFile(const std::string& filename,
-                                           scoped_ptr<std::string> data)
+                                           std::unique_ptr<std::string> data)
     : name(filename), data(std::move(data)) {}
 
 FeedbackCommon::AttachedFile::~AttachedFile() {}
@@ -112,36 +116,34 @@ bool FeedbackCommon::BelowCompressionThreshold(const std::string& content) {
 
 void FeedbackCommon::CompressFile(const base::FilePath& filename,
                                   const std::string& zipname,
-                                  scoped_ptr<std::string> data) {
-  AttachedFile* file = new AttachedFile(
-      zipname, scoped_ptr<std::string>(new std::string()));
+                                  std::unique_ptr<std::string> data) {
+  std::unique_ptr<AttachedFile> file(
+      new AttachedFile(zipname, base::WrapUnique(new std::string())));
   if (file->name.empty()) {
     // We need to use the UTF8Unsafe methods here to accomodate Windows, which
     // uses wide strings to store filepaths.
     file->name = filename.BaseName().AsUTF8Unsafe();
     file->name.append(kZipExt);
   }
-  if (feedback_util::ZipString(filename, *(data.get()), file->data.get())) {
+  if (feedback_util::ZipString(filename, *data, file->data.get())) {
     base::AutoLock lock(attachments_lock_);
-    attachments_.push_back(file);
-  } else {
-    delete file;
+    attachments_.push_back(file.release());
   }
 }
 
 void FeedbackCommon::AddFile(const std::string& filename,
-                             scoped_ptr<std::string> data) {
+                             std::unique_ptr<std::string> data) {
   base::AutoLock lock(attachments_lock_);
   attachments_.push_back(new AttachedFile(filename, std::move(data)));
 }
 
 void FeedbackCommon::AddLog(const std::string& name, const std::string& value) {
   if (!logs_.get())
-    logs_ = scoped_ptr<SystemLogsMap>(new SystemLogsMap);
-  (*logs_.get())[name] = value;
+    logs_ = base::WrapUnique(new SystemLogsMap);
+  (*logs_)[name] = value;
 }
 
-void FeedbackCommon::AddLogs(scoped_ptr<SystemLogsMap> logs) {
+void FeedbackCommon::AddLogs(std::unique_ptr<SystemLogsMap> logs) {
   if (logs_) {
     logs_->insert(logs->begin(), logs->end());
   } else {
@@ -152,11 +154,11 @@ void FeedbackCommon::AddLogs(scoped_ptr<SystemLogsMap> logs) {
 void FeedbackCommon::CompressLogs() {
   if (!logs_)
     return;
-  std::string* logs = LogsToString(*logs_.get());
-  if (!logs->empty())
-    CompressFile(
-        base::FilePath(kLogsFilename), kLogsAttachmentName,
-        scoped_ptr<std::string>(logs));
+  std::unique_ptr<std::string> logs = LogsToString(*logs_);
+  if (!logs->empty()) {
+    CompressFile(base::FilePath(kLogsFilename), kLogsAttachmentName,
+                 std::move(logs));
+  }
 }
 
 void FeedbackCommon::AddFilesAndLogsToReport(

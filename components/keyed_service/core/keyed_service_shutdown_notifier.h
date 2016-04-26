@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_SHUTDOWN_NOTIFIER_H_
 #define COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_SHUTDOWN_NOTIFIER_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 // This is a helper class for objects that depend on one or more keyed services,
@@ -27,7 +28,7 @@ class KEYED_SERVICE_EXPORT KeyedServiceShutdownNotifier : public KeyedService {
   // Subscribe for a notification when the keyed services this object depends on
   // (as defined by its factory) are shut down. The subscription object can be
   // destroyed to unsubscribe.
-  scoped_ptr<Subscription> Subscribe(const base::Closure& callback);
+  std::unique_ptr<Subscription> Subscribe(const base::Closure& callback);
 
  private:
   // KeyedService implementation:

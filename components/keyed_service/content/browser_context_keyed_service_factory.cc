@@ -5,6 +5,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -85,12 +86,12 @@ void BrowserContextKeyedServiceFactory::BrowserContextDestroyed(
   KeyedServiceFactory::ContextDestroyed(context);
 }
 
-scoped_ptr<KeyedService>
+std::unique_ptr<KeyedService>
 BrowserContextKeyedServiceFactory::BuildServiceInstanceFor(
     base::SupportsUserData* context) const {
   // TODO(isherman): The wrapped BuildServiceInstanceFor() should return a
   // scoped_ptr as well.
-  return make_scoped_ptr(
+  return base::WrapUnique(
       BuildServiceInstanceFor(static_cast<content::BrowserContext*>(context)));
 }
 

@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_FILESYSTEM_PUBLIC_CPP_PREFS_PREF_SERVICE_FACTORY_H_
 #define COMPONENTS_FILESYSTEM_PUBLIC_CPP_PREFS_PREF_SERVICE_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/prefs/pref_service.h"
 
 namespace mojo {
@@ -19,8 +20,8 @@ namespace filesystem {
 // This factory method creates a PrefService for the local process based on the
 // preference registry passed in. This PrefService will synchronize with a JSON
 // file in the mojo:filesystem.
-scoped_ptr<PrefService> CreatePrefService(shell::Connector* connector,
-                                          PrefRegistry* registry);
+std::unique_ptr<PrefService> CreatePrefService(shell::Connector* connector,
+                                               PrefRegistry* registry);
 
 }  // namespace filesystem
 

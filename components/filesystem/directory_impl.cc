@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/filesystem/file_impl.h"
 #include "components/filesystem/lock_table.h"
@@ -25,7 +24,7 @@ namespace filesystem {
 
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                              base::FilePath directory_path,
-                             scoped_ptr<base::ScopedTempDir> temp_dir,
+                             std::unique_ptr<base::ScopedTempDir> temp_dir,
                              scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       directory_path_(directory_path),
@@ -156,8 +155,7 @@ void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
   }
 
   if (directory.is_pending())
-    new DirectoryImpl(std::move(directory), path,
-                      scoped_ptr<base::ScopedTempDir>(), lock_table_);
+    new DirectoryImpl(std::move(directory), path, nullptr, lock_table_);
   callback.Run(FileError::OK);
 }
 
@@ -291,7 +289,7 @@ void DirectoryImpl::ReadEntireFile(const mojo::String& raw_path,
 
   std::string contents;
   const int kBufferSize = 1 << 16;
-  scoped_ptr<char[]> buf(new char[kBufferSize]);
+  std::unique_ptr<char[]> buf(new char[kBufferSize]);
   int len;
   while ((len = base_file.ReadAtCurrentPos(buf.get(), kBufferSize)) > 0)
     contents.append(buf.get(), len);

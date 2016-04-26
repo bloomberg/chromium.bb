@@ -50,7 +50,7 @@ std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip) {
 
 }  // namespace
 
-FaviconService::FaviconService(scoped_ptr<FaviconClient> favicon_client,
+FaviconService::FaviconService(std::unique_ptr<FaviconClient> favicon_client,
                                history::HistoryService* history_service)
     : favicon_client_(std::move(favicon_client)),
       history_service_(history_service) {}

@@ -4,11 +4,11 @@
 
 #include "components/google/core/browser/google_url_tracker.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
@@ -39,7 +39,8 @@ class TestCallbackListener {
   void OnGoogleURLUpdated();
 
   bool notified_;
-  scoped_ptr<GoogleURLTracker::Subscription> google_url_updated_subscription_;
+  std::unique_ptr<GoogleURLTracker::Subscription>
+      google_url_updated_subscription_;
 };
 
 TestCallbackListener::TestCallbackListener() : notified_(false) {
@@ -135,10 +136,10 @@ class GoogleURLTrackerTest : public testing::Test {
 
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests().
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   net::TestURLFetcherFactory fetcher_factory_;
   GoogleURLTrackerClient* client_;
-  scoped_ptr<GoogleURLTracker> google_url_tracker_;
+  std::unique_ptr<GoogleURLTracker> google_url_tracker_;
   TestCallbackListener listener_;
 };
 
@@ -156,7 +157,7 @@ void GoogleURLTrackerTest::SetUp() {
   // Ownership is passed to google_url_tracker_, but a weak pointer is kept;
   // this is safe since GoogleURLTracker keeps the client for its lifetime.
   client_ = new TestGoogleURLTrackerClient(&prefs_);
-  scoped_ptr<GoogleURLTrackerClient> client(client_);
+  std::unique_ptr<GoogleURLTrackerClient> client(client_);
   google_url_tracker_.reset(new GoogleURLTracker(
       std::move(client), GoogleURLTracker::UNIT_TEST_MODE));
 }

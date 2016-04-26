@@ -4,6 +4,8 @@
 
 #include "components/memory_pressure/memory_pressure_monitor.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/tracked_objects.h"
@@ -215,7 +217,7 @@ class MemoryPressureMonitorTest : public testing::Test {
 #endif
 
   MockDispatch mock_dispatch_;
-  scoped_ptr<TestMemoryPressureMonitor> monitor_;
+  std::unique_ptr<TestMemoryPressureMonitor> monitor_;
 };
 
 TEST_F(MemoryPressureMonitorTest, NormalScheduling) {

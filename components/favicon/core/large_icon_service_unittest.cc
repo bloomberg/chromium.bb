@@ -5,11 +5,11 @@
 #include "components/favicon/core/large_icon_service.h"
 
 #include <deque>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_client.h"
@@ -141,12 +141,13 @@ class LargeIconServiceTest : public testing::Test {
  protected:
   base::MessageLoopForIO loop_;
 
-  scoped_ptr<MockFaviconService> mock_favicon_service_;
-  scoped_ptr<TestLargeIconService> large_icon_service_;
+  std::unique_ptr<MockFaviconService> mock_favicon_service_;
+  std::unique_ptr<TestLargeIconService> large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   favicon_base::FaviconRawBitmapResult expected_bitmap_;
-  scoped_ptr<favicon_base::FallbackIconStyle> expected_fallback_icon_style_;
+  std::unique_ptr<favicon_base::FallbackIconStyle>
+      expected_fallback_icon_style_;
 
   bool is_callback_invoked_;
 

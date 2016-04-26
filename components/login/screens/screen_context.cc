@@ -4,8 +4,9 @@
 
 #include "components/login/screens/screen_context.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace login {
 
@@ -123,8 +124,8 @@ String16List ScreenContext::GetString16List(
 }
 
 void ScreenContext::CopyFrom(ScreenContext& context) {
-  scoped_ptr<base::DictionaryValue> storage(context.storage_.DeepCopy());
-  scoped_ptr<base::DictionaryValue> changes(context.changes_.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> storage(context.storage_.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> changes(context.changes_.DeepCopy());
   storage_.Swap(storage.get());
   changes_.Swap(changes.get());
 }
@@ -166,7 +167,7 @@ void ScreenContext::ApplyChanges(const base::DictionaryValue& diff,
 bool ScreenContext::Set(const KeyType& key, base::Value* value) {
   DCHECK(CalledOnValidThread());
   DCHECK(value);
-  scoped_ptr<base::Value> new_value(value);
+  std::unique_ptr<base::Value> new_value(value);
 
   base::Value* current_value;
   bool in_storage = storage_.Get(key, &current_value);

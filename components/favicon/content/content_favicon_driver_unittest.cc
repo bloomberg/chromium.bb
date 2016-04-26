@@ -4,8 +4,9 @@
 
 #include "components/favicon/content/content_favicon_driver.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
@@ -39,7 +40,7 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
   }
 
  private:
-  scoped_ptr<FaviconService> favicon_service_;
+  std::unique_ptr<FaviconService> favicon_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentFaviconDriverTest);
 };

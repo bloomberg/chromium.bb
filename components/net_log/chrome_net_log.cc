@@ -49,7 +49,7 @@ ChromeNetLog::ChromeNetLog(
       LOG(ERROR) << "Could not open file " << log_file.value()
                  << " for net logging";
     } else {
-      scoped_ptr<base::Value> constants(
+      std::unique_ptr<base::Value> constants(
           GetConstants(command_line_string, channel_string));
       write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
 
@@ -77,7 +77,8 @@ ChromeNetLog::~ChromeNetLog() {
 base::Value* ChromeNetLog::GetConstants(
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string) {
-  scoped_ptr<base::DictionaryValue> constants_dict = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> constants_dict =
+      net::GetNetConstants();
   DCHECK(constants_dict);
 
   // Add a dictionary with the version of the client and its command line

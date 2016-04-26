@@ -6,11 +6,11 @@
 #define COMPONENTS_FEEDBACK_ANONYMIZER_TOOL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace re2 {
 class RE2;
@@ -68,7 +68,7 @@ class AnonymizerTool {
 
   // Cache to prevent the repeated compilation of the same regular expression
   // pattern. Key is the string representation of the RegEx.
-  std::map<std::string, scoped_ptr<re2::RE2>> regexp_cache_;
+  std::map<std::string, std::unique_ptr<re2::RE2>> regexp_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AnonymizerTool);
 };

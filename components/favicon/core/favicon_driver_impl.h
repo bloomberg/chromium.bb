@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_IMPL_H_
 #define COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/favicon/core/favicon_driver.h"
 
 class GURL;
@@ -88,8 +88,8 @@ class FaviconDriverImpl : public FaviconDriver {
 
   // FaviconHandlers used to download the different kind of favicons.
   // |touch_icon_handler_| may be null depending on the platform and variations.
-  scoped_ptr<FaviconHandler> favicon_handler_;
-  scoped_ptr<FaviconHandler> touch_icon_handler_;
+  std::unique_ptr<FaviconHandler> favicon_handler_;
+  std::unique_ptr<FaviconHandler> touch_icon_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconDriverImpl);
 };

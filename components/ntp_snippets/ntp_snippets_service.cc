@@ -140,7 +140,8 @@ bool AddSnippetsFromListValue(const base::ListValue& list,
     const base::DictionaryValue* content = nullptr;
     if (!dict->GetDictionary(kContentInfo, &content))
       return false;
-    scoped_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromDictionary(*content);
+    std::unique_ptr<NTPSnippet> snippet =
+        NTPSnippet::CreateFromDictionary(*content);
     if (!snippet)
       return false;
 
@@ -149,11 +150,11 @@ bool AddSnippetsFromListValue(const base::ListValue& list,
   return true;
 }
 
-scoped_ptr<base::ListValue> SnippetsToListValue(
+std::unique_ptr<base::ListValue> SnippetsToListValue(
     const NTPSnippetsService::NTPSnippetStorage& snippets) {
-  scoped_ptr<base::ListValue> list(new base::ListValue);
+  std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (const auto& snippet : snippets) {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     dict->Set(kContentInfo, snippet->ToDictionary());
     list->Append(std::move(dict));
   }
@@ -161,10 +162,10 @@ scoped_ptr<base::ListValue> SnippetsToListValue(
 }
 
 bool ContainsSnippet(const NTPSnippetsService::NTPSnippetStorage& haystack,
-                     const scoped_ptr<NTPSnippet>& needle) {
+                     const std::unique_ptr<NTPSnippet>& needle) {
   const GURL& url = needle->url();
   return std::find_if(haystack.begin(), haystack.end(),
-                      [&url](const scoped_ptr<NTPSnippet>& snippet) {
+                      [&url](const std::unique_ptr<NTPSnippet>& snippet) {
                         return snippet->url() == url;
                       }) != haystack.end();
 }
@@ -177,7 +178,7 @@ NTPSnippetsService::NTPSnippetsService(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
-    scoped_ptr<NTPSnippetsFetcher> snippets_fetcher,
+    std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
     const ParseJSONCallback& parse_json_callback)
     : enabled_(false),
       pref_service_(pref_service),
@@ -284,7 +285,7 @@ std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
 
 bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
   auto it = std::find_if(snippets_.begin(), snippets_.end(),
-                         [&url](const scoped_ptr<NTPSnippet>& snippet) {
+                         [&url](const std::unique_ptr<NTPSnippet>& snippet) {
                            return snippet->url() == url;
                          });
   if (it == snippets_.end())
@@ -326,7 +327,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
   // Remove existing snippets that aren't in the suggestions anymore.
   snippets_.erase(
       std::remove_if(snippets_.begin(), snippets_.end(),
-                     [&hosts](const scoped_ptr<NTPSnippet>& snippet) {
+                     [&hosts](const std::unique_ptr<NTPSnippet>& snippet) {
                        return !hosts.count(snippet->url().host());
                      }),
       snippets_.end());
@@ -359,7 +360,7 @@ void NTPSnippetsService::OnSnippetsDownloaded(
 }
 
 void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
-                                      scoped_ptr<base::Value> parsed) {
+                                      std::unique_ptr<base::Value> parsed) {
   if (!LoadFromValue(*parsed)) {
     LOG(WARNING) << "Received invalid snippets: " << snippets_json;
     last_fetch_status_ = kStatusMessageEmptyList;
@@ -399,14 +400,14 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
   // Remove new snippets that we already have, or that have been discarded.
   new_snippets.erase(
       std::remove_if(new_snippets.begin(), new_snippets.end(),
-                     [this](const scoped_ptr<NTPSnippet>& snippet) {
+                     [this](const std::unique_ptr<NTPSnippet>& snippet) {
                        return ContainsSnippet(discarded_snippets_, snippet) ||
                               ContainsSnippet(snippets_, snippet);
                      }),
       new_snippets.end());
 
   // Fill in default publish/expiry dates where required.
-  for (scoped_ptr<NTPSnippet>& snippet : new_snippets) {
+  for (std::unique_ptr<NTPSnippet>& snippet : new_snippets) {
     if (snippet->publish_date().is_null())
       snippet->set_publish_date(base::Time::Now());
     if (snippet->expiry_date().is_null()) {
@@ -479,7 +480,7 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
 
   snippets_.erase(
       std::remove_if(snippets_.begin(), snippets_.end(),
-                     [&expiry](const scoped_ptr<NTPSnippet>& snippet) {
+                     [&expiry](const std::unique_ptr<NTPSnippet>& snippet) {
                        return snippet->expiry_date() <= expiry;
                      }),
       snippets_.end());
@@ -487,10 +488,10 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
 
   discarded_snippets_.erase(
       std::remove_if(discarded_snippets_.begin(), discarded_snippets_.end(),
-                     [&expiry](const scoped_ptr<NTPSnippet>& snippet) {
+                     [&expiry](const std::unique_ptr<NTPSnippet>& snippet) {
                        return snippet->expiry_date() <= expiry;
                      }),
-                     discarded_snippets_.end());
+      discarded_snippets_.end());
   StoreDiscardedSnippetsToPrefs();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,

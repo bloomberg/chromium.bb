@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -35,7 +36,7 @@ class FaviconClient;
 class FaviconService : public KeyedService {
  public:
   // The FaviconClient must outlive the constructed FaviconService.
-  FaviconService(scoped_ptr<FaviconClient> favicon_client,
+  FaviconService(std::unique_ptr<FaviconClient> favicon_client,
                  history::HistoryService* history_service);
 
   ~FaviconService() override;
@@ -244,7 +245,7 @@ class FaviconService : public KeyedService {
           favicon_bitmap_results);
 
   base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
-  scoped_ptr<FaviconClient> favicon_client_;
+  std::unique_ptr<FaviconClient> favicon_client_;
   history::HistoryService* history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);

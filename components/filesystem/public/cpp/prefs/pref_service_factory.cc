@@ -23,8 +23,8 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
 
 }  // namespace
 
-scoped_ptr<PrefService> CreatePrefService(shell::Connector* connector,
-                                          PrefRegistry* pref_registry) {
+std::unique_ptr<PrefService> CreatePrefService(shell::Connector* connector,
+                                               PrefRegistry* pref_registry) {
   filesystem::FileSystemPtr filesystem;
   connector->ConnectToInterface("mojo:filesystem", &filesystem);
 
@@ -33,7 +33,7 @@ scoped_ptr<PrefService> CreatePrefService(shell::Connector* connector,
                                   nullptr /* TODO(erg): pref filter */);
 
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  scoped_ptr<PrefService> pref_service(new PrefService(
+  std::unique_ptr<PrefService> pref_service(new PrefService(
       pref_notifier,
       new PrefValueStore(nullptr, nullptr, nullptr, nullptr, user_prefs.get(),
                          nullptr, pref_registry->defaults().get(),

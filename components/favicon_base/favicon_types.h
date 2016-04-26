@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -95,7 +96,7 @@ struct LargeIconResult {
 
   // The fallback icon style if a sufficiently large icon isn't available. This
   // uses the dominant color of a smaller icon as the background if available.
-  scoped_ptr<FallbackIconStyle> fallback_icon_style;
+  std::unique_ptr<FallbackIconStyle> fallback_icon_style;
 };
 
 }  // namespace favicon_base

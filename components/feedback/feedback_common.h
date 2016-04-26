@@ -7,13 +7,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 
@@ -35,11 +36,11 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
 
   struct AttachedFile {
     explicit AttachedFile(const std::string& filename,
-                          scoped_ptr<std::string> data);
+                          std::unique_ptr<std::string> data);
     ~AttachedFile();
 
     std::string name;
-    scoped_ptr<std::string> data;
+    std::unique_ptr<std::string> data;
   };
 
   // Determine if the given feedback value is small enough to not need to
@@ -50,11 +51,11 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
 
   void CompressFile(const base::FilePath& filename,
                     const std::string& zipname,
-                    scoped_ptr<std::string> data);
-  void AddFile(const std::string& filename, scoped_ptr<std::string> data);
+                    std::unique_ptr<std::string> data);
+  void AddFile(const std::string& filename, std::unique_ptr<std::string> data);
 
   void AddLog(const std::string& name, const std::string& value);
-  void AddLogs(scoped_ptr<SystemLogsMap> logs);
+  void AddLogs(std::unique_ptr<SystemLogsMap> logs);
   void CompressLogs();
 
   void AddFilesAndLogsToReport(
@@ -89,7 +90,9 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   void set_user_email(const std::string& user_email) {
     user_email_ = user_email;
   }
-  void set_image(scoped_ptr<std::string> image) { image_ = std::move(image); }
+  void set_image(std::unique_ptr<std::string> image) {
+    image_ = std::move(image);
+  }
   void set_product_id(int32_t product_id) { product_id_ = product_id; }
   void set_user_agent(const std::string& user_agent) {
     user_agent_ = user_agent;
@@ -111,14 +114,14 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   std::string user_agent_;
   std::string locale_;
 
-  scoped_ptr<std::string> image_;
+  std::unique_ptr<std::string> image_;
 
   // It is possible that multiple attachment add calls are running in
   // parallel, so synchronize access.
   base::Lock attachments_lock_;
   ScopedVector<AttachedFile> attachments_;
 
-  scoped_ptr<SystemLogsMap> logs_;
+  std::unique_ptr<SystemLogsMap> logs_;
 };
 
 #endif  // COMPONENTS_FEEDBACK_FEEDBACK_COMMON_H_

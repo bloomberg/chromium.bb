@@ -29,9 +29,9 @@
 #define COMPONENTS_MEMORY_PRESSURE_MEMORY_PRESSURE_MONITOR_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -176,7 +176,7 @@ class MemoryPressureMonitor {
   // notifications to OnMemoryPressureChanged, and setting the initial pressure
   // value. The OS specific implementation is responsible for allocating this
   // object.
-  scoped_ptr<MemoryPressureMonitorImpl> monitor_impl_;
+  std::unique_ptr<MemoryPressureMonitorImpl> monitor_impl_;
 #endif
 
   // Object state.

@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_LEVELDB_LEVELDB_APP_H_
 #define COMPONENTS_LEVELDB_LEVELDB_APP_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
@@ -32,7 +33,7 @@ class LevelDBApp : public shell::ShellClient,
               leveldb::LevelDBServiceRequest request) override;
 
   mojo::TracingImpl tracing_;
-  scoped_ptr<LevelDBService> service_;
+  std::unique_ptr<LevelDBService> service_;
   mojo::BindingSet<LevelDBService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBApp);

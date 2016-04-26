@@ -4,12 +4,13 @@
 
 #include "components/favicon/core/large_icon_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/favicon/core/favicon_service.h"
@@ -68,7 +69,7 @@ class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
   scoped_refptr<base::TaskRunner> background_task_runner_;
   base::CancelableTaskTracker* tracker_;
   favicon_base::FaviconRawBitmapResult bitmap_result_;
-  scoped_ptr<favicon_base::LargeIconResult> result_;
+  std::unique_ptr<favicon_base::LargeIconResult> result_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconWorker);
 };
@@ -105,7 +106,7 @@ void LargeIconWorker::ProcessIconOnBackgroundThread() {
         new favicon_base::LargeIconResult(resized_bitmap_result));
   } else {
     // Failed to resize |bitmap_result_|, so compute fallback icon style.
-    scoped_ptr<favicon_base::FallbackIconStyle> fallback_icon_style(
+    std::unique_ptr<favicon_base::FallbackIconStyle> fallback_icon_style(
         new favicon_base::FallbackIconStyle());
     if (bitmap_result_.is_valid()) {
       favicon_base::SetDominantColorAsBackground(

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -15,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -63,7 +63,7 @@ class FilesystemJsonPrefStore
 
   FilesystemJsonPrefStore(const std::string& pref_filename,
                           filesystem::FileSystemPtr filesystem,
-                          scoped_ptr<PrefFilter> pref_filter);
+                          std::unique_ptr<PrefFilter> pref_filter);
 
   // PrefStore overrides:
   bool GetValue(const std::string& key,
@@ -76,10 +76,10 @@ class FilesystemJsonPrefStore
   // PersistentPrefStore overrides:
   bool GetMutableValue(const std::string& key, base::Value** result) override;
   void SetValue(const std::string& key,
-                scoped_ptr<base::Value> value,
+                std::unique_ptr<base::Value> value,
                 uint32_t flags) override;
   void SetValueSilently(const std::string& key,
-                        scoped_ptr<base::Value> value,
+                        std::unique_ptr<base::Value> value,
                         uint32_t flags) override;
   void RemoveValue(const std::string& key, uint32_t flags) override;
   bool ReadOnly() const override;
@@ -113,14 +113,14 @@ class FilesystemJsonPrefStore
   // FinalizeFileRead() to that |pref_filter_| which is then responsible for
   // invoking it when done. If there is no |pref_filter_|, FinalizeFileRead()
   // is invoked directly.
-  void OnFileRead(scoped_ptr<ReadResult> read_result);
+  void OnFileRead(std::unique_ptr<ReadResult> read_result);
 
   // This method is called after the JSON file has been read and the result has
   // potentially been intercepted and modified by |pref_filter_|.
   // |schedule_write| indicates whether a write should be immediately scheduled
   // (typically because the |pref_filter_| has already altered the |prefs|) --
   // this will be ignored if this store is read-only.
-  void FinalizeFileRead(scoped_ptr<base::DictionaryValue> prefs,
+  void FinalizeFileRead(std::unique_ptr<base::DictionaryValue> prefs,
                         bool schedule_write);
 
   // Schedule a write with the file writer as long as |flags| doesn't contain
@@ -157,14 +157,14 @@ class FilesystemJsonPrefStore
   // |filesystem. See OpenFilesystem().
   DirectoryPtr directory_;
 
-  scoped_ptr<base::DictionaryValue> prefs_;
+  std::unique_ptr<base::DictionaryValue> prefs_;
 
   bool read_only_;
 
-  scoped_ptr<PrefFilter> pref_filter_;
+  std::unique_ptr<PrefFilter> pref_filter_;
   base::ObserverList<PrefStore::Observer, true> observers_;
 
-  scoped_ptr<ReadErrorDelegate> error_delegate_;
+  std::unique_ptr<ReadErrorDelegate> error_delegate_;
 
   bool initialized_;
   bool filtering_in_progress_;

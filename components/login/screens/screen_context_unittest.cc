@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/login/screens/screen_context.h"
+
 #include <algorithm>
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "components/login/screens/screen_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace login {
@@ -24,7 +25,7 @@ class ScreenContextTest : public testing::Test {
   ScreenContext& context() { return *context_.get(); }
 
  private:
-  scoped_ptr<ScreenContext> context_;
+  std::unique_ptr<ScreenContext> context_;
 };
 
 TEST_F(ScreenContextTest, Simple) {

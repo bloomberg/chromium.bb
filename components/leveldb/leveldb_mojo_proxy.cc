@@ -127,7 +127,7 @@ LevelDBMojoProxy::LockFile(OpaqueDir* dir, const std::string& path) {
 
 filesystem::FileError LevelDBMojoProxy::UnlockFile(OpaqueLock* lock) {
   // Take ownership of the incoming lock so it gets destroyed whatever happens.
-  scoped_ptr<OpaqueLock> scoped_lock(lock);
+  std::unique_ptr<OpaqueLock> scoped_lock(lock);
   filesystem::FileError error = filesystem::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::UnlockFileImpl, this,
                          base::Passed(&scoped_lock), &error));
@@ -316,7 +316,7 @@ void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
   }
 }
 
-void LevelDBMojoProxy::UnlockFileImpl(scoped_ptr<OpaqueLock> lock,
+void LevelDBMojoProxy::UnlockFileImpl(std::unique_ptr<OpaqueLock> lock,
                                       filesystem::FileError* out_error) {
   lock->lock_file->Unlock(out_error);
 }

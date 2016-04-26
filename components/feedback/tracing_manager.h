@@ -6,11 +6,11 @@
 #define COMPONENTS_FEEDBACK_TRACING_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 
@@ -39,7 +39,7 @@ class TracingManager {
   virtual ~TracingManager();
 
   // Create a TracingManager.  Can only be called when none exists.
-  static scoped_ptr<TracingManager> Create();
+  static std::unique_ptr<TracingManager> Create();
 
   // Get the current TracingManager.  Returns NULL if one doesn't exist.
   static TracingManager* Get();
@@ -59,8 +59,9 @@ class TracingManager {
   TracingManager();
 
   void StartTracing();
-  void OnTraceDataCollected(scoped_ptr<const base::DictionaryValue> metadata,
-                            base::RefCountedString* data);
+  void OnTraceDataCollected(
+      std::unique_ptr<const base::DictionaryValue> metadata,
+      base::RefCountedString* data);
 
   // ID of the trace that is being collected.
   int current_trace_id_;

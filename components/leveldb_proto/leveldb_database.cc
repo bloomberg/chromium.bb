@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
@@ -115,7 +114,7 @@ bool LevelDB::Load(std::vector<std::string>* entries) {
     return false;
 
   leveldb::ReadOptions options;
-  scoped_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
+  std::unique_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
   for (db_iterator->SeekToFirst(); db_iterator->Valid(); db_iterator->Next()) {
     leveldb::Slice value_slice = db_iterator->value();
     std::string entry(value_slice.data(), value_slice.size());

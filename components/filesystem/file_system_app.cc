@@ -4,6 +4,8 @@
 
 #include "components/filesystem/file_system_app.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -70,7 +72,7 @@ base::FilePath FileSystemApp::GetUserDataDir() {
 #elif defined(OS_ANDROID)
     CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &path));
 #elif defined(OS_LINUX)
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     path = base::nix::GetXDGDirectory(env.get(),
                                       base::nix::kXdgConfigHomeEnvVar,
                                       base::nix::kDotConfigDir);

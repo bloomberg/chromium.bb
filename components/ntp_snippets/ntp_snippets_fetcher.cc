@@ -79,7 +79,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {}
 
-scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
+std::unique_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
 NTPSnippetsFetcher::AddCallback(const SnippetsAvailableCallback& callback) {
   return callback_list_.Add(callback);
 }

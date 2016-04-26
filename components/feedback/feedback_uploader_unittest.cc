@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -34,9 +35,9 @@ const char kReportFive[] = "five";
 const base::TimeDelta kRetryDelayForTest =
     base::TimeDelta::FromMilliseconds(100);
 
-scoped_ptr<KeyedService> CreateFeedbackUploaderService(
+std::unique_ptr<KeyedService> CreateFeedbackUploaderService(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new feedback::FeedbackUploaderChrome(context));
+  return base::WrapUnique(new feedback::FeedbackUploaderChrome(context));
 }
 
 }  // namespace
@@ -105,10 +106,10 @@ class FeedbackUploaderTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<content::TestBrowserContext> context_;
-  scoped_ptr<PrefService> prefs_;
+  std::unique_ptr<content::TestBrowserContext> context_;
+  std::unique_ptr<PrefService> prefs_;
 
   FeedbackUploader* uploader_;
 

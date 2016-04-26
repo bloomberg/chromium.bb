@@ -4,6 +4,8 @@
 
 #include "components/network_time/network_time_tracker.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -27,9 +29,8 @@ class NetworkTimeTrackerTest : public testing::Test {
     tick_clock_->Advance(base::TimeDelta::FromDays(222));
 
     tracker_.reset(new NetworkTimeTracker(
-        scoped_ptr<base::Clock>(clock_),
-        scoped_ptr<base::TickClock>(tick_clock_),
-        &pref_service_));
+        std::unique_ptr<base::Clock>(clock_),
+        std::unique_ptr<base::TickClock>(tick_clock_), &pref_service_));
 
     // Can not be smaller than 15, it's the NowFromSystemTime() resolution.
     resolution_ = base::TimeDelta::FromMilliseconds(17);
@@ -47,9 +48,8 @@ class NetworkTimeTrackerTest : public testing::Test {
     clock_ = new_clock;
     tick_clock_= new_tick_clock;
     tracker_.reset(new NetworkTimeTracker(
-        scoped_ptr<base::Clock>(clock_),
-        scoped_ptr<base::TickClock>(tick_clock_),
-        &pref_service_));
+        std::unique_ptr<base::Clock>(clock_),
+        std::unique_ptr<base::TickClock>(tick_clock_), &pref_service_));
   }
 
   // Updates the notifier's time with the specified parameters.
@@ -75,7 +75,7 @@ class NetworkTimeTrackerTest : public testing::Test {
   base::SimpleTestClock* clock_;
   base::SimpleTestTickClock* tick_clock_;
   TestingPrefServiceSimple pref_service_;
-  scoped_ptr<NetworkTimeTracker> tracker_;
+  std::unique_ptr<NetworkTimeTracker> tracker_;
 };
 
 TEST_F(NetworkTimeTrackerTest, Uninitialized) {

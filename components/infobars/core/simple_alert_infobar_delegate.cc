@@ -4,6 +4,8 @@
 
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 
+#include <memory>
+
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -17,7 +19,7 @@ void SimpleAlertInfoBarDelegate::Create(
     const base::string16& message,
     bool auto_expire) {
   infobar_manager->AddInfoBar(infobar_manager->CreateConfirmInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new SimpleAlertInfoBarDelegate(
+      std::unique_ptr<ConfirmInfoBarDelegate>(new SimpleAlertInfoBarDelegate(
           infobar_identifier, icon_id, vector_icon_id, message, auto_expire))));
 }
 

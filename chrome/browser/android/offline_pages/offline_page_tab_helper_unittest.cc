@@ -98,7 +98,7 @@ void OfflinePageTabHelperTest::SetUp() {
   // Enables offline pages feature.
   // TODO(jianli): Remove this once the feature is completely enabled.
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       offline_pages::kOfflineBookmarksFeature.name, "");
   base::FeatureList::SetInstance(std::move(feature_list));

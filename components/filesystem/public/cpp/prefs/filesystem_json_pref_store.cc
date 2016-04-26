@@ -33,7 +33,7 @@ struct FilesystemJsonPrefStore::ReadResult {
   ReadResult();
   ~ReadResult();
 
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   PrefReadError error;
 
  private:
@@ -58,7 +58,7 @@ PersistentPrefStore::PrefReadError HandleReadErrors(const base::Value* value) {
 FilesystemJsonPrefStore::FilesystemJsonPrefStore(
     const std::string& pref_filename,
     filesystem::FileSystemPtr filesystem,
-    scoped_ptr<PrefFilter> pref_filter)
+    std::unique_ptr<PrefFilter> pref_filter)
     : path_(pref_filename),
       binding_(this),
       filesystem_(std::move(filesystem)),
@@ -117,7 +117,7 @@ bool FilesystemJsonPrefStore::GetMutableValue(const std::string& key,
 }
 
 void FilesystemJsonPrefStore::SetValue(const std::string& key,
-                                       scoped_ptr<base::Value> value,
+                                       std::unique_ptr<base::Value> value,
                                        uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
@@ -130,9 +130,10 @@ void FilesystemJsonPrefStore::SetValue(const std::string& key,
   }
 }
 
-void FilesystemJsonPrefStore::SetValueSilently(const std::string& key,
-                                               scoped_ptr<base::Value> value,
-                                               uint32_t flags) {
+void FilesystemJsonPrefStore::SetValueSilently(
+    const std::string& key,
+    std::unique_ptr<base::Value> value,
+    uint32_t flags) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
@@ -235,12 +236,14 @@ void FilesystemJsonPrefStore::ReportValueChanged(const std::string& key,
 
 void FilesystemJsonPrefStore::OnFileSystemShutdown() {}
 
-void FilesystemJsonPrefStore::OnFileRead(scoped_ptr<ReadResult> read_result) {
+void FilesystemJsonPrefStore::OnFileRead(
+    std::unique_ptr<ReadResult> read_result) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(read_result);
 
-  scoped_ptr<base::DictionaryValue> unfiltered_prefs(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> unfiltered_prefs(
+      new base::DictionaryValue);
 
   read_error_ = read_result->error;
 
@@ -289,7 +292,7 @@ FilesystemJsonPrefStore::~FilesystemJsonPrefStore() {
 }
 
 void FilesystemJsonPrefStore::FinalizeFileRead(
-    scoped_ptr<base::DictionaryValue> prefs,
+    std::unique_ptr<base::DictionaryValue> prefs,
     bool schedule_write) {
   DCHECK(CalledOnValidThread());
 
@@ -391,7 +394,7 @@ void FilesystemJsonPrefStore::OnPreferencesReadStart() {
 void FilesystemJsonPrefStore::OnPreferencesFileRead(
     FileError err,
     mojo::Array<uint8_t> contents) {
-  scoped_ptr<FilesystemJsonPrefStore::ReadResult> read_result(
+  std::unique_ptr<FilesystemJsonPrefStore::ReadResult> read_result(
       new FilesystemJsonPrefStore::ReadResult);
   // TODO(erg): Needs even better error handling.
   switch (err) {

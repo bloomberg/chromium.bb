@@ -79,7 +79,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
   // Create new object.
   // Check to see if we have a per-context testing factory that we should use
   // instead of default behavior.
-  scoped_ptr<KeyedService> service;
+  std::unique_ptr<KeyedService> service;
   const auto& jt = testing_factories_.find(context);
   if (jt != testing_factories_.end()) {
     if (jt->second) {
@@ -96,7 +96,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
 }
 
 void KeyedServiceFactory::Associate(base::SupportsUserData* context,
-                                    scoped_ptr<KeyedService> service) {
+                                    std::unique_ptr<KeyedService> service) {
   DCHECK(!ContainsKey(mapping_, context));
   mapping_.insert(std::make_pair(context, service.release()));
 }

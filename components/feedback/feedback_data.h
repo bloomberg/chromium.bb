@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_FEEDBACK_FEEDBACK_DATA_H_
 #define COMPONENTS_FEEDBACK_FEEDBACK_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/feedback/feedback_common.h"
 #include "url/gurl.h"
 
@@ -32,20 +32,21 @@ class FeedbackData : public FeedbackCommon {
 
   // Sets the system information for this instance and kicks off its
   // compression.
-  void SetAndCompressSystemInfo(scoped_ptr<SystemLogsMap> sys_info);
+  void SetAndCompressSystemInfo(std::unique_ptr<SystemLogsMap> sys_info);
 
   // Sets the histograms for this instance and kicks off its
   // compression.
-  void SetAndCompressHistograms(scoped_ptr<std::string> histograms);
+  void SetAndCompressHistograms(std::unique_ptr<std::string> histograms);
 
   // Sets the attached file data and kicks off its compression.
-  void AttachAndCompressFileData(scoped_ptr<std::string> attached_filedata);
+  void AttachAndCompressFileData(
+      std::unique_ptr<std::string> attached_filedata);
 
   // Called once we have compressed our system logs.
-  void OnCompressLogsComplete(scoped_ptr<std::string> compressed_logs);
+  void OnCompressLogsComplete(std::unique_ptr<std::string> compressed_logs);
 
   // Called once we have compressed our attached file.
-  void OnCompressFileComplete(scoped_ptr<std::string> compressed_file);
+  void OnCompressFileComplete(std::unique_ptr<std::string> compressed_file);
 
   // Returns true if we've completed all the tasks needed before we can send
   // feedback - at this time this is includes getting the feedback page data

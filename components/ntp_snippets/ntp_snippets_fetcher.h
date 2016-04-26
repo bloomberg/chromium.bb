@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -36,7 +36,7 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   ~NTPSnippetsFetcher() override;
 
   // Adds a callback that is called when a new set of snippets are downloaded.
-  scoped_ptr<SnippetsAvailableCallbackList::Subscription> AddCallback(
+  std::unique_ptr<SnippetsAvailableCallbackList::Subscription> AddCallback(
       const SnippetsAvailableCallback& callback) WARN_UNUSED_RESULT;
 
   // Fetches snippets from the server. |hosts| can be used to restrict the
@@ -55,7 +55,7 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // The fetcher for downloading the snippets.
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // The callbacks to notify when new snippets get fetched.
   SnippetsAvailableCallbackList callback_list_;
