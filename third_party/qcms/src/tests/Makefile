@@ -9,7 +9,7 @@ OBJS=$(QCMS:.c=.o)
 
 all: qcms_tests
 
-qcms_tests: qcms_test_*.c $(OBJS)
+qcms_tests: qcms_test_main.c qcms_test_munsell.c qcms_test_tetra_clut_rgba.c qcms_test_internal_srgb.c qcms_test_ntsc_gamut.c $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDE) $^ -o $@ $(LDFLAGS)
 
 clean:

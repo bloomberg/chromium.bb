@@ -59,9 +59,7 @@ if (!disable_qcms) {
       "src/tests/qcms_test_main.c",
       "src/tests/qcms_test_munsell.c",
       "src/tests/qcms_test_ntsc_gamut.c",
-      "src/tests/qcms_test_output_trc.c",
       "src/tests/qcms_test_tetra_clut_rgba.c",
-      "src/tests/qcms_test_util.c",
     ]
 
     deps = [
