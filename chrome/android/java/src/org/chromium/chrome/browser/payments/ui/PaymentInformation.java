@@ -20,7 +20,7 @@ public class PaymentInformation {
      *
      * @param totalPrice The total price.
      * @param defaultShippingAddress The default shipping address.
-     * @param defaultShippingOption The defaullt shipping option.
+     * @param defaultShippingOption The default shipping option.
      * @param defaultPaymentMethod The default payment method.
     */
     public PaymentInformation(LineItem totalPrice, PaymentOption defaultShippingAddress,
@@ -66,7 +66,7 @@ public class PaymentInformation {
      * @return The shipping options.
      */
     public SectionInformation getShippingOptions() {
-        return mShippingAddresses;
+        return mShippingOptions;
     }
 
     /**

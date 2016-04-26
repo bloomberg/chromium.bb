@@ -90,13 +90,29 @@ public class SectionInformation {
     }
 
     /**
-     * Sets the currently selected item.
+     * Sets the currently selected item by index.
      *
      * @param index The index of the currently selected item, or NO_SELECTION if a selection has not
      *              yet been made.
      */
     public void setSelectedItemIndex(int index) {
         mSelectedItem = index;
+    }
+
+    /**
+     * Sets the currently selected item.
+     *
+     * @param selectedItem The currently selected item, or null of a selection has not yet been
+     *                     made.
+     */
+    public void setSelectedItem(PaymentOption selectedItem) {
+        if (mItems == null) return;
+        for (int i = 0; i < mItems.size(); i++) {
+            if (mItems.get(i) == selectedItem) {
+                mSelectedItem = i;
+                return;
+            }
+        }
     }
 
     /**

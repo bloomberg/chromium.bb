@@ -220,6 +220,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_width="0dp"
+                android:enabled="false"
                 android:text="@string/payments_pay_button"
                 android:textColor="#ffffff"
                 android:background="#0000ff"

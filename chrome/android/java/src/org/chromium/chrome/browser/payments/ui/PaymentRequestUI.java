@@ -25,7 +25,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The PaymentRequest UI.
@@ -43,7 +43,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         /**
          * Asynchronously returns the full bill. The last line item is the total.
          */
-        void getLineItems(Callback<ArrayList<LineItem>> callback);
+        void getLineItems(Callback<List<LineItem>> callback);
 
         /**
          * Asynchronously returns the full list of available shipping addresses.
@@ -134,7 +134,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private View mSelectedSectionLabel;
     private ViewGroup mSelectedSection;
 
-    private ArrayList<LineItem> mLineItems;
+    private List<LineItem> mLineItems;
     private SectionInformation mPaymentMethodsSection;
     private SectionInformation mShippingAddressesSection;
     private SectionInformation mShippingOptionsSection;
@@ -250,6 +250,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
                 mPaymentMethodsSection = result.getPaymentMethods();
                 updateSection(mPaymentMethods, mPaymentMethodsSection, null);
+
+                updatePayButtonEnabled();
             }
         });
     }
@@ -313,7 +315,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *
      * @param lineItems The full bill. The last line item is the total.
      */
-    public void updateLineItems(ArrayList<LineItem> lineItems) {
+    public void updateLineItems(List<LineItem> lineItems) {
         mLineItems = lineItems;
         mOrderSummary.removeAllViews();
 
@@ -329,9 +331,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         if (mSelectedSection != mOrderSummary) return;
 
-        for (LineItem item : lineItems) {
-            if (item == total) return;
-            mOrderSummary.addView(buildLineItem(item));
+        for (int i = 0; i < lineItems.size() - 1; i++) {
+            mOrderSummary.addView(buildLineItem(lineItems.get(i)));
         }
     }
 
@@ -482,8 +483,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                             ? null : mShippingAddressesSection.getSelectedItem(),
                     mShippingOptionsSection == null
                             ? null : mShippingOptionsSection.getSelectedItem(),
-                    mPaymentMethodsSection == null
-                            ? null : mPaymentMethodsSection.getSelectedItem());
+                    mPaymentMethodsSection.getSelectedItem());
         } else if (v == mEditButton) {
             if (mSelectedSection == null) {
                 expand(mOrderSummaryLabel, mOrderSummary);
@@ -501,6 +501,22 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             } else if (tag.getSection() == mPaymentMethodsSection) {
                 mClient.onPaymentMethodChanged(tag.getSection().getSelectedItem());
             }
+        }
+
+        updatePayButtonEnabled();
+    }
+
+    private void updatePayButtonEnabled() {
+        if (mRequestShipping) {
+            mPayButton.setEnabled(mShippingAddressesSection != null
+                    && mShippingAddressesSection.getSelectedItem() != null
+                    && mShippingOptionsSection != null
+                    && mShippingOptionsSection.getSelectedItem() != null
+                    && mPaymentMethodsSection != null
+                    && mPaymentMethodsSection.getSelectedItem() != null);
+        } else {
+            mPayButton.setEnabled(mPaymentMethodsSection != null
+                    && mPaymentMethodsSection.getSelectedItem() != null);
         }
     }
 
@@ -562,9 +578,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
 
         if (mSelectedSection == mOrderSummary) {
-            mClient.getLineItems(new Callback<ArrayList<LineItem>>() {
+            mClient.getLineItems(new Callback<List<LineItem>>() {
                 @Override
-                public void onResult(ArrayList<LineItem> result) {
+                public void onResult(List<LineItem> result) {
                     updateLineItems(result);
                 }
             });

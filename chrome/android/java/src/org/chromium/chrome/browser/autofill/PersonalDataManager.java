@@ -533,7 +533,8 @@ public class PersonalDataManager {
         nativeClearUnmaskedCache(mPersonalDataManagerAndroid, guid);
     }
 
-    public void unmaskCard(WebContents webContents, String guid, FullCardRequestDelegate delegate) {
+    public void getFullCard(WebContents webContents, String guid,
+            FullCardRequestDelegate delegate) {
         nativeGetFullCardForPaymentRequest(
                 mPersonalDataManagerAndroid, webContents, guid, delegate);
     }
