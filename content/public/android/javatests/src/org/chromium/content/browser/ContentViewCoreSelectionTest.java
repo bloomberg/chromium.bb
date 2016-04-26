@@ -448,8 +448,11 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
                 });
     }
 
-    @SmallTest
-    @Feature({"TextSelection", "TextInput"})
+    /**
+     * @SmallTest
+     * @Feature({"TextSelection", "TextInput"})
+     */
+    @FlakyTest(message = "http://crbug.com/606942")
     public void testCursorPositionAfterHidingActionMode() throws Exception {
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         waitForSelectActionBarVisible(true);

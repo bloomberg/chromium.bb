@@ -15,6 +15,7 @@ import android.view.KeyEvent;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -116,9 +117,12 @@ public class ContextMenuTest extends DownloadTestBase {
                 "testImage", "/chrome/test/data/android/contextmenu/test_image.png");
     }
 
-    @MediumTest
-    @Feature({"Browser"})
-    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    /**
+     * @MediumTest
+     * @Feature({"Browser"})
+     * @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    */
+    @FlakyTest(message = "http://crbug.com/606939")
     public void testLongPressOnImageLink() throws InterruptedException, TimeoutException {
         checkOpenImageInNewTab(
                 "testImageLink", "/chrome/test/data/android/contextmenu/test_image.png");
