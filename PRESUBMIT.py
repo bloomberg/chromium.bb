@@ -317,6 +317,7 @@ _VALID_OS_MACROS = (
 
 _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/test_runner.pydeps',
+    'net/tools/testserver/testserver.pydeps',
 ]
 
 _GENERIC_PYDEPS_FILES = [

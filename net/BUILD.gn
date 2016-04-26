@@ -1594,6 +1594,7 @@ test("net_unittests") {
   }
 
   if (is_android) {
+    data_deps += [ "//net/tools/testserver:testserver_py" ]
     deps += [
       ":net_test_jni_headers",
       "//base:base_java_unittest_support",
