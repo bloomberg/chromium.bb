@@ -32,8 +32,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
@@ -74,9 +72,9 @@ public:
     // the worker context thread)
     WaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
 
-    // Called in shutdown sequence. Internally calls terminate() (or
-    // terminateInternal) and wait (by *blocking* the calling thread) until the
-    // worker(s) is/are shut down.
+    // Called in shutdown sequence on the main thread. Internally calls
+    // terminate() (or terminateInternal) and wait (by *blocking* the calling
+    // thread) until the worker(s) is/are shut down.
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
@@ -92,12 +90,14 @@ public:
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
     void appendDebuggerTask(PassOwnPtr<CrossThreadClosure>);
 
-    // Runs only debugger tasks while paused in debugger, called on worker thread.
+    // Runs only debugger tasks while paused in debugger, called on the worker
+    // thread.
     void startRunningDebuggerTasksOnPause();
     void stopRunningDebuggerTasksOnPause();
     bool isRunningDebuggerTasksOnPause() const { return m_pausedInDebugger; }
 
-    // Can be called only on the worker thread, WorkerGlobalScope is not thread safe.
+    // Can be called only on the worker thread, WorkerGlobalScope is not thread
+    // safe.
     WorkerGlobalScope* workerGlobalScope();
 
     // Returns true once one of the terminate* methods is called.
@@ -112,8 +112,10 @@ protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     // Factory method for creating a new worker context for the thread.
+    // Called on the worker thread.
     virtual WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
 
+    // Called on the worker thread.
     virtual void postInitialize() { }
 
 private:

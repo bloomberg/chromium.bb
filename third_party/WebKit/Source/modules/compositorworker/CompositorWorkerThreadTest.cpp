@@ -14,6 +14,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"

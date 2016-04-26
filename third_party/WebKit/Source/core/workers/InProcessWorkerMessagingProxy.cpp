@@ -45,6 +45,7 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "wtf/WTF.h"
 
 namespace blink {
 
@@ -77,29 +78,28 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_workerClients(workerClients)
 {
+    DCHECK(isParentContextThread());
     DCHECK(m_workerObject);
-    DCHECK((m_executionContext->isDocument() && isMainThread())
-        || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
 }
 
 InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy()
 {
+    DCHECK(isParentContextThread());
     DCHECK(!m_workerObject);
-    DCHECK((m_executionContext->isDocument() && isMainThread())
-        || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
     if (m_loaderProxy)
         m_loaderProxy->detachProvider(this);
 }
 
 void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode)
 {
-    // FIXME: This need to be revisited when we support nested worker one day
-    DCHECK(m_executionContext->isDocument());
+    DCHECK(isParentContextThread());
     if (m_askedToTerminate) {
-        // Worker.terminate() could be called from JS before the thread was created.
+        // Worker.terminate() could be called from JS before the thread was
+        // created.
         return;
     }
-    Document* document = toDocument(m_executionContext.get());
+
+    Document* document = toDocument(getExecutionContext());
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
     ContentSecurityPolicy* csp = m_workerObject->contentSecurityPolicy() ? m_workerObject->contentSecurityPolicy() : document->contentSecurityPolicy();
@@ -118,15 +118,17 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL
 
 void InProcessWorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
+    DCHECK(isParentContextThread());
     if (!m_workerObject || m_askedToTerminate)
         return;
 
-    MessagePortArray* ports = MessagePort::entanglePorts(*m_executionContext.get(), std::move(channels));
+    MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), std::move(channels));
     m_workerObject->dispatchEvent(MessageEvent::create(ports, message));
 }
 
 void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
+    DCHECK(isParentContextThread());
     if (m_askedToTerminate)
         return;
 
@@ -151,18 +153,21 @@ bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<Execu
 
 void InProcessWorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
 {
-    // FIXME: In case of nested workers, this should go directly to the root Document context.
-    DCHECK(m_executionContext->isDocument());
-    m_executionContext->postTask(BLINK_FROM_HERE, std::move(task));
+    DCHECK(getExecutionContext()->isDocument());
+    getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
 void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
 {
+    DCHECK(isParentContextThread());
     if (!m_workerObject)
         return;
 
-    // We don't bother checking the askedToTerminate() flag here, because exceptions should *always* be reported even if the thread is terminated.
-    // This is intentionally different than the behavior in MessageWorkerTask, because terminated workers no longer deliver messages (section 4.6 of the WebWorker spec), but they do report exceptions.
+    // We don't bother checking the askedToTerminate() flag here, because
+    // exceptions should *always* be reported even if the thread is terminated.
+    // This is intentionally different than the behavior in MessageWorkerTask,
+    // because terminated workers no longer deliver messages (section 4.6 of the
+    // WebWorker spec), but they do report exceptions.
 
     ErrorEvent* event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, nullptr);
     DispatchEventResult dispatchResult = m_workerObject->dispatchEvent(event);
@@ -171,11 +176,11 @@ void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, 
 
 void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
 {
+    DCHECK(isParentContextThread());
     if (m_askedToTerminate)
         return;
-    // FIXME: In case of nested workers, this should go directly to the root Document context.
-    DCHECK(m_executionContext->isDocument());
-    Document* document = toDocument(m_executionContext.get());
+
+    Document* document = toDocument(getExecutionContext());
     LocalFrame* frame = document->frame();
     if (!frame)
         return;
@@ -187,12 +192,15 @@ void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, M
 
 void InProcessWorkerMessagingProxy::workerThreadCreated()
 {
+    DCHECK(isParentContextThread());
     DCHECK(!m_askedToTerminate);
     DCHECK(m_workerThread);
 
     DCHECK(!m_unconfirmedMessageCount);
     m_unconfirmedMessageCount = m_queuedEarlyTasks.size();
-    m_workerThreadHadPendingActivity = true; // Worker initialization means a pending activity.
+
+    // Worker initialization means a pending activity.
+    m_workerThreadHadPendingActivity = true;
 
     for (auto& earlyTasks : m_queuedEarlyTasks)
         m_workerThread->postTask(BLINK_FROM_HERE, earlyTasks.release());
@@ -201,16 +209,19 @@ void InProcessWorkerMessagingProxy::workerThreadCreated()
 
 void InProcessWorkerMessagingProxy::workerObjectDestroyed()
 {
+    DCHECK(isParentContextThread());
+
     // workerObjectDestroyed() is called in InProcessWorkerBase's destructor.
-    // Thus it should be guaranteed that a weak pointer m_workerObject has been cleared
-    // before this method gets called.
+    // Thus it should be guaranteed that a weak pointer m_workerObject has been
+    // cleared before this method gets called.
     DCHECK(!m_workerObject);
 
-    m_executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, this));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, this));
 }
 
 void InProcessWorkerMessagingProxy::workerObjectDestroyedInternal()
 {
+    DCHECK(isParentContextThread());
     m_mayBeDestroyed = true;
     if (m_workerThread)
         terminateWorkerGlobalScope();
@@ -220,8 +231,11 @@ void InProcessWorkerMessagingProxy::workerObjectDestroyedInternal()
 
 void InProcessWorkerMessagingProxy::workerThreadTerminated()
 {
-    // This method is always the last to be performed, so the proxy is not needed for communication
-    // in either side any more. However, the Worker object may still exist, and it assumes that the proxy exists, too.
+    DCHECK(isParentContextThread());
+
+    // This method is always the last to be performed, so the proxy is not
+    // needed for communication in either side any more. However, the Worker
+    // object may still exist, and it assumes that the proxy exists, too.
     m_askedToTerminate = true;
     m_workerThread = nullptr;
     terminateInternally();
@@ -231,6 +245,7 @@ void InProcessWorkerMessagingProxy::workerThreadTerminated()
 
 void InProcessWorkerMessagingProxy::terminateWorkerGlobalScope()
 {
+    DCHECK(isParentContextThread());
     if (m_askedToTerminate)
         return;
     m_askedToTerminate = true;
@@ -243,18 +258,21 @@ void InProcessWorkerMessagingProxy::terminateWorkerGlobalScope()
 
 void InProcessWorkerMessagingProxy::postMessageToPageInspector(const String& message)
 {
+    DCHECK(isParentContextThread());
     if (m_workerInspectorProxy)
         m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
 void InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled()
 {
+    DCHECK(isParentContextThread());
     if (m_workerInspectorProxy)
         m_workerInspectorProxy->workerConsoleAgentEnabled();
 }
 
 void InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
+    DCHECK(isParentContextThread());
     if (!m_askedToTerminate) {
         DCHECK(m_unconfirmedMessageCount);
         --m_unconfirmedMessageCount;
@@ -264,24 +282,33 @@ void InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendi
 
 void InProcessWorkerMessagingProxy::reportPendingActivity(bool hasPendingActivity)
 {
+    DCHECK(isParentContextThread());
     m_workerThreadHadPendingActivity = hasPendingActivity;
 }
 
 bool InProcessWorkerMessagingProxy::hasPendingActivity() const
 {
+    DCHECK(isParentContextThread());
     return (m_unconfirmedMessageCount || m_workerThreadHadPendingActivity) && !m_askedToTerminate;
 }
 
 void InProcessWorkerMessagingProxy::terminateInternally()
 {
+    DCHECK(isParentContextThread());
     m_workerInspectorProxy->workerThreadTerminated();
 
-    // FIXME: This need to be revisited when we support nested worker one day
-    DCHECK(m_executionContext->isDocument());
-    Document* document = toDocument(m_executionContext.get());
+    Document* document = toDocument(getExecutionContext());
     LocalFrame* frame = document->frame();
     if (frame)
         frame->console().adoptWorkerMessagesAfterTermination(m_workerInspectorProxy.get());
+}
+
+bool InProcessWorkerMessagingProxy::isParentContextThread() const
+{
+    // TODO(nhiroki): Nested worker is not supported yet, so the parent context
+    // thread should be equal to the main thread (http://crbug.com/31666).
+    DCHECK(getExecutionContext()->isDocument());
+    return isMainThread();
 }
 
 } // namespace blink

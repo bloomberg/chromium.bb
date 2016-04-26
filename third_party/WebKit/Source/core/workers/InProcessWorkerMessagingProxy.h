@@ -57,7 +57,7 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
     WTF_MAKE_NONCOPYABLE(InProcessWorkerMessagingProxy);
 public:
     // Implementations of InProcessWorkerGlobalScopeProxy.
-    // (Only use these methods in the worker object thread.)
+    // (Only use these methods in the parent context thread.)
     void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) override;
     void terminateWorkerGlobalScope() override;
     void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) override;
@@ -65,8 +65,7 @@ public:
     void workerObjectDestroyed() override;
 
     // These methods come from worker context thread via
-    // InProcessWorkerObjectProxy and are called on the worker object thread
-    // (e.g. main thread).
+    // InProcessWorkerObjectProxy and are called on the parent context thread.
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId);
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL);
@@ -74,7 +73,6 @@ public:
     void postWorkerConsoleAgentEnabled();
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
-    void workerGlobalScopeClosed();
     void workerThreadTerminated();
     void workerThreadCreated();
 
@@ -99,18 +97,27 @@ private:
     void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
     bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
+    // Returns true if this is called on the parent context thread.
+    bool isParentContextThread() const;
+
     Persistent<ExecutionContext> m_executionContext;
     OwnPtr<InProcessWorkerObjectProxy> m_workerObjectProxy;
     WeakPersistent<InProcessWorkerBase> m_workerObject;
     bool m_mayBeDestroyed;
     OwnPtr<WorkerThread> m_workerThread;
 
-    unsigned m_unconfirmedMessageCount; // Unconfirmed messages from worker object to worker thread.
-    bool m_workerThreadHadPendingActivity; // The latest confirmation from worker thread reported that it was still active.
+    // Unconfirmed messages from the parent context thread to the worker thread.
+    unsigned m_unconfirmedMessageCount;
+
+    // The latest confirmation from worker thread reported that it was still
+    // active.
+    bool m_workerThreadHadPendingActivity;
 
     bool m_askedToTerminate;
 
-    Vector<OwnPtr<ExecutionContextTask>> m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
+    // Tasks are queued here until there's a thread object created.
+    Vector<OwnPtr<ExecutionContextTask>> m_queuedEarlyTasks;
+
     Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
     Persistent<WorkerClients> m_workerClients;

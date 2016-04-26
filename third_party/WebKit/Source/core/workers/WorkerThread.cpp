@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
-#include "bindings/core/v8/V8Initializer.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerThreadDebugger.h"
@@ -40,6 +39,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
@@ -254,9 +254,13 @@ void WorkerThread::shutdown()
 
 void WorkerThread::performShutdownTask()
 {
-    // The below assignment will destroy the context, which will in turn notify messaging proxy.
-    // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
-    // If Oilpan is enabled, we detach of the context/global scope, with the final heap cleanup below sweeping it out.
+    DCHECK(isCurrentThread());
+
+    // The below assignment will destroy the context, which will in turn notify
+    // messaging proxy. We cannot let any objects survive past thread exit,
+    // because no other thread will run GC or otherwise destroy them. If Oilpan
+    // is enabled, we detach of the context/global scope, with the final heap
+    // cleanup below sweeping it out.
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
@@ -274,6 +278,8 @@ void WorkerThread::performShutdownTask()
 
 void WorkerThread::terminate()
 {
+    DCHECK(isMainThread());
+
     // Prevent the deadlock between GC and an attempt to terminate a thread.
     SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
     terminateInternal();
@@ -281,6 +287,7 @@ void WorkerThread::terminate()
 
 void WorkerThread::terminateAndWait()
 {
+    DCHECK(isMainThread());
     terminate();
     m_terminationEvent->wait();
 }
@@ -301,7 +308,8 @@ void WorkerThread::terminateInternal()
 {
     DCHECK(isMainThread());
 
-    // Protect against this method, initialize() or termination via the global scope racing each other.
+    // Protect against this method, initialize() or termination via the global
+    // scope racing each other.
     MutexLocker lock(m_threadStateMutex);
 
     // If terminateInternal has already been called, just return.
@@ -323,7 +331,9 @@ void WorkerThread::terminateInternal()
     if (!m_workerGlobalScope)
         return;
 
-    // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
+    // Ensure that tasks are being handled by thread event loop. If script
+    // execution weren't forbidden, a while(1) loop in JS could keep the thread
+    // alive forever.
     m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
 
     if (workerBackingThread().workerScriptCount() == 1) {
@@ -358,6 +368,8 @@ v8::Isolate* WorkerThread::isolate()
 
 void WorkerThread::terminateAndWaitForAllWorkers()
 {
+    DCHECK(isMainThread());
+
     // Keep this lock to prevent WorkerThread instances from being destroyed.
     MutexLocker lock(threadSetMutex());
     HashSet<WorkerThread*> threads = workerThreads();
@@ -380,6 +392,7 @@ void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<Executi
 
 void WorkerThread::runDebuggerTaskDontWait()
 {
+    DCHECK(isCurrentThread());
     OwnPtr<CrossThreadClosure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
     if (task)
         (*task)();

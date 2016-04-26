@@ -46,9 +46,9 @@ class ExecutionContextTask;
 class InProcessWorkerMessagingProxy;
 
 // A proxy to talk to the worker object. This object is created on the
-// worker object thread (i.e. usually the main thread), passed on to
+// parent context thread (i.e. usually the main thread), passed on to
 // the worker thread, and used just to proxy messages to the
-// InProcessWorkerMessagingProxy on the worker object thread.
+// InProcessWorkerMessagingProxy on the parent context thread.
 //
 // Used only by in-process workers (DedicatedWorker and CompositorWorker.)
 class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
