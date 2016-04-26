@@ -281,6 +281,7 @@
       'browser/ui/website_settings/website_settings_unittest.cc',
       'browser/ui/webui/browsing_history_handler_unittest.cc',
       'browser/ui/webui/fileicon_source_unittest.cc',
+      'browser/ui/webui/local_state/local_state_ui_unittest.cc',
       'browser/ui/webui/log_web_ui_url_unittest.cc',
       'browser/update_client/chrome_update_query_params_delegate_unittest.cc',
       'common/chrome_content_client_unittest.cc',

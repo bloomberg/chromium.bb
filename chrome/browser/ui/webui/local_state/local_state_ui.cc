@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
 
-#include <string>
-
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +20,15 @@
 #include "grit/browser_resources.h"
 
 namespace {
+
+// On ChromeOS, the local state file contains some information about other
+// user accounts which we don't want to expose to other users. Use a whitelist
+// to only show variations and UMA related fields which don't contain PII.
+#if defined(OS_CHROMEOS)
+#define ENABLE_FILTERING true
+#else
+#define ENABLE_FILTERING false
+#endif  // defined(OS_CHROMEOS)
 
 // UI Handler for chrome://local-state. Displays the Local State file as JSON.
 class LocalStateUIHandler : public content::WebUIMessageHandler {
@@ -51,10 +60,13 @@ void LocalStateUIHandler::RegisterMessages() {
 }
 
 void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
-#if !defined(OS_CHROMEOS)
   std::unique_ptr<base::DictionaryValue> local_state_values(
       g_browser_process->local_state()->GetPreferenceValuesOmitDefaults());
-
+  if (ENABLE_FILTERING) {
+    std::vector<std::string> whitelisted_prefixes = {
+        "variations", "user_experience_metrics", "uninstall_metrics"};
+    internal::FilterPrefs(whitelisted_prefixes, local_state_values.get());
+  }
   std::string json;
   JSONStringValueSerializer serializer(&json);
   serializer.set_pretty_print(true);
@@ -64,10 +76,38 @@ void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
 
   web_ui()->CallJavascriptFunction("localState.setLocalState",
                                    base::StringValue(json));
-#endif  // !defined(OS_CHROMEOS)
+}
+
+// Returns true if |pref_name| starts with one of the |valid_prefixes|.
+bool HasValidPrefix(const std::string& pref_name,
+                    const std::vector<std::string> valid_prefixes) {
+  for (const std::string& prefix : valid_prefixes) {
+    if (base::StartsWith(pref_name, prefix, base::CompareCase::SENSITIVE))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
+
+namespace internal {
+
+void FilterPrefs(const std::vector<std::string>& valid_prefixes,
+                 base::DictionaryValue* prefs) {
+  std::vector<std::string> prefs_to_remove;
+  for (base::DictionaryValue::Iterator it(*prefs); !it.IsAtEnd();
+       it.Advance()) {
+    if (!HasValidPrefix(it.key(), valid_prefixes))
+      prefs_to_remove.push_back(it.key());
+  }
+  for (const std::string& pref_to_remove : prefs_to_remove) {
+    std::unique_ptr<base::Value> removed_value;
+    bool successfully_removed = prefs->Remove(pref_to_remove, &removed_value);
+    DCHECK(successfully_removed);
+  }
+}
+
+}  // namespace internal
 
 LocalStateUI::LocalStateUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://local-state source.
