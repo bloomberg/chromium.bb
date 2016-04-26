@@ -83,18 +83,6 @@ void DOMURL::setSearch(const String& value)
         updateSearchParams(value);
 }
 
-String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)
-{
-    DCHECK(blob);
-    if (!executionContext)
-        return String();
-    if (blob->isClosed()) {
-        exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
-        return String();
-    }
-    return createPublicURL(executionContext, blob, blob->uuid());
-}
-
 String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrable* registrable, const String& uuid)
 {
     KURL publicURL = BlobURL::createPublicURL(executionContext->getSecurityOrigin());
@@ -104,16 +92,6 @@ String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrabl
     executionContext->publicURLManager().registerURL(executionContext->getSecurityOrigin(), publicURL, registrable, uuid);
 
     return publicURL.getString();
-}
-
-void DOMURL::revokeObjectURL(ExecutionContext* executionContext, const String& urlString)
-{
-    if (!executionContext)
-        return;
-
-    KURL url(KURL(), urlString);
-    executionContext->removeURLFromMemoryCache(url);
-    executionContext->publicURLManager().revoke(url);
 }
 
 void DOMURL::revokeObjectUUID(ExecutionContext* executionContext, const String& uuid)

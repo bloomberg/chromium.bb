@@ -56,9 +56,6 @@ public:
     }
     ~DOMURL();
 
-    static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
-    static void revokeObjectURL(ExecutionContext*, const String&);
-
     CORE_EXPORT static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());
     static void revokeObjectUUID(ExecutionContext*, const String&);
 

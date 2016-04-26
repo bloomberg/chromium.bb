@@ -37,13 +37,6 @@
     // static USVString domainToASCII(USVString domain);
     // static USVString domainToUnicode(USVString domain);
 
-    // TODO(philipj): This should be in a partial interface definition:
-    // File API
-    // https://w3c.github.io/FileAPI/#creating-revoking
-    // TODO(philipj): The return type should not be nullable.
-    [RaisesException, CallWith=ExecutionContext] static DOMString? createObjectURL(Blob blob);
-    [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
-
     stringifier attribute USVString href;
     readonly attribute USVString origin;
 
@@ -58,4 +51,3 @@
     readonly attribute URLSearchParams searchParams;
     attribute USVString hash;
 };
-
