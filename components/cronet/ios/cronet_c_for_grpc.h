@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CRONET_IOS_CRONET_C_FOR_GRPC_H_
 #define COMPONENTS_CRONET_IOS_CRONET_C_FOR_GRPC_H_
 
+#define CRONET_EXPORT __attribute__((visibility("default")))
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -127,6 +129,7 @@ typedef struct cronet_bidirectional_stream_callback {
  *
  * Both |calback| and |engine| must remain valid until stream is destroyed.
  */
+CRONET_EXPORT
 cronet_bidirectional_stream* cronet_bidirectional_stream_create(
     cronet_engine* engine,
     void* annotation,
@@ -138,6 +141,7 @@ cronet_bidirectional_stream* cronet_bidirectional_stream_create(
  * network thread, but is posted, so |stream| is valid until calling task is
  * complete.
  */
+CRONET_EXPORT
 int cronet_bidirectional_stream_destroy(cronet_bidirectional_stream* stream);
 
 /* Start the stream by sending request to |url| using |method| and |headers|. If
@@ -145,6 +149,7 @@ int cronet_bidirectional_stream_destroy(cronet_bidirectional_stream* stream);
  * is HTTP verb, with PUT having a special meaning to mark idempotent request,
  * which could use QUIC 0-RTT.
  */
+CRONET_EXPORT
 int cronet_bidirectional_stream_start(
     cronet_bidirectional_stream* stream,
     const char* url,
@@ -162,6 +167,7 @@ int cronet_bidirectional_stream_start(
  * there's an error. The callback's on_succeeded() method is also invoked if
  * there is no more data to read and |end_of_stream| was previously sent.
  */
+CRONET_EXPORT
 int cronet_bidirectional_stream_read(cronet_bidirectional_stream* stream,
                                      char* buffer,
                                      int capacity);
@@ -175,6 +181,7 @@ int cronet_bidirectional_stream_read(cronet_bidirectional_stream* stream,
  * The callback's on_succeeded() method is also invoked if |end_of_stream| is
  * set and all response data has been read.
  */
+CRONET_EXPORT
 int cronet_bidirectional_stream_write(cronet_bidirectional_stream* stream,
                                       const char* buffer,
                                       int buffer_length,
@@ -189,12 +196,14 @@ int cronet_bidirectional_stream_write(cronet_bidirectional_stream* stream,
  * be invoked. At most one callback method may be invoked after
  * cronet_bidirectional_stream_cancel() has completed.
  */
+CRONET_EXPORT
 int cronet_bidirectional_stream_cancel(cronet_bidirectional_stream* stream);
 
 /* Returns true if the |stream| was successfully started and is now done
  * (succeeded, canceled, or failed).
  * Returns false if the |stream| stream is not yet started or is in progress.
  */
+CRONET_EXPORT
 bool cronet_bidirectional_stream_is_done(cronet_bidirectional_stream* stream);
 
 #ifdef __cplusplus

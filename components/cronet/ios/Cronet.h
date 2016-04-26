@@ -7,6 +7,7 @@
 #include "cronet_c_for_grpc.h"
 
 // Interface for installing Cronet.
+CRONET_EXPORT
 @interface Cronet : NSObject
 
 // Sets whether HTTP/2 should be supported by CronetEngine. This method only has

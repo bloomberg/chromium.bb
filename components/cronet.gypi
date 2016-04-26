@@ -773,6 +773,7 @@
             '-fdata-sections',
             '-ffunction-sections',
             '-fno-rtti',
+            '-fvisibility=hidden'
             '-fvisibility-inlines-hidden',
             '-Wno-sign-promo',
             '-Wno-missing-field-initializers',
