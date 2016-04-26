@@ -583,7 +583,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // #onPageLoadFinished() and #onCrash(). If we are not actively loading a tab (e.g.
         // in Android N multi-instance, which is created by re-parenting an existing tab),
         // ensure onDeferredStartup() gets called by calling postDeferredStartupIfNeeded() here.
-        if (!getActivityTab().isLoading()) {
+        if (getActivityTab() == null || !getActivityTab().isLoading()) {
             postDeferredStartupIfNeeded();
         }
     }
