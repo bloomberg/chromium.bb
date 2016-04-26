@@ -14,10 +14,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
@@ -75,7 +75,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 
   void SetDisplayInfo(const gfx::Rect& work_area,
                       const gfx::Rect& display_bounds) {
-    gfx::Display dummy_display;
+    display::Display dummy_display;
     dummy_display.set_bounds(display_bounds);
     dummy_display.set_work_area(work_area);
     alignment_delegate_->RecomputeAlignment(dummy_display);

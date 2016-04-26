@@ -16,7 +16,6 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
@@ -506,7 +505,7 @@ void MessagePopupCollection::DoUpdateIfPossible() {
 }
 
 void MessagePopupCollection::OnDisplayMetricsChanged(
-    const gfx::Display& display) {
+    const display::Display& display) {
   alignment_delegate_->RecomputeAlignment(display);
 }
 

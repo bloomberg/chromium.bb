@@ -32,7 +32,10 @@ class Widget;
 
 namespace gfx {
 class Display;
-class Screen;
+}
+
+namespace display {
+using Display = gfx::Display;
 }
 
 namespace message_center {
@@ -99,7 +102,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void ForgetToast(ToastContentsView* toast);
 
   // Called when the display bounds has been changed. Used in Windows only.
-  void OnDisplayMetricsChanged(const gfx::Display& display);
+  void OnDisplayMetricsChanged(const display::Display& display);
 
   // Used by ToastContentsView to locate itself.
   gfx::NativeView parent() const { return parent_; }

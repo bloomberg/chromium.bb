@@ -4,9 +4,9 @@
 
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
 
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_popup_collection.h"
 
@@ -14,22 +14,21 @@ namespace message_center {
 
 DesktopPopupAlignmentDelegate::DesktopPopupAlignmentDelegate()
     : alignment_(POPUP_ALIGNMENT_BOTTOM | POPUP_ALIGNMENT_RIGHT),
-      display_id_(gfx::Display::kInvalidDisplayID),
-      screen_(NULL) {
-}
+      display_id_(display::Display::kInvalidDisplayID),
+      screen_(NULL) {}
 
 DesktopPopupAlignmentDelegate::~DesktopPopupAlignmentDelegate() {
   if (screen_)
     screen_->RemoveObserver(this);
 }
 
-void DesktopPopupAlignmentDelegate::StartObserving(gfx::Screen* screen) {
+void DesktopPopupAlignmentDelegate::StartObserving(display::Screen* screen) {
   if (screen_ || !screen)
     return;
 
   screen_ = screen;
   screen_->AddObserver(this);
-  gfx::Display display = screen_->GetPrimaryDisplay();
+  display::Display display = screen_->GetPrimaryDisplay();
   display_id_ = display.id();
   RecomputeAlignment(display);
 }
@@ -60,7 +59,7 @@ bool DesktopPopupAlignmentDelegate::IsFromLeft() const {
 }
 
 void DesktopPopupAlignmentDelegate::RecomputeAlignment(
-    const gfx::Display& display) {
+    const display::Display& display) {
   if (work_area_ == display.work_area())
     return;
 
@@ -85,15 +84,13 @@ void DesktopPopupAlignmentDelegate::RecomputeAlignment(
 }
 
 void DesktopPopupAlignmentDelegate::OnDisplayAdded(
-    const gfx::Display& new_display) {
-}
+    const display::Display& new_display) {}
 
 void DesktopPopupAlignmentDelegate::OnDisplayRemoved(
-    const gfx::Display& old_display) {
-}
+    const display::Display& old_display) {}
 
 void DesktopPopupAlignmentDelegate::OnDisplayMetricsChanged(
-    const gfx::Display& display,
+    const display::Display& display,
     uint32_t metrics) {
   if (display.id() == display_id_) {
     RecomputeAlignment(display);

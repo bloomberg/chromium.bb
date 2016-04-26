@@ -12,10 +12,9 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/views/message_popup_collection.h"
@@ -29,7 +28,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
-using gfx::Screen;
+using display::Screen;
 
 namespace message_center {
 namespace {

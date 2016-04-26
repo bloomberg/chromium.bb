@@ -23,6 +23,7 @@ component("message_center") {
       "//components/url_formatter",
       "//skia",
       "//ui/accessibility",
+      "//ui/display",
       "//ui/events",
       "//ui/gfx",
       "//ui/gfx/geometry",
@@ -233,6 +234,7 @@ test("message_center_unittests") {
         # Compositor is needed by message_center_view_unittest.cc and for the
         # fonts used by bounded_label_unittest.cc.
         "//ui/compositor",
+        "//ui/display",
         "//ui/views",
         "//ui/views:test_support",
       ]

@@ -8,12 +8,16 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/popup_alignment_delegate.h"
 
 namespace gfx {
 class Screen;
+}
+
+namespace display {
+using Screen = gfx::Screen;
 }
 
 namespace message_center {
@@ -24,12 +28,12 @@ class MessagePopupCollectionTest;
 // The PopupAlignmentDelegate for non-ash Windows/Linux desktop.
 class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
     : public PopupAlignmentDelegate,
-      public gfx::DisplayObserver {
+      public display::DisplayObserver {
  public:
   DesktopPopupAlignmentDelegate();
   ~DesktopPopupAlignmentDelegate() override;
 
-  void StartObserving(gfx::Screen* screen);
+  void StartObserving(display::Screen* screen);
 
   // Overridden from PopupAlignmentDelegate:
   int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
@@ -37,7 +41,7 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
   int GetWorkAreaBottom() const override;
   bool IsTopDown() const override;
   bool IsFromLeft() const override;
-  void RecomputeAlignment(const gfx::Display& display) override;
+  void RecomputeAlignment(const display::Display& display) override;
 
  private:
   friend class test::MessagePopupCollectionTest;
@@ -49,15 +53,15 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
     POPUP_ALIGNMENT_RIGHT = 1 << 3,
   };
 
-  // Overridden from gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   int32_t alignment_;
   int64_t display_id_;
-  gfx::Screen* screen_;
+  display::Screen* screen_;
   gfx::Rect work_area_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopPopupAlignmentDelegate);
