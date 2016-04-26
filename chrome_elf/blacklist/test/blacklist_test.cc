@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string16.h"

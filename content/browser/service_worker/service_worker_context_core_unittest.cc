@@ -4,7 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -26,7 +27,7 @@ class ServiceWorkerContextCoreTest : public testing::Test {
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
   TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCoreTest);

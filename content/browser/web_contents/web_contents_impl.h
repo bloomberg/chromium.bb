@@ -1113,7 +1113,7 @@ private:
   scoped_refptr<SavePackage> save_package_;
 
   // Manages/coordinates find-in-page requests. Created lazily.
-  scoped_ptr<FindRequestManager> find_request_manager_;
+  std::unique_ptr<FindRequestManager> find_request_manager_;
 
   // Data for loading state ----------------------------------------------------
 

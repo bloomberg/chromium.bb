@@ -7,8 +7,9 @@
 
 #include <OpenGL/CGLTypes.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_context.h"
 
 namespace gfx {
@@ -41,7 +42,7 @@ class GLContextCGL : public GLContextReal {
 
   void* context_;
   GpuPreference gpu_preference_;
-  scoped_ptr<gl::YUVToRGBConverter> yuv_to_rgb_converter_;
+  std::unique_ptr<gl::YUVToRGBConverter> yuv_to_rgb_converter_;
 
   CGLPixelFormatObj discrete_pixelformat_;
 

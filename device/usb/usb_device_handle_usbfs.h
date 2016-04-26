@@ -7,10 +7,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/memory/scoped_ptr.h"
 #include "device/usb/usb_device_handle.h"
 
 struct usbdevfs_urb;
@@ -113,7 +113,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                    unsigned int timeout,
                                    const IsochronousTransferCallback& callback);
   void ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs);
-  void TransferComplete(scoped_ptr<Transfer> transfer);
+  void TransferComplete(std::unique_ptr<Transfer> transfer);
   void RefreshEndpointInfo();
   void ReportIsochronousError(
       const std::vector<uint32_t>& packet_lengths,
@@ -143,7 +143,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   // destruction.
   FileThreadHelper* helper_;
 
-  std::list<scoped_ptr<Transfer>> transfers_;
+  std::list<std::unique_ptr<Transfer>> transfers_;
 };
 
 }  // namespace device

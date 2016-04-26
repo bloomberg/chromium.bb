@@ -4,12 +4,13 @@
 
 #import "ios/web/net/crw_cert_verification_controller.h"
 
+#include <memory>
+
 #include "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_block.h"
 #import "base/memory/ref_counted.h"
-#import "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"

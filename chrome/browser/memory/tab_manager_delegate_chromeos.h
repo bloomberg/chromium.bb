@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
@@ -209,7 +209,7 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   base::OneShotTimer focus_process_score_adjust_timer_;
   // Holds the info of the newly focused tab or app. Its OOM score would be
   // adjusted when |focus_process_score_adjust_timer_| is expired.
-  scoped_ptr<FocusedProcess> focused_process_;
+  std::unique_ptr<FocusedProcess> focused_process_;
 
   // This lock is for |oom_score_map_|.
   base::Lock oom_score_lock_;

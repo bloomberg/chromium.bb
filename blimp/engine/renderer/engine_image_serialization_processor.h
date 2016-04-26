@@ -5,8 +5,9 @@
 #ifndef BLIMP_ENGINE_RENDERER_ENGINE_IMAGE_SERIALIZATION_PROCESSOR_H_
 #define BLIMP_ENGINE_RENDERER_ENGINE_IMAGE_SERIALIZATION_PROCESSOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "blimp/common/blimp_common_export.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"
 #include "cc/proto/image_serialization_processor.h"
@@ -35,7 +36,7 @@ class BLIMP_COMMON_EXPORT EngineImageSerializationProcessor
   SkPicture::InstallPixelRefProc GetPixelDeserializer() override;
 
  private:
-  scoped_ptr<SkPixelSerializer> pixel_serializer_;
+  std::unique_ptr<SkPixelSerializer> pixel_serializer_;
   mojom::BlobChannelPtr blob_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineImageSerializationProcessor);

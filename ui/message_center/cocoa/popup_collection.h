@@ -7,11 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
 #include <set>
 
 #include "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
-#import "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {

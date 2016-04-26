@@ -8,7 +8,6 @@
 #include <tuple>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
 #include "content/public/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/base/video_frame.h"
 
@@ -86,7 +87,7 @@ bool ArcGpuVideoDecodeAccelerator::Initialize(
   vda_config.output_mode =
       media::VideoDecodeAccelerator::Config::OutputMode::IMPORT;
 
-  scoped_ptr<content::GpuVideoDecodeAcceleratorFactory> vda_factory =
+  std::unique_ptr<content::GpuVideoDecodeAcceleratorFactory> vda_factory =
       content::GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
   vda_ = vda_factory->CreateVDA(this, vda_config);
   if (!vda_) {

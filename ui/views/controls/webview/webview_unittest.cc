@@ -467,8 +467,9 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
 // if WebView is already removed from Widget.
 TEST_F(WebViewUnitTest, DetachedWebViewDestructor) {
   // Init WebView with attached NativeView.
-  const scoped_ptr<content::WebContents> web_contents(CreateWebContents());
-  scoped_ptr<WebView> webview(new WebView(web_contents->GetBrowserContext()));
+  const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
+  std::unique_ptr<WebView> webview(
+      new WebView(web_contents->GetBrowserContext()));
   View* contents_view = top_level_widget()->GetContentsView();
   contents_view->AddChildView(webview.get());
   webview->SetWebContents(web_contents.get());

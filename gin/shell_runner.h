@@ -5,8 +5,9 @@
 #ifndef GIN_SHELL_RUNNER_H_
 #define GIN_SHELL_RUNNER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "gin/runner.h"
 
 namespace gin {
@@ -60,7 +61,7 @@ class GIN_EXPORT ShellRunner : public Runner {
 
   ShellRunnerDelegate* delegate_;
 
-  scoped_ptr<ContextHolder> context_holder_;
+  std::unique_ptr<ContextHolder> context_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellRunner);
 };

@@ -333,7 +333,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
 #if defined(OS_LINUX)
   // Watch for certificate changes and kill the host when changes occur
-  scoped_ptr<CertificateWatcher> cert_watcher_;
+  std::unique_ptr<CertificateWatcher> cert_watcher_;
 #endif
 
   // XMPP server/remoting bot configuration (initialized from the command line).

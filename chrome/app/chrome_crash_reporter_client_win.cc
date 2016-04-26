@@ -6,12 +6,13 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,7 +70,7 @@ void ChromeCrashReporterClient::GetProductNameAndVersion(
   DCHECK(special_build);
   DCHECK(channel_name);
 
-  scoped_ptr<FileVersionInfo> version_info(
+  std::unique_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(exe_path));
 
   if (version_info.get()) {
@@ -93,7 +94,7 @@ void ChromeCrashReporterClient::GetProductNameAndVersion(
 bool ChromeCrashReporterClient::ShouldShowRestartDialog(base::string16* title,
                                                         base::string16* message,
                                                         bool* is_rtl_locale) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (!env->HasVar(env_vars::kShowRestart) ||
       !env->HasVar(env_vars::kRestartInfo) ||
       env->HasVar(env_vars::kMetroConnected)) {
@@ -119,7 +120,7 @@ bool ChromeCrashReporterClient::ShouldShowRestartDialog(base::string16* title,
 }
 
 bool ChromeCrashReporterClient::AboutToRestart() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (!env->HasVar(env_vars::kRestartInfo))
     return false;
 
@@ -226,7 +227,7 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
   // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
   // location to write breakpad crash dumps can be set.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string alternate_crash_dump_location;
   if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
     base::FilePath crash_dumps_dir_path =
@@ -250,7 +251,7 @@ size_t ChromeCrashReporterClient::RegisterCrashKeys() {
 }
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   return env->HasVar(env_vars::kHeadless);
 }
 

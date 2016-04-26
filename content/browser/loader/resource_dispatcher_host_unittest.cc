@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -1138,11 +1140,14 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
                                          false, REQUEST_CONTEXT_TYPE_LOCATION);
       CommonNavigationParams common_params;
       common_params.url = url;
-      scoped_ptr<NavigationRequestInfo> request_info(new NavigationRequestInfo(
-          common_params, begin_params, url, url::Origin(url), true, false, -1,
-          scoped_refptr<ResourceRequestBody>()));
-      scoped_ptr<NavigationURLLoader> test_loader = NavigationURLLoader::Create(
-          browser_context_.get(), std::move(request_info), nullptr, &delegate);
+      std::unique_ptr<NavigationRequestInfo> request_info(
+          new NavigationRequestInfo(common_params, begin_params, url,
+                                    url::Origin(url), true, false, -1,
+                                    scoped_refptr<ResourceRequestBody>()));
+      std::unique_ptr<NavigationURLLoader> test_loader =
+          NavigationURLLoader::Create(browser_context_.get(),
+                                      std::move(request_info), nullptr,
+                                      &delegate);
 
       // The navigation should fail with the expected error code.
       delegate.WaitForRequestFailed();
@@ -2602,10 +2607,11 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
                                        false, REQUEST_CONTEXT_TYPE_LOCATION);
     CommonNavigationParams common_params;
     common_params.url = download_url;
-    scoped_ptr<NavigationRequestInfo> request_info(new NavigationRequestInfo(
-        common_params, begin_params, download_url, url::Origin(download_url),
-        true, false, -1, scoped_refptr<ResourceRequestBody>()));
-    scoped_ptr<NavigationURLLoader> loader = NavigationURLLoader::Create(
+    std::unique_ptr<NavigationRequestInfo> request_info(
+        new NavigationRequestInfo(common_params, begin_params, download_url,
+                                  url::Origin(download_url), true, false, -1,
+                                  scoped_refptr<ResourceRequestBody>()));
+    std::unique_ptr<NavigationURLLoader> loader = NavigationURLLoader::Create(
         browser_context_.get(), std::move(request_info), nullptr, &delegate);
 
     // Wait until a response has been received and proceed with the response.

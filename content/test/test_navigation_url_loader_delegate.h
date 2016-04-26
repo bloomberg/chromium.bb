@@ -5,9 +5,10 @@
 #ifndef CONTENT_TEST_TEST_NAVIGATION_URL_LOADER_DELEGATE_H_
 #define CONTENT_TEST_TEST_NAVIGATION_URL_LOADER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "net/url_request/redirect_info.h"
@@ -54,7 +55,7 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
       const net::RedirectInfo& redirect_info,
       const scoped_refptr<ResourceResponse>& response) override;
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                         scoped_ptr<StreamHandle> body) override;
+                         std::unique_ptr<StreamHandle> body) override;
   void OnRequestFailed(bool in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
@@ -62,14 +63,14 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   net::RedirectInfo redirect_info_;
   scoped_refptr<ResourceResponse> redirect_response_;
   scoped_refptr<ResourceResponse> response_;
-  scoped_ptr<StreamHandle> body_;
+  std::unique_ptr<StreamHandle> body_;
   int net_error_;
   int on_request_handled_counter_;
 
-  scoped_ptr<base::RunLoop> request_redirected_;
-  scoped_ptr<base::RunLoop> response_started_;
-  scoped_ptr<base::RunLoop> request_failed_;
-  scoped_ptr<base::RunLoop> request_started_;
+  std::unique_ptr<base::RunLoop> request_redirected_;
+  std::unique_ptr<base::RunLoop> response_started_;
+  std::unique_ptr<base::RunLoop> request_failed_;
+  std::unique_ptr<base::RunLoop> request_started_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationURLLoaderDelegate);
 };

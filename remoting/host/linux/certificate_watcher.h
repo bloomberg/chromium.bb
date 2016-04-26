@@ -5,10 +5,11 @@
 #ifndef REMOTING_HOST_LINUX_CERTIFICATE_WATCHER_H_
 #define REMOTING_HOST_LINUX_CERTIFICATE_WATCHER_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "remoting/host/host_status_monitor.h"
@@ -91,13 +92,13 @@ class CertificateWatcher : public remoting::HostStatusObserver {
   base::FilePath cert_watch_path_;
 
   // The file watcher to watch changes inside the certificate folder.
-  scoped_ptr<base::FilePathWatcher> file_watcher_;
+  std::unique_ptr<base::FilePathWatcher> file_watcher_;
 
   // The time to wait to restart when it is scheduled.
   base::TimeDelta delay_;
 
   // Timer to delay the restart action.
-  scoped_ptr<base::DelayTimer> restart_timer_;
+  std::unique_ptr<base::DelayTimer> restart_timer_;
 
   base::WeakPtrFactory<CertificateWatcher> weak_factory_;
 

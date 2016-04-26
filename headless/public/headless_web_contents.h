@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "headless/public/headless_export.h"
 #include "url/gurl.h"
 

@@ -55,7 +55,7 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
-    scoped_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body) {
   response_ = response;
   body_ = std::move(body);
   ASSERT_TRUE(response_started_);

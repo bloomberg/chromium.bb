@@ -7,10 +7,11 @@
 
 #include "ui/touch_selection/touch_handle.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 

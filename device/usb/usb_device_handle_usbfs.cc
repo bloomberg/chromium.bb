@@ -143,7 +143,7 @@ class UsbDeviceHandleUsbfs::FileThreadHelper
                    scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~FileThreadHelper() override;
 
-  static void Start(scoped_ptr<FileThreadHelper> self);
+  static void Start(std::unique_ptr<FileThreadHelper> self);
 
   // base::MessagePumpLibevent::Watcher overrides.
   void OnFileCanReadWithoutBlocking(int fd) override;
@@ -175,7 +175,7 @@ UsbDeviceHandleUsbfs::FileThreadHelper::~FileThreadHelper() {
 
 // static
 void UsbDeviceHandleUsbfs::FileThreadHelper::Start(
-    scoped_ptr<FileThreadHelper> self) {
+    std::unique_ptr<FileThreadHelper> self) {
   base::ThreadRestrictions::AssertIOAllowed();
   self->thread_checker_.DetachFromThread();
 
@@ -295,7 +295,7 @@ UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
 
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-  scoped_ptr<FileThreadHelper> helper(
+  std::unique_ptr<FileThreadHelper> helper(
       new FileThreadHelper(fd_.get(), this, task_runner_));
   helper_ = helper.get();
   blocking_task_runner_->PostTask(
@@ -415,7 +415,7 @@ void UsbDeviceHandleUsbfs::ControlTransfer(UsbEndpointDirection direction,
     return;
   }
 
-  scoped_ptr<Transfer> transfer(new (0) Transfer(buffer, callback));
+  std::unique_ptr<Transfer> transfer(new (0) Transfer(buffer, callback));
   transfer->control_transfer_buffer =
       BuildControlTransferBuffer(direction, request_type, recipient, request,
                                  value, index, buffer, length);
@@ -486,7 +486,7 @@ void UsbDeviceHandleUsbfs::GenericTransfer(UsbEndpointDirection direction,
     return;
   }
 
-  scoped_ptr<Transfer> transfer(new (0) Transfer(buffer, callback));
+  std::unique_ptr<Transfer> transfer(new (0) Transfer(buffer, callback));
   transfer->urb.endpoint = endpoint_address;
   transfer->urb.buffer_length = length;
   transfer->urb.type = ConvertTransferType(it->second.type);
@@ -658,8 +658,8 @@ void UsbDeviceHandleUsbfs::IsochronousTransferInternal(
     return;
   }
 
-  scoped_ptr<Transfer> transfer(new (packet_lengths.size())
-                                    Transfer(buffer, callback));
+  std::unique_ptr<Transfer> transfer(new (packet_lengths.size())
+                                         Transfer(buffer, callback));
   transfer->urb.type = USBDEVFS_URB_TYPE_ISO;
   transfer->urb.endpoint = endpoint_address;
   transfer->urb.buffer_length = total_length;
@@ -688,17 +688,18 @@ void UsbDeviceHandleUsbfs::ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs) {
     DCHECK_EQ(urb, &this_transfer->urb);
     auto it = std::find_if(
         transfers_.begin(), transfers_.end(),
-        [this_transfer](const scoped_ptr<Transfer>& transfer) -> bool {
+        [this_transfer](const std::unique_ptr<Transfer>& transfer) -> bool {
           return transfer.get() == this_transfer;
         });
     DCHECK(it != transfers_.end());
-    scoped_ptr<Transfer> transfer = std::move(*it);
+    std::unique_ptr<Transfer> transfer = std::move(*it);
     transfers_.erase(it);
     TransferComplete(std::move(transfer));
   }
 }
 
-void UsbDeviceHandleUsbfs::TransferComplete(scoped_ptr<Transfer> transfer) {
+void UsbDeviceHandleUsbfs::TransferComplete(
+    std::unique_ptr<Transfer> transfer) {
   if (transfer->cancelled)
     return;
 

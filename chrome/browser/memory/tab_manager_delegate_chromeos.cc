@@ -203,7 +203,7 @@ class TabManagerDelegate::FocusedProcess {
   }
 
  private:
-  scoped_ptr<Data> data_;
+  std::unique_ptr<Data> data_;
   // Protects rw access to data_;
   base::Lock lock_;
 };

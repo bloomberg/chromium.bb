@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/mus/public/cpp/tests/test_window.h"
@@ -469,7 +468,7 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
                          gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  scoped_ptr<base::Callback<void(EventResult)>> ack_callback(
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
       new base::Callback<void(EventResult)>(
           base::Bind(&::TestCallback::ResultCallback, test_callback)));
 

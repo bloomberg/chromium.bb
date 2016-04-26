@@ -19,8 +19,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#import "base/memory/scoped_ptr.h"
 
 @class MultiKeyEquivalentButton;
 class HungRendererWebContentsObserverBridge;

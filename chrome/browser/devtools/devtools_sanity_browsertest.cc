@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -11,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -221,7 +224,7 @@ class TestInterceptor : public net::URLRequestInterceptor {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         url.scheme(), url.host(),
-        make_scoped_ptr(new TestInterceptor(url, file_path)));
+        base::WrapUnique(new TestInterceptor(url, file_path)));
   }
 
   // Unregisters previously created TestInterceptor, which should delete it.

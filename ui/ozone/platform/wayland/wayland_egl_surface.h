@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_EGL_SURFACE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_EGL_SURFACE_H_
 
+#include <memory>
+
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
@@ -31,7 +33,7 @@ class WaylandEGLSurface : public SurfaceOzoneEGL {
   bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
   bool OnSwapBuffers() override;
   void OnSwapBuffersAsync(const SwapCompletionCallback& callback) override;
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
   void* /* EGLConfig */ GetEGLSurfaceConfig(
       const EglConfigCallbacks& egl) override;
 
@@ -39,7 +41,7 @@ class WaylandEGLSurface : public SurfaceOzoneEGL {
   WaylandWindow* window_;
 
   gfx::Size size_;
-  scoped_ptr<wl_egl_window, EGLWindowDeleter> egl_window_;
+  std::unique_ptr<wl_egl_window, EGLWindowDeleter> egl_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandEGLSurface);
 };

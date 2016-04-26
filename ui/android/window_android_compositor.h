@@ -5,7 +5,8 @@
 #ifndef UI_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
 #define UI_ANDROID_WINDOW_ANDROID_COMPOSITOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/output/copy_output_request.h"
 #include "ui/android/ui_android_export.h"
 

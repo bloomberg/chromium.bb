@@ -5,6 +5,7 @@
 #include "remoting/host/linux/certificate_watcher.h"
 
 #include <cstdlib>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -90,7 +91,7 @@ class CertificateWatcherTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   base::FilePath watch_path_;
-  scoped_ptr<CertificateWatcher> watcher_;
+  std::unique_ptr<CertificateWatcher> watcher_;
   int restart_count_ = 0;
   base::TimeDelta loop_wait_ =
       base::TimeDelta::FromMilliseconds(kMessageLoopWaitMsecs);

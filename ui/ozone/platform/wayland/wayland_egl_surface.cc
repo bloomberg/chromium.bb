@@ -51,7 +51,7 @@ void WaylandEGLSurface::OnSwapBuffersAsync(
   NOTREACHED();
 }
 
-scoped_ptr<gfx::VSyncProvider> WaylandEGLSurface::CreateVSyncProvider() {
+std::unique_ptr<gfx::VSyncProvider> WaylandEGLSurface::CreateVSyncProvider() {
   NOTIMPLEMENTED();
   return nullptr;
 }

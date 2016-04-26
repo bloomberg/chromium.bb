@@ -6,11 +6,11 @@
 #define CHROME_GPU_ARC_GPU_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <list>
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/gpu/arc_video_accelerator.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -108,7 +108,7 @@ class ArcGpuVideoDecodeAccelerator
   // output buffer is available.
   bool pending_eos_output_buffer_;
 
-  scoped_ptr<media::VideoDecodeAccelerator> vda_;
+  std::unique_ptr<media::VideoDecodeAccelerator> vda_;
 
   // It's safe to use the pointer here, the life cycle of the |arc_client_|
   // is longer than this ArcGpuVideoDecodeAccelerator.

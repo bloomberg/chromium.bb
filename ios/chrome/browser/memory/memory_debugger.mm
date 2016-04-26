@@ -6,9 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/ios/ios_util.h"
 #import "base/mac/scoped_nsobject.h"
-#import "base/memory/scoped_ptr.h"
 #import "ios/chrome/browser/memory/memory_metrics.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
