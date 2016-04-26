@@ -30,7 +30,6 @@
 
 .non-blocking {
   background-color: var(--paper-grey-800);
-  overflow: hidden;
   padding: 16px;
   width: inherit;
 }
@@ -47,7 +46,10 @@
 }
 
 .non-blocking > div > #title {
+  -webkit-margin-end: 12px;
+  -webkit-padding-end: 12px;
   color: rgba(255, 255, 255, 0.87);
+  overflow: hidden;
 }
 
 paper-button {
