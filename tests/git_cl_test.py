@@ -1381,6 +1381,48 @@ class TestGitCl(TestCase):
     # super tedious.
     self.assertEqual(0, git_cl.main(['set-commit', '-d']))
 
+  def test_description_display(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+
+    class MockChangelist():
+      def __init__(self, **kwargs):
+        pass
+      def GetIssue(self):
+        return 1
+      def GetDescription(self):
+        return 'foo'
+
+    self.mock(git_cl, 'Changelist', MockChangelist)
+
+    self.assertEqual(0, git_cl.main(['description', '-d']))
+    self.assertEqual('foo\n', out.getvalue())
+
+  def test_description_rietveld(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *args: 'foobar')
+
+    self.calls = [
+        ((['git', 'config', 'rietveld.autoupdate'],), ''),
+        ((['git', 'config', 'rietveld.server'],), ''),
+        ((['git', 'config', 'rietveld.server'],), ''),
+    ]
+    self.assertEqual(0, git_cl.main([
+        'description', 'https://code.review.org/123123', '-d', '--rietveld']))
+    self.assertEqual('foobar\n', out.getvalue())
+
+  def test_description_gerrit(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *args: 'foobar')
+
+    self.assertEqual(0, git_cl.main([
+        'description', 'https://code.review.org/123123', '-d', '--gerrit']))
+    self.assertEqual('foobar\n', out.getvalue())
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

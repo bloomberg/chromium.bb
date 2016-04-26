@@ -3264,19 +3264,36 @@ def CMDcomments(parser, args):
   return 0
 
 
+@subcommand.usage('[codereview url or issue id]')
 def CMDdescription(parser, args):
   """Brings up the editor for the current CL's description."""
   parser.add_option('-d', '--display', action='store_true',
                     help='Display the description instead of opening an editor')
+
+  _add_codereview_select_options(parser)
   auth.add_auth_options(parser)
-  options, _ = parser.parse_args(args)
+  options, args = parser.parse_args(args)
+  _process_codereview_select_options(parser, options)
+
+  target_issue = None
+  if len(args) > 0:
+    issue_arg = ParseIssueNumberArgument(args[0])
+    if not issue_arg.valid:
+      parser.print_help()
+      return 1
+    target_issue = issue_arg.issue
+
   auth_config = auth.extract_auth_config_from_options(options)
-  cl = Changelist(auth_config=auth_config)
+
+  cl = Changelist(
+      auth_config=auth_config, issue=target_issue,
+      codereview=options.forced_codereview)
+
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
   description = ChangeDescription(cl.GetDescription())
   if options.display:
-    print description.description
+    print >> sys.stdout, description.description
     return 0
   description.prompt()
   if cl.GetDescription() != description.description:
