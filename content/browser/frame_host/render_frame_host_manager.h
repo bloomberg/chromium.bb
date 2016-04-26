@@ -384,10 +384,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   RenderFrameProxyHost* GetRenderFrameProxyHost(
       SiteInstance* instance) const;
 
-  // Returns whether |render_view_host| will be deleted when its main
-  // RenderFrameHost is deleted from the pending deletion list.
-  bool IsViewPendingDeletion(RenderViewHostImpl* render_view_host);
-
   // If |render_frame_host| is on the pending deletion list, this deletes it.
   // Returns whether it was deleted.
   bool DeleteFromPendingList(RenderFrameHostImpl* render_frame_host);

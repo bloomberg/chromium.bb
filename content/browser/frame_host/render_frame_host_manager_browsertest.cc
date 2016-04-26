@@ -2401,9 +2401,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   ASSERT_TRUE(rfh_a->IsRenderFrameLive());
   ASSERT_FALSE(rfh_a->is_active());
 
-  // The corresponding RVH should not be pending deletion due to the proxy.
-  EXPECT_FALSE(root->render_manager()->IsViewPendingDeletion(
-                  rfh_a->render_view_host()));
+  // The corresponding RVH should still be referenced by the proxy and the old
+  // frame.
+  RenderViewHostImpl* rvh_a = rfh_a->render_view_host();
+  EXPECT_EQ(2, rvh_a->ref_count());
 
   // Kill the old process.
   RenderProcessHost* process = rfh_a->GetProcess();
@@ -2414,10 +2415,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
   // |rfh_a| is now deleted, thanks to the bug fix.
 
+  // With |rfh_a| gone, the RVH should only be referenced by the (dead) proxy.
+  EXPECT_EQ(1, rvh_a->ref_count());
+  EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+  EXPECT_FALSE(root->render_manager()
+                   ->GetRenderFrameProxyHost(site_instance_a)
+                   ->is_render_frame_proxy_live());
+
   // Close the popup so there is no proxy for a.com in the original tab.
   new_shell->Close();
   EXPECT_FALSE(
       root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+
+  // This should delete the RVH as well.
+  EXPECT_FALSE(root->frame_tree()->GetRenderViewHost(site_instance_a));
 
   // Go back in the main frame from b.com to a.com. In https://crbug.com/581912,
   // the browser process would crash here because there was no main frame
@@ -2454,12 +2465,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   commit_observer.WaitForCommit();
   EXPECT_NE(site_instance_a, shell()->web_contents()->GetSiteInstance());
 
-  // The previous RFH and RVH should still be pending deletion, as we wait for
-  // either the SwapOut ACK or a timeout.
+  // The previous RFH should still be pending deletion, as we wait for either
+  // the SwapOut ACK or a timeout.
   ASSERT_TRUE(rfh_a->IsRenderFrameLive());
   ASSERT_FALSE(rfh_a->is_active());
-  EXPECT_TRUE(root->render_manager()->IsViewPendingDeletion(
-                  rfh_a->render_view_host()));
+
+  // When the previous RFH was swapped out, it should have still gotten a
+  // replacement proxy even though it's the last active frame in the process.
+  EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
 
   // Open a popup in the new B process.
   Shell* new_shell =
@@ -2468,8 +2481,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             new_shell->web_contents()->GetSiteInstance());
 
   // Navigate the popup to the original site, but don't wait for commit (which
-  // won't happen).  This creates a proxy in the original tab, alongside the
-  // RFH and RVH pending deletion.
+  // won't happen).  This should reuse the proxy in the original tab, which at
+  // this point exists alongside the RFH pending deletion.
   new_shell->LoadURL(embedded_test_server()->GetURL("a.com", "/title2.html"));
   EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
 

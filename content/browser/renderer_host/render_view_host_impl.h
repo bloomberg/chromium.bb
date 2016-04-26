@@ -183,8 +183,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   }
 
   // Tracks whether this RenderViewHost is in an active state (rather than
-  // pending swap out, pending deletion, or swapped out), according to its main
-  // frame RenderFrameHost.
+  // pending swap out or swapped out), according to its main frame
+  // RenderFrameHost.
   bool is_active() const { return is_active_; }
   void set_is_active(bool is_active) { is_active_ = is_active; }
 

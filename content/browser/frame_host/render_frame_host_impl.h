@@ -581,7 +581,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                            RenderViewInitAfterNewProxyAndProcessKill);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           RenderViewHostPendingDeletionIsNotReused);
+                           RenderViewHostIsNotReusedAfterDelayedSwapOutACK);
 
   // IPC Message handlers.
   void OnAddMessageToConsole(int32_t level,

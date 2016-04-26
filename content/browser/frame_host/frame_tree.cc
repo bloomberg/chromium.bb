@@ -303,21 +303,9 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
     bool hidden) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
-  if (iter != render_view_host_map_.end()) {
-    // If a RenderViewHost is pending deletion for this |site_instance|, it
-    // shouldn't be reused, so put it in the map of RenderViewHosts pending
-    // shutdown.  Otherwise, return the existing RenderViewHost for the
-    // SiteInstance.  Note that if swapped-out is forbidden, the
-    // RenderViewHost's main frame has already been cleared, so we cannot rely
-    // on checking whether the main frame is pending deletion.
-    if (root_->render_manager()->IsViewPendingDeletion(iter->second)) {
-      render_view_host_pending_shutdown_map_.insert(
-          std::make_pair(site_instance->GetId(), iter->second));
-      render_view_host_map_.erase(iter);
-    } else {
-      return iter->second;
-    }
-  }
+  if (iter != render_view_host_map_.end())
+    return iter->second;
+
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
@@ -330,11 +318,9 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
 RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
-  // Don't return the RVH if it is pending deletion.
-  if (iter != render_view_host_map_.end() &&
-      !root_->render_manager()->IsViewPendingDeletion(iter->second)) {
+  if (iter != render_view_host_map_.end())
     return iter->second;
-  }
+
   return nullptr;
 }
 
@@ -353,39 +339,17 @@ void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
   int32_t site_instance_id = site_instance->GetId();
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance_id);
-  if (iter != render_view_host_map_.end() && iter->second == render_view_host) {
-    // Decrement the refcount and shutdown the RenderViewHost if no one else is
-    // using it.
-    CHECK_GT(iter->second->ref_count(), 0);
-    iter->second->decrement_ref_count();
-    if (iter->second->ref_count() == 0) {
-      iter->second->ShutdownAndDestroy();
-      render_view_host_map_.erase(iter);
-    }
-  } else {
-    // The RenderViewHost should be in the list of RenderViewHosts pending
-    // shutdown.
-    bool render_view_host_found = false;
-    std::pair<RenderViewHostMultiMap::iterator,
-              RenderViewHostMultiMap::iterator> result =
-        render_view_host_pending_shutdown_map_.equal_range(site_instance_id);
-    for (RenderViewHostMultiMap::iterator multi_iter = result.first;
-         multi_iter != result.second;
-         ++multi_iter) {
-      if (multi_iter->second != render_view_host)
-        continue;
-      render_view_host_found = true;
-      // Decrement the refcount and shutdown the RenderViewHost if no one else
-      // is using it.
-      CHECK_GT(render_view_host->ref_count(), 0);
-      render_view_host->decrement_ref_count();
-      if (render_view_host->ref_count() == 0) {
-        render_view_host->ShutdownAndDestroy();
-        render_view_host_pending_shutdown_map_.erase(multi_iter);
-      }
-      break;
-    }
-    CHECK(render_view_host_found);
+
+  CHECK(iter != render_view_host_map_.end());
+  CHECK_EQ(iter->second, render_view_host);
+
+  // Decrement the refcount and shutdown the RenderViewHost if no one else is
+  // using it.
+  CHECK_GT(iter->second->ref_count(), 0);
+  iter->second->decrement_ref_count();
+  if (iter->second->ref_count() == 0) {
+    iter->second->ShutdownAndDestroy();
+    render_view_host_map_.erase(iter);
   }
 }
 

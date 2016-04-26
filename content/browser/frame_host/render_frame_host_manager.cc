@@ -645,25 +645,19 @@ void RenderFrameHostManager::SwapOutOldFrame(
   if (!old_render_frame_host->IsRenderFrameLive())
     return;
 
-  // If there are no active frames besides this one, we can delete the old
-  // RenderFrameHost once it runs its unload handler, without replacing it with
-  // a proxy.
-  if (old_render_frame_host->GetSiteInstance()->active_frame_count() <= 1) {
-    // Tell the old RenderFrameHost to swap out, with no proxy to replace it.
-    old_render_frame_host->SwapOut(nullptr, true);
-  } else {
-    // Otherwise there are active views and we need a proxy for the old RFH.
-    // (There should not be one yet.)
-    RenderFrameProxyHost* proxy =
-        CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
-                                   old_render_frame_host->render_view_host());
+  // Create a replacement proxy for the old RenderFrameHost. (There should not
+  // be one yet.)  This is done even if there are no active frames besides this
+  // one to simplify cleanup logic on the renderer side (see
+  // https://crbug.com/568836 for motivation).
+  RenderFrameProxyHost* proxy =
+      CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
+                                 old_render_frame_host->render_view_host());
 
-    // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
-    old_render_frame_host->SwapOut(proxy, true);
+  // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
+  old_render_frame_host->SwapOut(proxy, true);
 
-    // SwapOut creates a RenderFrameProxy, so set the proxy to be initialized.
-    proxy->set_render_frame_proxy_created(true);
-  }
+  // SwapOut creates a RenderFrameProxy, so set the proxy to be initialized.
+  proxy->set_render_frame_proxy_created(true);
 
   // |old_render_frame_host| will be deleted when its SwapOut ACK is received,
   // or when the timer times out, or when the RFHM itself is deleted (whichever
@@ -698,25 +692,6 @@ void RenderFrameHostManager::DiscardUnusedFrame(
   }
 
   render_frame_host.reset();
-}
-
-bool RenderFrameHostManager::IsViewPendingDeletion(
-    RenderViewHostImpl* render_view_host) {
-  // Only safe to call this on the main frame.
-  CHECK(frame_tree_node_->IsMainFrame());
-
-  // The view is not pending deletion if more than one frame or proxy references
-  // it.
-  if (render_view_host->ref_count() > 1)
-    return false;
-
-  // If the only thing referencing it is a frame on the pending deletion list,
-  // then this view will go away when the frame goes away.
-  for (const auto& rfh : pending_delete_hosts_) {
-    if (rfh->GetRenderViewHost() == render_view_host)
-      return true;
-  }
-  return false;
 }
 
 bool RenderFrameHostManager::DeleteFromPendingList(

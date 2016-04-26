@@ -1544,12 +1544,11 @@ void RenderFrameImpl::OnSwapOut(
   else
     render_view_->SendUpdateState();
 
-  // If we need a proxy to replace this, create it now so its routing id is
-  // registered for receiving IPC messages.
-  if (proxy_routing_id != MSG_ROUTING_NONE) {
-    proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-        this, proxy_routing_id, replicated_frame_state.scope);
-  }
+  // There should always be a proxy to replace this RenderFrame.  Create it now
+  // so its routing id is registered for receiving IPC messages.
+  CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
+  proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+      this, proxy_routing_id, replicated_frame_state.scope);
 
   // Synchronously run the unload handler before sending the ACK.
   // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
@@ -1564,12 +1563,11 @@ void RenderFrameImpl::OnSwapOut(
   // Set the proxy here, since OnStop() below could cause an onload event
   // handler to execute, which could trigger code such as
   // willCheckAndDispatchMessageEvent() that needs the proxy.
-  if (proxy)
-    set_render_frame_proxy(proxy);
+  set_render_frame_proxy(proxy);
 
   // Transfer settings such as initial drawing parameters to the remote frame,
   // if one is created, that will replace this frame.
-  if (!is_main_frame_ && proxy)
+  if (!is_main_frame_)
     proxy->web_frame()->initializeFromFrame(frame_);
 
   // Let WebKit know that this view is hidden so it can drop resources and
@@ -1587,37 +1585,36 @@ void RenderFrameImpl::OnSwapOut(
   int routing_id = GetRoutingID();
 
   // Now that all of the cleanup is complete and the browser side is notified,
-  // start using the RenderFrameProxy, if one is created.
-  if (proxy) {
-    // The swap call deletes this RenderFrame via frameDetached.  Do not access
-    // any members after this call.
-    // TODO(creis): WebFrame::swap() can return false.  Most of those cases
-    // should be due to the frame being detached during unload (in which case
-    // the necessary cleanup has happened anyway), but it might be possible for
-    // it to return false without detaching.  Catch those cases below to track
-    // down https://crbug.com/575245.
-    frame_->swap(proxy->web_frame());
+  // start using the RenderFrameProxy.
+  //
+  // The swap call deletes this RenderFrame via frameDetached.  Do not access
+  // any members after this call.
+  //
+  // TODO(creis): WebFrame::swap() can return false.  Most of those cases
+  // should be due to the frame being detached during unload (in which case
+  // the necessary cleanup has happened anyway), but it might be possible for
+  // it to return false without detaching.  Catch those cases below to track
+  // down https://crbug.com/575245.
+  frame_->swap(proxy->web_frame());
 
-    // For main frames, the swap should have cleared the RenderView's pointer to
-    // this frame.
-    if (is_main_frame) {
-      base::debug::SetCrashKeyValue("swapout_frame_id",
-                                    base::IntToString(routing_id));
-      base::debug::SetCrashKeyValue("swapout_proxy_id",
-                                    base::IntToString(proxy->routing_id()));
-      base::debug::SetCrashKeyValue(
-          "swapout_view_id", base::IntToString(render_view->GetRoutingID()));
-      CHECK(!render_view->main_render_frame_);
-    }
-
-    if (is_loading)
-      proxy->OnDidStartLoading();
+  // For main frames, the swap should have cleared the RenderView's pointer to
+  // this frame.
+  if (is_main_frame) {
+    base::debug::SetCrashKeyValue("swapout_frame_id",
+                                  base::IntToString(routing_id));
+    base::debug::SetCrashKeyValue("swapout_proxy_id",
+                                  base::IntToString(proxy->routing_id()));
+    base::debug::SetCrashKeyValue(
+        "swapout_view_id", base::IntToString(render_view->GetRoutingID()));
+    CHECK(!render_view->main_render_frame_);
   }
+
+  if (is_loading)
+    proxy->OnDidStartLoading();
 
   // Initialize the WebRemoteFrame with the replication state passed by the
   // process that is now rendering the frame.
-  if (proxy)
-    proxy->SetReplicatedState(replicated_frame_state);
+  proxy->SetReplicatedState(replicated_frame_state);
 
   // Safe to exit if no one else is using the process.
   // TODO(nasko): Remove the dependency on RenderViewImpl here and ref count

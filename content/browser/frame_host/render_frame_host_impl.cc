@@ -263,10 +263,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (delegate_ && render_frame_created_)
     delegate_->RenderFrameDeleted(this);
 
-  // If this RenderFrameHost is swapped out, it already decremented the active
-  // frame count of the SiteInstance it belongs to.
-  if (is_active())
-    GetSiteInstance()->DecrementActiveFrameCount();
+  // If this was the last active frame in the SiteInstance, the
+  // DecrementActiveFrameCount call will trigger the deletion of the
+  // SiteInstance's proxies.
+  GetSiteInstance()->DecrementActiveFrameCount();
 
   // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
   // RenderFrame will already be deleted in the renderer process. Main frame
@@ -1211,17 +1211,17 @@ void RenderFrameHostImpl::SwapOut(
         RenderViewHostImpl::kUnloadTimeoutMS));
   }
 
-  // There may be no proxy if there are no active views in the process.
-  int proxy_routing_id = MSG_ROUTING_NONE;
-  FrameReplicationState replication_state;
-  if (proxy) {
-    set_render_frame_proxy_host(proxy);
-    proxy_routing_id = proxy->GetRoutingID();
-    replication_state = proxy->frame_tree_node()->current_replication_state();
-  }
+  // There should always be a proxy to replace the old RenderFrameHost.  If
+  // there are no remaining active views in the process, the proxy will be
+  // short-lived and will be deleted when the SwapOut ACK is received.
+  CHECK(proxy);
+
+  set_render_frame_proxy_host(proxy);
 
   if (IsRenderFrameLive()) {
-    Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id, is_loading,
+    FrameReplicationState replication_state =
+        proxy->frame_tree_node()->current_replication_state();
+    Send(new FrameMsg_SwapOut(routing_id_, proxy->GetRoutingID(), is_loading,
                               replication_state));
   }
 
@@ -1230,11 +1230,6 @@ void RenderFrameHostImpl::SwapOut(
   is_waiting_for_swapout_ack_ = true;
   if (frame_tree_node_->IsMainFrame())
     render_view_host_->set_is_active(false);
-
-  // If this is the last active frame in the SiteInstance, the
-  // DecrementActiveFrameCount call will trigger the deletion of the
-  // SiteInstance's proxies.
-  GetSiteInstance()->DecrementActiveFrameCount();
 
   if (!GetParent())
     delegate_->SwappedOut(this);

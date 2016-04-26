@@ -31,8 +31,10 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/common/child_process_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/notification_observer.h"
@@ -4156,11 +4158,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test for https://crbug.com/515302.  Perform two navigations, A->B->A, and
-// delay the SwapOut ACK from the A->B navigation, so that the second B->A
+// drop the SwapOut ACK from the A->B navigation, so that the second B->A
 // navigation is initiated before the first page receives the SwapOut ACK.
-// Ensure that the RVH(A) that's pending deletion is not reused in that case.
+// Ensure that this doesn't crash and that the RVH(A) is not reused in that
+// case.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       RenderViewHostPendingDeletionIsNotReused) {
+                       RenderViewHostIsNotReusedAfterDelayedSwapOutACK) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   NavigateToURL(shell(), a_url);
 
@@ -4177,9 +4180,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   rfh->GetProcess()->AddFilter(filter.get());
   rfh->DisableSwapOutTimerForTesting();
 
-  // Navigate to B.  This must wait for DidCommitProvisionalLoad, as opposed to
-  // DidStopLoading, since otherwise the SwapOut timer might call OnSwappedOut
-  // and destroy |rvh| before its pending deletion status is checked.
+  // Navigate to B.  This must wait for DidCommitProvisionalLoad and not
+  // DidStopLoading, so that the SwapOut timer doesn't call OnSwappedOut and
+  // destroy |rfh| and |rvh| before they are checked in the test.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(b_url);
@@ -4187,17 +4190,27 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(deleted_observer.deleted());
 
   // Since the SwapOut ACK for A->B is dropped, the first page's
-  // RenderFrameHost and RenderViewHost should be pending deletion after the
-  // last navigation.
+  // RenderFrameHost should be pending deletion after the last navigation.
   EXPECT_FALSE(rfh->is_active());
-  EXPECT_TRUE(root->render_manager()->IsViewPendingDeletion(rvh));
 
   // Wait for process A to exit so we can reinitialize it cleanly for the next
-  // navigation. This can be removed once https://crbug.com/535246 is fixed.
+  // navigation.  Since process A doesn't have any active views, it will
+  // initiate shutdown via ChildProcessHostMsg_ShutdownRequest.  After process
+  // A shuts down, the |rfh| and |rvh| should get destroyed via
+  // OnRenderProcessGone.
+  //
+  // Not waiting for process shutdown here could lead to the |rvh| being
+  // reused, now that there is no notion of pending deletion RenderViewHosts.
+  // This would also be fine; however, the race in https://crbug.com/535246
+  // still needs to be addressed and tested in that case.
   RenderProcessHostWatcher process_exit_observer(
       rvh->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   process_exit_observer.Wait();
+
+  // Verify that the RVH and RFH for A were cleaned up.
+  EXPECT_FALSE(root->frame_tree()->GetRenderViewHost(site_instance));
+  EXPECT_TRUE(deleted_observer.deleted());
 
   // Start a navigation back to A and check that the RenderViewHost wasn't
   // reused.
@@ -4210,21 +4223,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
   EXPECT_NE(rvh_routing_id, pending_rvh->GetRoutingID());
 
-  // TODO(alexmos, creis): Once https://crbug.com/535246 is fixed and the
-  // process_exit_observer is not needed above, we'll need to simulate that the
-  // dropped SwapOut ACK message arrives now on the original RenderFrameHost,
-  // causing it to be deleted.
-  EXPECT_TRUE(deleted_observer.deleted());
-
   // Make sure the last navigation finishes without crashing.
   navigation_observer.Wait();
 }
 
 // Test for https://crbug.com/591478, where navigating to a cross-site page with
-// a subframe on the old site could cause the old RenderViewHost (now pending
-// deletion) to be reused.
+// a subframe on the old site caused a crash while trying to reuse the old
+// RenderViewHost.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DontReusePendingDeleteRenderViewHostForSubframe) {
+                       ReusePendingDeleteRenderViewHostForSubframe) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -4241,8 +4248,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), second_url));
 
   // If the subframe is created while the main frame is pending deletion, then
-  // the RVH will be different.
-  // TODO(creis, alexmos): Find a way to assert this that isn't flaky.  For now,
+  // the RVH will be reused.  The main frame should've been swapped with a
+  // proxy despite being the last active frame in the progress (see
+  // https://crbug.com/568836), and this proxy should also be reused by the new
+  // page.
+  //
+  // TODO(creis, alexmos): Find a way to assert this that isn't flaky. For now,
   // the test is just likely (not certain) to catch regressions by crashing.
 }
 
@@ -6126,6 +6137,92 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(rvh, contents->GetFrameTree()->GetRenderViewHost(
                      root->current_frame_host()->GetSiteInstance()));
   EXPECT_FALSE(rvh->is_swapped_out_);
+}
+
+// Helper class to wait for a ChildProcessHostMsg_ShutdownRequest message to
+// arrive.
+class ShutdownRequestMessageFilter : public BrowserMessageFilter {
+ public:
+  ShutdownRequestMessageFilter()
+      : BrowserMessageFilter(ChildProcessMsgStart),
+        message_loop_runner_(new MessageLoopRunner) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() == ChildProcessHostMsg_ShutdownRequest::ID) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&ShutdownRequestMessageFilter::OnShutdownRequest, this));
+    }
+    return false;
+  }
+
+  void OnShutdownRequest() { message_loop_runner_->Quit(); }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+ private:
+  ~ShutdownRequestMessageFilter() override {}
+
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownRequestMessageFilter);
+};
+
+// Test for https://crbug.com/568836.  From an A-embed-B page, navigate the
+// subframe from B to A.  This cleans up the process for B, but the test delays
+// the browser side from killing the B process right away.  This allows the
+// B process to process two ViewMsg_Close messages sent to the subframe's
+// RenderWidget and to the RenderView, in that order.  In the bug, the latter
+// crashed while detaching the subframe's LocalFrame (triggered as part of
+// closing the RenderView), because this tried to access the subframe's
+// WebFrameWidget (from RenderFrameImpl::didChangeSelection), which had already
+// been cleared by the former.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CloseSubframeWidgetAndViewOnProcessExit) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // "Select all" in the subframe.  The bug only happens if there's a selection
+  // change, which triggers the path through didChangeSelection.
+  root->child_at(0)->current_frame_host()->Send(new InputMsg_SelectAll(
+      root->child_at(0)->current_frame_host()->GetRoutingID()));
+
+  // Prevent b.com process from terminating right away once the subframe
+  // navigates away from b.com below.  This is necessary so that the renderer
+  // process has time to process the closings of RenderWidget and RenderView,
+  // which is where the original bug was triggered.  Incrementing worker
+  // RefCount will cause RenderProcessHostImpl::Cleanup to forego process
+  // termination.
+  RenderProcessHost* subframe_process =
+      root->child_at(0)->current_frame_host()->GetProcess();
+  subframe_process->IncrementWorkerRefCount();
+
+  // Navigate the subframe away from b.com.  Since this is the last active
+  // frame in the b.com process, this causes the RenderWidget and RenderView to
+  // be closed.  If this succeeds without crashing, the renderer will release
+  // the process and send a ChildProcessHostMsg_ShutdownRequest to the browser
+  // process to ask whether it's ok to terminate.  Thus, wait for this message
+  // to ensure that the RenderView and widget were closed without crashing.
+  scoped_refptr<ShutdownRequestMessageFilter> filter =
+      new ShutdownRequestMessageFilter();
+  subframe_process->AddFilter(filter.get());
+  NavigateFrameToURL(root->child_at(0),
+                     embedded_test_server()->GetURL("a.com", "/title1.html"));
+  filter->Wait();
+
+  // TODO(alexmos): Navigating the subframe back to b.com at this point would
+  // trigger the race in https://crbug.com/535246, where the browser process
+  // tries to reuse the b.com process thinking it's still initialized, whereas
+  // the process has actually been destroyed by the renderer (but the browser
+  // process hasn't heard the OnChannelError yet).  This race will need to be
+  // fixed.
+
+  subframe_process->DecrementWorkerRefCount();
 }
 
 }  // namespace content

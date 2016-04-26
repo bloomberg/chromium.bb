@@ -211,7 +211,6 @@ class CONTENT_EXPORT FrameTree {
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
-  typedef std::multimap<int, RenderViewHostImpl*> RenderViewHostMultiMap;
 
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order, skipping the subtree rooted at
@@ -234,13 +233,6 @@ class CONTENT_EXPORT FrameTree {
   // Must be declared before |root_| so that it is deleted afterward.  Otherwise
   // the map will be cleared before we delete the RenderFrameHosts in the tree.
   RenderViewHostMap render_view_host_map_;
-
-  // Map of SiteInstance ID to RenderViewHosts that are pending shutdown. The
-  // renderers of these RVH are currently executing the unload event in
-  // background. When the SwapOutACK is received, they will be deleted. In the
-  // meantime, they are kept in this map, as they should not be reused (part of
-  // their state is already gone away).
-  RenderViewHostMultiMap render_view_host_pending_shutdown_map_;
 
   // This is an owned ptr to the root FrameTreeNode, which never changes over
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
