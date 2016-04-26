@@ -1225,7 +1225,13 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     // Imagine moving 'bar' to ^.  'bar' will be deleted and its div pruned.  That would
     // cause 'baz' to collapse onto the line with 'foobar' unless we insert a br.
     // Must recononicalize these two VisiblePositions after the pruning above.
+    // TODO(yosin): We should abort when |beforeParagraph| is a orphan when
+    // we have a sample.
     beforeParagraph = createVisiblePosition(beforeParagraph.deepEquivalent());
+    if (afterParagraph.isOrphan()) {
+        editingState->abort();
+        return;
+    }
     afterParagraph = createVisiblePosition(afterParagraph.deepEquivalent());
 
     if (beforeParagraph.isNotNull() && !isDisplayInsideTable(beforeParagraph.deepEquivalent().anchorNode())
