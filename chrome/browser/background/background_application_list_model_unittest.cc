@@ -139,14 +139,11 @@ void RemoveBackgroundPermission(ExtensionService* service,
 
 // Crashes on Mac tryslaves.
 // http://crbug.com/165458
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_ExplicitTest DISABLED_ExplicitTest
-#else
-#define MAYBE_ExplicitTest ExplicitTest
-#endif
+// Also crashes on Windows under Dr. Memory (https://crbug.com/606779),
+// presumably broken on all platforms.
 // With minimal test logic, verifies behavior over an explicit set of
 // extensions, of which some are Background Apps and others are not.
-TEST_F(BackgroundApplicationListModelTest, MAYBE_ExplicitTest) {
+TEST_F(BackgroundApplicationListModelTest, DISABLED_ExplicitTest) {
   InitializeAndLoadEmptyExtensionService();
   ASSERT_TRUE(service()->is_ready());
   ASSERT_TRUE(registry()->enabled_extensions().is_empty());
