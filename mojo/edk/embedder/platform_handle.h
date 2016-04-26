@@ -10,6 +10,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+
+#include "base/process/process_handle.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach.h>
 #endif
@@ -58,13 +60,18 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 #elif defined(OS_WIN)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   PlatformHandle() : handle(INVALID_HANDLE_VALUE) {}
-  explicit PlatformHandle(HANDLE handle) : handle(handle) {}
+  explicit PlatformHandle(HANDLE handle)
+      : handle(handle), owning_process(base::GetCurrentProcessHandle()) {}
 
   void CloseIfNecessary();
 
   bool is_valid() const { return handle != INVALID_HANDLE_VALUE; }
 
   HANDLE handle;
+
+  // A Windows HANDLE may be duplicated to another process but not yet sent to
+  // that process. This tracks the handle's owning process.
+  base::ProcessHandle owning_process;
 };
 #else
 #error "Platform not yet supported."

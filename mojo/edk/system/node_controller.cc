@@ -911,6 +911,12 @@ void NodeController::OnRelayPortsMessage(const ports::NodeName& from_node,
   // process before going out (see NodeChannel::WriteChannelMessage).
   //
   // TODO: We could avoid double-duplication.
+  //
+  // Note that we explicitly mark the handles as being owned by the sending
+  // process before rewriting them, in order to accommodate RewriteHandles'
+  // internal sanity checks.
+  for (size_t i = 0; i < message->num_handles(); ++i)
+    message->handles()[i].owning_process = from_process;
   if (!Channel::Message::RewriteHandles(from_process,
                                         base::GetCurrentProcessHandle(),
                                         message->handles(),

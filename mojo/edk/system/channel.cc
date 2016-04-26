@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/process/process_handle.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -330,11 +331,14 @@ bool Channel::Message::RewriteHandles(base::ProcessHandle from_process,
       DLOG(ERROR) << "Refusing to duplicate invalid handle.";
       continue;
     }
+    DCHECK_EQ(handles[i].owning_process, from_process);
     BOOL result = DuplicateHandle(
         from_process, handles[i].handle, to_process,
-        reinterpret_cast<HANDLE*>(handles + i), 0, FALSE,
+        &handles[i].handle, 0, FALSE,
         DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    if (!result)
+    if (result)
+      handles[i].owning_process = to_process;
+    else
       success = false;
   }
   return success;

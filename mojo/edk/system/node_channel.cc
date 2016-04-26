@@ -394,11 +394,20 @@ void NodeChannel::OnChannelMessage(const void* payload,
   {
     base::AutoLock lock(remote_process_handle_lock_);
     if (handles && remote_process_handle_ != base::kNullProcessHandle) {
+      // Note that we explicitly mark the handles as being owned by the sending
+      // process before rewriting them, in order to accommodate RewriteHandles'
+      // internal sanity checks.
+      for (auto& handle : *handles)
+        handle.owning_process = remote_process_handle_;
       if (!Channel::Message::RewriteHandles(remote_process_handle_,
                                             base::GetCurrentProcessHandle(),
                                             handles->data(), handles->size())) {
         DLOG(ERROR) << "Received one or more invalid handles.";
       }
+    } else if (handles) {
+      // Handles received by an unknown process must already be owned by us.
+      for (auto& handle : *handles)
+        handle.owning_process = base::GetCurrentProcessHandle();
     }
   }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
