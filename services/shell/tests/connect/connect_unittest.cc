@@ -307,6 +307,19 @@ TEST_F(ConnectTest, CapabilityClasses) {
   EXPECT_EQ("CLASS APP", string2);
 }
 
+TEST_F(ConnectTest, ConnectWithoutExplicitClassBlocked) {
+  // We not be able to bind a ClassInterfacePtr since the connect_unittest app
+  // does not explicitly request the "class" capability from
+  // connect_test_class_app. This test will hang if it is bound.
+  std::unique_ptr<Connection> connection =
+      connector()->Connect(kTestClassAppName);
+  test::mojom::ClassInterfacePtr class_interface;
+  connection->GetInterface(&class_interface);
+  base::RunLoop loop;
+  class_interface.set_connection_error_handler(base::Bind(&QuitLoop, &loop));
+  loop.Run();
+}
+
 TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
   std::unique_ptr<Connection> connection = connector()->Connect(kTestAppName);
   test::mojom::UserIdTestPtr user_id_test;

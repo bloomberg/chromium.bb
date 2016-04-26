@@ -37,7 +37,6 @@ class ConnectTestClassApp
     identity_ = identity;
   }
   bool AcceptConnection(Connection* connection) override {
-    CHECK(connection->HasCapabilityClass("class"));
     connection->AddInterface<test::mojom::ConnectTestService>(this);
     connection->AddInterface<test::mojom::ClassInterface>(this);
     inbound_connections_.insert(connection);

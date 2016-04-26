@@ -38,6 +38,7 @@ const char kCapabilityClass_UserID[] = "shell:user_id";
 const char kCapabilityClass_ClientProcess[] = "shell:client_process";
 const char kCapabilityClass_InstanceName[] = "shell:instance_name";
 const char kCapabilityClass_AllUsers[] = "shell:all_users";
+const char kCapabilityClass_ExplicitClass[] = "shell:explicit_class";
 
 void EmptyResolverCallback(mojom::ResolveResultPtr result) {}
 
@@ -158,6 +159,14 @@ class Shell::Instance : public mojom::Connector,
           source->capability_spec_, identity_, capability_spec_);
       source_id = source->id();
     }
+
+    // The target has specified that sources must request one of its provided
+    // classes instead of specifying a wild-card for interfaces.
+    if (HasClass(capability_spec_, kCapabilityClass_ExplicitClass) &&
+        (request.interfaces.count("*") != 0)) {
+      request.interfaces = Interfaces();
+    }
+
     shell_client_->AcceptConnection(
         mojom::Identity::From(params->source()), source_id,
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
