@@ -1,8 +1,11 @@
 <html>
 <script>
-if (window.testRunner)
-    testRunner.notifyDone();
+function onLoad() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
 </script>
-<body>
+<body onload="onLoad()">
 This page calls testRunner.notifyDone().
+</body>
 </html>
