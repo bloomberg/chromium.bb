@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600 scrollWidth 1184
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x318
-  LayoutBlockFlow {HTML} at (0,0) size 800x318
-    LayoutBlockFlow {BODY} at (8,8) size 784x302
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
 layer at (8,8) size 784x302
   LayoutBlockFlow {DIV} at (0,0) size 784x302
     LayoutBlockFlow {DIV} at (0,0) size 302x302 [border: (1px solid #000000)]

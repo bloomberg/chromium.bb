@@ -1,14 +1,13 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x61
-  LayoutBlockFlow {HTML} at (0,0) size 800x61
-    LayoutBlockFlow {BODY} at (8,8) size 784x45
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {DIV} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 700x19
           text run at (0,0) width 700: "This test passes if the broken image icon appears high-resolution in HiDPI and if the outline is of the appropriate size."
-      LayoutBlockFlow (anonymous) at (0,20) size 784x25
-        LayoutBlockFlow {IMG} at (0,0) size 20x25
-        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,20) size 784x20
+        LayoutBlockFlow {IMG} at (0,0) size 20x20
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,28) size 20x20 clip at (9,29) size 18x18
   LayoutBlockFlow {DIV} at (0,0) size 20x20 [border: (1px solid #C0C0C0)]
