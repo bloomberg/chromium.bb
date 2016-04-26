@@ -4,10 +4,10 @@
 
 package org.chromium.content.browser;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
