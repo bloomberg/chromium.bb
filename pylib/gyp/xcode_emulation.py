@@ -229,10 +229,14 @@ class XcodeSettings(object):
         self.isIOS
 
   def _IsBundle(self):
-    return int(self.spec.get('mac_bundle', 0)) != 0 or self._IsXCTest()
+    return int(self.spec.get('mac_bundle', 0)) != 0 or self._IsXCTest() or \
+        self._IsXCUiTest()
 
   def _IsXCTest(self):
     return int(self.spec.get('mac_xctest_bundle', 0)) != 0
+
+  def _IsXCUiTest(self):
+    return int(self.spec.get('mac_xcuitest_bundle', 0)) != 0
 
   def _IsIosAppExtension(self):
     return int(self.spec.get('ios_app_extension', 0)) != 0
@@ -333,6 +337,10 @@ class XcodeSettings(object):
       assert self._IsBundle(), ('ios_watch_app flag requires mac_bundle '
           '(target %s)' % self.spec['target_name'])
       return 'com.apple.product-type.application.watchapp'
+    if self._IsXCUiTest():
+      assert self._IsBundle(), ('mac_xcuitest_bundle flag requires mac_bundle '
+          '(target %s)' % self.spec['target_name'])
+      return 'com.apple.product-type.bundle.ui-testing'
     if self._IsBundle():
       return {
         'executable': 'com.apple.product-type.application',
@@ -1420,6 +1428,7 @@ def IsMacBundle(flavor, spec):
   just a single file. Bundle rules do not produce a binary but also package
   resources into that directory."""
   is_mac_bundle = int(spec.get('mac_xctest_bundle', 0)) != 0 or \
+      int(spec.get('mac_xcuitest_bundle', 0)) != 0 or \
       (int(spec.get('mac_bundle', 0)) != 0 and flavor == 'mac')
 
   if is_mac_bundle:
