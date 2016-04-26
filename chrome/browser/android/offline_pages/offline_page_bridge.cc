@@ -179,14 +179,6 @@ void OfflinePageBridge::HasPages(JNIEnv* env,
       name_space, base::Bind(&HasPagesCallback, j_callback_ref));
 }
 
-bool OfflinePageBridge::MaybeHasPages(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_namespace) {
-  std::string name_space = ConvertJavaStringToUTF8(env, j_namespace);
-  return offline_page_model_->MaybeHasPages(name_space);
-}
-
 void OfflinePageBridge::GetAllPages(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -203,17 +195,6 @@ void OfflinePageBridge::GetAllPages(
 
   offline_page_model_->GetAllPages(
       base::Bind(&GetAllPagesCallback, j_result_ref, j_callback_ref));
-}
-
-void OfflinePageBridge::GetPagesToCleanUp(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_result_obj) {
-  DCHECK(offline_page_model_->is_loaded());
-  DCHECK(j_result_obj);
-  const std::vector<OfflinePageItem> offline_pages =
-      offline_page_model_->GetPagesToCleanUp();
-  ToJavaOfflinePageList(env, j_result_obj, offline_pages);
 }
 
 ScopedJavaLocalRef<jlongArray> OfflinePageBridge::GetOfflineIdsForClientId(

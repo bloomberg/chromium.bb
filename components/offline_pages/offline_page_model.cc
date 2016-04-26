@@ -280,19 +280,18 @@ void OfflinePageModel::HasPages(const std::string& name_space,
 void OfflinePageModel::HasPagesAfterLoadDone(
     const std::string& name_space,
     const HasPagesCallback& callback) const {
-  callback.Run(MaybeHasPages(name_space));
-}
+  DCHECK(is_loaded_);
 
-bool OfflinePageModel::MaybeHasPages(const std::string& name_space) const {
-  if (!is_loaded_)
-    return false;
+  bool has_pages = false;
 
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id.name_space == name_space)
-      return true;
+    if (id_page_pair.second.client_id.name_space == name_space) {
+      has_pages = true;
+      break;
+    }
   }
 
-  return false;
+  callback.Run(has_pages);
 }
 
 void OfflinePageModel::GetAllPages(const GetAllPagesCallback& callback) {

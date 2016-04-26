@@ -174,14 +174,6 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
       const base::Callback<bool(const GURL&)>& predicate,
       const DeletePageCallback& callback);
 
-  // Returns true if there are offline pages in the given |name_space|.  This
-  // method is sync, so the result can be wrong depending on implementation
-  // details of the model.
-  //
-  // Currently, this will return |false| if the model is not loaded, even if
-  // there are pages on disk.
-  bool MaybeHasPages(const std::string& name_space) const;
-
   // Returns true via callback if there are offline pages in the given
   // |name_space|.
   void HasPages(const std::string& name_space,
@@ -192,6 +184,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   // Gets pages that should be removed to clean up storage. Requires that the
   // model is loaded.
+  // TODO(fgorski): This needs an update as part of expiration policy work.
   const std::vector<OfflinePageItem> GetPagesToCleanUp() const;
 
   // Gets all offline ids where the offline page has the matching client id

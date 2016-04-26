@@ -262,18 +262,6 @@ public class OfflinePageBridge {
         nativeHasPages(mNativeOfflinePageBridge, namespace, callback);
     }
 
-    /**
-     * Returns whether we have any offline pages at all.
-     *
-     * This function may return false even if there are pages saved on disk, depending on the state
-     * of the OfflinePageModel.
-     *
-     * This function is deprecated.  Use OfflinePageBridge#hasPages instead.
-     */
-    public boolean maybeHasPages(String namespace) {
-        return nativeMaybeHasPages(mNativeOfflinePageBridge, namespace);
-    }
-
     /** @return A list of all offline ids that match a particular (namespace, client_id) pair. */
     Set<Long> getOfflineIdsForClientId(ClientId clientId) {
         assert mIsNativeOfflinePageModelLoaded;
@@ -476,17 +464,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * @return Gets a list of pages that will be removed to clean up storage.  Requires that the
-     *     model is already loaded.
-     */
-    public List<OfflinePageItem> getPagesToCleanUp() {
-        assert mIsNativeOfflinePageModelLoaded;
-        List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
-        nativeGetPagesToCleanUp(mNativeOfflinePageBridge, result);
-        return result;
-    }
-
-    /**
      * Starts a check of offline page metadata, e.g. are all offline copies present.
      */
     public void checkOfflinePageMetadata() {
@@ -612,7 +589,6 @@ public class OfflinePageBridge {
             final MultipleOfflinePageItemCallback callback);
     native void nativeHasPages(
             long nativeOfflinePageBridge, String nameSpace, final HasPagesCallback callback);
-    native boolean nativeMaybeHasPages(long nativeOfflinePageBridge, String nameSpace);
 
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
@@ -628,8 +604,6 @@ public class OfflinePageBridge {
             WebContents webContents, String clientNamespace, String clientId);
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, DeletePageCallback callback, long[] offlineIds);
-    private native void nativeGetPagesToCleanUp(
-            long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
     private native void nativeRecordStorageHistograms(long nativeOfflinePageBridge,
             long totalSpaceInBytes, long freeSpaceInBytes, boolean reportingAfterDelete);
