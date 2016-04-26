@@ -45,7 +45,7 @@
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
     '../url/ipc/url_ipc.gyp:url_ipc',
-    '../v8/tools/gyp/v8.gyp:v8',
+    '../v8/src/v8.gyp:v8',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'include_dirs': [

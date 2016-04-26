@@ -669,7 +669,7 @@
             'src_files': ['<(PRODUCT_DIR)/content_shell.pak'],
             'conditions': [
               ['v8_use_external_startup_data==1', {
-                'dependencies': ['<(DEPTH)/v8/tools/gyp/v8.gyp:v8_external_snapshot'],
+                'dependencies': ['<(DEPTH)/v8/src/v8.gyp:v8_external_snapshot'],
                 'renaming_sources': [
                   '<(PRODUCT_DIR)/natives_blob.bin',
                   '<(PRODUCT_DIR)/snapshot_blob.bin',

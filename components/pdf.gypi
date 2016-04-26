@@ -43,7 +43,7 @@
       '<(DEPTH)/ppapi/ppapi_internal.gyp:ppapi_shared',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+      '<(DEPTH)/v8/src/v8.gyp:v8',
       '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
       'components_resources.gyp:components_resources',
       'components_strings.gyp:components_strings',

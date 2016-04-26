@@ -192,7 +192,7 @@
             '../third_party/WebKit/public/blink.gyp:blink',
             '../third_party/cld_2/cld_2.gyp:cld_2',
             '../url/url.gyp:url_lib',
-            '../v8/tools/gyp/v8.gyp:v8',
+            '../v8/src/v8.gyp:v8',
           ],
           'include_dirs': [
             '..',

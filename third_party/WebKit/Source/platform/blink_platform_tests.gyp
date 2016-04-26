@@ -144,7 +144,7 @@
         'conditions': [
           ['v8_use_external_startup_data==1', {
             'dependencies': [
-              '<(DEPTH)/v8/tools/gyp/v8.gyp:v8_external_snapshot',
+              '<(DEPTH)/v8/src/v8.gyp:v8_external_snapshot',
             ],
             'variables': {
               'dest_path': '<(asset_location)',

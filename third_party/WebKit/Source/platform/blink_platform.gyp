@@ -150,7 +150,7 @@
       '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
       '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       '<(DEPTH)/url/url.gyp:url_lib',
-      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+      '<(DEPTH)/v8/src/v8.gyp:v8',
       '<(libjpeg_gyp_path):libjpeg',
     ],
     'export_dependent_settings': [
@@ -163,7 +163,7 @@
       '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
       '<(DEPTH)/third_party/ots/ots.gyp:ots',
       '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
-      '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+      '<(DEPTH)/v8/src/v8.gyp:v8',
       '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(libjpeg_gyp_path):libjpeg',

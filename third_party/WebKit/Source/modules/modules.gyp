@@ -79,7 +79,7 @@
           '<(DEPTH)/base/base.gyp:base',
           '<(DEPTH)/skia/skia.gyp:skia',
           '<(DEPTH)/url/url.gyp:url_lib',
-          '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+          '<(DEPTH)/v8/src/v8.gyp:v8',
         ],
       }, {
         'type': 'static_library',

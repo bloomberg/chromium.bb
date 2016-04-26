@@ -875,7 +875,7 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/surface/surface.gyp:surface',
         '../url/url.gyp:url_lib',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
         'content_test_mojo_bindings',
         'content.gyp:content_app_both',
@@ -1000,7 +1000,7 @@
         '../skia/skia.gyp:skia',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
       ],
       'include_dirs': [
         '..',
@@ -1531,7 +1531,7 @@
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/gl/gl.gyp:gl',
         '../ui/gl/gl.gyp:gl_test_support',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
       ],
       'include_dirs': [
         '..',
@@ -1838,7 +1838,7 @@
           'conditions': [
             ['v8_use_external_startup_data==1', {
               'dependencies': [
-                '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
+                '../v8/src/v8.gyp:v8_external_snapshot',
               ],
               'variables': {
                 'dest_path': '<(asset_location)',

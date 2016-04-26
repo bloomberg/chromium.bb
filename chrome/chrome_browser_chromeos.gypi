@@ -1226,7 +1226,7 @@
         '../ui/views/controls/webview/webview.gyp:webview',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../url/url.gyp:url_lib',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
         'chrome_resources.gyp:chrome_strings',
       ],
       'export_dependent_settings': [

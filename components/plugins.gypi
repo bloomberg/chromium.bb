@@ -15,7 +15,7 @@
             '../skia/skia.gyp:skia',
             '../third_party/WebKit/public/blink.gyp:blink',
             '../third_party/re2/re2.gyp:re2',
-            '../v8/tools/gyp/v8.gyp:v8',
+            '../v8/src/v8.gyp:v8',
           ],
           'include_dirs': [
             '..',

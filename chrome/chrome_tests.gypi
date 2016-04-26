@@ -2205,7 +2205,7 @@
         '../ui/compositor/compositor.gyp:compositor_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:power_saver_test_plugin',
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
@@ -2758,7 +2758,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',
       ],

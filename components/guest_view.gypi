@@ -58,7 +58,7 @@
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_renderer',
             '../third_party/WebKit/public/blink.gyp:blink',
-            '../v8/tools/gyp/v8.gyp:v8',
+            '../v8/src/v8.gyp:v8',
             'guest_view_common'
           ],
           'include_dirs': [

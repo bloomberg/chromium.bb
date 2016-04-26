@@ -52,7 +52,7 @@
         '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl',
         '<(DEPTH)/ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/content/content.gyp:content_browser',

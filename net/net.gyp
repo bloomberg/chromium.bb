@@ -875,7 +875,7 @@
             '../base/base.gyp:base',
             '../gin/gin.gyp:gin',
             '../url/url.gyp:url_lib',
-            '../v8/tools/gyp/v8.gyp:v8',
+            '../v8/src/v8.gyp:v8',
             'net'
           ],
           'defines': [
@@ -1571,7 +1571,7 @@
           'conditions': [
             ['v8_use_external_startup_data==1', {
               'dependencies': [
-                '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
+                '../v8/src/v8.gyp:v8_external_snapshot',
               ],
               'variables': {
                 'dest_path': '<(asset_location)',

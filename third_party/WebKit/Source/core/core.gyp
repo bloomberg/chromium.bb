@@ -118,7 +118,7 @@
         '<(DEPTH)/third_party/snappy/snappy.gyp:snappy',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'include_dirs': [
         '<@(webcore_include_dirs)',
@@ -182,7 +182,7 @@
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
@@ -200,7 +200,7 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'direct_dependent_settings': {
         'defines': [
@@ -458,7 +458,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'export_dependent_settings': [
         'webcore_generated',
@@ -467,7 +467,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -544,7 +544,7 @@
         '<(DEPTH)/third_party/snappy/snappy.gyp:snappy',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'export_dependent_settings': [
         '../platform/blink_platform.gyp:blink_platform',
@@ -553,7 +553,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/v8/src/v8.gyp:v8',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

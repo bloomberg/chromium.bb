@@ -2977,7 +2977,7 @@
             '../ui/native_theme/native_theme.gyp:native_theme',
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
-            '../v8/tools/gyp/v8.gyp:v8',
+            '../v8/src/v8.gyp:v8',
           ],
         }, {  # OS == "ios"
           'sources': [

@@ -162,7 +162,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../gin/gin.gyp:gin',
-        '../v8/tools/gyp/v8.gyp:v8',
+        '../v8/src/v8.gyp:v8',
         'mojo_public.gyp:mojo_message_pump_lib',
       ],
       'export_dependent_settings': [

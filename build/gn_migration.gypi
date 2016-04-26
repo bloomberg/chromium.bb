@@ -122,8 +122,8 @@
         '../ui/snapshot/snapshot.gyp:snapshot_unittests',
         '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
         '../url/url.gyp:url_unittests',
-        '../v8/tools/gyp/v8.gyp:v8_snapshot',
-        '../v8/tools/gyp/v8.gyp:postmortem-metadata',
+        '../v8/src/v8.gyp:v8_snapshot',
+        '../v8/src/v8.gyp:postmortem-metadata',
       ],
       'conditions': [
         ['clang==1', {

@@ -34,7 +34,7 @@
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/gfx/gfx.gyp:gfx_test_support',
         '../../url/url.gyp:url_lib',
-        '../../v8/tools/gyp/v8.gyp:v8',
+        '../../v8/src/v8.gyp:v8',
       ],
       'include_dirs': [
         '..',
