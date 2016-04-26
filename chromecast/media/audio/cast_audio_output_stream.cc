@@ -4,88 +4,42 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 
-#include <stdint.h>
-
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_checker.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
-#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/public/media/decoder_config.h"
-#include "chromecast/public/media/decrypt_context.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+
+namespace {
+const int kMaxQueuedDataMs = 1000;
+}  // namespace
 
 namespace chromecast {
 namespace media {
-namespace {
 
-const int kMaxQueuedDataMs = 1000;
-
-MediaPipelineBackend::AudioDecoder* InitializeBackend(
-    const ::media::AudioParameters& audio_params,
-    MediaPipelineBackend* backend,
-    MediaPipelineBackend::Decoder::Delegate* delegate) {
-  DCHECK(backend);
-  DCHECK(delegate);
-
-  MediaPipelineBackend::AudioDecoder* decoder = backend->CreateAudioDecoder();
-  if (!decoder)
-    return nullptr;
-  decoder->SetDelegate(delegate);
-
-  AudioConfig audio_config;
-  audio_config.codec = kCodecPCM;
-  audio_config.sample_format = kSampleFormatS16;
-  audio_config.bytes_per_channel = audio_params.bits_per_sample() / 8;
-  audio_config.channel_number = audio_params.channels();
-  audio_config.samples_per_second = audio_params.sample_rate();
-
-  if (!decoder->SetConfig(audio_config))
-    return nullptr;
-
-  if (!backend->Initialize())
-    return nullptr;
-
-  return decoder;
-}
-
-}  // namespace
-
-// Backend represents a MediaPipelineBackend adapter that runs on cast
-// media thread (media::MediaMessageLoop::GetTaskRunner).
-// It can be created and destroyed on any thread, but all other member functions
-// must be called on a single thread.
+// Backend represents a MediaPipelineBackend adapter.
+// It can be created and destroyed on any thread,
+// but all other member functions must be called on a single thread.
 class CastAudioOutputStream::Backend
     : public MediaPipelineBackend::Decoder::Delegate {
  public:
   using PushBufferCompletionCallback = base::Callback<void(bool)>;
 
-  Backend(const ::media::AudioParameters& audio_params)
-      : audio_params_(audio_params),
-        decoder_(nullptr),
-        first_start_(true),
-        error_(false),
-        weak_factory_(this) {
+  Backend() : decoder_(nullptr), first_start_(true), error_(false) {
     thread_checker_.DetachFromThread();
   }
   ~Backend() override {}
 
-  void Open(CastAudioManager* audio_manager,
-            bool* success,
-            base::WaitableEvent* completion_event) {
+  bool Open(const ::media::AudioParameters& audio_params,
+            CastAudioManager* audio_manager) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(backend_ == nullptr);
     DCHECK(audio_manager);
-    DCHECK(success);
-    DCHECK(completion_event);
+    DCHECK(backend_ == nullptr);
 
     backend_task_runner_.reset(new TaskRunnerImpl());
     MediaPipelineDeviceParams device_params(
@@ -93,10 +47,24 @@ class CastAudioOutputStream::Backend
         MediaPipelineDeviceParams::kAudioStreamSoundEffects,
         backend_task_runner_.get());
     backend_ = audio_manager->CreateMediaPipelineBackend(device_params);
-    if (backend_)
-      decoder_ = InitializeBackend(audio_params_, backend_.get(), this);
-    *success = decoder_ != nullptr;
-    completion_event->Signal();
+    if (!backend_)
+      return false;
+
+    decoder_ = backend_->CreateAudioDecoder();
+    if (!decoder_)
+      return false;
+    decoder_->SetDelegate(this);
+
+    AudioConfig audio_config;
+    audio_config.codec = kCodecPCM;
+    audio_config.sample_format = kSampleFormatS16;
+    audio_config.bytes_per_channel = audio_params.bits_per_sample() / 8;
+    audio_config.channel_number = audio_params.channels();
+    audio_config.samples_per_second = audio_params.sample_rate();
+    if (!decoder_->SetConfig(audio_config))
+      return false;
+
+    return backend_->Initialize();
   }
 
   void Close() {
@@ -139,7 +107,6 @@ class CastAudioOutputStream::Backend
     }
 
     backend_buffer_ = decoder_buffer;
-
     completion_cb_ = completion_cb;
     BufferStatus status = decoder_->PushBuffer(backend_buffer_.get());
     if (status != MediaPipelineBackend::kBufferPending)
@@ -152,6 +119,7 @@ class CastAudioOutputStream::Backend
     decoder_->SetVolume(volume);
   }
 
+ private:
   // MediaPipelineBackend::Decoder::Delegate implementation
   void OnPushBufferComplete(BufferStatus status) override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -168,6 +136,7 @@ class CastAudioOutputStream::Backend
   void OnEndOfStream() override {}
 
   void OnDecoderError() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
     error_ = true;
     if (!completion_cb_.is_null())
       OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
@@ -179,12 +148,6 @@ class CastAudioOutputStream::Backend
 
   void OnVideoResolutionChanged(const Size& size) override {}
 
-  base::WeakPtr<CastAudioOutputStream::Backend> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
- private:
-  const ::media::AudioParameters audio_params_;
   std::unique_ptr<MediaPipelineBackend> backend_;
   std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
   MediaPipelineBackend::AudioDecoder* decoder_;
@@ -193,7 +156,6 @@ class CastAudioOutputStream::Backend
   bool error_;
   scoped_refptr<DecoderBufferBase> backend_buffer_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<CastAudioOutputStream::Backend> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -206,22 +168,19 @@ CastAudioOutputStream::CastAudioOutputStream(
       audio_manager_(audio_manager),
       volume_(1.0),
       source_callback_(nullptr),
-      backend_(new Backend(audio_params)),
+      backend_(new Backend()),
       buffer_duration_(audio_params.GetBufferDuration()),
       push_in_progress_(false),
-      audio_task_runner_(audio_manager->GetTaskRunner()),
-      backend_task_runner_(media::MediaMessageLoop::GetTaskRunner()),
       weak_factory_(this) {
   VLOG(1) << "CastAudioOutputStream " << this << " created with "
           << audio_params_.AsHumanReadableString();
 }
 
 CastAudioOutputStream::~CastAudioOutputStream() {
-  backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
 }
 
 bool CastAudioOutputStream::Open() {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   ::media::AudioParameters::Format format = audio_params_.format();
   DCHECK((format == ::media::AudioParameters::AUDIO_PCM_LINEAR) ||
@@ -236,21 +195,11 @@ bool CastAudioOutputStream::Open() {
   DCHECK_GE(audio_params_.channels(), 1);
   DCHECK_LE(audio_params_.channels(), 2);
 
-  {
-    // Wait until the backend has initialized so that the outcome can be
-    // communicated to the client.
-    bool success = false;
-    base::WaitableEvent completion_event(false, false);
-    backend_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Backend::Open, backend_->GetWeakPtr(),
-                              audio_manager_, &success, &completion_event));
-    completion_event.Wait();
-
-    if (!success) {
-      LOG(WARNING) << "Failed to create media pipeline backend.";
-      return false;
-    }
+  if (!backend_->Open(audio_params_, audio_manager_)) {
+    LOG(WARNING) << "Failed to create media pipeline backend.";
+    return false;
   }
+
   audio_bus_ = ::media::AudioBus::Create(audio_params_);
   decoder_buffer_ = new DecoderBufferAdapter(
       new ::media::DecoderBuffer(audio_params_.GetBytesPerBuffer()));
@@ -260,27 +209,27 @@ bool CastAudioOutputStream::Open() {
 }
 
 void CastAudioOutputStream::Close() {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
-
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   VLOG(1) << __FUNCTION__ << " : " << this;
-  backend_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&Backend::Close, backend_->GetWeakPtr()),
-      base::Bind(&CastAudioOutputStream::OnClosed, base::Unretained(this)));
+
+  backend_->Close();
+  // Signal to the manager that we're closed and can be removed.
+  // This should be the last call in the function as it deletes "this".
+  audio_manager_->ReleaseOutputStream(this);
 }
 
 void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(source_callback);
 
   source_callback_ = source_callback;
-  backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Backend::Start, backend_->GetWeakPtr()));
+  backend_->Start();
 
   next_push_time_ = base::TimeTicks::Now();
   if (!push_in_progress_) {
-    audio_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&CastAudioOutputStream::PushBuffer,
-                                            weak_factory_.GetWeakPtr()));
+    audio_manager_->GetTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&CastAudioOutputStream::PushBuffer,
+                              weak_factory_.GetWeakPtr()));
     push_in_progress_ = true;
   }
 
@@ -288,39 +237,27 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
 }
 
 void CastAudioOutputStream::Stop() {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   source_callback_ = nullptr;
-  backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Backend::Stop, backend_->GetWeakPtr()));
+  backend_->Stop();
 }
 
 void CastAudioOutputStream::SetVolume(double volume) {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   volume_ = volume;
-  backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Backend::SetVolume,
-                            backend_->GetWeakPtr(), volume));
+  backend_->SetVolume(volume);
 }
 
 void CastAudioOutputStream::GetVolume(double* volume) {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   *volume = volume_;
 }
 
-void CastAudioOutputStream::OnClosed() {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
-
-  VLOG(1) << __FUNCTION__ << " : " << this;
-  // Signal to the manager that we're closed and can be removed.
-  // This should be the last call in the function as it deletes "this".
-  audio_manager_->ReleaseOutputStream(this);
-}
-
 void CastAudioOutputStream::PushBuffer() {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(push_in_progress_);
 
   if (!source_callback_) {
@@ -343,18 +280,13 @@ void CastAudioOutputStream::PushBuffer() {
   audio_bus_->ToInterleaved(frame_count, audio_params_.bits_per_sample() / 8,
                             decoder_buffer_->writable_data());
 
-  auto completion_cb = ::media::BindToCurrentLoop(
-      base::Bind(&CastAudioOutputStream::OnPushBufferComplete,
-                 weak_factory_.GetWeakPtr()));
-  backend_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&Backend::PushBuffer,
-                                            backend_->GetWeakPtr(),
-                                            decoder_buffer_,
-                                            completion_cb));
+  auto completion_cb = base::Bind(&CastAudioOutputStream::OnPushBufferComplete,
+                                  weak_factory_.GetWeakPtr());
+  backend_->PushBuffer(decoder_buffer_, completion_cb);
 }
 
 void CastAudioOutputStream::OnPushBufferComplete(bool success) {
-  DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(push_in_progress_);
 
   push_in_progress_ = false;
@@ -375,10 +307,9 @@ void CastAudioOutputStream::OnPushBufferComplete(bool success) {
                           base::TimeDelta::FromMilliseconds(kMaxQueuedDataMs);
   delay = std::max(delay, base::TimeDelta());
 
-  audio_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CastAudioOutputStream::PushBuffer,
-                 weak_factory_.GetWeakPtr()),
+  audio_manager_->GetTaskRunner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&CastAudioOutputStream::PushBuffer,
+                            weak_factory_.GetWeakPtr()),
       delay);
   push_in_progress_ = true;
 }

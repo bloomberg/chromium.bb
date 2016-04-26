@@ -35,8 +35,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
   ::media::AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
 
-  // This must be called on cast media thread.
-  // See chromecast::media::MediaMessageLoop.
+  // This must be called on audio thread.
   virtual std::unique_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
 
