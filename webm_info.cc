@@ -18,6 +18,8 @@
 
 #include "common/hdr_util.h"
 #include "common/indent.h"
+#include "common/vp9_header_parser.h"
+#include "common/vp9_level_stats.h"
 #include "common/webm_constants.h"
 #include "common/webm_endian.h"
 
@@ -33,7 +35,7 @@ using libwebm::Indent;
 using libwebm::kNanosecondsPerSecond;
 using libwebm::kNanosecondsPerSecondi;
 
-const char VERSION_STRING[] = "1.0.3.1";
+const char VERSION_STRING[] = "1.0.4.0";
 
 struct Options {
   Options();
@@ -61,6 +63,7 @@ struct Options {
   bool output_encrypted_info;
   bool output_cues;
   bool output_frame_stats;
+  bool output_vp9_level;
 };
 
 Options::Options()
@@ -80,7 +83,8 @@ Options::Options()
       output_clusters_size(false),
       output_encrypted_info(false),
       output_cues(false),
-      output_frame_stats(false) {}
+      output_frame_stats(false),
+      output_vp9_level(false) {}
 
 void Options::SetAll(bool value) {
   output_video = value;
@@ -99,6 +103,7 @@ void Options::SetAll(bool value) {
   output_encrypted_info = value;
   output_cues = value;
   output_frame_stats = value;
+  output_vp9_level = value;
 }
 
 bool Options::MatchesBooleanOption(const string& option, const string& value) {
@@ -155,6 +160,7 @@ void Usage() {
   printf("  -encrypted_info       Output encrypted frame info (false)\n");
   printf("  -cues                 Output Cues entries (false)\n");
   printf("  -frame_stats          Output frame stats (VP9)(false)\n");
+  printf("  -vp9_level            Output VP9 level(false)\n");
   printf("\nOutput options may be negated by prefixing 'no'.\n");
 }
 
@@ -654,7 +660,8 @@ void ParseSuperframeIndex(const uint8_t* data, size_t data_sz,
 }
 
 void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
-                  FrameStats* stats) {
+                  FrameStats* stats, vp9_parser::Vp9HeaderParser* parser,
+                  vp9_parser::Vp9LevelStats* level_stats) {
   if (size < 1)
     return;
 
@@ -668,16 +675,16 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
     stats->window.pop();
 
   do {
+    const size_t frame_length = (count > 0) ? sizes[i] : size;
+    parser->SetFrame(data, frame_length);
+    parser->ParseUncompressedHeader();
+    level_stats->AddFrame(*parser, time_ns);
+
     // const int frame_marker = (data[0] >> 6) & 0x3;
-    // TODO(jzern): profile > 2 uses 3 bits in the header.
-    const int version = (data[0] >> 4) & 0x3;
-    const int key = !((data[0] >> 2) & 0x1);
-    const int altref_frame = !((data[0] >> 1) & 0x1);
-    const int error_resilient_mode = data[0] & 0x1;
-    if (version > 2) {
-      fprintf(o, " profile > 2 is unsupported");
-      return;
-    }
+    const int version = parser->profile();
+    const int key = parser->key();
+    const int altref_frame = parser->altref();
+    const int error_resilient_mode = parser->error_resilient_mode();
 
     if (key &&
         !(size >= 4 && data[1] == 0x49 && data[2] == 0x83 && data[3] == 0x42)) {
@@ -710,7 +717,7 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
             error_resilient_mode);
 
     if (key && size > 4) {
-      fprintf(o, " cs:%d", (data[4] >> 5) & 0x7);
+      fprintf(o, " cs:%d", parser->color_space());
     }
 
     if (count > 0) {
@@ -748,7 +755,9 @@ void PrintVP8Info(const uint8_t* data, int size, FILE* o) {
 bool OutputCluster(const mkvparser::Cluster& cluster,
                    const mkvparser::Tracks& tracks, const Options& options,
                    FILE* o, mkvparser::MkvReader* reader, Indent* indent,
-                   int64_t* clusters_size, FrameStats* stats) {
+                   int64_t* clusters_size, FrameStats* stats,
+                   vp9_parser::Vp9HeaderParser* parser,
+                   vp9_parser::Vp9LevelStats* level_stats) {
   if (clusters_size) {
     // Load the Cluster.
     const mkvparser::BlockEntry* block_entry;
@@ -925,7 +934,7 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
                   PrintVP8Info(data, static_cast<int>(frame.len), o);
                 } else if (codec_id == "V_VP9") {
                   PrintVP9Info(data, static_cast<int>(frame.len), o, time_ns,
-                               stats);
+                               stats, parser, level_stats);
                 }
               }
             }
@@ -1081,6 +1090,8 @@ int main(int argc, char* argv[]) {
       options.output_cues = !strcmp("-cues", argv[i]);
     } else if (Options::MatchesBooleanOption("frame_stats", argv[i])) {
       options.output_frame_stats = !strcmp("-frame_stats", argv[i]);
+    } else if (Options::MatchesBooleanOption("vp9_level", argv[i])) {
+      options.output_vp9_level = !strcmp("-vp9_level", argv[i]);
     }
   }
 
@@ -1166,10 +1177,12 @@ int main(int argc, char* argv[]) {
 
   int64_t clusters_size = 0;
   FrameStats stats;
+  vp9_parser::Vp9HeaderParser parser;
+  vp9_parser::Vp9LevelStats level_stats;
   const mkvparser::Cluster* cluster = segment->GetFirst();
   while (cluster != NULL && !cluster->EOS()) {
     if (!OutputCluster(*cluster, *tracks, options, out, reader.get(), &indent,
-                       &clusters_size, &stats))
+                       &clusters_size, &stats, &parser, &level_stats))
       return EXIT_FAILURE;
     cluster = segment->GetNext(cluster);
   }
@@ -1204,6 +1217,21 @@ int main(int argc, char* argv[]) {
         stats.max_window_end_ns > kNanosecondsPerSecondi ? sec_end - 1.0 : 0.0;
     fprintf(out, "Maximum Window:%g-%g seconds  Window fps:%" PRId64 "\n",
             sec_start, sec_end, stats.max_window_size);
+  }
+
+  if (options.output_vp9_level) {
+    level_stats.set_duration(segment->GetInfo()->GetDuration());
+    const vp9_parser::Vp9Level level = level_stats.GetLevel();
+    fprintf(out, "VP9 Level:%d\n", level);
+    fprintf(out, "mlsr:%" PRId64 " mlps:%" PRId64
+                 " abr:%g mcs:%g cr:%g mct:%d"
+                 " mad:%d mrf:%d\n",
+            level_stats.GetMaxLumaSampleRate(),
+            level_stats.GetMaxLumaPictureSize(),
+            level_stats.GetAverageBitRate(), level_stats.GetMaxCpbSize(),
+            level_stats.GetCompressionRatio(), level_stats.GetMaxColumnTiles(),
+            level_stats.GetMinimumAltrefDistance(),
+            level_stats.GetMaxReferenceFrames());
   }
   return EXIT_SUCCESS;
 }

@@ -14,6 +14,7 @@ set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Build/test configuration flags. Defined here for visibility.
 option(ENABLE_WEBMTS "Enables WebM PES/TS support." ON)
+option(ENABLE_WEBMINFO "Enables building webm_info." ON)
 option(ENABLE_TESTS "Enables tests." OFF)
 option(ENABLE_IWYU "Enables include-what-you-use support." OFF)
 option(ENABLE_WERROR "Enable warnings as errors." OFF)
@@ -24,7 +25,7 @@ set(GTEST_SRC_DIR "${LIBWEBM_SRC_DIR}/../googletest" CACHE PATH
 set(GTEST_BUILD_DIR "${CMAKE_BINARY_DIR}/googletest_build")
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx_flags.cmake")
-if (ENABLE_TESTS OR ENABLE_WEBMTS)
+if (ENABLE_TESTS OR ENABLE_WEBMTS OR ENABLE_WEBMINFO)
   include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx11_tests.cmake")
 endif ()
 
@@ -103,15 +104,21 @@ add_executable(vttdemux
                "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
 target_link_libraries(vttdemux LINK_PUBLIC webm)
 
+if (ENABLE_WEBMINFO)
 # Webm_info section.
 add_executable(webm_info
                "${LIBWEBM_SRC_DIR}/common/indent.cc"
                "${LIBWEBM_SRC_DIR}/common/indent.h"
+               "${LIBWEBM_SRC_DIR}/common/vp9_header_parser.cc"
+               "${LIBWEBM_SRC_DIR}/common/vp9_header_parser.h"
+               "${LIBWEBM_SRC_DIR}/common/vp9_level_stats.cc"
+               "${LIBWEBM_SRC_DIR}/common/vp9_level_stats.h"
                "${LIBWEBM_SRC_DIR}/common/webm_constants.h"
                "${LIBWEBM_SRC_DIR}/common/webm_endian.cc"
                "${LIBWEBM_SRC_DIR}/common/webm_endian.h"
                "${LIBWEBM_SRC_DIR}/webm_info.cc")
 target_link_libraries(webm_info LINK_PUBLIC webm)
+endif ()
 
 if (ENABLE_WEBMTS)
   # webmts (PES/TS support) library section.

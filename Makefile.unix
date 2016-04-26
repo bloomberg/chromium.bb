@@ -12,12 +12,10 @@ WEBMOBJS  += common/file_util.o common/hdr_util.o
 OBJSA     := $(WEBMOBJS:.o=_a.o)
 OBJSSO    := $(WEBMOBJS:.o=_so.o)
 VTTOBJS   := webvtt/vttreader.o webvtt/webvttparser.o sample_muxer_metadata.o
-EXEOBJS   := sample.o sample_muxer.o dumpvtt.o vttdemux.o webm_info.o
-INFOOBJS  := common/indent.o common/webm_endian.o
+EXEOBJS   := sample.o sample_muxer.o dumpvtt.o vttdemux.o
 DEPS      := $(WEBMOBJS:.o=.d) $(OBJECTS1:.o=.d) $(OBJECTS2:.o=.d)
 DEPS      += $(OBJECTS3:.o=.d) $(OBJECTS4:.o=.d) $(OBJSA:.o=.d) $(OBJSSO:.o=.d)
-DEPS      += $(VTTOBJS:.o=.d) $(EXEOBJS:.o=.d) $(INFOOBJS:.o=.d)
-EXES      := sample_muxer sample dumpvtt vttdemux webm_info
+DEPS      += $(VTTOBJS:.o=.d) $(EXEOBJS:.o=.d)
 CLEAN     := $(EXEOBJS) $(VTTOBJS) $(WEBMOBJS) $(OBJSA) $(OBJSSO) $(LIBWEBMA)
 CLEAN     += $(LIBWEBMSO) $(EXES) $(DEPS) $(INFOOBJS)
 
@@ -33,9 +31,6 @@ dumpvtt: dumpvtt.o $(VTTOBJS) $(WEBMOBJS)
 	$(CXX) $^ -o $@
 
 vttdemux: vttdemux.o $(VTTOBJS) $(LIBWEBMA)
-	$(CXX) $^ -o $@
-
-webm_info: webm_info.o $(INFOOBJS) $(LIBWEBMA)
 	$(CXX) $^ -o $@
 
 shared: $(LIBWEBMSO)

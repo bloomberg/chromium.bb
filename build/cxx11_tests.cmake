@@ -135,5 +135,6 @@ if (NOT HAVE_UNIQUE_PTR
   # TODO(tomfinegan): Update settings at the include site instead of in here.
   set(ENABLE_TESTS OFF)
   set(ENABLE_WEBMTS OFF)
+  set(ENABLE_WEBMINFO OFF)
   message(WARNING "C++11 feature(s) not supported, tests and webmts disabled.")
 endif ()

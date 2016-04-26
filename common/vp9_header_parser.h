@@ -59,9 +59,12 @@ class Vp9HeaderParser {
   bool ParseUncompressedHeader();
 
   size_t frame_size() const { return frame_size_; }
+  int profile() const { return profile_; }
   int key() const { return key_; }
   int altref() const { return altref_; }
+  int error_resilient_mode() const { return error_resilient_mode_; }
   int bit_depth() const { return bit_depth_; }
+  int color_space() const { return color_space_; }
   int width() const { return width_; }
   int height() const { return height_; }
   int refresh_frame_flags() const { return refresh_frame_flags_; }
