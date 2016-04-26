@@ -165,13 +165,13 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest('addEventListener', function() {
     var args = $Array.slice(arguments);
     sendRequest(this.name, args, this.definition.parameters,
-                {forIOThread: true});
+                {__proto__: null, forIOThread: true});
   });
 
   apiFunctions.setHandleRequest('eventHandled', function() {
     var args = $Array.slice(arguments);
     sendRequest(this.name, args, this.definition.parameters,
-                {forIOThread: true});
+                {__proto__: null, forIOThread: true});
   });
 });
 

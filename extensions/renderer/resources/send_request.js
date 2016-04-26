@@ -9,7 +9,7 @@ var natives = requireNative('sendRequest');
 var validate = require('schemaUtils').validate;
 
 // All outstanding requests from sendRequest().
-var requests = {};
+var requests = { __proto__: null };
 
 // Used to prevent double Activity Logging for API calls that use both custom
 // bindings and ExtensionFunctions (via sendRequest).
@@ -88,7 +88,7 @@ function handleResponse(requestId, name, success, responseList, error) {
 }
 
 function prepareRequest(args, argSchemas) {
-  var request = {};
+  var request = { __proto__: null };
   var argCount = args.length;
 
   // Look for callback param.
@@ -99,11 +99,7 @@ function prepareRequest(args, argSchemas) {
     --argCount;
   }
 
-  request.args = [];
-  for (var k = 0; k < argCount; k++) {
-    request.args[k] = args[k];
-  }
-
+  request.args = $Array.slice(args, 0, argCount);
   return request;
 }
 
@@ -119,7 +115,8 @@ function prepareRequest(args, argSchemas) {
 function sendRequest(functionName, args, argSchemas, optArgs) {
   calledSendRequest = true;
   if (!optArgs)
-    optArgs = {};
+    optArgs = { __proto__: null };
+  logging.DCHECK(optArgs.__proto__ == null);
   var request = prepareRequest(args, argSchemas);
   request.stack = optArgs.stack || exceptionHandler.getExtensionStackTrace();
   if (optArgs.customCallback) {

@@ -120,7 +120,7 @@ function genHandle(name, failure_function) {
       if (success) {
         sendRequest(that.name,
             [id, notification_details, callback],
-            that.definition.parameters, {stack: stack});
+            that.definition.parameters, {__proto__: null, stack: stack});
         return;
       }
       lastError.run(name,

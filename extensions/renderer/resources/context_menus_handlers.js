@@ -88,14 +88,15 @@ function createContextMenusHandlers(isWebview) {
   };
 
   // To be used with apiFunctions.setHandleRequest
-  var requestHandlers = {};
+  var requestHandlers = { __proto__: null };
   // To be used with apiFunctions.setCustomCallback
-  var callbacks = {};
+  var callbacks = { __proto__: null };
 
   requestHandlers.create = function() {
     var createProperties = isWebview ? arguments[1] : arguments[0];
     createProperties.generatedId = contextMenuNatives.GetNextContextMenuId();
     var optArgs = {
+      __proto__: null,
       customCallback: this.customCallback,
     };
     sendRequest(this.name, arguments, this.definition.parameters, optArgs);

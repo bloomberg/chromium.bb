@@ -27,14 +27,14 @@ binding.registerCustomHook(function(bindingsAPI) {
     pendingRequests[id] = callback;
     sendRequest(this.name,
                 [id, sources, request, onRequestResult.bind(null, id)],
-                this.definition.parameters, {});
+                this.definition.parameters);
     return id;
   });
 
   apiFunctions.setHandleRequest('cancelChooseDesktopMedia', function(id) {
     if (id in pendingRequests) {
       delete pendingRequests[id];
-      sendRequest(this.name, [id], this.definition.parameters, {});
+      sendRequest(this.name, [id], this.definition.parameters);
     }
   });
 });

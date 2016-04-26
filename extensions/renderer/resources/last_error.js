@@ -68,10 +68,7 @@ function hasError(targetChrome) {
     throw new Error('No target chrome to check');
 
   assertRuntimeIsAvailable();
-  if ('lastError' in targetChrome.runtime)
-    return true;
-
-  return false;
+  return $Object.hasOwnProperty(targetChrome.runtime, 'lastError');
 };
 
 /**

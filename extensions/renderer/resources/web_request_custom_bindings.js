@@ -14,7 +14,7 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest('handlerBehaviorChanged', function() {
     var args = $Array.slice(arguments);
     sendRequest(this.name, args, this.definition.parameters,
-                {forIOThread: true});
+                {__proto__: null, forIOThread: true});
   });
 });
 

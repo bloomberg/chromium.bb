@@ -37,7 +37,7 @@ function StorageArea(namespace, schema) {
           'storage.' + functionName,
           $Array.concat([namespace], args),
           extendSchema(funSchema.definition.parameters),
-          {preserveNullInObjects: true});
+          {__proto__: null, preserveNullInObjects: true});
     };
   }
   var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];

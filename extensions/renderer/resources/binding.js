@@ -421,6 +421,7 @@ Binding.prototype = {
             retval = $Function.apply(this.handleRequest, this, args);
           } else {
             var optArgs = {
+              __proto__: null,
               customCallback: this.customCallback
             };
             retval = sendRequest(this.name, args,
