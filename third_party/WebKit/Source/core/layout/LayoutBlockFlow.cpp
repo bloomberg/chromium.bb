@@ -999,18 +999,16 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding()
     // First add in floats from the parent. Self-collapsing blocks let their parent track any floats that intrude into
     // them (as opposed to floats they contain themselves) so check for those here too. If margin collapsing has moved
     // us up past the top a previous sibling then we need to check for floats from the parent too.
-    LayoutUnit logicalTopOffset = logicalTop();
-    bool parentFloatsMayIntrude = !siblingFloatMayIntrude && (!prev || toLayoutBlockFlow(prev)->isSelfCollapsingBlock() || toLayoutBlock(prev)->logicalTop() > logicalTopOffset)
-        && parentBlockFlow->lowestFloatLogicalBottom() > logicalTopOffset;
+    bool parentFloatsMayIntrude = !siblingFloatMayIntrude && (!prev || toLayoutBlockFlow(prev)->isSelfCollapsingBlock() || toLayoutBlock(prev)->logicalTop() > logicalTop())
+        && parentBlockFlow->lowestFloatLogicalBottom() > logicalTop();
     if (siblingFloatMayIntrude || parentFloatsMayIntrude)
-        addIntrudingFloats(parentBlockFlow, parentBlockFlow->logicalLeftOffsetForContent(), logicalTopOffset);
+        addIntrudingFloats(parentBlockFlow, parentBlockFlow->logicalLeftOffsetForContent(), logicalTop());
 
     // Add overhanging floats from the previous LayoutBlockFlow, but only if it has a float that intrudes into our space.
     if (prev) {
-        LayoutBlockFlow* blockFlow = toLayoutBlockFlow(prev);
-        logicalTopOffset -= blockFlow->logicalTop();
-        if (blockFlow->lowestFloatLogicalBottom() > logicalTopOffset)
-            addIntrudingFloats(blockFlow, LayoutUnit(), logicalTopOffset);
+        LayoutBlockFlow* previousBlockFlow = toLayoutBlockFlow(prev);
+        if (logicalTop() < previousBlockFlow->logicalTop() + previousBlockFlow->lowestFloatLogicalBottom())
+            addIntrudingFloats(previousBlockFlow, LayoutUnit(), logicalTop() - previousBlockFlow->logicalTop());
     }
 
     if (childrenInline()) {
