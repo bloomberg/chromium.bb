@@ -243,6 +243,14 @@ public class WebViewLayoutTest
                 "blink-apis/battery-status/battery-callback-expected.txt");
     }
 
+    @MediumTest
+    public void testEMEPermission() throws Exception {
+        mTestActivity.setGrantPermission(true);
+        runWebViewLayoutTest("blink-apis/eme/eme.html", "blink-apis/eme/eme-expected.txt");
+        mTestActivity.setGrantPermission(false);
+    }
+
+
     // test helper methods
 
     private void runWebViewLayoutTest(final String fileName, final String fileNameExpected)
