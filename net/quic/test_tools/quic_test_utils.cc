@@ -114,6 +114,8 @@ MockFramerVisitor::MockFramerVisitor() {
 
   ON_CALL(*this, OnStopWaitingFrame(_)).WillByDefault(testing::Return(true));
 
+  ON_CALL(*this, OnPaddingFrame(_)).WillByDefault(testing::Return(true));
+
   ON_CALL(*this, OnPingFrame(_)).WillByDefault(testing::Return(true));
 
   ON_CALL(*this, OnRstStreamFrame(_)).WillByDefault(testing::Return(true));
@@ -153,6 +155,10 @@ bool NoOpFramerVisitor::OnAckFrame(const QuicAckFrame& frame) {
 }
 
 bool NoOpFramerVisitor::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnPaddingFrame(const QuicPaddingFrame& frame) {
   return true;
 }
 

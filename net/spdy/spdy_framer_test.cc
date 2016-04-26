@@ -318,12 +318,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
             << fin << ")   data:\n"
             << base::HexEncode(data, len);
     EXPECT_EQ(header_stream_id_, stream_id);
-    if (!FLAGS_spdy_on_stream_end) {
-      if (len == 0) {
-        ++end_of_stream_count_;
-      }
-    }
-
     data_bytes_ += len;
   }
 
@@ -4598,8 +4592,6 @@ TEST_P(SpdyFramerTest, CatchProbableHttpResponse) {
 }
 
 TEST_P(SpdyFramerTest, DataFrameFlagsV2V3) {
-  FLAGS_spdy_on_stream_end = true;
-
   if (!IsSpdy3()) {
     return;
   }
@@ -4639,52 +4631,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV2V3) {
   } while (++flags != 0);
 }
 
-TEST_P(SpdyFramerTest, DataFrameFlagsV2V3disabled) {
-  FLAGS_spdy_on_stream_end = false;
-
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  uint8_t flags = 0;
-  do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
-
-    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-    SpdyFramer framer(spdy_version_);
-    framer.set_visitor(&visitor);
-
-    SpdyDataIR data_ir(1, "hello");
-    SpdySerializedFrame frame(framer.SerializeData(data_ir));
-    SetFrameFlags(&frame, flags, spdy_version_);
-
-    if (flags & ~DATA_FLAG_FIN) {
-      EXPECT_CALL(visitor, OnError(_));
-    } else {
-      EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
-      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, false));
-      if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
-      }
-    }
-
-    framer.ProcessInput(frame.data(), frame.size());
-    if (flags & ~DATA_FLAG_FIN) {
-      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS,
-                framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else {
-      EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    }
-  } while (++flags != 0);
-}
-
 TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
-  FLAGS_spdy_on_stream_end = true;
-
   if (!IsHttp2()) {
     return;
   }
@@ -4737,64 +4684,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
   } while (++flags != 0);
 }
 
-TEST_P(SpdyFramerTest, DataFrameFlagsV4disabled) {
-  FLAGS_spdy_on_stream_end = false;
-
-  if (!IsHttp2()) {
-    return;
-  }
-
-  uint8_t valid_data_flags = DATA_FLAG_FIN | DATA_FLAG_PADDED;
-
-  uint8_t flags = 0;
-  do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
-
-    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-    SpdyFramer framer(spdy_version_);
-    framer.set_visitor(&visitor);
-
-    SpdyDataIR data_ir(1, "hello");
-    SpdySerializedFrame frame(framer.SerializeData(data_ir));
-    SetFrameFlags(&frame, flags, spdy_version_);
-
-    if (flags & ~valid_data_flags) {
-      EXPECT_CALL(visitor, OnError(_));
-    } else {
-      EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
-      if (flags & DATA_FLAG_PADDED) {
-        // The first byte of payload is parsed as padding length.
-        EXPECT_CALL(visitor, OnStreamPadding(_, 1));
-        // Expect Error since the frame ends prematurely.
-        EXPECT_CALL(visitor, OnError(_));
-      } else {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, false));
-        if (flags & DATA_FLAG_FIN) {
-          EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
-        }
-      }
-    }
-
-    framer.ProcessInput(frame.data(), frame.size());
-    if (flags & ~valid_data_flags) {
-      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else if (flags & DATA_FLAG_PADDED) {
-      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_PADDING, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else {
-      EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    }
-  } while (++flags != 0);
-}
-
 TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
-  FLAGS_spdy_on_stream_end = true;
-
   if (!IsSpdy3()) {
     return;
   }
@@ -4848,65 +4738,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
   } while (++flags != 0);
 }
 
-TEST_P(SpdyFramerTest, SynStreamFrameFlagsDisabled) {
-  FLAGS_spdy_on_stream_end = false;
-
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  uint8_t flags = 0;
-  do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
-
-    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-    testing::StrictMock<test::MockDebugVisitor> debug_visitor;
-    SpdyFramer framer(spdy_version_);
-    framer.set_visitor(&visitor);
-    framer.set_debug_visitor(&debug_visitor);
-
-    EXPECT_CALL(debug_visitor, OnSendCompressedFrame(8, SYN_STREAM, _, _));
-
-    SpdySynStreamIR syn_stream(8);
-    syn_stream.set_associated_to_stream_id(3);
-    syn_stream.set_priority(1);
-    syn_stream.SetHeader("foo", "bar");
-    SpdySerializedFrame frame(framer.SerializeSynStream(syn_stream));
-    SetFrameFlags(&frame, flags, spdy_version_);
-
-    if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
-      EXPECT_CALL(visitor, OnError(_));
-    } else {
-      EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(8, SYN_STREAM, _));
-      EXPECT_CALL(visitor, OnSynStream(8, 3, 1, flags & CONTROL_FLAG_FIN,
-                                       flags & CONTROL_FLAG_UNIDIRECTIONAL));
-      EXPECT_CALL(visitor, OnControlFrameHeaderData(8, _, _))
-          .WillRepeatedly(testing::Return(true));
-      if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
-      } else {
-        // Do not close the stream if we are expecting a CONTINUATION frame.
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true)).Times(0);
-      }
-    }
-
-    framer.ProcessInput(frame.data(), frame.size());
-    if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
-      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
-                framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else {
-      EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    }
-  } while (++flags != 0);
-}
-
 TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
-  FLAGS_spdy_on_stream_end = true;
-
   if (!IsSpdy3()) {
     return;
   }
@@ -4932,51 +4764,6 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
           .WillRepeatedly(testing::Return(true));
       if (flags & DATA_FLAG_FIN) {
         EXPECT_CALL(visitor, OnStreamEnd(_));
-      }
-    }
-
-    framer.ProcessInput(frame.data(), frame.size());
-    if (flags & ~CONTROL_FLAG_FIN) {
-      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
-                framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else {
-      EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    }
-  } while (++flags != 0);
-}
-
-TEST_P(SpdyFramerTest, SynReplyFrameFlagsDisabled) {
-  FLAGS_spdy_on_stream_end = false;
-
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  uint8_t flags = 0;
-  do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
-
-    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-    SpdyFramer framer(spdy_version_);
-    framer.set_visitor(&visitor);
-
-    SpdySynReplyIR syn_reply(37);
-    syn_reply.SetHeader("foo", "bar");
-    SpdySerializedFrame frame(framer.SerializeSynReply(syn_reply));
-    SetFrameFlags(&frame, flags, spdy_version_);
-
-    if (flags & ~CONTROL_FLAG_FIN) {
-      EXPECT_CALL(visitor, OnError(_));
-    } else {
-      EXPECT_CALL(visitor, OnSynReply(37, flags & CONTROL_FLAG_FIN));
-      EXPECT_CALL(visitor, OnControlFrameHeaderData(37, _, _))
-          .WillRepeatedly(testing::Return(true));
-      if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
       }
     }
 
@@ -5126,8 +4913,6 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, HeadersFrameFlags) {
-  FLAGS_spdy_on_stream_end = true;
-
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
@@ -5179,66 +4964,6 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
       EXPECT_CALL(visitor, OnStreamEnd(_)).Times(0);
     }
 
-    framer.ProcessInput(frame.data(), frame.size());
-    EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-    EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-        << SpdyFramer::ErrorCodeToString(framer.error_code());
-  } while (++flags != 0);
-}
-
-TEST_P(SpdyFramerTest, HeadersFrameFlagsDisabled) {
-  FLAGS_spdy_on_stream_end = false;
-
-  uint8_t flags = 0;
-  do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
-
-    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-    SpdyFramer framer(spdy_version_);
-    framer.set_visitor(&visitor);
-
-    SpdyHeadersIR headers_ir(57);
-    if (IsHttp2() && (flags & HEADERS_FLAG_PRIORITY)) {
-      headers_ir.set_priority(3);
-      headers_ir.set_has_priority(true);
-      headers_ir.set_parent_stream_id(5);
-      headers_ir.set_exclusive(true);
-    }
-    headers_ir.SetHeader("foo", "bar");
-    SpdySerializedFrame frame(framer.SerializeHeaders(headers_ir));
-    uint8_t set_flags = flags;
-    if (IsHttp2()) {
-      // TODO(jgraettinger): Add padding to SpdyHeadersIR,
-      // and implement framing.
-      set_flags &= ~HEADERS_FLAG_PADDED;
-    }
-    SetFrameFlags(&frame, set_flags, spdy_version_);
-
-    // Expected callback values
-    SpdyStreamId stream_id = 57;
-    bool has_priority = false;
-    SpdyPriority priority = 0;
-    SpdyStreamId parent_stream_id = 0;
-    bool exclusive = false;
-    bool fin = flags & CONTROL_FLAG_FIN;
-    bool end = IsSpdy3() || (flags & HEADERS_FLAG_END_HEADERS);
-    if (IsHttp2() && flags & HEADERS_FLAG_PRIORITY) {
-      has_priority = true;
-      priority = 3;
-      parent_stream_id = 5;
-      exclusive = true;
-    }
-    EXPECT_CALL(visitor, OnHeaders(stream_id, has_priority, priority,
-                                   parent_stream_id, exclusive, fin, end));
-    EXPECT_CALL(visitor, OnControlFrameHeaderData(57, _, _))
-        .WillRepeatedly(testing::Return(true));
-    if (flags & DATA_FLAG_FIN &&
-        (IsSpdy3() || flags & HEADERS_FLAG_END_HEADERS)) {
-      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
-    } else {
-      // Do not close the stream if we are expecting a CONTINUATION frame.
-      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true)).Times(0);
-    }
     framer.ProcessInput(frame.data(), frame.size());
     EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
     EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())

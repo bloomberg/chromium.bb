@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/chacha20_poly1305_rfc7539_decrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_decrypter.h"
 
 #include <memory>
 
@@ -112,7 +112,7 @@ namespace test {
 
 // DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the plaintext.
-QuicData* DecryptWithNonce(ChaCha20Poly1305Rfc7539Decrypter* decrypter,
+QuicData* DecryptWithNonce(ChaCha20Poly1305Decrypter* decrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece ciphertext) {
@@ -136,11 +136,7 @@ QuicData* DecryptWithNonce(ChaCha20Poly1305Rfc7539Decrypter* decrypter,
   return new QuicData(output.release(), output_length, true);
 }
 
-TEST(ChaCha20Poly1305Rfc7539DecrypterTest, Decrypt) {
-  if (!ChaCha20Poly1305Rfc7539Decrypter::IsSupported()) {
-    VLOG(1) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
+TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
   for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // If not present then decryption is expected to fail.
     bool has_pt = test_vectors[i].pt;
@@ -161,7 +157,7 @@ TEST(ChaCha20Poly1305Rfc7539DecrypterTest, Decrypt) {
       ASSERT_TRUE(DecodeHexString(test_vectors[i].pt, &pt));
     }
 
-    ChaCha20Poly1305Rfc7539Decrypter decrypter;
+    ChaCha20Poly1305Decrypter decrypter;
     ASSERT_TRUE(decrypter.SetKey(key));
     std::unique_ptr<QuicData> decrypted(DecryptWithNonce(
         &decrypter, fixed + iv,

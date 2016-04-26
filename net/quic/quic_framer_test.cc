@@ -199,6 +199,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     STLDeleteElements(&stream_frames_);
     STLDeleteElements(&ack_frames_);
     STLDeleteElements(&stop_waiting_frames_);
+    STLDeleteElements(&padding_frames_);
     STLDeleteElements(&ping_frames_);
     STLDeleteElements(&stream_data_);
   }
@@ -272,6 +273,11 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnPaddingFrame(const QuicPaddingFrame& frame) override {
+    padding_frames_.push_back(new QuicPaddingFrame(frame));
+    return true;
+  }
+
   bool OnPingFrame(const QuicPingFrame& frame) override {
     ++frame_count_;
     ping_frames_.push_back(new QuicPingFrame(frame));
@@ -326,6 +332,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   vector<QuicStreamFrame*> stream_frames_;
   vector<QuicAckFrame*> ack_frames_;
   vector<QuicStopWaitingFrame*> stop_waiting_frames_;
+  vector<QuicPaddingFrame*> padding_frames_;
   vector<QuicPingFrame*> ping_frames_;
   QuicRstStreamFrame rst_stream_frame_;
   QuicConnectionCloseFrame connection_close_frame_;

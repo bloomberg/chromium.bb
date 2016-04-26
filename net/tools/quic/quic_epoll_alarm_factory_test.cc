@@ -3,13 +3,26 @@
 // found in the LICENSE file.
 
 #include "net/tools/quic/quic_epoll_alarm_factory.h"
+
+#include "net/tools/quic/quic_epoll_clock.h"
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
-#include "testing/base/public/gmock.h"
-#include "testing/base/public/gunit.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
 namespace {
+
+class TestDelegate : public QuicAlarm::Delegate {
+ public:
+  TestDelegate() : fired_(false) {}
+
+  void OnAlarm() override { fired_ = true; }
+
+  bool fired() const { return fired_; }
+
+ private:
+  bool fired_;
+};
 
 // The boolean parameter denotes whether or not to use an arena.
 class QuicEpollAlarmFactoryTest : public ::testing::TestWithParam<bool> {

@@ -779,7 +779,7 @@ SerializedPacket::SerializedPacket(QuicPathId path_id,
     : encrypted_buffer(encrypted_buffer),
       encrypted_length(encrypted_length),
       has_crypto_handshake(NOT_HANDSHAKE),
-      needs_padding(false),
+      num_padding_bytes(0),
       path_id(path_id),
       packet_number(packet_number),
       packet_number_length(packet_number_length),
@@ -804,7 +804,7 @@ TransmissionInfo::TransmissionInfo()
       in_flight(false),
       is_unackable(false),
       has_crypto_handshake(false),
-      needs_padding(false),
+      num_padding_bytes(0),
       retransmission(0) {}
 
 TransmissionInfo::TransmissionInfo(EncryptionLevel level,
@@ -813,7 +813,7 @@ TransmissionInfo::TransmissionInfo(EncryptionLevel level,
                                    QuicTime sent_time,
                                    QuicPacketLength bytes_sent,
                                    bool has_crypto_handshake,
-                                   bool needs_padding)
+                                   int num_padding_bytes)
     : encryption_level(level),
       packet_number_length(packet_number_length),
       bytes_sent(bytes_sent),
@@ -823,7 +823,7 @@ TransmissionInfo::TransmissionInfo(EncryptionLevel level,
       in_flight(false),
       is_unackable(false),
       has_crypto_handshake(has_crypto_handshake),
-      needs_padding(needs_padding),
+      num_padding_bytes(num_padding_bytes),
       retransmission(0) {}
 
 TransmissionInfo::TransmissionInfo(const TransmissionInfo& other) = default;

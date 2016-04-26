@@ -206,12 +206,12 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   PendingRetransmission CreateRetransmission(
       const QuicFrames& retransmittable_frames,
       bool has_crypto_handshake,
-      bool needs_padding,
+      int num_padding_bytes,
       EncryptionLevel encryption_level,
       QuicPacketNumberLength packet_number_length) {
     return PendingRetransmission(1u, 1u, NOT_RETRANSMISSION,
                                  retransmittable_frames, has_crypto_handshake,
-                                 needs_padding, encryption_level,
+                                 num_padding_bytes, encryption_level,
                                  packet_number_length);
   }
 
@@ -416,7 +416,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   frames.push_back(QuicFrame(stream_frame));
   char buffer[kMaxPacketSize];
   PendingRetransmission retransmission(CreateRetransmission(
-      frames, true /* has_crypto_handshake */, true /* needs padding */,
+      frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
       ENCRYPTION_NONE, PACKET_1BYTE_PACKET_NUMBER));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
@@ -436,6 +436,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
     EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
     EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
   }
   ProcessPacket(serialized_packet_);
@@ -450,7 +451,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeCryptoFrameWithForwardSecurity) {
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
   char buffer[kMaxPacketSize];
   PendingRetransmission retransmission(CreateRetransmission(
-      frames, true /* has_crypto_handshake */, true /* needs padding */,
+      frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
       ENCRYPTION_NONE,
       QuicPacketCreatorPeer::NextPacketNumberLength(&creator_)));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -468,7 +469,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFrameWithForwardSecurity) {
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
   char buffer[kMaxPacketSize];
   PendingRetransmission retransmission(CreateRetransmission(
-      frames, false /* has_crypto_handshake */, false /* needs padding */,
+      frames, false /* has_crypto_handshake */, 0 /* no padding */,
       ENCRYPTION_NONE,
       QuicPacketCreatorPeer::NextPacketNumberLength(&creator_)));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -478,7 +479,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFrameWithForwardSecurity) {
   delete stream_frame;
 }
 
-TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
+TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPadding) {
   QuicFrame frame;
   QuicIOVector io_vector(MakeIOVector("fake handshake message data"));
   QuicPacketCreatorPeer::CreateStreamFrame(&creator_, kCryptoStreamId,
@@ -487,13 +488,52 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
   frames.push_back(frame);
   char buffer[kMaxPacketSize];
   PendingRetransmission retransmission(CreateRetransmission(
-      frames, true /* has_crypto_handshake */, true /* needs padding */,
+      frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
       ENCRYPTION_NONE,
       QuicPacketCreatorPeer::NextPacketNumberLength(&creator_)));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
   EXPECT_EQ(kDefaultMaxPacketSize, serialized_packet_.encrypted_length);
+  delete frame.stream_frame;
+}
+
+TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSpecifiedPadding) {
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("fake message data"));
+  QuicPacketCreatorPeer::CreateStreamFrame(&creator_, kCryptoStreamId,
+                                           io_vector, 0u, 0u, false, &frame);
+
+  const int kNumPaddingBytes1 = 4;
+  int packet_size = 0;
+  {
+    QuicFrames frames;
+    frames.push_back(frame);
+    char buffer[kMaxPacketSize];
+    PendingRetransmission retransmission(CreateRetransmission(
+        frames, false /* has_crypto_handshake */,
+        kNumPaddingBytes1 /* padding bytes */, ENCRYPTION_NONE,
+        QuicPacketCreatorPeer::NextPacketNumberLength(&creator_)));
+    EXPECT_CALL(delegate_, OnSerializedPacket(_))
+        .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+    creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
+    packet_size = serialized_packet_.encrypted_length;
+  }
+
+  const int kNumPaddingBytes2 = 44;
+  QuicFrames frames;
+  frames.push_back(frame);
+  char buffer[kMaxPacketSize];
+  PendingRetransmission retransmission(CreateRetransmission(
+      frames, false /* has_crypto_handshake */,
+      kNumPaddingBytes2 /* padding bytes */, ENCRYPTION_NONE,
+      QuicPacketCreatorPeer::NextPacketNumberLength(&creator_)));
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+  creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
+
+  EXPECT_EQ(packet_size + kNumPaddingBytes2 - kNumPaddingBytes1,
+            serialized_packet_.encrypted_length);
   delete frame.stream_frame;
 }
 
@@ -514,7 +554,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
     frames.push_back(frame);
     char buffer[kMaxPacketSize];
     PendingRetransmission retransmission(CreateRetransmission(
-        frames, true /* has_crypto_handshake */, true /* needs padding */,
+        frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
         ENCRYPTION_NONE,
         QuicPacketCreatorPeer::NextPacketNumberLength(&creator_)));
     EXPECT_CALL(delegate_, OnSerializedPacket(_))

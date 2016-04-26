@@ -278,9 +278,18 @@ size_t QuicFramer::GetSerializedFrameLength(
     return 0;
   }
   if (frame.type == PADDING_FRAME) {
-    // PADDING implies end of packet.
-    return free_bytes;
+    if (frame.padding_frame.num_padding_bytes == -1) {
+      // Full padding to the end of the packet.
+      return free_bytes;
+    } else {
+      // Lite padding.
+      return free_bytes <
+                     static_cast<size_t>(frame.padding_frame.num_padding_bytes)
+                 ? free_bytes
+                 : frame.padding_frame.num_padding_bytes;
+    }
   }
+
   size_t frame_len =
       ComputeFrameLength(frame, last_frame, packet_number_length);
   if (frame_len <= free_bytes) {
@@ -1101,9 +1110,14 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
     }
 
     switch (frame_type) {
-      case PADDING_FRAME:
+      case PADDING_FRAME: {
+        QuicPaddingFrame frame(reader->BytesRemaining());
+        if (!visitor_->OnPaddingFrame(frame)) {
+          DVLOG(1) << "Visitor asked to stop further processing.";
+        }
         // We're done with the packet.
         return true;
+      }
 
       case RST_STREAM_FRAME: {
         QuicRstStreamFrame frame;

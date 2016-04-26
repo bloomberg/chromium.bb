@@ -19,7 +19,7 @@
 #include "net/quic/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/cert_compressor.h"
-#include "net/quic/crypto/chacha20_poly1305_rfc7539_encrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_encrypter.h"
 #include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
@@ -296,8 +296,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
   } else {
     msg.SetTaglist(kKEXS, kC255, 0);
   }
-  if (FLAGS_quic_crypto_server_config_default_has_chacha20 &&
-      ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
+  if (FLAGS_quic_crypto_server_config_default_has_chacha20) {
     msg.SetTaglist(kAEAD, kAESG, kCC20, 0);
   } else {
     msg.SetTaglist(kAEAD, kAESG, 0);
@@ -1310,13 +1309,11 @@ const string QuicCryptoServerConfig::CompressChain(
     const string& client_cached_cert_hashes,
     const CommonCertSets* common_sets) const {
   // Check whether the compressed certs is available in the cache.
-  if (FLAGS_quic_use_cached_compressed_certs) {
-    DCHECK(compressed_certs_cache);
-    const string* cached_value = compressed_certs_cache->GetCompressedCert(
-        chain, client_common_set_hashes, client_cached_cert_hashes);
-    if (cached_value) {
-      return *cached_value;
-    }
+  DCHECK(compressed_certs_cache);
+  const string* cached_value = compressed_certs_cache->GetCompressedCert(
+      chain, client_common_set_hashes, client_cached_cert_hashes);
+  if (cached_value) {
+    return *cached_value;
   }
 
   const string compressed =
@@ -1324,10 +1321,8 @@ const string QuicCryptoServerConfig::CompressChain(
                                     client_common_set_hashes, common_sets);
 
   // Insert the newly compressed cert to cache.
-  if (FLAGS_quic_use_cached_compressed_certs) {
-    compressed_certs_cache->Insert(chain, client_common_set_hashes,
-                                   client_cached_cert_hashes, compressed);
-  }
+  compressed_certs_cache->Insert(chain, client_common_set_hashes,
+                                 client_cached_cert_hashes, compressed);
   return compressed;
 }
 

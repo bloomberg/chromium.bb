@@ -159,7 +159,7 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
                                     size_t iov_offset,
                                     QuicStreamOffset offset,
                                     bool fin,
-                                    bool needs_padding,
+                                    bool needs_full_padding,
                                     QuicFrame* frame) {
   if (!HasRoomForStreamFrame(id, offset)) {
     return false;
@@ -170,8 +170,8 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
     delete frame->stream_frame;
     return false;
   }
-  if (needs_padding) {
-    packet_.needs_padding = true;
+  if (needs_full_padding) {
+    packet_.num_padding_bytes = -1;
   }
   return true;
 }
@@ -293,7 +293,7 @@ void QuicPacketCreator::ReserializeAllFrames(
     char* buffer,
     size_t buffer_len) {
   DCHECK(queued_frames_.empty());
-  DCHECK(!packet_.needs_padding);
+  DCHECK_EQ(0, packet_.num_padding_bytes);
   QUIC_BUG_IF(retransmission.retransmittable_frames.empty())
       << "Attempt to serialize empty packet";
   const QuicPacketNumberLength saved_length = packet_.packet_number_length;
@@ -303,7 +303,7 @@ void QuicPacketCreator::ReserializeAllFrames(
   // Temporarily set the packet number length and change the encryption level.
   packet_.packet_number_length = retransmission.packet_number_length;
   next_packet_number_length_ = retransmission.packet_number_length;
-  packet_.needs_padding = retransmission.needs_padding;
+  packet_.num_padding_bytes = retransmission.num_padding_bytes;
   // Only preserve the original encryption level if it's a handshake packet or
   // if we haven't gone forward secure.
   if (retransmission.has_crypto_handshake ||
@@ -361,7 +361,7 @@ void QuicPacketCreator::ClearPacket() {
   packet_.has_ack = false;
   packet_.has_stop_waiting = false;
   packet_.has_crypto_handshake = NOT_HANDSHAKE;
-  packet_.needs_padding = false;
+  packet_.num_padding_bytes = 0;
   packet_.original_packet_number = 0;
   packet_.transmission_type = NOT_RETRANSMISSION;
   packet_.encrypted_buffer = nullptr;
@@ -410,7 +410,7 @@ bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
 
 bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame) {
   if (AddFrame(frame, /*save_retransmittable_frames=*/true)) {
-    packet_.needs_padding = true;
+    packet_.num_padding_bytes = -1;
     return true;
   }
   return false;
@@ -572,7 +572,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 }
 
 void QuicPacketCreator::MaybeAddPadding() {
-  if (!packet_.needs_padding) {
+  if (packet_.num_padding_bytes == 0) {
     return;
   }
 
@@ -581,7 +581,8 @@ void QuicPacketCreator::MaybeAddPadding() {
     return;
   }
 
-  bool success = AddFrame(QuicFrame(QuicPaddingFrame()), false);
+  bool success =
+      AddFrame(QuicFrame(QuicPaddingFrame(packet_.num_padding_bytes)), false);
   DCHECK(success);
 }
 

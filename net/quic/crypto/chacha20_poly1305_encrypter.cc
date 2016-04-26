@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/chacha20_poly1305_rfc7539_decrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_encrypter.h"
 
 #include <openssl/evp.h>
-#include <openssl/tls1.h>
 
 namespace net {
 
@@ -16,8 +15,8 @@ const size_t kNoncePrefixSize = 4;
 
 }  // namespace
 
-ChaCha20Poly1305Rfc7539Decrypter::ChaCha20Poly1305Rfc7539Decrypter()
-    : AeadBaseDecrypter(EVP_aead_chacha20_poly1305(),
+ChaCha20Poly1305Encrypter::ChaCha20Poly1305Encrypter()
+    : AeadBaseEncrypter(EVP_aead_chacha20_poly1305(),
                         kKeySize,
                         kAuthTagSize,
                         kNoncePrefixSize) {
@@ -26,18 +25,6 @@ ChaCha20Poly1305Rfc7539Decrypter::ChaCha20Poly1305Rfc7539Decrypter()
                 "nonce prefix size too big");
 }
 
-ChaCha20Poly1305Rfc7539Decrypter::~ChaCha20Poly1305Rfc7539Decrypter() {}
-
-bool ChaCha20Poly1305Rfc7539Decrypter::IsSupported() {
-  return true;
-}
-
-const char* ChaCha20Poly1305Rfc7539Decrypter::cipher_name() const {
-  return TLS1_TXT_ECDHE_RSA_WITH_CHACHA20_POLY1305_OLD;
-}
-
-uint32_t ChaCha20Poly1305Rfc7539Decrypter::cipher_id() const {
-  return TLS1_CK_ECDHE_RSA_CHACHA20_POLY1305_OLD;
-}
+ChaCha20Poly1305Encrypter::~ChaCha20Poly1305Encrypter() {}
 
 }  // namespace net

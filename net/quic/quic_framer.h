@@ -119,6 +119,9 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called when a StopWaitingFrame has been parsed.
   virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) = 0;
 
+  // Called when a QuicPaddingFrame has been parsed.
+  virtual bool OnPaddingFrame(const QuicPaddingFrame& frame) = 0;
+
   // Called when a PingFrame has been parsed.
   virtual bool OnPingFrame(const QuicPingFrame& frame) = 0;
 

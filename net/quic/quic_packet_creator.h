@@ -103,7 +103,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
                    size_t iov_offset,
                    QuicStreamOffset offset,
                    bool fin,
-                   bool needs_padding,
+                   bool needs_full_padding,
                    QuicFrame* frame);
 
   // Returns true if current open packet can accommodate more stream frames of

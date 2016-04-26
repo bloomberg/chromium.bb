@@ -766,7 +766,15 @@ enum QuicVersionNegotiationState {
 typedef QuicPacketPublicHeader QuicVersionNegotiationPacket;
 
 // A padding frame contains no payload.
-struct NET_EXPORT_PRIVATE QuicPaddingFrame {};
+struct NET_EXPORT_PRIVATE QuicPaddingFrame {
+  QuicPaddingFrame() : num_padding_bytes(-1) {}
+  explicit QuicPaddingFrame(int num_padding_bytes)
+      : num_padding_bytes(num_padding_bytes) {}
+
+  // -1: full padding to the end of a max-sized packet
+  // otherwise: only pad up to num_padding_bytes bytes
+  int num_padding_bytes;
+};
 
 // A ping frame contains no payload, though it is retransmittable,
 // and ACK'd just like other normal frames.
@@ -1357,7 +1365,10 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   QuicPacketLength encrypted_length;
   QuicFrames retransmittable_frames;
   IsHandshake has_crypto_handshake;
-  bool needs_padding;
+  // -1: full padding to the end of a max-sized packet
+  //  0: no padding
+  //  otherwise: only pad up to num_padding_bytes bytes
+  int num_padding_bytes;
   QuicPathId path_id;
   QuicPacketNumber packet_number;
   QuicPacketNumberLength packet_number_length;
@@ -1384,7 +1395,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
                    QuicTime sent_time,
                    QuicPacketLength bytes_sent,
                    bool has_crypto_handshake,
-                   bool needs_padding);
+                   int num_padding_bytes);
 
   TransmissionInfo(const TransmissionInfo& other);
 
@@ -1404,8 +1415,8 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   bool is_unackable;
   // True if the packet contains stream data from the crypto stream.
   bool has_crypto_handshake;
-  // True if the packet needs padding if it's retransmitted.
-  bool needs_padding;
+  // Non-zero if the packet needs padding if it's retransmitted.
+  int num_padding_bytes;
   // Stores the packet number of the next retransmission of this packet.
   // Zero if the packet has not been retransmitted.
   QuicPacketNumber retransmission;
@@ -1420,7 +1431,7 @@ struct PendingRetransmission {
                         TransmissionType transmission_type,
                         const QuicFrames& retransmittable_frames,
                         bool has_crypto_handshake,
-                        bool needs_padding,
+                        int num_padding_bytes,
                         EncryptionLevel encryption_level,
                         QuicPacketNumberLength packet_number_length)
       : packet_number(packet_number),
@@ -1428,7 +1439,7 @@ struct PendingRetransmission {
         transmission_type(transmission_type),
         path_id(path_id),
         has_crypto_handshake(has_crypto_handshake),
-        needs_padding(needs_padding),
+        num_padding_bytes(num_padding_bytes),
         encryption_level(encryption_level),
         packet_number_length(packet_number_length) {}
 
@@ -1437,7 +1448,7 @@ struct PendingRetransmission {
   TransmissionType transmission_type;
   QuicPathId path_id;
   bool has_crypto_handshake;
-  bool needs_padding;
+  int num_padding_bytes;
   EncryptionLevel encryption_level;
   QuicPacketNumberLength packet_number_length;
 };

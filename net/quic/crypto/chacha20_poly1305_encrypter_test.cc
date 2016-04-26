@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/crypto/chacha20_poly1305_rfc7539_encrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_encrypter.h"
 
 #include <stdint.h>
 #include <memory>
 
-#include "net/quic/crypto/chacha20_poly1305_rfc7539_decrypter.h"
+#include "net/quic/crypto/chacha20_poly1305_decrypter.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using base::StringPiece;
@@ -68,7 +68,7 @@ namespace test {
 
 // EncryptWithNonce wraps the |Encrypt| method of |encrypter| to allow passing
 // in an nonce and also to allocate the buffer needed for the ciphertext.
-QuicData* EncryptWithNonce(ChaCha20Poly1305Rfc7539Encrypter* encrypter,
+QuicData* EncryptWithNonce(ChaCha20Poly1305Encrypter* encrypter,
                            StringPiece nonce,
                            StringPiece associated_data,
                            StringPiece plaintext) {
@@ -83,14 +83,9 @@ QuicData* EncryptWithNonce(ChaCha20Poly1305Rfc7539Encrypter* encrypter,
   return new QuicData(ciphertext.release(), ciphertext_size, true);
 }
 
-TEST(ChaCha20Poly1305Rfc7539EncrypterTest, EncryptThenDecrypt) {
-  if (!ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
-    VLOG(1) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
-
-  ChaCha20Poly1305Rfc7539Encrypter encrypter;
-  ChaCha20Poly1305Rfc7539Decrypter decrypter;
+TEST(ChaCha20Poly1305EncrypterTest, EncryptThenDecrypt) {
+  ChaCha20Poly1305Encrypter encrypter;
+  ChaCha20Poly1305Decrypter decrypter;
 
   string key;
   DecodeHexString(test_vectors[0].key, &key);
@@ -115,12 +110,7 @@ TEST(ChaCha20Poly1305Rfc7539EncrypterTest, EncryptThenDecrypt) {
                                       arraysize(decrypted)));
 }
 
-TEST(ChaCha20Poly1305Rfc7539EncrypterTest, Encrypt) {
-  if (!ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
-    VLOG(1) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
-
+TEST(ChaCha20Poly1305EncrypterTest, Encrypt) {
   for (size_t i = 0; test_vectors[i].key != nullptr; i++) {
     // Decode the test vector.
     string key;
@@ -136,7 +126,7 @@ TEST(ChaCha20Poly1305Rfc7539EncrypterTest, Encrypt) {
     ASSERT_TRUE(DecodeHexString(test_vectors[i].aad, &aad));
     ASSERT_TRUE(DecodeHexString(test_vectors[i].ct, &ct));
 
-    ChaCha20Poly1305Rfc7539Encrypter encrypter;
+    ChaCha20Poly1305Encrypter encrypter;
     ASSERT_TRUE(encrypter.SetKey(key));
     std::unique_ptr<QuicData> encrypted(EncryptWithNonce(
         &encrypter, fixed + iv,
@@ -153,25 +143,15 @@ TEST(ChaCha20Poly1305Rfc7539EncrypterTest, Encrypt) {
   }
 }
 
-TEST(ChaCha20Poly1305Rfc7539EncrypterTest, GetMaxPlaintextSize) {
-  if (!ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
-    VLOG(1) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
-
-  ChaCha20Poly1305Rfc7539Encrypter encrypter;
+TEST(ChaCha20Poly1305EncrypterTest, GetMaxPlaintextSize) {
+  ChaCha20Poly1305Encrypter encrypter;
   EXPECT_EQ(1000u, encrypter.GetMaxPlaintextSize(1012));
   EXPECT_EQ(100u, encrypter.GetMaxPlaintextSize(112));
   EXPECT_EQ(10u, encrypter.GetMaxPlaintextSize(22));
 }
 
-TEST(ChaCha20Poly1305Rfc7539EncrypterTest, GetCiphertextSize) {
-  if (!ChaCha20Poly1305Rfc7539Encrypter::IsSupported()) {
-    VLOG(1) << "ChaCha20+Poly1305 not supported. Test skipped.";
-    return;
-  }
-
-  ChaCha20Poly1305Rfc7539Encrypter encrypter;
+TEST(ChaCha20Poly1305EncrypterTest, GetCiphertextSize) {
+  ChaCha20Poly1305Encrypter encrypter;
   EXPECT_EQ(1012u, encrypter.GetCiphertextSize(1000));
   EXPECT_EQ(112u, encrypter.GetCiphertextSize(100));
   EXPECT_EQ(22u, encrypter.GetCiphertextSize(10));
