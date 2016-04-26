@@ -148,7 +148,7 @@ void AutoplayExperimentHelper::registerForPositionUpdatesIfNeeded()
 {
     // If we don't require that the player is in the viewport, then we don't
     // need the listener.
-    if (!enabled(IfViewport)) {
+    if (!requiresViewportVisibility()) {
         if (!enabled(IfPageVisible))
             return;
     }
@@ -239,7 +239,7 @@ bool AutoplayExperimentHelper::meetsVisibilityRequirements() const
         && client().pageVisibilityState() != PageVisibilityStateVisible)
         return false;
 
-    if (!enabled(IfViewport))
+    if (!requiresViewportVisibility())
         return true;
 
     if (m_lastVisibleRect.isEmpty())
@@ -249,6 +249,12 @@ bool AutoplayExperimentHelper::meetsVisibilityRequirements() const
     if (currentLocation.isEmpty())
         return false;
 
+    // In partial-viewport mode, we require only 1x1 area.
+    if (enabled(IfPartialViewport)) {
+        return m_lastVisibleRect.intersects(currentLocation);
+    }
+
+    // Element must be completely visible, or as much as fits.
     // If element completely fills the screen, then truncate it to exactly
     // match the screen.  Any element that is wider just has to cover.
     if (currentLocation.x() <= m_lastVisibleRect.x()
@@ -382,6 +388,8 @@ AutoplayExperimentHelper::Mode AutoplayExperimentHelper::fromString(const String
         value |= IfPageVisible;
     if (mode.contains("-ifviewport"))
         value |= IfViewport;
+    if (mode.contains("-ifpartialviewport"))
+        value |= IfPartialViewport;
     if (mode.contains("-ifmuted"))
         value |= IfMuted;
     if (mode.contains("-ifmobile"))
@@ -475,6 +483,11 @@ void AutoplayExperimentHelper::loadingStarted()
     recordAutoplayMetric(client().isHTMLVideoElement()
         ? AnyVideoElement
         : AnyAudioElement);
+}
+
+bool AutoplayExperimentHelper::requiresViewportVisibility() const
+{
+    return enabled(IfViewport) || enabled(IfPartialViewport);
 }
 
 } // namespace blink

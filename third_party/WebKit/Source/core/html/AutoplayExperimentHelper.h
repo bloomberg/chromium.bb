@@ -164,24 +164,27 @@ public:
 
     enum Mode {
         // Do not enable the autoplay experiment.
-        ExperimentOff = 0,
+        ExperimentOff     = 0,
         // Enable gestureless autoplay for video elements.
-        ForVideo      = 1 << 0,
+        ForVideo          = 1 << 0,
         // Enable gestureless autoplay for audio elements.
-        ForAudio      = 1 << 1,
+        ForAudio          = 1 << 1,
         // Restrict gestureless autoplay to media that is in a visible page.
-        IfPageVisible = 1 << 2,
-        // Restrict gestureless autoplay to media that is visible in
+        IfPageVisible     = 1 << 2,
+        // Restrict gestureless autoplay to media that is entirely visible in
         // the viewport.
-        IfViewport    = 1 << 3,
+        IfViewport        = 1 << 3,
+        // Restrict gestureless autoplay to media that is partially visible in
+        // the viewport.
+        IfPartialViewport = 1 << 4,
         // Restrict gestureless autoplay to audio-less or muted media.
-        IfMuted       = 1 << 4,
+        IfMuted           = 1 << 5,
         // Restrict gestureless autoplay to sites which contain the
         // viewport tag.
-        IfMobile      = 1 << 5,
+        IfMobile          = 1 << 6,
         // If gestureless autoplay is allowed, then mute the media before
         // starting to play.
-        PlayMuted     = 1 << 6,
+        PlayMuted         = 1 << 7,
     };
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_client); }
@@ -249,6 +252,10 @@ private:
     // Could stopping at this point be considered a bailout of playback?
     // (as in, "The user really didn't want to play this").
     bool isBailout() const;
+
+    // Returns true if and only if the experiment requires some sort of viewport
+    // visibility check for autoplay.
+    bool requiresViewportVisibility() const;
 
     Member<Client> m_client;
 
