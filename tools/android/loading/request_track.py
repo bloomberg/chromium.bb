@@ -220,7 +220,7 @@ class Request(object):
 
   def ToJsonDict(self):
     result = copy.deepcopy(self.__dict__)
-    result['timing'] = self.timing.ToJsonDict()
+    result['timing'] = self.timing.ToJsonDict() if self.timing else {}
     return result
 
   @classmethod
