@@ -38,6 +38,11 @@ jobject GetApplicationContext() {
   return g_application_context.Get().obj();
 }
 
+void InitApplicationContext(JNIEnv* env, const JavaRef<jobject>& context) {
+  SetNativeApplicationContext(env, context);
+  Java_ContextUtils_initJavaSideApplicationContext(env, context.obj());
+}
+
 static void InitNativeSideApplicationContext(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

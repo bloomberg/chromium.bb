@@ -14,6 +14,7 @@ import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.CookieUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -29,10 +30,7 @@ public class CookieManagerStartupTest extends AwTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // CookeManager assumes that native is loaded, but webview browser should not be loaded for
-        // these tests as webview is not necessarily loaded when CookieManager is called.
-        AwBrowserProcess.loadLibrary(
-                getInstrumentation().getTargetContext().getApplicationContext());
+        ContextUtils.initApplicationContext(getActivity().getApplicationContext());
     }
 
     @Override

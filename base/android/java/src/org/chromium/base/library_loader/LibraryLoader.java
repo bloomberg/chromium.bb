@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.SystemClock;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
@@ -133,8 +132,6 @@ public class LibraryLoader {
      *  @param context The context in which the method is called.
      */
     public void ensureInitialized(Context context) throws ProcessInitException {
-        // TODO(wnwen): Move this call appropriately down to the tests that need it.
-        ContextUtils.initApplicationContext(context.getApplicationContext());
         synchronized (sLock) {
             if (mInitialized) {
                 // Already initialized, nothing to do.
@@ -363,10 +360,6 @@ public class LibraryLoader {
         nativeInitCommandLine(CommandLine.getJavaSwitchesOrNull());
         CommandLine.enableNativeProxy();
         mCommandLineSwitched = true;
-
-        // Ensure that native side application context is loaded and in sync with java side. Must do
-        // this here so webview also gets its application context set before fully initializing.
-        ContextUtils.initApplicationContextForNative();
     }
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
@@ -375,11 +368,21 @@ public class LibraryLoader {
             return;
         }
 
-        ensureCommandLineSwitchedAlreadyLocked();
+        // Setup the native command line if necessary.
+        if (!mCommandLineSwitched) {
+            nativeInitCommandLine(CommandLine.getJavaSwitchesOrNull());
+        }
 
         if (!nativeLibraryLoaded()) {
             Log.e(TAG, "error calling nativeLibraryLoaded");
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_FAILED_TO_REGISTER_JNI);
+        }
+
+        // The Chrome JNI is registered by now so we can switch the Java
+        // command line over to delegating to native if it's necessary.
+        if (!mCommandLineSwitched) {
+            CommandLine.enableNativeProxy();
+            mCommandLineSwitched = true;
         }
 
         // From now on, keep tracing in sync with native.

@@ -4,13 +4,13 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.Log;
+
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
@@ -20,7 +20,6 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -80,11 +79,10 @@ public class AwTestBase
 
     @Override
     protected void setUp() throws Exception {
-        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
-        mBrowserContext = new AwBrowserContext(new InMemorySharedPreferences(), appContext);
+        mBrowserContext = new AwBrowserContext(
+                new InMemorySharedPreferences(), getInstrumentation().getTargetContext());
 
         super.setUp();
-        ContextUtils.initApplicationContext(appContext);
         if (needsBrowserProcessStarted()) {
             startBrowserProcess();
         }
@@ -100,10 +98,8 @@ public class AwTestBase
         });
     }
 
-    /**
-     * Override this to return false if the test doesn't want the browser startup sequence to
+    /* Override this to return false if the test doesn't want the browser startup sequence to
      * be run automatically.
-     * @return Whether the instrumentation test requires the browser process to already be started.
      */
     protected boolean needsBrowserProcessStarted() {
         return true;

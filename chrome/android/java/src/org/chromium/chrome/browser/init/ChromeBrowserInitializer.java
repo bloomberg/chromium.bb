@@ -23,7 +23,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
@@ -186,8 +185,6 @@ public class ChromeBrowserInitializer {
     private void preInflationStartup() {
         ThreadUtils.assertOnUiThread();
         if (mPreInflationStartupComplete) return;
-
-        ContextUtils.initApplicationContext(mApplication);
 
         // Ensure critical files are available, so they aren't blocked on the file-system
         // behind long-running accesses in next phase.

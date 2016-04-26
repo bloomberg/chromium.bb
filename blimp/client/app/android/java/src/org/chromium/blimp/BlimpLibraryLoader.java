@@ -7,6 +7,7 @@ package org.chromium.blimp;
 import android.content.Context;
 import android.os.Handler;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -90,6 +91,7 @@ public final class BlimpLibraryLoader {
         extractor.addCompletionCallback(new Runnable() {
             @Override
             public void run() {
+                ContextUtils.initApplicationContext(context.getApplicationContext());
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
