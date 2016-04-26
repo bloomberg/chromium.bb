@@ -23,25 +23,27 @@
 
 namespace {
 
-static void CopyAlphaChannelIntoVideoFrame(
-    const uint8_t* const source,
-    const scoped_refptr<media::VideoFrame>& dest_frame) {
-  const gfx::Size& size = dest_frame->coded_size();
-  const int stride = dest_frame->stride(media::VideoFrame::kAPlane);
+using media::VideoFrame;
 
-  if (stride == size.width()) {
-    for (int p = 0; p < size.GetArea(); ++p)
-      dest_frame->data(media::VideoFrame::kAPlane)[p] = source[p * 4 + 3];
+static void CopyAlphaChannelIntoVideoFrame(
+    const uint8_t* const source_data,
+    const gfx::Size& source_size,
+    const scoped_refptr<VideoFrame>& dest_frame) {
+  const int dest_stride = dest_frame->stride(VideoFrame::kAPlane);
+  if (dest_stride == source_size.width()) {
+    for (int p = 0; p < source_size.GetArea(); ++p) {
+      dest_frame->visible_data(VideoFrame::kAPlane)[p] = source_data[p * 4 + 3];
+    }
     return;
   }
 
-  // Copy apha values one-by-one if the destination stride != source width.
-  for (int h = 0; h < size.height(); ++h) {
-    const uint8_t* const src_ptr = &source[4 * h * size.width()];
+  // Copy alpha values one-by-one if the destination stride != source width.
+  for (int h = 0; h < source_size.height(); ++h) {
+    const uint8_t* const src_ptr = &source_data[4 * h * source_size.width()];
     uint8_t* dest_ptr =
-        &dest_frame->data(media::VideoFrame::kAPlane)[h * stride];
-    for (int pixel_index = 0; pixel_index < 4 * size.width(); pixel_index += 4)
-      *(dest_ptr++) = src_ptr[pixel_index + 3];
+        &dest_frame->visible_data(VideoFrame::kAPlane)[h * dest_stride];
+    for (int pixel = 0; pixel < 4 * source_size.width(); pixel += 4)
+      *(dest_ptr++) = src_ptr[pixel + 3];
   }
 }
 
@@ -248,17 +250,17 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
   DCHECK(video_frame);
 
   libyuv::ARGBToI420(temp_data_.data(), row_bytes_,
-                     video_frame->data(media::VideoFrame::kYPlane),
+                     video_frame->visible_data(media::VideoFrame::kYPlane),
                      video_frame->stride(media::VideoFrame::kYPlane),
-                     video_frame->data(media::VideoFrame::kUPlane),
+                     video_frame->visible_data(media::VideoFrame::kUPlane),
                      video_frame->stride(media::VideoFrame::kUPlane),
-                     video_frame->data(media::VideoFrame::kVPlane),
+                     video_frame->visible_data(media::VideoFrame::kVPlane),
                      video_frame->stride(media::VideoFrame::kVPlane),
                      size.width(), size.height());
   if (!isOpaque) {
     // TODO(emircan): Use https://code.google.com/p/libyuv/issues/detail?id=572
     // when it becomes available.
-    CopyAlphaChannelIntoVideoFrame(temp_data_.data(), video_frame);
+    CopyAlphaChannelIntoVideoFrame(temp_data_.data(), size, video_frame);
   }
 
   last_frame_ = video_frame;
