@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
-#include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -29,6 +28,8 @@ class AnimationPlayer;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerTreeHost;
+class MutatorHostClient;
+enum class LayerTreeType;
 
 enum class ThreadInstance { MAIN, IMPL };
 

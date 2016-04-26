@@ -375,9 +375,9 @@ bool ElementAnimations::HasFilterAnimationThatInflatesBounds() const {
 
 bool ElementAnimations::HasTransformAnimationThatInflatesBounds() const {
   return IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
-                                      ObserverType::ACTIVE) ||
+                                      LayerTreeType::ACTIVE) ||
          IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
-                                      ObserverType::PENDING);
+                                      LayerTreeType::PENDING);
 }
 
 bool ElementAnimations::FilterAnimationBoundsForBox(const gfx::BoxF& box,
@@ -433,15 +433,15 @@ bool ElementAnimations::HasAnimationThatAffectsScale() const {
 }
 
 bool ElementAnimations::HasOnlyTranslationTransforms(
-    ObserverType observer_type) const {
+    LayerTreeType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((observer_type == ObserverType::ACTIVE &&
+    if ((observer_type == LayerTreeType::ACTIVE &&
          !animations_[i]->affects_active_observers()) ||
-        (observer_type == ObserverType::PENDING &&
+        (observer_type == LayerTreeType::PENDING &&
          !animations_[i]->affects_pending_observers()))
       continue;
 
@@ -469,7 +469,7 @@ bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool ElementAnimations::AnimationStartScale(ObserverType observer_type,
+bool ElementAnimations::AnimationStartScale(LayerTreeType observer_type,
                                             float* start_scale) const {
   *start_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -477,9 +477,9 @@ bool ElementAnimations::AnimationStartScale(ObserverType observer_type,
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((observer_type == ObserverType::ACTIVE &&
+    if ((observer_type == LayerTreeType::ACTIVE &&
          !animations_[i]->affects_active_observers()) ||
-        (observer_type == ObserverType::PENDING &&
+        (observer_type == LayerTreeType::PENDING &&
          !animations_[i]->affects_pending_observers()))
       continue;
 
@@ -506,7 +506,7 @@ bool ElementAnimations::AnimationStartScale(ObserverType observer_type,
   return true;
 }
 
-bool ElementAnimations::MaximumTargetScale(ObserverType observer_type,
+bool ElementAnimations::MaximumTargetScale(LayerTreeType observer_type,
                                            float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -514,9 +514,9 @@ bool ElementAnimations::MaximumTargetScale(ObserverType observer_type,
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((observer_type == ObserverType::ACTIVE &&
+    if ((observer_type == LayerTreeType::ACTIVE &&
          !animations_[i]->affects_active_observers()) ||
-        (observer_type == ObserverType::PENDING &&
+        (observer_type == LayerTreeType::PENDING &&
          !animations_[i]->affects_pending_observers()))
       continue;
 
@@ -1121,13 +1121,13 @@ bool ElementAnimations::HasActiveAnimation() const {
 
 bool ElementAnimations::IsPotentiallyAnimatingProperty(
     TargetProperty::Type target_property,
-    ObserverType observer_type) const {
+    LayerTreeType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->target_property() == target_property) {
-      if ((observer_type == ObserverType::ACTIVE &&
+      if ((observer_type == LayerTreeType::ACTIVE &&
            animations_[i]->affects_active_observers()) ||
-          (observer_type == ObserverType::PENDING &&
+          (observer_type == LayerTreeType::PENDING &&
            animations_[i]->affects_pending_observers()))
         return true;
     }
@@ -1137,14 +1137,14 @@ bool ElementAnimations::IsPotentiallyAnimatingProperty(
 
 bool ElementAnimations::IsCurrentlyAnimatingProperty(
     TargetProperty::Type target_property,
-    ObserverType observer_type) const {
+    LayerTreeType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->InEffect(last_tick_time_) &&
         animations_[i]->target_property() == target_property) {
-      if ((observer_type == ObserverType::ACTIVE &&
+      if ((observer_type == LayerTreeType::ACTIVE &&
            animations_[i]->affects_active_observers()) ||
-          (observer_type == ObserverType::PENDING &&
+          (observer_type == LayerTreeType::PENDING &&
            animations_[i]->affects_pending_observers()))
         return true;
     }

@@ -18,6 +18,7 @@
 #include "cc/animation/element_animations.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
+#include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
@@ -436,19 +437,12 @@ bool AnimationHost::ScrollOffsetAnimationWasInterrupted(int layer_id) const {
              : false;
 }
 
-static ElementAnimations::ObserverType ObserverTypeFromTreeType(
-    LayerTreeType tree_type) {
-  return tree_type == LayerTreeType::ACTIVE
-             ? ElementAnimations::ObserverType::ACTIVE
-             : ElementAnimations::ObserverType::PENDING;
-}
-
 bool AnimationHost::IsAnimatingFilterProperty(int layer_id,
                                               LayerTreeType tree_type) const {
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
              ? element_animations->IsCurrentlyAnimatingProperty(
-                   TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::FILTER, tree_type)
              : false;
 }
 
@@ -457,7 +451,7 @@ bool AnimationHost::IsAnimatingOpacityProperty(int layer_id,
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
              ? element_animations->IsCurrentlyAnimatingProperty(
-                   TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::OPACITY, tree_type)
              : false;
 }
 
@@ -467,8 +461,7 @@ bool AnimationHost::IsAnimatingTransformProperty(
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
              ? element_animations->IsCurrentlyAnimatingProperty(
-                   TargetProperty::TRANSFORM,
-                   ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::TRANSFORM, tree_type)
              : false;
 }
 
@@ -478,7 +471,7 @@ bool AnimationHost::HasPotentiallyRunningFilterAnimation(
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
              ? element_animations->IsPotentiallyAnimatingProperty(
-                   TargetProperty::FILTER, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::FILTER, tree_type)
              : false;
 }
 
@@ -488,7 +481,7 @@ bool AnimationHost::HasPotentiallyRunningOpacityAnimation(
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
              ? element_animations->IsPotentiallyAnimatingProperty(
-                   TargetProperty::OPACITY, ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::OPACITY, tree_type)
              : false;
 }
 
@@ -498,8 +491,7 @@ bool AnimationHost::HasPotentiallyRunningTransformAnimation(
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
              ? element_animations->IsPotentiallyAnimatingProperty(
-                   TargetProperty::TRANSFORM,
-                   ObserverTypeFromTreeType(tree_type))
+                   TargetProperty::TRANSFORM, tree_type)
              : false;
 }
 
@@ -599,8 +591,7 @@ bool AnimationHost::HasOnlyTranslationTransforms(
     LayerTreeType tree_type) const {
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
-             ? element_animations->HasOnlyTranslationTransforms(
-                   ObserverTypeFromTreeType(tree_type))
+             ? element_animations->HasOnlyTranslationTransforms(tree_type)
              : true;
 }
 
@@ -617,8 +608,7 @@ bool AnimationHost::MaximumTargetScale(int layer_id,
   *max_scale = 0.f;
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
-             ? element_animations->MaximumTargetScale(
-                   ObserverTypeFromTreeType(tree_type), max_scale)
+             ? element_animations->MaximumTargetScale(tree_type, max_scale)
              : true;
 }
 
@@ -628,8 +618,7 @@ bool AnimationHost::AnimationStartScale(int layer_id,
   *start_scale = 0.f;
   auto element_animations = GetElementAnimationsForLayerId(layer_id);
   return element_animations
-             ? element_animations->AnimationStartScale(
-                   ObserverTypeFromTreeType(tree_type), start_scale)
+             ? element_animations->AnimationStartScale(tree_type, start_scale)
              : true;
 }
 

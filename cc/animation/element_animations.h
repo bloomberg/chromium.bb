@@ -41,8 +41,6 @@ enum class LayerTreeType;
 // No pointer to/from respective blink::ElementAnimations object for now.
 class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
  public:
-  enum class ObserverType { ACTIVE, PENDING };
-
   static scoped_refptr<ElementAnimations> Create();
 
   int layer_id() const { return layer_id_; }
@@ -109,12 +107,12 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   // the given property or scheduled to animate this property in the future, and
   // that affects the given observer type.
   bool IsPotentiallyAnimatingProperty(TargetProperty::Type target_property,
-                                      ObserverType observer_type) const;
+                                      LayerTreeType observer_type) const;
 
   // Returns true if there is an animation that is currently animating the given
   // property and that affects the given observer type.
   bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
-                                    ObserverType observer_type) const;
+                                    LayerTreeType observer_type) const;
 
   void NotifyAnimationStarted(const AnimationEvent& event);
   void NotifyAnimationFinished(const AnimationEvent& event);
@@ -152,20 +150,20 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool HasAnimationThatAffectsScale() const;
 
-  bool HasOnlyTranslationTransforms(ObserverType observer_type) const;
+  bool HasOnlyTranslationTransforms(LayerTreeType observer_type) const;
 
   bool AnimationsPreserveAxisAlignment() const;
 
   // Sets |start_scale| to the maximum of starting animation scale along any
   // dimension at any destination in active animations. Returns false if the
   // starting scale cannot be computed.
-  bool AnimationStartScale(ObserverType observer_type,
+  bool AnimationStartScale(LayerTreeType observer_type,
                            float* start_scale) const;
 
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.
-  bool MaximumTargetScale(ObserverType observer_type, float* max_scale) const;
+  bool MaximumTargetScale(LayerTreeType observer_type, float* max_scale) const;
 
   // When a scroll animation is removed on the main thread, its compositor
   // thread counterpart continues producing scroll deltas until activation.
