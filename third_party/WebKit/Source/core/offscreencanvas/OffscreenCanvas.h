@@ -17,11 +17,10 @@ namespace blink {
 class CanvasContextCreationAttributes;
 class ImageBitmap;
 
-class CORE_EXPORT OffscreenCanvas final : public GarbageCollectedFinalized<OffscreenCanvas>, public ScriptWrappable {
+class CORE_EXPORT OffscreenCanvas final : public GarbageCollected<OffscreenCanvas>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OffscreenCanvas* create(unsigned width, unsigned height);
-    ~OffscreenCanvas();
 
     // IDL attributes
     unsigned width() const { return m_size.width(); }
@@ -42,7 +41,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    OffscreenCanvas(const IntSize&);
+    explicit OffscreenCanvas(const IntSize&);
 
     using ContextFactoryVector = Vector<OwnPtr<CanvasRenderingContextFactory>>;
     static ContextFactoryVector& renderingContextFactories();

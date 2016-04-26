@@ -34,8 +34,7 @@ namespace blink {
 
 namespace XPath {
 
-// TODO(Oilpan): drop Finalized once Node is on the heap.
-class NodeSet final : public GarbageCollectedFinalized<NodeSet> {
+class NodeSet final : public GarbageCollected<NodeSet> {
 public:
     static NodeSet* create() { return new NodeSet; }
     static NodeSet* create(const NodeSet&);

@@ -35,7 +35,7 @@ namespace blink {
 class MessagePort;
 class ExecutionContext;
 
-class MessageChannel final : public GarbageCollectedFinalized<MessageChannel>, public ScriptWrappable {
+class MessageChannel final : public GarbageCollected<MessageChannel>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MessageChannel* create(ExecutionContext* context)

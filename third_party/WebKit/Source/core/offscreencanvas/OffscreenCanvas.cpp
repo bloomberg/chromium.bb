@@ -14,10 +14,8 @@ namespace blink {
 
 OffscreenCanvas::OffscreenCanvas(const IntSize& size)
     : m_size(size)
-{ }
-
-OffscreenCanvas::~OffscreenCanvas()
-{ }
+{
+}
 
 OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height)
 {

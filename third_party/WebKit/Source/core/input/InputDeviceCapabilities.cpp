@@ -16,10 +16,6 @@ InputDeviceCapabilities::InputDeviceCapabilities(const InputDeviceCapabilitiesIn
     m_firesTouchEvents = initializer.firesTouchEvents();
 }
 
-InputDeviceCapabilities::~InputDeviceCapabilities()
-{
-}
-
 InputDeviceCapabilities* InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
 {
     DEFINE_STATIC_LOCAL(InputDeviceCapabilities, instance, (InputDeviceCapabilities::create(true)));

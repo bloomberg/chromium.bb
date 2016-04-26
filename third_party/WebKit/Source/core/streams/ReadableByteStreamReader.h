@@ -17,7 +17,7 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 
-class CORE_EXPORT ReadableByteStreamReader final : public GarbageCollectedFinalized<ReadableByteStreamReader>, public ScriptWrappable {
+class CORE_EXPORT ReadableByteStreamReader final : public GarbageCollected<ReadableByteStreamReader>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     explicit ReadableByteStreamReader(ReadableStreamReader* reader) : m_reader(reader) { }
@@ -29,7 +29,7 @@ public:
     void releaseLock(ExceptionState& es) { return m_reader->releaseLock(es); }
     void releaseLock() { return m_reader->releaseLock(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_reader);
     }

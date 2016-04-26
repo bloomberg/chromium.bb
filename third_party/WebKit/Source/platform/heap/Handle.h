@@ -42,7 +42,6 @@
 #include "wtf/Atomics.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
-#include "wtf/Locker.h"
 #include "wtf/TypeTraits.h"
 
 #if defined(LEAK_SANITIZER)

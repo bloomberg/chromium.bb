@@ -42,8 +42,7 @@ namespace XPath {
 struct EvaluationContext;
 }
 
-// TODO(Oilpan): remove Finalized when transition type for m_document is.
-class XPathResult final : public GarbageCollectedFinalized<XPathResult>, public ScriptWrappable {
+class XPathResult final : public GarbageCollected<XPathResult>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum XPathResultType {

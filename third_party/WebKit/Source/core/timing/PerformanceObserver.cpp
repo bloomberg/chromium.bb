@@ -30,10 +30,6 @@ PerformanceObserver::PerformanceObserver(PerformanceBase* performance, Performan
 {
 }
 
-PerformanceObserver::~PerformanceObserver()
-{
-}
-
 void PerformanceObserver::observe(const PerformanceObserverInit& observerInit, ExceptionState& exceptionState)
 {
     if (!m_performance) {

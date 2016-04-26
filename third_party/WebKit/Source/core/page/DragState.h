@@ -29,15 +29,13 @@
 #include "core/page/DragActions.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
 class DataTransfer;
 class Node;
 
-// TODO(Oilpan): when Node is always on the heap, just derive from GarbageCollected<>.
-class DragState final : public GarbageCollectedFinalized<DragState> {
+class DragState final : public GarbageCollected<DragState> {
     WTF_MAKE_NONCOPYABLE(DragState);
 public:
     DragState() { }

@@ -11,12 +11,9 @@
 
 namespace blink {
 
-class CORE_EXPORT InputDeviceCapabilities final : public GarbageCollectedFinalized<InputDeviceCapabilities>, public ScriptWrappable {
+class CORE_EXPORT InputDeviceCapabilities final : public GarbageCollected<InputDeviceCapabilities>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-
 public:
-    ~InputDeviceCapabilities();
-
     // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be true.
     static InputDeviceCapabilities* firesTouchEventsSourceCapabilities();
 

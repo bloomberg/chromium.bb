@@ -20,22 +20,18 @@ class PerformanceObserverInit;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
-class PerformanceObserver final : public GarbageCollectedFinalized<PerformanceObserver>, public ScriptWrappable {
+class PerformanceObserver final : public GarbageCollected<PerformanceObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class PerformanceBase;
 public:
     static PerformanceObserver* create(PerformanceBase*, PerformanceObserverCallback*);
     static void resumeSuspendedObservers();
 
-    ~PerformanceObserver();
-
     void observe(const PerformanceObserverInit&, ExceptionState&);
     void disconnect();
     void enqueuePerformanceEntry(PerformanceEntry&);
     PerformanceEntryTypeMask filterOptions() const { return m_filterOptions; }
 
-    // Eagerly finalized as destructor accesses heap object members.
-    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
