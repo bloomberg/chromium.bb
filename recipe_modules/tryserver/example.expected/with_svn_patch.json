@@ -20,7 +20,7 @@
     "cmd": [
       "patch",
       "--dir",
-      "[CWD]",
+      "[SLAVE_BUILD]",
       "--force",
       "--forward",
       "--remove-empty-files",
@@ -38,7 +38,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[CWD]",
+    "cwd": "[SLAVE_BUILD]",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [

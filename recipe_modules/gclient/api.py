@@ -134,7 +134,7 @@ class GclientApi(recipe_api.RecipeApi):
   def get_config_defaults(self):
     return {
       'USE_MIRROR': self.use_mirror,
-      'CACHE_DIR': self.m.infra_paths['git_cache'],
+      'CACHE_DIR': self.m.path['git_cache'],
     }
 
   @staticmethod
@@ -276,7 +276,7 @@ class GclientApi(recipe_api.RecipeApi):
           self(name, ['recurse', 'git', 'config', var, val], **kwargs)
 
     finally:
-      cwd = kwargs.get('cwd', self.m.infra_paths['slave_build'])
+      cwd = kwargs.get('cwd', self.m.path['slave_build'])
       if 'checkout' not in self.m.path:
         self.m.path['checkout'] = cwd.join(
           *cfg.solutions[0].name.split(self.m.path.sep))
@@ -290,13 +290,9 @@ class GclientApi(recipe_api.RecipeApi):
     prefix = '%sgclient ' % (('[spec: %s] ' % alias) if alias else '')
 
     return self.m.python(prefix + 'revert',
-        self.m.infra_paths['build'].join(
-            'scripts', 'slave', 'gclient_safe_revert.py'),
-        [
-            '.',
-            self.m.infra_paths['depot_tools'].join(
-                'gclient', platform_ext={'win': '.bat'})
-        ],
+        self.m.path['build'].join('scripts', 'slave', 'gclient_safe_revert.py'),
+        ['.', self.m.path['depot_tools'].join('gclient',
+                                              platform_ext={'win': '.bat'})],
         infra_step=True,
         **kwargs
     )
@@ -338,7 +334,7 @@ class GclientApi(recipe_api.RecipeApi):
                 print 'deleting %s' % path_to_file
                 os.remove(path_to_file)
       """,
-      args=[self.m.infra_paths['slave_build']],
+      args=[self.m.path['slave_build']],
       infra_step=True,
     )
 

@@ -3,9 +3,9 @@
     "cmd": [
       "python",
       "-u",
-      "[ROOT]/b/depot_tools/apply_issue.py",
+      "[DEPOT_TOOLS]/apply_issue.py",
       "-r",
-      "[CWD]/foo/bar",
+      "[SLAVE_BUILD]/foo/bar",
       "-i",
       "1",
       "-p",
@@ -13,9 +13,9 @@
       "-s",
       "http://review_tool.url",
       "-E",
-      "[ROOT]/b/build/site_config/.rietveld_client_email",
+      "[BUILD]/site_config/.rietveld_client_email",
       "-k",
-      "[ROOT]/b/build/site_config/.rietveld_secret_key"
+      "[BUILD]/site_config/.rietveld_secret_key"
     ],
     "cwd": "[SLAVE_BUILD]",
     "name": "apply_issue",

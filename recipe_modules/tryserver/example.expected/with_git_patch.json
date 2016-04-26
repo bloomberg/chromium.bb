@@ -3,7 +3,7 @@
     "cmd": [
       "python",
       "-u",
-      "[ROOT]/b/build/scripts/slave/git_setup.py",
+      "[BUILD]/scripts/slave/git_setup.py",
       "--path",
       "[TMP_BASE]/patch_tmp_1",
       "--url",
@@ -47,7 +47,7 @@
     "cmd": [
       "patch",
       "--dir",
-      "[CWD]",
+      "[SLAVE_BUILD]",
       "--force",
       "--forward",
       "--remove-empty-files",
@@ -75,7 +75,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[CWD]/v8",
+    "cwd": "[SLAVE_BUILD]/v8",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [

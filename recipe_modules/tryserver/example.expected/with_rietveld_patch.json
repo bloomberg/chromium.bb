@@ -3,9 +3,9 @@
     "cmd": [
       "python",
       "-u",
-      "[ROOT]/b/depot_tools/apply_issue.py",
+      "[DEPOT_TOOLS]/apply_issue.py",
       "-r",
-      "[CWD]",
+      "[SLAVE_BUILD]",
       "-i",
       "12853011",
       "-p",
@@ -27,7 +27,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[CWD]",
+    "cwd": "[SLAVE_BUILD]",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
