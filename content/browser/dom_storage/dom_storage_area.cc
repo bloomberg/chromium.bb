@@ -18,6 +18,7 @@
 #include "content/browser/dom_storage/local_storage_database_adapter.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/dom_storage/session_storage_database_adapter.h"
+#include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,6 +95,7 @@ GURL DOMStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
 
 void DOMStorageArea::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
+  LevelDBWrapperImpl::EnableAggressiveCommitDelay();
 }
 
 DOMStorageArea::DOMStorageArea(const GURL& origin,

@@ -116,13 +116,9 @@ TEST_F(LevelDBServiceTest, MAYBE_Basic) {
 #define MAYBE_WriteBatch WriteBatch
 #endif
 TEST_F(LevelDBServiceTest, MAYBE_WriteBatch) {
-  filesystem::DirectoryPtr directory;
-  GetUserDataDir(&directory);
-
   DatabaseError error;
   LevelDBDatabasePtr database;
-  leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                  Capture(&error));
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
   ASSERT_TRUE(leveldb().WaitForIncomingResponse());
   EXPECT_EQ(DatabaseError::OK, error);
 
@@ -166,6 +162,45 @@ TEST_F(LevelDBServiceTest, MAYBE_WriteBatch) {
   ASSERT_TRUE(database.WaitForIncomingResponse());
   EXPECT_EQ(DatabaseError::OK, error);
   EXPECT_EQ("more", value.To<std::string>());
+
+  // Write a some prefixed keys to the database.
+  database->Put(mojo::Array<uint8_t>::From(std::string("prefix-key1")),
+                mojo::Array<uint8_t>::From(std::string("value")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  database->Put(mojo::Array<uint8_t>::From(std::string("prefix-key2")),
+                mojo::Array<uint8_t>::From(std::string("value")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+
+  // Create a batched operation to delete them.
+  operations.SetToEmpty();
+  item = BatchedOperation::New();
+  item->type = BatchOperationType::DELETE_PREFIXED_KEY;
+  item->key = mojo::Array<uint8_t>::From(std::string("prefix"));
+  operations.push_back(std::move(item));
+  database->Write(std::move(operations), Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+
+  // Reading all "prefix" keys should be invalid now.
+  error = DatabaseError::INVALID_ARGUMENT;
+  value = nullptr;
+  database->Get(mojo::Array<uint8_t>::From(std::string("prefix-key1")),
+                Capture(&error, &value));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::NOT_FOUND, error);
+  EXPECT_EQ("", value.To<std::string>());
+  // Reading "key" should be invalid now.
+  error = DatabaseError::INVALID_ARGUMENT;
+  value = nullptr;
+  database->Get(mojo::Array<uint8_t>::From(std::string("prefix-key2")),
+                Capture(&error, &value));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::NOT_FOUND, error);
+  EXPECT_EQ("", value.To<std::string>());
 }
 
 // TODO(crbug.com/602820) Test is flaky.
@@ -374,6 +409,139 @@ TEST_F(LevelDBServiceTest, MemoryDBReadWrite) {
   EXPECT_EQ("", value.To<std::string>());
 }
 
+TEST_F(LevelDBServiceTest, Prefixed) {
+  // Open an in memory database for speed.
+  DatabaseError error = DatabaseError::INVALID_ARGUMENT;
+  LevelDBDatabasePtr database;
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
+  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+
+  const std::string prefix("prefix");
+  mojo::Array<KeyValuePtr> key_values;
+
+  // Completely empty database.
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_TRUE(key_values.empty());
+
+  // No values with our prefix, but values before and after.
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->Put(mojo::Array<uint8_t>::From(std::string("a-before-prefix")),
+                mojo::Array<uint8_t>::From(std::string("value")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->Put(mojo::Array<uint8_t>::From(std::string("z-after-prefix")),
+                mojo::Array<uint8_t>::From(std::string("value")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  key_values.SetToEmpty();
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_TRUE(key_values.empty());
+
+  // One value with the exact prefix.
+  database->Put(mojo::Array<uint8_t>::From(prefix),
+                mojo::Array<uint8_t>::From(std::string("value")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  error = DatabaseError::INVALID_ARGUMENT;
+  key_values.SetToEmpty();
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_EQ(1u, key_values.size());
+  EXPECT_EQ("prefix", key_values[0]->key.To<std::string>());
+  EXPECT_EQ("value", key_values[0]->value.To<std::string>());
+
+  // Multiple values with starting with the prefix.
+  database->Put(mojo::Array<uint8_t>::From(prefix + "2"),
+                mojo::Array<uint8_t>::From(std::string("value2")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  error = DatabaseError::INVALID_ARGUMENT;
+  key_values.SetToEmpty();
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_EQ(2u, key_values.size());
+  EXPECT_EQ("prefix", key_values[0]->key.To<std::string>());
+  EXPECT_EQ("value", key_values[0]->value.To<std::string>());
+  EXPECT_EQ("prefix2", key_values[1]->key.To<std::string>());
+  EXPECT_EQ("value2", key_values[1]->value.To<std::string>());
+
+  // Delete the prefixed values.
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->DeletePrefixed(mojo::Array<uint8_t>::From(prefix),
+                          Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  error = DatabaseError::INVALID_ARGUMENT;
+  key_values.SetToEmpty();
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_TRUE(key_values.empty());
+
+  // Make sure the others are not deleted.
+  mojo::Array<uint8_t> value;
+  database->Get(mojo::Array<uint8_t>::From(std::string("a-before-prefix")),
+                Capture(&error, &value));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_EQ("value", value.To<std::string>());
+  value.SetToEmpty();
+  database->Get(mojo::Array<uint8_t>::From(std::string("z-after-prefix")),
+                Capture(&error, &value));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_EQ("value", value.To<std::string>());
+
+  // A key having our prefix, but no key matching it exactly.
+  // Even thought there is no exact matching key, GetPrefixed
+  // and DeletePrefixed still operate on the values.
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->Put(mojo::Array<uint8_t>::From(prefix + "2"),
+                mojo::Array<uint8_t>::From(std::string("value2")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  error = DatabaseError::INVALID_ARGUMENT;
+  key_values.SetToEmpty();
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_EQ(1u, key_values.size());
+  EXPECT_EQ("prefix2", key_values[0]->key.To<std::string>());
+  EXPECT_EQ("value2", key_values[0]->value.To<std::string>());
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->DeletePrefixed(mojo::Array<uint8_t>::From(prefix),
+                          Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  error = DatabaseError::INVALID_ARGUMENT;
+  key_values.SetToEmpty();
+  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
+                        Capture(&error, &key_values));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_TRUE(key_values.empty());
+}
 
 }  // namespace
 }  // namespace leveldb

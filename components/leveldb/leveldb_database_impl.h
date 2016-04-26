@@ -30,9 +30,13 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
            const PutCallback& callback) override;
   void Delete(mojo::Array<uint8_t> key,
               const DeleteCallback& callback) override;
+  void DeletePrefixed(mojo::Array<uint8_t> key_prefix,
+                      const DeletePrefixedCallback& callback) override;
   void Write(mojo::Array<BatchedOperationPtr> operations,
              const WriteCallback& callback) override;
   void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
+  void GetPrefixed(mojo::Array<uint8_t> key_prefix,
+                   const GetPrefixedCallback& callback) override;
   void GetSnapshot(const GetSnapshotCallback& callback) override;
   void ReleaseSnapshot(uint64_t snapshot_id) override;
   void GetFromSnapshot(uint64_t snapshot_id,
@@ -61,6 +65,9 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
   // directly reference the underlying type in case of bindings change.
   void ReplyToIteratorMessage(leveldb::Iterator* it,
                               const IteratorSeekToFirstCallback& callback);
+
+  leveldb::Status DeletePrefixedHelper(const leveldb::Slice& key_prefix,
+                                       leveldb::WriteBatch* batch);
 
   mojo::StrongBinding<LevelDBDatabase> binding_;
   std::unique_ptr<leveldb::Env> environment_;

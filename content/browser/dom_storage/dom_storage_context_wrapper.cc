@@ -82,7 +82,9 @@ class DOMStorageContextWrapper::MojoState {
  public:
   MojoState(shell::Connector* connector, const base::FilePath& subdirectory)
       : connector_(connector),
-        subdirectory_(subdirectory),
+        // TODO(michaeln): Enable writing to disk when db is versioned,
+        // for now using an empty subdirectory to use an in-memory db.
+        // subdirectory_(subdirectory),
         connection_state_(NO_CONNECTION),
         weak_ptr_factory_(this) {}
 
@@ -217,11 +219,22 @@ void DOMStorageContextWrapper::MojoState::BindLocalStorage(
     const url::Origin& origin,
     mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
+  // Delay for a moment after a value is set in anticipation
+  // of other values being set, so changes are batched.
+  const int kCommitDefaultDelaySecs = 5;
+
+  // To avoid excessive IO we apply limits to the amount of data being written
+  // and the frequency of writes.
+  const int kMaxBytesPerHour = kPerStorageAreaQuota;
+  const int kMaxCommitsPerHour = 60;
+
   auto found = level_db_wrappers_.find(origin);
   if (found == level_db_wrappers_.end()) {
     level_db_wrappers_[origin] = base::WrapUnique(new LevelDBWrapperImpl(
         database_.get(), origin.Serialize(),
         kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+        base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs),
+        kMaxBytesPerHour, kMaxCommitsPerHour,
         base::Bind(&MojoState::OnLevelDDWrapperHasNoBindings,
                    base::Unretained(this), origin)));
     found = level_db_wrappers_.find(origin);

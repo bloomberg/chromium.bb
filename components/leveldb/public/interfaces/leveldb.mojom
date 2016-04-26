@@ -17,13 +17,19 @@ enum DatabaseError {
 
 enum BatchOperationType {
   PUT_KEY,
-  DELETE_KEY
+  DELETE_KEY,
+  DELETE_PREFIXED_KEY
 };
 
 struct BatchedOperation {
   BatchOperationType type;
   array<uint8> key;
   array<uint8>? value;
+};
+
+struct KeyValue {
+  array<uint8> key;
+  array<uint8> value;
 };
 
 // Options which control the behavior of a database. (This struct corresponds
@@ -78,10 +84,15 @@ interface LevelDBDatabase {
   // did not exist in the database.
   Delete(array<uint8> key) => (DatabaseError status);
 
+  DeletePrefixed(array<uint8> key_prefix) => (DatabaseError status);
+
   // Atomically performs all |operations|.
   Write(array<BatchedOperation> operations) => (DatabaseError status);
 
   Get(array<uint8> key) => (DatabaseError status, array<uint8> value);
+
+  GetPrefixed(array<uint8> key_prefix)
+      => (DatabaseError status, array<KeyValue> data);
 
   // Snapshots -------------------------------------------------------------
 
