@@ -8,26 +8,26 @@ namespace ui {
 
 namespace {
 
-void TransformCursorMove(gfx::Display::Rotation rotation,
+void TransformCursorMove(display::Display::Rotation rotation,
                          float scale,
                          gfx::Vector2dF* delta) {
   float dx;
   float dy;
 
   switch (rotation) {
-    case gfx::Display::ROTATE_90:
+    case display::Display::ROTATE_90:
       dx = -delta->y();
       dy = delta->x();
       break;
-    case gfx::Display::ROTATE_180:
+    case display::Display::ROTATE_180:
       dx = -delta->x();
       dy = -delta->y();
       break;
-    case gfx::Display::ROTATE_270:
+    case display::Display::ROTATE_270:
       dx = delta->y();
       dy = -delta->x();
       break;
-    default:  // gfx::Display::ROTATE_0
+    default:  // display::Display::ROTATE_0
       dx = delta->x();
       dy = delta->y();
       break;
@@ -44,9 +44,10 @@ CursorController* CursorController::GetInstance() {
   return base::Singleton<CursorController>::get();
 }
 
-void CursorController::SetCursorConfigForWindow(gfx::AcceleratedWidget widget,
-                                                gfx::Display::Rotation rotation,
-                                                float scale) {
+void CursorController::SetCursorConfigForWindow(
+    gfx::AcceleratedWidget widget,
+    display::Display::Rotation rotation,
+    float scale) {
   base::AutoLock lock(window_to_cursor_configuration_map_lock_);
   PerWindowCursorConfiguration config = {rotation, scale};
   window_to_cursor_configuration_map_[widget] = config;

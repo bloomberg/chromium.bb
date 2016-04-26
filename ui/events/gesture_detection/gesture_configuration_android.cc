@@ -7,8 +7,8 @@
 #include "base/android/build_info.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/android/view_configuration.h"
-#include "ui/gfx/screen.h"
 
 using gfx::ViewConfiguration;
 

@@ -66,8 +66,7 @@ bool TestCursorClient::IsMouseEventsEnabled() const {
   return mouse_events_enabled_;
 }
 
-void TestCursorClient::SetDisplay(const gfx::Display& display) {
-}
+void TestCursorClient::SetDisplay(const display::Display& display) {}
 
 void TestCursorClient::LockCursor() {
   cursor_lock_count_++;

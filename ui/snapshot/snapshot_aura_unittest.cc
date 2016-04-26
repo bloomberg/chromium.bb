@@ -215,7 +215,7 @@ TEST_F(SnapshotAuraTest, PartialBounds) {
 }
 
 TEST_F(SnapshotAuraTest, Rotated) {
-  test_screen()->SetDisplayRotation(gfx::Display::ROTATE_90);
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
   gfx::Rect test_bounds(100, 100, 300, 200);
   SetupTestWindow(test_bounds);
@@ -263,7 +263,7 @@ TEST_F(SnapshotAuraTest, DeviceScaleFactor) {
 TEST_F(SnapshotAuraTest, RotateAndUIScale) {
   const float kUIScale = 1.25f;
   test_screen()->SetUIScale(kUIScale);
-  test_screen()->SetDisplayRotation(gfx::Display::ROTATE_90);
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
   gfx::Rect test_bounds(100, 100, 300, 200);
   SetupTestWindow(test_bounds);
@@ -282,7 +282,7 @@ TEST_F(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
   test_screen()->SetDeviceScaleFactor(2.0f);
   const float kUIScale = 1.25f;
   test_screen()->SetUIScale(kUIScale);
-  test_screen()->SetDisplayRotation(gfx::Display::ROTATE_90);
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
   gfx::Rect test_bounds(20, 30, 150, 100);
   SetupTestWindow(test_bounds);

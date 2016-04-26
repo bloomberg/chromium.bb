@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "ui/display/display.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/gesture_touch_uma_histogram.h"
 #include "ui/events/gesture_detection/scale_gesture_detector.h"
 #include "ui/events/gesture_detection/snap_scroll_controller.h"
-#include "ui/gfx/display.h"
 
 namespace ui {
 
@@ -31,7 +31,7 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
     Config();
     Config(const Config& other);
     ~Config();
-    gfx::Display display;
+    display::Display display;
     GestureDetector::Config gesture_detector_config;
     ScaleGestureDetector::Config scale_gesture_detector_config;
 

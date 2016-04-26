@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace ui {
 namespace {

@@ -4,8 +4,8 @@
 
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
+#include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-#include "ui/gfx/screen.h"
 
 namespace ui {
 namespace {
@@ -89,7 +89,7 @@ GestureProvider::Config GetGestureProviderConfig(
       break;
   }
 
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   // |screen| is sometimes NULL during tests.
   if (screen)
     config.display = screen->GetPrimaryDisplay();

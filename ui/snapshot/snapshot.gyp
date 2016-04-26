@@ -14,6 +14,7 @@
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../base/ui_base.gyp:ui_base',
+        '../display/display.gyp:display',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
       ],

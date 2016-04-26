@@ -41,8 +41,8 @@ TEST_F(CursorControllerTest, ClearedIdentity) {
   ui::CursorController* cursor_controller = CursorController::GetInstance();
 
   // Check that configured & cleared windows use identity.
-  cursor_controller->SetCursorConfigForWindow(kTestWindow,
-                                              gfx::Display::ROTATE_180, 3.2f);
+  cursor_controller->SetCursorConfigForWindow(
+      kTestWindow, display::Display::ROTATE_180, 3.2f);
   cursor_controller->ClearCursorConfigForWindow(kTestWindow);
   gfx::Vector2dF delta(3.f, 5.f);
   cursor_controller->ApplyCursorConfigForWindow(kTestWindow, &delta);
@@ -55,7 +55,7 @@ TEST_F(CursorControllerTest, RotatedHighDpi) {
 
   // Check that 90deg rotated highdpi window transforms correctly.
   cursor_controller->SetCursorConfigForWindow(kTestWindow,
-                                              gfx::Display::ROTATE_90, 2.f);
+                                              display::Display::ROTATE_90, 2.f);
   gfx::Vector2dF delta(3.f, 5.f);
   cursor_controller->ApplyCursorConfigForWindow(kTestWindow, &delta);
   EXPECT_FLOAT_EQ(-10.f, delta.x());

@@ -34,11 +34,12 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/screen.h"
 
 namespace aura {
 
@@ -67,8 +68,8 @@ class ScopedCursorHider {
     if (hid_cursor_) {
       client::CursorClient* cursor_client = client::GetCursorClient(window_);
       if (cursor_client) {
-        const gfx::Display& display =
-            gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+        const display::Display& display =
+            display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
         cursor_client->SetDisplay(display);
         cursor_client->ShowCursor();
       }
@@ -321,7 +322,7 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
 }
 
 void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
-                               const gfx::Display& dst_display) {
+                               const display::Display& dst_display) {
   Window* root = GetRootWindow();
   if (root) {
     aura::client::ScreenPositionClient* screen_position_client =

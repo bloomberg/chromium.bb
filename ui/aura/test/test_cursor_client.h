@@ -42,7 +42,7 @@ class TestCursorClient : public aura::client::CursorClient {
   void EnableMouseEvents() override;
   void DisableMouseEvents() override;
   bool IsMouseEventsEnabled() const override;
-  void SetDisplay(const gfx::Display& display) override;
+  void SetDisplay(const display::Display& display) override;
   void LockCursor() override;
   void UnlockCursor() override;
   bool IsCursorLocked() const override;

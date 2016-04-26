@@ -12,18 +12,18 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen.h"
 
 namespace aura {
 
 namespace {
 
-bool IsRotationPortrait(gfx::Display::Rotation rotation) {
-  return rotation == gfx::Display::ROTATE_90 ||
-         rotation == gfx::Display::ROTATE_270;
+bool IsRotationPortrait(display::Display::Rotation rotation) {
+  return rotation == display::Display::ROTATE_90 ||
+         rotation == display::Display::ROTATE_270;
 }
 
 }  // namespace
@@ -56,7 +56,7 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
   host_->OnHostResized(bounds_in_pixel.size());
 }
 
-void TestScreen::SetDisplayRotation(gfx::Display::Rotation rotation) {
+void TestScreen::SetDisplayRotation(display::Display::Rotation rotation) {
   gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
   gfx::Rect new_bounds(bounds_in_pixel);
   if (IsRotationPortrait(rotation) != IsRotationPortrait(display_.rotation())) {
@@ -84,17 +84,17 @@ void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
 gfx::Transform TestScreen::GetRotationTransform() const {
   gfx::Transform rotate;
   switch (display_.rotation()) {
-    case gfx::Display::ROTATE_0:
+    case display::Display::ROTATE_0:
       break;
-    case gfx::Display::ROTATE_90:
+    case display::Display::ROTATE_90:
       rotate.Translate(display_.bounds().height(), 0);
       rotate.Rotate(90);
       break;
-    case gfx::Display::ROTATE_270:
+    case display::Display::ROTATE_270:
       rotate.Translate(0, display_.bounds().width());
       rotate.Rotate(270);
       break;
-    case gfx::Display::ROTATE_180:
+    case display::Display::ROTATE_180:
       rotate.Translate(display_.bounds().width(),
                        display_.bounds().height());
       rotate.Rotate(180);
@@ -140,32 +140,32 @@ int TestScreen::GetNumDisplays() const {
   return 1;
 }
 
-std::vector<gfx::Display> TestScreen::GetAllDisplays() const {
-  return std::vector<gfx::Display>(1, display_);
+std::vector<display::Display> TestScreen::GetAllDisplays() const {
+  return std::vector<display::Display>(1, display_);
 }
 
-gfx::Display TestScreen::GetDisplayNearestWindow(
+display::Display TestScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return display_;
 }
 
-gfx::Display TestScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
+display::Display TestScreen::GetDisplayNearestPoint(
+    const gfx::Point& point) const {
   return display_;
 }
 
-gfx::Display TestScreen::GetDisplayMatching(const gfx::Rect& match_rect) const {
+display::Display TestScreen::GetDisplayMatching(
+    const gfx::Rect& match_rect) const {
   return display_;
 }
 
-gfx::Display TestScreen::GetPrimaryDisplay() const {
+display::Display TestScreen::GetPrimaryDisplay() const {
   return display_;
 }
 
-void TestScreen::AddObserver(gfx::DisplayObserver* observer) {
-}
+void TestScreen::AddObserver(display::DisplayObserver* observer) {}
 
-void TestScreen::RemoveObserver(gfx::DisplayObserver* observer) {
-}
+void TestScreen::RemoveObserver(display::DisplayObserver* observer) {}
 
 TestScreen::TestScreen(const gfx::Rect& screen_bounds)
     : host_(NULL),

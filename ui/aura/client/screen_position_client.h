@@ -40,7 +40,7 @@ class AURA_EXPORT ScreenPositionClient {
   // for finding out and translating the right coordinates for the |window|.
   virtual void SetBounds(Window* window,
                          const gfx::Rect& bounds,
-                         const gfx::Display& display) = 0;
+                         const display::Display& display) = 0;
 };
 
 // Sets/Gets the activation client on the Window.

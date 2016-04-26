@@ -67,6 +67,7 @@ component("events_base") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//ui/display",
   ]
 
   public_deps = [
@@ -133,6 +134,7 @@ component("events") {
     ":gesture_detection",
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -250,6 +252,7 @@ component("gesture_detection") {
     ":events_base",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

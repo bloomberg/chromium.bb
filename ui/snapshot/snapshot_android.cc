@@ -13,10 +13,10 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/snapshot/snapshot_async.h"
 
 namespace ui {
@@ -42,7 +42,8 @@ static void MakeAsyncCopyRequest(
   std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
 
-  const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display& display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
   gfx::Rect source_rect_in_pixel =
       gfx::ScaleToEnclosingRect(source_rect, device_scale_factor);

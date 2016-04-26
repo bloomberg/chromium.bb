@@ -7,8 +7,8 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ui/display/display.h"
 #include "ui/events/devices/input_device_event_observer.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 // This macro provides the implementation for the observer notification methods.
@@ -80,7 +80,8 @@ bool DeviceDataManager::HasInstance() {
 void DeviceDataManager::ClearTouchDeviceAssociations() {
   for (int i = 0; i < kMaxDeviceNum; i++) {
     touch_device_transformer_map_[i] = gfx::Transform();
-    touch_device_to_target_display_map_[i] = gfx::Display::kInvalidDisplayID;
+    touch_device_to_target_display_map_[i] =
+        display::Display::kInvalidDisplayID;
     touch_radius_scale_map_[i] = 1.0;
   }
 }
@@ -129,7 +130,7 @@ int64_t DeviceDataManager::GetTargetDisplayForTouchDevice(
     int touch_device_id) const {
   if (IsTouchDeviceIdValid(touch_device_id))
     return touch_device_to_target_display_map_[touch_device_id];
-  return gfx::Display::kInvalidDisplayID;
+  return display::Display::kInvalidDisplayID;
 }
 
 void DeviceDataManager::OnTouchscreenDevicesUpdated(

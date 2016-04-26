@@ -14,6 +14,10 @@ namespace gfx {
 class Display;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ui {
 class KeyEvent;
 }
@@ -59,7 +63,7 @@ class AURA_EXPORT CursorClient {
   virtual bool IsMouseEventsEnabled() const = 0;
 
   // Sets the display for the cursor.
-  virtual void SetDisplay(const gfx::Display& display) = 0;
+  virtual void SetDisplay(const display::Display& display) = 0;
 
   // Locks the cursor change. The cursor type, cursor visibility, and mouse
   // events enable state never change as long as lock is held by anyone.

@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "ui/display/display.h"
 #include "ui/events/ozone/events_ozone_export.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -40,7 +40,7 @@ class EVENTS_OZONE_EXPORT CursorController {
 
   // Changes the rotation & scale applied for a window.
   void SetCursorConfigForWindow(gfx::AcceleratedWidget widget,
-                                gfx::Display::Rotation rotation,
+                                display::Display::Rotation rotation,
                                 float scale);
 
   // Cleans up all state associated with a window.
@@ -65,7 +65,7 @@ class EVENTS_OZONE_EXPORT CursorController {
   friend struct base::DefaultSingletonTraits<CursorController>;
 
   struct PerWindowCursorConfiguration {
-    gfx::Display::Rotation rotation;
+    display::Display::Rotation rotation;
     float scale;
   };
 

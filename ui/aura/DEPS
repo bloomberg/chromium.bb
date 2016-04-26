@@ -3,6 +3,7 @@ include_rules = [
   "+third_party/skia",
   "+ui/base",
   "+ui/compositor",
+  "+ui/display",
   "+ui/events",
   "+ui/gfx",
   "+ui/metro_viewer",  # TODO(beng): investigate moving remote_root_window_host

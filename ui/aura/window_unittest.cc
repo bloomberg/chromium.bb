@@ -38,6 +38,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/test_layers.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -45,7 +46,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(const char*)
@@ -407,19 +407,19 @@ TEST_F(WindowTest, MoveCursorTo) {
   Window* root = root_window();
   root->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("10,10",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("20,20",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
   w11->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("25,25",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
   w111->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("30,30",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
   w1111->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("35,35",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 }
 
 TEST_F(WindowTest, ContainsMouse) {
@@ -447,7 +447,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   EXPECT_EQ("50,120", QueryLatestMousePositionRequestInHost(host()).ToString());
 #endif
   EXPECT_EQ("10,10",
-            gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 }
 
 // Tests Window::ConvertPointToWindow() with transform to non-root windows.
@@ -460,21 +460,21 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
   w1->SetTransform(transform1);
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("30,30",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform2;
   transform2.Translate(-10, 20);
   w1->SetTransform(transform2);
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("10,40",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform3;
   transform3.Rotate(90.0);
   w1->SetTransform(transform3);
   w1->MoveCursorTo(gfx::Point(5, 5));
   EXPECT_EQ("5,15",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 
   gfx::Transform transform4;
   transform4.Translate(100.0, 100.0);
@@ -483,7 +483,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
   w1->SetTransform(transform4);
   w1->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("60,130",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 }
 
 // Test Window::ConvertPointToWindow() with complex transforms to both root and
@@ -523,7 +523,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   EXPECT_EQ("169,80", QueryLatestMousePositionRequestInHost(host()).ToString());
 #endif
   EXPECT_EQ("20,53",
-      gfx::Screen::GetScreen()->GetCursorScreenPoint().ToString());
+            display::Screen::GetScreen()->GetCursorScreenPoint().ToString());
 }
 
 // Tests that we do not crash when a Window is destroyed by going out of
@@ -1611,9 +1611,9 @@ TEST_F(WindowTest, IgnoreEventsTest) {
 // Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
   gfx::Size size = host()->GetBounds().size();
-  EXPECT_EQ(gfx::Rect(size),
-            gfx::Screen::GetScreen()->GetDisplayNearestPoint(
-                gfx::Point()).bounds());
+  EXPECT_EQ(gfx::Rect(size), display::Screen::GetScreen()
+                                 ->GetDisplayNearestPoint(gfx::Point())
+                                 .bounds());
 
   // Rotate it clock-wise 90 degrees.
   gfx::Transform transform;
@@ -1625,10 +1625,11 @@ TEST_F(WindowTest, Transform) {
   gfx::Size transformed_size(size.height(), size.width());
   EXPECT_EQ(transformed_size.ToString(),
             root_window()->bounds().size().ToString());
-  EXPECT_EQ(
-      gfx::Rect(transformed_size).ToString(),
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(
-          gfx::Point()).bounds().ToString());
+  EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
+            display::Screen::GetScreen()
+                ->GetDisplayNearestPoint(gfx::Point())
+                .bounds()
+                .ToString());
 
   // Host size shouldn't change.
   EXPECT_EQ(size.ToString(), host()->GetBounds().size().ToString());

@@ -12,11 +12,11 @@
 #include "base/event_types.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_WIN)
@@ -152,7 +152,7 @@ EVENTS_EXPORT bool GetScrollOffsets(const base::NativeEvent& native_event,
 EVENTS_EXPORT bool ShouldDefaultToNaturalScroll();
 
 // Returns whether or not the internal display produces touch events.
-EVENTS_EXPORT gfx::Display::TouchSupport GetInternalDisplayTouchSupport();
+EVENTS_EXPORT display::Display::TouchSupport GetInternalDisplayTouchSupport();
 
 #if defined(OS_WIN)
 EVENTS_EXPORT int GetModifiersFromKeyState();

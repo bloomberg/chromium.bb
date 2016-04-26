@@ -152,7 +152,7 @@ int DemoMain() {
   env->set_context_factory(context_factory.get());
   std::unique_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::Create(gfx::Size()));
-  gfx::Screen::SetScreenInstance(test_screen.get());
+  display::Screen::SetScreenInstance(test_screen.get());
   std::unique_ptr<aura::WindowTreeHost> host(
       test_screen->CreateHostForPrimaryDisplay());
   std::unique_ptr<DemoWindowTreeClient> window_tree_client(

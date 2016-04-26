@@ -22,7 +22,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 #if defined(USE_X11)
 #include "ui/aura/window_tree_host_x11.h"
@@ -93,8 +93,8 @@ void AuraTestHelper::TearDown() {
   client::SetFocusClient(root_window(), nullptr);
   host_.reset();
   ui::GestureRecognizer::Reset();
-  if (gfx::Screen::GetScreen() == test_screen_.get())
-    gfx::Screen::SetScreenInstance(nullptr);
+  if (display::Screen::GetScreen() == test_screen_.get())
+    display::Screen::SetScreenInstance(nullptr);
   test_screen_.reset();
 
 #if defined(USE_X11)

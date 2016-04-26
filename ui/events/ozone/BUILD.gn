@@ -37,6 +37,7 @@ if (use_ozone) {
     deps = [
       "//base",
       "//base/third_party/dynamic_annotations",
+      "//ui/display",
       "//ui/events",
       "//ui/events:events_base",
     ]
@@ -131,6 +132,7 @@ if (use_ozone) {
       ":events_ozone",
       ":events_ozone_layout",
       "//base",
+      "//ui/display",
       "//ui/events",
       "//ui/events:dom_keycode_converter",
       "//ui/events:events_base",
