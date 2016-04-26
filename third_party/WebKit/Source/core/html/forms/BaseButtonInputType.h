@@ -31,8 +31,8 @@
 #ifndef BaseButtonInputType_h
 #define BaseButtonInputType_h
 
-#include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/KeyboardClickableInputTypeView.h"
 
 namespace blink {
 

@@ -33,8 +33,8 @@
 #define FileInputType_h
 
 #include "core/CoreExport.h"
-#include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/KeyboardClickableInputTypeView.h"
 #include "platform/FileChooser.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"

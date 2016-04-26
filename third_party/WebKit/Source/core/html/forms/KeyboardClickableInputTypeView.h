@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseClickableWithKeyInputType_h
-#define BaseClickableWithKeyInputType_h
+#ifndef KeyboardClickableInputTypeView_h
+#define KeyboardClickableInputTypeView_h
 
 #include "core/CoreExport.h"
 #include "core/html/forms/InputTypeView.h"
@@ -37,7 +37,6 @@
 namespace blink {
 
 // An InputTypeView class that dispatches a simulated click on space/return key.
-// TODO(tkent): Rename this to FooBarInputTypeView.
 class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
 protected:
     KeyboardClickableInputTypeView(HTMLInputElement& element) : InputTypeView(element) {}
@@ -51,4 +50,4 @@ private:
 
 } // namespace blink
 
-#endif // BaseClickableWithKeyInputType_h
+#endif // KeyboardClickableInputTypeView_h

@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/BaseClickableWithKeyInputType.h"
+#include "core/html/forms/KeyboardClickableInputTypeView.h"
 
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"

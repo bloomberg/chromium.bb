@@ -26,10 +26,10 @@
 #ifndef ChooserOnlyTemporalInputTypeView_h
 #define ChooserOnlyTemporalInputTypeView_h
 
-#include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "core/html/forms/BaseTemporalInputType.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/html/forms/DateTimeChooserClient.h"
+#include "core/html/forms/KeyboardClickableInputTypeView.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

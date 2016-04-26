@@ -31,9 +31,9 @@
 #ifndef ColorInputType_h
 #define ColorInputType_h
 
-#include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/InputType.h"
+#include "core/html/forms/KeyboardClickableInputTypeView.h"
 
 namespace blink {
 
