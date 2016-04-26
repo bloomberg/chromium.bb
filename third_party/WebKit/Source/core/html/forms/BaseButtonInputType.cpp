@@ -45,13 +45,13 @@ using namespace HTMLNames;
 
 BaseButtonInputType::BaseButtonInputType(HTMLInputElement& element)
     : InputType(element)
-    , BaseClickableWithKeyInputType(element)
+    , KeyboardClickableInputTypeView(element)
 {
 }
 
 DEFINE_TRACE(BaseButtonInputType)
 {
-    BaseClickableWithKeyInputType::trace(visitor);
+    KeyboardClickableInputTypeView::trace(visitor);
     InputType::trace(visitor);
 }
 

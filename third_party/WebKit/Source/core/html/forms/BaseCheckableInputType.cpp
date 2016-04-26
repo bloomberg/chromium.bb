@@ -91,7 +91,8 @@ bool BaseCheckableInputType::canSetStringValue() const
     return false;
 }
 
-// FIXME: Could share this with BaseClickableWithKeyInputType and RangeInputType if we had a common base class.
+// FIXME: Could share this with KeyboardClickableInputTypeView and
+// RangeInputType if we had a common base class.
 void BaseCheckableInputType::accessKeyAction(bool sendMouseEvents)
 {
     InputTypeView::accessKeyAction(sendMouseEvents);

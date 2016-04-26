@@ -37,7 +37,7 @@
 namespace blink {
 
 ChooserOnlyTemporalInputTypeView::ChooserOnlyTemporalInputTypeView(HTMLInputElement& element, BaseTemporalInputType& inputType)
-    : BaseClickableWithKeyInputType(element)
+    : KeyboardClickableInputTypeView(element)
     ,  m_inputType(inputType)
 {
     ThreadState::current()->registerPreFinalizer(this);

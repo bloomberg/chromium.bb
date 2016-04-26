@@ -38,9 +38,9 @@ namespace blink {
 
 // An InputTypeView class that dispatches a simulated click on space/return key.
 // TODO(tkent): Rename this to FooBarInputTypeView.
-class CORE_EXPORT BaseClickableWithKeyInputType : public InputTypeView {
+class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
 protected:
-    BaseClickableWithKeyInputType(HTMLInputElement& element) : InputTypeView(element) {}
+    KeyboardClickableInputTypeView(HTMLInputElement& element) : InputTypeView(element) {}
 
 private:
     void handleKeydownEvent(KeyboardEvent*) override;

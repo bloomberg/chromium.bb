@@ -38,7 +38,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-void BaseClickableWithKeyInputType::handleKeydownEvent(KeyboardEvent* event)
+void KeyboardClickableInputTypeView::handleKeydownEvent(KeyboardEvent* event)
 {
     const String& key = event->keyIdentifier();
     if (key == "U+0020") {
@@ -48,7 +48,7 @@ void BaseClickableWithKeyInputType::handleKeydownEvent(KeyboardEvent* event)
     }
 }
 
-void BaseClickableWithKeyInputType::handleKeypressEvent(KeyboardEvent* event)
+void KeyboardClickableInputTypeView::handleKeypressEvent(KeyboardEvent* event)
 {
     int charCode = event->charCode();
     if (charCode == '\r') {
@@ -62,7 +62,7 @@ void BaseClickableWithKeyInputType::handleKeypressEvent(KeyboardEvent* event)
     }
 }
 
-void BaseClickableWithKeyInputType::handleKeyupEvent(KeyboardEvent* event)
+void KeyboardClickableInputTypeView::handleKeyupEvent(KeyboardEvent* event)
 {
     const String& key = event->keyIdentifier();
     if (key != "U+0020")
@@ -72,7 +72,7 @@ void BaseClickableWithKeyInputType::handleKeyupEvent(KeyboardEvent* event)
 }
 
 // FIXME: Could share this with BaseCheckableInputType and RangeInputType if we had a common base class.
-void BaseClickableWithKeyInputType::accessKeyAction(bool sendMouseEvents)
+void KeyboardClickableInputTypeView::accessKeyAction(bool sendMouseEvents)
 {
     InputTypeView::accessKeyAction(sendMouseEvents);
     element().dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);

@@ -37,7 +37,7 @@
 namespace blink {
 
 // Base of button, image, reset, and submit types.
-class BaseButtonInputType : public InputType, public BaseClickableWithKeyInputType {
+class BaseButtonInputType : public InputType, public KeyboardClickableInputTypeView {
     USING_GARBAGE_COLLECTED_MIXIN(BaseButtonInputType);
 public:
     DECLARE_VIRTUAL_TRACE();

@@ -41,7 +41,7 @@ class ColorChooser;
 
 class ColorInputType final
     : public InputType
-    , public BaseClickableWithKeyInputType
+    , public KeyboardClickableInputTypeView
     , public ColorChooserClient {
     USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
 public:

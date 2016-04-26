@@ -78,7 +78,7 @@ static bool isValidColorString(const String& value)
 
 ColorInputType::ColorInputType(HTMLInputElement& element)
     : InputType(element)
-    , BaseClickableWithKeyInputType(element)
+    , KeyboardClickableInputTypeView(element)
 {
 }
 
@@ -94,7 +94,7 @@ ColorInputType::~ColorInputType()
 DEFINE_TRACE(ColorInputType)
 {
     visitor->trace(m_chooser);
-    BaseClickableWithKeyInputType::trace(visitor);
+    KeyboardClickableInputTypeView::trace(visitor);
     ColorChooserClient::trace(visitor);
     InputType::trace(visitor);
 }

@@ -51,7 +51,7 @@ using namespace HTMLNames;
 
 inline FileInputType::FileInputType(HTMLInputElement& element)
     : InputType(element)
-    , BaseClickableWithKeyInputType(element)
+    , KeyboardClickableInputTypeView(element)
     , m_fileList(FileList::create())
 {
 }
@@ -64,7 +64,7 @@ InputType* FileInputType::create(HTMLInputElement& element)
 DEFINE_TRACE(FileInputType)
 {
     visitor->trace(m_fileList);
-    BaseClickableWithKeyInputType::trace(visitor);
+    KeyboardClickableInputTypeView::trace(visitor);
     InputType::trace(visitor);
 }
 
