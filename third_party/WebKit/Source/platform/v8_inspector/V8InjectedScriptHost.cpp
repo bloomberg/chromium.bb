@@ -43,23 +43,6 @@ inline void v8SetReturnValue(const CallbackInfo& info, bool value)
 
 }
 
-void V8InjectedScriptHost::inspectedObjectCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1)
-        return;
-
-    v8::Isolate* isolate = info.GetIsolate();
-    if (!info[0]->IsInt32() && !isolate->IsExecutionTerminating()) {
-        isolate->ThrowException(v8::Exception::TypeError(toV8String(isolate, "argument has to be an integer")));
-        return;
-    }
-
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
-    V8RuntimeAgent::Inspectable* object = host->inspectedObject(info[0].As<v8::Int32>()->Value());
-    v8SetReturnValue(info, object ? object->get(context) : v8::Local<v8::Value>());
-}
-
 void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1 || !info[0]->IsObject())
@@ -302,7 +285,6 @@ using InjectedScriptHostWrapper = InspectorWrapper<InjectedScriptHost, hiddenPro
 
 const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMethods[] = {
     {"inspect", V8InjectedScriptHost::inspectCallback},
-    {"inspectedObject", V8InjectedScriptHost::inspectedObjectCallback},
     {"internalConstructorName", V8InjectedScriptHost::internalConstructorNameCallback},
     {"formatAccessorsAsProperties", V8InjectedScriptHost::formatAccessorsAsProperties},
     {"isTypedArray", V8InjectedScriptHost::isTypedArrayCallback},

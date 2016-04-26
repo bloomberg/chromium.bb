@@ -45,7 +45,6 @@ public:
     void reset();
     void discardInjectedScripts();
     void reportAllContexts(V8RuntimeAgentImpl*);
-    void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
     void releaseObjectGroup(const String16& objectGroup);
     void setCustomObjectFormatterEnabled(bool);
     void changeInstrumentationCounter(int delta);
@@ -56,6 +55,11 @@ public:
     V8HeapProfilerAgent* heapProfilerAgent() override;
     V8ProfilerAgent* profilerAgent() override;
     V8RuntimeAgent* runtimeAgent() override;
+
+    void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
+    V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
+    static const unsigned kInspectedObjectBufferSize = 5;
+
 private:
     V8InspectorSessionImpl(V8DebuggerImpl*, int contextGroupId);
 
@@ -70,6 +74,7 @@ private:
     OwnPtr<V8DebuggerAgentImpl> m_debuggerAgent;
     OwnPtr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
     OwnPtr<V8ProfilerAgentImpl> m_profilerAgent;
+    protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
 };
 
 } // namespace blink

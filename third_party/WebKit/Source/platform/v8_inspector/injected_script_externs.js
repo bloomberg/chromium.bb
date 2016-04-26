@@ -14,12 +14,6 @@ function InjectedScriptHostClass()
 InjectedScriptHostClass.prototype.inspect = function(objectId, hints) {}
 
 /**
- * @param {number} num
- * @return {*}
- */
-InjectedScriptHostClass.prototype.inspectedObject = function(num) {}
-
-/**
  * @param {*} obj
  * @return {string}
  */

@@ -11,6 +11,7 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
+#include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/ConsoleAPITypes.h"
@@ -203,6 +204,15 @@ public:
         }
         return nullptr;
     }
+
+    V8InspectorSessionImpl* currentSession()
+    {
+        InspectedContext* inspectedContext = ensureInspectedContext();
+        if (!inspectedContext)
+            return nullptr;
+        return inspectedContext->debugger()->sessionForContextGroup(inspectedContext->contextGroupId());
+    }
+
 private:
     const v8::FunctionCallbackInfo<v8::Value>& m_info;
     v8::Isolate* m_isolate;
@@ -226,14 +236,6 @@ private:
         if (!console->SetPrivate(m_context, key, v8::True(m_isolate)).FromMaybe(false))
             return defaultValue;
         return false;
-    }
-
-    V8InspectorSessionImpl* currentSession()
-    {
-        InspectedContext* inspectedContext = ensureInspectedContext();
-        if (!inspectedContext)
-            return nullptr;
-        return inspectedContext->debugger()->sessionForContextGroup(inspectedContext->contextGroupId());
     }
 };
 
@@ -580,6 +582,20 @@ void V8Console::lastEvaluationResultCallback(const v8::FunctionCallbackInfo<v8::
         info.GetReturnValue().Set(injectedScript->lastEvaluationResult());
 }
 
+void V8Console::inspectedObject(const v8::FunctionCallbackInfo<v8::Value>& info, unsigned num)
+{
+    ASSERT(num < V8InspectorSessionImpl::kInspectedObjectBufferSize);
+    ConsoleHelper helper(info);
+    if (V8InspectorSessionImpl* session = helper.currentSession()) {
+        V8RuntimeAgent::Inspectable* object = session->inspectedObject(num);
+        v8::Isolate* isolate = info.GetIsolate();
+        if (object)
+            info.GetReturnValue().Set(object->get(isolate->GetCurrentContext()));
+        else
+            info.GetReturnValue().Set(v8::Undefined(isolate));
+    }
+}
+
 v8::MaybeLocal<v8::Object> V8Console::createConsole(InspectedContext* inspectedContext, bool hasMemoryAttribute)
 {
     v8::Local<v8::Context> context = inspectedContext->context();
@@ -650,6 +666,11 @@ v8::Local<v8::Object> V8Console::createCommandLineAPI(InspectedContext* inspecte
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "monitor", V8Console::monitorFunctionCallback);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "unmonitor", V8Console::unmonitorFunctionCallback);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$_", V8Console::lastEvaluationResultCallback);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$0", V8Console::inspectedObject0);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$1", V8Console::inspectedObject1);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$2", V8Console::inspectedObject2);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$3", V8Console::inspectedObject3);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$4", V8Console::inspectedObject4);
 
     commandLineAPI->SetPrivate(context, inspectedContextPrivateKey(isolate), v8::External::New(isolate, inspectedContext));
     return commandLineAPI;

@@ -31,19 +31,16 @@
 #define InjectedScriptHost_h
 
 #include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {
 
 class V8InspectorSessionImpl;
-class V8EventListenerInfo;
 class V8DebuggerImpl;
 
 namespace protocol {
-class DictionaryValue;
+class Value;
 }
 
 // SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
@@ -55,10 +52,6 @@ class InjectedScriptHost {
 public:
     static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*, V8InspectorSessionImpl*);
     ~InjectedScriptHost();
-
-    void addInspectedObject(PassOwnPtr<V8RuntimeAgent::Inspectable>);
-    void clearInspectedObjects();
-    V8RuntimeAgent::Inspectable* inspectedObject(unsigned num);
 
     void inspectImpl(PassOwnPtr<protocol::Value> objectToInspect, PassOwnPtr<protocol::Value> hints);
 
@@ -73,7 +66,6 @@ private:
 
     V8DebuggerImpl* m_debugger;
     V8InspectorSessionImpl* m_session;
-    protocol::Vector<OwnPtr<V8RuntimeAgent::Inspectable>> m_inspectedObjects;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 

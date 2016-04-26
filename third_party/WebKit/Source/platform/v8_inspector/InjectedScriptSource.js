@@ -618,10 +618,6 @@ InjectedScript.prototype = {
         var commandLineAPIImpl = this._commandLineAPIImpl;
         for (var member of members)
             nativeCommandLineAPI[member] = bind(commandLineAPIImpl[member], commandLineAPIImpl);
-        for (var i = 0; i < 5; ++i) {
-            var member = "$" + i;
-            nativeCommandLineAPI[member] = bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i);
-        }
         var functionToStringMap = new Map([
             ["$",          "function $(selector, [startNode]) { [Command Line API] }"],
             ["$$",         "function $$(selector, [startNode]) { [Command Line API] }"],
@@ -1339,14 +1335,6 @@ CommandLineAPIImpl.prototype = {
             }
         }
         return result;
-    },
-
-    /**
-     * @param {number} num
-     */
-    _inspectedObject: function(num)
-    {
-        return InjectedScriptHost.inspectedObject(num);
     },
 
     /**
