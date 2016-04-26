@@ -1441,6 +1441,7 @@
       'browser/media/router/issue_manager_unittest.cc',
       'browser/media/router/issue_unittest.cc',
       'browser/media/router/media_route_unittest.cc',
+      'browser/media/router/media_router_factory_unittest.cc',
       'browser/media/router/media_sink_unittest.cc',
       'browser/media/router/media_sinks_observer_unittest.cc',
       'browser/media/router/media_source_helper_unittest.cc',
