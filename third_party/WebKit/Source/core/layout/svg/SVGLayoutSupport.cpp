@@ -261,13 +261,15 @@ bool SVGLayoutSupport::layoutSizeOfNearestViewportChanged(const LayoutObject* st
 
 bool SVGLayoutSupport::screenScaleFactorChanged(const LayoutObject* ancestor)
 {
-    while (ancestor && !ancestor->isSVGRoot()) {
+    for (; ancestor; ancestor = ancestor->parent()) {
+        if (ancestor->isSVGRoot())
+            return toLayoutSVGRoot(ancestor)->didScreenScaleFactorChange();
         if (ancestor->isSVGTransformableContainer())
             return toLayoutSVGTransformableContainer(ancestor)->didScreenScaleFactorChange();
         if (ancestor->isSVGViewportContainer())
             return toLayoutSVGViewportContainer(ancestor)->didScreenScaleFactorChange();
-        ancestor = ancestor->parent();
     }
+    ASSERT_NOT_REACHED();
     return false;
 }
 

@@ -44,6 +44,7 @@ LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
     : LayoutReplaced(node)
     , m_objectBoundingBoxValid(false)
     , m_isLayoutSizeChanged(false)
+    , m_didScreenScaleFactorChange(false)
     , m_needsBoundariesOrTransformUpdate(true)
     , m_hasBoxDecorationBackground(false)
     , m_hasNonIsolatedBlendingDescendants(false)
@@ -142,7 +143,12 @@ void LayoutSVGRoot::layout()
     LayoutSize oldSize = size();
     updateLogicalWidth();
     updateLogicalHeight();
+
     buildLocalToBorderBoxTransform();
+    // TODO(fs): Temporarily, needing a layout implies that the local transform
+    // has changed. This should be updated to be more precise and factor in the
+    // actual (relevant) changes to the computed user-space transform.
+    m_didScreenScaleFactorChange = selfNeedsLayout();
 
     SVGLayoutSupport::layoutResourcesIfNeeded(this);
 
@@ -153,10 +159,7 @@ void LayoutSVGRoot::layout()
     // (hence no one is interested in viewport size changes).
     bool layoutSizeChanged = m_isLayoutSizeChanged && svg->hasRelativeLengths();
 
-    bool forceLayoutOfChildren = selfNeedsLayout();
-
-    const bool scalingFactorChanged = false;
-    SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, scalingFactorChanged, layoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), false, m_didScreenScaleFactorChange, layoutSizeChanged);
 
     if (m_needsBoundariesOrTransformUpdate) {
         updateCachedBoundaries();

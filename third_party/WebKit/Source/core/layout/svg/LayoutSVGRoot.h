@@ -47,6 +47,7 @@ public:
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
+    bool didScreenScaleFactorChange() const { return m_didScreenScaleFactorChange; }
     void setNeedsBoundariesUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
     void setNeedsTransformUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
 
@@ -124,6 +125,7 @@ private:
     mutable AffineTransform m_localToParentTransform;
     AffineTransform m_localToBorderBoxTransform;
     bool m_isLayoutSizeChanged : 1;
+    bool m_didScreenScaleFactorChange : 1;
     bool m_needsBoundariesOrTransformUpdate : 1;
     bool m_hasBoxDecorationBackground : 1;
     mutable bool m_hasNonIsolatedBlendingDescendants : 1;

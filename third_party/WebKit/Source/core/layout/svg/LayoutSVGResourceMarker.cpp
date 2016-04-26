@@ -152,4 +152,12 @@ void LayoutSVGResourceMarker::calcViewport()
     m_viewport = FloatRect(0, 0, w, h);
 }
 
+bool LayoutSVGResourceMarker::calculateLocalTransform()
+{
+    // TODO(fs): Temporarily, needing a layout implies that the local transform
+    // has changed. This should be updated to be more precise and factor in the
+    // actual (relevant) changes to the computed user-space transform.
+    return selfNeedsLayout();
+}
+
 } // namespace blink

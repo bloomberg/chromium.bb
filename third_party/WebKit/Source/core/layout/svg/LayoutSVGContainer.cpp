@@ -66,8 +66,7 @@ void LayoutSVGContainer::layout()
     bool layoutSizeChanged = element()->hasRelativeLengths()
         && SVGLayoutSupport::layoutSizeOfNearestViewportChanged(this);
 
-    bool forceLayoutOfChildren = selfNeedsLayout();
-    SVGLayoutSupport::layoutChildren(firstChild(), forceLayoutOfChildren, m_didScreenScaleFactorChange, layoutSizeChanged);
+    SVGLayoutSupport::layoutChildren(firstChild(), false, m_didScreenScaleFactorChange, layoutSizeChanged);
 
     // Invalidate all resources of this client if our layout changed.
     if (everHadLayout() && needsLayout())
