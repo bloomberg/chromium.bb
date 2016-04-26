@@ -795,6 +795,39 @@ TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
   EXPECT_EQ(1, GetTotalNodeCount(user_share(), preferences_root));
 }
 
+// Tests that InitUniqueByCreation called for existing encrypted entry properly
+// decrypts specifics and pust them in BaseNode::unencrypted_data_.
+TEST_F(SyncApiTest, WriteNode_UniqueByCreation_EncryptedExistingEntry) {
+  KeyParams params = {"localhost", "username", "passphrase"};
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+    trans.GetCryptographer()->AddKey(params);
+  }
+  encryption_handler()->EnableEncryptEverything();
+  WriteTransaction trans(FROM_HERE, user_share());
+  ReadNode root_node(&trans);
+  root_node.InitByRootLookup();
+
+  {
+    WriteNode pref_node(&trans);
+    WriteNode::InitUniqueByCreationResult result =
+        pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
+    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
+    pref_node.SetTitle("bar");
+    sync_pb::EntitySpecifics entity_specifics;
+    entity_specifics.mutable_preference();
+    pref_node.SetEntitySpecifics(entity_specifics);
+  }
+  {
+    WriteNode pref_node(&trans);
+    WriteNode::InitUniqueByCreationResult result =
+        pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
+    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
+    // Call GetEntitySpecifics, ensure it doesn't DCHECK.
+    pref_node.GetEntitySpecifics();
+  }
+}
+
 namespace {
 
 class TestHttpPostProviderInterface : public HttpPostProviderInterface {

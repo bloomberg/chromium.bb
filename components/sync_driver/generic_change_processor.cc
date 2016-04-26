@@ -548,6 +548,13 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
         LOG(ERROR) << "Create: Bad predecessor.";
         return error;
       }
+      case syncer::WriteNode::INIT_FAILED_DECRYPT_EXISTING_ENTRY: {
+        syncer::SyncError error;
+        error.Reset(FROM_HERE, error_prefix + "failed to decrypt", type_);
+        error_handler()->OnSingleDataTypeUnrecoverableError(error);
+        LOG(ERROR) << "Create: Failed to decrypt.";
+        return error;
+      }
       default: {
         syncer::SyncError error;
         error.Reset(FROM_HERE, error_prefix + "unknown error", type_);
@@ -605,55 +612,19 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
       error_handler()->OnSingleDataTypeUnrecoverableError(error);
       LOG(ERROR) << "Update: deleted entry.";
       return error;
+    } else if (result == syncer::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
+      syncer::SyncError error;
+      error.Reset(FROM_HERE, error_prefix + "failed to decrypt", type_);
+      error_handler()->OnSingleDataTypeUnrecoverableError(error);
+      LOG(ERROR) << "Update: Failed to decrypt.";
+      return error;
     } else {
-      syncer::Cryptographer* crypto = trans.GetCryptographer();
-      syncer::ModelTypeSet encrypted_types(trans.GetEncryptedTypes());
-      const sync_pb::EntitySpecifics& specifics =
-          sync_node->GetEntitySpecifics();
-      CHECK(specifics.has_encrypted());
-      const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
-      const bool agreement = encrypted_types.Has(type_);
-      if (!agreement && !can_decrypt) {
-        syncer::SyncError error;
-        error.Reset(FROM_HERE,
-                    "Failed to load encrypted entry, missing key and "
-                    "nigori mismatch for " +
-                        type_str + ".",
-                    type_);
-        error_handler()->OnSingleDataTypeUnrecoverableError(error);
-        LOG(ERROR) << "Update: encr case 1.";
-        return error;
-      } else if (agreement && can_decrypt) {
-        syncer::SyncError error;
-        error.Reset(FROM_HERE,
-                    "Failed to load encrypted entry, we have the key "
-                    "and the nigori matches (?!) for " +
-                        type_str + ".",
-                    type_);
-        error_handler()->OnSingleDataTypeUnrecoverableError(error);
-        LOG(ERROR) << "Update: encr case 2.";
-        return error;
-      } else if (agreement) {
-        syncer::SyncError error;
-        error.Reset(FROM_HERE,
-                    "Failed to load encrypted entry, missing key and "
-                    "the nigori matches for " +
-                        type_str + ".",
-                    type_);
-        error_handler()->OnSingleDataTypeUnrecoverableError(error);
-        LOG(ERROR) << "Update: encr case 3.";
-        return error;
-      } else {
-        syncer::SyncError error;
-        error.Reset(FROM_HERE,
-                    "Failed to load encrypted entry, we have the key"
-                    "(?!) and nigori mismatch for " +
-                        type_str + ".",
-                    type_);
-        error_handler()->OnSingleDataTypeUnrecoverableError(error);
-        LOG(ERROR) << "Update: encr case 4.";
-        return error;
-      }
+      NOTREACHED();
+      syncer::SyncError error;
+      error.Reset(FROM_HERE, error_prefix + "unknown error", type_);
+      error_handler()->OnSingleDataTypeUnrecoverableError(error);
+      LOG(ERROR) << "Update: Unknown error.";
+      return error;
     }
   }
 

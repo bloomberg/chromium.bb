@@ -49,6 +49,8 @@ class SYNC_EXPORT WriteNode : public BaseNode {
     INIT_FAILED_COULD_NOT_CREATE_ENTRY,
     // Setting the predecessor failed
     INIT_FAILED_SET_PREDECESSOR,
+    // Found existing entry, but was unable to decrypt.
+    INIT_FAILED_DECRYPT_EXISTING_ENTRY,
   };
 
   // Create a WriteNode using the given transaction.

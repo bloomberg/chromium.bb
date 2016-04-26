@@ -374,6 +374,8 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
       existing_entry->PutParentId(parent_id);
     }  // Else just reuse the existing entry.
     entry_ = existing_entry.release();
+    if (!DecryptIfNecessary())
+      return INIT_FAILED_DECRYPT_EXISTING_ENTRY;
   } else {
     entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                         syncable::CREATE,
