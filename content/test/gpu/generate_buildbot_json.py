@@ -616,7 +616,7 @@ COMMON_GTESTS = {
         'allow_on_android': True,
       }
     ],
-    'args': ['--use-gpu-in-tests']
+    'desktop_args': ['--use-gpu-in-tests']
   },
   'gl_unittests': {
     'tester_configs': [
@@ -624,7 +624,7 @@ COMMON_GTESTS = {
         'allow_on_android': True,
       }
     ],
-    'args': ['--use-gpu-in-tests']
+    'desktop_args': ['--use-gpu-in-tests']
   },
   # The gles2_conform_tests are closed-source and deliberately only run
   # on the FYI waterfall and the optional tryservers.
@@ -956,6 +956,14 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
         tester_config['swarming_dimensions']
       ],
     })
+  if 'desktop_args' in result:
+    if not is_android(tester_config):
+      if not 'args' in result:
+        result['args'] = []
+      result['args'] += result['desktop_args']
+    # Don't put the desktop args in the JSON.
+    result.pop('desktop_args')
+
   # This flag only has an effect on the Linux bots that run tests
   # locally (as opposed to via Swarming), which are only those couple
   # on the chromium.gpu.fyi waterfall. Still, there is no harm in
@@ -978,6 +986,9 @@ def generate_telemetry_test(tester_name, tester_config,
   test_args.append('--extra-browser-args=' + extra_browser_args_string)
   if 'args' in test_config:
     test_args.extend(substitute_args(tester_config, test_config['args']))
+  if 'desktop_args' in test_config and not is_android(tester_config):
+    test_args.extend(substitute_args(tester_config,
+                                     test_config['desktop_args']))
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
   # (At least, this was true some time ago.) Continue to use this

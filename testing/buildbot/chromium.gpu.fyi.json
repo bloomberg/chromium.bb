@@ -4,9 +4,6 @@
   "Android Debug (Nexus 9)": {
     "gtest_tests": [
       {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -20,9 +17,6 @@
         "use_xvfb": false
       },
       {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
