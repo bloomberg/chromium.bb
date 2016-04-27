@@ -555,6 +555,9 @@ crbug.com/396825 fast/repaint/outline-clip-change.html [ NeedsManualRebaseline ]
 
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
+crbug.com/603997 compositing/overflow/clear-scroll-parent.html [ NeedsManualRebaseline ]
+crbug.com/603997 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ NeedsManualRebaseline ]
+
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]

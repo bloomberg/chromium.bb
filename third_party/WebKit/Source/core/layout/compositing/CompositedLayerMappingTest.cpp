@@ -626,4 +626,18 @@ TEST_F(CompositedLayerMappingTest, ScrollingContentsAndForegroundLayerPaintingPh
     EXPECT_FALSE(mapping->foregroundLayer());
 }
 
+TEST_F(CompositedLayerMappingTest, OverflowAndClippingWithACL)
+{
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
+    setBodyInnerHTML(
+        "<div style='height:700px; overflow-y:scroll; background-color:red;'>"
+        "  <div style='overflow:hidden; width: 700px; height:2000px;'>"
+        "    <div id='hidden' style='background-color:blue; width: 700px; height:2000px; position:relative;'></div>"
+        "  </div>"
+        "</div>");
+    CompositedLayerMapping* mapping = toLayoutBlock(getLayoutObjectByElementId("hidden"))->layer()->compositedLayerMapping();
+    ASSERT_TRUE(mapping->ancestorClippingLayer());
+    EXPECT_EQ(2000.f, mapping->ancestorClippingLayer()->size().height());
+}
+
 } // namespace blink
