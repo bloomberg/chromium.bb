@@ -49,10 +49,6 @@ SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
     ASSERT(transform);
 }
 
-SVGMatrixTearOff::~SVGMatrixTearOff()
-{
-}
-
 DEFINE_TRACE(SVGMatrixTearOff)
 {
     visitor->trace(m_contextTransform);

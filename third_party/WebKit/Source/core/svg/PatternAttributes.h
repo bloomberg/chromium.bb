@@ -174,7 +174,7 @@ private:
 };
 
 // Wrapper object for the PatternAttributes part object.
-class PatternAttributesWrapper : public GarbageCollectedFinalized<PatternAttributesWrapper> {
+class PatternAttributesWrapper : public GarbageCollected<PatternAttributesWrapper> {
 public:
     static PatternAttributesWrapper* create()
     {

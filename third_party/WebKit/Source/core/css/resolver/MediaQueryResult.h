@@ -28,7 +28,7 @@
 
 namespace blink {
 
-class MediaQueryResult : public GarbageCollectedFinalized<MediaQueryResult> {
+class MediaQueryResult : public GarbageCollected<MediaQueryResult> {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult);
 public:
     MediaQueryResult(const MediaQueryExp& expr, bool result)

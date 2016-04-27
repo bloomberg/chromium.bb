@@ -19,11 +19,10 @@ class ScriptState;
 class SecurityOrigin;
 class WindowProxy;
 
-class CORE_EXPORT WindowProxyManager final : public GarbageCollectedFinalized<WindowProxyManager> {
+class CORE_EXPORT WindowProxyManager final : public GarbageCollected<WindowProxyManager> {
 public:
     static WindowProxyManager* create(Frame&);
 
-    ~WindowProxyManager();
     DECLARE_TRACE();
 
     Frame* frame() const { return m_frame.get(); }

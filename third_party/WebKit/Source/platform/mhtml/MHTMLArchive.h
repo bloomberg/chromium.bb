@@ -44,10 +44,9 @@ class SharedBuffer;
 
 struct SerializedResource;
 
-class PLATFORM_EXPORT MHTMLArchive final : public GarbageCollectedFinalized<MHTMLArchive> {
+class PLATFORM_EXPORT MHTMLArchive final : public GarbageCollected<MHTMLArchive> {
 public:
     static MHTMLArchive* create(const KURL&, SharedBuffer*);
-    ~MHTMLArchive();
 
     // Binary encoding results in smaller MHTML files but they might not work in other browsers.
     enum EncodingPolicy {

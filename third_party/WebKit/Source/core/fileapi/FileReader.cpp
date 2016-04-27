@@ -69,7 +69,7 @@ const CString utf8FilePath(Blob* blob)
 static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
 
-class FileReader::ThrottlingController final : public GarbageCollectedFinalized<FileReader::ThrottlingController>, public Supplement<ExecutionContext> {
+class FileReader::ThrottlingController final : public GarbageCollected<FileReader::ThrottlingController>, public Supplement<ExecutionContext> {
     USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 public:
     static ThrottlingController* from(ExecutionContext* context)
@@ -84,8 +84,6 @@ public:
         }
         return controller;
     }
-
-    ~ThrottlingController() { }
 
     enum FinishReaderType { DoNotRunPendingReaders, RunPendingReaders };
 

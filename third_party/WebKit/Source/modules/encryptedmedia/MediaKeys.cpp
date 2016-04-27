@@ -42,7 +42,7 @@
 namespace blink {
 
 // A class holding a pending action.
-class MediaKeys::PendingAction : public GarbageCollectedFinalized<MediaKeys::PendingAction> {
+class MediaKeys::PendingAction final : public GarbageCollected<MediaKeys::PendingAction> {
 public:
     const Persistent<ContentDecryptionModuleResult> result() const
     {
@@ -59,10 +59,6 @@ public:
         ASSERT(result);
         ASSERT(serverCertificate);
         return new PendingAction(result, serverCertificate);
-    }
-
-    ~PendingAction()
-    {
     }
 
     DEFINE_INLINE_TRACE()

@@ -66,7 +66,7 @@ enum UpdateReason {
 // MemoryCacheEntry class is used only in MemoryCache class, but we don't make
 // MemoryCacheEntry class an inner class of MemoryCache because of dependency
 // from MemoryCacheLRUList.
-class MemoryCacheEntry final : public GarbageCollectedFinalized<MemoryCacheEntry> {
+class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
 public:
     static MemoryCacheEntry* create(Resource* resource)
     {

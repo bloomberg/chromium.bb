@@ -15,12 +15,11 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class FetchManager final : public GarbageCollectedFinalized<FetchManager>, public ContextLifecycleObserver {
+class FetchManager final : public GarbageCollected<FetchManager>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 public:
     static FetchManager* create(ExecutionContext*);
     explicit FetchManager(ExecutionContext*);
-    ~FetchManager();
     ScriptPromise fetch(ScriptState*, FetchRequestData*);
     void contextDestroyed() override;
     bool isStopped() const { return m_isStopped; }

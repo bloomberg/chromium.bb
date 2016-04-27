@@ -42,7 +42,7 @@ namespace blink {
 class AudioBus;
 class ExceptionState;
 
-class MODULES_EXPORT AudioBuffer final : public GarbageCollectedFinalized<AudioBuffer>, public ScriptWrappable {
+class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioBuffer* create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
@@ -75,11 +75,11 @@ public:
     }
 
 private:
+    explicit AudioBuffer(AudioBus*);
+
     static DOMFloat32Array* createFloat32ArrayOrNull(size_t length);
 
-protected:
     AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
-    explicit AudioBuffer(AudioBus*);
     bool createdSuccessfully(unsigned desiredNumberOfChannels) const;
 
     float m_sampleRate;

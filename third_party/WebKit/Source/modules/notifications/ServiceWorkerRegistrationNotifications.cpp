@@ -50,10 +50,6 @@ ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(E
 {
 }
 
-ServiceWorkerRegistrationNotifications::~ServiceWorkerRegistrationNotifications()
-{
-}
-
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& registration, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
 {
     ExecutionContext* executionContext = scriptState->getExecutionContext();

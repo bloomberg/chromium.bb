@@ -48,10 +48,6 @@ ScriptRunner::ScriptRunner(Document* document)
 #endif
 }
 
-ScriptRunner::~ScriptRunner()
-{
-}
-
 void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
     DCHECK(scriptLoader);

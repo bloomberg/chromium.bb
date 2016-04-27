@@ -15,10 +15,6 @@ WindowProxyManager* WindowProxyManager::create(Frame& frame)
     return new WindowProxyManager(frame);
 }
 
-WindowProxyManager::~WindowProxyManager()
-{
-}
-
 DEFINE_TRACE(WindowProxyManager)
 {
     visitor->trace(m_frame);

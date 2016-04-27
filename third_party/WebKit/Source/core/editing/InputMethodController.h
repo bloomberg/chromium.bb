@@ -41,7 +41,7 @@ class LocalFrame;
 class Range;
 class Text;
 
-class CORE_EXPORT InputMethodController final : public GarbageCollectedFinalized<InputMethodController> {
+class CORE_EXPORT InputMethodController final : public GarbageCollected<InputMethodController> {
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
     enum ConfirmCompositionBehavior {
@@ -50,7 +50,6 @@ public:
     };
 
     static InputMethodController* create(LocalFrame&);
-    ~InputMethodController();
     DECLARE_TRACE();
 
     // international text input composition
