@@ -33,9 +33,9 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/HTTPNames.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
@@ -137,7 +137,7 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
     m_appCacheID = response.appCacheID();
     processContentSecurityPolicy(response);
 
-    if (Platform::current()->isReservedIPAddress(response.remoteIPAddress())) {
+    if (NetworkUtils::isReservedIPAddress(response.remoteIPAddress())) {
         m_responseAddressSpace = SecurityOrigin::create(m_responseURL)->isLocalhost()
             ? WebAddressSpaceLocal
             : WebAddressSpacePrivate;

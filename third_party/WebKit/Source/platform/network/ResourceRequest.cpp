@@ -28,8 +28,8 @@
 
 #include "platform/HTTPNames.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
@@ -351,7 +351,7 @@ void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(WebAddres
     }
 
     WebAddressSpace targetSpace = WebAddressSpacePublic;
-    if (Platform::current()->isReservedIPAddress(m_url.host()))
+    if (NetworkUtils::isReservedIPAddress(m_url.host()))
         targetSpace = WebAddressSpacePrivate;
     if (SecurityOrigin::create(m_url)->isLocalhost())
         targetSpace = WebAddressSpaceLocal;

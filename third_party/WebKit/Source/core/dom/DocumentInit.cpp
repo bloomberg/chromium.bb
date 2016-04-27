@@ -34,7 +34,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/Platform.h"
+#include "platform/network/NetworkUtils.h"
 
 namespace blink {
 
@@ -131,7 +131,7 @@ bool DocumentInit::isHostedInReservedIPRange() const
     if (LocalFrame* frame = frameForSecurityContext()) {
         if (DocumentLoader* loader = frame->loader().provisionalDocumentLoader() ? frame->loader().provisionalDocumentLoader() : frame->loader().documentLoader()) {
             if (!loader->response().remoteIPAddress().isEmpty())
-                return Platform::current()->isReservedIPAddress(loader->response().remoteIPAddress());
+                return NetworkUtils::isReservedIPAddress(loader->response().remoteIPAddress());
         }
     }
     return false;

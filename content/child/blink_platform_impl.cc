@@ -56,7 +56,6 @@
 #include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
 #include "net/base/data_url.h"
-#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -442,14 +441,6 @@ WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
 WebURLError BlinkPlatformImpl::cancelledError(
     const WebURL& unreachableURL) const {
   return CreateWebURLError(unreachableURL, false, net::ERR_ABORTED);
-}
-
-bool BlinkPlatformImpl::isReservedIPAddress(
-    const blink::WebString& host) const {
-  net::IPAddress address;
-  if (!net::ParseURLHostnameToAddress(host.utf8(), &address))
-    return false;
-  return address.IsReserved();
 }
 
 bool BlinkPlatformImpl::parseMultipartHeadersFromBody(

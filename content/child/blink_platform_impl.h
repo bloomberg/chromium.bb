@@ -91,7 +91,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
                               blink::WebString& mimetype,
                               blink::WebString& charset) override;
   blink::WebURLError cancelledError(const blink::WebURL& url) const override;
-  bool isReservedIPAddress(const blink::WebString& host) const override;
   bool parseMultipartHeadersFromBody(const char* bytes,
                                      size_t size,
                                      blink::WebURLResponse* response,

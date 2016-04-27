@@ -38,9 +38,9 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -465,7 +465,7 @@ void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const Atomi
         return;
 
     // Just count these for the moment, don't block them.
-    if (Platform::current()->isReservedIPAddress(resourceIPAddress) && frame->document()->addressSpace() == WebAddressSpacePublic)
+    if (NetworkUtils::isReservedIPAddress(resourceIPAddress) && frame->document()->addressSpace() == WebAddressSpacePublic)
         UseCounter::count(frame->document(), UseCounter::MixedContentPrivateHostnameInPublicHostname);
 }
 
