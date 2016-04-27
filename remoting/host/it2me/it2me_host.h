@@ -36,8 +36,8 @@ class PolicyWatcher;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
 
-// These state values are duplicated in host_session.js. Remember to update
-// both copies when making changes.
+// These state values are duplicated in host_session.js and the Android Java
+// It2MeObserver class. Remember to update all copies when making changes.
 enum It2MeHostState {
   kDisconnected,
   kStarting,

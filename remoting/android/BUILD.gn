@@ -184,13 +184,16 @@ android_apk("remoting_host_apk") {
   apk_name = "ChromotingHost"
   android_manifest = "host/AndroidManifest.xml"
   native_libs = [ "libremoting_host_jni.so" ]
-  java_files = [
-    "host/src/org/chromium/chromoting/host/MainActivity.java",
-    "host/src/org/chromium/chromoting/host/RemotingApplication.java",
-    "host/src/org/chromium/chromoting/host/jni/Host.java",
-    "java/src/org/chromium/chromoting/base/OAuthTokenFetcher.java",
+  _java_file_prefix = "host/src/org/chromium/chromoting/host"
+  _java_files = [
+    "MainActivity.java",
+    "RemotingApplication.java",
+    "jni/Host.java",
+    "jni/It2MeHostObserver.java",
   ]
-
+  java_files = rebase_path(_java_files, ".", _java_file_prefix)
+  java_files +=
+      [ "java/src/org/chromium/chromoting/base/OAuthTokenFetcher.java" ]
   deps = [
     ":remoting_host_apk_resources",
     ":remoting_host_jni",

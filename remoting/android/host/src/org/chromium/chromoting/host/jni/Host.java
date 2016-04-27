@@ -7,6 +7,8 @@ package org.chromium.chromoting.host.jni;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -15,8 +17,12 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("remoting")
 public class Host {
+    private static final String TAG = "host";
+
     // Pointer to the C++ object, cast to a |long|.
     private long mNativeJniHost;
+
+    private It2MeHostObserver mObserver;
 
     /**
      * To be called once from the Application context singleton. Loads and initializes the native
@@ -36,11 +42,13 @@ public class Host {
 
     public void destroy() {
         nativeDestroy(mNativeJniHost);
+        mNativeJniHost = 0;
     }
 
     private native void nativeDestroy(long nativeJniHost);
 
-    public void connect(String userName, String authToken) {
+    public void connect(String userName, String authToken, It2MeHostObserver observer) {
+        mObserver = observer;
         nativeConnect(mNativeJniHost, userName, authToken);
     }
 
@@ -51,4 +59,19 @@ public class Host {
     }
 
     private native void nativeDisconnect(long nativeJniHost);
+
+    @CalledByNative
+    private void onStateChanged(int state, String errorMessage) {
+        It2MeHostObserver.State[] states = It2MeHostObserver.State.values();
+        if (state < 0 || state >= states.length) {
+            Log.e(TAG, "Invalid It2Me state: %d", state);
+            return;
+        }
+        mObserver.onStateChanged(states[state], errorMessage);
+    }
+
+    @CalledByNative
+    private void onAccessCodeReceived(String accessCode, int lifetimeSeconds) {
+        mObserver.onAccessCodeReceived(accessCode, lifetimeSeconds);
+    }
 }

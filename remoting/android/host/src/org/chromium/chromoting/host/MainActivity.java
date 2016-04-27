@@ -14,11 +14,12 @@ import android.view.View;
 import org.chromium.base.Log;
 import org.chromium.chromoting.base.OAuthTokenFetcher;
 import org.chromium.chromoting.host.jni.Host;
+import org.chromium.chromoting.host.jni.It2MeHostObserver;
 
 /**
  * Main screen of the Chromoting Host application.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements It2MeHostObserver {
     private static final String TAG = "host";
 
     /** Scope to use when fetching the OAuth token. */
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         new OAuthTokenFetcher(this, mAccountName, TOKEN_SCOPE, new OAuthTokenFetcher.Callback() {
             @Override
             public void onTokenFetched(String token) {
-                mHost.connect(mAccountName, token);
+                mHost.connect(mAccountName, token, MainActivity.this);
             }
 
             @Override
@@ -77,5 +78,15 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Error fetching token: %s", error.name());
             }
         }).fetch();
+    }
+
+    @Override
+    public void onAccessCodeReceived(String accessCode, int lifetimeSeconds) {
+        Log.e(TAG, "OnAccessCodeReceived: %s, %d", accessCode, lifetimeSeconds);
+    }
+
+    @Override
+    public void onStateChanged(State state, String errorMessage) {
+        Log.e(TAG, "OnStateChanged: %s", state.name());
     }
 }

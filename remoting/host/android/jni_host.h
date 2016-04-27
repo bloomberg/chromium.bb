@@ -23,7 +23,7 @@ class It2MeHostFactory;
 
 class JniHost : public It2MeHost::Observer {
  public:
-  JniHost();
+  JniHost(JNIEnv* env, jobject java_host);
   virtual ~JniHost();
 
   // Register C++ methods exposed to Java using JNI.
@@ -48,6 +48,8 @@ class JniHost : public It2MeHost::Observer {
                       const std::string& error_message) override;
 
  private:
+  base::android::ScopedJavaGlobalRef<jobject> java_host_;
+
   std::unique_ptr<base::MessageLoopForUI> ui_loop_;
   std::unique_ptr<ChromotingHostContext> host_context_;
   std::unique_ptr<It2MeHostFactory> factory_;

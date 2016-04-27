@@ -18,10 +18,12 @@
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 
 namespace remoting {
 
-JniHost::JniHost() : weak_factory_(this) {
+JniHost::JniHost(JNIEnv* env, jobject java_host) : weak_factory_(this) {
+  java_host_.Reset(env, java_host);
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
   base::CommandLine::Init(0, nullptr);
@@ -98,8 +100,10 @@ void JniHost::OnClientAuthenticated(const std::string& client_username) {
 
 void JniHost::OnStoreAccessCode(const std::string& access_code,
                                 base::TimeDelta access_code_lifetime) {
-  HOST_LOG << "OnStoreAccessCode: " << access_code << ", "
-           << access_code_lifetime.InSeconds();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Host_onAccessCodeReceived(
+      env, java_host_.obj(), ConvertUTF8ToJavaString(env, access_code).obj(),
+      static_cast<int>(access_code_lifetime.InSeconds()));
 }
 
 void JniHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
@@ -108,11 +112,13 @@ void JniHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
 
 void JniHost::OnStateChanged(It2MeHostState state,
                              const std::string& error_message) {
-  HOST_LOG << "OnStateChanged: " << state;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Host_onStateChanged(env, java_host_.obj(), state,
+                           ConvertUTF8ToJavaString(env, error_message).obj());
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
-  return reinterpret_cast<intptr_t>(new JniHost());
+  return reinterpret_cast<intptr_t>(new JniHost(env, caller));
 }
 
 }  // namespace remoting
