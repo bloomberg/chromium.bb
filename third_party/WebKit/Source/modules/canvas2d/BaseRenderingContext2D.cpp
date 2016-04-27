@@ -1052,7 +1052,7 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
             buffer->setHasExpensiveOp();
     }
 
-    if (originClean() && wouldTaintOrigin(imageSource))
+    if (originClean() && wouldTaintOrigin(imageSource, nullptr))
         setOriginTainted();
 }
 
@@ -1089,7 +1089,7 @@ CanvasGradient* BaseRenderingContext2D::createRadialGradient(double x0, double y
     return gradient;
 }
 
-CanvasPattern* BaseRenderingContext2D::createPattern(const CanvasImageSourceUnion& imageSource, const String& repetitionType, ExceptionState& exceptionState)
+CanvasPattern* BaseRenderingContext2D::createPattern(ScriptState* scriptState, const CanvasImageSourceUnion& imageSource, const String& repetitionType, ExceptionState& exceptionState)
 {
     Pattern::RepeatMode repeatMode = CanvasPattern::parseRepetitionType(repetitionType, exceptionState);
     if (exceptionState.hadException())
@@ -1122,7 +1122,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(const CanvasImageSourceUnio
     }
     ASSERT(imageForRendering);
 
-    bool originClean = !wouldTaintOrigin(imageSourceInternal);
+    bool originClean = !wouldTaintOrigin(imageSourceInternal, scriptState);
 
     return CanvasPattern::create(imageForRendering.release(), repeatMode, originClean);
 }

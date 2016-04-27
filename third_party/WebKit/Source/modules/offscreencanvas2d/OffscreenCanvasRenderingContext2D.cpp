@@ -41,10 +41,20 @@ void OffscreenCanvasRenderingContext2D::setOriginTainted()
     m_originClean = false;
 }
 
-bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source)
+bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source, ScriptState* scriptState)
 {
+    if (scriptState->getExecutionContext()->isWorkerGlobalScope()) {
+        // Currently, we only support passing in ImageBitmap as source image in
+        // drawImage() or createPattern() in a OffscreenCanvas2d in worker.
+        ASSERT(source->isImageBitmap());
+        // ImageBitmap wouldTaintOrigin doesn't consider destinationSecurityOrigin.
+        return source->wouldTaintOrigin(nullptr);
+    }
+
+    // TODO(crbug.com/606925): implement wouldTaintOrigin for OffscreenCanvas2d
+    // on main thread
     NOTIMPLEMENTED();
-    return false;
+    return true;
 }
 
 int OffscreenCanvasRenderingContext2D::width() const

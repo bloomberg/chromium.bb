@@ -113,7 +113,7 @@ public:
 
     CanvasGradient* createLinearGradient(double x0, double y0, double x1, double y1);
     CanvasGradient* createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1, ExceptionState&);
-    CanvasPattern* createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
+    CanvasPattern* createPattern(ScriptState*, const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
     ImageData* createImageData(ImageData*, ExceptionState&) const;
     ImageData* createImageData(double width, double height, ExceptionState&) const;
@@ -128,7 +128,7 @@ public:
 
     virtual bool originClean() const = 0;
     virtual void setOriginTainted() = 0;
-    virtual bool wouldTaintOrigin(CanvasImageSource*) = 0;
+    virtual bool wouldTaintOrigin(CanvasImageSource*, ScriptState*) = 0;
 
     virtual int width() const = 0;
     virtual int height() const = 0;

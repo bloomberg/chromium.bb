@@ -14,6 +14,9 @@
     // colors and styles
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)
     attribute (DOMString or CanvasGradient or CanvasPattern) fillStyle; // (default black)
+    CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
+    [RaisesException] CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
+    [CallWith=ScriptState, RaisesException, Exposed=Worker] CanvasPattern? createPattern(CanvasImageSource image, [TreatNullAs=NullString] DOMString repetitionType);
 
     // CanvasRect interface
     void clearRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);

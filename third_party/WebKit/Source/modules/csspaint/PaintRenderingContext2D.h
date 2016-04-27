@@ -32,7 +32,7 @@ public:
     // is always clean, and unable to taint it.
     bool originClean() const final { return true; }
     void setOriginTainted() final { }
-    bool wouldTaintOrigin(CanvasImageSource*) final { return false; }
+    bool wouldTaintOrigin(CanvasImageSource*, ScriptState*) final { return false; }
 
     int width() const final;
     int height() const final;

@@ -34,6 +34,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method keys
 [Worker]     method match
 [Worker]     method open
+[Worker] interface CanvasGradient
+[Worker]     attribute @@toStringTag
+[Worker]     method addColorStop
+[Worker]     method constructor
+[Worker] interface CanvasPattern
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
 [Worker] interface CircularGeofencingRegion : GeofencingRegion
 [Worker]     attribute @@toStringTag
 [Worker]     attribute MAX_RADIUS
@@ -509,6 +516,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method clearRect
 [Worker]     method closePath
 [Worker]     method constructor
+[Worker]     method createLinearGradient
+[Worker]     method createPattern
+[Worker]     method createRadialGradient
 [Worker]     method ellipse
 [Worker]     method fill
 [Worker]     method fillRect

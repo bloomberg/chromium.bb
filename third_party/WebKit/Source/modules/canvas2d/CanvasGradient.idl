@@ -24,6 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
+    Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures),
 ] interface CanvasGradient {
 
     [RaisesException] void addColorStop(float offset, DOMString color);

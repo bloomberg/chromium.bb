@@ -24,6 +24,11 @@ interface CacheStorage
     method keys
     method match
     method open
+interface CanvasGradient
+    method addColorStop
+    method constructor
+interface CanvasPattern
+    method constructor
 interface CircularGeofencingRegion : GeofencingRegion
     attribute MAX_RADIUS
     attribute MIN_RADIUS
@@ -502,6 +507,9 @@ interface OffscreenCanvasRenderingContext2D
     method clearRect
     method closePath
     method constructor
+    method createLinearGradient
+    method createPattern
+    method createRadialGradient
     method ellipse
     method fill
     method fillRect

@@ -105,6 +105,8 @@ crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-transform-shadow-in-worker.html [ Failure ]
+crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
+crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-2d-gradients-in-worker.html [ Failure ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]
