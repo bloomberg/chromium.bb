@@ -64,6 +64,12 @@ class IMkvWriter {
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(IMkvWriter);
 };
 
+// Writes out the EBML header for a WebM file, but allows caller to specify
+// DocType. This function must be called before any other libwebm writing
+// functions are called.
+bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version,
+                     const char* const doc_type);
+
 // Writes out the EBML header for a WebM file. This function must be called
 // before any other libwebm writing functions are called.
 bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version);
@@ -670,6 +676,10 @@ class Tracks {
   static const char kVp8CodecId[];
   static const char kVp9CodecId[];
   static const char kVp10CodecId[];
+  static const char kWebVttCaptionsId[];
+  static const char kWebVttDescriptionsId[];
+  static const char kWebVttMetadataId[];
+  static const char kWebVttSubtitlesId[];
 
   Tracks();
   ~Tracks();
@@ -1482,6 +1492,9 @@ class Segment {
   CuesPosition cues_position() const { return cues_position_; }
   bool output_cues() const { return output_cues_; }
   const SegmentInfo* segment_info() const { return &segment_info_; }
+
+  // Returns true when codec IDs are valid for WebM.
+  bool DocTypeIsWebm() const;
 
  private:
   // Checks if header information has been output and initialized. If not it

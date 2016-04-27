@@ -723,6 +723,24 @@ TEST_F(MuxerTest, UseFixedSizeClusterTimecode) {
                            filename_));
 }
 
+TEST_F(MuxerTest, DocTypeWebm) {
+  EXPECT_TRUE(SegmentInit(false, false, false));
+  AddVideoTrack();
+  Track* const vid_track = segment_.GetTrackByNumber(kVideoTrackNumber);
+  vid_track->set_codec_id(kVP9CodecId);
+  AddDummyFrameAndFinalize(kVideoTrackNumber);
+  EXPECT_TRUE(CompareFiles(GetTestFilePath("webm_doctype.webm"), filename_));
+}
+
+TEST_F(MuxerTest, DocTypeMatroska) {
+  EXPECT_TRUE(SegmentInit(false, false, false));
+  AddVideoTrack();
+  Track* const vid_track = segment_.GetTrackByNumber(kVideoTrackNumber);
+  vid_track->set_codec_id("V_SOMETHING_NOT_IN_WEBM");
+  AddDummyFrameAndFinalize(kVideoTrackNumber);
+  EXPECT_TRUE(CompareFiles(GetTestFilePath("matroska_doctype.mkv"), filename_));
+}
+
 }  // namespace test
 
 int main(int argc, char* argv[]) {

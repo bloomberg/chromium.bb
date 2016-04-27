@@ -16,6 +16,7 @@
 #include <ctime>
 #include <memory>
 #include <new>
+#include <string>
 #include <vector>
 
 #include "common/webmids.h"
@@ -29,6 +30,10 @@ const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const uint64_t Colour::kValueNotPresent = UINT64_MAX;
 
 namespace {
+
+const char kDocTypeWebm[] = "webm";
+const char kDocTypeMatroska[] = "matroska";
+
 // Deallocate the string designated by |dst|, and then copy the |src|
 // string to |dst|.  The caller owns both the |src| string and the
 // |dst| copy (hence the caller is responsible for eventually
@@ -80,7 +85,8 @@ IMkvWriter::IMkvWriter() {}
 
 IMkvWriter::~IMkvWriter() {}
 
-bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version) {
+bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version,
+                     const char* const doc_type) {
   // Level 0
   uint64_t size =
       EbmlElementSize(libwebm::kMkvEBMLVersion, static_cast<uint64>(1));
@@ -88,7 +94,7 @@ bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version) {
   size += EbmlElementSize(libwebm::kMkvEBMLMaxIDLength, static_cast<uint64>(4));
   size +=
       EbmlElementSize(libwebm::kMkvEBMLMaxSizeLength, static_cast<uint64>(8));
-  size += EbmlElementSize(libwebm::kMkvDocType, "webm");
+  size += EbmlElementSize(libwebm::kMkvDocType, doc_type);
   size += EbmlElementSize(libwebm::kMkvDocTypeVersion,
                           static_cast<uint64>(doc_type_version));
   size +=
@@ -112,7 +118,7 @@ bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version) {
                         static_cast<uint64>(8))) {
     return false;
   }
-  if (!WriteEbmlElement(writer, libwebm::kMkvDocType, "webm"))
+  if (!WriteEbmlElement(writer, libwebm::kMkvDocType, doc_type))
     return false;
   if (!WriteEbmlElement(writer, libwebm::kMkvDocTypeVersion,
                         static_cast<uint64>(doc_type_version))) {
@@ -124,6 +130,10 @@ bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version) {
   }
 
   return true;
+}
+
+bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version) {
+  return WriteEbmlHeader(writer, doc_type_version, kDocTypeWebm);
 }
 
 bool WriteEbmlHeader(IMkvWriter* writer) {
@@ -1483,6 +1493,10 @@ const char Tracks::kVorbisCodecId[] = "A_VORBIS";
 const char Tracks::kVp8CodecId[] = "V_VP8";
 const char Tracks::kVp9CodecId[] = "V_VP9";
 const char Tracks::kVp10CodecId[] = "V_VP10";
+const char Tracks::kWebVttCaptionsId[] = "D_WEBVTT/CAPTIONS";
+const char Tracks::kWebVttDescriptionsId[] = "D_WEBVTT/DESCRIPTIONS";
+const char Tracks::kWebVttMetadataId[] = "D_WEBVTT/METADATA";
+const char Tracks::kWebVttSubtitlesId[] = "D_WEBVTT/SUBTITLES";
 
 Tracks::Tracks()
     : track_entries_(NULL), track_entries_size_(0), wrote_tracks_(false) {}
@@ -3038,7 +3052,9 @@ bool Segment::Finalize() {
         if (writer_header_->Position(0))
           return false;
 
-        if (!WriteEbmlHeader(writer_header_, doc_type_version_))
+        const char* const doc_type =
+            DocTypeIsWebm() ? kDocTypeWebm : kDocTypeMatroska;
+        if (!WriteEbmlHeader(writer_header_, doc_type_version_, doc_type))
           return false;
         if (writer_header_->Position() != ebml_header_size_)
           return false;
@@ -3389,8 +3405,9 @@ Track* Segment::GetTrackByNumber(uint64_t track_number) const {
 bool Segment::WriteSegmentHeader() {
   UpdateDocTypeVersion();
 
-  // TODO(fgalligan): Support more than one segment.
-  if (!WriteEbmlHeader(writer_header_, doc_type_version_))
+  const char* const doc_type =
+      DocTypeIsWebm() ? kDocTypeWebm : kDocTypeMatroska;
+  if (!WriteEbmlHeader(writer_header_, doc_type_version_, doc_type))
     return false;
   doc_type_version_written_ = doc_type_version_;
   ebml_header_size_ = static_cast<int32_t>(writer_header_->Position());
@@ -3858,6 +3875,37 @@ bool Segment::WriteFramesLessThan(uint64_t timestamp) {
 
       frames_size_ = new_frames_size;
     }
+  }
+
+  return true;
+}
+
+bool Segment::DocTypeIsWebm() const {
+  const int kNumCodecIds = 9;
+
+  // TODO(vigneshv): Tweak .clang-format.
+  const char* kWebmCodecIds[kNumCodecIds] = {
+      Tracks::kOpusCodecId,          Tracks::kVorbisCodecId,
+      Tracks::kVp8CodecId,           Tracks::kVp9CodecId,
+      Tracks::kVp10CodecId,          Tracks::kWebVttCaptionsId,
+      Tracks::kWebVttDescriptionsId, Tracks::kWebVttMetadataId,
+      Tracks::kWebVttSubtitlesId};
+
+  const int num_tracks = static_cast<int>(tracks_.track_entries_size());
+  for (int track_index = 0; track_index < num_tracks; ++track_index) {
+    const Track* const track = tracks_.GetTrackByIndex(track_index);
+    const std::string codec_id = track->codec_id();
+
+    bool id_is_webm = false;
+    for (int id_index = 0; id_index < kNumCodecIds; ++id_index) {
+      if (codec_id == kWebmCodecIds[id_index]) {
+        id_is_webm = true;
+        break;
+      }
+    }
+
+    if (!id_is_webm)
+      return false;
   }
 
   return true;
