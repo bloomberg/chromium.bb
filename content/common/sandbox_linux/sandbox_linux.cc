@@ -312,11 +312,18 @@ bool LinuxSandbox::InitializeSandboxImpl() {
   // threads have been created.
   if (!IsSingleThreaded()) {
     std::string error_message = "InitializeSandbox() called with multiple "
-                                "threads in process " + process_type;
+                                "threads in process " + process_type + ". ";
     // TSAN starts a helper thread, so we don't start the sandbox and don't
     // even report an error about it.
     if (IsRunningTSAN())
       return false;
+
+#if defined(OS_CHROMEOS)
+    if (base::SysInfo::IsRunningOnChromeOS() &&
+        process_type == switches::kGpuProcess) {
+      error_message += "This error can be safely ignored in VMTests.";
+    }
+#endif
 
     // The GPU process is allowed to call InitializeSandbox() with threads.
     bool sandbox_failure_fatal = process_type != switches::kGpuProcess;
