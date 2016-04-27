@@ -584,6 +584,11 @@ void GLManager::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
 
+bool GLManager::IsGpuChannelLost() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void GLManager::EnsureWorkVisible() {
   // This is only relevant for out-of-process command buffers.
 }

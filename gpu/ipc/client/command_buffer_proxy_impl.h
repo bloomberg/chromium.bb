@@ -101,6 +101,7 @@ class GPU_EXPORT CommandBufferProxyImpl
                                      unsigned usage) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock* lock) override;
+  bool IsGpuChannelLost() override;
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   gpu::CommandBufferId GetCommandBufferID() const override;
@@ -191,21 +192,6 @@ class GPU_EXPORT CommandBufferProxyImpl
   void InvalidGpuReply();
 
   void InvalidGpuReplyOnClientThread();
-
-  // Mark the command buffer as lost and destroy internals. Use this variant
-  // when acting on call stacks of messages from the GPU process.
-  void OnLostContextNoReentrancy(gpu::error::ContextLostReason reason,
-                                 gpu::error::Error error);
-
-  // Mark the command buffer as lost and destroy internals. Use this variant
-  // when acting inside call stacks from clients, as we don't want to re-enter
-  // them.
-  void OnLostContextAvoidReentrancy(gpu::error::ContextLostReason reason,
-                                    gpu::error::Error error);
-
-  // Helper methods, don't call these directly.
-  void OnLostContextImplFromAvoidReentrancy();
-  void OnLostContextImpl();
 
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;

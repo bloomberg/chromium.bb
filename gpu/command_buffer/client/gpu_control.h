@@ -69,6 +69,10 @@ class GPU_EXPORT GpuControl {
   // may not be supported with all implementations.
   virtual void SetLock(base::Lock*) = 0;
 
+  // Returns true if the channel to the Gpu is lost. When true, all contexts
+  // should be considered as lost.
+  virtual bool IsGpuChannelLost() = 0;
+
   // When this function returns it ensures all previously flushed work is
   // visible by the service. This command does this by sending a synchronous
   // IPC. Note just because the work is visible to the server does not mean

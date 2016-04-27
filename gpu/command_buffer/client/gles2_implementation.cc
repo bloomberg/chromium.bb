@@ -327,10 +327,11 @@ IdAllocator* GLES2Implementation::GetIdAllocator(int namespace_id) const {
 }
 
 void GLES2Implementation::OnGpuControlLostContext() {
+#if DCHECK_IS_ON()
   // This should never occur more than once.
-  DCHECK(!lost_context_callback_run_);
-  lost_context_callback_run_ = true;
-  share_group_->Lose();
+  DCHECK(!lost_context_);
+  lost_context_ = true;
+#endif
   if (!lost_context_callback_.is_null())
     lost_context_callback_.Run();
 }
@@ -366,7 +367,7 @@ void GLES2Implementation::FreeEverything() {
 }
 
 void GLES2Implementation::RunIfContextNotLost(const base::Closure& callback) {
-  if (!lost_context_callback_run_)
+  if (!helper_->IsContextLost())
     callback.Run();
 }
 
@@ -4636,10 +4637,15 @@ void GLES2Implementation::GetVertexAttribIuiv(
 GLenum GLES2Implementation::GetGraphicsResetStatusKHR() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetGraphicsResetStatusKHR()");
-  // If any context (including ourselves) has seen itself become lost,
-  // then it will have told the ShareGroup, so just report its status.
-  if (share_group_->IsLost())
+  // If we can't make command buffers then the context is lost.
+  if (gpu_control_->IsGpuChannelLost())
     return GL_UNKNOWN_CONTEXT_RESET_KHR;
+  // Otherwise, check the command buffer if it is lost.
+  if (helper_->IsContextLost()) {
+    // TODO(danakj): We could GetLastState() off the CommandBuffer and return
+    // the actual reason here if we cared to.
+    return GL_UNKNOWN_CONTEXT_RESET_KHR;
+  }
   return GL_NO_ERROR;
 }
 
@@ -5376,6 +5382,11 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] EndQueryEXT("
                  << GLES2Util::GetStringQueryTarget(target) << ")");
+  // Don't do anything if the context is lost.
+  if (helper_->IsContextLost()) {
+    return;
+  }
+
   if (query_tracker_->EndQuery(target, this))
     CheckGLError();
 }

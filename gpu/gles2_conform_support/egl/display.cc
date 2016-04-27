@@ -359,6 +359,11 @@ void Display::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
 
+bool Display::IsGpuChannelLost() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void Display::EnsureWorkVisible() {
   // This is only relevant for out-of-process command buffers.
 }

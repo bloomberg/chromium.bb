@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/synchronization/lock.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -147,20 +146,13 @@ class GLES2_IMPL_EXPORT ShareGroup
 
   uint64_t TracingGUID() const { return tracing_guid_; }
 
-  // Mark the ShareGroup as lost when an error occurs on any context in the
-  // group. This is thread safe as contexts may be on different threads.
-  void Lose();
-  // Report if any context in the ShareGroup has reported itself lost. This is
-  // thread safe as contexts may be on different threads.
-  bool IsLost() const;
-
  private:
   friend class gpu::RefCountedThreadSafe<ShareGroup>;
   friend class gpu::gles2::GLES2ImplementationTest;
   ~ShareGroup();
 
   // Install a new program info manager. Used for testing only;
-  void SetProgramInfoManagerForTesting(ProgramInfoManager* manager);
+  void set_program_info_manager(ProgramInfoManager* manager);
 
   std::unique_ptr<IdHandlerInterface>
       id_handlers_[id_namespaces::kNumIdNamespaces];
@@ -170,9 +162,6 @@ class GLES2_IMPL_EXPORT ShareGroup
 
   bool bind_generates_resource_;
   uint64_t tracing_guid_;
-
-  mutable base::Lock lost_lock_;
-  bool lost_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShareGroup);
 };

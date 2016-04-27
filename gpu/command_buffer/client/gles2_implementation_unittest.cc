@@ -672,7 +672,7 @@ class GLES2ImplementationTest : public testing::Test {
   // Sets the ProgramInfoManager. The manager will be owned
   // by the ShareGroup.
   void SetProgramInfoManager(ProgramInfoManager* manager) {
-    gl_->share_group()->SetProgramInfoManagerForTesting(manager);
+    gl_->share_group()->set_program_info_manager(manager);
   }
 
   int CheckError() {
