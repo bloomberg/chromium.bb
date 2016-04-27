@@ -1,5 +1,11 @@
 {
+  "manifest_version":  1,
   "name": "exe:leveldb_service_unittests",
   "display_name": "LevelDB Service Unittests",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "mojo:filesystem": { "interfaces": [ "filesystem::FileSystem" ] },
+      "mojo:leveldb": { "interfaces":  [ "leveldb::LevelDBService" ] }
+    }
+  }
 }

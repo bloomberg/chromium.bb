@@ -1,5 +1,11 @@
 {
+  "manifest_version":  1,
   "name": "mojo:shell_unittest",
   "display_name": "Shell Unittest",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "mojo:shell": { "interfaces": [ "shell::mojom::Shell" ] },
+      "exe:shell_unittest_driver": { "interfaces": [ "*" ] }
+    }
+  }
 }

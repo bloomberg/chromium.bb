@@ -1,5 +1,10 @@
 {
+  "manifest_version":  1,
   "name": "mojo:resource_provider_test_app",
   "display_name": "Resource Provider Test App",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "classes": [ "app" ] }
+    }
+  }
 }

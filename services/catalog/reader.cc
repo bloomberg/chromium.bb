@@ -183,7 +183,6 @@ void Reader::CreateEntryForName(
         base::Bind(&ReadManifest, system_package_dir_, mojo_name),
         base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(),
                    cache, entry_created_callback));
-
   }
 }
 

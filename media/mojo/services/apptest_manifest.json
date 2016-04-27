@@ -1,5 +1,11 @@
 {
+  "manifest_version":  1,
   "name": "mojo:media_apptests",
   "display_name": "Media Apptests",
-  "capabilities": { "*": ["*"] }
+  "capabilities": {
+    "required": {
+      "*": { "classes": [ "app" ] },
+      "mojo:media": { "interfaces": [ "media::interfaces::ServiceFactory" ] }
+    }
+  }
 }

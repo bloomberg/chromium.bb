@@ -1,5 +1,6 @@
 {
+  "manifest_version":  1,
   "name": "mojo:connect_test_package",
   "display_name": "Connect Test Package",
-  "capabilities": {}
+  "capabilities": { }
 }

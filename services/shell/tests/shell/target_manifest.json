@@ -1,5 +1,12 @@
 {
+  "manifest_version":  1,
   "name": "exe:shell_unittest_target",
   "display_name": "Shell Unittest: Target",
-  "capabilities": { "mojo:shell_unittest": [ "shell::test::mojom::CreateInstanceTest" ] }
+  "capabilities": {
+    "required": {
+      "mojo:shell_unittest": {
+        "interfaces": [ "shell::test::mojom::CreateInstanceTest" ]
+      }
+    }
+  }
 }

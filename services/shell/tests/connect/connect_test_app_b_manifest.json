@@ -1,5 +1,6 @@
 {
+  "manifest_version":  1,
   "name": "mojo:connect_test_b",
   "display_name": "Connect Test B",
-  "capabilities": {}
+  "capabilities": { }
 }

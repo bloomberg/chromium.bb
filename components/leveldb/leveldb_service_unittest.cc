@@ -59,7 +59,7 @@ class LevelDBServiceTest : public shell::test::ShellTest {
 };
 
 // TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
@@ -110,7 +110,7 @@ TEST_F(LevelDBServiceTest, MAYBE_Basic) {
 }
 
 // TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_WriteBatch DISABLED_WriteBatch
 #else
 #define MAYBE_WriteBatch WriteBatch
@@ -204,7 +204,7 @@ TEST_F(LevelDBServiceTest, MAYBE_WriteBatch) {
 }
 
 // TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_Reconnect DISABLED_Reconnect
 #else
 #define MAYBE_Reconnect Reconnect
@@ -256,7 +256,7 @@ TEST_F(LevelDBServiceTest, MAYBE_Reconnect) {
 }
 
 // TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_GetSnapshotSimple DISABLED_GetSnapshotSimple
 #else
 #define MAYBE_GetSnapshotSimple GetSnapshotSimple
@@ -280,7 +280,7 @@ TEST_F(LevelDBServiceTest, MAYBE_GetSnapshotSimple) {
 }
 
 // TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_GetFromSnapshots DISABLED_GetFromSnapshots
 #else
 #define MAYBE_GetFromSnapshots GetFromSnapshots
@@ -340,7 +340,7 @@ TEST_F(LevelDBServiceTest, MAYBE_GetFromSnapshots) {
 }
 
 // TODO(crbug.com/602820) Test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_InvalidArgumentOnInvalidSnapshot DISABLED_InvalidArgumentOnInvalidSnapshot
 #else
 #define MAYBE_InvalidArgumentOnInvalidSnapshot InvalidArgumentOnInvalidSnapshot

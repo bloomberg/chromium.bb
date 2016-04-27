@@ -11,89 +11,104 @@
 namespace catalog {
 namespace {
 
-shell::CapabilitySpec BuildCapabilitiesV0(const base::DictionaryValue& value) {
-  shell::CapabilitySpec capabilities;
-  base::DictionaryValue::Iterator it(value);
-  for (; !it.IsAtEnd(); it.Advance()) {
-    const base::ListValue* values = nullptr;
-    CHECK(it.value().GetAsList(&values));
-    shell::CapabilityRequest spec;
-    for (auto i = values->begin(); i != values->end(); ++i) {
-      shell::Interface interface_name;
-      const base::Value* v = *i;
-      CHECK(v->GetAsString(&interface_name));
-      spec.interfaces.insert(interface_name);
-    }
-    capabilities.required[it.key()] = spec;
-  }
-  return capabilities;
-}
-
-void ReadStringSet(const base::ListValue& list_value,
+bool ReadStringSet(const base::ListValue& list_value,
                    std::set<std::string>* string_set) {
   DCHECK(string_set);
   for (auto i = list_value.begin(); i != list_value.end(); ++i) {
     std::string value;
     const base::Value* value_value = *i;
-    CHECK(value_value->GetAsString(&value));
+    if (!value_value->GetAsString(&value)) {
+      LOG(ERROR) << "Entry::Deserialize: list member must be a string";
+      return false;
+    }
     string_set->insert(value);
   }
+  return true;
 }
 
-void ReadStringSetFromValue(const base::Value& value,
+bool ReadStringSetFromValue(const base::Value& value,
                             std::set<std::string>* string_set) {
   const base::ListValue* list_value = nullptr;
-  CHECK(value.GetAsList(&list_value));
-  ReadStringSet(*list_value, string_set);
+  if (!value.GetAsList(&list_value)) {
+    LOG(ERROR) << "Entry::Deserialize: Value must be a list.";
+    return false;
+  }
+  return ReadStringSet(*list_value, string_set);
 }
 
-void ReadStringSetFromDictionary(const base::DictionaryValue& dictionary,
+bool ReadStringSetFromDictionary(const base::DictionaryValue& dictionary,
                                  const std::string& key,
                                  std::set<std::string>* string_set) {
   const base::ListValue* list_value = nullptr;
-  if (dictionary.HasKey(key))
-    CHECK(dictionary.GetList(key, &list_value));
+  if (dictionary.HasKey(key) && !dictionary.GetList(key, &list_value)) {
+    LOG(ERROR) << "Entry::Deserialize: " << key << " must be a list.";
+    return false;
+  }
   if (list_value)
-    ReadStringSet(*list_value, string_set);
+    return ReadStringSet(*list_value, string_set);
+  return true;
 }
 
-shell::CapabilitySpec BuildCapabilitiesV1(const base::DictionaryValue& value) {
-  shell::CapabilitySpec capabilities;
-
+bool BuildCapabilities(const base::DictionaryValue& value,
+                       shell::CapabilitySpec* capabilities) {
+  DCHECK(capabilities);
   const base::DictionaryValue* provided_value = nullptr;
-  if (value.HasKey(Store::kCapabilities_ProvidedKey)) {
-    CHECK(value.GetDictionary(Store::kCapabilities_ProvidedKey,
-                              &provided_value));
+  if (value.HasKey(Store::kCapabilities_ProvidedKey) &&
+      !value.GetDictionary(Store::kCapabilities_ProvidedKey,
+                           &provided_value)) {
+    LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_ProvidedKey
+               << " must be a dictionary.";
+    return false;
   }
   if (provided_value) {
     shell::CapabilityRequest provided;
     base::DictionaryValue::Iterator it(*provided_value);
     for(; !it.IsAtEnd(); it.Advance()) {
       shell::Interfaces interfaces;
-      ReadStringSetFromValue(it.value(), &interfaces);
-      capabilities.provided[it.key()] = interfaces;
+      if (!ReadStringSetFromValue(it.value(), &interfaces)) {
+        LOG(ERROR) << "Entry::Deserialize: Invalid interface list in provided "
+                   << " classes dictionary";
+        return false;
+      }
+      capabilities->provided[it.key()] = interfaces;
     }
   }
 
   const base::DictionaryValue* required_value = nullptr;
-  if (value.HasKey(Store::kCapabilities_RequiredKey)) {
-    CHECK(value.GetDictionary(Store::kCapabilities_RequiredKey,
-                              &required_value));
+  if (value.HasKey(Store::kCapabilities_RequiredKey) &&
+      !value.GetDictionary(Store::kCapabilities_RequiredKey,
+                           &required_value)) {
+    LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_RequiredKey
+               << " must be a dictionary.";
+    return false;
   }
   if (required_value) {
     base::DictionaryValue::Iterator it(*required_value);
     for (; !it.IsAtEnd(); it.Advance()) {
       shell::CapabilityRequest spec;
       const base::DictionaryValue* entry_value = nullptr;
-      CHECK(it.value().GetAsDictionary(&entry_value));
-      ReadStringSetFromDictionary(
-          *entry_value, Store::kCapabilities_ClassesKey, &spec.classes);
-      ReadStringSetFromDictionary(
-          *entry_value, Store::kCapabilities_InterfacesKey, &spec.interfaces);
-      capabilities.required[it.key()] = spec;
+      if (!it.value().GetAsDictionary(&entry_value)) {
+        LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_RequiredKey
+                   << " must be a dictionary.";
+        return false;
+      }
+      if (!ReadStringSetFromDictionary(
+              *entry_value, Store::kCapabilities_ClassesKey, &spec.classes)) {
+        LOG(ERROR) << "Entry::Deserialize: Invalid classes list in required "
+                   << "capabilities dictionary.";
+        return false;
+      }
+      if (!ReadStringSetFromDictionary(*entry_value,
+                                       Store::kCapabilities_InterfacesKey,
+                                       &spec.interfaces)) {
+        LOG(ERROR) << "Entry::Deserialize: Invalid interfaces list in required "
+                   << "capabilities dictionary.";
+        return false;
+      }
+      capabilities->required[it.key()] = spec;
     }
   }
-  return capabilities;
+  return true;
 }
 
 }  // namespace
@@ -143,42 +158,71 @@ std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
 // static
 std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
   std::unique_ptr<Entry> entry(new Entry);
+
+  // Manifest version.
   int manifest_version = 0;
-  if (value.HasKey(Store::kManifestVersionKey))
-    CHECK(value.GetInteger(Store::kManifestVersionKey, &manifest_version));
+  if (!value.GetInteger(Store::kManifestVersionKey, &manifest_version)) {
+    LOG(ERROR) << "Entry::Deserialize: " << Store::kManifestVersionKey
+               << " must be an integer.";
+    return nullptr;
+  }
+  if (manifest_version != 1) {
+    LOG(ERROR) << "Entry::Deserialize: Unsupported value of "
+               << Store::kManifestVersionKey << ":" << manifest_version;
+    return nullptr;
+  }
+
+  // Name.
   std::string name_string;
   if (!value.GetString(Store::kNameKey, &name_string)) {
-    LOG(ERROR) << "Entry::Deserialize: dictionary has no name key";
+    LOG(ERROR) << "Entry::Deserialize: dictionary has no "
+               << Store::kNameKey << " key";
     return nullptr;
   }
   if (!shell::IsValidName(name_string)) {
-    LOG(WARNING) << "Entry::Deserialize: " << name_string << " is not a valid "
-                 << "Mojo name";
+    LOG(ERROR) << "Entry::Deserialize: " << name_string << " is not a valid "
+               << "Mojo name";
     return nullptr;
   }
   entry->set_name(name_string);
+
+  // Process group.
   if (value.HasKey(Store::kQualifierKey)) {
     std::string qualifier;
-    CHECK(value.GetString(Store::kQualifierKey, &qualifier));
+    if (!value.GetString(Store::kQualifierKey, &qualifier)) {
+      LOG(ERROR) << "Entry::Deserialize: " << Store::kQualifierKey << " must "
+                 << "be a string.";
+      return nullptr;
+    }
     entry->set_qualifier(qualifier);
   } else {
     entry->set_qualifier(shell::GetNamePath(name_string));
   }
+
+  // Human-readable name.
   std::string display_name;
   if (!value.GetString(Store::kDisplayNameKey, &display_name)) {
-    LOG(WARNING) << "Entry::Deserialize: dictionary has no display_name key";
+    LOG(ERROR) << "Entry::Deserialize: dictionary has no "
+               << Store::kDisplayNameKey << " key";
     return nullptr;
   }
   entry->set_display_name(display_name);
+
+  // Capability spec.
   const base::DictionaryValue* capabilities = nullptr;
   if (!value.GetDictionary(Store::kCapabilitiesKey, &capabilities)) {
-    LOG(WARNING) << "Entry::Description: dictionary has no capabilities key";
+    LOG(ERROR) << "Entry::Deserialize: dictionary has no "
+               << Store::kCapabilitiesKey << " key";
     return nullptr;
   }
-  if (manifest_version == 0)
-    entry->set_capabilities(BuildCapabilitiesV0(*capabilities));
-  else
-    entry->set_capabilities(BuildCapabilitiesV1(*capabilities));
+
+  shell::CapabilitySpec spec;
+  if (!BuildCapabilities(*capabilities, &spec)) {
+    LOG(ERROR) << "Entry::Deserialize: failed to build capability spec for "
+               << entry->name();
+    return nullptr;
+  }
+  entry->set_capabilities(spec);
 
   if (value.HasKey(Store::kApplicationsKey)) {
     const base::ListValue* applications = nullptr;

@@ -1,5 +1,10 @@
 {
+  "manifest_version":  1,
   "name": "mojo:leveldb",
   "display_name": "LevelDB Service",
-  "capabilities": { "*": ["*"] }
+  "capabilities": {
+    "required": {
+      "*": { "classes": [ "app" ] }
+    }
+  }
 }

@@ -1,6 +1,7 @@
 {
+  "manifest_version":  1,
   "name": "mojo:lifecycle_unittest_package_app_a",
   "process-group": "package",
   "display_name": "Lifecycle Unittest Package App A",
-  "capabilities": {}
+  "capabilities": { }
 }

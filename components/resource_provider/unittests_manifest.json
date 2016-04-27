@@ -1,5 +1,10 @@
 {
+  "manifest_version":  1,
   "name": "exe:resource_provider_unittests",
   "display_name": "Resource Provider Unittests",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] }
+    }
+  }
 }

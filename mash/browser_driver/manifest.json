@@ -1,5 +1,10 @@
 {
+  "manifest_version":  1,
   "name": "mojo:browser_driver",
   "display_name": "Browser Driver",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "classes": [ "app" ] }
+    }
+  }
 }
