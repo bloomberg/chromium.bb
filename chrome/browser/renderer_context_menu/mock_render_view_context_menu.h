@@ -60,6 +60,7 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
                       bool enabled,
                       bool hidden,
                       const base::string16& title) override;
+  void UpdateMenuIcon(int command_id, const gfx::Image& image) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
   content::RenderViewHost* GetRenderViewHost() const override;
   content::BrowserContext* GetBrowserContext() const override;

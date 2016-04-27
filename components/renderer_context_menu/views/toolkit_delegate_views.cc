@@ -5,6 +5,7 @@
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
 
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -57,3 +58,19 @@ void ToolkitDelegateViews::UpdateMenuItem(int command_id,
   parent->ChildrenChanged();
 }
 
+#if defined(OS_CHROMEOS)
+void ToolkitDelegateViews::UpdateMenuIcon(int command_id,
+                                          const gfx::Image& image) {
+  views::MenuItemView* item = menu_view_->GetMenuItemByID(command_id);
+  if (!item)
+    return;
+
+  item->SetIcon(*image.ToImageSkia());
+
+  views::MenuItemView* parent = item->GetParentMenuItem();
+  if (!parent)
+    return;
+
+  parent->ChildrenChanged();
+}
+#endif

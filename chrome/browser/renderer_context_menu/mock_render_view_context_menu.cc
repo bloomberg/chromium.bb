@@ -108,6 +108,9 @@ void MockRenderViewContextMenu::UpdateMenuItem(int command_id,
   FAIL() << "Menu observer is trying to change a menu item it doesn't own.";
 }
 
+void MockRenderViewContextMenu::UpdateMenuIcon(int command_id,
+                                               const gfx::Image& image) {}
+
 void MockRenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
   AddCheckItem(
       IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,

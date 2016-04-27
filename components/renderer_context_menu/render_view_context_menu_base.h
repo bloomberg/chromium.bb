@@ -56,6 +56,9 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
                                 bool enabled,
                                 bool hidden,
                                 const base::string16& title) = 0;
+#if defined(OS_CHROMEOS)
+    virtual void UpdateMenuIcon(int command_id, const gfx::Image& image) = 0;
+#endif
   };
 
   static const size_t kMaxSelectionTextLength;
@@ -109,6 +112,7 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
                       bool enabled,
                       bool hidden,
                       const base::string16& title) override;
+  void UpdateMenuIcon(int command_id, const gfx::Image& image) override;
   content::RenderViewHost* GetRenderViewHost() const override;
   content::WebContents* GetWebContents() const override;
   content::BrowserContext* GetBrowserContext() const override;

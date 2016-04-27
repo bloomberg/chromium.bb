@@ -13,6 +13,10 @@ class RenderViewHost;
 class WebContents;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace ui {
 class MenuModel;
 }
@@ -89,6 +93,9 @@ class RenderViewContextMenuProxy {
                               bool enabled,
                               bool hidden,
                               const base::string16& title) = 0;
+
+  // Update the icon of the specified context-menu item.
+  virtual void UpdateMenuIcon(int command_id, const gfx::Image& image) = 0;
 
   // Add spell check service item to the context menu.
   virtual void AddSpellCheckServiceItem(bool is_checked) = 0;

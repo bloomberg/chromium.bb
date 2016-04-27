@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -229,6 +230,14 @@ void RenderViewContextMenuBase::UpdateMenuItem(int command_id,
   }
 }
 
+void RenderViewContextMenuBase::UpdateMenuIcon(int command_id,
+                                               const gfx::Image& image) {
+#if defined(OS_CHROMEOS)
+  if (toolkit_delegate_)
+    toolkit_delegate_->UpdateMenuIcon(command_id, image);
+#endif
+}
+
 RenderViewHost* RenderViewContextMenuBase::GetRenderViewHost() const {
   return source_web_contents_->GetRenderViewHost();
 }
@@ -403,4 +412,3 @@ bool RenderViewContextMenuBase::IsCustomItemChecked(int id) const {
 bool RenderViewContextMenuBase::IsCustomItemEnabled(int id) const {
   return IsCustomItemEnabledInternal(params_.custom_items, id);
 }
-
