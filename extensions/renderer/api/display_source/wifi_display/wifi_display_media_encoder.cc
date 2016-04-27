@@ -33,6 +33,7 @@ WiFiDisplayMediaEncoder::~WiFiDisplayMediaEncoder() = default;
 void WiFiDisplayMediaEncoder::SetCallbacks(
     const EncodedUnitCallback& encoded_callback,
     const base::Closure& error_callback) {
+  DCHECK(client_thread_checker_.CalledOnValidThread());
   // This is not thread-safe if encoding has been started thus allow
   // this to be called only once.
   DCHECK(encoded_callback_.is_null() && error_callback_.is_null());

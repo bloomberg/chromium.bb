@@ -31,6 +31,7 @@ void WiFiDisplayVideoEncoder::Create(
 void WiFiDisplayVideoEncoder::InsertRawVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     base::TimeTicks reference_time) {
+  DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(!encoded_callback_.is_null());
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&WiFiDisplayVideoEncoder::InsertFrameOnMediaThread,
@@ -39,6 +40,7 @@ void WiFiDisplayVideoEncoder::InsertRawVideoFrame(
 }
 
 void WiFiDisplayVideoEncoder::RequestIDRPicture() {
+  DCHECK(client_thread_checker_.CalledOnValidThread());
   send_idr_ = true;
 }
 

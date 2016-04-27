@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/move.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 
 namespace extensions {
 
@@ -62,6 +63,7 @@ class WiFiDisplayMediaEncoder
   WiFiDisplayMediaEncoder();
   virtual ~WiFiDisplayMediaEncoder();
 
+  base::ThreadChecker client_thread_checker_;
   EncodedUnitCallback encoded_callback_;
   base::Closure error_callback_;
 };
