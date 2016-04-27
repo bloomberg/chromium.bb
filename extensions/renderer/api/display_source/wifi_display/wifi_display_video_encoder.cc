@@ -25,8 +25,7 @@ WiFiDisplayVideoEncoder::~WiFiDisplayVideoEncoder() = default;
 void WiFiDisplayVideoEncoder::Create(
     const InitParameters& params,
     const VideoEncoderCallback& encoder_callback) {
-  NOTIMPLEMENTED();
-  encoder_callback.Run(nullptr);
+  CreateVEA(params, encoder_callback);
 }
 
 void WiFiDisplayVideoEncoder::InsertRawVideoFrame(

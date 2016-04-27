@@ -43,7 +43,7 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
     int bit_rate;
     wds::H264Profile profile;
     wds::H264Level level;
-    // VEA-specific parameters.
+    // Video Encode Accelerator (VEA) specific parameters.
     CreateEncodeMemoryCallback create_memory_callback;
     CreateVideoEncodeAcceleratorCallback vea_create_callback;
   };
@@ -65,6 +65,11 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
   void RequestIDRPicture();
 
  protected:
+  // A factory method that creates a new encoder instance which uses Video
+  // Encode Accelerator (VEA) for encoding.
+  static void CreateVEA(const InitParameters& params,
+                        const VideoEncoderCallback& encoder_callback);
+
   explicit WiFiDisplayVideoEncoder(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
   ~WiFiDisplayVideoEncoder() override;
