@@ -96,19 +96,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Fails on all platforms
     self.Fail('deqp/data/gles2/shaders/functions.html',
         bug=478572)
-    self.Fail('deqp/data/gles2/shaders/scoping.html',
-        bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
-
-    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1520.
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        bug=295792)
 
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
+
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        bug=607283)
 
     # Fails on multiple platforms
 
@@ -189,37 +186,19 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=421710)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         ['mac'], bug=478572)
+    self.Fail('deqp/data/gles2/shaders/scoping.html',
+        ['mac'], bug=478572)
 
     # Mac Retina NVIDIA failures
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
-    self.Fail('conformance/textures/image_bitmap_from_image/*',
-        ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=589930)
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['mavericks', ('nvidia', 0xfe9)], bug=586536)
 
     # Mac Retina AMD failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', ('amd', 0x6821)], bug=599272)
-    self.Fail('conformance/textures/image_bitmap_from_image/*',
-        ['mac', ('amd', 0x6821)], bug=589930)
-
-    # Mac AMD failures
-    self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['mac', ('amd', 0x679e)], bug=589930)
-    self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-2d-rgba-rgba-unsigned_byte.html',
-        ['mac', ('amd', 0x679e)], bug=589930)
-
-    # Mac Intel failures
-    self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['mac', 'intel'], bug=589930)
-    self.Fail('conformance/textures/image_bitmap_from_image/' +
-        'tex-2d-rgba-rgba-unsigned_byte.html',
-        ['mac', 'intel'], bug=589930)
 
     # Linux failures
     # NVIDIA
