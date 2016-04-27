@@ -85,8 +85,6 @@ public final class ApplicationData {
         if (files == null) return true;
         for (File file : files) {
             if (!(file.getName().equals("lib")
-                    || file.getName().equals("etp_native") // Work Chrome
-                    || file.getName().equals("sdk_dex") // Work Chrome
                     || file.getName().equals("incremental-install-files"))
                     && !removeFile(file)) {
                 return false;

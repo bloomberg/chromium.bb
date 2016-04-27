@@ -292,5 +292,4 @@ public class FeatureUtilities {
     private static native void nativeSetDocumentModeEnabled(boolean enabled);
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
-    public static native void nativeSetSqlMmapDisabledByDefault();
 }

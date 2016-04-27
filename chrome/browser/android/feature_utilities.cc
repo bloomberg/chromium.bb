@@ -6,8 +6,6 @@
 
 #include "jni/FeatureUtilities_jni.h"
 
-#include "sql/connection.h"
-
 namespace {
 bool document_mode_enabled = false;
 bool custom_tab_visible = false;
@@ -50,11 +48,6 @@ static void SetIsInMultiWindowMode(JNIEnv* env,
                                    const JavaParamRef<jclass>& clazz,
                                    jboolean j_is_in_multi_window_mode) {
   is_in_multi_window_mode = j_is_in_multi_window_mode;
-}
-
-static void SetSqlMmapDisabledByDefault(JNIEnv* env,
-                                     const JavaParamRef<jclass>& clazz) {
-  sql::Connection::set_mmap_disabled_by_default();
 }
 
 bool RegisterFeatureUtilities(JNIEnv* env) {
