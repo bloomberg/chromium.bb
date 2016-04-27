@@ -2463,12 +2463,6 @@
       }, {
         'enable_hangout_services_extension%': 0,
       }],
-
-      # Gold doesn't respect section alignment and breaks gcc builds with icf
-      # https://bugs.chromium.org/p/chromium/issues/detail?id=576197
-      ['clang==0 and linux_use_bundled_gold==1', {
-        'gold_icf_level%': 'none'
-      }],
     ],
 
     # The path to the ANGLE library.

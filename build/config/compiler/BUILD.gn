@@ -87,10 +87,6 @@ declare_args() {
   # explore favoring size over speed in this case as well.
   optimize_for_size = is_android || is_ios
 
-  # Gold icf level, values are "none", "safe", "all". If value isn't overridden,
-  # default initialization is below.
-  gold_icf_level = ""
-
   # If this is set to true, or if LLVM_FORCE_HEAD_REVISION is set to 1
   # in the environment, we use the revision in the llvm repo to determine
   # the CLANG_REVISION to use, instead of the version hard-coded into
@@ -122,16 +118,6 @@ if (gold_path == false) {
 if (use_debug_fission == "default") {
   use_debug_fission = is_debug && !is_win && use_gold &&
                       linux_use_bundled_binutils && cc_wrapper == ""
-}
-
-if (gold_icf_level == "") {
-  if (use_gold && !is_clang) {
-    # Gold doesn't respect section alignment and breaks gcc builds with icf
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=576197
-    gold_icf_level = "none"
-  } else {
-    gold_icf_level = "all"
-  }
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -332,7 +318,7 @@ config("compiler") {
 
     if (!using_sanitizer && !(is_android && use_order_profiling)) {
       # TODO(brettw) common.gypi has this only for target toolset.
-      ldflags += [ "-Wl,--icf=${gold_icf_level}" ]
+      ldflags += [ "-Wl,--icf=all" ]
     }
 
     # TODO(thestig): Make this flag work with GN.
