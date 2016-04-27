@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.62",
+  "version": "8.63",
   "entries": [
     {
       "id": 1,
@@ -1068,17 +1068,6 @@ LONG_STRING_CONST(
       "gl_vendor": "Imagination.*",
       "features": [
         "gl_clear_broken"
-      ]
-    },
-    {
-      "id": 96,
-      "description": "glBindFramebuffer sometimes requires a glBegin/End to take effect",
-      "cr_bugs": [435786],
-      "os": {
-        "type": "macosx"
-      },
-      "features": [
-        "gl_begin_gl_end_on_fbo_change_to_backbuffer"
       ]
     },
     {

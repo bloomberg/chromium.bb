@@ -135,10 +135,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // on error.
   virtual bool OnMakeCurrent(GLContext* context);
 
-  // Called when the surface is bound as the current framebuffer for the
-  // current context.
-  virtual void NotifyWasBound();
-
   // Used for explicit buffer management.
   virtual bool SetBackbufferAllocation(bool allocated);
   virtual void SetFrontbufferAllocation(bool allocated);

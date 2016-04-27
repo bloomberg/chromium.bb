@@ -165,9 +165,6 @@ bool GLSurface::OnMakeCurrent(GLContext* context) {
   return true;
 }
 
-void GLSurface::NotifyWasBound() {
-}
-
 bool GLSurface::SetBackbufferAllocation(bool allocated) {
   return true;
 }
