@@ -17,6 +17,9 @@ static_assert(static_cast<uint32_t>(SkFontStyle::kUpright_Slant) ==
 static_assert(static_cast<uint32_t>(SkFontStyle::kItalic_Slant) ==
                   static_cast<uint32_t>(font_service::TypefaceSlant::ITALIC),
               "Skia and font service flags must match");
+static_assert(static_cast<uint32_t>(SkFontStyle::kOblique_Slant) ==
+                  static_cast<uint32_t>(font_service::TypefaceSlant::OBLIQUE),
+              "Skia and font service flags must match");
 
 namespace {
 
