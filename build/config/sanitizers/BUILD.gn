@@ -127,18 +127,9 @@ config("default_sanitizer_ldflags") {
   }
 }
 
-# This config is applied by default to all targets. It sets the compiler flags
-# for sanitizer usage, or, if no sanitizer is set, does nothing.
-#
-# This needs to be in a separate config so that targets can opt out of
-# sanitizers (by removing the config) if they desire. Even if a target
-# removes this config, executables & shared libraries should still depend on
-# :deps if any of their dependencies have not opted out of sanitizers.
-config("default_sanitizer_flags") {
+config("common_sanitizer_flags") {
   cflags = []
   cflags_cc = []
-  defines = []
-  configs = [ ":default_sanitizer_ldflags" ]
 
   # Sanitizers need line table info for stack traces. They don't need type info
   # or variable info, so we can leave that out to speed up the build.
@@ -156,6 +147,20 @@ config("default_sanitizer_flags") {
       cflags += [ "/Oy-" ]
     }
   }
+
+  if (use_custom_libcxx) {
+    prefix = "//buildtools/third_party"
+    include = "trunk/include"
+    cflags_cc += [
+      "-nostdinc++",
+      "-isystem" + rebase_path("$prefix/libc++/$include", root_build_dir),
+      "-isystem" + rebase_path("$prefix/libc++abi/$include", root_build_dir),
+    ]
+  }
+}
+
+config("asan_flags") {
+  cflags = []
   if (is_asan) {
     cflags += [ "-fsanitize=address" ]
     if (is_win) {
@@ -200,28 +205,68 @@ config("default_sanitizer_flags") {
       }
     }
   }
-  if (is_lsan) {
-    cflags += [ "-fsanitize=leak" ]
-  }
-  if (is_tsan) {
-    assert(is_linux, "tsan only supported on linux x86_64")
-    tsan_blacklist_path =
-        rebase_path("//tools/memory/tsan_v2/ignores.txt", root_build_dir)
+}
+
+config("cfi_flags") {
+  cflags = []
+  if (is_cfi && !is_nacl) {
+    cfi_blacklist_path =
+        rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
     cflags += [
-      "-fsanitize=thread",
-      "-fsanitize-blacklist=$tsan_blacklist_path",
+      "-fsanitize=cfi-vcall",
+      "-fsanitize=cfi-derived-cast",
+      "-fsanitize=cfi-unrelated-cast",
+      "-fsanitize-blacklist=$cfi_blacklist_path",
     ]
+
+    if (use_cfi_diag) {
+      cflags += [
+        "-fno-sanitize-trap=cfi",
+        "-fsanitize-recover=cfi",
+        "-fno-inline-functions",
+        "-fno-inline",
+        "-fno-omit-frame-pointer",
+        "-O1",
+      ]
+    } else {
+      defines = [ "CFI_ENFORCEMENT" ]
+    }
   }
+}
+
+config("lsan_flags") {
+  if (is_lsan) {
+    cflags = [ "-fsanitize=leak" ]
+  }
+}
+
+config("msan_flags") {
   if (is_msan) {
     assert(is_linux, "msan only supported on linux x86_64")
     msan_blacklist_path =
         rebase_path("//tools/msan/blacklist.txt", root_build_dir)
-    cflags += [
+    cflags = [
       "-fsanitize=memory",
       "-fsanitize-memory-track-origins=$msan_track_origins",
       "-fsanitize-blacklist=$msan_blacklist_path",
     ]
   }
+}
+
+config("tsan_flags") {
+  if (is_tsan) {
+    assert(is_linux, "tsan only supported on linux x86_64")
+    tsan_blacklist_path =
+        rebase_path("//tools/memory/tsan_v2/ignores.txt", root_build_dir)
+    cflags = [
+      "-fsanitize=thread",
+      "-fsanitize-blacklist=$tsan_blacklist_path",
+    ]
+  }
+}
+
+config("ubsan_flags") {
+  cflags = []
   if (is_ubsan) {
     ubsan_blacklist_path =
         rebase_path("//tools/ubsan/blacklist.txt", root_build_dir)
@@ -259,55 +304,69 @@ config("default_sanitizer_flags") {
       ]
     }
   }
-  if (is_ubsan_vptr) {
-    ubsan_vptr_blacklist_path =
-        rebase_path("//tools/ubsan/vptr_blacklist.txt", root_build_dir)
-    cflags += [
-      "-fsanitize=vptr",
-      "-fsanitize-blacklist=$ubsan_vptr_blacklist_path",
-    ]
-  }
+}
+
+config("ubsan_security_flags") {
   if (is_ubsan_security) {
     ubsan_blacklist_path =
         rebase_path("//tools/ubsan/blacklist.txt", root_build_dir)
-    cflags += [
+    cflags = [
       "-fsanitize=signed-integer-overflow,shift",
       "-fsanitize-blacklist=$ubsan_blacklist_path",
     ]
   }
-  if (is_cfi && !is_nacl) {
-    cfi_blacklist_path =
-        rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
-    cflags += [
-      "-fsanitize=cfi-vcall",
-      "-fsanitize=cfi-derived-cast",
-      "-fsanitize=cfi-unrelated-cast",
-      "-fsanitize-blacklist=$cfi_blacklist_path",
-    ]
+}
 
-    if (use_cfi_diag) {
-      cflags += [
-        "-fno-sanitize-trap=cfi",
-        "-fsanitize-recover=cfi",
-        "-fno-inline-functions",
-        "-fno-inline",
-        "-fno-omit-frame-pointer",
-        "-O1",
-      ]
-    } else {
-      defines += [ "CFI_ENFORCEMENT" ]
-    }
-  }
-
-  if (use_custom_libcxx) {
-    prefix = "//buildtools/third_party"
-    include = "trunk/include"
-    cflags_cc += [
-      "-nostdinc++",
-      "-isystem" + rebase_path("$prefix/libc++/$include", root_build_dir),
-      "-isystem" + rebase_path("$prefix/libc++abi/$include", root_build_dir),
+config("ubsan_vptr_flags") {
+  if (is_ubsan_vptr) {
+    ubsan_vptr_blacklist_path =
+        rebase_path("//tools/ubsan/vptr_blacklist.txt", root_build_dir)
+    cflags = [
+      "-fsanitize=vptr",
+      "-fsanitize-blacklist=$ubsan_vptr_blacklist_path",
     ]
   }
+}
+
+# This config is applied by default to all targets. It sets the compiler flags
+# for sanitizer usage, or, if no sanitizer is set, does nothing.
+#
+# This needs to be in a separate config so that targets can opt out of
+# sanitizers (by removing the config) if they desire. Even if a target
+# removes this config, executables & shared libraries should still depend on
+# :deps if any of their dependencies have not opted out of sanitizers.
+# Keep this list in sync with default_sanitizer_flags_but_ubsan_vptr.
+config("default_sanitizer_flags") {
+  configs = [
+    ":common_sanitizer_flags",
+    ":default_sanitizer_ldflags",
+    ":asan_flags",
+    ":cfi_flags",
+    ":lsan_flags",
+    ":msan_flags",
+    ":tsan_flags",
+    ":ubsan_flags",
+    ":ubsan_security_flags",
+    ":ubsan_vptr_flags",
+  ]
+}
+
+# This config is equivalent to default_sanitizer_flags, but excludes ubsan_vptr.
+# This allows to selectively disable ubsan_vptr, when needed. In particular,
+# if some third_party code is required to be compiled without rtti, which
+# is a requirement for ubsan_vptr.
+config("default_sanitizer_flags_but_ubsan_vptr") {
+  configs = [
+    ":common_sanitizer_flags",
+    ":default_sanitizer_ldflags",
+    ":asan_flags",
+    ":cfi_flags",
+    ":lsan_flags",
+    ":msan_flags",
+    ":tsan_flags",
+    ":ubsan_flags",
+    ":ubsan_security_flags",
+  ]
 }
 
 config("default_sanitizer_coverage_flags") {

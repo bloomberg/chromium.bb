@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 
 config("mesa_headers_config") {
   include_dirs = [ "src/include" ]
@@ -272,6 +273,12 @@ static_library("mesa_libglslcommon") {
     # Mesa triggers some of these Clang warnings.
     configs -= [ "//build/config/clang:extra_warnings" ]
   }
+
+  # UBsan's vptr is not compatible with -fno-rtti,
+  # which is used by gallium/auxiliary/Makefile.
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  configs +=
+      [ "//build/config/sanitizers:default_sanitizer_flags_but_ubsan_vptr" ]
 
   deps = [
     ":mesa_headers",
@@ -656,6 +663,12 @@ static_library("mesa") {
     configs -= [ "//build/config/clang:extra_warnings" ]
   }
 
+  # UBsan's vptr is not compatible with -fno-rtti,
+  # which is used by gallium/auxiliary/Makefile.
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  configs +=
+      [ "//build/config/sanitizers:default_sanitizer_flags_but_ubsan_vptr" ]
+
   cflags = []
 
   if (is_android && !is_clang) {
@@ -709,6 +722,12 @@ loadable_module("osmesa") {
     # Mesa triggers some of these Clang warnings.
     configs -= [ "//build/config/clang:extra_warnings" ]
   }
+
+  # UBsan's vptr is not compatible with -fno-rtti,
+  # which is used by gallium/auxiliary/Makefile.
+  configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
+  configs +=
+      [ "//build/config/sanitizers:default_sanitizer_flags_but_ubsan_vptr" ]
 
   if (is_win) {
     sources += [ "src/src/mesa/drivers/osmesa/osmesa.def" ]
