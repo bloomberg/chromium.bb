@@ -246,14 +246,6 @@ class SequencedWorkerPool::Worker : public SimpleThread {
     is_processing_task_ = true;
     task_sequence_token_ = token;
     task_shutdown_behavior_ = shutdown_behavior;
-
-    // It is dangerous for tasks with CONTINUE_ON_SHUTDOWN to access a class
-    // that implements a non-leaky base::Singleton because they are generally
-    // destroyed before the process terminates via an AtExitManager
-    // registration. This will trigger a DCHECK to warn of such cases. See the
-    // comment about CONTINUE_ON_SHUTDOWN for more details.
-    ThreadRestrictions::SetSingletonAllowed(task_shutdown_behavior_ !=
-                                            CONTINUE_ON_SHUTDOWN);
   }
 
   // Indicates that the task has finished running.
