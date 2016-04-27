@@ -1306,6 +1306,46 @@ static LayoutUnit justifyContentSpaceBetweenChildren(LayoutUnit availableFreeSpa
     return LayoutUnit();
 }
 
+static LayoutUnit alignmentOffset(LayoutUnit availableFreeSpace, ItemPosition position, LayoutUnit ascent, LayoutUnit maxAscent, bool isWrapReverse)
+{
+    switch (position) {
+    case ItemPositionAuto:
+        ASSERT_NOT_REACHED();
+        break;
+    case ItemPositionStretch:
+        // Actual stretching must be handled by the caller.
+        // Since wrap-reverse flips cross start and cross end, stretch children should be aligned with the cross end.
+        // This matters because applyStretchAlignment doesn't always stretch or stretch fully (explicit cross size given,
+        // or stretching constrained by max-height/max-width).
+        // For flex-start and flex-end this is handled by alignmentForChild().
+        if (isWrapReverse)
+            return availableFreeSpace;
+        break;
+    case ItemPositionFlexStart:
+        break;
+    case ItemPositionFlexEnd:
+        return availableFreeSpace;
+    case ItemPositionCenter:
+        return availableFreeSpace / 2;
+    case ItemPositionBaseline:
+        // FIXME: If we get here in columns, we want the use the descent, except we currently can't get the ascent/descent of orthogonal children.
+        // https://bugs.webkit.org/show_bug.cgi?id=98076
+        return maxAscent - ascent;
+    case ItemPositionLastBaseline:
+    case ItemPositionSelfStart:
+    case ItemPositionSelfEnd:
+    case ItemPositionStart:
+    case ItemPositionEnd:
+    case ItemPositionLeft:
+    case ItemPositionRight:
+        // FIXME: Implement these (https://crbug.com/507690). The extended grammar
+        // is not enabled by default so we shouldn't hit this codepath.
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return LayoutUnit();
+}
+
 void LayoutFlexibleBox::setOverrideMainAxisSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize)
 {
     if (hasOrthogonalFlow(child))
@@ -1659,48 +1699,14 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)
             if (updateAutoMarginsInCrossAxis(*child, std::max(LayoutUnit(), availableAlignmentSpaceForChild(lineCrossAxisExtent, *child))))
                 continue;
 
-            switch (alignmentForChild(*child)) {
-            case ItemPositionAuto:
-                ASSERT_NOT_REACHED();
-                break;
-            case ItemPositionStretch: {
+            ItemPosition position = alignmentForChild(*child);
+            if (position == ItemPositionStretch)
                 applyStretchAlignmentToChild(*child, lineCrossAxisExtent);
-                // Since wrap-reverse flips cross start and cross end, strech children should be aligned with the cross end.
-                if (style()->flexWrap() == FlexWrapReverse)
-                    adjustAlignmentForChild(*child, availableAlignmentSpaceForChild(lineCrossAxisExtent, *child));
-                break;
-            }
-            case ItemPositionFlexStart:
-                break;
-            case ItemPositionFlexEnd:
-                adjustAlignmentForChild(*child, availableAlignmentSpaceForChild(lineCrossAxisExtent, *child));
-                break;
-            case ItemPositionCenter:
-                adjustAlignmentForChild(*child, availableAlignmentSpaceForChild(lineCrossAxisExtent, *child) / 2);
-                break;
-            case ItemPositionBaseline: {
-                // FIXME: If we get here in columns, we want the use the descent, except we currently can't get the ascent/descent of orthogonal children.
-                // https://bugs.webkit.org/show_bug.cgi?id=98076
-                LayoutUnit ascent = marginBoxAscentForChild(*child);
-                LayoutUnit startOffset = maxAscent - ascent;
-                adjustAlignmentForChild(*child, startOffset);
-
-                if (style()->flexWrap() == FlexWrapReverse)
-                    minMarginAfterBaseline = std::min(minMarginAfterBaseline, availableAlignmentSpaceForChild(lineCrossAxisExtent, *child) - startOffset);
-                break;
-            }
-            case ItemPositionLastBaseline:
-            case ItemPositionSelfStart:
-            case ItemPositionSelfEnd:
-            case ItemPositionStart:
-            case ItemPositionEnd:
-            case ItemPositionLeft:
-            case ItemPositionRight:
-                // FIXME: Implement these (https://crbug.com/507690). The extended grammar
-                // is not enabled by default so we shouldn't hit this codepath.
-                ASSERT_NOT_REACHED();
-                break;
-            }
+            LayoutUnit availableSpace = availableAlignmentSpaceForChild(lineCrossAxisExtent, *child);
+            LayoutUnit offset = alignmentOffset(availableSpace, position, marginBoxAscentForChild(*child), maxAscent, styleRef().flexWrap() == FlexWrapReverse);
+            adjustAlignmentForChild(*child, offset);
+            if (position == ItemPositionBaseline && styleRef().flexWrap() == FlexWrapReverse)
+                minMarginAfterBaseline = std::min(minMarginAfterBaseline, availableAlignmentSpaceForChild(lineCrossAxisExtent, *child) - offset);
         }
         minMarginAfterBaselines.append(minMarginAfterBaseline);
     }
