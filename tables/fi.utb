@@ -109,6 +109,10 @@ sign \x00A9 236-14-356 © Copyright symbol
 sign \x00AE 236-1235-356 ® Registered trademark symbol
 sign \x2122 2345-134 ™ Trademark symbol
 
+# Undefined characters
+# Not covered by the specification document, but conventionally replaced with an asterisk.
+undefined 35
+
 # Mathematical symbols - these are ONLY used in mathematical context
 # Thus, these may have special rules
 math \x2212 36 − Minus sign, not a hyphen
