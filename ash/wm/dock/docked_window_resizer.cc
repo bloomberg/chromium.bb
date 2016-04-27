@@ -4,12 +4,12 @@
 
 #include "ash/wm/dock/docked_window_resizer.h"
 
-#include "ash/shell_window_ids.h"
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
 #include "ash/wm/common/window_parenting_utils.h"
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_event.h"
 #include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "ui/base/hit_test.h"

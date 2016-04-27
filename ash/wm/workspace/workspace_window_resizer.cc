@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/common/default_window_resizer.h"
 #include "ash/wm/common/dock/docked_window_layout_manager.h"
 #include "ash/wm/common/window_positioning_utils.h"
@@ -19,6 +18,7 @@
 #include "ash/wm/common/wm_globals.h"
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/dock/docked_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"

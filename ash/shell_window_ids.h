@@ -37,33 +37,24 @@ const int kShellWindowId_DesktopBackgroundContainer = 4;
 // The virtual keyboard container.
 const int kShellWindowId_VirtualKeyboardContainer = 5;
 
-// TODO(sky): rename kShellWindowId_DefaultContainer.
-
-// The container for standard top-level windows.
-const int kShellWindowId_DefaultContainer = 6;
+// The container for standard top-level windows. Defined in wm_shell_window_ids.
+// kShellWindowId_DefaultContainer = 6;
 
 // The container for top-level windows with the 'always-on-top' flag set.
 const int kShellWindowId_AlwaysOnTopContainer = 7;
 
-// The container for windows docked to either side of the desktop. Shell id is
-// defined in wm_shell_window_ids.
-
-static_assert(kShellWindowId_AlwaysOnTopContainer + 1 ==
-                  kShellWindowId_DockedContainer,
-              "docked container must be immediately after always on top");
+// The container for windows docked to either side of the desktop. Defined in
+// wm_shell_window_ids.
+// kShellWindowId_DockedContainer = 8;
 
 // The container for the shelf.
 const int kShellWindowId_ShelfContainer = 9;
 
-static_assert(kShellWindowId_DockedContainer + 1 ==
-                  kShellWindowId_ShelfContainer,
-              "shelf container must be immediately after docked container");
-
 // The container for bubbles which float over the shelf.
 const int kShellWindowId_ShelfBubbleContainer = 10;
 
-// The container for panel windows.
-const int kShellWindowId_PanelContainer = 11;
+// The container for panel windows. Defined in wm_shell_window_ids.
+// kShellWindowId_PanelContainer = 11;
 
 // The container for the app list.
 const int kShellWindowId_AppListContainer = 12;
@@ -111,7 +102,24 @@ const int kShellWindowId_MouseCursorContainer = 24;
 // The topmost container, used for power off animation.
 const int kShellWindowId_PowerButtonAnimationContainer = 25;
 
-}  // namespace ash
+static_assert((kShellWindowId_DefaultContainer - 1 ==
+               kShellWindowId_VirtualKeyboardContainer) &&
+                  (kShellWindowId_DefaultContainer + 1 ==
+                   kShellWindowId_AlwaysOnTopContainer),
+              "default between keyboard and always-on-top");
 
+static_assert((kShellWindowId_DockedContainer - 1 ==
+               kShellWindowId_AlwaysOnTopContainer) &&
+                  (kShellWindowId_DockedContainer + 1 ==
+                   kShellWindowId_ShelfContainer),
+              "docked between always-on-top and shelf");
+
+static_assert((kShellWindowId_PanelContainer - 1 ==
+               kShellWindowId_ShelfBubbleContainer) &&
+                  (kShellWindowId_PanelContainer + 1 ==
+                   kShellWindowId_AppListContainer),
+              "panel between shelf-bubble and app-list");
+
+}  // namespace ash
 
 #endif  // ASH_SHELL_WINDOW_IDS_H_

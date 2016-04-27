@@ -13,7 +13,17 @@
 // TODO(sky): move this into wm namespace.
 namespace ash {
 
+// NOTE: while the value of these is not necessarily important, the ordering
+// is and is enforced in ash/shell_window_ids.h.
+
+// The container for standard top-level windows.
+const int kShellWindowId_DefaultContainer = 6;
+
+// The container for windows docked to either side of the desktop.
 const int kShellWindowId_DockedContainer = 8;
+
+// The container for panel windows.
+const int kShellWindowId_PanelContainer = 11;
 
 }  // namespace ash
 
