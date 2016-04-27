@@ -181,6 +181,7 @@ grit("image_resources") {
 # WebKit/public/blink.gyp:mojo_bindings_blink_mojom
 mojom("mojo_bindings") {
   sources = [
+    "platform/modules/ballista/ballista.mojom",
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/geolocation/geolocation.mojom",
     "platform/modules/notifications/notification.mojom",

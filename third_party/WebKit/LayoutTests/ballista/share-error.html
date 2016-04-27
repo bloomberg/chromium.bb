@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-ballista-service.js"></script>
+<script>
+
+ballista_test((t, mock) => {
+  mock.pushShareResult('the title', 'the message', 'error from browser');
+  return promise_rejects(
+      t, new DOMException('error from browser', 'AbortError'),
+      navigator.actions.share('the title', 'the message'));
+}, 'share with browser-side error');
+
+</script>
