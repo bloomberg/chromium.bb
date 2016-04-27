@@ -1247,7 +1247,9 @@ crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass C
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 
+crbug.com/581038 [ Linux Win ] fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 crbug.com/607101 [ Mac ] fast/text/first-letter-bad-line-boxes-crash.html [ Timeout Pass ]
+
 crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Timeout Pass ]
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
