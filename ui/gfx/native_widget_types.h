@@ -209,7 +209,7 @@ const AcceleratedWidget kNullAcceleratedWidget = 0;
 typedef ANativeWindow* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(USE_OZONE)
-typedef intptr_t AcceleratedWidget;
+typedef int32_t AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform
