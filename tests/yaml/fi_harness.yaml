@@ -77,3 +77,16 @@ tests:
     - ⠠⠞⠜⠍⠜ ⠬⠬⠕⠝ ⠽⠇⠊ ⠅⠕⠇⠍⠑⠝ ⠎⠁⠝⠁⠝ ⠬⠞⠑⠎⠞⠊⠄
     - typeform:
         underline: '     +++++++++++++++++++++++++ '
+
+  - # Character additions:
+    # Copyright symbol, registered trademark symbol, trademark symbol.
+    # Not covered by the official specification document, but
+    # conventionally marked as (c), (r) and tm.
+    - © ® ™
+    - ⠦⠉⠴ ⠦⠗⠴ ⠞⠍
+
+  - # Unknown characters.
+    # Not covered by the official specification document, but
+    # conventionally replaced with an asterisk.
+    - გ
+    - ⠔
