@@ -32,7 +32,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
         scroll_offset_animation_player_(
             AnimationPlayer::Create(AnimationIdProvider::NextPlayerId())) {
     scroll_offset_timeline_->set_is_impl_only(true);
-    scroll_offset_animation_player_->set_layer_animation_delegate(this);
+    scroll_offset_animation_player_->set_animation_delegate(this);
 
     animation_host_->AddAnimationTimeline(scroll_offset_timeline_.get());
     scroll_offset_timeline_->AttachPlayer(
@@ -80,7 +80,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     Animation* animation = scroll_offset_animation_player_->element_animations()
                                ->GetAnimation(TargetProperty::SCROLL_OFFSET);
     if (!animation) {
-      scroll_offset_animation_player_->DetachLayer();
+      scroll_offset_animation_player_->DetachElement();
       return false;
     }
 
@@ -129,9 +129,9 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
   void ReattachScrollOffsetPlayerIfNeeded(ElementId element_id) {
     if (scroll_offset_animation_player_->element_id() != element_id) {
       if (scroll_offset_animation_player_->element_id())
-        scroll_offset_animation_player_->DetachLayer();
+        scroll_offset_animation_player_->DetachElement();
       if (element_id)
-        scroll_offset_animation_player_->AttachLayer(element_id);
+        scroll_offset_animation_player_->AttachElement(element_id);
     }
   }
 

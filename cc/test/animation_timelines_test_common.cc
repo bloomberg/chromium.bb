@@ -331,14 +331,14 @@ void AnimationTimelinesTest::CreateTestMainLayer() {
 }
 
 void AnimationTimelinesTest::CreateTestImplLayer(
-    ElementListType layer_tree_type) {
-  client_impl_.RegisterElement(element_id_, layer_tree_type);
+    ElementListType element_list_type) {
+  client_impl_.RegisterElement(element_id_, element_list_type);
 }
 
 void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {

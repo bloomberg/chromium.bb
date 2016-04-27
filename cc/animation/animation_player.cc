@@ -21,7 +21,7 @@ AnimationPlayer::AnimationPlayer(int id)
     : animation_host_(),
       animation_timeline_(),
       element_animations_(),
-      layer_animation_delegate_(),
+      animation_delegate_(),
       id_(id),
       element_id_(0) {
   DCHECK(id_);
@@ -57,7 +57,7 @@ void AnimationPlayer::SetAnimationTimeline(AnimationTimeline* timeline) {
     RegisterPlayer();
 }
 
-void AnimationPlayer::AttachLayer(ElementId element_id) {
+void AnimationPlayer::AttachElement(ElementId element_id) {
   DCHECK_EQ(element_id_, 0);
   DCHECK(element_id);
 
@@ -68,7 +68,7 @@ void AnimationPlayer::AttachLayer(ElementId element_id) {
     RegisterPlayer();
 }
 
-void AnimationPlayer::DetachLayer() {
+void AnimationPlayer::DetachElement() {
   DCHECK(element_id_);
 
   if (animation_host_)
@@ -175,9 +175,9 @@ void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
   if (element_id_ != player_impl->element_id()) {
     if (player_impl->element_id())
-      player_impl->DetachLayer();
+      player_impl->DetachElement();
     if (element_id_)
-      player_impl->AttachLayer(element_id_);
+      player_impl->AttachElement(element_id_);
   }
 }
 
@@ -185,27 +185,27 @@ void AnimationPlayer::NotifyAnimationStarted(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     int group) {
-  if (layer_animation_delegate_)
-    layer_animation_delegate_->NotifyAnimationStarted(monotonic_time,
-                                                      target_property, group);
+  if (animation_delegate_)
+    animation_delegate_->NotifyAnimationStarted(monotonic_time, target_property,
+                                                group);
 }
 
 void AnimationPlayer::NotifyAnimationFinished(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     int group) {
-  if (layer_animation_delegate_)
-    layer_animation_delegate_->NotifyAnimationFinished(monotonic_time,
-                                                       target_property, group);
+  if (animation_delegate_)
+    animation_delegate_->NotifyAnimationFinished(monotonic_time,
+                                                 target_property, group);
 }
 
 void AnimationPlayer::NotifyAnimationAborted(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     int group) {
-  if (layer_animation_delegate_)
-    layer_animation_delegate_->NotifyAnimationAborted(monotonic_time,
-                                                      target_property, group);
+  if (animation_delegate_)
+    animation_delegate_->NotifyAnimationAborted(monotonic_time, target_property,
+                                                group);
 }
 
 void AnimationPlayer::NotifyAnimationTakeover(
@@ -213,9 +213,9 @@ void AnimationPlayer::NotifyAnimationTakeover(
     TargetProperty::Type target_property,
     double animation_start_time,
     std::unique_ptr<AnimationCurve> curve) {
-  if (layer_animation_delegate_) {
+  if (animation_delegate_) {
     DCHECK(curve);
-    layer_animation_delegate_->NotifyAnimationTakeover(
+    animation_delegate_->NotifyAnimationTakeover(
         monotonic_time, target_property, animation_start_time,
         std::move(curve));
   }

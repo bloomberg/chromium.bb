@@ -68,7 +68,7 @@ class AnimationHostPerfTest : public testing::Test {
       last_player_id = AnimationIdProvider::NextPlayerId();
 
       timeline->AttachPlayer(player);
-      player->AttachLayer(layer->id());
+      player->AttachElement(layer->id());
       EXPECT_TRUE(player->element_animations());
     }
 

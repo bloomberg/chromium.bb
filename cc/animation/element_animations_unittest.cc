@@ -52,7 +52,7 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   host_->AddAnimationTimeline(timeline_);
 
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   scoped_refptr<ElementAnimations> element_animations =
       player_->element_animations();
@@ -112,7 +112,7 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_FALSE(element_animations_impl->has_element_in_active_list());
   EXPECT_FALSE(element_animations_impl->has_element_in_pending_list());
 
-  player_->DetachLayer();
+  player_->DetachElement();
   EXPECT_FALSE(player_->element_animations());
 
   // Release ptrs now to test the order of destruction.
@@ -127,7 +127,7 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
 
   GetImplTimelineAndPlayerByID();
 
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   scoped_refptr<ElementAnimations> element_animations =
       player_->element_animations();
@@ -162,7 +162,7 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
 TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   scoped_refptr<ElementAnimations> element_animations =
       player_->element_animations();
@@ -177,8 +177,8 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   timeline_->AttachPlayer(player2);
 
   // Attach players to the same layer.
-  player1->AttachLayer(element_id_);
-  player2->AttachLayer(element_id_);
+  player1->AttachElement(element_id_);
+  player2->AttachElement(element_id_);
 
   EXPECT_EQ(element_animations, player1->element_animations());
   EXPECT_EQ(element_animations, player2->element_animations());
@@ -201,7 +201,7 @@ TEST_F(ElementAnimationsTest, AddRemovePlayers) {
   }
   EXPECT_EQ(3, list_size_before);
 
-  player2->DetachLayer();
+  player2->DetachElement();
   EXPECT_FALSE(player2->element_animations());
   EXPECT_EQ(element_animations, player_->element_animations());
   EXPECT_EQ(element_animations, player1->element_animations());
@@ -1231,7 +1231,7 @@ TEST_F(ElementAnimationsTest,
   auto events = host_impl_->CreateEvents();
 
   TestAnimationDelegate delegate;
-  player_impl_->set_layer_animation_delegate(&delegate);
+  player_impl_->set_animation_delegate(&delegate);
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -1267,7 +1267,7 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   TestAnimationDelegate delegate;
-  player_->set_layer_animation_delegate(&delegate);
+  player_->set_animation_delegate(&delegate);
 
   int animation_id =
       AddOpacityTransitionToElementAnimations(animations.get(), 1, 0, 1, false);
@@ -1985,7 +1985,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   TestAnimationDelegate delegate;
-  player_->set_layer_animation_delegate(&delegate);
+  player_->set_animation_delegate(&delegate);
 
   int animation_id = AddOpacityTransitionToElementAnimations(
       animations.get(), 1.0, 0.f, 1.f, false);
@@ -2039,9 +2039,9 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   TestAnimationDelegate delegate_impl;
-  player_impl_->set_layer_animation_delegate(&delegate_impl);
+  player_impl_->set_animation_delegate(&delegate_impl);
   TestAnimationDelegate delegate;
-  player_->set_layer_animation_delegate(&delegate);
+  player_->set_animation_delegate(&delegate);
 
   // Add impl-only scroll offset animation.
   const int animation_id = 1;

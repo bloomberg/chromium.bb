@@ -301,7 +301,7 @@ void AddAnimationToLayerWithPlayer(int layer_id,
   scoped_refptr<AnimationPlayer> player =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
-  player->AttachLayer(layer_id);
+  player->AttachElement(layer_id);
   DCHECK(player->element_animations());
   player->AddAnimation(std::move(animation));
 }
@@ -345,7 +345,7 @@ int AddAnimatedFilterToLayerWithPlayer(
   scoped_refptr<AnimationPlayer> player =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
-  player->AttachLayer(layer_id);
+  player->AttachElement(layer_id);
   DCHECK(player->element_animations());
   return AddAnimatedFilterToPlayer(player.get(), duration, start_brightness,
                                    end_brightness);
@@ -360,7 +360,7 @@ int AddAnimatedTransformToLayerWithPlayer(
   scoped_refptr<AnimationPlayer> player =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
-  player->AttachLayer(layer_id);
+  player->AttachElement(layer_id);
   DCHECK(player->element_animations());
   return AddAnimatedTransformToPlayer(player.get(), duration, delta_x, delta_y);
 }
@@ -374,7 +374,7 @@ int AddAnimatedTransformToLayerWithPlayer(
   scoped_refptr<AnimationPlayer> player =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
-  player->AttachLayer(layer_id);
+  player->AttachElement(layer_id);
   DCHECK(player->element_animations());
   return AddAnimatedTransformToPlayer(player.get(), duration, start_operations,
                                       operations);
@@ -390,7 +390,7 @@ int AddOpacityTransitionToLayerWithPlayer(
   scoped_refptr<AnimationPlayer> player =
       AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
   timeline->AttachPlayer(player);
-  player->AttachLayer(layer_id);
+  player->AttachElement(layer_id);
   DCHECK(player->element_animations());
   return AddOpacityTransitionToPlayer(player.get(), duration, start_opacity,
                                       end_opacity, use_timing_function);

@@ -217,7 +217,7 @@ class AnimationTimelinesTest : public testing::Test {
   void CreateImplTimelineAndPlayer();
 
   void CreateTestMainLayer();
-  void CreateTestImplLayer(ElementListType layer_tree_type);
+  void CreateTestImplLayer(ElementListType element_list_type);
 
   scoped_refptr<ElementAnimations> element_animations() const;
   scoped_refptr<ElementAnimations> element_animations_impl() const;

@@ -22,7 +22,6 @@ class AnimationDelegate;
 class AnimationHost;
 class AnimationTimeline;
 class ElementAnimations;
-enum class ElementListType;
 
 // An AnimationPlayer owns all animations to be run on particular CC Layer.
 // Multiple AnimationPlayers can be attached to one layer. In this case,
@@ -59,12 +58,12 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
     return element_animations_;
   }
 
-  void set_layer_animation_delegate(AnimationDelegate* delegate) {
-    layer_animation_delegate_ = delegate;
+  void set_animation_delegate(AnimationDelegate* delegate) {
+    animation_delegate_ = delegate;
   }
 
-  void AttachLayer(ElementId element_id);
-  void DetachLayer();
+  void AttachElement(ElementId element_id);
+  void DetachElement();
 
   void AddAnimation(std::unique_ptr<Animation> animation);
   void PauseAnimation(int animation_id, double time_offset);
@@ -118,7 +117,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   AnimationTimeline* animation_timeline_;
   // element_animations isn't null if player attached to an element (layer).
   scoped_refptr<ElementAnimations> element_animations_;
-  AnimationDelegate* layer_animation_delegate_;
+  AnimationDelegate* animation_delegate_;
 
   int id_;
   ElementId element_id_;

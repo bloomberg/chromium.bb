@@ -38,7 +38,7 @@ TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
   EXPECT_FALSE(player_impl_->element_animations());
   EXPECT_FALSE(player_impl_->element_id());
 
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
   EXPECT_EQ(player_, GetPlayerForLayerId(element_id_));
   EXPECT_TRUE(player_->element_animations());
   EXPECT_EQ(player_->element_id(), element_id_);
@@ -49,7 +49,7 @@ TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
   EXPECT_TRUE(player_impl_->element_animations());
   EXPECT_EQ(player_impl_->element_id(), element_id_);
 
-  player_->DetachLayer();
+  player_->DetachElement();
   EXPECT_FALSE(GetPlayerForLayerId(element_id_));
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
@@ -72,7 +72,7 @@ TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
   EXPECT_FALSE(player_->element_animations());
   EXPECT_FALSE(player_->element_id());
 
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
   EXPECT_FALSE(player_->animation_timeline());
   EXPECT_FALSE(GetPlayerForLayerId(element_id_));
   EXPECT_FALSE(player_->element_animations());
@@ -99,7 +99,7 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
 
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -183,12 +183,12 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   timeline_->AttachPlayer(player1);
   timeline_->AttachPlayer(player2);
 
-  player1->set_layer_animation_delegate(&delegate1);
-  player2->set_layer_animation_delegate(&delegate2);
+  player1->set_animation_delegate(&delegate1);
+  player2->set_animation_delegate(&delegate2);
 
   // Attach players to the same layer.
-  player1->AttachLayer(element_id_);
-  player2->AttachLayer(element_id_);
+  player1->AttachElement(element_id_);
+  player2->AttachElement(element_id_);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -264,7 +264,7 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
   EXPECT_FALSE(player_->element_animations());
   player_->RemoveAnimation(filter_id);
 
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   EXPECT_TRUE(player_->element_animations());
   EXPECT_FALSE(player_->element_animations()
@@ -310,7 +310,7 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationCausesSetNeedsCommit) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   EXPECT_FALSE(client_.mutators_need_commit());
 
@@ -334,7 +334,7 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationCausesSetNeedsCommit) {
 TEST_F(AnimationPlayerTest, SwitchToLayer) {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
-  player_->AttachLayer(element_id_);
+  player_->AttachElement(element_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
@@ -349,8 +349,8 @@ TEST_F(AnimationPlayerTest, SwitchToLayer) {
   EXPECT_EQ(player_impl_->element_id(), element_id_);
 
   const int new_layer_id = NextTestLayerId();
-  player_->DetachLayer();
-  player_->AttachLayer(new_layer_id);
+  player_->DetachElement();
+  player_->AttachElement(new_layer_id);
 
   EXPECT_EQ(player_, GetPlayerForLayerId(new_layer_id));
   EXPECT_TRUE(player_->element_animations());

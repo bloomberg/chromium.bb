@@ -192,18 +192,18 @@ void LayerAnimator::ResetCompositor(Compositor* compositor) {
 
 void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
   if (!animation_player_->element_id())
-    animation_player_->AttachLayer(layer_id);
+    animation_player_->AttachElement(layer_id);
   else
     DCHECK_EQ(animation_player_->element_id(), layer_id);
 
-  animation_player_->set_layer_animation_delegate(this);
+  animation_player_->set_animation_delegate(this);
 }
 
 void LayerAnimator::DetachLayerFromAnimationPlayer() {
-  animation_player_->set_layer_animation_delegate(nullptr);
+  animation_player_->set_animation_delegate(nullptr);
 
   if (animation_player_->element_id())
-    animation_player_->DetachLayer();
+    animation_player_->DetachElement();
 }
 
 void LayerAnimator::AddThreadedAnimation(

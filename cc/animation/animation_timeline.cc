@@ -94,7 +94,7 @@ void AnimationTimeline::RemoveDetachedPlayersFromImplThread(
 
 void AnimationTimeline::ErasePlayer(scoped_refptr<AnimationPlayer> player) {
   if (player->element_animations())
-    player->DetachLayer();
+    player->DetachElement();
   player->SetAnimationTimeline(nullptr);
   player->SetAnimationHost(nullptr);
 }
