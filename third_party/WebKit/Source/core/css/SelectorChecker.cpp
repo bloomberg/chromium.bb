@@ -829,11 +829,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoDefault:
         return element.matchesDefaultPseudoClass();
     case CSSSelector::PseudoDisabled:
-        // TODO(esprehn): Why not just always return isDisabledFormControl()?
-        // Can it be true for elements not in the list below?
-        if (element.isFormControlElement() || isHTMLOptionElement(element) || isHTMLOptGroupElement(element))
-            return element.isDisabledFormControl();
-        break;
+        return element.isDisabledFormControl();
     case CSSSelector::PseudoReadOnly:
         return element.matchesReadOnlyPseudoClass();
     case CSSSelector::PseudoReadWrite:
