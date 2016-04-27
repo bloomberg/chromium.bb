@@ -27,7 +27,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     : m_contextGroupId(contextGroupId)
     , m_debugger(debugger)
     , m_client(nullptr)
-    , m_injectedScriptHost(InjectedScriptHost::create(debugger, this))
+    , m_injectedScriptHost(InjectedScriptHost::create(debugger))
     , m_customObjectFormatterEnabled(false)
     , m_instrumentationCounter(0)
     , m_runtimeAgent(adoptPtr(new V8RuntimeAgentImpl(this)))

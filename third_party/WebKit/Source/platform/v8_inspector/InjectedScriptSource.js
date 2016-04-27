@@ -366,22 +366,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {*} object
-     * @return {*}
-     */
-    _inspect: function(object)
-    {
-        if (arguments.length === 0)
-            return;
-
-        var objectId = this._wrapObject(object, "");
-        var hints = { __proto__: null };
-
-        InjectedScriptHost.inspect(objectId, hints);
-        return object;
-    },
-
-    /**
      * This method cannot throw.
      * @param {*} object
      * @param {string=} objectGroupName
@@ -614,7 +598,7 @@ InjectedScript.prototype = {
     {
         // NOTE: This list contains only not native Command Line API methods. For full list: V8Console.
         // NOTE: Argument names of these methods will be printed in the console, so use pretty names!
-        var members = [ "$", "$$", "$x", "monitorEvents", "unmonitorEvents", "inspect", "copy", "getEventListeners" ];
+        var members = [ "$", "$$", "$x", "monitorEvents", "unmonitorEvents", "getEventListeners" ];
         var commandLineAPIImpl = this._commandLineAPIImpl;
         for (var member of members)
             nativeCommandLineAPI[member] = bind(commandLineAPIImpl[member], commandLineAPIImpl);
@@ -1258,35 +1242,6 @@ CommandLineAPIImpl.prototype = {
         var types = this._normalizeEventTypes(opt_types);
         for (var i = 0; i < types.length; ++i)
             object.removeEventListener(types[i], this._logEvent, false);
-    },
-
-    /**
-     * @param {*} object
-     * @return {*}
-     */
-    inspect: function(object)
-    {
-        return injectedScript._inspect(object);
-    },
-
-    copy: function(object)
-    {
-        var string;
-        if (injectedScript._subtype(object) === "node") {
-            string = object.outerHTML;
-        } else if (injectedScript.isPrimitiveValue(object)) {
-            string = toString(object);
-        } else {
-            try {
-                string = JSON.stringify(object, null, "  ");
-            } catch (e) {
-                string = toString(object);
-            }
-        }
-
-        var hints = { copyToClipboard: true, __proto__: null };
-        var remoteObject = injectedScript._wrapObject(string, "")
-        InjectedScriptHost.inspect(remoteObject, hints);
     },
 
     /**

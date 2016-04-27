@@ -189,16 +189,6 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     v8SetReturnValue(info, result);
 }
 
-void V8InjectedScriptHost::inspectCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 2)
-        return;
-
-    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
-    InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
-    host->inspectImpl(toProtocolValue(context, info[0]), toProtocolValue(context, info[1]));
-}
-
 void V8InjectedScriptHost::callFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 2 || info.Length() > 3 || !info[0]->IsFunction()) {
@@ -284,7 +274,6 @@ char className[] = "V8InjectedScriptHost";
 using InjectedScriptHostWrapper = InspectorWrapper<InjectedScriptHost, hiddenPropertyName, className>;
 
 const InjectedScriptHostWrapper::V8MethodConfiguration V8InjectedScriptHostMethods[] = {
-    {"inspect", V8InjectedScriptHost::inspectCallback},
     {"internalConstructorName", V8InjectedScriptHost::internalConstructorNameCallback},
     {"formatAccessorsAsProperties", V8InjectedScriptHost::formatAccessorsAsProperties},
     {"isTypedArray", V8InjectedScriptHost::isTypedArrayCallback},

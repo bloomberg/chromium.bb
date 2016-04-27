@@ -30,32 +30,20 @@
 
 #include "platform/v8_inspector/InjectedScriptHost.h"
 
-#include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/V8InspectorSessionImpl.h"
-#include "platform/v8_inspector/V8RuntimeAgentImpl.h"
-
 namespace blink {
 
-PassOwnPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger, V8InspectorSessionImpl* session)
+PassOwnPtr<InjectedScriptHost> InjectedScriptHost::create(V8DebuggerImpl* debugger)
 {
-    return adoptPtr(new InjectedScriptHost(debugger, session));
+    return adoptPtr(new InjectedScriptHost(debugger));
 }
 
-InjectedScriptHost::InjectedScriptHost(V8DebuggerImpl* debugger, V8InspectorSessionImpl* session)
+InjectedScriptHost::InjectedScriptHost(V8DebuggerImpl* debugger)
     : m_debugger(debugger)
-    , m_session(session)
 {
 }
 
 InjectedScriptHost::~InjectedScriptHost()
 {
-}
-
-void InjectedScriptHost::inspectImpl(PassOwnPtr<protocol::Value> object, PassOwnPtr<protocol::Value> hints)
-{
-    protocol::ErrorSupport errors;
-    OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(object.get(), &errors);
-    m_session->runtimeAgentImpl()->inspect(remoteObject.release(), protocol::DictionaryValue::cast(hints));
 }
 
 } // namespace blink

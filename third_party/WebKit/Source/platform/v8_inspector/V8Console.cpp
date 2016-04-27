@@ -582,6 +582,42 @@ void V8Console::lastEvaluationResultCallback(const v8::FunctionCallbackInfo<v8::
         info.GetReturnValue().Set(injectedScript->lastEvaluationResult());
 }
 
+static void inspectImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool copyToClipboard)
+{
+    if (info.Length() < 1)
+        return;
+    if (!copyToClipboard)
+        info.GetReturnValue().Set(info[0]);
+
+    ConsoleHelper helper(info);
+    InspectedContext* context = helper.ensureInspectedContext();
+    if (!context)
+        return;
+    InjectedScript* injectedScript = context->getInjectedScript();
+    if (!injectedScript)
+        return;
+    ErrorString errorString;
+    OwnPtr<protocol::Runtime::RemoteObject> wrappedObject = injectedScript->wrapObject(&errorString, info[0], "", false /** forceValueType */, false /** generatePreview */);
+    if (!wrappedObject || !errorString.isEmpty())
+        return;
+
+    OwnPtr<protocol::DictionaryValue> hints = protocol::DictionaryValue::create();
+    if (copyToClipboard)
+        hints->setBoolean("copyToClipboard", true);
+    if (V8InspectorSessionImpl* session = helper.currentSession())
+        session->runtimeAgentImpl()->inspect(wrappedObject.release(), hints.release());
+}
+
+void V8Console::inspectCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    inspectImpl(info, false);
+}
+
+void V8Console::copyCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    inspectImpl(info, true);
+}
+
 void V8Console::inspectedObject(const v8::FunctionCallbackInfo<v8::Value>& info, unsigned num)
 {
     ASSERT(num < V8InspectorSessionImpl::kInspectedObjectBufferSize);
@@ -665,6 +701,8 @@ v8::Local<v8::Object> V8Console::createCommandLineAPI(InspectedContext* inspecte
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "undebug", V8Console::undebugFunctionCallback);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "monitor", V8Console::monitorFunctionCallback);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "unmonitor", V8Console::unmonitorFunctionCallback);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "inspect", V8Console::inspectCallback);
+    createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "copy", V8Console::copyCallback);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$_", V8Console::lastEvaluationResultCallback);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$0", V8Console::inspectedObject0);
     createBoundFunctionProperty(context, commandLineAPI, commandLineAPI, "$1", V8Console::inspectedObject1);

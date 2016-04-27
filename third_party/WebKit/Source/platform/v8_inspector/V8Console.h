@@ -56,6 +56,8 @@ private:
     static void monitorFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void unmonitorFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void lastEvaluationResultCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void inspectCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void copyCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void inspectedObject(const v8::FunctionCallbackInfo<v8::Value>&, unsigned num);
     static void inspectedObject0(const v8::FunctionCallbackInfo<v8::Value>& info) { inspectedObject(info, 0); }
     static void inspectedObject1(const v8::FunctionCallbackInfo<v8::Value>& info) { inspectedObject(info, 1); }

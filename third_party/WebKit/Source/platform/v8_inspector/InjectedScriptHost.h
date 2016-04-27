@@ -30,13 +30,11 @@
 #ifndef InjectedScriptHost_h
 #define InjectedScriptHost_h
 
-#include "platform/inspector_protocol/Collections.h"
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {
 
-class V8InspectorSessionImpl;
 class V8DebuggerImpl;
 
 namespace protocol {
@@ -50,10 +48,8 @@ class Value;
 
 class InjectedScriptHost {
 public:
-    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*, V8InspectorSessionImpl*);
+    static PassOwnPtr<InjectedScriptHost> create(V8DebuggerImpl*);
     ~InjectedScriptHost();
-
-    void inspectImpl(PassOwnPtr<protocol::Value> objectToInspect, PassOwnPtr<protocol::Value> hints);
 
     V8DebuggerImpl* debugger() { return m_debugger; }
 
@@ -62,10 +58,9 @@ public:
     v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
 
 private:
-    InjectedScriptHost(V8DebuggerImpl*, V8InspectorSessionImpl*);
+    explicit InjectedScriptHost(V8DebuggerImpl*);
 
     V8DebuggerImpl* m_debugger;
-    V8InspectorSessionImpl* m_session;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 

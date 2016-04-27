@@ -168,7 +168,6 @@ void InjectedScript::releaseObject(const String16& objectId)
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(ErrorString* errorString, v8::Local<v8::Value> value, const String16& groupName, bool forceValueType, bool generatePreview) const
 {
     v8::HandleScope handles(m_context->isolate());
-    V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "wrapObject");
     v8::Local<v8::Value> wrappedObject;
     if (!wrapValue(errorString, value, groupName, forceValueType, generatePreview).ToLocal(&wrappedObject))
         return nullptr;

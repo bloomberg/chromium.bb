@@ -18,7 +18,6 @@ public:
     static InjectedScriptHost* unwrap(v8::Local<v8::Context>, v8::Local<v8::Object>);
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
 
-    static void inspectCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void formatAccessorsAsProperties(const v8::FunctionCallbackInfo<v8::Value>&);
     static void isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>&);
