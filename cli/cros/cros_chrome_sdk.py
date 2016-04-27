@@ -9,6 +9,7 @@ from __future__ import print_function
 import argparse
 import collections
 import contextlib
+import glob
 import json
 import os
 import distutils.version
@@ -471,10 +472,11 @@ class ChromeSDKCommand(command.CliCommand):
              'Defaults to %s.' % constants.CHROME_SDK_BASHRC)
     parser.add_argument(
         '--chroot', type='path',
-        help='Path to a ChromeOS chroot to use.  If set, '
+        help='Path to a ChromeOS chroot to use. If set, '
              '<chroot>/build/<board> will be used as the sysroot that Chrome '
-             'is built against.  The version shown in the SDK shell prompt '
-             'will then have an asterisk prepended to it.')
+             'is built against. If chromeos-chrome was built, the build '
+             'environment from the chroot will also be used. The version shown '
+             'in the SDK shell prompt will have an asterisk prepended to it.')
     parser.add_argument(
         '--chrome-src', type='path',
         help='Specifies the location of a Chrome src/ directory.  Required if '
@@ -639,6 +641,31 @@ class ChromeSDKCommand(command.CliCommand):
 
     environment = os.path.join(sdk_ctx.key_map[constants.CHROME_ENV_TAR].path,
                                'environment')
+    if options.chroot:
+      # Override with the environment from the chroot if available (i.e.
+      # build_packages or emerge chromeos-chrome has been run for |board|).
+      env_path = os.path.join(sysroot, 'var', 'db', 'pkg', 'chromeos-base',
+                              'chromeos-chrome-*')
+      env_glob = glob.glob(env_path)
+      if len(env_glob) != 1:
+        logging.warning('Multiple Chrome versions in %s. This can be resolved'
+                        ' by running "eclean-$BOARD -d packages". Using'
+                        ' environment from: %s', env_path, environment)
+      elif not os.path.isdir(env_glob[0]):
+        logging.warning('Environment path not found: %s. Using enviroment from:'
+                        ' %s.', env_path, environment)
+      else:
+        chroot_env_file = os.path.join(env_glob[0], 'environment.bz2')
+        if os.path.isfile(chroot_env_file):
+          # Log a warning here since this is new behavior that is not obvious.
+          logging.notice('Environment fetched from: %s', chroot_env_file)
+          # Uncompress enviornment.bz2 to pass to osutils.SourceEnvironment.
+          chroot_cache = os.path.join(
+              self.options.cache_dir, COMMAND_NAME, 'chroot')
+          osutils.SafeMakedirs(chroot_cache)
+          environment = os.path.join(chroot_cache, 'environment_%s' % board)
+          cros_build_lib.UncompressFile(chroot_env_file, environment)
+
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
     self._SetupTCEnvironment(sdk_ctx, options, env)
 
