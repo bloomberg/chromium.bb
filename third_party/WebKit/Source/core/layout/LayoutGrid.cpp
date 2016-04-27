@@ -1653,6 +1653,12 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
         child->setOverrideContainingBlockContentLogicalHeight(rowBreadth);
         child->setExtraInlineOffset(columnOffset);
         child->setExtraBlockOffset(rowOffset);
+
+        if (child->parent() == this) {
+            PaintLayer* childLayer = child->layer();
+            childLayer->setStaticInlinePosition(borderStart() + columnOffset);
+            childLayer->setStaticBlockPosition(borderBefore() + rowOffset);
+        }
     }
 
     LayoutBlock::layoutPositionedObjects(relayoutChildren, info);
@@ -1740,14 +1746,6 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         }
     }
 
-    if (child.parent() == this && !startIsAuto) {
-        // If column/row start is "auto" the static position has been already set in prepareChildForPositionedLayout().
-        PaintLayer* childLayer = child.layer();
-        if (isForColumns)
-            childLayer->setStaticInlinePosition(borderStart() + offset);
-        else
-            childLayer->setStaticBlockPosition(borderBefore() + offset);
-    }
 }
 
 GridArea LayoutGrid::cachedGridArea(const LayoutBox& gridItem) const
