@@ -55,6 +55,7 @@ ContentSettingsType kHistogramOrder[] = {
     CONTENT_SETTINGS_TYPE_KEYGEN,
     CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+    CONTENT_SETTINGS_TYPE_AUTOPLAY,
 };
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,

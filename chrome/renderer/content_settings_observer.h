@@ -42,9 +42,9 @@ class ContentSettingsObserver
                           bool should_whitelist);
   ~ContentSettingsObserver() override;
 
-  // Sets the content setting rules which back |AllowImage()|, |AllowScript()|,
-  // and |AllowScriptFromSource()|. |content_setting_rules| must outlive this
-  // |ContentSettingsObserver|.
+  // Sets the content setting rules which back |allowImage()|, |allowScript()|,
+  // |allowScriptFromSource()| and |allowAutoplay()|. |content_setting_rules|
+  // must outlive this |ContentSettingsObserver|.
   void SetContentSettingRules(
       const RendererContentSettingRules* content_setting_rules);
 
@@ -84,6 +84,7 @@ class ContentSettingsObserver
   bool allowRunningInsecureContent(bool allowed_per_settings,
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
+  bool allowAutoplay(bool default_value) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);

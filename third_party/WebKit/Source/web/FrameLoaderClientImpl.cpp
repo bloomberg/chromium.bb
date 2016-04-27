@@ -286,6 +286,14 @@ bool FrameLoaderClientImpl::allowRunningInsecureContent(bool enabledPerSettings,
     return enabledPerSettings;
 }
 
+bool FrameLoaderClientImpl::allowAutoplay(bool defaultValue)
+{
+    if (m_webFrame->contentSettingsClient())
+        return m_webFrame->contentSettingsClient()->allowAutoplay(defaultValue);
+
+    return defaultValue;
+}
+
 void FrameLoaderClientImpl::didNotAllowScript()
 {
     if (m_webFrame->contentSettingsClient())

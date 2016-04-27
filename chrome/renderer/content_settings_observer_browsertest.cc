@@ -485,3 +485,41 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
   EXPECT_TRUE(observer->allowImage(true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
+
+TEST_F(ChromeRenderViewTest, AutoplayContentSettings) {
+  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
+
+  // Load some HTML.
+  LoadHTML("<html>Foo</html>");
+
+  // Set the default setting.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& autoplay_setting_rules =
+      content_setting_rules.autoplay_rules;
+  autoplay_setting_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  std::string(),
+                                  false));
+
+  ContentSettingsObserver* observer =
+      ContentSettingsObserver::Get(view_->GetMainRenderFrame());
+  observer->SetContentSettingRules(&content_setting_rules);
+
+  EXPECT_TRUE(observer->allowAutoplay(false));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Add rule to block autoplay.
+  autoplay_setting_rules.insert(
+      autoplay_setting_rules.begin(),
+      ContentSettingPatternSource(
+          ContentSettingsPattern::Wildcard(),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTING_BLOCK,
+          std::string(),
+          false));
+
+  EXPECT_FALSE(observer->allowAutoplay(true));
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
+}

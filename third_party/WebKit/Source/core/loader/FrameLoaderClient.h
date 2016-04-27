@@ -195,6 +195,7 @@ public:
     virtual bool allowMedia(const KURL&) { return true; }
     virtual bool allowDisplayingInsecureContent(bool enabledPerSettings, const KURL&) { return enabledPerSettings; }
     virtual bool allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) { return enabledPerSettings; }
+    virtual bool allowAutoplay(bool defaultValue) { return defaultValue; }
 
     // This callback notifies the client that the frame was about to run
     // JavaScript but did not because allowScript returned false. We

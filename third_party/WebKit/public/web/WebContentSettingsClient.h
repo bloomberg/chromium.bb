@@ -78,6 +78,9 @@ public:
     // but it's been named for consistency with the rest of the interface.
     virtual bool allowMutationEvents(bool defaultValue) { return defaultValue; }
 
+    // Controls whether autoplay is allowed for this frame.
+    virtual bool allowAutoplay(bool defaultValue) { return defaultValue; }
+
     // Notifies the client that the frame would have instantiated a plugin if plugins were enabled.
     virtual void didNotAllowPlugins() { }
 

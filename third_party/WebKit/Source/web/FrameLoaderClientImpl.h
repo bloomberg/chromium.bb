@@ -143,6 +143,7 @@ public:
     bool allowMedia(const KURL& mediaURL) override;
     bool allowDisplayingInsecureContent(bool enabledPerSettings, const KURL&) override;
     bool allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
+    bool allowAutoplay(bool defaultValue) override;
     void didNotAllowScript() override;
     void didNotAllowPlugins() override;
     void didUseKeygen() override;

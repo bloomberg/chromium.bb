@@ -136,6 +136,11 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
                                      example_url,
                                      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
                                      std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              map->GetContentSetting(example_url,
+                                     example_url,
+                                     CONTENT_SETTINGS_TYPE_AUTOPLAY,
+                                     std::string()));
 
     // Check content settings for www.google.com
     GURL url("http://www.google.com");
@@ -178,6 +183,9 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
             std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_AUTOPLAY, std::string()));
   }
 
   void CheckContentSettingsDefault() {
@@ -229,6 +237,9 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
             std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              map->GetContentSetting(
+                  url, url, CONTENT_SETTINGS_TYPE_AUTOPLAY, std::string()));
   }
 
  private:

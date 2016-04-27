@@ -486,6 +486,18 @@ bool ContentSettingsObserver::allowRunningInsecureContent(
   return true;
 }
 
+bool ContentSettingsObserver::allowAutoplay(bool default_value) {
+  if (!content_setting_rules_)
+    return default_value;
+
+  WebFrame* frame = render_frame()->GetWebFrame();
+  return GetContentSettingFromRules(
+             content_setting_rules_->autoplay_rules, frame,
+             blink::WebStringToGURL(
+                 frame->document().getSecurityOrigin().toString())) ==
+         CONTENT_SETTING_ALLOW;
+}
+
 void ContentSettingsObserver::didUseKeygen() {
   WebFrame* frame = render_frame()->GetWebFrame();
   Send(new ChromeViewHostMsg_DidUseKeygen(

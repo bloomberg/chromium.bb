@@ -655,7 +655,7 @@ float GetDeviceScaleAdjustment() {
 #endif  // defined(OS_ANDROID)
 
 #if defined(ENABLE_EXTENSIONS)
-// By default, JavaScript and images are enabled in guest content.
+// By default, JavaScript, images and autoplay are enabled in guest content.
 void GetGuestViewDefaultContentSettingRules(
     bool incognito,
     RendererContentSettingRules* rules) {
@@ -667,6 +667,12 @@ void GetGuestViewDefaultContentSettingRules(
                                   incognito));
 
   rules->script_rules.push_back(
+      ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
+                                  ContentSettingsPattern::Wildcard(),
+                                  CONTENT_SETTING_ALLOW,
+                                  std::string(),
+                                  incognito));
+  rules->autoplay_rules.push_back(
       ContentSettingPatternSource(ContentSettingsPattern::Wildcard(),
                                   ContentSettingsPattern::Wildcard(),
                                   CONTENT_SETTING_ALLOW,

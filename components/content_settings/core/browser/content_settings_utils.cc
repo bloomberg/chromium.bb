@@ -141,6 +141,10 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
       ResourceIdentifier(),
       &(rules->script_rules));
+  map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_AUTOPLAY,
+      ResourceIdentifier(),
+      &(rules->autoplay_rules));
 }
 
 }  // namespace content_settings
