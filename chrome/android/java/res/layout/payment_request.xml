@@ -8,39 +8,63 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp">
-
+        android:layout_width="match_parent"
+        android:minHeight="64dp">
         <ImageView
             android:id="@+id/pageFavIcon"
             android:layout_height="match_parent"
-            android:layout_width="wrap_content"
+            android:layout_width="24dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_gravity="start|center_vertical"
             android:importantForAccessibility="no"
-            android:paddingEnd="8dp" />
+            android:scaleType="centerInside" />
 
         <LinearLayout
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
+            android:layout_marginStart="56dp"
+            android:layout_marginEnd="56dp"
+            android:layout_gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/pageTitle"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:textColor="#000000"
-                android:textStyle="bold" />
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@color/default_text_color"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                />
 
             <TextView
                 android:id="@+id/hostname"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content" />
-
+                android:layout_width="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@color/descriptive_text_color"
+                android:textSize="14sp"
+                />
         </LinearLayout>
 
-    </LinearLayout>
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_gravity="end|center_vertical"
+            android:layout_height="56dp"
+            android:layout_width="56dp"
+            android:src="@drawable/btn_close"
+            android:contentDescription="@string/close"
+            android:background="?attr/selectableItemBackground"
+            android:scaleType="center"
+            />
+    </FrameLayout>
 
     <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
         android:id="@+id/paymentContainer"

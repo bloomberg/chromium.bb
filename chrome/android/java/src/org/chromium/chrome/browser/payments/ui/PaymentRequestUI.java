@@ -110,6 +110,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final TextView mWaitingMessage;
     private final Button mEditButton;
     private final Button mPayButton;
+    private final View mCloseButton;
 
     private final View mOrderSummaryLabel;
     private final ViewGroup mOrderSummary;
@@ -178,6 +179,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPayButton = (Button) mContainer.findViewById(R.id.payButton);
         mPayButton.setOnClickListener(this);
 
+        mCloseButton = mContainer.findViewById(R.id.close_button);
+        mCloseButton.setOnClickListener(this);
+
         mOrderSummaryLabel = mContainer.findViewById(R.id.orderSummaryLabel);
         mOrderSummary = (ViewGroup) mContainer.findViewById(R.id.lineItems);
         mOrderSummaryLabel.setOnClickListener(this);
@@ -230,6 +234,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mDialog.show();
 
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
+            @Override
             public void onResult(PaymentInformation result) {
                 updateLineItems(result.getLineItems());
 
@@ -493,6 +498,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             } else {
                 mDialog.dismiss();
             }
+        } else if (v == mCloseButton) {
+            mDialog.dismiss();
+            return;
         } else if (v.getTag() != null && v.getTag() instanceof OptionLineTag) {
             OptionLineTag tag = (OptionLineTag) v.getTag();
             tag.selectOptionLine();
