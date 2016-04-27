@@ -20,7 +20,7 @@
           "--override-use-gl-with-osmesa-for-tests",
           "--run-in-mash",
           "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter",
-          "--use-x11-test-config"
+          "--use-test-config"
         ],
         "test": "browser_tests"
       },
