@@ -11,7 +11,6 @@ import android.view.View;
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.content.common.CleanupReference;
 
 /**
  * Simple Java abstraction and wrapper for the native DrawGLFunctor flow.
@@ -23,18 +22,19 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
     private static final String TAG = DrawGLFunctor.class.getSimpleName();
 
     // Pointer to native side instance
-    private final CleanupReference mCleanupReference;
     private final DestroyRunnable mDestroyRunnable;
     private final WebViewDelegate mWebViewDelegate;
 
     public DrawGLFunctor(long viewContext, WebViewDelegate webViewDelegate) {
         mDestroyRunnable = new DestroyRunnable(nativeCreateGLFunctor(viewContext));
-        mCleanupReference = new CleanupReference(this, mDestroyRunnable);
         mWebViewDelegate = webViewDelegate;
     }
 
     @Override
     public void detach(View containerView) {
+        if (mDestroyRunnable.mNativeDrawGLFunctor == 0) {
+            throw new RuntimeException("detach on already destroyed DrawGLFunctor");
+        }
         mWebViewDelegate.detachDrawGlFunctor(containerView, mDestroyRunnable.mNativeDrawGLFunctor);
     }
 
@@ -43,6 +43,9 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
 
     @Override
     public boolean requestDrawGL(Canvas canvas, Runnable releasedCallback) {
+        if (mDestroyRunnable.mNativeDrawGLFunctor == 0) {
+            throw new RuntimeException("requestDrawGL on already destroyed DrawGLFunctor");
+        }
         assert canvas != null;
         if (sSupportFunctorReleasedCallback) {
             assert releasedCallback != null;
@@ -57,6 +60,9 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
 
     @Override
     public boolean requestInvokeGL(View containerView, boolean waitForCompletion) {
+        if (mDestroyRunnable.mNativeDrawGLFunctor == 0) {
+            throw new RuntimeException("requestInvokeGL on already destroyed DrawGLFunctor");
+        }
         if (!sSupportFunctorReleasedCallback
                 && !mWebViewDelegate.canInvokeDrawGlFunctor(containerView)) {
             return false;
@@ -70,6 +76,11 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
     @Override
     public boolean supportsDrawGLFunctorReleasedCallback() {
         return sSupportFunctorReleasedCallback;
+    }
+
+    @Override
+    public Runnable getDestroyRunnable() {
+        return mDestroyRunnable;
     }
 
     public static void setChromiumAwDrawGLFunction(long functionPointer) {

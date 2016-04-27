@@ -215,6 +215,14 @@ public class AwContents implements SmartClipProvider,
          * Detaches the GLFunctor from the view tree.
          */
         void detach(View containerView);
+
+        /**
+         * Get a Runnable that is used to destroy the native portion of the functor. After the
+         * run method of this Runnable is called, no other methods should be called on the Java
+         * object.
+         */
+        Runnable getDestroyRunnable();
+
     }
 
     /**

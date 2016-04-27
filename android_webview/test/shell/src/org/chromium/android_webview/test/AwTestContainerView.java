@@ -145,6 +145,7 @@ public class AwTestContainerView extends FrameLayout {
 
         public void requestRender(long viewContext, Canvas canvas, boolean waitForCompletion) {
             synchronized (mSyncLock) {
+                assert viewContext != 0;
                 assert mViewContext == 0 || mViewContext == viewContext;
                 mViewContext = viewContext;
                 super.requestRender();
@@ -420,11 +421,22 @@ public class AwTestContainerView extends FrameLayout {
         }
     }
 
+    private static final class NativeDrawGLFunctorDestroyRunnable implements Runnable {
+        public long mContext;
+        NativeDrawGLFunctorDestroyRunnable(long context) {
+            mContext = context;
+        }
+        @Override
+        public void run() {
+            mContext = 0;
+        }
+    }
+
     private class NativeDrawGLFunctor implements AwContents.NativeDrawGLFunctor {
-        private long mContext;
+        private NativeDrawGLFunctorDestroyRunnable mDestroyRunnable;
 
         NativeDrawGLFunctor(long context) {
-            mContext = context;
+            mDestroyRunnable = new NativeDrawGLFunctorDestroyRunnable(context);
         }
 
         @Override
@@ -436,20 +448,25 @@ public class AwTestContainerView extends FrameLayout {
         public boolean requestDrawGL(Canvas canvas, Runnable releasedRunnable) {
             assert releasedRunnable == null;
             if (!isBackedByHardwareView()) return false;
-            mHardwareView.requestRender(mContext, canvas, false);
+            mHardwareView.requestRender(mDestroyRunnable.mContext, canvas, false);
             return true;
         }
 
         @Override
         public boolean requestInvokeGL(View containerView, boolean waitForCompletion) {
             if (!isBackedByHardwareView()) return false;
-            mHardwareView.requestRender(mContext, null, waitForCompletion);
+            mHardwareView.requestRender(mDestroyRunnable.mContext, null, waitForCompletion);
             return true;
         }
 
         @Override
         public void detach(View containerView) {
             if (isBackedByHardwareView()) mHardwareView.detachGLFunctor();
+        }
+
+        @Override
+        public Runnable getDestroyRunnable() {
+            return mDestroyRunnable;
         }
     }
 

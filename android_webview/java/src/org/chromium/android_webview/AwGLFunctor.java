@@ -23,12 +23,16 @@ import org.chromium.content.common.CleanupReference;
 public class AwGLFunctor {
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwGLFunctor;
+        private final Runnable mNativeDrawGLFunctorDestroyRunnable;
 
-        private DestroyRunnable(long nativeAwGLFunctor) {
+        private DestroyRunnable(
+                long nativeAwGLFunctor, Runnable nativeDrawGLFunctorDestroyRunnable) {
             mNativeAwGLFunctor = nativeAwGLFunctor;
+            mNativeDrawGLFunctorDestroyRunnable = nativeDrawGLFunctorDestroyRunnable;
         }
         @Override
         public void run() {
+            mNativeDrawGLFunctorDestroyRunnable.run();
             nativeDestroy(mNativeAwGLFunctor);
         }
     }
@@ -44,10 +48,10 @@ public class AwGLFunctor {
     public AwGLFunctor(AwContents.NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
             ViewGroup containerView) {
         mNativeAwGLFunctor = nativeCreate(this);
-        mLifetimeObject = new Object();
-        mCleanupReference =
-                new CleanupReference(mLifetimeObject, new DestroyRunnable(mNativeAwGLFunctor));
         mNativeDrawGLFunctor = nativeDrawGLFunctorFactory.createFunctor(getAwDrawGLViewContext());
+        mLifetimeObject = new Object();
+        mCleanupReference = new CleanupReference(mLifetimeObject,
+                new DestroyRunnable(mNativeAwGLFunctor, mNativeDrawGLFunctor.getDestroyRunnable()));
         mContainerView = containerView;
         if (mNativeDrawGLFunctor.supportsDrawGLFunctorReleasedCallback()) {
             mFunctorReleasedCallback = new Runnable() {
