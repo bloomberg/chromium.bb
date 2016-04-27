@@ -586,6 +586,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                            AutocompleteSuggestions_NoneWhenAutofillPresent);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillManagerTest,
+      AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete);
+  FRIEND_TEST_ALL_PREFIXES(
+      AutofillManagerTest,
+      AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete);
+  FRIEND_TEST_ALL_PREFIXES(
+      AutofillManagerTest,
       AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillManagerTest,

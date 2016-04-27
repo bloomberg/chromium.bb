@@ -550,10 +550,18 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
     }
   }
 
-  if (suggestions.empty() && field.should_autocomplete) {
-    // Show autocomplete. Suggestions come back asynchronously, so the
-    // autocomplete manager will handle sending the results back to the
-    // renderer.
+  // If there are no Autofill suggestions, consider showing Autocomplete
+  // suggestions. We will not show Autocomplete suggestions for a field that
+  // specifies autocomplete=off or a field that we think is a credit card
+  // expiration, cvc or number.
+  if (suggestions.empty() && field.should_autocomplete &&
+      !(autofill_field &&
+        (IsCreditCardExpirationType(autofill_field->Type().GetStorableType()) ||
+         autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER ||
+         autofill_field->Type().GetStorableType() ==
+             CREDIT_CARD_VERIFICATION_CODE))) {
+    // Suggestions come back asynchronously, so the Autocomplete manager will
+    // handle sending the results back to the renderer.
     autocomplete_history_manager_->OnGetAutocompleteSuggestions(
         query_id, field.name, field.value, field.form_control_type);
     return;

@@ -694,7 +694,10 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
     suggestion_vector.push_back(suggestion2);
     CheckSuggestions(expected_page_id, 3, &suggestion_vector[0]);
   }
-
+  void CheckNoSuggestions(int expected_page_id) {
+    EXPECT_TRUE(on_suggestions_returned_seen());
+    CheckSuggestions(expected_page_id, 0, nullptr);
+  }
 
   bool on_query_seen() const {
     return on_query_seen_;
@@ -1510,6 +1513,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
+  // Autocomplete suggestions are queried, but not Autofill.
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
@@ -1618,7 +1622,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
-  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+  external_delegate_->CheckNoSuggestions(kDefaultPageID);
 }
 
 // Test that we return autocomplete-like suggestions when trying to autofill
@@ -3067,6 +3071,68 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
           autofill_manager_->autocomplete_history_manager_.get());
   EXPECT_CALL(*m,
       OnGetAutocompleteSuggestions(_, _, _, _));
+
+  GetAutofillSuggestions(form, field);
+}
+
+// Test that when Autofill is disabled and the field is a credit card name
+// field,
+// autocomplete is queried for suggestions.
+TEST_F(AutofillManagerTest,
+       AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete) {
+  TestAutofillClient client;
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetExternalDelegate(external_delegate_.get());
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, false, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  // The first field is "Name on card", which should autocomplete.
+  FormFieldData field = form.fields[0];
+  field.should_autocomplete = true;
+
+  // Autocomplete manager is not called for suggestions.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(),
+                                         autofill_manager_->client()));
+  MockAutocompleteHistoryManager* m =
+      static_cast<MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _));
+
+  GetAutofillSuggestions(form, field);
+}
+
+// Test that when Autofill is disabled and the field is a credit card number
+// field, autocomplete is not queried for suggestions.
+TEST_F(AutofillManagerTest,
+       AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete) {
+  TestAutofillClient client;
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
+  autofill_manager_->set_autofill_enabled(false);
+  autofill_manager_->SetExternalDelegate(external_delegate_.get());
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, false, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  // The second field is "Card Number", which should not autocomplete.
+  FormFieldData field = form.fields[1];
+  field.should_autocomplete = true;
+
+  // Autocomplete manager is not called for suggestions.
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
+  MockAutocompleteHistoryManager* m =
+      static_cast<MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
 
   GetAutofillSuggestions(form, field);
 }
@@ -4791,6 +4857,7 @@ TEST_F(AutofillManagerTest, NoCreditCardSuggestionsForNonPrefixTokenMatch) {
   test::CreateTestFormField("Name on Card", "nameoncard", "lvis", "text",
                             &field);
   GetAutofillSuggestions(form, field);
+  // Autocomplete suggestions are queried, but not Autofill.
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
