@@ -3641,6 +3641,9 @@
           'defines': [
             'USE_LIBSECRET',
           ],
+          'include_dirs' : [
+            '../third_party/libsecret/'
+          ],
         }],
         ['use_aura==1', {
           'sources': [ '<@(chrome_browser_aura_sources)' ],

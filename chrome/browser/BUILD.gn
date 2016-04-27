@@ -588,6 +588,7 @@ source_set("browser") {
                            ".",
                            "//chrome")
     defines += [ "USE_LIBSECRET" ]
+    deps += [ "//third_party/libsecret" ]
   }
   if (use_aura) {
     sources +=

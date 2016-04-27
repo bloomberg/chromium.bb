@@ -2557,7 +2557,10 @@
         ['OS=="linux" and chromeos!=1', {
           'sources': [
             'browser/password_manager/native_backend_libsecret_unittest.cc',
-           ],
+          ],
+          'include_dirs' : [
+            '../third_party/libsecret/'
+          ],
         }],
         ['OS=="linux" and use_aura==1', {
           'dependencies': [
