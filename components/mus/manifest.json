@@ -14,7 +14,7 @@
     },
     "required": {
       "*": { "classes": [ "app" ] },
-      "mojo:shell": { "classes": [ "shell:all_users" ] }
+      "mojo:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
     }
   }
 }

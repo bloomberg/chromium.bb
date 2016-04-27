@@ -4,9 +4,11 @@
   "display_name": "Mus Window Server Unittests",
   "capabilities": {
     "required": {
-      "*": { "interfaces": [ "*" ] },
+      "*": { "classes": [ "app" ] },
+      "mojo:mus_ws_unittests_app": {
+        "interfaces": [ "mus::mojom::WindowTreeClient" ]
+      },
       "mojo:mus": {
-        "classes": [ "app" ],
         "interfaces":  [ "mus::mojom::WindowTreeHostFactory" ]
       }
     }
