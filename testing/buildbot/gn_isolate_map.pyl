@@ -251,7 +251,7 @@
     "type": "windowed_test_launcher",
   },
   "filesystem_service_unittests": {
-    "label": "//components/filesystem:unittests",
+    "label": "//components/filesystem:filesystem_service_unittests",
     "type": "console_test_launcher",
   },
   "gcm_unit_tests": {

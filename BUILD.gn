@@ -655,7 +655,7 @@ group("gn_only") {
       "//chrome/installer/util:strings",
       "//chrome/tools/convert_dict",
       "//components/constrained_window:unit_tests",
-      "//components/filesystem:unittests",
+      "//components/filesystem:filesystem_service_unittests",
       "//components/leveldb:leveldb_service_unittests",
       "//components/metrics:serialization",
       "//components/password_manager/content/renderer:browser_tests",

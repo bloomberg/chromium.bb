@@ -724,6 +724,9 @@
         "test": "extensions_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "filesystem_service_unittests"
       },
       {

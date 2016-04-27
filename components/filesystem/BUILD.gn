@@ -61,9 +61,7 @@ mojo_application_manifest("manifest") {
   source = "manifest.json"
 }
 
-test("unittests") {
-  output_name = "filesystem_service_unittests"
-
+test("filesystem_service_unittests") {
   sources = [
     "directory_impl_unittest.cc",
     "file_impl_unittest.cc",
