@@ -70,6 +70,16 @@ public:
     LayoutUnit childLogicalWidthForPercentageResolution(const LayoutBox& child);
 
     void clearCachedMainSizeForChild(const LayoutBox& child);
+
+    LayoutUnit staticMainAxisPositionForPositionedChild(const LayoutBox& child);
+    LayoutUnit staticCrossAxisPositionForPositionedChild(const LayoutBox& child);
+
+    LayoutUnit staticInlinePositionForPositionedChild(const LayoutBox& child);
+    LayoutUnit staticBlockPositionForPositionedChild(const LayoutBox& child);
+
+    // Returns true if the position changed. In that case, the child will have to be
+    // laid out again.
+    bool setStaticPositionForPositionedLayout(LayoutBox& child);
 protected:
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
@@ -80,11 +90,6 @@ private:
     enum FlexSign {
         PositiveFlexibility,
         NegativeFlexibility,
-    };
-
-    enum PositionedLayoutMode {
-        FlipForRowReverse,
-        NoFlipForRowReverse,
     };
 
     enum ChildLayoutType {
@@ -177,7 +182,7 @@ private:
 
     void resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
     void setOverrideMainAxisSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize);
-    void prepareChildForPositionedLayout(LayoutBox& child, LayoutUnit mainAxisOffset, LayoutUnit crossAxisOffset, PositionedLayoutMode);
+    void prepareChildForPositionedLayout(LayoutBox& child);
     size_t numberOfInFlowPositionedChildren(const OrderedFlexItemList&) const;
     void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList&, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope&, Vector<LineContext>&);
     void layoutColumnReverse(const OrderedFlexItemList&, LayoutUnit crossAxisOffset, LayoutUnit availableFreeSpace);

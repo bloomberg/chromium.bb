@@ -1354,17 +1354,72 @@ void LayoutFlexibleBox::setOverrideMainAxisSizeForChild(LayoutBox& child, Layout
         child.setOverrideLogicalContentWidth(childPreferredSize - child.borderAndPaddingLogicalWidth());
 }
 
-void LayoutFlexibleBox::prepareChildForPositionedLayout(LayoutBox& child, LayoutUnit mainAxisOffset, LayoutUnit crossAxisOffset, PositionedLayoutMode layoutMode)
+LayoutUnit LayoutFlexibleBox::staticMainAxisPositionForPositionedChild(const LayoutBox& child)
+{
+    const LayoutUnit availableSpace = mainAxisContentExtent(contentLogicalHeight()) - mainAxisExtentForChild(child);
+
+    ContentPosition position = styleRef().resolvedJustifyContentPosition(normalValueBehavior());
+    ContentDistributionType distribution = styleRef().resolvedJustifyContentDistribution(normalValueBehavior());
+    // TODO(cbiesinger): what should row-reverse/column-reverse do? https://lists.w3.org/Archives/Public/www-style/2016Apr/0387.html
+    return initialJustifyContentOffset(availableSpace, position, distribution, 1);
+}
+
+LayoutUnit LayoutFlexibleBox::staticCrossAxisPositionForPositionedChild(const LayoutBox& child)
+{
+    LayoutUnit availableSpace = crossAxisContentExtent() - crossAxisExtentForChild(child);
+    return alignmentOffset(availableSpace, alignmentForChild(child), LayoutUnit(), LayoutUnit(), styleRef().flexWrap() == FlexWrapReverse);
+}
+
+LayoutUnit LayoutFlexibleBox::staticInlinePositionForPositionedChild(const LayoutBox& child)
+{
+    LayoutUnit staticInlineOffset = flowAwareBorderStart() + flowAwarePaddingStart();
+    return staticInlineOffset + (isColumnFlow() ?
+        staticCrossAxisPositionForPositionedChild(child) :
+        staticMainAxisPositionForPositionedChild(child));
+}
+
+LayoutUnit LayoutFlexibleBox::staticBlockPositionForPositionedChild(const LayoutBox& child)
+{
+    LayoutUnit staticBlockOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
+    return staticBlockOffset + (isColumnFlow() ?
+        staticMainAxisPositionForPositionedChild(child) :
+        staticCrossAxisPositionForPositionedChild(child));
+}
+
+bool LayoutFlexibleBox::setStaticPositionForPositionedLayout(LayoutBox& child)
+{
+    bool positionChanged = false;
+    PaintLayer* childLayer = child.layer();
+    if (child.styleRef().hasStaticInlinePosition(styleRef().isHorizontalWritingMode())) {
+        LayoutUnit inlinePosition = staticInlinePositionForPositionedChild(child);
+        if (childLayer->staticInlinePosition() != inlinePosition) {
+            childLayer->setStaticInlinePosition(inlinePosition);
+            positionChanged = true;
+        }
+    }
+    if (child.styleRef().hasStaticBlockPosition(styleRef().isHorizontalWritingMode())) {
+        LayoutUnit blockPosition = staticBlockPositionForPositionedChild(child);
+        if (childLayer->staticBlockPosition() != blockPosition) {
+            childLayer->setStaticBlockPosition(blockPosition);
+            positionChanged = true;
+        }
+    }
+    return positionChanged;
+}
+
+void LayoutFlexibleBox::prepareChildForPositionedLayout(LayoutBox& child)
 {
     ASSERT(child.isOutOfFlowPositioned());
     child.containingBlock()->insertPositionedObject(&child);
     PaintLayer* childLayer = child.layer();
-    LayoutUnit inlinePosition = isColumnFlow() ? crossAxisOffset : mainAxisOffset;
-    if (layoutMode == FlipForRowReverse && style()->flexDirection() == FlowRowReverse)
-        inlinePosition = mainAxisExtent() - mainAxisOffset;
-    childLayer->setStaticInlinePosition(inlinePosition);
+    LayoutUnit staticInlinePosition = flowAwareBorderStart() + flowAwarePaddingStart();
+    if (childLayer->staticInlinePosition() != staticInlinePosition) {
+        childLayer->setStaticInlinePosition(staticInlinePosition);
+        if (child.style()->hasStaticInlinePosition(style()->isHorizontalWritingMode()))
+            child.setChildNeedsLayout(MarkOnlyThis);
+    }
 
-    LayoutUnit staticBlockPosition = isColumnFlow() ? mainAxisOffset : crossAxisOffset;
+    LayoutUnit staticBlockPosition = flowAwareBorderBefore() + flowAwarePaddingBefore();
     if (childLayer->staticBlockPosition() != staticBlockPosition) {
         childLayer->setStaticBlockPosition(staticBlockPosition);
         if (child.style()->hasStaticBlockPosition(style()->isHorizontalWritingMode()))
@@ -1486,7 +1541,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         LayoutBox* child = children[i];
 
         if (child->isOutOfFlowPositioned()) {
-            prepareChildForPositionedLayout(*child, mainAxisOffset, crossAxisOffset, FlipForRowReverse);
+            prepareChildForPositionedLayout(*child);
             continue;
         }
 
@@ -1584,10 +1639,9 @@ void LayoutFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children,
     for (size_t i = 0; i < children.size(); ++i) {
         LayoutBox* child = children[i];
 
-        if (child->isOutOfFlowPositioned()) {
-            child->layer()->setStaticBlockPosition(mainAxisOffset);
+        if (child->isOutOfFlowPositioned())
             continue;
-        }
+
         mainAxisOffset -= mainAxisExtentForChild(*child) + flowAwareMarginEndForChild(*child);
 
         setFlowAwareLocationForChild(*child, LayoutPoint(mainAxisOffset, crossAxisOffset + flowAwareMarginBeforeForChild(*child)));
@@ -1664,15 +1718,8 @@ void LayoutFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts)
 
 void LayoutFlexibleBox::adjustAlignmentForChild(LayoutBox& child, LayoutUnit delta)
 {
-    if (child.isOutOfFlowPositioned()) {
-        LayoutUnit staticInlinePosition = child.layer()->staticInlinePosition();
-        LayoutUnit staticBlockPosition = child.layer()->staticBlockPosition();
-        LayoutUnit mainAxis = isColumnFlow() ? staticBlockPosition : staticInlinePosition;
-        LayoutUnit crossAxis = isColumnFlow() ? staticInlinePosition : staticBlockPosition;
-        crossAxis += delta;
-        prepareChildForPositionedLayout(child, mainAxis, crossAxis, NoFlipForRowReverse);
+    if (child.isOutOfFlowPositioned())
         return;
-    }
 
     setFlowAwareLocationForChild(child, flowAwareLocationForChild(child) + LayoutSize(LayoutUnit(), delta));
 }

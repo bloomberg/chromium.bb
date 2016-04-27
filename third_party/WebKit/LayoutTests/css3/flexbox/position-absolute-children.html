@@ -78,6 +78,9 @@ body {
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 <script>
+// Each flexbox has two abspos children - one is 40x10, the other 10x20.
+// The flexbox itself is 80x20.
+// All that is flipped for vertical flows.
 var expectations = {
     'horizontal-tb': {
         'row': {
@@ -87,20 +90,20 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [80, 0],
-                    'child2': [80, 0],
+                    'child1': [40, 0],
+                    'child2': [70, 0],
                 },
                 'center': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
                     'child1': [0, 0],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
             'rtl': {
@@ -109,20 +112,20 @@ var expectations = {
                     'child2': [70, 0],
                 },
                 'flex-end': {
-                    'child1': [-40, 0],
-                    'child2': [-10, 0],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'center': {
-                    'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
                     'child1': [40, 0],
                     'child2': [70, 0],
                 },
                 'space-around': {
-                    'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
         },
@@ -133,20 +136,20 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [0, 80],
-                    'child2': [0, 80],
+                    'child1': [0, 40],
+                    'child2': [0, 70],
                 },
                 'center': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
                     'child1': [0, 0],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
             },
             'rtl': {
@@ -155,112 +158,112 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [10, 80],
-                    'child2': [0, 80],
+                    'child1': [10, 40],
+                    'child2': [0, 70],
                 },
                 'center': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
                     'child1': [10, 0],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
             },
         },
         'row-reverse': {
             'ltr': {
                 'flex-start': {
-                    'child1': [80, 0],
-                    'child2': [80, 0],
-                },
-                'flex-end': {
                     'child1': [0, 0],
                     'child2': [0, 0],
-                },
-                'center': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
-                },
-                'space-between': {
-                    'child1': [80, 0],
-                    'child2': [80, 0],
-                },
-                'space-around': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
-                },
-            },
-            'rtl': {
-                'flex-start': {
-                    'child1': [-40, 0],
-                    'child2': [-10, 0],
                 },
                 'flex-end': {
                     'child1': [40, 0],
                     'child2': [70, 0],
                 },
                 'center': {
-                    'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
-                    'child1': [-40, 0],
-                    'child2': [-10, 0],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'space-around': {
+                    'child1': [20, 0],
+                    'child2': [35, 0],
+                },
+            },
+            'rtl': {
+                'flex-start': {
+                    'child1': [40, 0],
+                    'child2': [70, 0],
+                },
+                'flex-end': {
                     'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child2': [0, 0],
+                },
+                'center': {
+                    'child1': [20, 0],
+                    'child2': [35, 0],
+                },
+                'space-between': {
+                    'child1': [40, 0],
+                    'child2': [70, 0],
+                },
+                'space-around': {
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
         },
         'column-reverse': {
             'ltr': {
                 'flex-start': {
-                    'child1': [0, 80],
-                    'child2': [0, 80],
-                },
-                'flex-end': {
                     'child1': [0, 0],
                     'child2': [0, 0],
                 },
-                'center': {
+                'flex-end': {
                     'child1': [0, 40],
-                    'child2': [0, 40],
+                    'child2': [0, 70],
+                },
+                'center': {
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
-                    'child1': [0, 80],
-                    'child2': [0, 80],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
             },
             'rtl': {
                 'flex-start': {
-                    'child1': [10, 80],
-                    'child2': [0, 80],
-                },
-                'flex-end': {
                     'child1': [10, 0],
                     'child2': [0, 0],
                 },
-                'center': {
+                'flex-end': {
                     'child1': [10, 40],
-                    'child2': [0, 40],
+                    'child2': [0, 70],
+                },
+                'center': {
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
-                    'child1': [10, 80],
-                    'child2': [0, 80],
+                    'child1': [10, 0],
+                    'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
             },
         },
@@ -273,20 +276,20 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [10, 80],
-                    'child2': [0, 80],
+                    'child1': [10, 40],
+                    'child2': [0, 70],
                 },
                 'center': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
                     'child1': [10, 0],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
             },
             'rtl': {
@@ -295,20 +298,20 @@ var expectations = {
                     'child2': [0, 70],
                 },
                 'flex-end': {
-                    'child1': [10, -40],
-                    'child2': [0, -10],
+                    'child1': [10, 0],
+                    'child2': [0, 0],
                 },
                 'center': {
-                    'child1': [10, 0],
-                    'child2': [0, 30],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
                     'child1': [10, 40],
                     'child2': [0, 70],
                 },
                 'space-around': {
-                    'child1': [10, 0],
-                    'child2': [0, 30],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
             },
         },
@@ -319,20 +322,20 @@ var expectations = {
                     'child2': [70, 0],
                 },
                 'flex-end': {
-                    'child1': [-40, 0],
-                    'child2': [-10, 0],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'center': {
-                    'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
                     'child1': [40, 0],
                     'child2': [70, 0],
                 },
                 'space-around': {
-                    'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
             'rtl': {
@@ -341,112 +344,112 @@ var expectations = {
                     'child2': [70, 0],
                 },
                 'flex-end': {
-                    'child1': [-40, 10],
-                    'child2': [-10, 0],
+                    'child1': [0, 10],
+                    'child2': [0, 0],
                 },
                 'center': {
-                    'child1': [0, 10],
-                    'child2': [30, 0],
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
                 'space-between': {
                     'child1': [40, 10],
                     'child2': [70, 0],
                 },
                 'space-around': {
-                    'child1': [0, 10],
-                    'child2': [30, 0],
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
             },
         },
         'row-reverse': {
             'ltr': {
                 'flex-start': {
-                    'child1': [10, 80],
-                    'child2': [0, 80],
-                },
-                'flex-end': {
                     'child1': [10, 0],
                     'child2': [0, 0],
-                },
-                'center': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
-                },
-                'space-between': {
-                    'child1': [10, 80],
-                    'child2': [0, 80],
-                },
-                'space-around': {
-                    'child1': [10, 40],
-                    'child2': [0, 40],
-                },
-            },
-            'rtl': {
-                'flex-start': {
-                    'child1': [10, -40],
-                    'child2': [0, -10],
                 },
                 'flex-end': {
                     'child1': [10, 40],
                     'child2': [0, 70],
                 },
                 'center': {
-                    'child1': [10, 0],
-                    'child2': [0, 30],
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
-                    'child1': [10, -40],
-                    'child2': [0, -10],
+                    'child1': [10, 0],
+                    'child2': [0, 0],
                 },
                 'space-around': {
+                    'child1': [10, 20],
+                    'child2': [0, 35],
+                },
+            },
+            'rtl': {
+                'flex-start': {
+                    'child1': [10, 40],
+                    'child2': [0, 70],
+                },
+                'flex-end': {
                     'child1': [10, 0],
-                    'child2': [0, 30],
+                    'child2': [0, 0],
+                },
+                'center': {
+                    'child1': [10, 20],
+                    'child2': [0, 35],
+                },
+                'space-between': {
+                    'child1': [10, 40],
+                    'child2': [0, 70],
+                },
+                'space-around': {
+                    'child1': [10, 20],
+                    'child2': [0, 35],
                 },
             },
         },
         'column-reverse': {
             'ltr': {
                 'flex-start': {
-                    'child1': [-40, 0],
-                    'child2': [-10, 0],
-                },
-                'flex-end': {
                     'child1': [40, 0],
                     'child2': [70, 0],
                 },
-                'center': {
+                'flex-end': {
                     'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child2': [0, 0],
+                },
+                'center': {
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
-                    'child1': [-40, 0],
-                    'child2': [-10, 0],
+                    'child1': [40, 0],
+                    'child2': [70, 0],
                 },
                 'space-around': {
-                    'child1': [0, 0],
-                    'child2': [30, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
             'rtl': {
                 'flex-start': {
-                    'child1': [-40, 10],
-                    'child2': [-10, 0],
-                },
-                'flex-end': {
                     'child1': [40, 10],
                     'child2': [70, 0],
                 },
-                'center': {
+                'flex-end': {
                     'child1': [0, 10],
-                    'child2': [30, 0],
+                    'child2': [0, 0],
+                },
+                'center': {
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
                 'space-between': {
-                    'child1': [-40, 10],
-                    'child2': [-10, 0],
+                    'child1': [40, 10],
+                    'child2': [70, 0],
                 },
                 'space-around': {
-                    'child1': [0, 10],
-                    'child2': [30, 0],
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
             },
         },
@@ -459,20 +462,20 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [0, 80],
-                    'child2': [0, 80],
+                    'child1': [0, 40],
+                    'child2': [0, 70],
                 },
                 'center': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
                     'child1': [0, 0],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
             },
             'rtl': {
@@ -481,20 +484,20 @@ var expectations = {
                     'child2': [0, 70],
                 },
                 'flex-end': {
-                    'child1': [0, -40],
-                    'child2': [0, -10],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'center': {
-                    'child1': [0, 0],
-                    'child2': [0, 30],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
                     'child1': [0, 40],
                     'child2': [0, 70],
                 },
                 'space-around': {
-                    'child1': [0, 0],
-                    'child2': [0, 30],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
             },
         },
@@ -505,20 +508,20 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [80, 0],
-                    'child2': [80, 0],
+                    'child1': [40, 0],
+                    'child2': [70, 0],
                 },
                 'center': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
                     'child1': [0, 0],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
             'rtl': {
@@ -527,112 +530,112 @@ var expectations = {
                     'child2': [0, 0],
                 },
                 'flex-end': {
-                    'child1': [80, 10],
-                    'child2': [80, 0],
+                    'child1': [40, 10],
+                    'child2': [70, 0],
                 },
                 'center': {
-                    'child1': [40, 10],
-                    'child2': [40, 0],
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
                 'space-between': {
                     'child1': [0, 10],
                     'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [40, 10],
-                    'child2': [40, 0],
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
             },
         },
         'row-reverse': {
             'ltr': {
                 'flex-start': {
-                    'child1': [0, 80],
-                    'child2': [0, 80],
-                },
-                'flex-end': {
                     'child1': [0, 0],
                     'child2': [0, 0],
-                },
-                'center': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
-                },
-                'space-between': {
-                    'child1': [0, 80],
-                    'child2': [0, 80],
-                },
-                'space-around': {
-                    'child1': [0, 40],
-                    'child2': [0, 40],
-                },
-            },
-            'rtl': {
-                'flex-start': {
-                    'child1': [0, -40],
-                    'child2': [0, -10],
                 },
                 'flex-end': {
                     'child1': [0, 40],
                     'child2': [0, 70],
                 },
                 'center': {
-                    'child1': [0, 0],
-                    'child2': [0, 30],
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
                 'space-between': {
-                    'child1': [0, -40],
-                    'child2': [0, -10],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'space-around': {
+                    'child1': [0, 20],
+                    'child2': [0, 35],
+                },
+            },
+            'rtl': {
+                'flex-start': {
+                    'child1': [0, 40],
+                    'child2': [0, 70],
+                },
+                'flex-end': {
                     'child1': [0, 0],
-                    'child2': [0, 30],
+                    'child2': [0, 0],
+                },
+                'center': {
+                    'child1': [0, 20],
+                    'child2': [0, 35],
+                },
+                'space-between': {
+                    'child1': [0, 40],
+                    'child2': [0, 70],
+                },
+                'space-around': {
+                    'child1': [0, 20],
+                    'child2': [0, 35],
                 },
             },
         },
         'column-reverse': {
             'ltr': {
                 'flex-start': {
-                    'child1': [80, 0],
-                    'child2': [80, 0],
-                },
-                'flex-end': {
                     'child1': [0, 0],
                     'child2': [0, 0],
                 },
-                'center': {
+                'flex-end': {
                     'child1': [40, 0],
-                    'child2': [40, 0],
+                    'child2': [70, 0],
+                },
+                'center': {
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
                 'space-between': {
-                    'child1': [80, 0],
-                    'child2': [80, 0],
+                    'child1': [0, 0],
+                    'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [40, 0],
-                    'child2': [40, 0],
+                    'child1': [20, 0],
+                    'child2': [35, 0],
                 },
             },
             'rtl': {
                 'flex-start': {
-                    'child1': [80, 10],
-                    'child2': [80, 0],
-                },
-                'flex-end': {
                     'child1': [0, 10],
                     'child2': [0, 0],
                 },
-                'center': {
+                'flex-end': {
                     'child1': [40, 10],
-                    'child2': [40, 0],
+                    'child2': [70, 0],
+                },
+                'center': {
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
                 'space-between': {
-                    'child1': [80, 10],
-                    'child2': [80, 0],
+                    'child1': [0, 10],
+                    'child2': [0, 0],
                 },
                 'space-around': {
-                    'child1': [40, 10],
-                    'child2': [40, 0],
+                    'child1': [20, 10],
+                    'child2': [35, 0],
                 },
             },
         },

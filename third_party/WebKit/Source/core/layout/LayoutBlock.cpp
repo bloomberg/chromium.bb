@@ -1224,8 +1224,18 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
 
         positionedObject->layoutIfNeeded();
 
+        LayoutObject* parent = positionedObject->parent();
+        bool layoutChanged = false;
+        if (parent->isFlexibleBox() && toLayoutFlexibleBox(parent)->setStaticPositionForPositionedLayout(*positionedObject)) {
+            // The static position of an abspos child of a flexbox depends on its size (for example,
+            // they can be centered). So we may have to reposition the item after layout.
+            // TODO(cbiesinger): We could probably avoid a layout here and just reposition?
+            positionedObject->forceChildLayout();
+            layoutChanged = true;
+        }
+
         // Lay out again if our estimate was wrong.
-        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopEstimate != logicalTopForChild(*positionedObject))
+        if (!layoutChanged && needsBlockDirectionLocationSetBeforeLayout && logicalTopEstimate != logicalTopForChild(*positionedObject))
             positionedObject->forceChildLayout();
     }
 }
