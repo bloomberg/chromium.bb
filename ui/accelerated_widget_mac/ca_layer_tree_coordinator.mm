@@ -4,6 +4,8 @@
 
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
 
+#include <AVFoundation/AVFoundation.h>
+
 #include "base/trace_event/trace_event.h"
 #include "ui/base/cocoa/animation_utils.h"
 
@@ -15,6 +17,9 @@ CALayerTreeCoordinator::CALayerTreeCoordinator(bool allow_remote_layers)
     root_ca_layer_.reset([[CALayer alloc] init]);
     [root_ca_layer_ setGeometryFlipped:YES];
     [root_ca_layer_ setOpaque:YES];
+
+    fullscreen_low_power_layer_.reset(
+        [[AVSampleBufferDisplayLayer alloc] init]);
   }
 }
 
@@ -55,13 +60,19 @@ CARendererLayerTree* CALayerTreeCoordinator::GetPendingCARendererLayerTree() {
 }
 
 void CALayerTreeCoordinator::CommitPendingTreesToCA(
-    const gfx::Rect& pixel_damage_rect) {
+    const gfx::Rect& pixel_damage_rect,
+    bool* fullscreen_low_power_layer_valid) {
+  *fullscreen_low_power_layer_valid = false;
+
   // Update the CALayer hierarchy.
   ScopedCAActionDisabler disabler;
   if (pending_ca_renderer_layer_tree_) {
     pending_ca_renderer_layer_tree_->CommitScheduledCALayers(
         root_ca_layer_.get(), std::move(current_ca_renderer_layer_tree_),
         scale_factor_);
+    *fullscreen_low_power_layer_valid =
+        pending_ca_renderer_layer_tree_->CommitFullscreenLowPowerLayer(
+            fullscreen_low_power_layer_);
     current_ca_renderer_layer_tree_.swap(pending_ca_renderer_layer_tree_);
     current_gl_renderer_layer_tree_.reset();
   } else if (pending_gl_renderer_layer_tree_) {
@@ -77,6 +88,15 @@ void CALayerTreeCoordinator::CommitPendingTreesToCA(
     current_ca_renderer_layer_tree_.reset();
   }
 
+  // TODO(ccameron): It may be necessary to leave the last image up for a few
+  // extra frames to allow a smooth switch between the normal and low-power
+  // NSWindows.
+  if (current_fullscreen_low_power_layer_valid_ &&
+      !*fullscreen_low_power_layer_valid) {
+    [fullscreen_low_power_layer_ flushAndRemoveImage];
+  }
+  current_fullscreen_low_power_layer_valid_ = *fullscreen_low_power_layer_valid;
+
   // Reset all state for the next frame.
   pending_ca_renderer_layer_tree_.reset();
   pending_gl_renderer_layer_tree_.reset();
@@ -85,6 +105,10 @@ void CALayerTreeCoordinator::CommitPendingTreesToCA(
 CALayer* CALayerTreeCoordinator::GetCALayerForDisplay() const {
   DCHECK(allow_remote_layers_);
   return root_ca_layer_.get();
+}
+
+CALayer* CALayerTreeCoordinator::GetFullscreenLowPowerLayerForDisplay() const {
+  return fullscreen_low_power_layer_.get();
 }
 
 IOSurfaceRef CALayerTreeCoordinator::GetIOSurfaceForDisplay() {

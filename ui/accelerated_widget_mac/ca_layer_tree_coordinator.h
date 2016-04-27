@@ -37,11 +37,19 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
   CARendererLayerTree* GetPendingCARendererLayerTree();
 
   // Commit the pending frame's OpenGL backbuffer or CALayer tree to be
-  // attached to the root CALayer.
-  void CommitPendingTreesToCA(const gfx::Rect& pixel_damage_rect);
+  // attached to the root CALayer. If the frame can be displayed using the
+  // fullscreen low power layer then |fullscreen_low_power_layer_valid| will
+  // be set to true.
+  void CommitPendingTreesToCA(const gfx::Rect& pixel_damage_rect,
+                              bool* fullscreen_low_power_layer_valid);
 
-  // Get the root CALayer to display the current frame.
+  // Get the root CALayer to display the current frame. This does not change
+  // over the lifetime of the object.
   CALayer* GetCALayerForDisplay() const;
+
+  // Get the CALayer to display fullscreen low power content. This does not
+  // change over the lifetime of the object.
+  CALayer* GetFullscreenLowPowerLayerForDisplay() const;
 
   // Get the current frame's OpenGL backbuffer IOSurface. This is only needed
   // when not using remote layers.
@@ -53,6 +61,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
   float scale_factor_ = 1;
 
   base::scoped_nsobject<CALayer> root_ca_layer_;
+  base::scoped_nsobject<AVSampleBufferDisplayLayer> fullscreen_low_power_layer_;
 
   // Frame that has been scheduled, but has not had a subsequent commit call
   // made yet.
@@ -62,6 +71,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
   // Frame that is currently being displayed on the screen.
   std::unique_ptr<GLRendererLayerTree> current_gl_renderer_layer_tree_;
   std::unique_ptr<CARendererLayerTree> current_ca_renderer_layer_tree_;
+  bool current_fullscreen_low_power_layer_valid_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CALayerTreeCoordinator);
 };

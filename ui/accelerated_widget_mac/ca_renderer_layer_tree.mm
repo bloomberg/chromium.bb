@@ -174,6 +174,58 @@ void CARendererLayerTree::CommitScheduledCALayers(
   scale_factor_ = scale_factor;
 }
 
+bool CARendererLayerTree::CommitFullscreenLowPowerLayer(
+    AVSampleBufferDisplayLayer* fullscreen_low_power_layer) {
+  DCHECK(has_committed_);
+  const ContentLayer* video_layer = nullptr;
+  gfx::RectF video_layer_frame_dip;
+  for (const auto& clip_layer : root_layer_.clip_and_sorting_layers) {
+    for (const auto& transform_layer : clip_layer.transform_layers) {
+      for (const auto& content_layer : transform_layer.content_layers) {
+        // Detached mode requires that no layers be on top of the video layer.
+        if (video_layer)
+          return false;
+
+        // See if this is the video layer.
+        if (content_layer.use_av_layer) {
+          video_layer = &content_layer;
+          video_layer_frame_dip = gfx::RectF(video_layer->rect);
+          if (!transform_layer.transform.IsPositiveScaleOrTranslation())
+            return false;
+          if (content_layer.opacity != 1)
+            return false;
+          transform_layer.transform.TransformRect(&video_layer_frame_dip);
+          video_layer_frame_dip.Scale(1 / scale_factor_);
+          continue;
+        }
+
+        // If we haven't found the video layer yet, make sure everything is
+        // solid black or transparent
+        if (content_layer.io_surface)
+          return false;
+        if (content_layer.background_color != SK_ColorBLACK &&
+            content_layer.background_color != SK_ColorTRANSPARENT) {
+          return false;
+        }
+      }
+    }
+  }
+  if (!video_layer)
+    return false;
+
+  if (video_layer->cv_pixel_buffer) {
+    AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(
+        fullscreen_low_power_layer, video_layer->cv_pixel_buffer);
+  } else {
+    AVSampleBufferDisplayLayerEnqueueIOSurface(fullscreen_low_power_layer,
+                                               video_layer->io_surface);
+  }
+  [fullscreen_low_power_layer setVideoGravity:AVLayerVideoGravityResize];
+  [fullscreen_low_power_layer setFrame:video_layer_frame_dip.ToCGRect()];
+  return true;
+}
+
+
 CARendererLayerTree::RootLayer::RootLayer() {}
 
 // Note that for all destructors, the the CALayer will have been reset to nil if

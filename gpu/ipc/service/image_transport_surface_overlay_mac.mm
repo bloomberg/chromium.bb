@@ -174,7 +174,11 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 
   base::TimeTicks finish_time = base::TimeTicks::Now();
 
-  ca_layer_tree_coordinator_->CommitPendingTreesToCA(pixel_damage_rect);
+  bool fullscreen_low_power_layer_valid = false;
+  ca_layer_tree_coordinator_->CommitPendingTreesToCA(
+      pixel_damage_rect, &fullscreen_low_power_layer_valid);
+  // TODO(ccameron): Plumb the fullscreen low power layer through to the
+  // appropriate window.
 
   // Update the latency info to reflect the swap time.
   for (auto latency_info : latency_info_) {

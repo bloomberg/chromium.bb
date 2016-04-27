@@ -59,6 +59,13 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                                std::unique_ptr<CARendererLayerTree> old_tree,
                                float scale_factor);
 
+  // Check to see if the CALayer tree can be represented entirely by a video
+  // layer on a black background. If so, then set |fullscreen_low_power_layer|
+  // to draw this content and return true. Otherwise return false. This is to
+  // be called after committing scheduled CALayers.
+  bool CommitFullscreenLowPowerLayer(
+      AVSampleBufferDisplayLayer* fullscreen_low_power_layer);
+
  private:
   struct RootLayer;
   struct ClipAndSortingLayer;
