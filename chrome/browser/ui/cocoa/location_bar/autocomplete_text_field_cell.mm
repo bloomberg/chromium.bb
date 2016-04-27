@@ -317,6 +317,10 @@ size_t CalculatePositionsInFrame(
 
   // Compute the border's bezier path.
   NSRect pathRect = NSInsetRect(frame, insetSize, insetSize);
+  // In dark mode, make room for a shadow beneath the bottom edge.
+  if (inDarkMode && isModeMaterial) {
+    pathRect.size.height -= singlePixelLineWidth_;
+  }
   NSBezierPath* path =
       [NSBezierPath bezierPathWithRoundedRect:pathRect
                                       xRadius:kCornerRadius
@@ -365,7 +369,7 @@ size_t CalculatePositionsInFrame(
       }
 
       // Draw a highlight beneath the top edge, and a shadow beneath the bottom
-      // edge when on a Retina screen.
+      // edge.
       {
         gfx::ScopedNSGraphicsContextSaveGState saveState;
         [NSBezierPath setDefaultLineWidth:singlePixelLineWidth_];
@@ -379,12 +383,10 @@ size_t CalculatePositionsInFrame(
         [NSBezierPath strokeLineFromPoint:origin
                                   toPoint:destination];
 
-        if (singlePixelLineWidth_ < 1) {
-          origin.y = destination.y = NSMaxY(pathRect) + singlePixelLineWidth_;
-          [[AutocompleteTextField shadowColor] set];
-          [NSBezierPath strokeLineFromPoint:origin
-                                    toPoint:destination];
-        }
+        origin.y = destination.y = NSMaxY(pathRect) + singlePixelLineWidth_;
+        [[NSColor colorWithCalibratedWhite:69 / 255. alpha:1] set];
+        [NSBezierPath strokeLineFromPoint:origin
+                                  toPoint:destination];
       }
     }
   } else {
