@@ -32,7 +32,7 @@ import org.chromium.ui.base.WindowAndroid;
  * Activity for managing the Cast shell.
  */
 public class CastShellActivity extends Activity {
-    private static final String TAG = "cr.CastShellActivity";
+    private static final String TAG = "cr_CastShellActivity";
     private static final boolean DEBUG = false;
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";

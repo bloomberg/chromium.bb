@@ -16,7 +16,7 @@ import org.chromium.chromecast.base.ChromecastConfigAndroid;
  */
 @JNINamespace("chromecast")
 public final class CastCrashHandler {
-    private static final String TAG = "cr.CastCrashHandler";
+    private static final String TAG = "cr_CastCrashHandler";
 
     @CalledByNative
     public static void initializeUploader(Context context, String crashDumpPath,
