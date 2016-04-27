@@ -904,7 +904,7 @@ class MetaBuildWrapper(object):
       if not 'GN_ARGS' in os.environ:
         raise MBErr('MB is expecting GN_ARGS to be in the environment')
       gn_args = os.environ['GN_ARGS']
-      if not re.match('target_os.*=.*"chromeos"', gn_args):
+      if not re.search('target_os.*=.*"chromeos"', gn_args):
         raise MBErr('GN_ARGS is missing target_os = "chromeos": (GN_ARGS=%s)' %
                     gn_args)
     else:
