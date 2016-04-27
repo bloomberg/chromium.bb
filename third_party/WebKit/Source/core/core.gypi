@@ -2005,6 +2005,8 @@
             'page/TouchDisambiguation.cpp',
             'page/TouchDisambiguation.h',
             'page/WindowFeatures.cpp',
+            'page/scrolling/OverscrollController.cpp',
+            'page/scrolling/OverscrollController.h',
             'page/scrolling/ScrollingCoordinator.cpp',
             'page/scrolling/ScrollingCoordinator.h',
             'page/scrolling/ScrollCustomizationCallbacks.cpp',

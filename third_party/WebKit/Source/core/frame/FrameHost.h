@@ -45,6 +45,7 @@ class ChromeClient;
 class ConsoleMessageStorage;
 class Deprecation;
 class EventHandlerRegistry;
+class OverscrollController;
 class Page;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
@@ -70,26 +71,46 @@ public:
     ~FrameHost();
 
     // Careful: This function will eventually be removed.
-    Page& page() const { return *m_page; }
-    Settings& settings() const;
-    ChromeClient& chromeClient() const;
-    UseCounter& useCounter() const;
-    Deprecation& deprecation() const;
+    Page& page();
+    const Page& page() const;
+
+    Settings& settings();
+    const Settings& settings() const;
+
+    ChromeClient& chromeClient();
+    const ChromeClient& chromeClient() const;
+
+    UseCounter& useCounter();
+    const UseCounter& useCounter() const;
+
+    Deprecation& deprecation();
+    const Deprecation& deprecation() const;
 
     // Corresponds to pixel density of the device where this Page is
     // being displayed. In multi-monitor setups this can vary between pages.
     // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
     float deviceScaleFactor() const;
 
-    TopControls& topControls() const;
-    VisualViewport& visualViewport() const;
-    PageScaleConstraintsSet& pageScaleConstraintsSet() const;
-    EventHandlerRegistry& eventHandlerRegistry() const;
+    TopControls& topControls();
+    const TopControls& topControls() const;
+
+    OverscrollController& overscrollController();
+    const OverscrollController& overscrollController() const;
+
+    VisualViewport& visualViewport();
+    const VisualViewport& visualViewport() const;
+
+    PageScaleConstraintsSet& pageScaleConstraintsSet();
+    const PageScaleConstraintsSet& pageScaleConstraintsSet() const;
+
+    EventHandlerRegistry& eventHandlerRegistry();
+    const EventHandlerRegistry& eventHandlerRegistry() const;
 
     const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
     void setOverrideEncoding(const AtomicString& encoding) { m_overrideEncoding = encoding; }
 
-    ConsoleMessageStorage& consoleMessageStorage() const;
+    ConsoleMessageStorage& consoleMessageStorage();
+    const ConsoleMessageStorage& consoleMessageStorage() const;
 
     DECLARE_TRACE();
 
@@ -108,10 +129,11 @@ public:
 private:
     explicit FrameHost(Page&);
 
-    Member<Page> m_page;
+    const Member<Page> m_page;
     const Member<TopControls> m_topControls;
     const OwnPtr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
     const Member<VisualViewport> m_visualViewport;
+    const Member<OverscrollController> m_overscrollController;
     const Member<EventHandlerRegistry> m_eventHandlerRegistry;
     const Member<ConsoleMessageStorage> m_consoleMessageStorage;
 

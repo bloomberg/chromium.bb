@@ -64,6 +64,7 @@ template <typename EventType>
 class EventWithHitTestResults;
 class FloatPoint;
 class FloatQuad;
+class FrameHost;
 class HTMLFrameSetElement;
 class HitTestRequest;
 class HitTestResult;
@@ -240,9 +241,6 @@ public:
         String region;
     };
 
-    // TODO(bokan): This seems like it no longer belongs here.
-    void handleOverscroll(const ScrollResult&, const FloatPoint& positionInRootFrame = FloatPoint(), const FloatSize& velocity = FloatSize());
-
 private:
     static DragState& dragState();
 
@@ -317,8 +315,6 @@ private:
     // startNode - Optional. If provided, start chaining from the given node.
     //             If not, use the current focus or last clicked node.
     bool logicalScroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr);
-
-    void resetOverscroll(bool didScrollX, bool didScrollY);
 
     ScrollResult scrollBox(
         LayoutBox*,
@@ -402,6 +398,8 @@ private:
 
     WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&, bool);
 
+    FrameHost* frameHost();
+
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
 
@@ -451,8 +449,6 @@ private:
     Member<HTMLFrameSetElement> m_frameSetBeingResized;
 
     LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeScrollableArea.
-
-    FloatSize m_accumulatedRootOverscroll;
 
     bool m_mousePositionIsUnknown;
     // The last mouse movement position this frame has seen in root frame coordinates.

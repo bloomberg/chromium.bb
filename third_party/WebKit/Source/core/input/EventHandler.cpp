@@ -84,6 +84,7 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
+#include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
@@ -294,10 +295,6 @@ static const double TextDragDelay = 0.15;
 static const double TextDragDelay = 0.0;
 #endif
 
-// Report Overscroll if OverscrollDelta is greater than minimumOverscrollDelta
-// to maintain consistency as did in compositor.
-static const float minimumOverscrollDelta = 0.1;
-
 enum NoCursorChangeType { NoCursorChange };
 
 enum class DragInitiator { Mouse, Touch };
@@ -330,7 +327,6 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_eventHandlerWillResetCapturingMouseEventsNode(0)
     , m_clickCount(0)
     , m_shouldOnlyFireDragOverEvent(false)
-    , m_accumulatedRootOverscroll(FloatSize())
     , m_mousePositionIsUnknown(true)
     , m_mouseDownTimestamp(0)
     , m_touchPressed(false)
@@ -2337,7 +2333,7 @@ WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTest
         bool domTreeChanged = preDispatchDomTreeVersion != m_frame->document()->domTreeVersion();
         bool styleChanged = preDispatchStyleVersion != m_frame->document()->styleVersion();
 
-        IntPoint tappedPositionInViewport = m_frame->page()->frameHost().visualViewport().rootFrameToViewport(tappedPosition);
+        IntPoint tappedPositionInViewport = frameHost()->visualViewport().rootFrameToViewport(tappedPosition);
         m_frame->chromeClient().showUnhandledTapUIIfNeeded(tappedPositionInViewport, tappedNode, domTreeChanged || styleChanged);
     }
     return eventResult;
@@ -2501,44 +2497,6 @@ WebInputEventResult EventHandler::handleGestureScrollBegin(const PlatformGesture
     return WebInputEventResult::HandledSystem;
 }
 
-void EventHandler::resetOverscroll(bool didScrollX, bool didScrollY)
-{
-    if (didScrollX)
-        m_accumulatedRootOverscroll.setWidth(0);
-    if (didScrollY)
-        m_accumulatedRootOverscroll.setHeight(0);
-}
-
-static inline FloatSize adjustOverscroll(FloatSize unusedDelta)
-{
-    if (std::abs(unusedDelta.width()) < minimumOverscrollDelta)
-        unusedDelta.setWidth(0);
-    if (std::abs(unusedDelta.height()) < minimumOverscrollDelta)
-        unusedDelta.setHeight(0);
-
-    return unusedDelta;
-}
-
-void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& positionInRootFrame, const FloatSize& velocityInRootFrame)
-{
-    ASSERT(m_frame->isMainFrame());
-    VisualViewport& visualViewport = m_frame->page()->frameHost().visualViewport();
-
-    FloatSize unusedDelta(scrollResult.unusedScrollDeltaX, scrollResult.unusedScrollDeltaY);
-    unusedDelta = adjustOverscroll(unusedDelta);
-
-    FloatSize deltaInViewport = unusedDelta.scaledBy(visualViewport.scale());
-    FloatSize velocityInViewport = velocityInRootFrame.scaledBy(visualViewport.scale());
-    FloatPoint positionInViewport =
-        visualViewport.rootFrameToViewport(positionInRootFrame);
-
-    resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
-    if (deltaInViewport != FloatSize()) {
-        m_accumulatedRootOverscroll += deltaInViewport;
-        m_frame->chromeClient().didOverscroll(deltaInViewport, m_accumulatedRootOverscroll, positionInViewport, velocityInViewport);
-    }
-}
-
 bool EventHandler::isRootScroller(const Node& node) const
 {
     // The root scroller is the one Element on the page designated to perform
@@ -2637,8 +2595,10 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             if (gestureEvent.preventPropagation())
                 m_previousGestureScrolledNode = stopNode;
 
-            if (!stopNode || !isRootScroller(*stopNode))
-                resetOverscroll(result.didScrollX, result.didScrollY);
+            if ((!stopNode || !isRootScroller(*stopNode)) && frameHost()) {
+                frameHost()->overscrollController().resetAccumulated(
+                    result.didScrollX, result.didScrollY);
+            }
 
             if (consumed)
                 return WebInputEventResult::HandledSystem;
@@ -2654,7 +2614,12 @@ void EventHandler::clearGestureScrollState()
     m_previousGestureScrolledNode = nullptr;
     m_deltaConsumedForScrollSequence = false;
     m_currentScrollChain.clear();
-    m_accumulatedRootOverscroll = FloatSize();
+
+    if (FrameHost* host = frameHost()) {
+        bool resetX = true;
+        bool resetY = true;
+        host->overscrollController().resetAccumulated(resetX, resetY);
+    }
 }
 
 bool EventHandler::isScrollbarHandlingGestures() const
@@ -3023,7 +2988,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
     Element* focusedElement = overrideTargetElement ? overrideTargetElement : doc->focusedElement();
     FrameSelection& selection = m_frame->selection();
     Position start = selection.selection().start();
-    VisualViewport& visualViewport = m_frame->page()->frameHost().visualViewport();
+    VisualViewport& visualViewport = frameHost()->visualViewport();
 
     if (!overrideTargetElement && start.anchorNode() && (selection.rootEditableElement() || selection.isRange())) {
         IntRect firstRect = m_frame->editor().firstRectForRange(selection.selection().toNormalizedEphemeralRange());
@@ -4179,6 +4144,14 @@ PlatformEvent::Modifiers EventHandler::accessKeyModifiers()
 #else
     return PlatformEvent::AltKey;
 #endif
+}
+
+FrameHost* EventHandler::frameHost()
+{
+    if (!m_frame->page())
+        return nullptr;
+
+    return &m_frame->page()->frameHost();
 }
 
 } // namespace blink

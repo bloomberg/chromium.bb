@@ -12,6 +12,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -61,6 +62,8 @@ void ViewportScrollCallback::handleEvent(ScrollState* state)
         return;
 
     TopControls& topControls = m_document->frameHost()->topControls();
+    OverscrollController& overscrollController =
+        m_document->frameHost()->overscrollController();
 
     // Scroll top controls.
     if (state->isBeginning())
@@ -90,9 +93,7 @@ void ViewportScrollCallback::handleEvent(ScrollState* state)
     // Handle Overscroll.
     FloatPoint position(state->positionX(), state->positionY());
     FloatSize velocity(state->velocityX(), state->velocityY());
-
-    m_document->frame()->eventHandler().handleOverscroll(
-        result, position, velocity);
+    overscrollController.handleOverscroll(result, position, velocity);
 
     // The viewport consumes everything.
     state->consumeDeltaNative(
