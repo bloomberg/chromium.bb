@@ -24,8 +24,8 @@ import org.chromium.sync.signin.ChromeSigninController;
  * - sets up the Android status bar notification controller.
  * - start Tango service if sync setup is completed.
  * <p/>
- * It is intended to be an application level object and is not tied to any particularly
- * activity, although re-verifies some settings when browser is launched.
+ * It is intended to be an application level object and is not tied to any particulary
+ * activity, although re-verifies some settings whe browser is launched.
  * <p/>
  * The object must be created on the main thread.
  * <p/>
@@ -40,7 +40,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
     private static GoogleServicesManager sGoogleServicesManager;
 
     @VisibleForTesting
-    protected final Context mAppContext;
+    protected final Context mContext;
 
     private final ChromeSigninController mChromeSigninController;
 
@@ -68,17 +68,17 @@ public class GoogleServicesManager implements ApplicationStateListener {
             ThreadUtils.assertOnUiThread();
             // We should store the application context, as we outlive any activity which may create
             // us.
-            mAppContext = context.getApplicationContext();
+            mContext = context.getApplicationContext();
 
-            mChromeSigninController = ChromeSigninController.get(mAppContext);
-            mSigninHelper = SigninHelper.get(mAppContext);
+            mChromeSigninController = ChromeSigninController.get(mContext);
+            mSigninHelper = SigninHelper.get(mContext);
 
             // The sign out flow starts by clearing the signed in user in the ChromeSigninController
             // on the Java side, and then performs a sign out on the native side. If there is a
             // crash on the native side then the signin state may get out of sync. Make sure that
             // the native side is signed out if the Java side doesn't have a currently signed in
             // user.
-            SigninManager signinManager = SigninManager.get(mAppContext);
+            SigninManager signinManager = SigninManager.get(mContext);
             if (!mChromeSigninController.isSignedIn() && signinManager.isSignedInOnNative()) {
                 Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
                 signinManager.signOut();
@@ -101,7 +101,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
     public void onMainActivityStart() {
         try {
             TraceEvent.begin("GoogleServicesManager.onMainActivityStart");
-            boolean accountsChanged = mSigninHelper.checkAndClearAccountsChangedPref();
+            boolean accountsChanged = SigninHelper.checkAndClearAccountsChangedPref(mContext);
             mSigninHelper.validateAccountSettings(accountsChanged);
         } finally {
             TraceEvent.end("GoogleServicesManager.onMainActivityStart");
