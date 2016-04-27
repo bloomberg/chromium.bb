@@ -16,7 +16,6 @@
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
-#include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
@@ -64,7 +63,6 @@ void ModulesInitializer::shutdown()
 {
     ASSERT(isInitialized());
     DatabaseManager::terminateDatabaseThread();
-    CompositorWorkerThread::clearSharedBackingThread();
     CoreInitializer::shutdown();
 }
 

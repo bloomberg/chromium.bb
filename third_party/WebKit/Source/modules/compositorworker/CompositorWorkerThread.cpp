@@ -18,6 +18,12 @@ namespace blink {
 
 namespace {
 
+// This is a singleton class holding the compositor worker thread in this
+// renderrer process. BackingThreadHolst::m_thread will never be cleared,
+// but Oilpan and V8 are detached from the thread when the last compositor
+// worker thread is gone.
+// See WorkerThread::terminateAndWaitForAllWorkers for the process shutdown
+// case.
 class BackingThreadHolder {
 public:
     static BackingThreadHolder& instance()
@@ -27,10 +33,10 @@ public:
     }
 
     WorkerBackingThread* thread() { return m_thread.get(); }
-    void clear() { m_thread = nullptr; }
     void resetForTest()
     {
         ASSERT(!m_thread || (m_thread->workerScriptCount() == 0));
+        m_thread = nullptr;
         m_thread = WorkerBackingThread::createForTest(Platform::current()->compositorThread());
     }
 
@@ -69,11 +75,6 @@ WorkerGlobalScope*CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<Wor
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorWorkerThread::createWorkerGlobalScope");
     return CompositorWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
-}
-
-void CompositorWorkerThread::clearSharedBackingThread()
-{
-    BackingThreadHolder::instance().clear();
 }
 
 void CompositorWorkerThread::resetSharedBackingThreadForTest()

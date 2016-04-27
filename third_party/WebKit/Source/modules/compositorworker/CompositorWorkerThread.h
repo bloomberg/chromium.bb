@@ -23,7 +23,6 @@ public:
     bool shouldAttachThreadDebugger() const override { return false; }
 
     static void resetSharedBackingThreadForTest();
-    static void clearSharedBackingThread();
 
 protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
