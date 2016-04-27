@@ -59,7 +59,7 @@ void TrayAudioChromeOs::DestroyDetailedView() {
   }
 }
 
-void TrayAudioChromeOs::OnDisplayAdded(const gfx::Display& new_display) {
+void TrayAudioChromeOs::OnDisplayAdded(const display::Display& new_display) {
   TrayAudio::OnDisplayAdded(new_display);
 
   // This event will be triggered when the lid of the device is opened to exit
@@ -68,7 +68,7 @@ void TrayAudioChromeOs::OnDisplayAdded(const gfx::Display& new_display) {
   audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
-void TrayAudioChromeOs::OnDisplayRemoved(const gfx::Display& old_display) {
+void TrayAudioChromeOs::OnDisplayRemoved(const display::Display& old_display) {
   TrayAudio::OnDisplayRemoved(old_display);
 
   // This event will be triggered when the lid of the device is closed to enter
@@ -77,7 +77,7 @@ void TrayAudioChromeOs::OnDisplayRemoved(const gfx::Display& old_display) {
   audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
-void TrayAudioChromeOs::OnDisplayMetricsChanged(const gfx::Display& display,
+void TrayAudioChromeOs::OnDisplayMetricsChanged(const display::Display& display,
                                                 uint32_t changed_metrics) {
   // The event could be triggered multiple times during the HDMI display
   // transition, we don't need to restart HDMI re-discovering grace period

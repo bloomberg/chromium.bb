@@ -19,8 +19,8 @@
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/display_observer.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -50,11 +50,10 @@ class WindowGrid;
 
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
-class ASH_EXPORT WindowSelector
-    : public gfx::DisplayObserver,
-      public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver,
-      public views::TextfieldController {
+class ASH_EXPORT WindowSelector : public display::DisplayObserver,
+                                  public aura::WindowObserver,
+                                  public aura::client::ActivationChangeObserver,
+                                  public views::TextfieldController {
  public:
   // The distance between the top edge of the screen and the bottom edge of
   // the text filtering textfield.
@@ -95,10 +94,10 @@ class ASH_EXPORT WindowSelector
     return restoring_minimized_windows_;
   }
 
-  // gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& display) override;
-  void OnDisplayRemoved(const gfx::Display& display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& display) override;
+  void OnDisplayRemoved(const display::Display& display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // aura::WindowObserver:

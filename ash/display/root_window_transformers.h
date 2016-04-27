@@ -17,13 +17,17 @@ class Rect;
 class Transform;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ash {
 class DisplayInfo;
 class RootWindowTransformer;
 
 ASH_EXPORT RootWindowTransformer* CreateRootWindowTransformerForDisplay(
     aura::Window* root,
-    const gfx::Display& display);
+    const display::Display& display);
 
 // Creates a RootWindowTransformers for mirror root window.
 // |source_display_info| specifies the display being mirrored,
@@ -38,7 +42,7 @@ ASH_EXPORT RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
 // |display| specifies the display used to mirror the unified desktop.
 ASH_EXPORT RootWindowTransformer* CreateRootWindowTransformerForUnifiedDesktop(
     const gfx::Rect& screen_bounds,
-    const gfx::Display& display);
+    const display::Display& display);
 
 }  // namespace ash
 

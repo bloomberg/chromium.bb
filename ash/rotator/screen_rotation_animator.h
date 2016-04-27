@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace ash {
 
@@ -21,15 +21,16 @@ class ASH_EXPORT ScreenRotationAnimator {
 
   // Returns true if the screen rotation animation can be completed
   // successfully. For example an animation is not possible if |display_id_|
-  // specifies a gfx::Display that is not currently active. See
+  // specifies a display::Display that is not currently active. See
   // www.crbug.com/479503.
   bool CanAnimate() const;
 
-  // Rotates the gfx::Display specified by |display_id_| to the |new_rotation|
+  // Rotates the display::Display specified by |display_id_| to the
+  // |new_rotation|
   // orientation, for the given |source|. The rotation will also become active.
   // Clients should only call |Rotate()| if |CanAnimate()| returns true.
-  void Rotate(gfx::Display::Rotation new_rotation,
-              gfx::Display::RotationSource source);
+  void Rotate(display::Display::Rotation new_rotation,
+              display::Display::RotationSource source);
 
  private:
   // The id of the display to rotate.

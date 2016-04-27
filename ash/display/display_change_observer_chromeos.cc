@@ -24,13 +24,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/display_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
-#include "ui/gfx/display.h"
 
 namespace ash {
 
@@ -65,9 +65,9 @@ void UpdateInternalDisplayId(
     const ui::DisplayConfigurator::DisplayStateList& display_states) {
   for (auto* state : display_states) {
     if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (gfx::Display::HasInternalDisplay())
-        DCHECK_EQ(gfx::Display::InternalDisplayId(), state->display_id());
-      gfx::Display::SetInternalDisplayId(state->display_id());
+      if (display::Display::HasInternalDisplay())
+        DCHECK_EQ(display::Display::InternalDisplayId(), state->display_id());
+      display::Display::SetInternalDisplayId(state->display_id());
     }
   }
 }

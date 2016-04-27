@@ -6,17 +6,17 @@
 
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_window.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 namespace wm {
 
 WmWindow* GetRootWindowAt(const gfx::Point& point) {
-  const gfx::Display& display =
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   DCHECK(display.is_valid());
   WmRootWindowController* root_window_controller =
       WmRootWindowController::GetWithDisplayId(display.id());
@@ -24,8 +24,8 @@ WmWindow* GetRootWindowAt(const gfx::Point& point) {
 }
 
 WmWindow* GetRootWindowMatching(const gfx::Rect& rect) {
-  const gfx::Display& display =
-      gfx::Screen::GetScreen()->GetDisplayMatching(rect);
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayMatching(rect);
   WmRootWindowController* root_window_controller =
       WmRootWindowController::GetWithDisplayId(display.id());
   return root_window_controller ? root_window_controller->GetWindow() : nullptr;

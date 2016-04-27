@@ -19,11 +19,11 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -241,7 +241,8 @@ void MultiWindowResizeController::OnWindowDestroying(
 MultiWindowResizeController::ResizeWindows
 MultiWindowResizeController::DetermineWindowsFromScreenPoint(
     aura::Window* window) const {
-  gfx::Point mouse_location(gfx::Screen::GetScreen()->GetCursorScreenPoint());
+  gfx::Point mouse_location(
+      display::Screen::GetScreen()->GetCursorScreenPoint());
   ::wm::ConvertPointFromScreen(window, &mouse_location);
   const int component =
       window->delegate()->GetNonClientComponent(mouse_location);
@@ -477,7 +478,7 @@ void MultiWindowResizeController::CompleteResize() {
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.
-  gfx::Point screen_loc = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point screen_loc = display::Screen::GetScreen()->GetCursorScreenPoint();
   if (!resize_widget_->GetWindowBoundsInScreen().Contains(screen_loc)) {
     Hide();
   } else {

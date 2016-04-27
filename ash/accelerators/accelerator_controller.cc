@@ -69,9 +69,9 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
@@ -359,19 +359,19 @@ void HandleRestoreTab() {
   Shell::GetInstance()->new_window_delegate()->RestoreTab();
 }
 
-gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
+display::Display::Rotation GetNextRotation(display::Display::Rotation current) {
   switch (current) {
-    case gfx::Display::ROTATE_0:
-      return gfx::Display::ROTATE_90;
-    case gfx::Display::ROTATE_90:
-      return gfx::Display::ROTATE_180;
-    case gfx::Display::ROTATE_180:
-      return gfx::Display::ROTATE_270;
-    case gfx::Display::ROTATE_270:
-      return gfx::Display::ROTATE_0;
+    case display::Display::ROTATE_0:
+      return display::Display::ROTATE_90;
+    case display::Display::ROTATE_90:
+      return display::Display::ROTATE_180;
+    case display::Display::ROTATE_180:
+      return display::Display::ROTATE_270;
+    case display::Display::ROTATE_270:
+      return display::Display::ROTATE_0;
   }
   NOTREACHED() << "Unknown rotation:" << current;
-  return gfx::Display::ROTATE_0;
+  return display::Display::ROTATE_0;
 }
 
 // Rotates the screen.
@@ -380,14 +380,14 @@ void HandleRotateScreen() {
     return;
 
   base::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
-  gfx::Point point = gfx::Screen::GetScreen()->GetCursorScreenPoint();
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   const DisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
   ash::ScreenRotationAnimator(display.id())
       .Rotate(GetNextRotation(display_info.GetActiveRotation()),
-              gfx::Display::ROTATION_SOURCE_USER);
+              display::Display::ROTATION_SOURCE_USER);
 }
 
 // Rotate the active window.
@@ -1060,7 +1060,7 @@ bool AcceleratorController::CanPerformAction(
     case TOUCH_HUD_MODE_CHANGE:
       return CanHandleTouchHud();
     case SWAP_PRIMARY_DISPLAY:
-      return gfx::Screen::GetScreen()->GetNumDisplays() > 1;
+      return display::Screen::GetScreen()->GetNumDisplays() > 1;
 #endif
     case CYCLE_BACKWARD_MRU:
     case CYCLE_FORWARD_MRU:

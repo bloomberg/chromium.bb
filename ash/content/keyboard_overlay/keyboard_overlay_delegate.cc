@@ -14,7 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -77,7 +77,7 @@ views::Widget* KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   gfx::Size size;
   GetDialogSize(&size);
   const gfx::Rect& rect =
-      gfx::Screen::GetScreen()
+      display::Screen::GetScreen()
           ->GetDisplayNearestWindow(widget_->GetNativeView())
           .work_area();
   gfx::Rect bounds(rect.x() + (rect.width() - size.width()) / 2,
@@ -108,7 +108,7 @@ void KeyboardOverlayDelegate::GetWebUIMessageHandlers(
 void KeyboardOverlayDelegate::GetDialogSize(gfx::Size* size) const {
   using std::min;
   DCHECK(widget_);
-  gfx::Rect rect = gfx::Screen::GetScreen()
+  gfx::Rect rect = display::Screen::GetScreen()
                        ->GetDisplayNearestWindow(widget_->GetNativeView())
                        .work_area();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);

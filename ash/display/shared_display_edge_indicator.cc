@@ -9,10 +9,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -56,7 +56,8 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget->GetNativeWindow()->SetName("SharedEdgeIndicator");
   widget->SetContentsView(contents_view);
-  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(bounds);
   aura::Window* window = widget->GetNativeWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window->GetRootWindow());

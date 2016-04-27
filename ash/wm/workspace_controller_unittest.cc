@@ -32,9 +32,9 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
@@ -140,7 +140,9 @@ class WorkspaceControllerTest : public test::AshTestBase {
   }
 
   gfx::Rect GetFullscreenBounds(aura::Window* window) {
-    return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds();
+    return display::Screen::GetScreen()
+        ->GetDisplayNearestWindow(window)
+        .bounds();
   }
 
   ShelfWidget* shelf_widget() {
@@ -628,7 +630,7 @@ TEST_F(WorkspaceControllerTest, MoveOnSwitch) {
   // Increase the size of the WorkAreaInsets. This would make |w1| fall
   // completely out of the display work area.
   gfx::Insets insets =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
   insets.Set(0, 0, insets.bottom() + 30, 0);
   Shell::GetInstance()->SetDisplayWorkAreaInsets(w1.get(), insets);
 

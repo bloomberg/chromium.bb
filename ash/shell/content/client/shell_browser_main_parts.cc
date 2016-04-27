@@ -32,7 +32,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/core/wm_state.h"
@@ -138,7 +138,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
-  gfx::Screen::GetScreen()->AddObserver(window_watcher_.get());
+  display::Screen::GetScreen()->AddObserver(window_watcher_.get());
 
   ash::shell::InitWindowTypeLauncher();
 
@@ -146,7 +146,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  gfx::Screen::GetScreen()->RemoveObserver(window_watcher_.get());
+  display::Screen::GetScreen()->RemoveObserver(window_watcher_.get());
 
   window_watcher_.reset();
   delegate_ = nullptr;

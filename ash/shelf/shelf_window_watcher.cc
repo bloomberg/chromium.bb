@@ -20,8 +20,8 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace {
@@ -121,11 +121,11 @@ ShelfWindowWatcher::ShelfWindowWatcher(
        it != root_windows.end(); ++it)
     OnRootWindowAdded(*it);
 
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ShelfWindowWatcher::~ShelfWindowWatcher() {
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
@@ -269,7 +269,7 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
   AddShelfItem(window);
 }
 
-void ShelfWindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
+void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
   // Add a new RootWindow and its ActivationClient to observed list.
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
@@ -281,15 +281,14 @@ void ShelfWindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
     OnRootWindowAdded(root_window);
 }
 
-void ShelfWindowWatcher::OnDisplayRemoved(const gfx::Display& old_display) {
+void ShelfWindowWatcher::OnDisplayRemoved(const display::Display& old_display) {
   // When this is called, RootWindow of |old_display| is already removed.
   // Instead, we remove an observer from RootWindow and ActivationClient in the
   // OnRootWindowDestroyed().
   // Do nothing here.
 }
 
-void ShelfWindowWatcher::OnDisplayMetricsChanged(const gfx::Display&,
-                                                 uint32_t) {
-}
+void ShelfWindowWatcher::OnDisplayMetricsChanged(const display::Display&,
+                                                 uint32_t) {}
 
 }  // namespace ash

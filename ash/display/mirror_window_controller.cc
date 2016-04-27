@@ -7,8 +7,8 @@
 #include <utility>
 
 #if defined(USE_X11)
-#include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xlib.h>
 
 // Xlib.h defines RootWindow.
 #undef RootWindow
@@ -35,9 +35,9 @@
 #include "ui/base/layout.h"
 #include "ui/compositor/reflector.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"  // nogncheck
@@ -72,7 +72,8 @@ class MirroringScreenPositionClient
                             gfx::Point* point) override {
     const aura::Window* root = window->GetRootWindow();
     aura::Window::ConvertPointToTarget(window, root, point);
-    const gfx::Display& display = controller_->GetDisplayForRootWindow(root);
+    const display::Display& display =
+        controller_->GetDisplayForRootWindow(root);
     const gfx::Point display_origin = display.bounds().origin();
     point->Offset(display_origin.x(), display_origin.y());
   }
@@ -80,7 +81,8 @@ class MirroringScreenPositionClient
   void ConvertPointFromScreen(const aura::Window* window,
                               gfx::Point* point) override {
     const aura::Window* root = window->GetRootWindow();
-    const gfx::Display& display = controller_->GetDisplayForRootWindow(root);
+    const display::Display& display =
+        controller_->GetDisplayForRootWindow(root);
     const gfx::Point display_origin = display.bounds().origin();
     point->Offset(-display_origin.x(), -display_origin.y());
     aura::Window::ConvertPointToTarget(root, window, point);
@@ -96,7 +98,7 @@ class MirroringScreenPositionClient
 
   void SetBounds(aura::Window* window,
                  const gfx::Rect& bounds,
-                 const gfx::Display& display) override {
+                 const display::Display& display) override {
     NOTREACHED();
   }
 
@@ -162,7 +164,8 @@ void MirrorWindowController::UpdateWindow(
     const std::vector<DisplayInfo>& display_info_list) {
   static int mirror_host_count = 0;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  const gfx::Display& primary = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display& primary =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   const DisplayInfo& source_display_info =
       display_manager->GetDisplayInfo(primary.id());
 
@@ -174,7 +177,7 @@ void MirrorWindowController::UpdateWindow(
       transformer.reset(CreateRootWindowTransformerForMirroredDisplay(
           source_display_info, display_info));
     } else if (display_manager->IsInUnifiedMode()) {
-      gfx::Display display =
+      display::Display display =
           display_manager->GetMirroringDisplayById(display_info.id());
       transformer.reset(CreateRootWindowTransformerForUnifiedDesktop(
           primary.bounds(), display));
@@ -217,7 +220,7 @@ void MirrorWindowController::UpdateWindow(
             Shell::GetInstance()
                 ->window_tree_host_manager()
                 ->GetAshWindowTreeHostForDisplayId(
-                    gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
+                    display::Screen::GetScreen()->GetPrimaryDisplay().id());
         unified_ash_host->RegisterMirroringHost(host_info->ash_host.get());
         aura::client::SetScreenPositionClient(host->window(),
                                               screen_position_client_.get());
@@ -327,7 +330,7 @@ aura::Window* MirrorWindowController::GetWindow() {
       ->window();
 }
 
-gfx::Display MirrorWindowController::GetDisplayForRootWindow(
+display::Display MirrorWindowController::GetDisplayForRootWindow(
     const aura::Window* root) const {
   for (const auto& pair : mirroring_host_info_map_) {
     if (pair.second->ash_host->AsWindowTreeHost()->window() == root) {
@@ -339,13 +342,13 @@ gfx::Display MirrorWindowController::GetDisplayForRootWindow(
               ->software_mirroring_display_list();
       auto iter = std::find_if(
           list.begin(), list.end(),
-          [id](const gfx::Display& display) { return display.id() == id; });
+          [id](const display::Display& display) { return display.id() == id; });
       DCHECK(iter != list.end());
       if (iter != list.end())
         return *iter;
     }
   }
-  return gfx::Display();
+  return display::Display();
 }
 
 AshWindowTreeHost* MirrorWindowController::GetAshWindowTreeHostForDisplayId(

@@ -20,7 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
@@ -55,7 +55,7 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 
   last_mouse_location_ = location;
   // Show a phantom window for dragging in another root window.
-  if (gfx::Screen::GetScreen()->GetNumDisplays() > 1) {
+  if (display::Screen::GetScreen()->GetNumDisplays() > 1) {
     gfx::Point location_in_screen = location;
     ::wm::ConvertPointToScreen(GetAuraTarget()->parent(), &location_in_screen);
     UpdateDragWindow(GetAuraTarget()->bounds(), location_in_screen);
@@ -74,8 +74,8 @@ void DragWindowResizer::CompleteDrag() {
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetAuraTarget()->parent(),
                              &last_mouse_location_in_screen);
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  const gfx::Display dst_display =
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display dst_display =
       screen->GetDisplayNearestPoint(last_mouse_location_in_screen);
 
   if (dst_display.id() !=

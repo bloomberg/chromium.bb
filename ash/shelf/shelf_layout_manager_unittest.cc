@@ -37,11 +37,11 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -708,9 +708,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   gfx::Rect shelf_bounds(
       shelf->GetWindowBoundsInScreen());
   int shelf_height = manager->GetIdealBounds().height();
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display display = screen->GetDisplayNearestWindow(
-      Shell::GetPrimaryRootWindow());
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display display =
+      screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   // Bottom inset should be the max of widget heights.
   EXPECT_EQ(shelf_height, display.GetWorkAreaInsets().bottom());
@@ -761,15 +761,18 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   SetState(shelf->shelf_layout_manager(), SHELF_HIDDEN);
   shelf->shelf_layout_manager()->LayoutShelf();
   EXPECT_EQ(SHELF_HIDDEN, shelf->shelf_layout_manager()->visibility_state());
-  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayNearestWindow(
-      Shell::GetPrimaryRootWindow());
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          Shell::GetPrimaryRootWindow());
   EXPECT_EQ(0, display.GetWorkAreaInsets().bottom());
 
   // Make sure the bounds of the two widgets changed.
-  EXPECT_GE(shelf->GetNativeView()->bounds().y(),
-            gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom());
-  EXPECT_GE(shelf->status_area_widget()->GetNativeView()->bounds().y(),
-            gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom());
+  EXPECT_GE(
+      shelf->GetNativeView()->bounds().y(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom());
+  EXPECT_GE(
+      shelf->status_area_widget()->GetNativeView()->bounds().y(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom());
 }
 
 // Test that switching to a different visibility state does not restart the
@@ -845,7 +848,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
-            gfx::Screen::GetScreen()
+            display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(root)
                 .work_area()
                 .bottom());
@@ -860,7 +863,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_AutoHide) {
   EXPECT_EQ(root->bounds().bottom() - shelf->GetIdealBounds().height(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
-            gfx::Screen::GetScreen()
+            display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(root)
                 .work_area()
                 .bottom());
@@ -928,7 +931,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   EXPECT_EQ(right_edge - 1,
-            gfx::Screen::GetScreen()->GetCursorScreenPoint().x());
+            display::Screen::GetScreen()->GetCursorScreenPoint().x());
 
   // Moving the mouse off the light bar should hide the shelf.
   generator.MoveMouseTo(right_edge - 50, y);
@@ -942,7 +945,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   generator.MoveMouseTo(right_edge, y);
   UpdateAutoHideStateNow();
   EXPECT_NE(right_edge - 1,
-            gfx::Screen::GetScreen()->GetCursorScreenPoint().x());
+            display::Screen::GetScreen()->GetCursorScreenPoint().x());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
   // Hide the shelf.
@@ -1055,7 +1058,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect display_bounds(
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
@@ -1065,7 +1068,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
 
   widget->Maximize();
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(gfx::Screen::GetScreen()
+  EXPECT_EQ(display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(window)
                 .work_area()
                 .bottom(),
@@ -1073,7 +1076,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(gfx::Screen::GetScreen()
+  EXPECT_EQ(display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(window)
                 .work_area()
                 .bottom(),
@@ -1088,7 +1091,7 @@ TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   StepWidgetLayerAnimatorToEnd(shelf_widget);
   StepWidgetLayerAnimatorToEnd(shelf_widget->status_area_widget());
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(gfx::Screen::GetScreen()
+  EXPECT_EQ(display::Screen::GetScreen()
                 ->GetDisplayNearestWindow(window)
                 .work_area()
                 .bottom(),
@@ -1115,7 +1118,7 @@ TEST_F(ShelfLayoutManagerTest, DimmingBehavior) {
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect display_bounds(
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
 
   gfx::Point off_shelf = display_bounds.CenterPoint();
   gfx::Point on_shelf =
@@ -1246,7 +1249,7 @@ TEST_F(ShelfLayoutManagerTest, DimmingBehaviorWithMenus) {
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect display_bounds(
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
 
   // After maximization, the shelf should be visible and the dimmer created.
   widget->Maximize();
@@ -1667,8 +1670,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   gfx::Rect shelf_bounds(
       GetShelfWidget()->GetWindowBoundsInScreen());
-  const gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display display =
+  const display::Screen* screen = display::Screen::GetScreen();
+  display::Display display =
       screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
   ASSERT_NE(-1, display.id());
   EXPECT_EQ(shelf->GetIdealBounds().width(),

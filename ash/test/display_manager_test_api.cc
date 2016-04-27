@@ -21,9 +21,9 @@
 #include "base/strings/string_split.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout_builder.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/display.h"
 
 namespace ash {
 namespace test {
@@ -45,7 +45,7 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
     int64_t id = (index < list.size()) ? list[index].id()
-                                       : gfx::Display::kInvalidDisplayID;
+                                       : display::Display::kInvalidDisplayID;
     display_info_list.push_back(
         DisplayInfo::CreateFromSpecWithID(*iter, id));
   }
@@ -64,8 +64,8 @@ bool DisplayManagerTestApi::TestIfMouseWarpsAt(
           ->mouse_cursor_filter()
           ->mouse_warp_controller_for_test())
       ->allow_non_native_event_for_test();
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display original_display =
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display original_display =
       screen->GetDisplayNearestPoint(point_in_screen);
   event_generator.MoveMouseTo(point_in_screen);
   return original_display.id() !=
@@ -118,13 +118,13 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
 }
 
 int64_t DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
-  const gfx::Display& internal = display_manager_->active_display_list_[0];
+  const display::Display& internal = display_manager_->active_display_list_[0];
   SetInternalDisplayId(internal.id());
-  return gfx::Display::InternalDisplayId();
+  return display::Display::InternalDisplayId();
 }
 
 void DisplayManagerTestApi::SetInternalDisplayId(int64_t id) {
-  gfx::Display::SetInternalDisplayId(id);
+  display::Display::SetInternalDisplayId(id);
   display_manager_->UpdateInternalDisplayModeListForTest();
 }
 
@@ -152,7 +152,7 @@ ScopedSetInternalDisplayId::ScopedSetInternalDisplayId(int64_t id) {
 }
 
 ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
-  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
 }
 
 bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
@@ -165,7 +165,7 @@ bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
 }
 
 void SwapPrimaryDisplay() {
-  if (gfx::Screen::GetScreen()->GetNumDisplays() <= 1)
+  if (display::Screen::GetScreen()->GetNumDisplays() <= 1)
     return;
   Shell::GetInstance()->window_tree_host_manager()->SetPrimaryDisplayId(
       ScreenUtil::GetSecondaryDisplay().id());
@@ -178,7 +178,7 @@ std::unique_ptr<display::DisplayLayout> CreateDisplayLayout(
   display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
 
   display::DisplayLayoutBuilder builder(
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().id());
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   builder.SetSecondaryPlacement(ScreenUtil::GetSecondaryDisplay().id(),
                                 position, offset);
   return builder.Build();

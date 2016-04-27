@@ -8,7 +8,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/ash_native_cursor_manager.h"
 #include "ui/base/cursor/image_cursors.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -29,8 +29,8 @@ gfx::NativeCursor CursorManagerTestApi::GetCurrentCursor() const {
   return cursor_manager_->GetCursor();
 }
 
-gfx::Display::Rotation
-CursorManagerTestApi::GetCurrentCursorRotation() const {
+display::Display::Rotation CursorManagerTestApi::GetCurrentCursorRotation()
+    const {
   return ShellTestApi(Shell::GetInstance()).ash_native_cursor_manager()->
       image_cursors_->GetRotation();
 }

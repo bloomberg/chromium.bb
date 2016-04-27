@@ -10,7 +10,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/gfx/screen.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"

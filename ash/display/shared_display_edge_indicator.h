@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/display.h"
 
 namespace gfx {
 class Rect;

@@ -22,8 +22,8 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/display/display.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -43,7 +43,7 @@ const int kRotationDurationInMs = 250;
 
 // Gets the current display rotation for the display with the specified
 // |display_id|.
-gfx::Display::Rotation GetCurrentRotation(int64_t display_id) {
+display::Display::Rotation GetCurrentRotation(int64_t display_id) {
   return Shell::GetInstance()
       ->display_manager()
       ->GetDisplayInfo(display_id)
@@ -52,8 +52,8 @@ gfx::Display::Rotation GetCurrentRotation(int64_t display_id) {
 
 // Returns true if the rotation between |initial_rotation| and |new_rotation| is
 // 180 degrees.
-bool Is180DegreeFlip(gfx::Display::Rotation initial_rotation,
-                     gfx::Display::Rotation new_rotation) {
+bool Is180DegreeFlip(display::Display::Rotation initial_rotation,
+                     display::Display::Rotation new_rotation) {
   return (initial_rotation + 2) % 4 == new_rotation;
 }
 
@@ -146,13 +146,13 @@ void LayerCleanupObserver::AbortAnimations(ui::Layer* layer) {
 // out, and the new orientation's layer will be rotated in to the
 // |new_orientation| through |rotation_degrees| arc.
 void RotateScreen(int64_t display_id,
-                  gfx::Display::Rotation new_rotation,
-                  gfx::Display::RotationSource source) {
+                  display::Display::Rotation new_rotation,
+                  display::Display::RotationSource source) {
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display_id);
 
-  const gfx::Display::Rotation initial_orientation =
+  const display::Display::Rotation initial_orientation =
       GetCurrentRotation(display_id);
 
   const gfx::Rect original_screen_bounds = root_window->GetTargetBounds();
@@ -256,9 +256,9 @@ bool ScreenRotationAnimator::CanAnimate() const {
       .is_valid();
 }
 
-void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation,
-                                    gfx::Display::RotationSource source) {
-  const gfx::Display::Rotation current_rotation =
+void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
+                                    display::Display::RotationSource source) {
+  const display::Display::Rotation current_rotation =
       GetCurrentRotation(display_id_);
 
   if (current_rotation == new_rotation)

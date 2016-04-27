@@ -13,8 +13,8 @@
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -34,7 +34,7 @@ class ScreenshotDelegate;
 // This class does not use aura::Window / views::Widget intentionally to avoid
 // the conflicts of window manager features like mouse captures or window focus.
 class ASH_EXPORT PartialScreenshotController : public ui::EventHandler,
-                                               public gfx::DisplayObserver {
+                                               public display::DisplayObserver {
  public:
   PartialScreenshotController();
   ~PartialScreenshotController() override;
@@ -61,10 +61,10 @@ class ASH_EXPORT PartialScreenshotController : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
 
-  // gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
   // The data to build the screenshot region.

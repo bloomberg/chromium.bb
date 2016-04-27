@@ -33,10 +33,10 @@ class ASH_EXPORT TrayAudioChromeOs
   views::View* CreateDetailedView(user::LoginStatus status) override;
   void DestroyDetailedView() override;
 
-  // Overridden from gfx::DisplayObserver.
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // Overridden from display::DisplayObserver.
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
   // Overriden from chromeos::PowerManagerClient::Observer.

@@ -21,6 +21,10 @@ class Rect;
 class Size;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ui {
 class Layer;
 }
@@ -70,7 +74,7 @@ class ASH_EXPORT WmWindow {
   // TODO(sky): seems like this shouldn't be exposed.
   virtual ui::Layer* GetLayer() = 0;
 
-  virtual gfx::Display GetDisplayNearestWindow() = 0;
+  virtual display::Display GetDisplayNearestWindow() = 0;
 
   virtual bool HasNonClientArea() = 0;
   virtual int GetNonClientComponent(const gfx::Point& location) = 0;
@@ -134,7 +138,7 @@ class ASH_EXPORT WmWindow {
   virtual void SetBoundsDirectAnimated(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsDirectCrossFade(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
-                                 const gfx::Display& dst_display) = 0;
+                                 const display::Display& dst_display) = 0;
   virtual gfx::Rect GetBoundsInScreen() const = 0;
   virtual const gfx::Rect& GetBounds() const = 0;
   virtual gfx::Rect GetTargetBounds() = 0;

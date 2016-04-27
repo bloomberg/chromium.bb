@@ -160,7 +160,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   ASSERT_EQ(2U, root_windows.size());
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window.
@@ -178,7 +178,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   }
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window and move the pointer to (775, 10).
@@ -197,7 +197,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   }
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)
@@ -220,7 +220,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   // Dropping a window that is larger than the destination work area
   // will shrink to fit to the work area.
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 700, 500),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)
@@ -245,7 +245,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
   // Dropping a window that is larger than the destination work area
   // will shrink to fit to the work area.
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 700, 500),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab the top-left edge of the window and move the pointer to (150, 10)
@@ -287,7 +287,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
   window->Init(ui::LAYER_TEXTURED);
   ParentWindowInPrimaryRootWindow(window.get());
   window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                            gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                            display::Screen::GetScreen()->GetPrimaryDisplay());
   window->Show();
   EXPECT_TRUE(ash::wm::CanActivateWindow(window.get()));
   ash::wm::ActivateWindow(window.get());
@@ -320,7 +320,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
 
   window_->SetBoundsInScreen(
       gfx::Rect(800, 00, 50, 60),
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window.
@@ -346,7 +346,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
   ASSERT_EQ(2U, root_windows.size());
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -398,7 +398,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
 
   // Do the same test with RevertDrag().
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                             display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -429,7 +429,7 @@ TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
   ASSERT_EQ(3u, list.size());
-  ASSERT_EQ(gfx::Screen::GetScreen()->GetPrimaryDisplay().id(), list[0]);
+  ASSERT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().id(), list[0]);
   display::DisplayLayoutBuilder builder(list[0]);
   builder.AddDisplayPlacement(list[1], list[0],
                               display::DisplayPlacement::RIGHT, 0);
@@ -581,8 +581,9 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   // Move window from the root window with 1.0 device scale factor to the root
   // window with 2.0 device scale factor.
   {
-    window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                               gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window_->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
@@ -606,7 +607,7 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
     default_container->AddChild(window_.get());
     window_->SetBoundsInScreen(
         gfx::Rect(600, 0, 50, 60),
-        gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
@@ -636,8 +637,9 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // Normal window can be moved across display.
   {
     aura::Window* window = window_.get();
-    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                              gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
@@ -652,8 +654,9 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // Always on top window can be moved across display.
   {
     aura::Window* window = always_on_top_window_.get();
-    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                              gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
@@ -668,8 +671,9 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // System modal window can be moved across display.
   {
     aura::Window* window = system_modal_window_.get();
-    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                              gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(0, 0));
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
@@ -685,8 +689,9 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // Transient window cannot be moved across display.
   {
     aura::Window* window = transient_child_;
-    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                              gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
@@ -701,8 +706,9 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // The parent of transient window can be moved across display.
   {
     aura::Window* window = transient_parent_.get();
-    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                              gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
@@ -717,8 +723,9 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // Panel window can be moved across display.
   {
     aura::Window* window = panel_window_.get();
-    window->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                              gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    window->SetBoundsInScreen(
+        gfx::Rect(0, 0, 50, 60),
+        display::Screen::GetScreen()->GetPrimaryDisplay());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));

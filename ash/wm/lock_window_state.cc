@@ -175,7 +175,7 @@ wm::WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
 gfx::Rect GetBoundsForLockWindow(aura::Window* window) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (display_manager->IsInUnifiedMode()) {
-    const gfx::Display& first =
+    const display::Display& first =
         display_manager->software_mirroring_display_list()[0];
     return first.bounds();
   } else {

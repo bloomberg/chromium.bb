@@ -9,8 +9,8 @@
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -49,7 +49,7 @@ TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
 
   // The widget is horizontally centered at the bottom of the work area.
   gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect bounds = widget->GetRestoredBounds();
   EXPECT_EQ(work_area.CenterPoint().x(), bounds.CenterPoint().x());
   EXPECT_EQ(work_area.bottom(), bounds.bottom());

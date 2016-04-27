@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {

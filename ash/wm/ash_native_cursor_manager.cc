@@ -75,7 +75,7 @@ void AshNativeCursorManager::SetNativeCursorEnabled(bool enabled) {
 }
 
 void AshNativeCursorManager::SetDisplay(
-    const gfx::Display& display,
+    const display::Display& display,
     ::wm::NativeCursorManagerDelegate* delegate) {
   DCHECK(display.is_valid());
   // Use the platform's device scale factor instead of the display's, which

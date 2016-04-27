@@ -12,10 +12,10 @@
 #include "ash/shell_window_ids.h"
 #include "base/stl_util.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -146,7 +146,7 @@ void PartialScreenshotController::StartPartialScreenshotSession(
   }
 
   screenshot_delegate_ = screenshot_delegate;
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     layers_[root] = new PartialScreenshotLayer(
         Shell::GetContainer(root, kShellWindowId_OverlayContainer)->layer());
@@ -199,7 +199,7 @@ void PartialScreenshotController::Complete() {
 void PartialScreenshotController::Cancel() {
   root_window_ = nullptr;
   screenshot_delegate_ = nullptr;
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   STLDeleteValues(&layers_);
   cursor_setter_.reset();
   EnableMouseWarp(true);
@@ -273,22 +273,21 @@ void PartialScreenshotController::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void PartialScreenshotController::OnDisplayAdded(
-    const gfx::Display& new_display) {
+    const display::Display& new_display) {
   if (!screenshot_delegate_)
     return;
   Cancel();
 }
 
 void PartialScreenshotController::OnDisplayRemoved(
-    const gfx::Display& old_display) {
+    const display::Display& old_display) {
   if (!screenshot_delegate_)
     return;
   Cancel();
 }
 
 void PartialScreenshotController::OnDisplayMetricsChanged(
-    const gfx::Display& display,
-    uint32_t changed_metrics) {
-}
+    const display::Display& display,
+    uint32_t changed_metrics) {}
 
 }  // namespace ash

@@ -19,7 +19,6 @@
 #include "ash/wm/window_properties.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/session/logout_button_tray.h"

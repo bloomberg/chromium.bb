@@ -28,7 +28,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/message_bubble_base.h"
@@ -192,10 +192,11 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
       message_center(),
       message_center_tray_.get(),
       popup_alignment_delegate_.get()));
-  const gfx::Display& display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
           status_area_widget->GetNativeView());
-  popup_alignment_delegate_->StartObserving(gfx::Screen::GetScreen(), display);
+  popup_alignment_delegate_->StartObserving(display::Screen::GetScreen(),
+                                            display);
   OnMessageCenterTrayChanged();
 }
 

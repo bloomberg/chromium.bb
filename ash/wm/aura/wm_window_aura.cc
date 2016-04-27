@@ -26,7 +26,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
@@ -136,8 +136,8 @@ ui::Layer* WmWindowAura::GetLayer() {
   return window_->layer();
 }
 
-gfx::Display WmWindowAura::GetDisplayNearestWindow() {
-  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_);
+display::Display WmWindowAura::GetDisplayNearestWindow() {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
 }
 
 bool WmWindowAura::HasNonClientArea() {
@@ -334,7 +334,7 @@ void WmWindowAura::SetBoundsDirectCrossFade(const gfx::Rect& bounds) {
 }
 
 void WmWindowAura::SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
-                                     const gfx::Display& dst_display) {
+                                     const display::Display& dst_display) {
   window_->SetBoundsInScreen(bounds_in_screen, dst_display);
 }
 

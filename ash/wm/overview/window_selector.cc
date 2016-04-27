@@ -37,9 +37,9 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -319,7 +319,7 @@ void WindowSelector::Init(const WindowList& windows) {
 
   shell->activation_client()->AddObserver(this);
 
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   // Send an a11y alert.
   shell->accessibility_delegate()->TriggerAccessibilityAlert(
@@ -382,7 +382,7 @@ void WindowSelector::RemoveAllObservers() {
     window->RemoveObserver(this);
 
   shell->activation_client()->RemoveObserver(this);
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   if (restore_focus_window_)
     restore_focus_window_->RemoveObserver(this);
 }
@@ -469,15 +469,14 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
   return true;
 }
 
-void WindowSelector::OnDisplayAdded(const gfx::Display& display) {
-}
+void WindowSelector::OnDisplayAdded(const display::Display& display) {}
 
-void WindowSelector::OnDisplayRemoved(const gfx::Display& display) {
+void WindowSelector::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
 }
 
-void WindowSelector::OnDisplayMetricsChanged(const gfx::Display& display,
+void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
   PositionWindows(/* animate */ false);
   RepositionTextFilterOnDisplayMetricsChange();

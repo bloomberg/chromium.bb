@@ -23,8 +23,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/background.h"
 

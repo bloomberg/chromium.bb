@@ -46,7 +46,7 @@ class ASH_EXPORT AshNativeCursorManager
   friend class test::CursorManagerTestApi;
 
   // Overridden from ::wm::NativeCursorManager:
-  void SetDisplay(const gfx::Display& display,
+  void SetDisplay(const display::Display& display,
                   ::wm::NativeCursorManagerDelegate* delegate) override;
   void SetCursor(gfx::NativeCursor cursor,
                  ::wm::NativeCursorManagerDelegate* delegate) override;

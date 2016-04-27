@@ -16,7 +16,7 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -45,8 +45,8 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
 
   // Check if the destination has changed displays.
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  const gfx::Display dst_display =
+  display::Screen* screen = display::Screen::GetScreen();
+  const display::Display dst_display =
       screen->GetDisplayNearestPoint(last_location_);
   if (dst_display.id() !=
       panel_container_->GetRootWindow()->GetDisplayNearestWindow().id()) {

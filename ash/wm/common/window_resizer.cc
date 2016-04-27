@@ -11,9 +11,9 @@
 #include "ash/wm/common/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -191,8 +191,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     gfx::Rect near_passed_location(passed_location_in_screen, gfx::Size());
     // Use a pointer location (matching the logic in DragWindowResizer) to
     // calculate the target display after the drag.
-    const gfx::Display& display =
-        gfx::Screen::GetScreen()->GetDisplayMatching(near_passed_location);
+    const display::Display& display =
+        display::Screen::GetScreen()->GetDisplayMatching(near_passed_location);
     DockedWindowLayoutManager* dock_layout = DockedWindowLayoutManager::Get(
         wm::GetRootWindowMatching(near_passed_location));
 

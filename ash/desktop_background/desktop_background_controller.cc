@@ -26,10 +26,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 using wallpaper::WallpaperResizer;
@@ -163,17 +163,17 @@ void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
 gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
   int width = 0;
   int height = 0;
-  std::vector<gfx::Display> displays =
-      gfx::Screen::GetScreen()->GetAllDisplays();
+  std::vector<display::Display> displays =
+      display::Screen::GetScreen()->GetAllDisplays();
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  for (std::vector<gfx::Display>::iterator iter = displays.begin();
+  for (std::vector<display::Display>::iterator iter = displays.begin();
        iter != displays.end(); ++iter) {
     // Don't use size_in_pixel because we want to use the native pixel size.
     gfx::Size size_in_pixel =
         display_manager->GetDisplayInfo(iter->id()).bounds_in_native().size();
-    if (iter->rotation() == gfx::Display::ROTATE_90 ||
-        iter->rotation() == gfx::Display::ROTATE_270) {
+    if (iter->rotation() == display::Display::ROTATE_90 ||
+        iter->rotation() == display::Display::ROTATE_270) {
       size_in_pixel = gfx::Size(size_in_pixel.height(), size_in_pixel.width());
     }
     width = std::max(size_in_pixel.width(), width);

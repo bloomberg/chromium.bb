@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 
 namespace aura {
 class Window;
@@ -29,7 +29,7 @@ namespace shell {
 // WindowWatcher is responsible for listening for newly created windows and
 // creating items on the Shelf for them.
 class WindowWatcher : public aura::WindowObserver,
-                      public gfx::DisplayObserver {
+                      public display::DisplayObserver {
  public:
   WindowWatcher();
   ~WindowWatcher() override;
@@ -40,10 +40,10 @@ class WindowWatcher : public aura::WindowObserver,
   void OnWindowAdded(aura::Window* new_window) override;
   void OnWillRemoveWindow(aura::Window* window) override;
 
-  // gfx::DisplayObserver overrides:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
  private:

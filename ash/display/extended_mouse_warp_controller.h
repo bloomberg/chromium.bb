@@ -23,6 +23,10 @@ class Point;
 class Display;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ash {
 namespace test {
 class DisplayManagerTestApi;
@@ -109,8 +113,8 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
   // drag is started, or invalid id passed if this is not for
   // dragging. Returns null scoped_ptr if two displays do not share
   // the edge.
-  std::unique_ptr<WarpRegion> CreateWarpRegion(const gfx::Display& a,
-                                               const gfx::Display& b,
+  std::unique_ptr<WarpRegion> CreateWarpRegion(const display::Display& a,
+                                               const display::Display& b,
                                                int64_t drag_source_dispay_id);
 
   void allow_non_native_event_for_test() { allow_non_native_event_ = true; }

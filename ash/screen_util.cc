@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -25,7 +25,8 @@ DisplayManager* GetDisplayManager() {
 }
 
 // static
-gfx::Display ScreenUtil::FindDisplayContainingPoint(const gfx::Point& point) {
+display::Display ScreenUtil::FindDisplayContainingPoint(
+    const gfx::Point& point) {
   return GetDisplayManager()->FindDisplayContainingPoint(point);
 }
 
@@ -41,21 +42,22 @@ gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
 gfx::Rect ScreenUtil::GetDisplayBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds());
 }
 
 // static
 gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
-  return ConvertRectFromScreen(
-      window->parent(),
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area());
+  return ConvertRectFromScreen(window->parent(),
+                               display::Screen::GetScreen()
+                                   ->GetDisplayNearestWindow(window)
+                                   .work_area());
 }
 
 gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (display_manager->IsInUnifiedMode()) {
     // In unified desktop mode, there is only one shelf in the 1st display.
-    const gfx::Display& first =
+    const display::Display& first =
         display_manager->software_mirroring_display_list()[0];
     float scale =
         static_cast<float>(window->GetRootWindow()->bounds().height()) /
@@ -70,8 +72,8 @@ gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
       // sized/positioned yet. Use the bounds of the display in this case.
       // Ideally, we would not run this code at all for mustash.
       NOTIMPLEMENTED();
-      gfx::Display display =
-          gfx::Screen::GetScreen()->GetDisplayNearestWindow(window);
+      display::Display display =
+          display::Screen::GetScreen()->GetDisplayNearestWindow(window);
       return gfx::Rect(display.size());
     }
     return window->GetRootWindow()->bounds();
@@ -97,11 +99,11 @@ gfx::Rect ScreenUtil::ConvertRectFromScreen(aura::Window* window,
 }
 
 // static
-const gfx::Display& ScreenUtil::GetSecondaryDisplay() {
+const display::Display& ScreenUtil::GetSecondaryDisplay() {
   DisplayManager* display_manager = GetDisplayManager();
   CHECK_LE(2U, display_manager->GetNumDisplays());
   return display_manager->GetDisplayAt(0).id() ==
-                 gfx::Screen::GetScreen()->GetPrimaryDisplay().id()
+                 display::Screen::GetScreen()->GetPrimaryDisplay().id()
              ? display_manager->GetDisplayAt(1)
              : display_manager->GetDisplayAt(0);
 }

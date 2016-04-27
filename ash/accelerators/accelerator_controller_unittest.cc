@@ -36,10 +36,10 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
 
@@ -648,7 +648,7 @@ TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
 
   // Center the window using accelerator.
   GetController()->PerformActionIfEnabled(WINDOW_POSITION_CENTER);
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(window.get())
                             .work_area();
   gfx::Rect bounds = window->GetBoundsInScreen();

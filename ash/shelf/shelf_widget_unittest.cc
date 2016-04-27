@@ -17,9 +17,9 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,7 +43,7 @@ void TestLauncherAlignment(aura::Window* root,
                            wm::ShelfAlignment alignment,
                            const std::string& expected) {
   Shell::GetInstance()->SetShelfAlignment(alignment, root);
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(expected,
             screen->GetDisplayNearestWindow(root).work_area().ToString());
 }

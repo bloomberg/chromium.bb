@@ -244,8 +244,9 @@ TEST_F(OverviewButtonTrayTest, MAYBE_HideAnimationAlwaysCompletes) {
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> rotate_duration(
       new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-  ash::ScreenRotationAnimator(gfx::Display::InternalDisplayId())
-      .Rotate(gfx::Display::ROTATE_270, gfx::Display::ROTATION_SOURCE_ACTIVE);
+  ash::ScreenRotationAnimator(display::Display::InternalDisplayId())
+      .Rotate(display::Display::ROTATE_270,
+              display::Display::ROTATION_SOURCE_ACTIVE);
 
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(GetTray()->visible());

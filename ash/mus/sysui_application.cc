@@ -199,14 +199,14 @@ class AshInit {
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
     views::WindowManagerConnection::Create(connector, identity);
 
-    gfx::Screen* screen = gfx::Screen::GetScreen();
+    display::Screen* screen = display::Screen::GetScreen();
     DCHECK(screen);
     gfx::Size size = screen->GetPrimaryDisplay().bounds().size();
 
     // Uninstall the ScreenMus installed by WindowManagerConnection, so that ash
     // installs and uses the ScreenAsh. This can be removed once ash learns to
     // talk to mus for managing displays.
-    gfx::Screen::SetScreenInstance(nullptr);
+    display::Screen::SetScreenInstance(nullptr);
 
     // Install some hook so that the WindowTreeHostMus created for widgets can
     // be hooked up correctly.

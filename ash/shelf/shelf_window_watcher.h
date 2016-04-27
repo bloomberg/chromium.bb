@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -34,7 +34,7 @@ class ShelfItemDelegateManager;
 // a ShelfItemDetails property in the default container.
 class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
                            public aura::WindowObserver,
-                           public gfx::DisplayObserver {
+                           public display::DisplayObserver {
  public:
   ShelfWindowWatcher(ShelfModel* model,
                      ShelfItemDelegateManager* item_delegate_manager);
@@ -117,10 +117,10 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
                                const void* key,
                                intptr_t old) override;
 
-  // gfx::DisplayObserver overrides:
-  void OnDisplayAdded(const gfx::Display& display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // Owned by Shell.

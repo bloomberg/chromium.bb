@@ -23,9 +23,9 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -336,7 +336,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRightPastMinimum) {
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomRightWorkArea) {
   std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(target.get())
                             .work_area();
   gfx::Point position = target->bounds().origin();
@@ -352,7 +352,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRightWorkArea) {
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomLeftWorkArea) {
   std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOMLEFT));
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(target.get())
                             .work_area();
   gfx::Point position = target->bounds().origin();
@@ -369,7 +369,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomLeftWorkArea) {
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomWorkArea) {
   std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOM));
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(target.get())
                             .work_area();
   gfx::Point position = target->bounds().origin();
@@ -417,8 +417,9 @@ TEST_F(ToplevelWindowEventHandlerTest, DontDragToNegativeY) {
 // Verifies we don't let windows go bigger than the display width.
 TEST_F(ToplevelWindowEventHandlerTest, DontGotWiderThanScreen) {
   std::unique_ptr<aura::Window> target(CreateWindow(HTRIGHT));
-  gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(target.get()).bounds();
+  gfx::Rect work_area = display::Screen::GetScreen()
+                            ->GetDisplayNearestWindow(target.get())
+                            .bounds();
   DragFromCenterBy(target.get(), work_area.width() * 2, 0);
   // The y location and height should not have changed.
   EXPECT_EQ(work_area.width(), target->bounds().width());

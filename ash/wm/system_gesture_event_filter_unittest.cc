@@ -27,6 +27,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
@@ -34,7 +35,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
@@ -410,7 +410,7 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   ui::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging left snaps before reaching the screen edge.
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(root_window)
                             .work_area();
   int drag_x = work_area.x() + 20 - points[0].x();
@@ -440,7 +440,7 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   ui::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging right snaps before reaching the screen edge.
-  gfx::Rect work_area = gfx::Screen::GetScreen()
+  gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(root_window)
                             .work_area();
   int drag_x = work_area.right() - 20 - points[0].x();

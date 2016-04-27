@@ -21,7 +21,7 @@ using DeviceList = std::vector<const ui::TouchscreenDevice*>;
 // Helper method to associate |display| and |device|.
 void Associate(DisplayInfo* display, const ui::TouchscreenDevice* device) {
   display->AddInputDevice(device->id);
-  display->set_touch_support(gfx::Display::TOUCH_SUPPORT_AVAILABLE);
+  display->set_touch_support(display::Display::TOUCH_SUPPORT_AVAILABLE);
 }
 
 // Returns true if |path| is likely a USB device.
@@ -109,7 +109,7 @@ void AssociateUdlDevices(DisplayInfoList* displays, DeviceList* devices) {
 
 // Returns true if |display| is internal.
 bool IsInternalDisplay(DisplayInfo* display) {
-  return gfx::Display::IsInternalDisplayId(display->id());
+  return display::Display::IsInternalDisplayId(display->id());
 }
 
 // Returns true if |device| is internal.

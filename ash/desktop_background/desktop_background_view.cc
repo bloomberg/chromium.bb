@@ -21,11 +21,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 
@@ -53,8 +53,9 @@ class LayerControlView : public views::View {
 
   // Overrides views::View.
   void Layout() override {
-    gfx::Display display = gfx::Screen::GetScreen()->GetDisplayNearestWindow(
-        GetWidget()->GetNativeView());
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            GetWidget()->GetNativeView());
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     DisplayInfo info = display_manager->GetDisplayInfo(display.id());
     float ui_scale = info.GetEffectiveUIScale();

@@ -65,8 +65,8 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -397,7 +397,7 @@ void RootWindowController::Shutdown() {
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
   GetRootWindowSettings(root_window)->display_id =
-      gfx::Display::kInvalidDisplayID;
+      display::Display::kInvalidDisplayID;
   ash_host_->PrepareForShutdown();
 
   system_background_.reset();

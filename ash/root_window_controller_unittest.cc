@@ -820,19 +820,22 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
       root_window->bounds(), 100));
   keyboard_window->Show();
 
-  gfx::Rect before = gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  gfx::Rect before =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
 
   // Notify keyboard bounds changing.
   controller->NotifyKeyboardBoundsChanging(keyboard_container->bounds());
 
   if (!keyboard::IsKeyboardOverscrollEnabled()) {
-    gfx::Rect after = gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+    gfx::Rect after =
+        display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
     EXPECT_LT(after, before);
   }
 
   // Mock a login user profile change to reinitialize the keyboard.
   ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
-  EXPECT_EQ(gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area(), before);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().work_area(),
+            before);
 }
 
 // Ensure that system modal dialogs do not block events targeted at the virtual

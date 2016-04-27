@@ -15,12 +15,12 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/activation_delegate.h"
@@ -601,7 +601,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   gfx::Size size = root_window->bounds().size();
   EXPECT_EQ(gfx::Rect(size).ToString(),
-            gfx::Screen::GetScreen()
+            display::Screen::GetScreen()
                 ->GetDisplayNearestPoint(gfx::Point())
                 .bounds()
                 .ToString());

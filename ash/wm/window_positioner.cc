@@ -10,8 +10,8 @@
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_window.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -386,7 +386,7 @@ WindowPositioner::~WindowPositioner() {
 }
 
 gfx::Rect WindowPositioner::GetDefaultWindowBounds(
-    const gfx::Display& display) {
+    const display::Display& display) {
   const gfx::Rect work_area = display.work_area();
   // There should be a 'desktop' border around the window at the left and right
   // side.
@@ -424,7 +424,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   const gfx::Rect work_area =
       window && window->IsVisible()
           ? window->GetDisplayNearestWindow().work_area()
-          : gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+          : display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
   // Only try to reposition the popup when it is not spanning the entire
   // screen.
   if ((old_pos.width() + popup_position_offset_from_screen_corner_x >=

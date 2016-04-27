@@ -16,8 +16,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/display_observer.h"
 
 namespace ui {
 class TouchEvent;
@@ -34,7 +34,7 @@ class MaximizeModeWindowState;
 // With the destruction of the manager all windows will be restored to their
 // original state.
 class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
-                                             public gfx::DisplayObserver,
+                                             public display::DisplayObserver,
                                              public ShellObserver,
                                              public ui::EventHandler {
  public:
@@ -67,10 +67,10 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  // gfx::DisplayObserver overrides:
-  void OnDisplayAdded(const gfx::Display& display) override;
-  void OnDisplayRemoved(const gfx::Display& display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& display) override;
+  void OnDisplayRemoved(const display::Display& display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // ui::EventHandler override:

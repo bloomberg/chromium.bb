@@ -15,7 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -110,7 +110,7 @@ bool DisplayMode::IsEquivalent(const DisplayMode& other) const {
 
 // satic
 DisplayInfo DisplayInfo::CreateFromSpec(const std::string& spec) {
-  return CreateFromSpecWithID(spec, gfx::Display::kInvalidDisplayID);
+  return CreateFromSpecWithID(spec, display::Display::kInvalidDisplayID);
 }
 
 // static
@@ -142,7 +142,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
 
   parts = base::SplitString(main_spec, "/", base::KEEP_WHITESPACE,
                             base::SPLIT_WANT_NONEMPTY);
-  gfx::Display::Rotation rotation(gfx::Display::ROTATE_0);
+  display::Display::Rotation rotation(display::Display::ROTATE_0);
   bool has_overscan = false;
   if (!parts.empty()) {
     main_spec = parts[0];
@@ -155,13 +155,13 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
             has_overscan = true;
             break;
           case 'r':  // rotate 90 degrees to 'right'.
-            rotation = gfx::Display::ROTATE_90;
+            rotation = display::Display::ROTATE_90;
             break;
           case 'u':  // 180 degrees, 'u'pside-down.
-            rotation = gfx::Display::ROTATE_180;
+            rotation = display::Display::ROTATE_180;
             break;
           case 'l':  // rotate 90 degrees to 'left'.
-            rotation = gfx::Display::ROTATE_270;
+            rotation = display::Display::ROTATE_270;
             break;
         }
       }
@@ -209,12 +209,12 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
     display_modes[native_mode].native = true;
   }
 
-  if (id == gfx::Display::kInvalidDisplayID)
+  if (id == display::Display::kInvalidDisplayID)
     id = synthesized_display_id++;
   DisplayInfo display_info(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
   display_info.set_device_scale_factor(device_scale_factor);
-  display_info.SetRotation(rotation, gfx::Display::ROTATION_SOURCE_ACTIVE);
+  display_info.SetRotation(rotation, display::Display::ROTATION_SOURCE_ACTIVE);
   display_info.set_configured_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_native);
   display_info.SetDisplayModes(display_modes);
@@ -238,10 +238,10 @@ void DisplayInfo::SetUse125DSFForUIScalingForTest(bool enable) {
 }
 
 DisplayInfo::DisplayInfo()
-    : id_(gfx::Display::kInvalidDisplayID),
+    : id_(display::Display::kInvalidDisplayID),
       has_overscan_(false),
-      active_rotation_source_(gfx::Display::ROTATION_SOURCE_UNKNOWN),
-      touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
+      active_rotation_source_(display::Display::ROTATION_SOURCE_UNKNOWN),
+      touch_support_(display::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -255,8 +255,8 @@ DisplayInfo::DisplayInfo(int64_t id, const std::string& name, bool has_overscan)
     : id_(id),
       name_(name),
       has_overscan_(has_overscan),
-      active_rotation_source_(gfx::Display::ROTATION_SOURCE_UNKNOWN),
-      touch_support_(gfx::Display::TOUCH_SUPPORT_UNKNOWN),
+      active_rotation_source_(display::Display::ROTATION_SOURCE_UNKNOWN),
+      touch_support_(display::Display::TOUCH_SUPPORT_UNKNOWN),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -271,21 +271,21 @@ DisplayInfo::DisplayInfo(const DisplayInfo& other) = default;
 DisplayInfo::~DisplayInfo() {
 }
 
-void DisplayInfo::SetRotation(gfx::Display::Rotation rotation,
-                              gfx::Display::RotationSource source) {
+void DisplayInfo::SetRotation(display::Display::Rotation rotation,
+                              display::Display::RotationSource source) {
   rotations_[source] = rotation;
-  rotations_[gfx::Display::ROTATION_SOURCE_ACTIVE] = rotation;
+  rotations_[display::Display::ROTATION_SOURCE_ACTIVE] = rotation;
   active_rotation_source_ = source;
 }
 
-gfx::Display::Rotation DisplayInfo::GetActiveRotation() const {
-  return GetRotation(gfx::Display::ROTATION_SOURCE_ACTIVE);
+display::Display::Rotation DisplayInfo::GetActiveRotation() const {
+  return GetRotation(display::Display::ROTATION_SOURCE_ACTIVE);
 }
 
-gfx::Display::Rotation DisplayInfo::GetRotation(
-    gfx::Display::RotationSource source) const {
+display::Display::Rotation DisplayInfo::GetRotation(
+    display::Display::RotationSource source) const {
   if (rotations_.find(source) == rotations_.end())
-    return gfx::Display::ROTATE_0;
+    return display::Display::ROTATE_0;
   return rotations_.at(source);
 }
 
@@ -356,8 +356,8 @@ void DisplayInfo::UpdateDisplaySize() {
     overscan_insets_in_dip_.Set(0, 0, 0, 0);
   }
 
-  if (GetActiveRotation() == gfx::Display::ROTATE_90 ||
-      GetActiveRotation() == gfx::Display::ROTATE_270) {
+  if (GetActiveRotation() == display::Display::ROTATE_90 ||
+      GetActiveRotation() == display::Display::ROTATE_270) {
     size_in_pixel_.SetSize(size_in_pixel_.height(), size_in_pixel_.width());
   }
   gfx::SizeF size_f(size_in_pixel_);
@@ -377,7 +377,7 @@ void DisplayInfo::SetDisplayModes(
     const std::vector<DisplayMode>& display_modes) {
   display_modes_ = display_modes;
   std::sort(display_modes_.begin(), display_modes_.end(),
-            DisplayModeSorter(gfx::Display::IsInternalDisplayId(id_)));
+            DisplayModeSorter(display::Display::IsInternalDisplayId(id_)));
 }
 
 gfx::Size DisplayInfo::GetNativeModeSize() const {
@@ -407,9 +407,9 @@ std::string DisplayInfo::ToString() const {
       size_in_pixel_.ToString().c_str(), device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(), rotation_degree,
       configured_ui_scale_,
-      touch_support_ == gfx::Display::TOUCH_SUPPORT_AVAILABLE
+      touch_support_ == display::Display::TOUCH_SUPPORT_AVAILABLE
           ? "yes"
-          : touch_support_ == gfx::Display::TOUCH_SUPPORT_UNAVAILABLE
+          : touch_support_ == display::Display::TOUCH_SUPPORT_UNAVAILABLE
                 ? "no"
                 : "unknown",
       devices_str.c_str());
@@ -447,7 +447,8 @@ bool DisplayInfo::IsColorProfileAvailable(
 }
 
 bool DisplayInfo::Use125DSFForUIScaling() const {
-  return use_125_dsf_for_ui_scaling && gfx::Display::IsInternalDisplayId(id_);
+  return use_125_dsf_for_ui_scaling &&
+         display::Display::IsInternalDisplayId(id_);
 }
 
 void DisplayInfo::AddInputDevice(int id) {

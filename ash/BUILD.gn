@@ -46,6 +46,7 @@ component("ash") {
     "//ui/base:ui_data_pack",
     "//ui/base/ime",
     "//ui/compositor",
+    "//ui/display",
     "//ui/display/types",
     "//ui/events",
     "//ui/events:events_base",
@@ -115,7 +116,6 @@ component("ash") {
       "//ui/chromeos:ui_chromeos",
       "//ui/chromeos/resources",
       "//ui/chromeos/strings",
-      "//ui/display",
       "//ui/display/util",
     ]
   } else {

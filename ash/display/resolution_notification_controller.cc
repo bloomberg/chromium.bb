@@ -16,8 +16,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -140,7 +140,7 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
       accept_callback(accept_callback),
       timeout_count(0) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!gfx::Display::HasInternalDisplay() &&
+  if (!display::Display::HasInternalDisplay() &&
       display_manager->num_connected_displays() == 1u) {
     timeout_count = kTimeoutInSec;
   }
@@ -152,12 +152,12 @@ ResolutionNotificationController::ResolutionChangeInfo::
 
 ResolutionNotificationController::ResolutionNotificationController() {
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 ResolutionNotificationController::~ResolutionNotificationController() {
   Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ResolutionNotificationController::PrepareNotification(
@@ -165,7 +165,7 @@ void ResolutionNotificationController::PrepareNotification(
     const DisplayMode& old_resolution,
     const DisplayMode& new_resolution,
     const base::Closure& accept_callback) {
-  DCHECK(!gfx::Display::IsInternalDisplayId(display_id));
+  DCHECK(!display::Display::IsInternalDisplayId(display_id));
   // If multiple resolution changes are invoked for the same display,
   // the original resolution for the first resolution change has to be used
   // instead of the specified |old_resolution|.
@@ -277,18 +277,17 @@ void ResolutionNotificationController::RevertResolutionChange() {
 }
 
 void ResolutionNotificationController::OnDisplayAdded(
-    const gfx::Display& new_display) {
-}
+    const display::Display& new_display) {}
 
 void ResolutionNotificationController::OnDisplayRemoved(
-    const gfx::Display& old_display) {
+    const display::Display& old_display) {
   if (change_info_ && change_info_->display_id == old_display.id())
     RevertResolutionChange();
 }
 
 void ResolutionNotificationController::OnDisplayMetricsChanged(
-    const gfx::Display&, uint32_t) {
-}
+    const display::Display&,
+    uint32_t) {}
 
 void ResolutionNotificationController::OnDisplayConfigurationChanged() {
   if (!change_info_)

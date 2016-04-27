@@ -227,7 +227,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   EXPECT_EQ("300,200", env->last_mouse_location().ToString());
   test::CursorManagerTestApi cursor_test_api(shell->cursor_manager());
   EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
-  EXPECT_EQ(gfx::Display::ROTATE_0, cursor_test_api.GetCurrentCursorRotation());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            cursor_test_api.GetCurrentCursorRotation());
 
   shell->display_manager()->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400*2/r,400x400");
@@ -237,7 +238,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   // Check real cursor's position and properties.
   EXPECT_EQ("100,100", env->last_mouse_location().ToString());
   EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
-  EXPECT_EQ(gfx::Display::ROTATE_90,
+  EXPECT_EQ(display::Display::ROTATE_90,
             cursor_test_api.GetCurrentCursorRotation());
 
   // Check mirrored cursor's location.

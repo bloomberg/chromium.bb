@@ -17,21 +17,22 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(gfx::Display::Rotation);
+DECLARE_WINDOW_PROPERTY_TYPE(display::Display::Rotation);
 
 namespace ash {
 namespace {
 
 #if defined(OS_WIN)
-DEFINE_WINDOW_PROPERTY_KEY(gfx::Display::Rotation, kRotationPropertyKey,
-                           gfx::Display::ROTATE_0);
+DEFINE_WINDOW_PROPERTY_KEY(display::Display::Rotation,
+                           kRotationPropertyKey,
+                           display::Display::ROTATE_0);
 #endif
 
 // Round near zero value to zero.
@@ -51,7 +52,7 @@ void RoundNearZero(gfx::Transform* transform) {
 // precalculating the transform using fixed value.
 
 gfx::Transform CreateRotationTransform(aura::Window* root_window,
-                                       const gfx::Display& display) {
+                                       const display::Display& display) {
   DisplayInfo info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
 
@@ -73,17 +74,17 @@ gfx::Transform CreateRotationTransform(aura::Window* root_window,
   // 1 pixel.
   float one_pixel = 1.0f / display.device_scale_factor();
   switch (info.GetActiveRotation()) {
-    case gfx::Display::ROTATE_0:
+    case display::Display::ROTATE_0:
       break;
-    case gfx::Display::ROTATE_90:
+    case display::Display::ROTATE_90:
       rotate.Translate(display.bounds().height() - one_pixel, 0);
       rotate.Rotate(90);
       break;
-    case gfx::Display::ROTATE_270:
+    case display::Display::ROTATE_270:
       rotate.Translate(0, display.bounds().width() - one_pixel);
       rotate.Rotate(270);
       break;
-    case gfx::Display::ROTATE_180:
+    case display::Display::ROTATE_180:
       rotate.Translate(display.bounds().width() - one_pixel,
                        display.bounds().height() - one_pixel);
       rotate.Rotate(180);
@@ -125,7 +126,7 @@ gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
   return transform;
 }
 
-gfx::Transform CreateMirrorTransform(const gfx::Display& display) {
+gfx::Transform CreateMirrorTransform(const display::Display& display) {
   gfx::Transform transform;
   transform.matrix().set3x3(-1, 0, 0,
                             0, 1, 0,
@@ -137,8 +138,7 @@ gfx::Transform CreateMirrorTransform(const gfx::Display& display) {
 // RootWindowTransformer for ash environment.
 class AshRootWindowTransformer : public RootWindowTransformer {
  public:
-  AshRootWindowTransformer(aura::Window* root,
-                           const gfx::Display& display)
+  AshRootWindowTransformer(aura::Window* root, const display::Display& display)
       : root_window_(root) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     DisplayInfo info = display_manager->GetDisplayInfo(display.id());
@@ -277,9 +277,9 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
 class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
  public:
   PartialBoundsRootWindowTransformer(const gfx::Rect& screen_bounds,
-                                     const gfx::Display& display) {
-    gfx::Display unified_display =
-        gfx::Screen::GetScreen()->GetPrimaryDisplay();
+                                     const display::Display& display) {
+    display::Display unified_display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
     DisplayInfo display_info =
         Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
     root_bounds_ = gfx::Rect(display_info.bounds_in_native().size());
@@ -314,7 +314,7 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
 
 RootWindowTransformer* CreateRootWindowTransformerForDisplay(
     aura::Window* root,
-    const gfx::Display& display) {
+    const display::Display& display) {
   return new AshRootWindowTransformer(root, display);
 }
 
@@ -327,7 +327,7 @@ RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
 
 RootWindowTransformer* CreateRootWindowTransformerForUnifiedDesktop(
     const gfx::Rect& screen_bounds,
-    const gfx::Display& display) {
+    const display::Display& display) {
   return new PartialBoundsRootWindowTransformer(screen_bounds, display);
 }
 

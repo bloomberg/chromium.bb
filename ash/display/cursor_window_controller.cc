@@ -18,12 +18,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -102,9 +102,9 @@ void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {
 
 void CursorWindowController::UpdateContainer() {
   if (is_cursor_compositing_enabled_) {
-    gfx::Screen* screen = gfx::Screen::GetScreen();
-    gfx::Display display = screen->GetDisplayNearestPoint(
-        screen->GetCursorScreenPoint());
+    display::Screen* screen = display::Screen::GetScreen();
+    display::Display display =
+        screen->GetDisplayNearestPoint(screen->GetCursorScreenPoint());
     DCHECK(display.is_valid());
     if (display.is_valid())
       SetDisplay(display);
@@ -114,14 +114,14 @@ void CursorWindowController::UpdateContainer() {
                                       ->mirror_window_controller()
                                       ->GetWindow();
     if (mirror_window)
-      display_ = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+      display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
     SetContainer(mirror_window);
   }
   // Updates the hot point based on the current display.
   UpdateCursorImage();
 }
 
-void CursorWindowController::SetDisplay(const gfx::Display& display) {
+void CursorWindowController::SetDisplay(const display::Display& display) {
   if (!is_cursor_compositing_enabled_)
     return;
 
@@ -234,23 +234,23 @@ void CursorWindowController::UpdateCursorImage() {
   if (!is_cursor_compositing_enabled_) {
     gfx::ImageSkia rotated = *image;
     switch (display_.rotation()) {
-      case gfx::Display::ROTATE_0:
+      case display::Display::ROTATE_0:
         break;
-      case gfx::Display::ROTATE_90:
+      case display::Display::ROTATE_90:
         rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
             *image, SkBitmapOperations::ROTATION_90_CW);
         hot_point_.SetPoint(
             rotated.width() - hot_point_.y(),
             hot_point_.x());
         break;
-      case gfx::Display::ROTATE_180:
+      case display::Display::ROTATE_180:
         rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
             *image, SkBitmapOperations::ROTATION_180_CW);
         hot_point_.SetPoint(
             rotated.height() - hot_point_.x(),
             rotated.width() - hot_point_.y());
         break;
-      case gfx::Display::ROTATE_270:
+      case display::Display::ROTATE_270:
         rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
             *image, SkBitmapOperations::ROTATION_270_CW);
         hot_point_.SetPoint(

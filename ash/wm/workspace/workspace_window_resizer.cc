@@ -29,7 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/public/window_types.h"
 
@@ -373,8 +373,8 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
       GetTarget()->GetParent()->ConvertPointToScreen(location_in_parent);
 
   wm::WmWindow* root = nullptr;
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
   // Track the last screen that the pointer was on to keep the snap phantom
   // window there.
   if (display.bounds().Contains(location_in_screen)) {
@@ -767,8 +767,9 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds) {
   gfx::Point last_mouse_location_in_screen =
       GetTarget()->GetParent()->ConvertPointToScreen(last_mouse_location_);
-  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayNearestPoint(
-      last_mouse_location_in_screen);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(
+          last_mouse_location_in_screen);
   gfx::Rect work_area =
       GetTarget()->GetParent()->ConvertRectFromScreen(display.work_area());
   if (details().window_component == HTCAPTION) {

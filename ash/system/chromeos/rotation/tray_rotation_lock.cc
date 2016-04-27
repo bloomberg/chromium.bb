@@ -13,7 +13,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace ash {
 
@@ -149,8 +149,8 @@ bool TrayRotationLock::ShouldBeVisible() {
 
 bool TrayRotationLock::OnPrimaryDisplay() const {
   gfx::NativeView native_view = system_tray()->GetWidget()->GetNativeView();
-  gfx::Display parent_display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
+  display::Display parent_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
   return parent_display.IsInternal();
 }
 

@@ -14,8 +14,6 @@
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_window.h"
 #include "base/auto_reset.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 namespace wm {

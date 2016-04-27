@@ -19,11 +19,11 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -107,7 +107,7 @@ gfx::Point GetEventLocationInScreen(const ui::LocatedEvent& event) {
 
 // Returns the bounds of the display nearest to |window| in screen coordinates.
 gfx::Rect GetDisplayBoundsInScreen(aura::Window* window) {
-  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds();
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).bounds();
 }
 
 }  // namespace
@@ -924,7 +924,7 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
   // closest screen ensures that the event is from a valid bezel (as opposed to
   // another screen in an extended desktop).
   gfx::Rect screen_bounds =
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(location).bounds();
+      display::Screen::GetScreen()->GetDisplayNearestPoint(location).bounds();
   return (!screen_bounds.Contains(location) &&
           location.y() < hit_bounds_in_screen.y() &&
           location.x() >= hit_bounds_in_screen.x() &&

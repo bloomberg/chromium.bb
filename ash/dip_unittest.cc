@@ -17,9 +17,9 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -41,8 +41,8 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
   UpdateDisplay("1000x900*1.0f");
 
   aura::Window* root = Shell::GetPrimaryRootWindow();
-  const gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root);
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root);
 
   EXPECT_EQ("0,0 1000x900", display.bounds().ToString());
   gfx::Rect work_area = display.work_area();
@@ -50,9 +50,9 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
   EXPECT_EQ("0,0,47,0", display.bounds().InsetsFrom(work_area).ToString());
 
   UpdateDisplay("2000x1800*2.0f");
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
 
-  const gfx::Display display_2x = screen->GetDisplayNearestWindow(root);
+  const display::Display display_2x = screen->GetDisplayNearestWindow(root);
   const DisplayInfo display_info_2x =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 

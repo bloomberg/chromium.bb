@@ -38,7 +38,7 @@ class ScreenPositionController : public aura::client::ScreenPositionClient {
                                 gfx::Point* point) override;
   void SetBounds(aura::Window* window,
                  const gfx::Rect& bounds,
-                 const gfx::Display& display) override;
+                 const display::Display& display) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenPositionController);

@@ -12,7 +12,7 @@
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 
 namespace ash {
 
@@ -26,7 +26,7 @@ class VolumeView;
 
 class TrayAudio : public TrayImageItem,
                   public AudioObserver,
-                  public gfx::DisplayObserver {
+                  public display::DisplayObserver {
  public:
   TrayAudio(SystemTray* system_tray,
             std::unique_ptr<system::TrayAudioDelegate> audio_delegate);
@@ -35,10 +35,10 @@ class TrayAudio : public TrayImageItem,
   static bool ShowAudioDeviceMenu();
 
  protected:
-  // Overridden from gfx::DisplayObserver.
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // Overridden from display::DisplayObserver.
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
   virtual void Update();

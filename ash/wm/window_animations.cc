@@ -33,9 +33,9 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -483,7 +483,7 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   // to the location of the application launcher (which is fixed as first item
   // of the shelf).
   gfx::Rect work_area =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
   return shelf->SelectValueForShelfAlignment(
       gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0),

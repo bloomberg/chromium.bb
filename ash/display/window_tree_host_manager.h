@@ -23,11 +23,10 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
-class Display;
 class WindowTreeHost;
 }
 
@@ -38,7 +37,6 @@ class JSONValueConverter;
 }
 
 namespace gfx {
-class Display;
 class Insets;
 }
 
@@ -56,12 +54,12 @@ class RootWindowController;
 // WindowTreeHostManager owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
 class ASH_EXPORT WindowTreeHostManager
-    : public gfx::DisplayObserver,
+    : public display::DisplayObserver,
       public aura::WindowTreeHostObserver,
       public DisplayManager::Delegate,
       public ui::internal::InputMethodDelegate {
  public:
-  // TODO(oshima): Consider moving this to gfx::DisplayObserver.
+  // TODO(oshima): Consider moving this to display::DisplayObserver.
   class ASH_EXPORT Observer {
    public:
     // Invoked only once after all displays are initialized
@@ -152,10 +150,10 @@ class ASH_EXPORT WindowTreeHostManager
 
   ui::InputMethod* input_method() { return input_method_.get(); }
 
-  // gfx::DisplayObserver overrides:
-  void OnDisplayAdded(const gfx::Display& display) override;
-  void OnDisplayRemoved(const gfx::Display& display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& display) override;
+  void OnDisplayRemoved(const display::Display& display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // aura::WindowTreeHostObserver overrides:
@@ -185,7 +183,7 @@ class ASH_EXPORT WindowTreeHostManager
   // Creates a WindowTreeHost for |display| and stores it in the
   // |window_tree_hosts_| map.
   AshWindowTreeHost* AddWindowTreeHostForDisplay(
-      const gfx::Display& display,
+      const display::Display& display,
       const AshWindowTreeHostInitParams& params);
 
   // Delete the AsWindowTreeHost. This does not remove the entry from

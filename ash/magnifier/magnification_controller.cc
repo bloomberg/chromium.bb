@@ -30,13 +30,13 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -372,8 +372,8 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration_in_ms));
 
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
   GetRootWindowController(root_window_)

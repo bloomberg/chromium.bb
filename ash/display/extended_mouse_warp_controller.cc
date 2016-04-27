@@ -16,8 +16,8 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -33,7 +33,7 @@ const int kMaximumSnapHeight = 16;
 // this, entire edge will be used as a draggable space.
 const int kMinimumIndicatorHeight = 200;
 
-// Helper method that maps a gfx::Display to an aura::Window.
+// Helper method that maps a display::Display to an aura::Window.
 aura::Window* GetRootWindowForDisplayId(int64_t display_id) {
   return Shell::GetInstance()
       ->window_tree_host_manager()
@@ -42,7 +42,7 @@ aura::Window* GetRootWindowForDisplayId(int64_t display_id) {
 
 // Helper method that maps an aura::Window to display id;
 int64_t GetDisplayIdFromWindow(aura::Window* window) {
-  return gfx::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
 
 // Adjust the edge so that it has |barrier_size| gap at the top to
@@ -104,16 +104,16 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
   ash::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
-                                       : gfx::Display::kInvalidDisplayID;
+                                       : display::Display::kInvalidDisplayID;
   display::DisplayList display_list = display_manager->active_display_list();
   // Try to create a Warp region for all possible two displays combination.
   // The following code does it by poping the last element in the list
   // and then pairing with remaining displays in the list, until the list
   // becomes single element.
   while (display_list.size() > 1) {
-    gfx::Display display = display_list.back();
+    display::Display display = display_list.back();
     display_list.pop_back();
-    for (const gfx::Display& peer : display_list) {
+    for (const display::Display& peer : display_list) {
       std::unique_ptr<WarpRegion> region =
           CreateWarpRegion(display, peer, drag_source_id);
       if (region)
@@ -126,7 +126,7 @@ ExtendedMouseWarpController::~ExtendedMouseWarpController() {
 }
 
 bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
-  if (gfx::Screen::GetScreen()->GetNumDisplays() <= 1 || !enabled_)
+  if (display::Screen::GetScreen()->GetNumDisplays() <= 1 || !enabled_)
     return false;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -202,12 +202,12 @@ bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
 }
 
 std::unique_ptr<ExtendedMouseWarpController::WarpRegion>
-ExtendedMouseWarpController::CreateWarpRegion(const gfx::Display& a,
-                                              const gfx::Display& b,
+ExtendedMouseWarpController::CreateWarpRegion(const display::Display& a,
+                                              const display::Display& b,
                                               int64_t drag_source_id) {
   gfx::Rect a_edge;
   gfx::Rect b_edge;
-  int snap_barrier = drag_source_id == gfx::Display::kInvalidDisplayID
+  int snap_barrier = drag_source_id == display::Display::kInvalidDisplayID
                          ? 0
                          : kMaximumSnapHeight;
 

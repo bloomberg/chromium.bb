@@ -13,7 +13,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_delegate.h"
 

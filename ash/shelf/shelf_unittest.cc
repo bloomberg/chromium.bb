@@ -18,8 +18,6 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

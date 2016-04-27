@@ -15,7 +15,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -61,7 +61,7 @@ TEST_F(WindowPositionerTest, OpenDefaultWindowOnSecondDisplay) {
   // The window should be in the 2nd display with the default size.
   EXPECT_EQ("300x300", bounds.size().ToString());
 #endif
-  EXPECT_TRUE(gfx::Screen::GetScreen()
+  EXPECT_TRUE(display::Screen::GetScreen()
                   ->GetDisplayNearestWindow(second_root_window)
                   .bounds()
                   .Contains(bounds));

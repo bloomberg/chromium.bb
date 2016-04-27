@@ -13,9 +13,9 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/chromeos/accessibility_types.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -695,7 +695,7 @@ TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
 
   GetMagnificationController()->SetEnabled(true);
 
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
 
   UpdateDisplay("500x500, 500x500");
   EXPECT_EQ("0,0 1000x500", screen->GetPrimaryDisplay().bounds().ToString());

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace wm {
@@ -25,7 +25,7 @@ class CursorManagerTestApi {
 
   ui::CursorSetType GetCurrentCursorSet() const;
   gfx::NativeCursor GetCurrentCursor() const;
-  gfx::Display::Rotation GetCurrentCursorRotation() const;
+  display::Display::Rotation GetCurrentCursorRotation() const;
   float GetCurrentCursorScale() const;
 
  private:

@@ -10,11 +10,11 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -56,10 +56,12 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
 
   UpdateDisplay("360x360,700x700");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  int64_t display_0_id =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]).id();
-  int64_t display_1_id =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
+  int64_t display_0_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[0])
+                             .id();
+  int64_t display_1_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[1])
+                             .id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   std::unique_ptr<display::DisplayLayout> layout(
@@ -128,10 +130,12 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
   UpdateDisplay("360x360,700x700");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
-  int64_t display_0_id =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]).id();
-  int64_t display_1_id =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
+  int64_t display_0_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[0])
+                             .id();
+  int64_t display_1_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[1])
+                             .id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   std::unique_ptr<display::DisplayLayout> layout(
@@ -169,10 +173,12 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
 
   UpdateDisplay("360x360,700x700");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  int64_t display_0_id =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]).id();
-  int64_t display_1_id =
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]).id();
+  int64_t display_0_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[0])
+                             .id();
+  int64_t display_1_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(root_windows[1])
+                             .id();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   std::unique_ptr<display::DisplayLayout> layout(
@@ -223,7 +229,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestThreeDisplays) {
 
   UpdateDisplay("360x360,700x700,1000x1000");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   int64_t display_0_id = screen->GetDisplayNearestWindow(root_windows[0]).id();
   int64_t display_1_id = screen->GetDisplayNearestWindow(root_windows[1]).id();
   int64_t display_2_id = screen->GetDisplayNearestWindow(root_windows[2]).id();
@@ -279,7 +285,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
     return;
   UpdateDisplay("700x500,500x500,1000x1000");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   int64_t display_0_id = screen->GetDisplayNearestWindow(root_windows[0]).id();
   int64_t display_1_id = screen->GetDisplayNearestWindow(root_windows[1]).id();
   int64_t display_2_id = screen->GetDisplayNearestWindow(root_windows[2]).id();
@@ -330,7 +336,7 @@ TEST_F(ExtendedMouseWarpControllerTest,
     return;
   UpdateDisplay("700x500,500x500,1000x1000");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  gfx::Screen* screen = gfx::Screen::GetScreen();
+  display::Screen* screen = display::Screen::GetScreen();
   int64_t display_0_id = screen->GetDisplayNearestWindow(root_windows[0]).id();
   int64_t display_1_id = screen->GetDisplayNearestWindow(root_windows[1]).id();
   int64_t display_2_id = screen->GetDisplayNearestWindow(root_windows[2]).id();

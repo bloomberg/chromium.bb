@@ -36,9 +36,9 @@ TEST_F(ScreenAshTest, TestGetWindowAtScreenPoint) {
 
   ASSERT_NE(win1->GetRootWindow(), win2->GetRootWindow());
 
-  EXPECT_EQ(win1.get(), gfx::Screen::GetScreen()->GetWindowAtScreenPoint(
+  EXPECT_EQ(win1.get(), display::Screen::GetScreen()->GetWindowAtScreenPoint(
                             gfx::Point(50, 60)));
-  EXPECT_EQ(win2.get(), gfx::Screen::GetScreen()->GetWindowAtScreenPoint(
+  EXPECT_EQ(win2.get(), display::Screen::GetScreen()->GetWindowAtScreenPoint(
                             gfx::Point(250, 260)));
 }
 

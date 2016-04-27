@@ -13,8 +13,8 @@
 
 #include "ash/ash_export.h"
 #include "base/files/file_path.h"
+#include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -43,7 +43,7 @@ struct ASH_EXPORT DisplayMode {
 };
 
 // DisplayInfo contains metadata for each display. This is used to
-// create |gfx::Display| as well as to maintain extra infomation
+// create |display::Display| as well as to maintain extra infomation
 // to manage displays in ash environment.
 // This class is intentionally made copiable.
 class ASH_EXPORT DisplayInfo {
@@ -111,10 +111,12 @@ class ASH_EXPORT DisplayInfo {
   // actual overscan automatically, but used in the message.
   bool has_overscan() const { return has_overscan_; }
 
-  void set_touch_support(gfx::Display::TouchSupport support) {
+  void set_touch_support(display::Display::TouchSupport support) {
     touch_support_ = support;
   }
-  gfx::Display::TouchSupport touch_support() const { return touch_support_; }
+  display::Display::TouchSupport touch_support() const {
+    return touch_support_;
+  }
 
   // Associate the input device with identifier |id| with this display.
   void AddInputDevice(int id);
@@ -156,19 +158,20 @@ class ASH_EXPORT DisplayInfo {
 
   // Sets the rotation for the given |source|. Setting a new rotation will also
   // have it become the active rotation.
-  void SetRotation(gfx::Display::Rotation rotation,
-                   gfx::Display::RotationSource source);
+  void SetRotation(display::Display::Rotation rotation,
+                   display::Display::RotationSource source);
 
   // Returns the currently active rotation for this display.
-  gfx::Display::Rotation GetActiveRotation() const;
+  display::Display::Rotation GetActiveRotation() const;
 
   // Returns the source which set the active rotation for this display.
-  gfx::Display::RotationSource active_rotation_source() const {
+  display::Display::RotationSource active_rotation_source() const {
     return active_rotation_source_;
   }
 
   // Returns the rotation set by a given |source|.
-  gfx::Display::Rotation GetRotation(gfx::Display::RotationSource source) const;
+  display::Display::Rotation GetRotation(
+      display::Display::RotationSource source) const;
 
   // Returns the ui scale and device scale factor actually used to create
   // display that chrome sees. This can be different from one obtained
@@ -269,9 +272,10 @@ class ASH_EXPORT DisplayInfo {
   std::string name_;
   base::FilePath sys_path_;
   bool has_overscan_;
-  std::map<gfx::Display::RotationSource, gfx::Display::Rotation> rotations_;
-  gfx::Display::RotationSource active_rotation_source_;
-  gfx::Display::TouchSupport touch_support_;
+  std::map<display::Display::RotationSource, display::Display::Rotation>
+      rotations_;
+  display::Display::RotationSource active_rotation_source_;
+  display::Display::TouchSupport touch_support_;
 
   // The set of input devices associated with this display.
   std::vector<int> input_devices_;

@@ -17,8 +17,8 @@
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 namespace wm {
@@ -53,8 +53,8 @@ void MoveToDisplayForRestore(WindowState* window_state) {
       window_state->window()->GetDisplayNearestWindow().bounds();
 
   if (!display_area.Intersects(restore_bounds)) {
-    const gfx::Display& display =
-        gfx::Screen::GetScreen()->GetDisplayMatching(restore_bounds);
+    const display::Display& display =
+        display::Screen::GetScreen()->GetDisplayMatching(restore_bounds);
     WmGlobals* globals = window_state->window()->GetGlobals();
     WmWindow* new_root = globals->GetRootWindowForDisplayId(display.id());
     if (new_root != window_state->window()->GetRootWindow()) {
@@ -246,7 +246,7 @@ void DefaultState::AttachState(WindowState* window_state,
 
   // If the display has changed while in the another mode,
   // we need to let windows know the change.
-  gfx::Display current_display =
+  display::Display current_display =
       window_state->window()->GetDisplayNearestWindow();
   if (stored_display_state_.bounds() != current_display.bounds()) {
     const WMEvent event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);

@@ -18,8 +18,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
-#include "ui/gfx/display.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_configurator.h"
@@ -34,10 +34,8 @@ class DisplayNotificationsTest;
 }
 
 namespace gfx {
-class Display;
 class Insets;
 class Rect;
-class Screen;
 }
 
 namespace ash {
@@ -142,12 +140,12 @@ class ASH_EXPORT DisplayManager
       std::unique_ptr<display::DisplayLayout> layout);
 
   // Returns display for given |id|;
-  const gfx::Display& GetDisplayForId(int64_t id) const;
+  const display::Display& GetDisplayForId(int64_t id) const;
 
   // Finds the display that contains |point| in screeen coordinates.
   // Returns invalid display if there is no display that can satisfy
   // the condition.
-  const gfx::Display& FindDisplayContainingPoint(
+  const display::Display& FindDisplayContainingPoint(
       const gfx::Point& point_in_screen) const;
 
   // Sets the work area's |insets| to the display given by |display_id|.
@@ -161,8 +159,8 @@ class ASH_EXPORT DisplayManager
   // Sets the display's rotation for the given |source|. The new |rotation| will
   // also become active.
   void SetDisplayRotation(int64_t display_id,
-                          gfx::Display::Rotation rotation,
-                          gfx::Display::RotationSource source);
+                          display::Display::Rotation rotation,
+                          display::Display::RotationSource source);
 
   // Sets the external display's configuration, including resolution change,
   // ui-scale change, and device scale factor change. Returns true if it changes
@@ -173,7 +171,7 @@ class ASH_EXPORT DisplayManager
   // Register per display properties. |overscan_insets| is NULL if
   // the display has no custom overscan insets.
   void RegisterDisplayProperty(int64_t display_id,
-                               gfx::Display::Rotation rotation,
+                               display::Display::Rotation rotation,
                                float ui_scale,
                                const gfx::Insets* overscan_insets,
                                const gfx::Size& resolution_in_pixels,
@@ -182,7 +180,7 @@ class ASH_EXPORT DisplayManager
 
   // Register stored rotation properties for the internal display.
   void RegisterDisplayRotationProperties(bool rotation_lock,
-                                         gfx::Display::Rotation rotation);
+                                         display::Display::Rotation rotation);
 
   // Returns the stored rotation lock preference if it has been loaded,
   // otherwise false.
@@ -191,8 +189,8 @@ class ASH_EXPORT DisplayManager
   }
 
   // Returns the stored rotation preference for the internal display if it has
-  // been loaded, otherwise |gfx::Display::Rotate_0|.
-  gfx::Display::Rotation registered_internal_display_rotation() const {
+  // been loaded, otherwise |display::Display::Rotate_0|.
+  display::Display::Rotation registered_internal_display_rotation() const {
     return registered_internal_display_rotation_;
   }
 
@@ -230,9 +228,9 @@ class ASH_EXPORT DisplayManager
 
   // Returns the display at |index|. The display at 0 is
   // no longer considered "primary".
-  const gfx::Display& GetDisplayAt(size_t index) const;
+  const display::Display& GetDisplayAt(size_t index) const;
 
-  const gfx::Display& GetPrimaryDisplayCandidate() const;
+  const display::Display& GetPrimaryDisplayCandidate() const;
 
   // Returns the logical number of displays. This returns 1
   // when displays are mirrored.
@@ -266,7 +264,7 @@ class ASH_EXPORT DisplayManager
 
   // Returns the display used for software mirrroring. Returns invalid
   // display if not found.
-  const gfx::Display GetMirroringDisplayById(int64_t id) const;
+  const display::Display GetMirroringDisplayById(int64_t id) const;
 
   // Retuns the display info associated with |display_id|.
   const DisplayInfo& GetDisplayInfo(int64_t display_id) const;
@@ -357,7 +355,7 @@ private:
   // used to mirror the content is removed from the |display_info_list|.
   void CreateSoftwareMirroringDisplayInfo(DisplayInfoList* display_info_list);
 
-  gfx::Display* FindDisplayForId(int64_t id);
+  display::Display* FindDisplayForId(int64_t id);
 
   // Add the mirror display's display info if the software based
   // mirroring is in use.
@@ -374,12 +372,12 @@ private:
   void OnDisplayInfoUpdated(const DisplayInfo& display_info);
 
   // Creates a display object from the DisplayInfo for |display_id|.
-  gfx::Display CreateDisplayFromDisplayInfoById(int64_t display_id);
+  display::Display CreateDisplayFromDisplayInfoById(int64_t display_id);
 
   // Creates a display object from the DisplayInfo for |display_id| for
   // mirroring. The size of the display will be scaled using |scale|
   // with the offset using |origin|.
-  gfx::Display CreateMirroringDisplayFromDisplayInfoById(
+  display::Display CreateMirroringDisplayFromDisplayInfoById(
       int64_t display_id,
       const gfx::Point& origin,
       float scale);
@@ -441,7 +439,7 @@ private:
   bool registered_internal_display_rotation_lock_;
 
   // User preference for the rotation of the internal display.
-  gfx::Display::Rotation registered_internal_display_rotation_;
+  display::Display::Rotation registered_internal_display_rotation_;
 
   bool unified_desktop_enabled_;
 

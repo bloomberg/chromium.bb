@@ -447,8 +447,8 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   const gfx::Rect target_bounds = SelectedWindow()->target_bounds();
   gfx::Vector2d fade_out_direction =
           GetSlideVectorForFadeIn(direction, target_bounds);
-  gfx::Display dst_display =
-      gfx::Screen::GetScreen()->GetDisplayMatching(target_bounds);
+  display::Display dst_display =
+      display::Screen::GetScreen()->GetDisplayMatching(target_bounds);
   selection_widget_->GetNativeWindow()->SetBoundsInScreen(
       target_bounds - fade_out_direction, dst_display);
 }

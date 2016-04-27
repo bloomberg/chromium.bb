@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -23,7 +23,7 @@ namespace {
 views::Widget* CreateFirstRunWindow() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  params.bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),

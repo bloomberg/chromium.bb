@@ -20,7 +20,7 @@
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 
@@ -48,7 +48,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
 
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Shell::GetInstance()->RemoveShellObserver(this);
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   RestoreAllWindows();
@@ -148,15 +148,17 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
   }
 }
 
-void MaximizeModeWindowManager::OnDisplayAdded(const gfx::Display& display) {
+void MaximizeModeWindowManager::OnDisplayAdded(
+    const display::Display& display) {
   DisplayConfigurationChanged();
 }
 
-void MaximizeModeWindowManager::OnDisplayRemoved(const gfx::Display& display) {
+void MaximizeModeWindowManager::OnDisplayRemoved(
+    const display::Display& display) {
   DisplayConfigurationChanged();
 }
 
-void MaximizeModeWindowManager::OnDisplayMetricsChanged(const gfx::Display&,
+void MaximizeModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
                                                         uint32_t) {
   // Nothing to do here.
 }
@@ -196,7 +198,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   MaximizeAllWindows();
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
 }

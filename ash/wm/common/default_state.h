@@ -7,7 +7,7 @@
 
 #include "ash/wm/common/window_state.h"
 #include "base/macros.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -68,7 +68,7 @@ class DefaultState : public WindowState::State {
   gfx::Rect stored_restore_bounds_;
 
   // The display state in which the mode got started.
-  gfx::Display stored_display_state_;
+  display::Display stored_display_state_;
 
   // The window state only gets remembered for DCHECK reasons.
   WindowState* stored_window_state_;

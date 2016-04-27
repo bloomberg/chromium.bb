@@ -32,7 +32,8 @@ namespace ash {
 // and opacity based on the current bounds.
 class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
  public:
-  DragWindowDetails(const gfx::Display& display, aura::Window* original_window)
+  DragWindowDetails(const display::Display& display,
+                    aura::Window* original_window)
       : root_window_(Shell::GetInstance()
                          ->window_tree_host_manager()
                          ->GetRootWindowForDisplayId(display.id())) {}
@@ -182,10 +183,10 @@ float DragWindowController::GetDragWindowOpacity(
 DragWindowController::DragWindowController(aura::Window* window)
     : window_(window) {
   DCHECK(drag_windows_.empty());
-  gfx::Screen* screen = gfx::Screen::GetScreen();
-  gfx::Display current = screen->GetDisplayNearestWindow(window_);
+  display::Screen* screen = display::Screen::GetScreen();
+  display::Display current = screen->GetDisplayNearestWindow(window_);
 
-  for (const gfx::Display& display : screen->GetAllDisplays()) {
+  for (const display::Display& display : screen->GetAllDisplays()) {
     if (current.id() == display.id())
       continue;
     drag_windows_.push_back(

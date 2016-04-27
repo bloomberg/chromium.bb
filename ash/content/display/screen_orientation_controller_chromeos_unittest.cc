@@ -27,7 +27,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/test/webview_test_helper.h"
 #include "ui/views/view.h"
@@ -60,13 +60,13 @@ bool RotationLocked() {
 }
 
 void SetDisplayRotationById(int64_t display_id,
-                            gfx::Display::Rotation rotation) {
+                            display::Display::Rotation rotation) {
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
-      display_id, rotation, gfx::Display::ROTATION_SOURCE_USER);
+      display_id, rotation, display::Display::ROTATION_SOURCE_USER);
 }
 
-void SetInternalDisplayRotation(gfx::Display::Rotation rotation) {
-  SetDisplayRotationById(gfx::Display::InternalDisplayId(), rotation);
+void SetInternalDisplayRotation(display::Display::Rotation rotation) {
+  SetDisplayRotationById(display::Display::InternalDisplayId(), rotation);
 }
 
 void SetRotationLocked(bool rotation_locked) {
@@ -166,12 +166,12 @@ TEST_F(ScreenOrientationControllerTest, LockOrientation) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
-  ASSERT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 }
 
@@ -180,12 +180,12 @@ TEST_F(ScreenOrientationControllerTest, Unlock) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
-  ASSERT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   delegate()->Unlock(content.get());
@@ -198,16 +198,16 @@ TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateTestWindowInShellWithId(0));
   ASSERT_NE(nullptr, content->GetNativeView());
-  ASSERT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockPortrait);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that orientation can only be set by the first content::WebContents that
@@ -223,7 +223,7 @@ TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
   AttachWebContents(content2.get(), focus_window2.get());
   delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
   delegate()->Lock(content2.get(), blink::WebScreenOrientationLockPortrait);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that only the content::WebContents that set a rotation lock can perform
@@ -274,17 +274,17 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
 
   delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
   delegate()->Lock(content2.get(), blink::WebScreenOrientationLockPortrait);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   aura::client::ActivationClient* activation_client =
       Shell::GetInstance()->activation_client();
   activation_client->ActivateWindow(focus_window2.get());
   EXPECT_TRUE(RotationLocked());
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   activation_client->ActivateWindow(focus_window1.get());
   EXPECT_TRUE(RotationLocked());
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that a rotation lock is removed when the setting window is hidden, and
@@ -334,13 +334,13 @@ TEST_F(ScreenOrientationControllerTest, DisplayRotation) {
   EnableMaximizeMode(true);
   // Now test rotating in all directions.
   TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that low angles are ignored by the accelerometer (i.e. when the device
@@ -348,15 +348,15 @@ TEST_F(ScreenOrientationControllerTest, DisplayRotation) {
 TEST_F(ScreenOrientationControllerTest, RotationIgnoresLowAngles) {
   EnableMaximizeMode(true);
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, -kMeanGravity));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(-2.0f, 0.0f, -kMeanGravity));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, 2.0f, -kMeanGravity));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(2.0f, 0.0f, -kMeanGravity));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -2.0f, -kMeanGravity));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that the display will stick to the current orientation beyond the
@@ -365,7 +365,7 @@ TEST_F(ScreenOrientationControllerTest, RotationSticky) {
   EnableMaximizeMode(true);
   gfx::Vector3dF gravity(0.0f, -kMeanGravity, 0.0f);
   TriggerLidUpdate(gravity);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Turn past half-way point to next direction and rotation should remain
   // the same.
@@ -373,14 +373,14 @@ TEST_F(ScreenOrientationControllerTest, RotationSticky) {
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
   TriggerLidUpdate(gravity);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Turn more and the screen should rotate.
   degrees = 70.0;
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
   TriggerLidUpdate(gravity);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Turn back just beyond the half-way point and the new rotation should
   // still be in effect.
@@ -388,7 +388,7 @@ TEST_F(ScreenOrientationControllerTest, RotationSticky) {
   gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
   gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
   TriggerLidUpdate(gravity);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that the display will stick to its current orientation when the
@@ -403,11 +403,11 @@ TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
                          -cos(degrees * kDegreesToRadians) * kMeanGravity,
                          0.0f);
   TriggerLidUpdate(gravity);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   SetRotationLocked(false);
   TriggerLidUpdate(gravity);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
 // The TrayDisplay class that is responsible for adding/updating MessageCenter
@@ -430,10 +430,10 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
 
   // Make sure notifications are still displayed when
   // adjusting the screen rotation directly when in maximize mode
-  ASSERT_NE(gfx::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
-  SetInternalDisplayRotation(gfx::Display::ROTATE_270);
+  ASSERT_NE(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  SetInternalDisplayRotation(display::Display::ROTATE_270);
   SetRotationLocked(false);
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(1u, message_center->NotificationCount());
   EXPECT_TRUE(message_center->HasPopupNotifications());
 
@@ -446,9 +446,9 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   // Make sure notifications are blocked when adjusting the screen rotation
   // via the accelerometer while in maximize mode
   // Rotate the screen 90 degrees
-  ASSERT_NE(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  ASSERT_NE(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
-  ASSERT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  ASSERT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(0u, message_center->NotificationCount());
   EXPECT_FALSE(message_center->HasPopupNotifications());
 
@@ -456,15 +456,15 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   // adjusting the screen rotation directly when not in maximize mode
   EnableMaximizeMode(false);
   // Reset the screen rotation.
-  SetInternalDisplayRotation(gfx::Display::ROTATE_0);
+  SetInternalDisplayRotation(display::Display::ROTATE_0);
   // Clear all notifications
   message_center->RemoveAllNotifications(
       false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
-  ASSERT_NE(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  ASSERT_NE(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   ASSERT_EQ(0u, message_center->NotificationCount());
   ASSERT_FALSE(message_center->HasPopupNotifications());
-  SetInternalDisplayRotation(gfx::Display::ROTATE_180);
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  SetInternalDisplayRotation(display::Display::ROTATE_180);
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(1u, message_center->NotificationCount());
   EXPECT_TRUE(message_center->HasPopupNotifications());
 }
@@ -474,14 +474,14 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
 TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
   test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
-  SetInternalDisplayRotation(gfx::Display::ROTATE_90);
+  SetInternalDisplayRotation(display::Display::ROTATE_90);
   EnableMaximizeMode(true);
 
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 
   EnableMaximizeMode(false);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that if a user sets a display rotation that accelerometer rotation
@@ -490,7 +490,7 @@ TEST_F(ScreenOrientationControllerTest,
        NonAccelerometerRotationChangesLockRotation) {
   EnableMaximizeMode(true);
   ASSERT_FALSE(RotationLocked());
-  SetInternalDisplayRotation(gfx::Display::ROTATE_270);
+  SetInternalDisplayRotation(display::Display::ROTATE_270);
   EXPECT_TRUE(RotationLocked());
 }
 
@@ -499,12 +499,12 @@ TEST_F(ScreenOrientationControllerTest,
 // rotation should be applied.
 TEST_F(ScreenOrientationControllerTest, UpdateUserRotationWhileRotationLocked) {
   EnableMaximizeMode(true);
-  SetInternalDisplayRotation(gfx::Display::ROTATE_270);
+  SetInternalDisplayRotation(display::Display::ROTATE_270);
   // User sets rotation to the same rotation that the display was at when
   // maximize mode was activated.
-  SetInternalDisplayRotation(gfx::Display::ROTATE_0);
+  SetInternalDisplayRotation(display::Display::ROTATE_0);
   EnableMaximizeMode(false);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that when the orientation lock is set to Landscape, that rotation can
@@ -516,18 +516,18 @@ TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   // Inverse of orientation is allowed
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 
   // Display rotations between are not allowed
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that when the orientation lock is set to Portrait, that rotaiton can be
@@ -539,18 +539,18 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(), blink::WebScreenOrientationLockPortrait);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   // Inverse of orientation is allowed
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
   // Display rotations between are not allowed
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that for an orientation lock which does not allow rotation, that the
@@ -563,16 +563,16 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(),
                    blink::WebScreenOrientationLockPortraitPrimary);
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
   // Rotation does not change.
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that after a content::WebContents has applied an orientation lock which
@@ -588,10 +588,10 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
 
   SetRotationLocked(true);
   EXPECT_TRUE(RotationLocked());
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 // Tests that when MaximizeMode is triggered before the internal display is
@@ -600,23 +600,23 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
 TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
   test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
 
-  int64_t internal_display_id = gfx::Display::InternalDisplayId();
-  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+  int64_t internal_display_id = display::Display::InternalDisplayId();
+  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
 
   EnableMaximizeMode(true);
 
   // Should not crash, even though there is no internal display.
-  SetDisplayRotationById(internal_display_id, gfx::Display::ROTATE_180);
+  SetDisplayRotationById(internal_display_id, display::Display::ROTATE_180);
   EXPECT_FALSE(RotationLocked());
 
   // Should not crash, even though the invalid display id is requested.
-  SetDisplayRotationById(gfx::Display::kInvalidDisplayID,
-                         gfx::Display::ROTATE_180);
+  SetDisplayRotationById(display::Display::kInvalidDisplayID,
+                         display::Display::ROTATE_180);
   EXPECT_FALSE(RotationLocked());
 
   // With an internal display now available, functionality should resume.
-  gfx::Display::SetInternalDisplayId(internal_display_id);
-  SetInternalDisplayRotation(gfx::Display::ROTATE_90);
+  display::Display::SetInternalDisplayId(internal_display_id);
+  SetInternalDisplayRotation(display::Display::ROTATE_90);
   EXPECT_TRUE(RotationLocked());
 }
 
@@ -624,7 +624,7 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
 TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   const int64_t kInternalDisplayId = 9;
   const int64_t kExternalDisplayId = 10;
-  const gfx::Display::Rotation kNewRotation = gfx::Display::ROTATE_180;
+  const display::Display::Rotation kNewRotation = display::Display::ROTATE_180;
 
   const DisplayInfo internal_display_info =
       CreateDisplayInfo(kInternalDisplayId, gfx::Rect(0, 0, 500, 500));
@@ -651,7 +651,7 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
                               .GetActiveRotation());
 
   Shell::GetInstance()->screen_orientation_controller()->SetDisplayRotation(
-      kNewRotation, gfx::Display::ROTATION_SOURCE_ACTIVE);
+      kNewRotation, display::Display::ROTATION_SOURCE_ACTIVE);
 
   EXPECT_EQ(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
                               .GetActiveRotation());

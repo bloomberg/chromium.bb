@@ -10,8 +10,8 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
 #if defined(OS_CHROMEOS)
@@ -28,7 +28,7 @@ namespace ash {
 // class manage their own lifetime.
 class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
                                     public views::WidgetObserver,
-                                    public gfx::DisplayObserver,
+                                    public display::DisplayObserver,
 #if defined(OS_CHROMEOS)
                                     public ui::DisplayConfigurator::Observer,
 #endif  // defined(OS_CHROMEOS)
@@ -61,10 +61,10 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   // Overridden from views::WidgetObserver.
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // Overridden from gfx::DisplayObserver.
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // Overridden from display::DisplayObserver.
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
 #if defined(OS_CHROMEOS)

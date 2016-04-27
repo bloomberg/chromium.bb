@@ -7,7 +7,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -28,7 +28,7 @@ void ShelfBezelEventFilter::OnGestureEvent(
   gfx::Point point_in_screen(event->location());
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ::wm::ConvertPointToScreen(target, &point_in_screen);
-  gfx::Rect screen = gfx::Screen::GetScreen()
+  gfx::Rect screen = display::Screen::GetScreen()
                          ->GetDisplayNearestPoint(point_in_screen)
                          .bounds();
   if ((!screen.Contains(point_in_screen) &&

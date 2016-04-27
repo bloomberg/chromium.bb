@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace ash {
 namespace test {
@@ -43,7 +43,7 @@ class ASH_EXPORT CursorWindowController {
 
   // Sets the display on which to draw cursor.
   // Only applicable when cursor compositing is enabled.
-  void SetDisplay(const gfx::Display& display);
+  void SetDisplay(const display::Display& display);
 
   // Sets cursor location, shape, set and visibility.
   void UpdateLocation();
@@ -87,7 +87,7 @@ class ASH_EXPORT CursorWindowController {
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.
-  gfx::Display display_;
+  display::Display display_;
 
   std::unique_ptr<aura::Window> cursor_window_;
   std::unique_ptr<CursorWindowDelegate> delegate_;

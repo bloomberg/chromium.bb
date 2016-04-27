@@ -27,8 +27,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -48,11 +48,11 @@ TrayAudio::TrayAudio(SystemTray* system_tray,
       volume_view_(NULL),
       pop_up_volume_view_(false) {
   Shell::GetInstance()->system_tray_notifier()->AddAudioObserver(this);
-  gfx::Screen::GetScreen()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 TrayAudio::~TrayAudio() {
-  gfx::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   Shell::GetInstance()->system_tray_notifier()->RemoveAudioObserver(this);
 }
 
@@ -143,35 +143,35 @@ void TrayAudio::ChangeInternalSpeakerChannelMode() {
   // Swap left/right channel only if it is in Yoga mode.
   system::TrayAudioDelegate::AudioChannelMode channel_mode =
       system::TrayAudioDelegate::NORMAL;
-  if (gfx::Display::HasInternalDisplay()) {
+  if (display::Display::HasInternalDisplay()) {
     const DisplayInfo& display_info =
         Shell::GetInstance()->display_manager()->GetDisplayInfo(
-            gfx::Display::InternalDisplayId());
-    if (display_info.GetActiveRotation() == gfx::Display::ROTATE_180)
+            display::Display::InternalDisplayId());
+    if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
       channel_mode = system::TrayAudioDelegate::LEFT_RIGHT_SWAPPED;
   }
 
   audio_delegate_->SetInternalSpeakerChannelMode(channel_mode);
 }
 
-void TrayAudio::OnDisplayAdded(const gfx::Display& new_display) {
+void TrayAudio::OnDisplayAdded(const display::Display& new_display) {
   if (!new_display.IsInternal())
     return;
   ChangeInternalSpeakerChannelMode();
 }
 
-void TrayAudio::OnDisplayRemoved(const gfx::Display& old_display) {
+void TrayAudio::OnDisplayRemoved(const display::Display& old_display) {
   if (!old_display.IsInternal())
     return;
   ChangeInternalSpeakerChannelMode();
 }
 
-void TrayAudio::OnDisplayMetricsChanged(const gfx::Display& display,
+void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
                                         uint32_t changed_metrics) {
   if (!display.IsInternal())
     return;
 
-  if (changed_metrics & gfx::DisplayObserver::DISPLAY_METRIC_ROTATION)
+  if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)
     ChangeInternalSpeakerChannelMode();
 }
 

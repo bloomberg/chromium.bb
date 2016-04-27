@@ -19,7 +19,7 @@
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
@@ -227,7 +227,7 @@ TEST_F(TrayDisplayTest, NoInternalDisplay) {
 TEST_F(TrayDisplayTest, InternalDisplay) {
   UpdateDisplay("400x400");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager->first_display_id());
 
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_FALSE(IsDisplayVisibleInTray());
@@ -261,7 +261,7 @@ TEST_F(TrayDisplayTest, InternalDisplay) {
 TEST_F(TrayDisplayTest, InternalDisplayResized) {
   UpdateDisplay("400x400@1.5");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager->first_display_id());
 
   // Shows the tray_display even though there's a single-display.
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
@@ -302,7 +302,8 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   // Closed lid mode.
   display_manager->SetSoftwareMirroring(false);
   UpdateDisplay("400x400@1.5,200x200");
-  gfx::Display::SetInternalDisplayId(ScreenUtil::GetSecondaryDisplay().id());
+  display::Display::SetInternalDisplayId(
+      ScreenUtil::GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
@@ -327,7 +328,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
 TEST_F(TrayDisplayTest, ExternalDisplayResized) {
   UpdateDisplay("400x400");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager->first_display_id());
 
   // Shows the tray_display even though there's a single-display.
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
@@ -335,7 +336,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
 
   // Extended
   UpdateDisplay("400x400,200x200@1.5");
-  const gfx::Display& secondary_display = ScreenUtil::GetSecondaryDisplay();
+  const display::Display& secondary_display = ScreenUtil::GetSecondaryDisplay();
 
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
@@ -367,7 +368,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
 TEST_F(TrayDisplayTest, OverscanDisplay) {
   UpdateDisplay("400x400,300x300/o");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager->first_display_id());
 
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
@@ -449,7 +450,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
 
   UpdateDisplay("400x400");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::SetInternalDisplayId(display_manager->first_display_id());
+  display::Display::SetInternalDisplayId(display_manager->first_display_id());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 
   // rotation.
@@ -541,7 +542,8 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
 
   // Enters closed lid mode.
   UpdateDisplay("400x400@1.5,200x200");
-  gfx::Display::SetInternalDisplayId(ScreenUtil::GetSecondaryDisplay().id());
+  display::Display::SetInternalDisplayId(
+      ScreenUtil::GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
             GetDisplayNotificationText());
@@ -601,27 +603,27 @@ TEST_F(TrayDisplayTest, RotationOnInternalDisplay) {
   UpdateDisplay("400x400");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const int64_t display_id = display_manager->first_display_id();
-  gfx::Display::SetInternalDisplayId(display_id);
+  display::Display::SetInternalDisplayId(display_id);
 
   GetTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   // Accelerometer change does not display.
   display_manager->SetDisplayRotation(
-      display_id, gfx::Display::ROTATE_90,
-      gfx::Display::ROTATION_SOURCE_ACCELEROMETER);
+      display_id, display::Display::ROTATE_90,
+      display::Display::ROTATION_SOURCE_ACCELEROMETER);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   // User change does.
-  display_manager->SetDisplayRotation(display_id, gfx::Display::ROTATE_180,
-                                      gfx::Display::ROTATION_SOURCE_USER);
+  display_manager->SetDisplayRotation(display_id, display::Display::ROTATE_180,
+                                      display::Display::ROTATION_SOURCE_USER);
   EXPECT_TRUE(IsDisplayVisibleInTray());
 
   // If a user setting matches the accelerometer, do not display if caused by
   // the accelerometer.
   display_manager->SetDisplayRotation(
-      display_id, gfx::Display::ROTATE_180,
-      gfx::Display::ROTATION_SOURCE_ACCELEROMETER);
+      display_id, display::Display::ROTATE_180,
+      display::Display::ROTATION_SOURCE_ACCELEROMETER);
   EXPECT_FALSE(IsDisplayVisibleInTray());
 
   // If a non-rotation setting is changed, display regardless of the source of

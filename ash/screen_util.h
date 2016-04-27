@@ -18,6 +18,10 @@ class Rect;
 class Point;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ash {
 
 class ASH_EXPORT ScreenUtil {
@@ -25,7 +29,7 @@ class ASH_EXPORT ScreenUtil {
   // Finds the display that contains |point| in screeen coordinates.
   // Returns invalid display if there is no display that can satisfy
   // the condition.
-  static gfx::Display FindDisplayContainingPoint(const gfx::Point& point);
+  static display::Display FindDisplayContainingPoint(const gfx::Point& point);
 
   // Returns the bounds for maximized windows in parent coordinates.
   // Maximized windows trigger auto-hiding the shelf.
@@ -57,9 +61,9 @@ class ASH_EXPORT ScreenUtil {
   static gfx::Rect ConvertRectFromScreen(aura::Window* window,
                                          const gfx::Rect& rect);
 
-  // Returns a gfx::Display object for secondary display. Returns
+  // Returns a display::Display object for secondary display. Returns
   // invalid display if there is no secondary display connected.
-  static const gfx::Display& GetSecondaryDisplay();
+  static const display::Display& GetSecondaryDisplay();
 
  private:
   ScreenUtil() {}

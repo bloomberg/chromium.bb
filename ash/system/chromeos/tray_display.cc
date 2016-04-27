@@ -27,7 +27,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -52,7 +52,8 @@ base::string16 GetDisplayName(int64_t display_id) {
 base::string16 GetDisplaySize(int64_t display_id) {
   DisplayManager* display_manager = GetDisplayManager();
 
-  const gfx::Display* display = &display_manager->GetDisplayForId(display_id);
+  const display::Display* display =
+      &display_manager->GetDisplayForId(display_id);
 
   // We don't show display size for mirrored display. Fallback
   // to empty string if this happens on release build.
@@ -94,10 +95,11 @@ base::string16 GetDisplayInfoLine(int64_t display_id) {
 base::string16 GetAllDisplayInfo() {
   DisplayManager* display_manager = GetDisplayManager();
   std::vector<base::string16> lines;
-  int64_t internal_id = gfx::Display::kInvalidDisplayID;
+  int64_t internal_id = display::Display::kInvalidDisplayID;
   // Make sure to show the internal display first.
   if (!display_manager->IsInUnifiedMode() &&
-      gfx::Display::IsInternalDisplayId(display_manager->first_display_id())) {
+      display::Display::IsInternalDisplayId(
+          display_manager->first_display_id())) {
     internal_id = display_manager->first_display_id();
     lines.push_back(GetDisplayInfoLine(internal_id));
   }
@@ -191,16 +193,16 @@ class DisplayView : public ActionableView {
     DisplayManager* display_manager = GetDisplayManager();
     DCHECK(!display_manager->IsInMirrorMode());
 
-    int64_t external_id = gfx::Display::kInvalidDisplayID;
+    int64_t external_id = display::Display::kInvalidDisplayID;
     for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
       int64_t id = display_manager->GetDisplayAt(i).id();
-      if (!gfx::Display::IsInternalDisplayId(id)) {
+      if (!display::Display::IsInternalDisplayId(id)) {
         external_id = id;
         break;
       }
     }
 
-    if (external_id == gfx::Display::kInvalidDisplayID) {
+    if (external_id == display::Display::kInvalidDisplayID) {
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
     }
@@ -210,7 +212,7 @@ class DisplayView : public ActionableView {
     base::string16 name = GetDisplayName(external_id);
     const DisplayInfo& display_info =
         display_manager->GetDisplayInfo(external_id);
-    if (display_info.GetActiveRotation() != gfx::Display::ROTATE_0 ||
+    if (display_info.GetActiveRotation() != display::Display::ROTATE_0 ||
         display_info.configured_ui_scale() != 1.0f ||
         !display_info.overscan_insets_in_dip().IsEmpty()) {
       name = l10n_util::GetStringFUTF16(
@@ -231,7 +233,7 @@ class DisplayView : public ActionableView {
       base::string16* additional_message_out) {
     DisplayManager* display_manager = GetDisplayManager();
     if (display_manager->GetNumDisplays() > 1) {
-      if (gfx::Display::HasInternalDisplay()) {
+      if (display::Display::HasInternalDisplay()) {
         return l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName());
       }
@@ -240,7 +242,7 @@ class DisplayView : public ActionableView {
     }
 
     if (display_manager->IsInMirrorMode()) {
-      if (gfx::Display::HasInternalDisplay()) {
+      if (display::Display::HasInternalDisplay()) {
         return l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
             GetDisplayName(display_manager->mirroring_display_id()));
@@ -252,9 +254,9 @@ class DisplayView : public ActionableView {
     if (display_manager->IsInUnifiedMode())
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_UNIFIED);
 
-    int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
-    if (gfx::Display::HasInternalDisplay() &&
-        !(gfx::Display::IsInternalDisplayId(primary_id))) {
+    int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+    if (display::Display::HasInternalDisplay() &&
+        !(display::Display::IsInternalDisplayId(primary_id))) {
       if (additional_message_out) {
         *additional_message_out = ash::SubstituteChromeOSDeviceType(
             IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION);
@@ -271,10 +273,10 @@ class DisplayView : public ActionableView {
 
     const DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(first_display_id);
-    return (display_info.GetActiveRotation() != gfx::Display::ROTATE_0 &&
+    return (display_info.GetActiveRotation() != display::Display::ROTATE_0 &&
             (display_info.active_rotation_source() !=
-                 gfx::Display::ROTATION_SOURCE_ACCELEROMETER ||
-             !gfx::Display::IsInternalDisplayId(first_display_id))) ||
+                 display::Display::ROTATION_SOURCE_ACCELEROMETER ||
+             !display::Display::IsInternalDisplayId(first_display_id))) ||
            display_info.configured_ui_scale() != 1.0f ||
            !display_info.overscan_insets_in_dip().IsEmpty() ||
            display_info.has_overscan();
@@ -354,16 +356,16 @@ bool TrayDisplay::GetDisplayMessageForNotification(
         old_iter->second.GetActiveRotation()) {
       int rotation_text_id = 0;
       switch (iter->second.GetActiveRotation()) {
-        case gfx::Display::ROTATE_0:
+        case display::Display::ROTATE_0:
           rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION;
           break;
-        case gfx::Display::ROTATE_90:
+        case display::Display::ROTATE_90:
           rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90;
           break;
-        case gfx::Display::ROTATE_180:
+        case display::Display::ROTATE_180:
           rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180;
           break;
-        case gfx::Display::ROTATE_270:
+        case display::Display::ROTATE_270:
           rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270;
           break;
       }

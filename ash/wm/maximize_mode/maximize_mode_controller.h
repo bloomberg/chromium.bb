@@ -12,7 +12,6 @@
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(OS_CHROMEOS)

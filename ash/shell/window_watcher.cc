@@ -18,7 +18,7 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace ash {
 namespace shell {
@@ -138,19 +138,19 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   }
 }
 
-void WindowWatcher::OnDisplayAdded(const gfx::Display& new_display) {
+void WindowWatcher::OnDisplayAdded(const display::Display& new_display) {
   aura::Window* root = Shell::GetInstance()
                            ->window_tree_host_manager()
                            ->GetRootWindowForDisplayId(new_display.id());
   workspace_window_watcher_->RootWindowAdded(root);
 }
 
-void WindowWatcher::OnDisplayRemoved(const gfx::Display& old_display) {
+void WindowWatcher::OnDisplayRemoved(const display::Display& old_display) {
   // All windows in the display has already been removed, so no need to
   // remove observers.
 }
 
-void WindowWatcher::OnDisplayMetricsChanged(const gfx::Display&, uint32_t) {
+void WindowWatcher::OnDisplayMetricsChanged(const display::Display&, uint32_t) {
 }
 
 }  // namespace shell

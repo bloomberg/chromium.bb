@@ -12,7 +12,7 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/popup_alignment_delegate.h"
 
@@ -22,6 +22,10 @@ class Window;
 
 namespace gfx {
 class Screen;
+}
+
+namespace display {
+using Screen = gfx::Screen;
 }
 
 namespace ash {
@@ -36,13 +40,13 @@ class ASH_EXPORT AshPopupAlignmentDelegate
     : public message_center::PopupAlignmentDelegate,
       public ShelfLayoutManagerObserver,
       public ShellObserver,
-      public gfx::DisplayObserver {
+      public display::DisplayObserver {
  public:
   explicit AshPopupAlignmentDelegate(ShelfLayoutManager* shelf);
   ~AshPopupAlignmentDelegate() override;
 
   // Start observing the system.
-  void StartObserving(gfx::Screen* screen, const gfx::Display& display);
+  void StartObserving(display::Screen* screen, const display::Display& display);
 
   // Sets the current height of the system tray so that the notification toasts
   // can avoid it.
@@ -54,7 +58,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   int GetWorkAreaBottom() const override;
   bool IsTopDown() const override;
   bool IsFromLeft() const override;
-  void RecomputeAlignment(const gfx::Display& display) override;
+  void RecomputeAlignment(const display::Display& display) override;
 
  private:
   friend class AshPopupAlignmentDelegateTest;
@@ -64,7 +68,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   wm::ShelfAlignment GetAlignment() const;
 
   // Utility function to get the display which should be care about.
-  gfx::Display GetCurrentDisplay() const;
+  display::Display GetCurrentDisplay() const;
 
   // Compute the new work area.
   void UpdateWorkArea();
@@ -76,13 +80,13 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
-  // Overridden from gfx::DisplayObserver:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  gfx::Screen* screen_;
+  display::Screen* screen_;
   gfx::Rect work_area_;
   ShelfLayoutManager* shelf_;
   int system_tray_height_;

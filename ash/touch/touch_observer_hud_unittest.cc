@@ -44,11 +44,11 @@ class TouchHudTestBase : public test::AshTestBase {
         CreateDisplayInfo(mirrored_display_id_, gfx::Rect(0, 0, 100, 100));
   }
 
-  gfx::Display GetPrimaryDisplay() {
-    return gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display GetPrimaryDisplay() {
+    return display::Screen::GetScreen()->GetPrimaryDisplay();
   }
 
-  const gfx::Display& GetSecondaryDisplay() {
+  const display::Display& GetSecondaryDisplay() {
     return ScreenUtil::GetSecondaryDisplay();
   }
 
@@ -127,11 +127,11 @@ class TouchHudTestBase : public test::AshTestBase {
     return Shell::GetInstance()->window_tree_host_manager();
   }
 
-  const gfx::Display& GetInternalDisplay() {
+  const display::Display& GetInternalDisplay() {
     return GetDisplayManager()->GetDisplayForId(internal_display_id_);
   }
 
-  const gfx::Display& GetExternalDisplay() {
+  const display::Display& GetExternalDisplay() {
     return GetDisplayManager()->GetDisplayForId(external_display_id_);
   }
 
@@ -146,12 +146,12 @@ class TouchHudTestBase : public test::AshTestBase {
   }
 
   aura::Window* GetPrimaryRootWindow() {
-    const gfx::Display& display = GetPrimaryDisplay();
+    const display::Display& display = GetPrimaryDisplay();
     return GetWindowTreeHostManager()->GetRootWindowForDisplayId(display.id());
   }
 
   aura::Window* GetSecondaryRootWindow() {
-    const gfx::Display& display = GetSecondaryDisplay();
+    const display::Display& display = GetSecondaryDisplay();
     return GetWindowTreeHostManager()->GetRootWindowForDisplayId(display.id());
   }
 

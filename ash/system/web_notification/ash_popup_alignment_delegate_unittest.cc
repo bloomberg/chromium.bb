@@ -18,8 +18,8 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center_style.h"
@@ -64,8 +64,8 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   }
 
   void UpdateWorkArea(AshPopupAlignmentDelegate* alignment_delegate,
-                      const gfx::Display& display) {
-    alignment_delegate->StartObserving(gfx::Screen::GetScreen(), display);
+                      const display::Display& display) {
+    alignment_delegate->StartObserving(display::Screen::GetScreen(), display);
     // Update the layout
     alignment_delegate->OnDisplayWorkAreaInsetsChanged();
   }
@@ -78,12 +78,12 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     }
     alignment_delegate_ = std::move(delegate);
     UpdateWorkArea(alignment_delegate_.get(),
-                   gfx::Screen::GetScreen()->GetPrimaryDisplay());
+                   display::Screen::GetScreen()->GetPrimaryDisplay());
   }
 
   Position GetPositionInDisplay(const gfx::Point& point) {
     const gfx::Rect& work_area =
-        gfx::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+        display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
     const gfx::Point center_point = work_area.CenterPoint();
     if (work_area.x() > point.x() || work_area.y() > point.y() ||
         work_area.right() < point.x() || work_area.bottom() < point.y()) {
@@ -274,7 +274,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   SetAlignmentDelegate(base::WrapUnique(new AshPopupAlignmentDelegate(
       Shelf::ForPrimaryDisplay()->shelf_layout_manager())));
 
-  gfx::Display second_display = ScreenUtil::GetSecondaryDisplay();
+  display::Display second_display = ScreenUtil::GetSecondaryDisplay();
   aura::Window* second_root =
       Shell::GetInstance()
           ->window_tree_host_manager()

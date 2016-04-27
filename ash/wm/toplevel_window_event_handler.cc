@@ -30,7 +30,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/screen.h"
 
 namespace {
 const double kMinHorizVelocityForWindowSwipe = 1100;

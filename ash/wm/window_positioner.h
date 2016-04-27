@@ -14,6 +14,10 @@ class Display;
 class Rect;
 }
 
+namespace display {
+using Display = gfx::Display;
+}
+
 namespace ash {
 namespace wm {
 class WmGlobals;
@@ -54,7 +58,7 @@ class ASH_EXPORT WindowPositioner {
       ui::WindowShowState* show_state_out);
 
   // Returns the default bounds for a window to be created in the |display|.
-  static gfx::Rect GetDefaultWindowBounds(const gfx::Display& display);
+  static gfx::Rect GetDefaultWindowBounds(const display::Display& display);
 
   // Check if after removal or hide of the given |removed_window| an
   // automated desktop location management can be performed and

@@ -60,7 +60,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
   }
 
   void SetDisplayResolutionAndNotifyWithResolution(
-      const gfx::Display& display,
+      const display::Display& display,
       const gfx::Size& new_resolution,
       const gfx::Size& actual_new_resolution) {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
@@ -99,7 +99,7 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
     RunAllPendingInMessageLoop();
   }
 
-  void SetDisplayResolutionAndNotify(const gfx::Display& display,
+  void SetDisplayResolutionAndNotify(const display::Display& display,
                                      const gfx::Size& new_resolution) {
     SetDisplayResolutionAndNotifyWithResolution(
         display, new_resolution, new_resolution);
@@ -233,7 +233,8 @@ TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
       ash::Shell::GetInstance()->display_manager();
 
   UpdateDisplay("300x300#300x300%59|200x200%60");
-  const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display& display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   SetDisplayResolutionAndNotify(display, gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
 
@@ -298,7 +299,8 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
     return;
 
   UpdateDisplay("300x300#300x300%59|200x200%60");
-  const gfx::Display& display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display& display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   SetDisplayResolutionAndNotify(display, gfx::Size(200, 200));
 
   for (int i = 0; i < ResolutionNotificationController::kTimeoutInSec; ++i) {

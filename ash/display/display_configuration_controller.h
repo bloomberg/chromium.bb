@@ -11,7 +11,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace display {
 class DisplayLayout;
@@ -51,8 +51,8 @@ class ASH_EXPORT DisplayConfigurationController
 
   // Sets the display's rotation with animation if available.
   void SetDisplayRotation(int64_t display_id,
-                          gfx::Display::Rotation rotation,
-                          gfx::Display::RotationSource source,
+                          display::Display::Rotation rotation,
+                          display::Display::RotationSource source,
                           bool user_action);
 
   // Sets the primary display id.

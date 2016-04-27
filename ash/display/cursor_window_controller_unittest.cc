@@ -13,8 +13,9 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/display.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -154,19 +155,19 @@ TEST_F(CursorWindowControllerTest, VisibilityTest) {
 // the DSF becomes 1x as a result of zooming out.
 TEST_F(CursorWindowControllerTest, DSF) {
   UpdateDisplay("1000x500*2");
-  int64_t primary_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   test::ScopedSetInternalDisplayId set_internal(primary_id);
   SetCursorCompositionEnabled(true);
   ASSERT_EQ(
       2.0f,
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 
   ASSERT_TRUE(SetDisplayUIScale(primary_id, 2.0f));
   ASSERT_EQ(
       1.0f,
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 }
 #endif

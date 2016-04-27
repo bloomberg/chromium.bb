@@ -4,10 +4,10 @@
 
 #include "ash/host/ash_window_tree_host_x11.h"
 
+#include <X11/extensions/Xfixes.h>
+#include <X11/extensions/XInput2.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xfixes.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -29,7 +30,6 @@
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -213,13 +213,13 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
       // that if the event is within the bound of the root window. Note
       // that in multi-monitor case, the event position is in framebuffer
       // space so the bounds check will not work so well.
-      if (touch_display_id == gfx::Display::kInvalidDisplayID) {
+      if (touch_display_id == display::Display::kInvalidDisplayID) {
         if (base::SysInfo::IsRunningOnChromeOS() &&
             !bounds().Contains(ui::EventLocationFromNative(xev)))
           return false;
       } else {
-        gfx::Screen* screen = gfx::Screen::GetScreen();
-        gfx::Display display = screen->GetDisplayNearestWindow(window());
+        display::Screen* screen = display::Screen::GetScreen();
+        display::Display display = screen->GetDisplayNearestWindow(window());
         return touch_display_id == display.id();
       }
 #endif  // defined(OS_CHROMEOS)

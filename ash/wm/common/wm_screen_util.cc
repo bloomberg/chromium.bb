@@ -6,18 +6,18 @@
 
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_window.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 namespace ash {
 namespace wm {
 
 gfx::Rect GetDisplayWorkAreaBoundsInParent(WmWindow* window) {
-  gfx::Display display = window->GetDisplayNearestWindow();
+  display::Display display = window->GetDisplayNearestWindow();
   return window->GetParent()->ConvertRectFromScreen(display.work_area());
 }
 
 gfx::Rect GetDisplayBoundsInParent(WmWindow* window) {
-  gfx::Display display = window->GetDisplayNearestWindow();
+  display::Display display = window->GetDisplayNearestWindow();
   return window->GetParent()->ConvertRectFromScreen(display.bounds());
 }
 

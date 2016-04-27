@@ -26,8 +26,8 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -44,7 +44,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
       delegate_(std::move(delegate)),
       work_area_in_parent_(ScreenUtil::ConvertRectFromScreen(
           window_,
-          gfx::Screen::GetScreen()
+          display::Screen::GetScreen()
               ->GetDisplayNearestWindow(window_)
               .work_area())),
       is_fullscreen_(GetRootWindowController(window->GetRootWindow())
@@ -177,8 +177,9 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
 
 void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
   const gfx::Rect work_area(ScreenUtil::ConvertRectFromScreen(
-      window_,
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_).work_area()));
+      window_, display::Screen::GetScreen()
+                   ->GetDisplayNearestWindow(window_)
+                   .work_area()));
   if (work_area != work_area_in_parent_) {
     const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&event);
@@ -317,8 +318,9 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
          event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
   work_area_in_parent_ = ScreenUtil::ConvertRectFromScreen(
-      window_,
-      gfx::Screen::GetScreen()->GetDisplayNearestWindow(window_).work_area());
+      window_, display::Screen::GetScreen()
+                   ->GetDisplayNearestWindow(window_)
+                   .work_area());
 
   // Don't do any adjustments of the insets while we are in screen locked mode.
   // This would happen if the launcher was auto hidden before the login screen

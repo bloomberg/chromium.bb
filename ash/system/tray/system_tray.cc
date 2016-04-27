@@ -32,9 +32,9 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -364,7 +364,7 @@ bool SystemTray::IsMouseInNotificationBubble() const {
   if (!notification_bubble_)
     return false;
   return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
-      gfx::Screen::GetScreen()->GetCursorScreenPoint());
+      display::Screen::GetScreen()->GetCursorScreenPoint());
 }
 
 bool SystemTray::CloseSystemBubble() const {
@@ -594,7 +594,7 @@ void SystemTray::UpdateWebNotifications() {
   int height = 0;
   if (bubble_view) {
     gfx::Rect work_area =
-        gfx::Screen::GetScreen()
+        display::Screen::GetScreen()
             ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
             .work_area();
     height =

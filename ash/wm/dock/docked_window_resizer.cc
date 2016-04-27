@@ -14,15 +14,15 @@
 #include "ash/wm/workspace/magnetism_matcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 namespace {
 
 DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     const gfx::Point& point) {
-  gfx::Display display =
-      gfx::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   if (!display.bounds().Contains(point))
     return nullptr;
 

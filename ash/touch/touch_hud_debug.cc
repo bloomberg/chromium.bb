@@ -17,10 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
@@ -328,7 +328,7 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
       touch_log_(new TouchLog()),
       canvas_(NULL),
       label_container_(NULL) {
-  const gfx::Display& display =
+  const display::Display& display =
       Shell::GetInstance()->display_manager()->GetDisplayForId(display_id());
 
   views::View* content = widget()->GetContentsView();
@@ -458,7 +458,7 @@ void TouchHudDebug::OnTouchEvent(ui::TouchEvent* event) {
   label_container_->SetSize(label_container_->GetPreferredSize());
 }
 
-void TouchHudDebug::OnDisplayMetricsChanged(const gfx::Display& display,
+void TouchHudDebug::OnDisplayMetricsChanged(const display::Display& display,
                                             uint32_t metrics) {
   TouchObserverHUD::OnDisplayMetricsChanged(display, metrics);
 

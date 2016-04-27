@@ -47,7 +47,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   WmWindow* GetChildByShellWindowId(int id) override;
   ui::wm::WindowType GetType() const override;
   ui::Layer* GetLayer() override;
-  gfx::Display GetDisplayNearestWindow() override;
+  display::Display GetDisplayNearestWindow() override;
   bool HasNonClientArea() override;
   int GetNonClientComponent(const gfx::Point& location) override;
   gfx::Point ConvertPointToTarget(const WmWindow* target,
@@ -83,7 +83,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void SetBoundsDirectAnimated(const gfx::Rect& bounds) override;
   void SetBoundsDirectCrossFade(const gfx::Rect& bounds) override;
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
-                         const gfx::Display& dst_display) override;
+                         const display::Display& dst_display) override;
   gfx::Rect GetBoundsInScreen() const override;
   const gfx::Rect& GetBounds() const override;
   gfx::Rect GetTargetBounds() override;

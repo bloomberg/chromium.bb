@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromeos {
@@ -32,7 +32,7 @@ struct DisplayMode;
 // A class which manages the notification of display resolution change and
 // also manages the timeout in case the new resolution is unusable.
 class ASH_EXPORT ResolutionNotificationController
-    : public gfx::DisplayObserver,
+    : public display::DisplayObserver,
       public WindowTreeHostManager::Observer {
  public:
   ResolutionNotificationController();
@@ -88,10 +88,10 @@ class ASH_EXPORT ResolutionNotificationController
   // Called every second for timeout.
   void OnTimerTick();
 
-  // gfx::DisplayObserver overrides:
-  void OnDisplayAdded(const gfx::Display& new_display) override;
-  void OnDisplayRemoved(const gfx::Display& old_display) override;
-  void OnDisplayMetricsChanged(const gfx::Display& display,
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
   // WindowTreeHostManager::Observer overrides:

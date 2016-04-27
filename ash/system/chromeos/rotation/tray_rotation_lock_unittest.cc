@@ -244,14 +244,14 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
 // Tests that when the tray is created without the internal display being known,
 // that it will still display correctly once the internal display is known.
 TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
-  int64_t internal_display_id = gfx::Display::InternalDisplayId();
+  int64_t internal_display_id = display::Display::InternalDisplayId();
   TearDownViews();
-  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
 
   std::unique_ptr<TrayRotationLock> tray(new TrayRotationLock(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->system_tray()));
 
-  gfx::Display::SetInternalDisplayId(internal_display_id);
+  display::Display::SetInternalDisplayId(internal_display_id);
   std::unique_ptr<views::View> tray_view(CreateTrayView(tray.get()));
   std::unique_ptr<views::View> default_view(tray->CreateDefaultView(
       StatusAreaWidgetTestHelper::GetUserLoginStatus()));

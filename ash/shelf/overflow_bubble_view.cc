@@ -13,9 +13,9 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/common/shelf/wm_shelf_constants.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -103,7 +103,7 @@ gfx::Size OverflowBubbleView::GetPreferredSize() const {
   gfx::Size preferred_size = GetContentsSize();
 
   const gfx::Rect monitor_rect =
-      gfx::Screen::GetScreen()
+      display::Screen::GetScreen()
           ->GetDisplayNearestPoint(GetAnchorRect().CenterPoint())
           .work_area();
   if (!monitor_rect.IsEmpty()) {
@@ -186,7 +186,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       false);
 
   gfx::Rect monitor_rect =
-      gfx::Screen::GetScreen()
+      display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
           .work_area();
 

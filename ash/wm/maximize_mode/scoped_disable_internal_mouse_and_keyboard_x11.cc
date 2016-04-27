@@ -4,8 +4,8 @@
 
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
 
-#include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xlib.h>
 
 #include <memory>
 #include <set>
@@ -50,8 +50,8 @@ gfx::Point GetMouseLocationInScreen() {
 }
 
 void SetMouseLocationInScreen(const gfx::Point& screen_location) {
-  gfx::Display display = ash::ScreenUtil::FindDisplayContainingPoint(
-      screen_location);
+  display::Display display =
+      ash::ScreenUtil::FindDisplayContainingPoint(screen_location);
   if (!display.is_valid())
     return;
   aura::Window* root_window = Shell::GetInstance()

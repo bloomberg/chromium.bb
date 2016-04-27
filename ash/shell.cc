@@ -96,11 +96,11 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_target_iterator.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -970,7 +970,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 #endif
 
   if (cursor_manager_)
-    cursor_manager_->SetDisplay(gfx::Screen::GetScreen()->GetPrimaryDisplay());
+    cursor_manager_->SetDisplay(
+        display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_.reset(new AcceleratorController);
   maximize_mode_controller_.reset(new MaximizeModeController());

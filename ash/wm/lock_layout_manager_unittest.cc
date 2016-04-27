@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
@@ -107,7 +107,7 @@ class LockLayoutManagerTest : public AshTestBase {
 
 TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
   gfx::Rect screen_bounds =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -134,7 +134,7 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
     return;
 
   gfx::Rect screen_bounds =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -186,7 +186,8 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   if (!SupportsHostWindowResize())
     return;
 
-  gfx::Display primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect screen_bounds = primary_display.bounds();
 
   views::Widget::InitParams widget_params(
@@ -220,14 +221,14 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ash::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   display_manager->SetDisplayRotation(primary_display.id(),
-                                      gfx::Display::ROTATE_90,
-                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
-  primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+                                      display::Display::ROTATE_90,
+                                      display::Display::ROTATION_SOURCE_ACTIVE);
+  primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   display_manager->SetDisplayRotation(primary_display.id(),
-                                      gfx::Display::ROTATE_0,
-                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
+                                      display::Display::ROTATE_0,
+                                      display::Display::ROTATION_SOURCE_ACTIVE);
 
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.
@@ -236,7 +237,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
   keyboard::KeyboardController* keyboard =
         keyboard::KeyboardController::GetInstance();
-  primary_display = gfx::Screen::GetScreen()->GetPrimaryDisplay();
+  primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);
   target_bounds.set_height(
@@ -255,7 +256,7 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
 
   UpdateDisplay("300x400,400x500");
   gfx::Rect screen_bounds =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   views::Widget::InitParams widget_params(

@@ -17,8 +17,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/display/manager/display_layout.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -54,7 +54,7 @@ aura::WindowTreeHost* FindMirroringWindowTreeHostFromScreenPoint(
 }  // namespace
 
 UnifiedMouseWarpController::UnifiedMouseWarpController()
-    : current_cursor_display_id_(gfx::Display::kInvalidDisplayID),
+    : current_cursor_display_id_(display::Display::kInvalidDisplayID),
       update_location_for_test_(false) {}
 
 UnifiedMouseWarpController::~UnifiedMouseWarpController() {
@@ -73,7 +73,7 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   // transform back to the host coordinates.
   target->GetHost()->GetRootTransform().TransformPoint(&point_in_unified_host);
 
-  if (current_cursor_display_id_ != gfx::Display::kInvalidDisplayID) {
+  if (current_cursor_display_id_ != display::Display::kInvalidDisplayID) {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(target->GetRootWindow());
     if (cursor_client) {
@@ -84,10 +84,10 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
       int index = FindDisplayIndexContainingPoint(mirroring_display_list,
                                                   point_in_unified_host);
       if (index >= 0) {
-        const gfx::Display& new_display = mirroring_display_list[index];
+        const display::Display& new_display = mirroring_display_list[index];
         if (current_cursor_display_id_ != new_display.id()) {
           cursor_client->SetDisplay(new_display);
-          current_cursor_display_id_ = gfx::Display::kInvalidDisplayID;
+          current_cursor_display_id_ = display::Display::kInvalidDisplayID;
         }
       }
     }
@@ -131,8 +131,8 @@ void UnifiedMouseWarpController::ComputeBounds() {
   }
   LOG_IF(ERROR, display_list.size() > 2) << "Only two displays are supported";
 
-  const gfx::Display& first = display_list[0];
-  const gfx::Display& second = display_list[1];
+  const display::Display& first = display_list[0];
+  const display::Display& second = display_list[1];
   bool success = ComputeBoundary(first, second, &first_edge_bounds_in_native_,
                                  &second_edge_bounds_in_native_);
   DCHECK(success);

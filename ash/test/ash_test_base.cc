@@ -28,10 +28,10 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(OS_CHROMEOS)
@@ -60,8 +60,8 @@ class AshEventGeneratorDelegate
   // aura::test::EventGeneratorDelegateAura overrides:
   aura::WindowTreeHost* GetHostAt(
       const gfx::Point& point_in_screen) const override {
-    gfx::Screen* screen = gfx::Screen::GetScreen();
-    gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
+    display::Screen* screen = display::Screen::GetScreen();
+    display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetInstance()
         ->window_tree_host_manager()
         ->GetRootWindowForDisplayId(display.id())
@@ -167,7 +167,7 @@ void AshTestBase::TearDown() {
   event_generator_.reset();
   // Some tests set an internal display id,
   // reset it here, so other tests will continue in a clean environment.
-  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+  display::Display::SetInternalDisplayId(display::Display::kInvalidDisplayID);
 }
 
 ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
@@ -178,15 +178,15 @@ ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
-gfx::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64_t id) {
+display::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64_t id) {
   return Shell::GetInstance()
       ->display_manager()
       ->GetDisplayInfo(id)
       .GetActiveRotation();
 }
 
-gfx::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
-  return GetActiveDisplayRotation(gfx::Display::InternalDisplayId());
+display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
+  return GetActiveDisplayRotation(display::Display::InternalDisplayId());
 }
 
 bool AshTestBase::SupportsMultipleDisplays() {
@@ -243,7 +243,8 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   if (bounds.IsEmpty()) {
     ParentWindowInPrimaryRootWindow(window);
   } else {
-    gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayMatching(bounds);
     aura::Window* root = ash::Shell::GetInstance()
                              ->window_tree_host_manager()
                              ->GetRootWindowForDisplayId(display.id());

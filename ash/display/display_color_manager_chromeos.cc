@@ -14,9 +14,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/quirks/quirks_manager.h"
 #include "third_party/qcms/src/qcms.h"
+#include "ui/display/display.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
-#include "ui/gfx/display.h"
 
 namespace ash {
 
@@ -187,7 +187,7 @@ void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
 void DisplayColorManager::LoadCalibrationForDisplay(
     const ui::DisplaySnapshot* display) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (display->display_id() == gfx::Display::kInvalidDisplayID) {
+  if (display->display_id() == display::Display::kInvalidDisplayID) {
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
     return;
   }

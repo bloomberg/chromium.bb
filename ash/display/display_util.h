@@ -15,7 +15,6 @@
 #include "ui/display/manager/display_layout.h"
 
 namespace gfx {
-class Display;
 class Point;
 class Rect;
 class Size;
@@ -64,8 +63,8 @@ bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale);
 
 // Computes the bounds that defines the bounds between two displays.
 // Returns false if two displays do not intersect.
-bool ComputeBoundary(const gfx::Display& primary_display,
-                     const gfx::Display& secondary_display,
+bool ComputeBoundary(const display::Display& primary_display,
+                     const display::Display& secondary_display,
                      gfx::Rect* primary_edge_in_screen,
                      gfx::Rect* secondary_edge_in_screen);
 
@@ -85,7 +84,7 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
 // Returns the index in the displays whose bounds contains |point_in_screen|.
 // Returns -1 if no such display exist.
 ASH_EXPORT int FindDisplayIndexContainingPoint(
-    const std::vector<gfx::Display>& displays,
+    const std::vector<display::Display>& displays,
     const gfx::Point& point_in_screen);
 
 // Sorts id list using |CompareDisplayIds| below.

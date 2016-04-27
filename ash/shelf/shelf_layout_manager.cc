@@ -46,9 +46,9 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/screen.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
@@ -321,7 +321,7 @@ void ShelfLayoutManager::UpdateAutoHideState() {
       if (!auto_hide_timer_.IsRunning()) {
         mouse_over_shelf_when_auto_hide_timer_started_ =
             shelf_->GetWindowBoundsInScreen().Contains(
-                gfx::Screen::GetScreen()->GetCursorScreenPoint());
+                display::Screen::GetScreen()->GetCursorScreenPoint());
       }
       auto_hide_timer_.Start(
           FROM_HERE,
@@ -1001,7 +1001,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   }
 
   gfx::Point cursor_position_in_screen =
-      gfx::Screen::GetScreen()->GetCursorScreenPoint();
+      display::Screen::GetScreen()->GetCursorScreenPoint();
   if (shelf_region.Contains(cursor_position_in_screen))
     return SHELF_AUTO_HIDE_SHOWN;
 

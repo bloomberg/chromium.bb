@@ -25,12 +25,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/notification_list.h"
@@ -302,7 +302,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupShownOnBothDisplays) {
 
 #if defined(OS_CHROMEOS)
 // PopupAndSystemTray may fail in platforms other than ChromeOS because the
-// RootWindow's bound can be bigger than gfx::Display's work area so that
+// RootWindow's bound can be bigger than display::Display's work area so that
 // openingsystem tray doesn't affect at all the work area of popups.
 #define MAYBE_PopupAndSystemTray PopupAndSystemTray
 #define MAYBE_PopupAndAutoHideShelf PopupAndAutoHideShelf
@@ -438,7 +438,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   // Move the mouse cursor at the bottom, which shows the shelf.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   gfx::Point bottom_right =
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
   bottom_right.Offset(-1, -1);
   generator.MoveMouseTo(bottom_right);
   shelf->UpdateAutoHideStateNow();
@@ -446,7 +446,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 
   generator.MoveMouseTo(
-      gfx::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
   shelf->UpdateAutoHideStateNow();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ(bottom_auto_hidden, GetPopupWorkAreaBottom());

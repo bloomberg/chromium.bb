@@ -18,9 +18,9 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(USE_X11)
@@ -190,11 +190,11 @@ void MaximizeModeController::OnAccelerometerUpdated(
   if (!update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     return;
 
-  if (!gfx::Display::HasInternalDisplay())
+  if (!display::Display::HasInternalDisplay())
     return;
 
   if (!Shell::GetInstance()->display_manager()->IsActiveDisplayId(
-          gfx::Display::InternalDisplayId())) {
+          display::Display::InternalDisplayId())) {
     return;
   }
 
@@ -349,9 +349,9 @@ void MaximizeModeController::OnMaximizeModeEnded() {
 }
 
 void MaximizeModeController::OnDisplayConfigurationChanged() {
-  if (!gfx::Display::HasInternalDisplay() ||
+  if (!display::Display::HasInternalDisplay() ||
       !Shell::GetInstance()->display_manager()->IsActiveDisplayId(
-          gfx::Display::InternalDisplayId())) {
+          display::Display::InternalDisplayId())) {
     LeaveMaximizeMode();
   }
 }
