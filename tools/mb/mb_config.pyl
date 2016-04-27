@@ -97,7 +97,7 @@
       'Chromium Linux Goma Canary': 'gn_release_bot',
       'Chromium Linux Goma Canary (clobber)': 'gn_release_bot',
       'Chromium Linux Precise Goma LinkTest': 'gn_release_bot',
-      'Chromium Linux32 Goma Canary (clobber)': 'gn_release_bot_x86',
+      'Chromium Linux32 Goma Canary (clobber)': 'gyp_release_bot_x86',
       'Chromium Mac 10.10 MacViews': 'mac_views_browser_gyp_release_bot',
       'Chromium Mac 10.11': 'gyp_release_bot',
       'Chromium Mac 10.11 Force Mac Toolchain': 'gyp_release_bot',
@@ -301,7 +301,7 @@
       'Cast Android (dbg)': 'android_cast_gn_debug_static_bot',
       'Cast Linux': 'cast_gn_release_bot',
       'Linux Builder (dbg)': 'swarming_gn_debug_bot',
-      'Linux Builder (dbg)(32)': 'swarming_gn_debug_bot_no_symbols_x86',
+      'Linux Builder (dbg)(32)': 'swarming_gyp_debug_bot_no_symbols_x86',
       'Linux Builder': 'swarming_gn_release_bot',
       'Linux Tests (dbg)(1)': 'none',
       'Linux Tests (dbg)(1)(32)': 'none',
@@ -720,10 +720,10 @@
       'linux_chromium_chromeos_variable': 'findit',
       'linux_chromium_chromeos_variable_chrome': 'findit',
       'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
-      'linux_chromium_compile_dbg_32_ng': 'swarming_gn_debug_trybot_x86',
+      'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_compile_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_compile_rel_ng': 'swarming_gn_release_trybot',
-      'linux_chromium_dbg_32_ng': 'swarming_gn_debug_trybot_x86',
+      'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_dbg_ng': 'swarming_gn_debug_trybot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_ozone_gn_release_trybot',
@@ -1136,10 +1136,6 @@
       'gn', 'release_bot',
     ],
 
-    'gn_release_bot_x86': [
-      'gn', 'release_bot', 'x86',
-    ],
-
     'gn_release_bot_minimal_symbols': [
       'gn', 'release_bot_minimal_symbols',
     ],
@@ -1329,6 +1325,10 @@
 
     'gyp_release_bot_android': [
       'gyp', 'release_bot', 'android',
+    ],
+
+    'gyp_release_bot_x86': [
+      'gyp', 'release_bot', 'x86',
     ],
 
     'gyp_release_trybot': [
@@ -1750,14 +1750,6 @@
       'swarming', 'gn', 'debug_bot',
     ],
 
-    'swarming_gn_debug_bot_no_symbols_x86': [
-      'swarming', 'gn', 'debug_bot', 'no_symbols', 'x86',
-    ],
-
-    'swarming_gn_debug_trybot_x86': [
-      'swarming', 'gn', 'debug_trybot', 'x86',
-    ],
-
     'swarming_gn_debug_bot_minimal_symbols_x64': [
       'swarming', 'gn', 'debug_bot_minimal_symbols', 'x64',
     ],
@@ -1837,6 +1829,14 @@
 
     'swarming_gyp_debug_bot_minimal_symbols_x86': [
       'swarming', 'gyp', 'debug_bot_minimal_symbols', 'x86',
+    ],
+
+    'swarming_gyp_debug_bot_no_symbols_x86': [
+      'swarming', 'gyp', 'debug_bot', 'no_symbols', 'x86',
+    ],
+
+    'swarming_gyp_debug_trybot_x86': [
+      'swarming', 'gyp', 'debug_trybot', 'x86',
     ],
 
     'swarming_gyp_msan_release_bot': [
