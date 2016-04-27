@@ -168,4 +168,21 @@ specific_include_rules = {
     "+content/common/view_messages.h",
     "+content/public/browser/browser_message_filter.h",
   ],
+  "sync_resource_handler\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/resource_dispatcher_host_impl.h",
+    "+content/browser/loader/resource_handler.h",
+    "+content/browser/loader/resource_message_filter.h",
+    "+content/browser/loader/resource_request_info_impl.h",
+    "+content/browser/loader/sync_resource_handler.h",
+    "+content/public/browser/resource_dispatcher_host_delegate.h",
+    "+content/public/browser/resource_request_info.h",
+    "+content/public/common/resource_response.h",
+
+    # TODO: These all have to be removed.
+    "+content/browser/devtools/devtools_netlog_observer.h",
+
+    # TODO: To be replaced by mojo.
+    "+content/common/resource_messages.h",
+  ],
 }
