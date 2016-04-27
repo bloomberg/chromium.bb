@@ -1632,7 +1632,10 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
 {
     WebLocalFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
 
-    if (this != mainFrameImpl->activeMatchFrame())
+    // Main frame should already have a textFinder at this point of time.
+    DCHECK(mainFrameImpl->textFinder());
+
+    if (this != mainFrameImpl->textFinder()->activeMatchFrame())
         return;
 
     if (Range* activeMatch = m_textFinder->activeMatch()) {
@@ -2084,20 +2087,9 @@ void WebLocalFrameImpl::willDetachParent()
     }
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::activeMatchFrame() const
+TextFinder* WebLocalFrameImpl::textFinder() const
 {
-    DCHECK(!parent());
-
-    if (m_textFinder)
-        return m_textFinder->activeMatchFrame();
-    return 0;
-}
-
-Range* WebLocalFrameImpl::activeMatch() const
-{
-    if (m_textFinder)
-        return m_textFinder->activeMatch();
-    return 0;
+    return m_textFinder;
 }
 
 TextFinder& WebLocalFrameImpl::ensureTextFinder()
