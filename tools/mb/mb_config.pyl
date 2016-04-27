@@ -38,7 +38,8 @@
       'Android Cronet x86 Builder (dbg)':
           'android_cronet_gn_debug_static_bot_x86',
       'Android GN Builder (dbg)': 'android_gn_debug_bot_minimal_symbols',
-      'Android MIPS Builder (dbg)': 'android_gn_debug_static_bot_mipsel',
+      'Android MIPS Builder (dbg)':
+          'android_gn_debug_static_minimal_symbols_mipsel',
       'Android Swarm Builder':
           'swarming_android_gn_release_bot_minimal_symbols',
       'Android WebView CTS L-MR1 (dbg)': 'none',
@@ -972,16 +973,16 @@
       'android', 'gn', 'debug_static_bot', 'arm64',
     ],
 
-    'android_gn_debug_static_bot_mipsel': [
-      'android', 'gn', 'debug_static_bot', 'mipsel',
-    ],
-
     'android_gn_debug_static_bot_x64': [
       'android', 'gn', 'debug_static_bot', 'x64',
     ],
 
     'android_gn_debug_static_bot_x86': [
       'android', 'gn', 'debug_static_bot', 'x86',
+    ],
+
+    'android_gn_debug_static_minimal_symbols_mipsel': [
+      'android', 'gn', 'debug', 'static', 'minimal_symbols', 'mipsel',
     ],
 
     'android_gn_debug_trybot': [
