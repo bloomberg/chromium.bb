@@ -160,12 +160,12 @@ void AddItemToList(const std::vector<char>& from, base::ListValue* out) {
 
 void AddItemToList(const std::unique_ptr<base::Value>& from,
                    base::ListValue* out) {
-  out->Append(from->DeepCopy());
+  out->Append(from->CreateDeepCopy());
 }
 
 void AddItemToList(const std::unique_ptr<base::DictionaryValue>& from,
                    base::ListValue* out) {
-  out->Append(static_cast<base::Value*>(from->DeepCopy()));
+  out->Append(from->CreateDeepCopy());
 }
 
 std::string ValueTypeToString(base::Value::Type type) {

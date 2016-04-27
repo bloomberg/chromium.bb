@@ -43,6 +43,7 @@ class _Generator(object):
       .Append()
       .Append(self._util_cc_helper.GetIncludePath())
       .Append('#include "base/logging.h"')
+      .Append('#include "base/memory/ptr_util.h"')
       .Append('#include "base/strings/string_number_conversions.h"')
       .Append('#include "base/strings/utf_string_conversions.h"')
       .Append('#include "%s/%s.h"' %
@@ -317,7 +318,7 @@ class _Generator(object):
         c.Append('const base::DictionaryValue* dict = '
                      'static_cast<const base::DictionaryValue*>(&value);')
         if self._generate_error_messages:
-            c.Append('std::set<std::string> keys;')
+          c.Append('std::set<std::string> keys;')
       for prop in type_.properties.itervalues():
         c.Concat(self._InitializePropertyToDefault(prop, 'out'))
       for prop in type_.properties.itervalues():
@@ -508,20 +509,12 @@ class _Generator(object):
       # Enums cannot be wrapped with scoped_ptr, but the XXX_NONE enum value
       # is equal to 0.
       (c.Sblock('if (%s) {' % choice_var)
-          .Append('DCHECK(!result) << "Cannot set multiple choices for %s";' %
-                      type_.unix_name)
-          .Cblock(self._CreateValueFromType('result.reset(%s);',
-                                            choice.name,
-                                            choice,
-                                            choice_var,
-                                            True))
-        .Eblock('}')
-      )
+       .Append('DCHECK(!result) << "Cannot set multiple choices for %s";' %
+               type_.unix_name).Cblock(self._CreateValueFromType(
+                   'result = %s;', choice.name, choice, choice_var, True))
+       .Eblock('}'))
     (c.Append('DCHECK(result) << "Must set at least one choice for %s";' %
-                  type_.unix_name)
-      .Append('return result;')
-      .Eblock('}')
-    )
+              type_.unix_name).Append('return result;').Eblock('}'))
     return c
 
   def _GenerateFunction(self, function):
@@ -570,7 +563,7 @@ class _Generator(object):
 
   def _CreateValueFromType(self, code, prop_name, type_, var, is_ptr=False):
     """Creates a base::Value given a type. Generated code passes ownership
-    to caller.
+    to caller via std::unique_ptr.
 
     var: variable or variable*
 
@@ -624,21 +617,22 @@ class _Generator(object):
     if (underlying_type.property_type == PropertyType.CHOICES or
         underlying_type.property_type == PropertyType.OBJECT):
       if is_ptr:
-        return '(%s)->ToValue().release()' % var
+        return '(%s)->ToValue()' % var
       else:
-        return '(%s).ToValue().release()' % var
+        return '(%s).ToValue()' % var
     elif (underlying_type.property_type == PropertyType.ANY or
           underlying_type.property_type == PropertyType.FUNCTION):
       if is_ptr:
         vardot = '(%s)->' % var
       else:
         vardot = '(%s).' % var
-      return '%sDeepCopy()' % vardot
+      return '%sCreateDeepCopy()' % vardot
     elif underlying_type.property_type == PropertyType.ENUM:
       maybe_namespace = ''
       if type_.property_type == PropertyType.REF:
         maybe_namespace = '%s::' % underlying_type.namespace.unix_name
-      return 'new base::StringValue(%sToString(%s))' % (maybe_namespace, var)
+      return 'base::WrapUnique(new base::StringValue(%sToString(%s)))' % (
+          maybe_namespace, var)
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
         vardot = var + '->'
@@ -647,16 +641,16 @@ class _Generator(object):
       return ('base::BinaryValue::CreateWithCopiedBuffer(%sdata(),'
               ' %ssize())' % (vardot, vardot))
     elif underlying_type.property_type == PropertyType.ARRAY:
-      return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
+      return '%s' % self._util_cc_helper.CreateValueFromArray(
           var,
           is_ptr)
     elif underlying_type.property_type.is_fundamental:
       if is_ptr:
         var = '*%s' % var
       if underlying_type.property_type == PropertyType.STRING:
-        return 'new base::StringValue(%s)' % var
+        return 'base::WrapUnique(new base::StringValue(%s))' % var
       else:
-        return 'new base::FundamentalValue(%s)' % var
+        return 'base::WrapUnique(new base::FundamentalValue(%s))' % var
     else:
       raise NotImplementedError('Conversion of %s to base::Value not '
                                 'implemented' % repr(type_.type_))
@@ -840,7 +834,7 @@ class _Generator(object):
       if is_ptr:
         c.Append('%(dst_var)s.reset(new base::DictionaryValue());')
     elif underlying_type.property_type == PropertyType.ANY:
-      c.Append('%(dst_var)s.reset(%(src_var)s->DeepCopy());')
+      c.Append('%(dst_var)s = %(src_var)s->CreateDeepCopy();')
     elif underlying_type.property_type == PropertyType.ARRAY:
       # util_cc_helper deals with optional and required arrays
       (c.Append('const base::ListValue* list = NULL;')
