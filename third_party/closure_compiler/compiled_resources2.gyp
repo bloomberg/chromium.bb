@@ -20,6 +20,7 @@
         '<(DEPTH)/chrome/browser/resources/md_downloads/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_history/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_user_manager/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/media_router/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/uber/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:*',

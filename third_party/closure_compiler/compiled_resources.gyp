@@ -25,7 +25,6 @@
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/help/compiled_resources.gyp:*',
         '../../chrome/browser/resources/options/compiled_resources.gyp:*',
-        '../../chrome/browser/resources/media_router/compiled_resources.gyp:*',
         '../../chrome/browser/resources/md_extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/ntp4/compiled_resources.gyp:*',
         '../../remoting/remoting_webapp_compile.gypi:*',
