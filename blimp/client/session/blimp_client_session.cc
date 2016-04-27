@@ -114,22 +114,28 @@ void ClientNetworkComponents::Initialize() {
 void ClientNetworkComponents::ConnectWithAssignment(
     const Assignment& assignment) {
   DCHECK(connection_manager_);
-  connection_manager_->set_client_token(assignment.client_token);
 
+  connection_manager_->set_client_token(assignment.client_token);
+  const char* transport_type = "UNKNOWN";
   switch (assignment.transport_protocol) {
     case Assignment::SSL:
       DCHECK(assignment.cert);
       connection_manager_->AddTransport(base::WrapUnique(new SSLClientTransport(
           assignment.engine_endpoint, std::move(assignment.cert), nullptr)));
+      transport_type = "SSL";
       break;
     case Assignment::TCP:
       connection_manager_->AddTransport(base::WrapUnique(
           new TCPClientTransport(assignment.engine_endpoint, nullptr)));
+      transport_type = "TCP";
       break;
     case Assignment::UNKNOWN:
-      DLOG(FATAL) << "Uknown transport type.";
+      LOG(FATAL) << "Unknown transport type.";
       break;
   }
+
+  VLOG(1) << "Connecting to " << assignment.engine_endpoint.ToString() << " ("
+          << transport_type << ")";
 
   connection_manager_->Connect();
 }
@@ -141,12 +147,14 @@ ClientNetworkComponents::GetBrowserConnectionHandler() {
 
 void ClientNetworkComponents::HandleConnection(
     std::unique_ptr<BlimpConnection> connection) {
+  VLOG(1) << "Connection established.";
   connection->AddConnectionErrorObserver(this);
   network_observer_->OnConnected();
   connection_handler_->HandleConnection(std::move(connection));
 }
 
 void ClientNetworkComponents::OnConnectionError(int result) {
+  VLOG(1) << "Connection error: " << net::ErrorToString(result);
   network_observer_->OnDisconnected(result);
 }
 

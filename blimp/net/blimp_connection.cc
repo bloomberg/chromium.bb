@@ -118,7 +118,7 @@ BlimpConnection::BlimpConnection(std::unique_ptr<PacketReader> reader,
 BlimpConnection::BlimpConnection() {}
 
 BlimpConnection::~BlimpConnection() {
-  DVLOG(1) << "BlimpConnection destroyed.";
+  VLOG(1) << "BlimpConnection destroyed.";
 }
 
 void BlimpConnection::AddConnectionErrorObserver(
