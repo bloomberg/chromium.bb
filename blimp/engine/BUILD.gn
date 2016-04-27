@@ -53,8 +53,6 @@ source_set("app") {
     "app/blimp_content_browser_client.h",
     "app/blimp_content_main_delegate.cc",
     "app/blimp_content_main_delegate.h",
-    "app/blimp_content_renderer_client.cc",
-    "app/blimp_content_renderer_client.h",
     "app/blimp_engine_config.cc",
     "app/blimp_engine_config.h",
     "app/blimp_network_delegate.cc",
@@ -152,6 +150,8 @@ source_set("feature") {
 
 source_set("renderer") {
   sources = [
+    "renderer/blimp_content_renderer_client.cc",
+    "renderer/blimp_content_renderer_client.h",
     "renderer/engine_image_serialization_processor.cc",
     "renderer/engine_image_serialization_processor.h",
   ]

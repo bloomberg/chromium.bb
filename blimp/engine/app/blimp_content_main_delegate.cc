@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
-#include "blimp/engine/app/blimp_content_renderer_client.h"
+#include "blimp/engine/renderer/blimp_content_renderer_client.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/resource/resource_bundle.h"
 

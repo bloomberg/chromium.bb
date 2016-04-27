@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/engine/app/blimp_content_renderer_client.h"
+#include "blimp/engine/renderer/blimp_content_renderer_client.h"
 
 #include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/engine/mojo/blob_channel.mojom.h"

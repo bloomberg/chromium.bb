@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_ENGINE_APP_BLIMP_CONTENT_RENDERER_CLIENT_H_
-#define BLIMP_ENGINE_APP_BLIMP_CONTENT_RENDERER_CLIENT_H_
+#ifndef BLIMP_ENGINE_RENDERER_BLIMP_CONTENT_RENDERER_CLIENT_H_
+#define BLIMP_ENGINE_RENDERER_BLIMP_CONTENT_RENDERER_CLIENT_H_
 
 #include <memory>
 
@@ -40,4 +40,4 @@ class BlimpContentRendererClient : public content::ContentRendererClient {
 }  // namespace engine
 }  // namespace blimp
 
-#endif  // BLIMP_ENGINE_APP_BLIMP_CONTENT_RENDERER_CLIENT_H_
+#endif  // BLIMP_ENGINE_RENDERER_BLIMP_CONTENT_RENDERER_CLIENT_H_
