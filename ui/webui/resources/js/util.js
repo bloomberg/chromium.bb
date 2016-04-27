@@ -355,24 +355,6 @@ function getFaviconImageSet(url, opt_size, opt_type) {
 }
 
 /**
- * Creates a new URL for a favicon request for the current device pixel ratio.
- * The URL must be updated when the user moves the browser to a screen with a
- * different device pixel ratio. Use getFaviconImageSet() for the updating to
- * occur automatically.
- * @param {string} url The url for the favicon.
- * @param {number=} opt_size Optional preferred size of the favicon.
- * @param {string=} opt_type Optional type of favicon to request. Valid values
- *     are 'favicon' and 'touch-icon'. Default is 'favicon'.
- * @return {string} Updated URL for the favicon.
- */
-function getFaviconUrlForCurrentDevicePixelRatio(url, opt_size, opt_type) {
-  var size = opt_size || 16;
-  var type = opt_type || 'favicon';
-  return 'chrome://' + type + '/size/' + size + '@' +
-      window.devicePixelRatio + 'x/' + url;
-}
-
-/**
  * Creates an element of a specified type with a specified class name.
  * @param {string} type The node type.
  * @param {string} className The class name to use.
