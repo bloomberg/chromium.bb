@@ -84,6 +84,13 @@ public class IntentHandler {
     public static final String EXTRA_PARENT_INTENT = "com.android.chrome.parent_intent";
 
     /**
+     * ComponentName of the parent Activity. Can be used by an Activity launched on top of another
+     * Activity (e.g. BookmarkActivity) to intent back into the Activity it sits on top of.
+     */
+    public static final String EXTRA_PARENT_COMPONENT =
+            "org.chromium.chrome.browser.parent_component";
+
+    /**
      * Transition type is only set internally by a first-party app and has to be signed.
      */
     public static final String EXTRA_PAGE_TRANSITION_TYPE = "com.google.chrome.transition_type";

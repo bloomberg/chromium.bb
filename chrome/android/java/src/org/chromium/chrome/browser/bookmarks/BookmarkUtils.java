@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,13 +21,13 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -147,10 +148,11 @@ public class BookmarkUtils {
         String url = getFirstUrlToLoad(activity);
 
         if (DeviceFormFactor.isTablet(activity)) {
-            openUrl(activity, url);
+            openUrl(activity, url, activity.getComponentName());
         } else {
             Intent intent = new Intent(activity, BookmarkActivity.class);
             intent.setData(Uri.parse(url));
+            intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
             activity.startActivity(intent);
         }
     }
@@ -231,17 +233,28 @@ public class BookmarkUtils {
         RecordHistogram.recordEnumeratedHistogram(
                 "Stars.LaunchLocation", launchLocation, BookmarkLaunchLocation.COUNT);
 
-        openUrl(activity, url);
+        if (DeviceFormFactor.isTablet(activity)) {
+            // For tablets, the bookmark manager is open in a tab in the ChromeActivity. Use
+            // the ComponentName of the ChromeActivity passed into this method.
+            openUrl(activity, url, activity.getComponentName());
+        } else {
+            // For phones, the bookmark manager is a separate activity. When the activity is
+            // launched, an intent extra is set specifying the parent component.
+            ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
+                    activity.getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
+            openUrl(activity, url, parentComponent);
+        }
+
         return true;
     }
 
-    private static void openUrl(Activity activity, String url) {
+    private static void openUrl(Activity activity, String url, ComponentName componentName) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        intent.setClassName(activity.getApplicationContext().getPackageName(),
-                ChromeLauncherActivity.class.getName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID,
                 activity.getApplicationContext().getPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setComponent(componentName);
+
         IntentHandler.startActivityForTrustedIntent(intent, activity);
     }
 
