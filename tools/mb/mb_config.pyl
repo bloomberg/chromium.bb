@@ -82,9 +82,6 @@
     },
 
     'chromium.fyi': {
-      'ChromiumOS Linux Tests': 'tbd',
-      'Closure Compilation Linux': 'tbd',
-
       'Android ChromeDriver Tests (dbg)': 'none',
       'Android Cloud Tests': 'android_gn_debug_static_bot_x86',
       'Android Remoting Tests': 'none',
@@ -93,7 +90,7 @@
       'Android Asan Builder Tests (dbg)':
           'android_asan_gn_clang_debug_bot_minimal_symbols',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
-      'Browser Side Navigation Linux': 'gyp_release_bot',
+      'Browser Side Navigation Linux': 'gn_release_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
       'CFI Linux': 'gn_cfi_release_bot',
@@ -165,6 +162,7 @@
         'swarming_gyp_clang_tot_minimal_symbols_shared_release_x64',
       'ClangToTWin64(dll) tester': 'none',
       'ClangToTiOS': 'ios_gyp',
+      'Closure Compilation Linux': 'closure_compilation',
       'CrWinAsan':
        'swarming_gyp_asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
       'CrWinAsan tester': 'none',
@@ -202,15 +200,15 @@
         'gyp_chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material':
         'gyp_debug_bot_minimal_symbols_x64',
-      'MD Top Chrome Linux material': 'gyp_debug_bot',
+      'MD Top Chrome Linux material': 'gn_debug_bot',
       'LTO Linux Perf': 'gn_official_goma_lto',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
-      'Linux ARM': 'swarming_gyp_release_bot_arm',
+      'Linux ARM': 'swarming_gn_release_bot_arm',
       'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
       'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
-      'Linux V8 API Stability': 'gyp_release_bot',
+      'Linux V8 API Stability': 'gn_release_bot',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
       'UBSanVptr Linux': 'gn_ubsan_vptr_release_bot',
@@ -688,8 +686,8 @@
     },
 
     'tryserver.chromium.linux': {
-      'Chromium Linux Codesearch Builder': 'gyp_debug_trybot',
-      'ChromiumOS Codesearch Builder': 'gyp_debug_trybot',
+      'Chromium Linux Codesearch Builder': 'codesearch_gn',
+      'ChromiumOS Codesearch Builder': 'codesearch_gn',
       'cast_shell_linux': 'cast_gn_release_trybot',
       'chromeos_amd64-generic_variable': 'findit',
       'chromeos_amd64-generic_chromium_compile_only_ng': 'cros_chrome_sdk_gyp',
@@ -1058,6 +1056,16 @@
       'chromeos', 'ozone', 'gn', 'release_trybot',
     ],
 
+    'closure_compilation': [
+      # The closure bots run their own recipe and shouldn't go through MB.
+      'gyp', 'error',
+    ],
+
+    'codesearch_gn': [
+      # The Codesearch bots run their own recipe and invoke GN directly.
+      'error', 'gn'
+    ],
+
     # The 'cros_chrome_sdk_* configs are placeholders that indicate
     # that the GYP_DEFINES (or GN args) are set by the `cros chrome-sdk`
     # wrapper and need to be looked at specially.
@@ -1209,10 +1217,6 @@
 
     'gyp_debug_bot': [
       'gyp', 'debug_bot',
-    ],
-
-    'gyp_debug_trybot': [
-      'gyp', 'debug_trybot',
     ],
 
     'gyp_msan_edge_release_bot': [
@@ -1773,6 +1777,10 @@
       'swarming', 'gn', 'release_bot',
     ],
 
+    'swarming_gn_release_bot_arm': [
+      'swarming', 'gn', 'release_bot', 'arm', 'crosscompile',
+    ],
+
     'swarming_gn_release_bot_minimal_symbols_x64': [
       'swarming', 'gn', 'release_bot_minimal_symbols', 'x64',
     ],
@@ -1842,10 +1850,6 @@
       'swarming', 'gyp', 'release_bot',
     ],
 
-    'swarming_gyp_release_bot_arm': [
-      'swarming', 'gyp', 'release_bot', 'arm', 'crosscompile',
-    ],
-
     'swarming_gyp_release_bot_minimal_symbols_x64': [
       'swarming', 'gyp', 'release_bot_minimal_symbols', 'x64',
     ],
@@ -1898,12 +1902,6 @@
     'gn_release_bot_minimal_symbols_chrome_with_codecs': [
       'gn', 'release_bot_minimal_symbols', 'chrome_with_codecs',
     ],
-
-    # This indicates that we haven't yet set up this bot w/ MB. This is
-    # different from 'none' in that a bot set to 'none' should never do
-    # compiles; a bot set to 'tbd' should do compiles but we haven't
-    # added the entries yet.
-    'tbd': ['error'],
 
     'win_clang_debug_bot': [
       'gn', 'clang', 'debug_bot_minimal_symbols',
