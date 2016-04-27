@@ -19,6 +19,19 @@
               "device_os": "KTU84P",
               "device_type": "hammerhead"
             }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "android_webview_test"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
           ]
         },
         "test": "android_webview_unittests"
@@ -34,6 +47,19 @@
           ]
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "blimp_test"
       },
       {
         "swarming": {
@@ -79,6 +105,32 @@
               "device_os": "KTU84P",
               "device_type": "hammerhead"
             }
+          ],
+          "hard_timeout": 1200
+        },
+        "test": "chrome_public_test"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "chrome_sync_shell_test"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
           ]
         },
         "test": "components_browsertests"
@@ -103,9 +155,23 @@
               "device_os": "KTU84P",
               "device_type": "hammerhead"
             }
-          ]
+          ],
+          "hard_timeout": 960
         },
         "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "content_shell_test"
       },
       {
         "swarming": {
@@ -286,61 +352,6 @@
           ]
         },
         "test": "unit_tests"
-      }
-    ],
-    "instrumentation_tests": [
-      {
-        "apk_under_test": "Blimp.apk",
-        "override_compile_targets": [
-          "blimp_test_apk"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "blimp_test_apk",
-        "test_apk": "BlimpTest.apk"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "chrome_public_test_apk"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "chrome_sync_shell_test_apk"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "KTU84P",
-              "device_type": "hammerhead"
-            }
-          ]
-        },
-        "test": "content_shell_test_apk"
       }
     ]
   },
