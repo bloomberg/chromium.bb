@@ -213,6 +213,8 @@ test("sbox_integration_tests") {
     "//base/test:test_support",
     "//testing/gtest",
   ]
+
+  libs = [ "dxva2.lib" ]
 }
 
 test("sbox_validation_tests") {

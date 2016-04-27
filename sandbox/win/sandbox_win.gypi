@@ -225,6 +225,11 @@
         'tests/common/test_utils.h',
         'tests/integration_tests/integration_tests.cc',
       ],
+      'link_settings': {
+        'libraries': [
+          '-ldxva2.lib',
+        ],
+      },
     },
     {
       'target_name': 'sbox_validation_tests',

@@ -135,7 +135,8 @@ PolicyBase::PolicyBase()
       policy_maker_(NULL),
       policy_(NULL),
       lowbox_sid_(NULL),
-      lockdown_default_dacl_(false) {
+      lockdown_default_dacl_(false),
+      enable_opm_redirection_(false) {
   ::InitializeCriticalSection(&lock_);
   dispatcher_.reset(new TopLevelDispatcher(this));
 }
@@ -605,6 +606,14 @@ HANDLE PolicyBase::GetStdoutHandle() {
 
 HANDLE PolicyBase::GetStderrHandle() {
   return stderr_handle_;
+}
+
+void PolicyBase::SetEnableOPMRedirection() {
+  enable_opm_redirection_ = true;
+}
+
+bool PolicyBase::GetEnableOPMRedirection() {
+  return enable_opm_redirection_;
 }
 
 bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {

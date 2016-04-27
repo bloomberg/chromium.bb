@@ -62,6 +62,19 @@ TopLevelDispatcher::TopLevelDispatcher(PolicyBase* policy) : policy_(policy) {
   ipc_targets_[IPC_GDI_GDIDLLINITIALIZE_TAG] = dispatcher;
   ipc_targets_[IPC_GDI_GETSTOCKOBJECT_TAG] = dispatcher;
   ipc_targets_[IPC_USER_REGISTERCLASSW_TAG] = dispatcher;
+  ipc_targets_[IPC_USER_ENUMDISPLAYMONITORS_TAG] = dispatcher;
+  ipc_targets_[IPC_USER_ENUMDISPLAYDEVICES_TAG] = dispatcher;
+  ipc_targets_[IPC_USER_GETMONITORINFO_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_CREATEOPMPROTECTEDOUTPUTS_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_GETCERTIFICATE_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_GETCERTIFICATESIZE_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_DESTROYOPMPROTECTEDOUTPUT_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_CONFIGUREOPMPROTECTEDOUTPUT_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_GETOPMINFORMATION_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_GETOPMRANDOMNUMBER_TAG] = dispatcher;
+  ipc_targets_[IPC_GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE_TAG] =
+      dispatcher;
+  ipc_targets_[IPC_GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS_TAG] = dispatcher;
   process_mitigations_win32k_dispatcher_.reset(dispatcher);
 }
 

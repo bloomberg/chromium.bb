@@ -70,6 +70,8 @@ class PolicyBase final : public TargetPolicy {
                                     const base::char16* handle_name) override;
   void AddHandleToShare(HANDLE handle) override;
   void SetLockdownDefaultDacl() override;
+  void SetEnableOPMRedirection() override;
+  bool GetEnableOPMRedirection() override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
@@ -164,6 +166,7 @@ class PolicyBase final : public TargetPolicy {
   // This list contains handles other than the stderr/stdout handles which are
   // shared with the target at times.
   base::HandlesToInheritVector handles_to_share_;
+  bool enable_opm_redirection_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };
