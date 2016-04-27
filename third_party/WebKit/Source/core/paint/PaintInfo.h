@@ -73,7 +73,6 @@ struct CORE_EXPORT PaintInfo {
 
     // Creates a PaintInfo for painting descendants. See comments about the paint phases
     // in PaintPhase.h for details.
-    // TODO(wangxianzhu): Actually use this method.
     PaintInfo forDescendants() const
     {
         PaintInfo result(*this);

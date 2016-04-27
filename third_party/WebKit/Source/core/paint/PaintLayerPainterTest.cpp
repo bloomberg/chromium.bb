@@ -503,4 +503,39 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting)
     EXPECT_TRUE(htmlLayer.needsPaintPhaseDescendantBlockBackgrounds());
 }
 
+TEST_P(PaintLayerPainterTest, TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgrounds)
+{
+    // "position: relative" makes the table and td self-painting layers.
+    // The table's layer should be marked needsPaintPhaseDescendantBlockBackground because it
+    // will paint collapsed borders in the phase.
+    setBodyInnerHTML(
+        "<table id='table' style='position: relative; border-collapse: collapse'>"
+        "  <tr><td style='position: relative; border: 1px solid green'>Cell</td></tr>"
+        "</table>");
+
+    LayoutBlock& table = *toLayoutBlock(getLayoutObjectByElementId("table"));
+    ASSERT_TRUE(table.hasLayer());
+    PaintLayer& layer = *table.layer();
+    EXPECT_TRUE(layer.isSelfPaintingLayer());
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
+}
+
+TEST_P(PaintLayerPainterTest, TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgroundsDynamic)
+{
+    setBodyInnerHTML(
+        "<table id='table' style='position: relative'>"
+        "  <tr><td style='position: relative; border: 1px solid green'>Cell</td></tr>"
+        "</table>");
+
+    LayoutBlock& table = *toLayoutBlock(getLayoutObjectByElementId("table"));
+    ASSERT_TRUE(table.hasLayer());
+    PaintLayer& layer = *table.layer();
+    EXPECT_TRUE(layer.isSelfPaintingLayer());
+    EXPECT_FALSE(layer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    toHTMLElement(table.node())->setAttribute(HTMLNames::styleAttr, "position: relative; border-collapse: collapse");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_TRUE(layer.needsPaintPhaseDescendantBlockBackgrounds());
+}
+
 } // namespace blink

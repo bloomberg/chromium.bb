@@ -1420,6 +1420,9 @@ PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(const PaintInvalida
     // Information of collapsed borders doesn't affect layout and are for painting only.
     // Do it now instead of during painting to invalidate table cells if needed.
     recalcCollapsedBordersIfNeeded();
+    if (collapseBorders() && !m_collapsedBorders.isEmpty())
+        paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsPaintPhaseDescendantBlockBackgrounds();
+
     return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
 }
 
