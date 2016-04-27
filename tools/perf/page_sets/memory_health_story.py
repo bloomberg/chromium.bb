@@ -29,17 +29,20 @@ URL_LIST = [
 ]
 
 
-class ForegroundPage(page_module.Page):
-  """Take a measurement after loading a regular webpage."""
+class MemoryHealthPage(page_module.Page):
+  """Abstract page class for measuring memory."""
+
+  _PHASE = NotImplemented
 
   def __init__(self, story_set, name, url):
-    super(ForegroundPage, self).__init__(
-        url=url, page_set=story_set, name=name,
-        shared_page_state_class=shared_page_state.SharedMobilePageState)
+    super(MemoryHealthPage, self).__init__(
+        page_set=story_set, name=name, url=url,
+        shared_page_state_class=shared_page_state.SharedMobilePageState,
+        grouping_keys={'phase': self._PHASE})
 
-  def _TakeMemoryMeasurement(self, action_runner, phase):
+  def _TakeMemoryMeasurement(self, action_runner):
     action_runner.Wait(1)  # See crbug.com/540022#c17.
-    with action_runner.CreateInteraction(phase):
+    with action_runner.CreateInteraction(self._PHASE):
       action_runner.Wait(DUMP_WAIT_TIME)
       action_runner.ForceGarbageCollection()
       action_runner.tab.browser.platform.FlushEntireSystemCache()
@@ -47,13 +50,24 @@ class ForegroundPage(page_module.Page):
       if not action_runner.tab.browser.DumpMemory():
         logging.error('Unable to get a memory dump for %s.', self.name)
 
+
+class ForegroundPage(MemoryHealthPage):
+  """Take a measurement after loading a regular webpage."""
+
+  _PHASE = 'foreground'
+
+  def __init__(self, story_set, name, url):
+    super(ForegroundPage, self).__init__(story_set, name, url)
+
   def RunPageInteractions(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    self._TakeMemoryMeasurement(action_runner, 'foreground')
+    self._TakeMemoryMeasurement(action_runner)
 
 
-class BackgroundPage(ForegroundPage):
+class BackgroundPage(MemoryHealthPage):
   """Take a measurement while Chrome is in the background."""
+
+  _PHASE = 'background'
 
   def __init__(self, story_set, name):
     super(BackgroundPage, self).__init__(story_set, name, 'about:blank')
@@ -69,7 +83,7 @@ class BackgroundPage(ForegroundPage):
         app_has_webviews=False)
 
     # Take measurement.
-    self._TakeMemoryMeasurement(action_runner, 'background')
+    self._TakeMemoryMeasurement(action_runner)
 
     # Go back to Chrome.
     android_platform.android_action_runner.InputKeyEvent(keyevent.KEYCODE_BACK)
