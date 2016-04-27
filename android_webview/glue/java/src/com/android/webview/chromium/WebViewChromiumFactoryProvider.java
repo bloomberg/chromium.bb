@@ -138,7 +138,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
         int lastVersion = mWebViewPrefs.getInt(VERSION_CODE_PREF, 0);
         int currentVersion = packageInfo.versionCode;
-        if (lastVersion > currentVersion) {
+        if (!versionCodeGE(currentVersion, lastVersion)) {
             // The WebView package has been downgraded since we last ran in this application.
             // Delete the WebView data directory's contents.
             String dataDir = PathUtils.getDataDirectory(mWebViewDelegate.getApplication());
@@ -154,6 +154,29 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     private static boolean isBuildDebuggable() {
         return !Build.TYPE.equals("user");
+    }
+
+    /**
+     * Both versionCodes should be from a WebView provider package implemented by Chromium.
+     * VersionCodes from other kinds of packages won't make any sense in this method.
+     *
+     * An introduction to Chromium versionCode scheme:
+     * "BBBBPPPAX"
+     * BBBB: 4 digit branch number. It monotonically increases over time.
+     * PPP: patch number in the branch. It is padded with zeroes to the left. These three digits may
+     * change their meaning in the future.
+     * A: architecture digit.
+     * X: A digit to differentiate APKs for other reasons.
+     *
+     * This method takes the "BBBB" of versionCodes and compare them.
+     *
+     * @return true if versionCode1 is higher than or equal to versionCode2.
+     */
+    private static boolean versionCodeGE(int versionCode1, int versionCode2) {
+        int v1 = versionCode1 / 100000;
+        int v2 = versionCode2 / 100000;
+
+        return v1 >= v2;
     }
 
     private static void deleteContents(File dir) {
