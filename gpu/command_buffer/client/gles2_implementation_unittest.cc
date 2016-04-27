@@ -4487,7 +4487,9 @@ TEST_F(GLES2ImplementationTest, SignalSyncToken) {
   EXPECT_EQ(1, signaled_count);
 }
 
-TEST_F(GLES2ImplementationTest, SignalSyncTokenAfterContextLoss) {
+// TODO(danakj): Re-enable after/during re-land of https://crrev.com/389947.
+// This test depends on r389947 but that CL was reverted in r389980.
+TEST_F(GLES2ImplementationTest, DISABLED_SignalSyncTokenAfterContextLoss) {
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease()).WillOnce(Return(1));
   const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
   gl_->ShallowFlushCHROMIUM();
