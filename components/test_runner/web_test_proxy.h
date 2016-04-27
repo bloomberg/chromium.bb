@@ -44,6 +44,7 @@ namespace test_runner {
 class AccessibilityController;
 class EventSender;
 class TestInterfaces;
+class TestRunnerForSpecificView;
 class TextInputController;
 class WebTestDelegate;
 class WebTestInterfaces;
@@ -93,6 +94,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
     return accessibility_controller_.get();
   }
 
+  TestRunnerForSpecificView* view_test_runner() {
+    return view_test_runner_.get();
+  }
+
   void Reset();
   void BindTo(blink::WebLocalFrame* frame);
 
@@ -113,6 +118,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<EventSender> event_sender_;
   std::unique_ptr<TextInputController> text_input_controller_;
+  std::unique_ptr<TestRunnerForSpecificView> view_test_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };

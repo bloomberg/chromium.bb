@@ -179,15 +179,15 @@ blink::WebSpeechRecognizer* WebViewTestClient::speechRecognizer() {
 }
 
 bool WebViewTestClient::requestPointerLock() {
-  return test_runner_->RequestPointerLock();
+  return web_test_proxy_base_->view_test_runner()->RequestPointerLock();
 }
 
 void WebViewTestClient::requestPointerUnlock() {
-  test_runner_->RequestPointerUnlock();
+  web_test_proxy_base_->view_test_runner()->RequestPointerUnlock();
 }
 
 bool WebViewTestClient::isPointerLocked() {
-  return test_runner_->isPointerLocked();
+  return web_test_proxy_base_->view_test_runner()->isPointerLocked();
 }
 
 void WebViewTestClient::didFocus() {

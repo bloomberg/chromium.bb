@@ -103,6 +103,7 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   test_runner::WebTestProxyBase* proxy = GetWebTestProxyBase(render_view);
   proxy->set_web_widget(render_view->GetWebView());
   proxy->set_web_view(render_view->GetWebView());
+  proxy->Reset();
   proxy->SetSendWheelGestures(UseGestureBasedWheelScrolling());
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);

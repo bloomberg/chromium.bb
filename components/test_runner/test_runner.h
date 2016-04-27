@@ -27,6 +27,7 @@ class SkBitmap;
 namespace blink {
 class WebContentSettingsClient;
 class WebFrame;
+class WebLocalFrame;
 class WebMediaStream;
 class WebString;
 class WebView;
@@ -48,15 +49,30 @@ class MockWebSpeechRecognizer;
 class MockWebUserMediaClient;
 class SpellCheckClient;
 class TestInterfaces;
+class TestRunnerForSpecificView;
 class WebTestDelegate;
 class WebTestProxyBase;
 
+// TestRunner class currently has dual purpose:
+// 1. It implements |testRunner| javascript bindings for "global" / "ambient".
+//    Examples:
+//    - testRunner.dumpAsText (test flag affecting test behavior)
+//    - testRunner.setAllowDisplayOfInsecureContent (test flag affecting product
+//      behavior)
+//    - testRunner.setTextSubpixelPositioning (directly interacts with product).
+//    Note that "per-view" (non-"global") bindings are handled by
+//    instances of TestRunnerForSpecificView class.
+// 2. It manages global test state.  Example:
+//    - Tracking topLoadingFrame that can finish the test when it loads.
+//    - WorkQueue holding load requests from the TestInterfaces
+//    - LayoutTestRuntimeFlags
 class TestRunner : public WebTestRunner {
  public:
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
 
-  void Install(blink::WebFrame* frame);
+  void Install(blink::WebLocalFrame* frame,
+               base::WeakPtr<TestRunnerForSpecificView> view_test_runner);
 
   void SetDelegate(WebTestDelegate*);
   void SetWebView(blink::WebView*);
@@ -127,9 +143,6 @@ class TestRunner : public WebTestRunner {
   bool policyDelegateShouldNotifyDone() const;
   bool shouldInterceptPostMessage() const;
   bool shouldDumpResourcePriorities() const;
-  bool RequestPointerLock();
-  void RequestPointerUnlock();
-  bool isPointerLocked();
   void setToolTipText(const blink::WebString&);
   void setDragImage(const blink::WebImage& drag_image);
   bool shouldDumpNavigationPolicy() const;
@@ -152,20 +165,6 @@ class TestRunner : public WebTestRunner {
  private:
   friend class TestRunnerBindings;
   friend class WorkQueue;
-
-  // Helpers for working with base and V8 callbacks.
-  void PostTask(const base::Closure& callback);
-  void PostDelayedTask(long long delay, const base::Closure& callback);
-  void PostV8Callback(const v8::Local<v8::Function>& callback);
-  void PostV8CallbackWithArgs(v8::UniquePersistent<v8::Function> callback,
-                              int argc,
-                              v8::Local<v8::Value> argv[]);
-  void InvokeV8Callback(const v8::UniquePersistent<v8::Function>& callback);
-  void InvokeV8CallbackWithArgs(
-      const v8::UniquePersistent<v8::Function>& callback,
-      const std::vector<v8::UniquePersistent<v8::Value>>& args);
-  base::Closure CreateClosureThatPostsV8Callback(
-      const v8::Local<v8::Function>& callback);
 
   // Helper class for managing events queued by methods like queueLoad or
   // queueScript.
@@ -223,30 +222,6 @@ class TestRunner : public WebTestRunner {
   void SetCloseRemainingWindowsWhenComplete(bool close_remaining_windows);
   void ResetTestHelperControllers();
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Methods implemented entirely in terms of chromium's public WebKit API
-
-  // Method that controls whether pressing Tab key cycles through page elements
-  // or inserts a '\t' char in text area
-  void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
-
-  // Executes an internal command (superset of document.execCommand() commands).
-  void ExecCommand(gin::Arguments* args);
-
-  // Checks if an internal command is currently available.
-  bool IsCommandEnabled(const std::string& command);
-
-  bool CallShouldCloseOnWebView();
-  void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
-                                                const std::string& scheme);
-  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
-      int world_id, const std::string& script);
-  void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
-  void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      v8::Local<v8::Value> origin);
-  void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                             const std::string& policy);
-
   // Allows layout tests to manage origins' whitelisting.
   void AddOriginAccessWhitelistEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
@@ -257,21 +232,9 @@ class TestRunner : public WebTestRunner {
                                         const std::string& destination_host,
                                         bool allow_destination_subdomains);
 
-  // Returns true if the current page box has custom page size style for
-  // printing.
-  bool HasCustomPageSizeStyle(int page_index);
-
-  // Forces the selection colors for testing under Linux.
-  void ForceRedSelectionColors();
-
   // Add |source_code| as an injected stylesheet to the active document of the
   // window of the current V8 context.
   void InsertStyleSheet(const std::string& source_code);
-
-  bool FindString(const std::string& search_text,
-                  const std::vector<std::string>& options_array);
-
-  std::string SelectionAsMarkup();
 
   // Enables or disables subpixel positioning (i.e. fractional X positions for
   // glyphs) in text rendering on Linux. Since this method changes global
@@ -279,12 +242,6 @@ class TestRunner : public WebTestRunner {
   // all text that they render. If not, an already-cached style will be used,
   // resulting in the changed setting being ignored.
   void SetTextSubpixelPositioning(bool value);
-
-  // Switch the visibility of the page.
-  void SetPageVisibility(const std::string& new_visibility);
-
-  // Changes the direction of the focused element.
-  void SetTextDirection(const std::string& direction_name);
 
   // After this function is called, all window-sizing machinery is
   // short-circuited inside the renderer. This mode is necessary for
@@ -327,12 +284,6 @@ class TestRunner : public WebTestRunner {
 
   void SetMockScreenOrientation(const std::string& orientation);
   void DisableMockScreenOrientation();
-
-  void DidAcquirePointerLock();
-  void DidNotAcquirePointerLock();
-  void DidLosePointerLock();
-  void SetPointerLockWillFailSynchronously();
-  void SetPointerLockWillRespondAsynchronously();
 
   ///////////////////////////////////////////////////////////////////////////
   // Methods modifying WebPreferences.
@@ -491,9 +442,6 @@ class TestRunner : public WebTestRunner {
   // policy passed to the decidePolicyForNavigation callback.
   void DumpNavigationPolicy();
 
-  // Dump current PageImportanceSignals for the page.
-  void DumpPageImportanceSignals();
-
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebTestProxy
 
@@ -523,43 +471,8 @@ class TestRunner : public WebTestRunner {
   // Changes the cookie policy from the default to allow all cookies.
   void SetAlwaysAcceptCookies(bool accept);
 
-  // Gives focus to the main test window.
-  void SetWindowIsKey(bool value);
-
   // Converts a URL starting with file:///tmp/ to the local mapping.
   std::string PathToLocalResource(const std::string& path);
-
-  // Used to set the device scale factor.
-  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
-
-  // Enable zoom-for-dsf option.
-  // TODO(oshima): Remove this once all platforms migrated.
-  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
-
-  // Change the device color profile while running a layout test.
-  void SetColorProfile(const std::string& name,
-                       v8::Local<v8::Function> callback);
-
-  // Change the bluetooth test data while running a layout test.
-  void SetBluetoothFakeAdapter(const std::string& adapter_name,
-                               v8::Local<v8::Function> callback);
-
-  // If |enable| is true, makes the Bluetooth chooser record its input and wait
-  // for instructions from the test program on how to proceed. Otherwise falls
-  // back to the browser's default chooser.
-  void SetBluetoothManualChooser(bool enable);
-
-  // Calls |callback| with a DOMString[] representing the events recorded since
-  // the last call to this function.
-  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
-
-  // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
-  // event strings are:
-  //  * "cancel" - simulates the user canceling the chooser.
-  //  * "select" - simulates the user selecting a device whose device ID is in
-  //               |argument|.
-  void SendBluetoothManualChooserEvent(const std::string& event,
-                                       const std::string& argument);
 
   // Enables mock geofencing service while running a layout test.
   // |service_available| indicates if the mock service should mock geofencing
@@ -579,20 +492,9 @@ class TestRunner : public WebTestRunner {
                      const GURL& origin,
                      const GURL& embedding_origin);
 
-  // Causes the beforeinstallprompt event to be sent to the renderer.
-  void DispatchBeforeInstallPromptEvent(
-      int request_id,
-      const std::vector<std::string>& event_platforms,
-      v8::Local<v8::Function> callback);
-
   // Resolve the beforeinstallprompt event with the matching request id.
   void ResolveBeforeInstallPromptPromise(int request_id,
                                          const std::string& platform);
-
-  // Immediately run all pending idle tasks, including all pending
-  // requestIdleCallback calls.  Invoke the callback when all
-  // idle tasks are complete.
-  void RunIdleTasks(v8::Local<v8::Function> callback);
 
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
@@ -621,27 +523,6 @@ class TestRunner : public WebTestRunner {
                                         const std::string& password);
   void AddMockCredentialManagerError(const std::string& error);
 
-  // WebPageOverlay related functions. Permits the adding and removing of only
-  // one opaque overlay.
-  void AddWebPageOverlay();
-  void RemoveWebPageOverlay();
-
-  void LayoutAndPaintAsync();
-  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
-
-  // Similar to LayoutAndPaintAsyncThen(), but pass parameters of the captured
-  // snapshot (width, height, snapshot) to the callback. The snapshot is in
-  // uint8_t RGBA format.
-  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
-  // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
-  // located at a particular point in the WebView (if there is such an image),
-  // reads back its pixels, and provides the snapshot to the callback. If there
-  // is no image at that point, calls the callback with (0, 0, empty_snapshot).
-  void CopyImageAtAndCapturePixelsAsyncThen(
-      int x, int y, const v8::Local<v8::Function> callback);
-
-  void GetManifestThen(v8::Local<v8::Function> callback);
-
   // Takes care of notifying the delegate after a change to layout test runtime
   // flags.
   void OnLayoutTestRuntimeFlagsChanged();
@@ -649,35 +530,13 @@ class TestRunner : public WebTestRunner {
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
 
-  void GetManifestCallback(v8::UniquePersistent<v8::Function> callback,
-                           const blink::WebURLResponse& response,
-                           const std::string& data);
-  void CapturePixelsCallback(v8::UniquePersistent<v8::Function> callback,
-                             const SkBitmap& snapshot);
-  void DispatchBeforeInstallPromptCallback(
-      v8::UniquePersistent<v8::Function> callback,
-      bool canceled);
-  void GetBluetoothManualChooserEventsCallback(
-      v8::UniquePersistent<v8::Function> callback,
-      const std::vector<std::string>& events);
-
   void CheckResponseMimeType();
   void CompleteNotifyDone();
-
-  void DidAcquirePointerLockInternal();
-  void DidNotAcquirePointerLockInternal();
-  void DidLosePointerLockInternal();
 
   // In the Mac code, this is called to trigger the end of a test after the
   // page has finished loading. From here, we can generate the dump for the
   // test.
   void LocationChangeDone();
-
-  // Sets a flag causing the next call to WebGLRenderingContext::create to fail.
-  void ForceNextWebGLContextCreationToFail();
-
-  // Sets a flag causing the next call to DrawingBuffer::create to fail.
-  void ForceNextDrawingBufferCreationToFail();
 
   bool test_is_running_;
 
@@ -752,12 +611,6 @@ class TestRunner : public WebTestRunner {
   // WebContentSettingsClient mock object.
   std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;
 
-  bool pointer_locked_;
-  enum {
-    PointerLockWillSucceed,
-    PointerLockWillRespondAsync,
-    PointerLockWillFailSync,
-  } pointer_lock_planned_result_;
   bool use_mock_theme_;
 
   std::unique_ptr<MockCredentialManagerClient> credential_manager_client_;
@@ -782,6 +635,201 @@ class TestRunner : public WebTestRunner {
   base::WeakPtrFactory<TestRunner> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
+};
+
+// TestRunnerForSpecificView implements part of |testRunner| javascript bindings
+// that work with a view where the javascript call originated from.  Examples:
+// - testRunner.capturePixelsAsyncThen
+// - testRunner.setPageVisibility
+// Note that "global" bindings are handled by TestRunner class.
+// TODO(lukasza): Move this class to a separate compilation unit.
+class TestRunnerForSpecificView {
+ public:
+  explicit TestRunnerForSpecificView(WebTestProxyBase* web_test_proxy_base);
+  ~TestRunnerForSpecificView();
+
+  // Installs view-specific bindings (handled by |this|) and *also* global
+  // TestRunner bindings (both kinds of bindings are exposed via a single
+  // |testRunner| object in javascript).
+  void Install(blink::WebLocalFrame* frame);
+
+  void Reset();
+
+  // Pointer lock methods used by WebViewTestClient.
+  bool RequestPointerLock();
+  void RequestPointerUnlock();
+  bool isPointerLocked();
+
+ private:
+  friend class TestRunnerBindings;
+
+  // Helpers for working with base and V8 callbacks.
+  void PostTask(const base::Closure& callback);
+  void PostDelayedTask(long long delay, const base::Closure& callback);
+  void PostV8Callback(const v8::Local<v8::Function>& callback);
+  void PostV8CallbackWithArgs(v8::UniquePersistent<v8::Function> callback,
+                              int argc,
+                              v8::Local<v8::Value> argv[]);
+  void InvokeV8Callback(const v8::UniquePersistent<v8::Function>& callback);
+  void InvokeV8CallbackWithArgs(
+      const v8::UniquePersistent<v8::Function>& callback,
+      const std::vector<v8::UniquePersistent<v8::Value>>& args);
+  base::Closure CreateClosureThatPostsV8Callback(
+      const v8::Local<v8::Function>& callback);
+
+  void LayoutAndPaintAsync();
+  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
+
+  // Similar to LayoutAndPaintAsyncThen(), but pass parameters of the captured
+  // snapshot (width, height, snapshot) to the callback. The snapshot is in
+  // uint8_t RGBA format.
+  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
+  void CapturePixelsCallback(v8::UniquePersistent<v8::Function> callback,
+                             const SkBitmap& snapshot);
+
+  // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
+  // located at a particular point in the WebView (if there is such an image),
+  // reads back its pixels, and provides the snapshot to the callback. If there
+  // is no image at that point, calls the callback with (0, 0, empty_snapshot).
+  void CopyImageAtAndCapturePixelsAsyncThen(
+      int x,
+      int y,
+      const v8::Local<v8::Function> callback);
+
+  void GetManifestThen(v8::Local<v8::Function> callback);
+  void GetManifestCallback(v8::UniquePersistent<v8::Function> callback,
+                           const blink::WebURLResponse& response,
+                           const std::string& data);
+
+  // Calls |callback| with a DOMString[] representing the events recorded since
+  // the last call to this function.
+  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
+  void GetBluetoothManualChooserEventsCallback(
+      v8::UniquePersistent<v8::Function> callback,
+      const std::vector<std::string>& events);
+
+  // Change the bluetooth test data while running a layout test.
+  void SetBluetoothFakeAdapter(const std::string& adapter_name,
+                               v8::Local<v8::Function> callback);
+
+  // If |enable| is true, makes the Bluetooth chooser record its input and wait
+  // for instructions from the test program on how to proceed. Otherwise falls
+  // back to the browser's default chooser.
+  void SetBluetoothManualChooser(bool enable);
+
+  // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
+  // event strings are:
+  //  * "cancel" - simulates the user canceling the chooser.
+  //  * "select" - simulates the user selecting a device whose device ID is in
+  //               |argument|.
+  void SendBluetoothManualChooserEvent(const std::string& event,
+                                       const std::string& argument);
+
+  // Used to set the device scale factor.
+  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
+
+  // Enable zoom-for-dsf option.
+  // TODO(oshima): Remove this once all platforms migrated.
+  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
+
+  // Change the device color profile while running a layout test.
+  void SetColorProfile(const std::string& name,
+                       v8::Local<v8::Function> callback);
+
+  // Causes the beforeinstallprompt event to be sent to the renderer.
+  void DispatchBeforeInstallPromptEvent(
+      int request_id,
+      const std::vector<std::string>& event_platforms,
+      v8::Local<v8::Function> callback);
+  void DispatchBeforeInstallPromptCallback(
+      v8::UniquePersistent<v8::Function> callback,
+      bool canceled);
+
+  // Immediately run all pending idle tasks, including all pending
+  // requestIdleCallback calls.  Invoke the callback when all
+  // idle tasks are complete.
+  void RunIdleTasks(v8::Local<v8::Function> callback);
+
+  // Method that controls whether pressing Tab key cycles through page elements
+  // or inserts a '\t' char in text area
+  void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
+
+  // Executes an internal command (superset of document.execCommand() commands).
+  void ExecCommand(gin::Arguments* args);
+
+  // Checks if an internal command is currently available.
+  bool IsCommandEnabled(const std::string& command);
+
+  // Returns true if the current page box has custom page size style for
+  // printing.
+  bool HasCustomPageSizeStyle(int page_index);
+
+  // Forces the selection colors for testing under Linux.
+  void ForceRedSelectionColors();
+
+  // Switch the visibility of the page.
+  void SetPageVisibility(const std::string& new_visibility);
+
+  // Changes the direction of the focused element.
+  void SetTextDirection(const std::string& direction_name);
+
+  // Dump current PageImportanceSignals for the page.
+  void DumpPageImportanceSignals();
+
+  // WebPageOverlay related functions. Permits the adding and removing of only
+  // one opaque overlay.
+  void AddWebPageOverlay();
+  void RemoveWebPageOverlay();
+
+  // Sets a flag causing the next call to WebGLRenderingContext::create to fail.
+  void ForceNextWebGLContextCreationToFail();
+
+  // Sets a flag causing the next call to DrawingBuffer::create to fail.
+  void ForceNextDrawingBufferCreationToFail();
+
+  // Gives focus to the view associated with TestRunnerForSpecificView.
+  void SetWindowIsKey(bool value);
+
+  // Pointer lock handling.
+  void DidAcquirePointerLock();
+  void DidNotAcquirePointerLock();
+  void DidLosePointerLock();
+  void SetPointerLockWillFailSynchronously();
+  void SetPointerLockWillRespondAsynchronously();
+  void DidAcquirePointerLockInternal();
+  void DidNotAcquirePointerLockInternal();
+  void DidLosePointerLockInternal();
+  bool pointer_locked_;
+  enum {
+    PointerLockWillSucceed,
+    PointerLockWillRespondAsync,
+    PointerLockWillFailSync,
+  } pointer_lock_planned_result_;
+
+  bool CallShouldCloseOnWebView();
+  void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
+                                                const std::string& scheme);
+  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
+      int world_id,
+      const std::string& script);
+  void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
+  void SetIsolatedWorldSecurityOrigin(int world_id,
+                                      v8::Local<v8::Value> origin);
+  void SetIsolatedWorldContentSecurityPolicy(int world_id,
+                                             const std::string& policy);
+  bool FindString(const std::string& search_text,
+                  const std::vector<std::string>& options_array);
+  std::string SelectionAsMarkup();
+  void SetViewSourceForFrame(const std::string& name, bool enabled);
+
+  // Helpers for accessing pointers exposed by |web_test_proxy_base_|.
+  blink::WebView* web_view();
+  WebTestDelegate* delegate();
+  WebTestProxyBase* web_test_proxy_base_;
+
+  base::WeakPtrFactory<TestRunnerForSpecificView> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRunnerForSpecificView);
 };
 
 }  // namespace test_runner

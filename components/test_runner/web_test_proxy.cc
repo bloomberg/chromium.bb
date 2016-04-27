@@ -25,7 +25,8 @@ WebTestProxyBase::WebTestProxyBase()
       web_widget_(nullptr),
       accessibility_controller_(new AccessibilityController(this)),
       event_sender_(new EventSender(this)),
-      text_input_controller_(new TextInputController(this)) {}
+      text_input_controller_(new TextInputController(this)),
+      view_test_runner_(new TestRunnerForSpecificView(this)) {}
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->WindowClosed(this);
@@ -44,12 +45,14 @@ void WebTestProxyBase::Reset() {
   accessibility_controller_->Reset();
   event_sender_->Reset();
   // text_input_controller_ doesn't have any state to reset.
+  view_test_runner_->Reset();
 }
 
 void WebTestProxyBase::BindTo(blink::WebLocalFrame* frame) {
   accessibility_controller_->Install(frame);
   event_sender_->Install(frame);
   text_input_controller_->Install(frame);
+  view_test_runner_->Install(frame);
 }
 
 void WebTestProxyBase::GetScreenOrientationForTesting(
