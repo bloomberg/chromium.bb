@@ -115,8 +115,7 @@ View::View()
       registered_accelerator_count_(0),
       next_focusable_view_(NULL),
       previous_focusable_view_(NULL),
-      focusable_(false),
-      accessibility_focusable_(false),
+      focus_behavior_(FocusBehavior::NEVER),
       context_menu_controller_(NULL),
       drag_controller_(NULL),
       native_view_accessibility_(NULL) {
@@ -1199,28 +1198,20 @@ void View::SetNextFocusableView(View* view) {
   next_focusable_view_ = view;
 }
 
-void View::SetFocusable(bool focusable) {
-  if (focusable_ == focusable)
+void View::SetFocusBehavior(FocusBehavior focus_behavior) {
+  if (focus_behavior_ == focus_behavior)
     return;
 
-  focusable_ = focusable;
+  focus_behavior_ = focus_behavior;
   AdvanceFocusIfNecessary();
 }
 
 bool View::IsFocusable() const {
-  return focusable_ && enabled_ && IsDrawn();
+  return focus_behavior_ == FocusBehavior::ALWAYS && enabled_ && IsDrawn();
 }
 
 bool View::IsAccessibilityFocusable() const {
-  return (focusable_ || accessibility_focusable_) && enabled_ && IsDrawn();
-}
-
-void View::SetAccessibilityFocusable(bool accessibility_focusable) {
-  if (accessibility_focusable_ == accessibility_focusable)
-    return;
-
-  accessibility_focusable_ = accessibility_focusable;
-  AdvanceFocusIfNecessary();
+  return focus_behavior_ != FocusBehavior::NEVER && enabled_ && IsDrawn();
 }
 
 FocusManager* View::GetFocusManager() {

@@ -78,7 +78,6 @@ ToastOverlayLabel::ToastOverlayLabel(const std::string& label) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFontList(rb->GetFontList(kTextFontStyle));
   SetAutoColorReadabilityEnabled(false);
-  SetFocusable(false);
   SetMultiLine(true);
   SetEnabledColor(SK_ColorWHITE);
   SetDisabledColor(SK_ColorWHITE);

@@ -294,7 +294,7 @@ Textfield::Textfield()
   set_drag_controller(this);
   GetRenderText()->SetFontList(GetDefaultFontList());
   SetBorder(std::unique_ptr<Border>(new FocusableBorder()));
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 
   if (ViewsDelegate::GetInstance()) {
     password_reveal_duration_ =

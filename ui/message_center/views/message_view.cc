@@ -44,7 +44,7 @@ MessageView::MessageView(MessageViewController* controller,
       background_view_(NULL),
       scroller_(NULL),
       display_source_(display_source) {
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();

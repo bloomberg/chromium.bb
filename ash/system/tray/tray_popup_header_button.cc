@@ -35,7 +35,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   SetAccessibleName(bundle.GetLocalizedString(accessible_name_id));
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   set_request_focus_on_press(false);
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(

@@ -50,7 +50,7 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
 
   web_view_ = new views::WebView(nullptr);
   web_view_->SetWebContents(contents);
-  web_view_->SetFocusable(false);
+  web_view_->SetFocusBehavior(FocusBehavior::NEVER);
   AddChildView(web_view_);
 
   SetLayoutManager(new views::FillLayout);

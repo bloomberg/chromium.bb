@@ -601,7 +601,8 @@ void MessageCenterView::NotificationsChanged() {
     }
   }
   button_bar_->SetCloseAllButtonEnabled(!no_closable_views);
-  scroller_->SetFocusable(!no_message_views);
+  scroller_->SetFocusBehavior(no_message_views ? FocusBehavior::NEVER
+                                               : FocusBehavior::ALWAYS);
 
   if (focus_manager && focused_view)
     focus_manager->SetFocusedView(focused_view);

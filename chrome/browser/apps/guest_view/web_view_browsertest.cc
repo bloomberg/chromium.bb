@@ -2979,7 +2979,7 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   views::View* other_focusable_view = new views::View();
   other_focusable_view->SetBounds(bounds.x() + bounds.width(), bounds.y(), 100,
                                   100);
-  other_focusable_view->SetFocusable(true);
+  other_focusable_view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   aura_webview->parent()->AddChildView(other_focusable_view);
   other_focusable_view->SetPosition(gfx::Point(bounds.x() + bounds.width(), 0));
 

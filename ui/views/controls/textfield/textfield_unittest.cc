@@ -2546,11 +2546,11 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionInUnfocusableTextfield) {
 
   // Make textfield unfocusable and tap on it. Touch text selection should not
   // get activated.
-  textfield_->SetFocusable(false);
+  textfield_->SetFocusBehavior(View::FocusBehavior::NEVER);
   Tap(touch_point);
   EXPECT_FALSE(textfield_->HasFocus());
   EXPECT_FALSE(test_api_->touch_selection_controller());
-  textfield_->SetFocusable(true);
+  textfield_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.

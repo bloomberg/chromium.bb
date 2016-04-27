@@ -40,11 +40,11 @@ gfx::Rect CustomLauncherPageView::GetPageBoundsForState(
 }
 
 void CustomLauncherPageView::OnShown() {
-  custom_launcher_page_contents_->SetFocusable(true);
+  custom_launcher_page_contents_->SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 void CustomLauncherPageView::OnWillBeHidden() {
-  custom_launcher_page_contents_->SetFocusable(false);
+  custom_launcher_page_contents_->SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 }  // namespace app_list

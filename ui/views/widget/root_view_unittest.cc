@@ -54,7 +54,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   content->AddChildView(child);
 
   // Give focus to |child| so that it will be the target of the key event.
-  child->SetFocusable(true);
+  child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   child->RequestFocus();
 
   internal::RootView* root_view =
@@ -121,7 +121,7 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   View* focused_view = new View;
   focused_view->set_context_menu_controller(&controller);
   widget.SetContentsView(focused_view);
-  focused_view->SetFocusable(true);
+  focused_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   focused_view->RequestFocus();
 
   // No context menu should be shown for a keypress of 'A'.

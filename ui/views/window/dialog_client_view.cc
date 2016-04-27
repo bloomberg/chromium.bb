@@ -313,7 +313,7 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
     button = new LabelButton(this, title);
     button->SetStyle(Button::STYLE_BUTTON);
   }
-  button->SetFocusable(true);
+  button->SetFocusBehavior(FocusBehavior::ALWAYS);
 
   const int kDialogMinButtonWidth = 75;
   button->SetMinSize(gfx::Size(kDialogMinButtonWidth, 0));

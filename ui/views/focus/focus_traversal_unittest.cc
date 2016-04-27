@@ -134,7 +134,7 @@ class BorderView : public NativeViewHost {
  public:
   explicit BorderView(View* child) : child_(child), widget_(NULL) {
     DCHECK(child);
-    SetFocusable(false);
+    SetFocusBehavior(FocusBehavior::NEVER);
   }
 
   ~BorderView() override {}
@@ -543,7 +543,7 @@ void FocusTraversalTest::InitContentView() {
   y += 60;
 
   contents = new View();
-  contents->SetFocusable(true);
+  contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   contents->set_background(Background::CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(kThumbnailContainerID);
   button = new LabelButton(NULL, ASCIIToUTF16("Star"));
@@ -747,10 +747,11 @@ TEST_F(FocusTraversalTest, PaneTraversal) {
 
   FocusSearch focus_search_right(right_container_, true, true);
   right_container_->EnablePaneFocus(&focus_search_right);
-  FindViewByID(kRosettaLinkID)->SetFocusable(false);
-  FindViewByID(kStupeurEtTremblementLinkID)->SetFocusable(false);
-  FindViewByID(kDinerGameLinkID)->SetAccessibilityFocusable(true);
-  FindViewByID(kDinerGameLinkID)->SetFocusable(false);
+  FindViewByID(kRosettaLinkID)->SetFocusBehavior(View::FocusBehavior::NEVER);
+  FindViewByID(kStupeurEtTremblementLinkID)
+      ->SetFocusBehavior(View::FocusBehavior::NEVER);
+  FindViewByID(kDinerGameLinkID)
+      ->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
   FindViewByID(kAsterixLinkID)->RequestFocus();
 
   // Traverse the focus hierarchy within the pane several times.

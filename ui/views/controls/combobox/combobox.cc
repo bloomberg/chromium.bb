@@ -95,6 +95,7 @@ class TransparentButton : public CustomButton {
   TransparentButton(ButtonListener* listener)
       : CustomButton(listener) {
     SetAnimationDuration(LabelButton::kHoverAnimationDurationMs);
+    SetFocusBehavior(FocusBehavior::NEVER);
   }
   ~TransparentButton() override {}
 
@@ -353,7 +354,7 @@ Combobox::Combobox(ui::ComboboxModel* model)
       arrow_button_(new TransparentButton(this)),
       weak_ptr_factory_(this) {
   ModelChanged();
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   UpdateBorder();
   // set_background() takes ownership but takes a raw pointer.
   std::unique_ptr<Background> b = PlatformStyle::CreateComboboxBackground();
@@ -381,8 +382,6 @@ Combobox::Combobox(ui::ComboboxModel* model)
 
   text_button_->SetVisible(true);
   arrow_button_->SetVisible(true);
-  text_button_->SetFocusable(false);
-  arrow_button_->SetFocusable(false);
   AddChildView(text_button_);
   AddChildView(arrow_button_);
 }

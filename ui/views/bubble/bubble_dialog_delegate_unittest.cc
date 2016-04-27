@@ -25,7 +25,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   TestBubbleDialogDelegateView(View* anchor_view)
       : BubbleDialogDelegateView(anchor_view, BubbleBorder::TOP_LEFT),
         view_(new View()) {
-    view_->SetFocusable(true);
+    view_->SetFocusBehavior(FocusBehavior::ALWAYS);
     AddChildView(view_);
   }
   ~TestBubbleDialogDelegateView() override {}

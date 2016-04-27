@@ -74,12 +74,12 @@ ButtonView::ButtonView(views::ButtonListener* listener,
     : accept_button_(nullptr), deny_button_(nullptr) {
   accept_button_ = new views::LabelButton(listener, base::string16());
   accept_button_->SetStyle(views::Button::STYLE_BUTTON);
-  accept_button_->SetFocusable(false);
+  accept_button_->SetFocusBehavior(FocusBehavior::NEVER);
   AddChildView(accept_button_);
 
   deny_button_ = new views::LabelButton(listener, base::string16());
   deny_button_->SetStyle(views::Button::STYLE_BUTTON);
-  deny_button_->SetFocusable(false);
+  deny_button_->SetFocusBehavior(FocusBehavior::NEVER);
   AddChildView(deny_button_);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
@@ -257,7 +257,6 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
       views::BubbleBorder::NONE, shadow_type, background_color));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(std::move(bubble_border));
-  SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& font_list =
@@ -273,7 +272,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
                                           foreground_color, background_color);
 
   link_ = new views::Link();
-  link_->SetFocusable(false);
+  link_->SetFocusBehavior(FocusBehavior::NEVER);
 #if defined(OS_CHROMEOS)
   // On CrOS, the link text doesn't change, since it doesn't show the shortcut.
   link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));

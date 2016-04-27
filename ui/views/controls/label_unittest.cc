@@ -376,7 +376,6 @@ TEST_F(LabelTest, PreferredSizeForAllowCharacterBreak) {
 
 TEST_F(LabelTest, MultiLineSizing) {
   Label label;
-  label.SetFocusable(false);
   label.SetText(
       ASCIIToUTF16("A random string\nwith multiple lines\nand returns!"));
   label.SetMultiLine(true);
@@ -461,7 +460,6 @@ TEST_F(LabelTest, MultiLineSizingWithElide) {
   const base::string16 text =
       ASCIIToUTF16("A random string\nwith multiple lines\nand returns!");
   Label label;
-  label.SetFocusable(false);
   label.SetText(text);
   label.SetMultiLine(true);
 
@@ -612,7 +610,7 @@ TEST_F(LabelFocusTest, FocusBounds) {
   label()->SetText(ASCIIToUTF16("Example"));
   gfx::Size normal_size = label()->GetPreferredSize();
 
-  label()->SetFocusable(true);
+  label()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   label()->RequestFocus();
   gfx::Size focusable_size = label()->GetPreferredSize();
   // Focusable label requires larger size to paint the focus rectangle.
@@ -649,7 +647,7 @@ TEST_F(LabelFocusTest, FocusBounds) {
 }
 
 TEST_F(LabelFocusTest, EmptyLabel) {
-  label()->SetFocusable(true);
+  label()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   label()->RequestFocus();
   label()->SizeToPreferredSize();
 

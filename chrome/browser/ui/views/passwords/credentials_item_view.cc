@@ -105,7 +105,7 @@ CredentialsItemView::CredentialsItemView(
     AddChildView(lower_label_);
   }
 
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 CredentialsItemView::~CredentialsItemView() = default;

@@ -162,7 +162,7 @@ void Link::SetText(const base::string16& text) {
   // Disable focusability for empty links.  Otherwise Label::GetInsets() will
   // give them an unconditional 1-px. inset on every side to allow for a focus
   // border, when in this case we probably wanted zero width.
-  SetFocusable(!text.empty());
+  SetFocusBehavior(text.empty() ? FocusBehavior::NEVER : FocusBehavior::ALWAYS);
 }
 
 void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -198,9 +198,10 @@ void Link::Init() {
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
   // SetText() override will not be reached (because the constructed class is
-  // only a Label at the moment, not yet a Link).  So so the set_focusable()
-  // call explicitly here.
-  SetFocusable(!text().empty());
+  // only a Label at the moment, not yet a Link).  So set the focus behavior
+  // here as well
+  SetFocusBehavior(text().empty() ? FocusBehavior::NEVER
+                                  : FocusBehavior::ALWAYS);
 }
 
 void Link::SetPressed(bool pressed) {

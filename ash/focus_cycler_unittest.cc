@@ -318,22 +318,22 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   root_view->AddChildView(pane1);
 
   views::View* view1 = new views::View;
-  view1->SetFocusable(true);
+  view1->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   pane1->AddChildView(view1);
 
   views::View* view2 = new views::View;
-  view2->SetFocusable(true);
+  view2->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   pane1->AddChildView(view2);
 
   views::AccessiblePaneView* pane2 = new views::AccessiblePaneView();
   root_view->AddChildView(pane2);
 
   views::View* view3 = new views::View;
-  view3->SetFocusable(true);
+  view3->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   pane2->AddChildView(view3);
 
   views::View* view4 = new views::View;
-  view4->SetFocusable(true);
+  view4->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   pane2->AddChildView(view4);
 
   std::vector<views::View*> panes;

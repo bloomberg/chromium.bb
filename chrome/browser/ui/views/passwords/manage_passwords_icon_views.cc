@@ -17,7 +17,7 @@
 ManagePasswordsIconViews::ManagePasswordsIconViews(CommandUpdater* updater)
     : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE),
       state_(password_manager::ui::INACTIVE_STATE) {
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   UpdateUiForState();
 }
 

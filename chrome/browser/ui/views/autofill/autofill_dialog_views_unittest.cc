@@ -91,8 +91,10 @@ class AutofillDialogViewsTest : public TestWithBrowserView {
 
  protected:
   void SetSectionsFocusable() {
-    dialog()->GetNotificationAreaForTesting()->SetFocusable(true);
-    dialog()->GetScrollableAreaForTesting()->SetFocusable(true);
+    dialog()->GetNotificationAreaForTesting()->SetFocusBehavior(
+        views::View::FocusBehavior::ALWAYS);
+    dialog()->GetScrollableAreaForTesting()->SetFocusBehavior(
+        views::View::FocusBehavior::ALWAYS);
   }
 
  private:

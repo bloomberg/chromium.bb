@@ -135,7 +135,7 @@ bool TestDesktopWidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
 TestInitialFocusWidgetDelegate::TestInitialFocusWidgetDelegate(
     gfx::NativeWindow context)
     : view_(new View) {
-  view_->SetFocusable(true);
+  view_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.context = context;

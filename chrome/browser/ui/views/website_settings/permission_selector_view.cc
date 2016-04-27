@@ -71,6 +71,7 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
   // be available, and the button would get native GTK styling on Linux.
   UpdateThemedBorder();
 
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   is_rtl_display_ =
       base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(text);
 }
@@ -178,7 +179,6 @@ PermissionSelectorView::PermissionSelectorView(
           permission.source),
       menu_model_.get(), button_enabled);
   menu_button_->SetEnabled(button_enabled);
-  menu_button_->SetFocusable(button_enabled);
   menu_button_->SetAccessibleName(
       WebsiteSettingsUI::PermissionTypeToUIString(permission.type));
   layout->AddView(menu_button_);

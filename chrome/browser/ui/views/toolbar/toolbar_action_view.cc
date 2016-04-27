@@ -77,7 +77,7 @@ ToolbarActionView::ToolbarActionView(
   // (because that would close the menu).
   if (delegate_->ShownInsideMenu()) {
     set_request_focus_on_press(false);
-    SetFocusable(true);
+    SetFocusBehavior(FocusBehavior::ALWAYS);
   }
 
   UpdateState();

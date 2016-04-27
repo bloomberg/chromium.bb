@@ -401,7 +401,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   web_view()->SetBoundsRect(gfx::Rect(0, 0, 100, 90));
   views::View* const something_to_focus = new views::View();
   something_to_focus->SetBoundsRect(gfx::Rect(0, 90, 100, 10));
-  something_to_focus->SetFocusable(true);
+  something_to_focus->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   top_level_widget()->GetContentsView()->AddChildView(something_to_focus);
 
   web_view()->SetEmbedFullscreenWidgetMode(true);

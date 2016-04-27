@@ -189,7 +189,7 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
   status_font_list_ =
       rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(-2);
 
-  SetAccessibilityFocusable(true);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   OnDownloadUpdated(download());
 

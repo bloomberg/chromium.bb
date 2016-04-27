@@ -61,7 +61,7 @@ ContentSettingImageView::ContentSettingImageView(
                                       : views::ImageView::LEADING);
   image()->set_interactive(true);
   image()->EnableCanvasFlippingForRTLUI(true);
-  image()->SetAccessibilityFocusable(true);
+  image()->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetVisible(false);
 

@@ -22,7 +22,6 @@ Separator::Separator(Orientation orientation)
     : orientation_(orientation),
       color_(kDefaultColor),
       size_(kSeparatorSize) {
-  SetFocusable(false);
 }
 
 Separator::~Separator() {

@@ -1935,7 +1935,8 @@ void BrowserView::Layout() {
   views::View::Layout();
 
   // TODO(jamescook): Why was this in the middle of layout code?
-  toolbar_->location_bar()->omnibox_view()->SetFocusable(IsToolbarVisible());
+  toolbar_->location_bar()->omnibox_view()->SetFocusBehavior(
+      IsToolbarVisible() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 }
 
 void BrowserView::ViewHierarchyChanged(

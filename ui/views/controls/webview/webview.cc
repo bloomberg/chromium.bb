@@ -67,7 +67,8 @@ void WebView::SetWebContents(content::WebContents* replacement) {
     observing_render_process_host_->AddObserver(this);
   }
   // web_contents() now returns |replacement| from here onwards.
-  SetFocusable(!!web_contents());
+  SetFocusBehavior(web_contents() ? FocusBehavior::ALWAYS
+                                  : FocusBehavior::NEVER);
   if (wc_owner_.get() != replacement)
     wc_owner_.reset();
   if (embed_fullscreen_widget_mode_enabled_) {

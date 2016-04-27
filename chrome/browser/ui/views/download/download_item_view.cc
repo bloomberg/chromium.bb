@@ -217,7 +217,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
   body_hover_animation_.reset(new gfx::SlideAnimation(this));
   drop_hover_animation_.reset(new gfx::SlideAnimation(this));
 
-  SetAccessibilityFocusable(true);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   OnDownloadUpdated(download());
   UpdateDropDownButtonPosition();

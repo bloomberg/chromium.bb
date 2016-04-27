@@ -26,7 +26,7 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
   AddChildView(image_);
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
-  image_->SetAccessibilityFocusable(true);
+  image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 BubbleIconView::~BubbleIconView() {

@@ -8,7 +8,7 @@
 
 LocationBarDecorationView::LocationBarDecorationView()
     : could_handle_click_(true) {
-  SetAccessibilityFocusable(true);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 LocationBarDecorationView::~LocationBarDecorationView() {}

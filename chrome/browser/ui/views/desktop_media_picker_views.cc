@@ -84,7 +84,7 @@ DesktopMediaSourceView::DesktopMediaSourceView(
       selected_(false)  {
   AddChildView(image_view_);
   AddChildView(label_);
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 DesktopMediaSourceView::~DesktopMediaSourceView() {}
@@ -213,7 +213,7 @@ DesktopMediaListView::DesktopMediaListView(
     std::unique_ptr<DesktopMediaList> media_list)
     : parent_(parent), media_list_(std::move(media_list)), weak_factory_(this) {
   media_list_->SetThumbnailSize(gfx::Size(kThumbnailWidth, kThumbnailHeight));
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 DesktopMediaListView::~DesktopMediaListView() {}

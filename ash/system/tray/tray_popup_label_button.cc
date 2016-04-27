@@ -16,7 +16,7 @@ TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
                                            const base::string16& text)
     : views::LabelButton(listener, text) {
   SetBorder(std::unique_ptr<views::Border>(new TrayPopupLabelButtonBorder));
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   set_request_focus_on_press(false);
   set_animate_on_state_change(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);

@@ -116,6 +116,18 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   typedef std::vector<View*> Views;
 
+  enum class FocusBehavior {
+    // Use when the View is never focusable. Default.
+    NEVER,
+
+    // Use when the View is to be focusable both in regular and accessibility
+    // mode.
+    ALWAYS,
+
+    // Use when the View is focusable only during accessibility mode.
+    ACCESSIBLE_ONLY,
+  };
+
   struct ViewHierarchyChangedDetails {
     ViewHierarchyChangedDetails()
         : is_add(false),
@@ -767,24 +779,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Sets whether this view is capable of taking focus. It will clear focus if
-  // the focused view is set to be non-focusable.
-  // Note that this is false by default so that a view used as a container does
-  // not get the focus.
-  void SetFocusable(bool focusable);
+  // Sets |focus_behavior| and advances focus if necessary.
+  void SetFocusBehavior(FocusBehavior focus_behavior);
 
-  // Returns true if this view is |focusable_|, |enabled_| and drawn.
+  // Returns true if this view is focusable, |enabled_| and drawn.
   bool IsFocusable() const;
 
   // Return whether this view is focusable when the user requires full keyboard
   // access, even though it may not be normally focusable.
   bool IsAccessibilityFocusable() const;
-
-  // Set whether this view can be made focusable if the user requires
-  // full keyboard access, even though it's not normally focusable. It will
-  // clear focus if the focused view is set to be non-focusable.
-  // Note that this is false by default.
-  void SetAccessibilityFocusable(bool accessibility_focusable);
 
   // Convenience method to retrieve the FocusManager associated with the
   // Widget that contains this view.  This can return NULL if this view is not
@@ -1141,9 +1144,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Focus ---------------------------------------------------------------------
 
-  // Returns last value passed to SetFocusable(). Use IsFocusable() to determine
-  // if a view can take focus right now.
-  bool focusable() const { return focusable_; }
+  // Returns true if ALWAYS is the last set focus behavior. Use IsFocusable() to
+  // determine if a view can take focus right now.
+  bool focusable() const { return focus_behavior_ == FocusBehavior::ALWAYS; }
 
   // Override to be notified when focus has changed either to or from this View.
   virtual void OnFocus();
@@ -1544,12 +1547,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Next view to be focused when the Shift-Tab key combination is pressed.
   View* previous_focusable_view_;
 
-  // Whether this view can be focused.
-  bool focusable_;
-
-  // Whether this view is focusable if the user requires full keyboard access,
-  // even though it may not be normally focusable.
-  bool accessibility_focusable_;
+  // The focus behavior of the view in regular and accessibility mode.
+  FocusBehavior focus_behavior_;
 
   // Context menus -------------------------------------------------------------
 

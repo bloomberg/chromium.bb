@@ -37,7 +37,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
   // There should be an associated focus manager so that we can safely register
   // accelerators for commands.
   DCHECK(GetFocusManagerForAccelerator());
-  SetAccessibilityFocusable(true);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   view_controller_->SetDelegate(this);
   view_controller_->RegisterCommand();
   set_context_menu_controller(this);

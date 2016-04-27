@@ -85,7 +85,7 @@ class TestItem : public SystemTrayItem {
   }
   views::View* CreateDefaultView(user::LoginStatus status) override {
     default_view_ = new views::View;
-    default_view_->SetFocusable(true);
+    default_view_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     return default_view_;
   }
   views::View* CreateDetailedView(user::LoginStatus status) override {

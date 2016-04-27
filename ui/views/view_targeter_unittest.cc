@@ -134,7 +134,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   content->AddChildView(child);
   child->AddChildView(grandchild);
 
-  grandchild->SetFocusable(true);
+  grandchild->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   grandchild->RequestFocus();
 
   internal::RootView* root_view =

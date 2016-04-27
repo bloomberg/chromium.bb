@@ -1351,7 +1351,7 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
 // Ensure traversing NSView focus correctly updates the views::FocusManager.
 TEST_F(NativeWidgetMacTest, ChangeFocusOnChangeFirstResponder) {
   Widget* widget = CreateTopLevelPlatformWidget();
-  widget->GetRootView()->SetFocusable(true);
+  widget->GetRootView()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   widget->Show();
 
   base::scoped_nsobject<NSView> child_view([[FocusableTestNSView alloc]

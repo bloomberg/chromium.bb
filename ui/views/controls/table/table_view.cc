@@ -145,7 +145,7 @@ TableView::TableView(ui::TableModel* model,
     visible_column.column = columns[i];
     visible_columns_.push_back(visible_column);
   }
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetModel(model);
 }
 

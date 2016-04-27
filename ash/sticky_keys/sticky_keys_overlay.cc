@@ -67,7 +67,6 @@ StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFontList(rb->GetFontList(kKeyLabelFontStyle));
   SetAutoColorReadabilityEnabled(false);
-  SetFocusable(false);
   SetEnabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
   SetDisabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
   SetSubpixelRenderingEnabled(false);

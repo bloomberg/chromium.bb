@@ -318,7 +318,7 @@ class WidgetTestInteractive : public WidgetTest {
 TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Create widget 1 and expect the active window to be its window.
   View* focusable_view1 = new View;
-  focusable_view1->SetFocusable(true);
+  focusable_view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   Widget* widget1 = CreateWidget();
   widget1->GetContentsView()->AddChildView(focusable_view1);
   widget1->Show();
@@ -602,14 +602,14 @@ TEST_F(WidgetTestInteractive, CheckResizeControllerEvents) {
 TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
   Widget* widget1 = CreateTopLevelPlatformWidget();
   View* view1 = new View;
-  view1->SetFocusable(true);
+  view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   widget1->GetContentsView()->AddChildView(view1);
 
   Widget* widget2 = CreateTopLevelPlatformWidget();
   View* view2a = new View;
   View* view2b = new View;
-  view2a->SetFocusable(true);
-  view2b->SetFocusable(true);
+  view2a->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  view2b->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   widget2->GetContentsView()->AddChildView(view2a);
   widget2->GetContentsView()->AddChildView(view2b);
 
@@ -651,7 +651,8 @@ TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   widget->SetContentsView(new View);
   for (size_t i = 0; i < 2; ++i) {
     widget->GetContentsView()->AddChildView(new View);
-    widget->GetContentsView()->child_at(i)->SetFocusable(true);
+    widget->GetContentsView()->child_at(i)->SetFocusBehavior(
+        View::FocusBehavior::ALWAYS);
   }
 
   widget->Show();
@@ -1050,7 +1051,7 @@ TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
   widget1.Init(params1);
 
   View* view1 = new View();
-  view1->SetFocusable(true);
+  view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   widget1.GetRootView()->AddChildView(view1);
 
   ActivateSync(&widget1);
@@ -1068,7 +1069,7 @@ TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
   widget2.Init(params2);
 
   View* view2 = new View();
-  view2->SetFocusable(true);
+  view2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   widget2.GetRootView()->AddChildView(view2);
 
   ActivateSync(&widget2);
@@ -1229,7 +1230,7 @@ TEST_F(WidgetTestInteractive, InitialFocus) {
   // focusable subview).
   Widget* toplevel(CreateTopLevelPlatformWidget());
   View* view = new View;
-  view->SetFocusable(true);
+  view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   toplevel->GetContentsView()->AddChildView(view);
 
   ShowSync(toplevel);

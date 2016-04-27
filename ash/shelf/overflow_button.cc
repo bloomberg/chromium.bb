@@ -40,7 +40,7 @@ OverflowButton::OverflowButton(views::ButtonListener* listener, Shelf* shelf)
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   bottom_image_ = rb->GetImageNamed(IDR_ASH_SHELF_OVERFLOW).ToImageSkia();
 
-  SetAccessibilityFocusable(true);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));
 }
 

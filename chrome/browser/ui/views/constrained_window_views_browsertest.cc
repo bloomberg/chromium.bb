@@ -32,7 +32,7 @@ namespace {
 
 class TestDialog : public views::DialogDelegateView {
  public:
-  TestDialog() { SetFocusable(true); }
+  TestDialog() { SetFocusBehavior(FocusBehavior::ALWAYS); }
   ~TestDialog() override {}
 
   views::View* GetInitiallyFocusedView() override { return this; }

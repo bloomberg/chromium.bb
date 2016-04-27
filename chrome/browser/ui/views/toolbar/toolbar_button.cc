@@ -47,8 +47,7 @@ ToolbarButton::ToolbarButton(Profile* profile,
 ToolbarButton::~ToolbarButton() {}
 
 void ToolbarButton::Init() {
-  SetFocusable(false);
-  SetAccessibilityFocusable(true);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   image()->EnableCanvasFlippingForRTLUI(true);
 }
 

@@ -495,7 +495,7 @@ void NetworkStateListDetailedView::CreateHeaderEntry() {
   }
 
   info_icon_ = new InfoIcon(this);
-  info_icon_->SetFocusable(true);
+  info_icon_->SetFocusBehavior(FocusBehavior::ALWAYS);
   info_icon_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
   info_throbber_container->AddChildView(info_icon_);
@@ -607,11 +607,11 @@ void NetworkStateListDetailedView::SetScanningStateForThrobberView(
   // NOTE: As we do not want to lose focus from the network info throbber view,
   // the order of below operation is important.
   if (is_scanning) {
-    scanning_throbber_->SetFocusable(true);
-    info_icon_->SetFocusable(false);
+    scanning_throbber_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    info_icon_->SetFocusBehavior(FocusBehavior::NEVER);
   } else {
-    info_icon_->SetFocusable(true);
-    scanning_throbber_->SetFocusable(false);
+    info_icon_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    scanning_throbber_->SetFocusBehavior(FocusBehavior::NEVER);
   }
   // If the Network Info view was in focus while this toggle operation was
   // being performed then the focus should remain on this view.

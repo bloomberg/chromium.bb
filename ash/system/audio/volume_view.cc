@@ -110,7 +110,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       device_type_(NULL),
       more_(NULL),
       is_default_view_(is_default_view) {
-  SetFocusable(false);
+  SetFocusBehavior(FocusBehavior::NEVER);
   views::BoxLayout* box_layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kBoxLayoutPadding);
   box_layout->SetDefaultFlex(0);

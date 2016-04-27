@@ -171,7 +171,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
     top_container_ = new views::View();
     top_container_->SetBounds(
         0, 0, window_size.width(), 100);
-    top_container_->SetFocusable(true);
+    top_container_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     widget_->GetContentsView()->AddChildView(top_container_);
 
     delegate_.reset(
@@ -801,11 +801,11 @@ TEST_F(ImmersiveFullscreenControllerTest, Focus) {
   // test.
   views::View* child_view = new views::View();
   child_view->SetBounds(0, 0, 10, 10);
-  child_view->SetFocusable(true);
+  child_view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   top_container()->AddChildView(child_view);
   views::View* unrelated_view = new views::View();
   unrelated_view->SetBounds(0, 100, 10, 10);
-  unrelated_view->SetFocusable(true);
+  unrelated_view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   top_container()->parent()->AddChildView(unrelated_view);
   views::FocusManager* focus_manager =
       top_container()->GetWidget()->GetFocusManager();

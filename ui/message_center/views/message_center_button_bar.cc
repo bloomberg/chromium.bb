@@ -76,7 +76,7 @@ NotificationCenterButton::NotificationCenterButton(
   if (text_id)
     SetTooltipText(resource_bundle.GetLocalizedString(text_id));
 
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   set_request_focus_on_press(false);
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
@@ -119,7 +119,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   title_arrow_->set_size(gfx::Size(kButtonSize, kButtonSize));
 
   // Keyboardists can use the gear button to switch modes.
-  title_arrow_->SetFocusable(false);
+  title_arrow_->SetFocusBehavior(FocusBehavior::NEVER);
   AddChildView(title_arrow_);
 
   notification_label_ = new views::Label(title);

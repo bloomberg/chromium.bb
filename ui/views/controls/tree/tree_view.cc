@@ -81,7 +81,7 @@ TreeView::TreeView()
       controller_(NULL),
       root_shown_(true),
       row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2) {
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       (base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
                            : IDR_FOLDER_CLOSED)).ToImageSkia();

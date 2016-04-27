@@ -67,7 +67,7 @@ Slider::Slider(SliderListener* listener, Orientation orientation)
       bar_active_images_(kBarImagesActive),
       bar_disabled_images_(kBarImagesDisabled) {
   EnableCanvasFlippingForRTLUI(true);
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   UpdateState(true);
 }
 

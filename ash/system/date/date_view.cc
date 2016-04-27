@@ -94,6 +94,7 @@ void BaseDateTimeView::UpdateText() {
 
 BaseDateTimeView::BaseDateTimeView() {
   SetTimer(base::Time::Now());
+  SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 void BaseDateTimeView::SetTimer(const base::Time& now) {
@@ -138,7 +139,6 @@ DateView::DateView()
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
-  SetFocusable(false);
 }
 
 DateView::~DateView() {
@@ -154,7 +154,8 @@ void DateView::SetAction(TrayDate::DateAction action) {
     SchedulePaint();
   }
   action_ = action;
-  SetFocusable(action_ != TrayDate::NONE);
+  SetFocusBehavior(action_ != TrayDate::NONE ? FocusBehavior::ALWAYS
+                                             : FocusBehavior::NEVER);
 }
 
 void DateView::UpdateTimeFormat() {
@@ -226,7 +227,6 @@ TimeView::TimeView(TrayDate::ClockLayout clock_layout)
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);
-  SetFocusable(false);
 }
 
 TimeView::~TimeView() {

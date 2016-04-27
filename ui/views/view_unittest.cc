@@ -3426,9 +3426,9 @@ TEST_F(ViewTest, ReorderChildren) {
   child->AddChildView(foo2);
   View* foo3 = new View();
   child->AddChildView(foo3);
-  foo1->SetFocusable(true);
-  foo2->SetFocusable(true);
-  foo3->SetFocusable(true);
+  foo1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  foo2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  foo3->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   ASSERT_EQ(0, child->GetIndexOf(foo1));
   ASSERT_EQ(1, child->GetIndexOf(foo2));
@@ -3573,10 +3573,11 @@ TEST_F(ViewTest, AdvanceFocusIfNecessaryForUnfocusableView) {
   widget.Init(params);
 
   View* view1 = new View();
-  view1->SetFocusable(true);
+  view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
   widget.GetRootView()->AddChildView(view1);
   View* view2 = new View();
-  view2->SetFocusable(true);
+  view2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   widget.GetRootView()->AddChildView(view2);
 
   FocusManager* focus_manager = widget.GetFocusManager();
@@ -3605,7 +3606,7 @@ TEST_F(ViewTest, AdvanceFocusIfNecessaryForUnfocusableView) {
 
   // Set the focused view as not focusable and check if the next view gets
   // focused.
-  view1->SetFocusable(false);
+  view1->SetFocusBehavior(View::FocusBehavior::NEVER);
   EXPECT_EQ(view2, focus_manager->GetFocusedView());
 }
 
@@ -4363,16 +4364,16 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
 TEST_F(ViewTest, FocusableAssertions) {
   // View subclasses may change insets based on whether they are focusable,
   // which effects the preferred size. To avoid preferred size changing around
-  // these Views need to key off the last value set to SetFocusable(), not
+  // these Views need to key off the last value set to SetFocusBehavior(), not
   // whether the View is focusable right now. For this reason it's important
-  // that focusable() return the last value passed to SetFocusable and not
-  // whether the View is focusable right now.
+  // that the return value of focusable() depends on the last value passed to
+  // SetFocusBehavior and not whether the View is focusable right now.
   TestView view;
-  view.SetFocusable(true);
+  view.SetFocusBehavior(View::FocusBehavior::ALWAYS);
   EXPECT_TRUE(view.focusable());
   view.SetEnabled(false);
   EXPECT_TRUE(view.focusable());
-  view.SetFocusable(false);
+  view.SetFocusBehavior(View::FocusBehavior::NEVER);
   EXPECT_FALSE(view.focusable());
 }
 

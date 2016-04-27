@@ -229,7 +229,7 @@ void LocationBarView::Init() {
   omnibox_view_ = new OmniboxViewViews(
       this, profile(), command_updater(), is_popup_mode_, this, font_list);
   omnibox_view_->Init();
-  omnibox_view_->SetFocusable(true);
+  omnibox_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
   AddChildView(omnibox_view_);
 
   // Initialize the inline autocomplete view which is visible only when IME is

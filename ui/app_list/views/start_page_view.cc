@@ -283,7 +283,7 @@ void StartPageView::InitInstantContainer() {
   views::View* web_view = view_delegate_->CreateStartPageWebView(
       gfx::Size(kWebViewWidth, kWebViewHeight));
   if (web_view) {
-    web_view->SetFocusable(false);
+    web_view->SetFocusBehavior(FocusBehavior::NEVER);
     instant_container_->AddChildView(web_view);
   }
 

@@ -623,7 +623,7 @@ AutofillDialogViews::SuggestedButton::SuggestedButton(
                         -kFocusBorderWidth, -kFocusBorderWidth);
   SetFocusPainter(
       views::Painter::CreateDashedFocusPainterWithInsets(insets));
-  SetFocusable(true);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 AutofillDialogViews::SuggestedButton::~SuggestedButton() {}
