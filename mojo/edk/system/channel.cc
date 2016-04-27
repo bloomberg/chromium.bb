@@ -359,6 +359,9 @@ bool Channel::Message::RewriteHandles(base::ProcessHandle from_process,
 // Discard() marks occupied bytes as discarded, signifying that their contents
 // can be forgotten or overwritten.
 //
+// Realign() moves occupied bytes to the front of the buffer so that those
+// occupied bytes are properly aligned.
+//
 // The most common Channel behavior in practice should result in very few
 // allocations and copies, as memory is claimed and discarded shortly after
 // being reserved, and future reservations will immediately reuse discarded
@@ -441,6 +444,13 @@ class Channel::ReadBuffer {
     }
   }
 
+  void Realign() {
+    size_t num_bytes = num_occupied_bytes();
+    memmove(data_, occupied_bytes(), num_bytes);
+    num_discarded_bytes_ = 0;
+    num_occupied_bytes_ = num_bytes;
+  }
+
  private:
   char* data_ = nullptr;
 
@@ -482,6 +492,13 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
   bool did_dispatch_message = false;
   read_buffer_->Claim(bytes_read);
   while (read_buffer_->num_occupied_bytes() >= sizeof(Message::Header)) {
+    // Ensure the occupied data is properly aligned. If it isn't, a SIGBUS could
+    // happen on architectures that don't allow misaligned words access (i.e.
+    // anything other than x86). Only re-align when necessary to avoid copies.
+    if (reinterpret_cast<uintptr_t>(read_buffer_->occupied_bytes()) %
+        kChannelMessageAlignment != 0)
+      read_buffer_->Realign();
+
     // We have at least enough data available for a MessageHeader.
     const Message::Header* header = reinterpret_cast<const Message::Header*>(
         read_buffer_->occupied_bytes());
