@@ -6,9 +6,10 @@
 
 // base dependencies
 #include "base/values.h"
-#include "base/memory/scoped_ptr.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 namespace dom_distiller {
   namespace proto {
@@ -31,8 +32,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DistilledContent& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DistilledContent& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_html()) {
             dict->SetString("1", message.html());
           }
@@ -72,8 +73,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::PaginationInfo& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::PaginationInfo& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_next_page()) {
             dict->SetString("1", message.next_page());
           }
@@ -139,8 +140,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupArticle& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupArticle& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_published_time()) {
             dict->SetString("1", message.published_time());
           }
@@ -217,8 +218,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupImage& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupImage& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_url()) {
             dict->SetString("1", message.url());
           }
@@ -325,8 +326,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupInfo& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::MarkupInfo& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_title()) {
             dict->SetString("1", message.title());
           }
@@ -349,17 +350,17 @@ namespace dom_distiller {
             dict->SetString("7", message.author());
           }
           if (message.has_article()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::MarkupArticle::WriteToValue(message.article());
-            dict->Set("8", inner_message_value.release());
+            dict->Set("8", std::move(inner_message_value));
           }
           {
             base::ListValue* field_list = new base::ListValue();
             dict->Set("9", field_list);
             for (int i = 0; i < message.images_size(); ++i) {
-              scoped_ptr<base::Value> inner_message_value =
+              std::unique_ptr<base::Value> inner_message_value =
                   dom_distiller::proto::json::MarkupImage::WriteToValue(message.images(i));
-              field_list->Append(inner_message_value.release());
+              field_list->Append(std::move(inner_message_value));
             }
           }
           return dict;
@@ -391,8 +392,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::TimingEntry& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::TimingEntry& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_name()) {
             dict->SetString("1", message.name());
           }
@@ -464,8 +465,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::TimingInfo& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::TimingInfo& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_markup_parsing_time()) {
             dict->SetDouble("1", message.markup_parsing_time());
           }
@@ -485,9 +486,9 @@ namespace dom_distiller {
             base::ListValue* field_list = new base::ListValue();
             dict->Set("6", field_list);
             for (int i = 0; i < message.other_times_size(); ++i) {
-              scoped_ptr<base::Value> inner_message_value =
+              std::unique_ptr<base::Value> inner_message_value =
                   dom_distiller::proto::json::TimingEntry::WriteToValue(message.other_times(i));
-              field_list->Append(inner_message_value.release());
+              field_list->Append(std::move(inner_message_value));
             }
           }
           return dict;
@@ -512,8 +513,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DebugInfo& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DebugInfo& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_log()) {
             dict->SetString("1", message.log());
           }
@@ -539,8 +540,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::StatisticsInfo& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::StatisticsInfo& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_word_count()) {
             dict->SetInteger("1", message.word_count());
           }
@@ -568,8 +569,8 @@ namespace dom_distiller {
             return false;
           }
 
-          static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerResult::ContentImage& message) {
-            scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerResult::ContentImage& message) {
+            std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
             if (message.has_url()) {
               dict->SetString("1", message.url());
             }
@@ -669,40 +670,40 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerResult& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerResult& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_title()) {
             dict->SetString("1", message.title());
           }
           if (message.has_distilled_content()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::DistilledContent::WriteToValue(message.distilled_content());
-            dict->Set("2", inner_message_value.release());
+            dict->Set("2", std::move(inner_message_value));
           }
           if (message.has_pagination_info()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::PaginationInfo::WriteToValue(message.pagination_info());
-            dict->Set("3", inner_message_value.release());
+            dict->Set("3", std::move(inner_message_value));
           }
           if (message.has_markup_info()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::MarkupInfo::WriteToValue(message.markup_info());
-            dict->Set("5", inner_message_value.release());
+            dict->Set("5", std::move(inner_message_value));
           }
           if (message.has_timing_info()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::TimingInfo::WriteToValue(message.timing_info());
-            dict->Set("6", inner_message_value.release());
+            dict->Set("6", std::move(inner_message_value));
           }
           if (message.has_debug_info()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::DebugInfo::WriteToValue(message.debug_info());
-            dict->Set("7", inner_message_value.release());
+            dict->Set("7", std::move(inner_message_value));
           }
           if (message.has_statistics_info()) {
-            scoped_ptr<base::Value> inner_message_value =
+            std::unique_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::StatisticsInfo::WriteToValue(message.statistics_info());
-            dict->Set("8", inner_message_value.release());
+            dict->Set("8", std::move(inner_message_value));
           }
           if (message.has_text_direction()) {
             dict->SetString("9", message.text_direction());
@@ -711,9 +712,9 @@ namespace dom_distiller {
             base::ListValue* field_list = new base::ListValue();
             dict->Set("10", field_list);
             for (int i = 0; i < message.content_images_size(); ++i) {
-              scoped_ptr<base::Value> inner_message_value =
+              std::unique_ptr<base::Value> inner_message_value =
                   dom_distiller::proto::json::DomDistillerResult::ContentImage::WriteToValue(message.content_images(i));
-              field_list->Append(inner_message_value.release());
+              field_list->Append(std::move(inner_message_value));
             }
           }
           return dict;
@@ -759,8 +760,8 @@ namespace dom_distiller {
           return false;
         }
 
-        static scoped_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerOptions& message) {
-          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+        static std::unique_ptr<base::DictionaryValue> WriteToValue(const dom_distiller::proto::DomDistillerOptions& message) {
+          std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
           if (message.has_extract_text_only()) {
             dict->SetBoolean("1", message.extract_text_only());
           }
