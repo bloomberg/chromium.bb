@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_ui_manager_android.h"
+#include "chrome/browser/notifications/notification_platform_bridge_android.h"
 
 #include <utility>
 #include <vector>
@@ -20,7 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
-#include "jni/NotificationUIManager_jni.h"
+#include "jni/NotificationPlatformBridge_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
@@ -58,32 +58,31 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaBitmaps(
 }  // namespace
 
 // Called by the Java side when a notification event has been received, but the
-// NotificationUIManager has not been initialized yet. Enforce initialization of
+// NotificationBridge has not been initialized yet. Enforce initialization of
 // the class.
-static void InitializeNotificationUIManager(JNIEnv* env,
-                                            const JavaParamRef<jclass>& clazz) {
+static void InitializeNotificationPlatformBridge(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   g_browser_process->notification_platform_bridge();
 }
 
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
-  return new NotificationUIManagerAndroid();
+  return new NotificationPlatformBridgeAndroid();
 }
 
-NotificationUIManagerAndroid::NotificationUIManagerAndroid() {
-  java_object_.Reset(
-      Java_NotificationUIManager_create(
-          AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this),
-          base::android::GetApplicationContext()));
+NotificationPlatformBridgeAndroid::NotificationPlatformBridgeAndroid() {
+  java_object_.Reset(Java_NotificationPlatformBridge_create(
+      AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      base::android::GetApplicationContext()));
 }
 
-NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {
-  Java_NotificationUIManager_destroy(AttachCurrentThread(),
-                                     java_object_.obj());
+NotificationPlatformBridgeAndroid::~NotificationPlatformBridgeAndroid() {
+  Java_NotificationPlatformBridge_destroy(AttachCurrentThread(),
+                                          java_object_.obj());
 }
 
-void NotificationUIManagerAndroid::OnNotificationClicked(
+void NotificationPlatformBridgeAndroid::OnNotificationClicked(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_object,
     jlong persistent_notification_id,
@@ -105,7 +104,7 @@ void NotificationUIManagerAndroid::OnNotificationClicked(
           incognito, origin, persistent_notification_id, action_index);
 }
 
-void NotificationUIManagerAndroid::OnNotificationClosed(
+void NotificationPlatformBridgeAndroid::OnNotificationClosed(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_object,
     jlong persistent_notification_id,
@@ -126,14 +125,15 @@ void NotificationUIManagerAndroid::OnNotificationClosed(
           incognito, origin, persistent_notification_id, -1);
 }
 
-void NotificationUIManagerAndroid::Display(const std::string& notification_id,
-                                           const std::string& profile_id,
-                                           bool incognito,
-                                           const Notification& notification) {
+void NotificationPlatformBridgeAndroid::Display(
+    const std::string& notification_id,
+    const std::string& profile_id,
+    bool incognito,
+    const Notification& notification) {
   JNIEnv* env = AttachCurrentThread();
 
-  // The Android notification UI manager only supports Web Notifications, which
-  // have a PersistentNotificationDelegate. The persistent id of the
+  // The Android notification platform bridge only supports Web Notifications,
+  // which have a PersistentNotificationDelegate. The persistent id of the
   // notification is exposed through it's interface.
   //
   // TODO(peter): When content/ passes a message_center::Notification to the
@@ -146,14 +146,14 @@ void NotificationUIManagerAndroid::Display(const std::string& notification_id,
   int64_t persistent_notification_id = delegate->persistent_notification_id();
   GURL origin_url(notification.origin_url().GetOrigin());
 
-  ScopedJavaLocalRef<jstring> origin = ConvertUTF8ToJavaString(
-      env, origin_url.spec());
+  ScopedJavaLocalRef<jstring> origin =
+      ConvertUTF8ToJavaString(env, origin_url.spec());
   ScopedJavaLocalRef<jstring> tag =
       ConvertUTF8ToJavaString(env, notification.tag());
-  ScopedJavaLocalRef<jstring> title = ConvertUTF16ToJavaString(
-      env, notification.title());
-  ScopedJavaLocalRef<jstring> body = ConvertUTF16ToJavaString(
-      env, notification.message());
+  ScopedJavaLocalRef<jstring> title =
+      ConvertUTF16ToJavaString(env, notification.title());
+  ScopedJavaLocalRef<jstring> body =
+      ConvertUTF16ToJavaString(env, notification.message());
 
   ScopedJavaLocalRef<jobject> notification_icon;
   SkBitmap notification_icon_bitmap = notification.icon().AsBitmap();
@@ -180,7 +180,7 @@ void NotificationUIManagerAndroid::Display(const std::string& notification_id,
   ScopedJavaLocalRef<jstring> j_profile_id =
       ConvertUTF8ToJavaString(env, profile_id);
 
-  Java_NotificationUIManager_displayNotification(
+  Java_NotificationPlatformBridge_displayNotification(
       env, java_object_.obj(), persistent_notification_id, origin.obj(),
       j_profile_id.obj(), incognito, tag.obj(), title.obj(), body.obj(),
       notification_icon.obj(), badge.obj(), vibration_pattern.obj(),
@@ -191,8 +191,9 @@ void NotificationUIManagerAndroid::Display(const std::string& notification_id,
       std::make_pair(origin_url.spec(), notification.tag());
 }
 
-void NotificationUIManagerAndroid::Close(const std::string& profile_id,
-                                         const std::string& notification_id) {
+void NotificationPlatformBridgeAndroid::Close(
+    const std::string& profile_id,
+    const std::string& notification_id) {
   int64_t persistent_notification_id = 0;
 
   // TODO(peter): Use the |delegate_id| directly when notification ids are being
@@ -220,12 +221,12 @@ void NotificationUIManagerAndroid::Close(const std::string& profile_id,
 
   regenerated_notification_infos_.erase(iterator);
 
-  Java_NotificationUIManager_closeNotification(
+  Java_NotificationPlatformBridge_closeNotification(
       env, java_object_.obj(), j_profile_id.obj(), persistent_notification_id,
       origin.obj(), tag.obj());
 }
 
-bool NotificationUIManagerAndroid::GetDisplayed(
+bool NotificationPlatformBridgeAndroid::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
     std::set<std::string>* notifications) const {
@@ -233,11 +234,11 @@ bool NotificationUIManagerAndroid::GetDisplayed(
   return false;
 }
 
-bool NotificationUIManagerAndroid::SupportsNotificationCenter() const {
+bool NotificationPlatformBridgeAndroid::SupportsNotificationCenter() const {
   return true;
 }
 
-bool NotificationUIManagerAndroid::RegisterNotificationPlatformBridge(
+bool NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge(
     JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_ANDROID_H_
-#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_ANDROID_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_ANDROID_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_ANDROID_H_
 
 #include <jni.h>
 #include <stdint.h>
@@ -27,10 +27,10 @@
 // persistent Web Notifications will be forwarded directly to the associated
 // event handlers, as such notifications may outlive the browser process on
 // Android.
-class NotificationUIManagerAndroid : public NotificationPlatformBridge {
+class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
  public:
-  NotificationUIManagerAndroid();
-  ~NotificationUIManagerAndroid() override;
+  NotificationPlatformBridgeAndroid();
+  ~NotificationPlatformBridgeAndroid() override;
 
   // Called by the Java implementation when the notification has been clicked.
   void OnNotificationClicked(
@@ -83,7 +83,7 @@ class NotificationUIManagerAndroid : public NotificationPlatformBridge {
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationUIManagerAndroid);
+  DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeAndroid);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_UI_MANAGER_ANDROID_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_ANDROID_H_

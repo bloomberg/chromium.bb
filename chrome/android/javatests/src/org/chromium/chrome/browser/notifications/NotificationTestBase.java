@@ -129,16 +129,16 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
 
     @Override
     public void startMainActivity() throws InterruptedException {
-        // The NotificationUIManager must be overriden prior to the browser process starting.
+        // The NotificationPlatformBridge must be overriden prior to the browser process starting.
         mMockNotificationManager = new MockNotificationManagerProxy();
-        NotificationUIManager.overrideNotificationManagerForTesting(mMockNotificationManager);
+        NotificationPlatformBridge.overrideNotificationManagerForTesting(mMockNotificationManager);
 
         startMainActivityFromLauncher();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        NotificationUIManager.overrideNotificationManagerForTesting(null);
+        NotificationPlatformBridge.overrideNotificationManagerForTesting(null);
         mTestServer.stopAndDestroyServer();
         super.tearDown();
     }

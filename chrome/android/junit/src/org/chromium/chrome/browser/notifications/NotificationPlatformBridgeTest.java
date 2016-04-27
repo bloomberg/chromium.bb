@@ -18,10 +18,10 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import java.util.Arrays;
 
 /**
- * Unit tests for NotificationUIManager.
+ * Unit tests for NotificationPlatformBridge.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
-public class NotificationUIManagerUnitTest {
+public class NotificationPlatformBridgeTest {
     /**
      * Verifies that the getOriginFromTag method returns the origin for valid input, and null for
      * invalid input.
@@ -31,25 +31,25 @@ public class NotificationUIManagerUnitTest {
     public void testGetOriginFromTag() throws Exception {
         // The common case.
         assertEquals(
-                "https://example.com", NotificationUIManager.getOriginFromTag(
-                                               "NotificationUIManager;https://example.com;42"));
+                "https://example.com", NotificationPlatformBridge.getOriginFromTag(
+                                               "NotificationPlatformBridge;https://example.com;42"));
 
         // An tag that includes the separator. Probably a bit unusual, but valid.
-        assertEquals("https://example.com", NotificationUIManager.getOriginFromTag(
-                "NotificationUIManager;https://example.com;this;tag;contains;the;separator"));
+        assertEquals("https://example.com", NotificationPlatformBridge.getOriginFromTag(
+                "NotificationPlatformBridge;https://example.com;this;tag;contains;the;separator"));
 
         // Some invalid input.
-        assertNull(NotificationUIManager.getOriginFromTag("SystemDownloadNotifier"));
-        assertNull(NotificationUIManager.getOriginFromTag(null));
-        assertNull(NotificationUIManager.getOriginFromTag(""));
-        assertNull(NotificationUIManager.getOriginFromTag(";"));
-        assertNull(NotificationUIManager.getOriginFromTag(";;;;;;;"));
-        assertNull(NotificationUIManager.getOriginFromTag(
-                "SystemDownloadNotifier;NotificationUIManager;42"));
-        assertNull(NotificationUIManager.getOriginFromTag(
+        assertNull(NotificationPlatformBridge.getOriginFromTag("SystemDownloadNotifier"));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(null));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(""));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(";"));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(";;;;;;;"));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(
+                "SystemDownloadNotifier;NotificationPlatformBridge;42"));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(
                 "SystemDownloadNotifier;https://example.com;42"));
-        assertNull(NotificationUIManager.getOriginFromTag(
-                "NotificationUIManager;SystemDownloadNotifier;42"));
+        assertNull(NotificationPlatformBridge.getOriginFromTag(
+                "NotificationPlatformBridge;SystemDownloadNotifier;42"));
     }
 
     /**
@@ -59,16 +59,16 @@ public class NotificationUIManagerUnitTest {
     @Feature({"Browser", "Notifications"})
     public void testMakeDefaults() throws Exception {
         // 0 should be returned if silent is true and vibration's length is 0.
-        assertEquals(0, NotificationUIManager.makeDefaults(0, true));
+        assertEquals(0, NotificationPlatformBridge.makeDefaults(0, true));
 
         // Notification.DEFAULT_ALL should be returned if silent is false and
         // vibration's length is 0.
-        assertEquals(Notification.DEFAULT_ALL, NotificationUIManager.makeDefaults(0, false));
+        assertEquals(Notification.DEFAULT_ALL, NotificationPlatformBridge.makeDefaults(0, false));
 
         // Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE should be returned
         // if silent is false and vibration's length is greater than 0.
         assertEquals(Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE,
-                NotificationUIManager.makeDefaults(10, false));
+                NotificationPlatformBridge.makeDefaults(10, false));
     }
 
     /**
@@ -79,6 +79,6 @@ public class NotificationUIManagerUnitTest {
     @Feature({"Browser", "Notifications"})
     public void testMakeVibrationPattern() throws Exception {
         assertTrue(Arrays.equals(new long[] {0, 100, 200, 300},
-                NotificationUIManager.makeVibrationPattern(new int[] {100, 200, 300})));
+                NotificationPlatformBridge.makeVibrationPattern(new int[] {100, 200, 300})));
     }
 }

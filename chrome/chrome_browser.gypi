@@ -1948,7 +1948,7 @@
       'android/java/src/org/chromium/chrome/browser/metrics/VariationsSession.java',
       'android/java/src/org/chromium/chrome/browser/net/qualityprovider/ExternalEstimateProviderAndroid.java',
       'android/java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java',
-      'android/java/src/org/chromium/chrome/browser/notifications/NotificationUIManager.java',
+      'android/java/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridge.java',
       'android/java/src/org/chromium/chrome/browser/ntp/ForeignSessionHelper.java',
       'android/java/src/org/chromium/chrome/browser/ntp/interests/InterestsService.java',
       'android/java/src/org/chromium/chrome/browser/ntp/LogoBridge.java',
@@ -2190,10 +2190,10 @@
     ],
     # Used on Android when notifications and java_ui are enabled.
     'chrome_browser_notifications_android_java_ui_sources': [
-      'browser/notifications/notification_ui_manager_android.cc',
-      'browser/notifications/notification_ui_manager_android.h',
       'browser/notifications/notification_permission_infobar_delegate.cc',
       'browser/notifications/notification_permission_infobar_delegate.h',
+      'browser/notifications/notification_platform_bridge_android.cc',
+      'browser/notifications/notification_platform_bridge_android.h',
     ],
     # Used on non-Android platforms when notifications are enabled.
     'chrome_browser_notifications_non_android_sources': [

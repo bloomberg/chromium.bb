@@ -67,7 +67,7 @@ public class NotificationService extends IntentService {
 
     /**
      * Initializes Chrome and starts the browser process if it's not running as of yet, and
-     * dispatch |intent| to the NotificationUIManager once this is done.
+     * dispatch |intent| to the NotificationPlatformBridge once this is done.
      *
      * @param intent The intent containing the notification's information.
      */
@@ -77,8 +77,8 @@ public class NotificationService extends IntentService {
             ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
 
             // Now that the browser process is initialized, we pass forward the call to the
-            // Notification UI Manager which will take care of delivering the appropriate events.
-            if (!NotificationUIManager.dispatchNotificationEvent(intent)) {
+            // NotificationPlatformBridge which will take care of delivering the appropriate events.
+            if (!NotificationPlatformBridge.dispatchNotificationEvent(intent)) {
                 Log.w(TAG, "Unable to dispatch the notification event to Chrome.");
             }
 

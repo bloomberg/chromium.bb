@@ -23,7 +23,7 @@ import org.chromium.chrome.test.util.browser.notifications.MockNotificationManag
 import java.util.List;
 
 /**
- * Instrumentation tests for the Notification UI Manager implementation on Android.
+ * Instrumentation tests for the Notification Bridge.
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
@@ -31,7 +31,7 @@ import java.util.List;
 @SuppressLint("NewApi")
 // TODO(peter): fix deprecation warnings crbug.com/528076
 @SuppressWarnings("deprecation")
-public class NotificationUIManagerTest extends NotificationTestBase {
+public class NotificationPlatformBridgeTest extends NotificationTestBase {
     private static final String NOTIFICATION_TEST_PAGE =
             "/chrome/test/data/notifications/android_test.html";
 
@@ -67,7 +67,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         // Validate the appearance style of the notification. The EXTRA_TEMPLATE was introduced
         // in Android Lollipop, we cannot verify this in earlier versions.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && !NotificationUIManager.useCustomLayouts()) {
+                && !NotificationPlatformBridge.useCustomLayouts()) {
             assertEquals("android.app.Notification$BigTextStyle",
                     notification.extras.getString(Notification.EXTRA_TEMPLATE));
         }
@@ -148,12 +148,13 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         assertEquals("NoIconNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertNotNull(notification.largeIcon);
 
-        NotificationUIManager manager = NotificationUIManager.getInstanceForTests();
-        assertNotNull(manager);
+        NotificationPlatformBridge notificationBridge =
+                NotificationPlatformBridge.getInstanceForTests();
+        assertNotNull(notificationBridge);
 
         // Create a second rounded icon for the test's origin, and compare its dimensions against
         // those of the icon associated to the notification itself.
-        RoundedIconGenerator generator = manager.mIconGenerator;
+        RoundedIconGenerator generator = notificationBridge.mIconGenerator;
         assertNotNull(generator);
 
         Bitmap generatedIcon = generator.generateIconForUrl(getOrigin());
@@ -175,7 +176,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         loadUrl(getTestServer().getURL(NOTIFICATION_TEST_PAGE));
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
-        // Create a notification to ensure that the NotificationUIManager is initialized.
+        // Create a notification to ensure that the NotificationPlatformBridge is initialized.
         showAndGetNotification("MyNotification", "{}");
 
         // Get the dimensions of the notification icon that will be presented to the user.
@@ -189,10 +190,11 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         String origin = "https://example.com";
 
-        NotificationUIManager manager = NotificationUIManager.getInstanceForTests();
-        assertNotNull(manager);
+        NotificationPlatformBridge notificationBridge =
+                NotificationPlatformBridge.getInstanceForTests();
+        assertNotNull(notificationBridge);
 
-        Bitmap fromNullIcon = manager.ensureNormalizedIcon(null, origin);
+        Bitmap fromNullIcon = notificationBridge.ensureNormalizedIcon(null, origin);
         assertNotNull(fromNullIcon);
         assertEquals(largeIconWidthPx, fromNullIcon.getWidth());
         assertEquals(largeIconHeightPx, fromNullIcon.getHeight());
@@ -200,7 +202,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         Bitmap largeIcon = Bitmap.createBitmap(largeIconWidthPx * 2, largeIconHeightPx * 2,
                                                Bitmap.Config.ALPHA_8);
 
-        Bitmap fromLargeIcon = manager.ensureNormalizedIcon(largeIcon, origin);
+        Bitmap fromLargeIcon = notificationBridge.ensureNormalizedIcon(largeIcon, origin);
         assertNotNull(fromLargeIcon);
         assertEquals(largeIconWidthPx, fromLargeIcon.getWidth());
         assertEquals(largeIconHeightPx, fromLargeIcon.getHeight());
@@ -208,7 +210,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         Bitmap smallIcon = Bitmap.createBitmap(largeIconWidthPx / 2, largeIconHeightPx / 2,
                                                Bitmap.Config.ALPHA_8);
 
-        Bitmap fromSmallIcon = manager.ensureNormalizedIcon(smallIcon, origin);
+        Bitmap fromSmallIcon = notificationBridge.ensureNormalizedIcon(smallIcon, origin);
         assertNotNull(fromSmallIcon);
         assertEquals(smallIcon, fromSmallIcon);
     }
@@ -267,7 +269,7 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         // Verify that as always, the same integer is used, also for replaced notifications.
         assertEquals(id, notifications.get(0).id);
-        assertEquals(NotificationUIManager.PLATFORM_ID, notifications.get(0).id);
+        assertEquals(NotificationPlatformBridge.PLATFORM_ID, notifications.get(0).id);
     }
 
     /**
@@ -298,8 +300,8 @@ public class NotificationUIManagerTest extends NotificationTestBase {
 
         // The same integer id is always used as it is not needed for uniqueness, we rely on the tag
         // for uniqueness when the replacement behavior is not needed.
-        assertEquals(NotificationUIManager.PLATFORM_ID, notifications.get(0).id);
-        assertEquals(NotificationUIManager.PLATFORM_ID, notifications.get(1).id);
+        assertEquals(NotificationPlatformBridge.PLATFORM_ID, notifications.get(0).id);
+        assertEquals(NotificationPlatformBridge.PLATFORM_ID, notifications.get(1).id);
 
         // As these notifications were not meant to replace eachother, they must not have the same
         // tag internally.

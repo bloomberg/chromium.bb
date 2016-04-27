@@ -23,13 +23,14 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
- * Instrumentation tests for the Notification UI Manager implementation on Android.
+ * Instrumentation tests for the Notification Platform Bridge.
  *
  * Exercises the handling of intents and explicitly does not do anything in startMainActivity so
  * that the responsibility for correct initialization, e.g. loading the native library, lies with
  * the code exercised by this test.
  */
-public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class NotificationPlatformBridgeIntentTest
+        extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Name of the Intent extra holding the notification id. This is set by the framework when a
      * notification preferences intent has been triggered from there, which could be one of the
@@ -37,7 +38,7 @@ public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<
      */
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
 
-    public NotificationUIManagerIntentTest() {
+    public NotificationPlatformBridgeIntentTest() {
         super(ChromeActivity.class);
     }
 
@@ -97,9 +98,9 @@ public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<
                         .addCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)
                         .setClassName(context, ChromeLauncherActivity.class.getName())
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .putExtra(EXTRA_NOTIFICATION_ID, NotificationUIManager.PLATFORM_ID)
+                        .putExtra(EXTRA_NOTIFICATION_ID, NotificationPlatformBridge.PLATFORM_ID)
                         .putExtra(NotificationConstants.EXTRA_NOTIFICATION_TAG,
-                                NotificationUIManager.makePlatformTag(
+                                NotificationPlatformBridge.makePlatformTag(
                                         42L /* persistentNotificationId */, "https://example.com",
                                         null /* tag */));
 
@@ -120,7 +121,7 @@ public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<
     /**
      * Tests the browser initialization code when a notification has been activated. This will be
      * routed through the NotificationService which starts the browser process, which in turn will
-     * create an instance of the NotificationUIManager.
+     * create an instance of the NotificationPlatformBridge.
      *
      * The created intent does not carry significant data and is expected to fail, but has to be
      * sufficient for the Java code to trigger start-up of the browser process.
@@ -129,7 +130,7 @@ public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<
     @Feature({"Browser", "Notifications"})
     public void testLaunchProcessForNotificationActivation() throws Exception {
         assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
-        assertNull(NotificationUIManager.getInstanceForTests());
+        assertNull(NotificationPlatformBridge.getInstanceForTests());
 
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
 
@@ -152,11 +153,11 @@ public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<
         CriteriaHelper.pollUiThread(new Criteria("Browser process was never started.") {
             @Override
             public boolean isSatisfied() {
-                return NotificationUIManager.getInstanceForTests() != null;
+                return NotificationPlatformBridge.getInstanceForTests() != null;
             }
         });
 
         assertTrue("The native library should be loaded now", LibraryLoader.isInitialized());
-        assertNotNull(NotificationUIManager.getInstanceForTests());
+        assertNotNull(NotificationPlatformBridge.getInstanceForTests());
     }
 }

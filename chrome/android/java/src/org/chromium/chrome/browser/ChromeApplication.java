@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderAndroid;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.notifications.NotificationUIManager;
+import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
@@ -278,7 +278,7 @@ public class ChromeApplication extends ContentApplication {
         // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
         RecordHistogram.recordBooleanHistogram(
                 "Startup.BringToForegroundReason",
-                NotificationUIManager.wasNotificationRecentlyClicked());
+                NotificationPlatformBridge.wasNotificationRecentlyClicked());
     }
 
     /**

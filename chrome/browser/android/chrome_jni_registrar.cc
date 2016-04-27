@@ -105,7 +105,7 @@
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
-#include "chrome/browser/notifications/notification_ui_manager_android.h"
+#include "chrome/browser/notifications/notification_platform_bridge_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
@@ -311,8 +311,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ExternalEstimateProviderAndroid",
      RegisterExternalEstimateProviderAndroid},
     {"NewTabPagePrefs", NewTabPagePrefs::RegisterNewTabPagePrefs},
-    {"NotificationUIManager",
-     NotificationUIManagerAndroid::RegisterNotificationPlatformBridge},
+    {"NotificationPlatformBridge",
+     NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge},
     {"NTPSnippetsBridge", NTPSnippetsBridge::Register},
     {"NTPSnippetsLauncher", NTPSnippetsLauncher::Register},
     {"OAuth2TokenServiceDelegateAndroid",
