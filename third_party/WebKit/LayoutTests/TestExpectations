@@ -1547,3 +1547,5 @@ crbug.com/606302 [ Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
 crbug.com/607156 [ Mac10.11 Debug ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Pass Crash ]
+crbug.com/607156 [ Win7 Debug ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Pass Crash ]
+crbug.com/607156 [ Linux Debug ] http/tests/fetch/referrer/serviceworker-echo-referrer-from-default-document.html [ Pass Crash ]
