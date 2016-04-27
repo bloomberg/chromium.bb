@@ -100,15 +100,6 @@ class CrashReporterClient {
   // Returns the result code to return when breakpad failed to respawn a
   // crashed process.
   virtual int GetResultCodeRespawnFailed();
-
-  // Invoked when initializing the crash reporter in the browser process.
-  virtual void InitBrowserCrashDumpsRegKey();
-
-  // Invoked before attempting to write a minidump.
-  virtual void RecordCrashDumpAttempt(bool is_real_crash);
-
-  // Invoked with the results of a minidump attempt.
-  virtual void RecordCrashDumpAttemptResult(bool is_real_crash, bool succeeded);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

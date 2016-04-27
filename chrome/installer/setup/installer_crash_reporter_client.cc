@@ -95,20 +95,6 @@ int InstallerCrashReporterClient::GetResultCodeRespawnFailed() {
   return 0;
 }
 
-void InstallerCrashReporterClient::InitBrowserCrashDumpsRegKey() {
-  // The installer does not track dump attempts and results in the registry.
-}
-
-void InstallerCrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
-  // The installer does not track dump attempts and results in the registry.
-}
-
-void InstallerCrashReporterClient::RecordCrashDumpAttemptResult(
-    bool is_real_crash,
-    bool succeeded) {
-  // The installer does not track dump attempts and results in the registry.
-}
-
 bool InstallerCrashReporterClient::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);

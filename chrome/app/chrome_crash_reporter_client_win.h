@@ -5,17 +5,8 @@
 #ifndef CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_WIN_H_
 #define CHROME_APP_CHROME_CRASH_REPORTER_CLIENT_WIN_H_
 
-#include <stddef.h>
-#include <memory>
-
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
-
-namespace browser_watcher {
-class CrashReportingMetrics;
-}  // namespace browser_watcher
 
 class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
@@ -37,10 +28,6 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   bool GetIsPerUserInstall(const base::FilePath& exe_path) override;
   bool GetShouldDumpLargerDumps(bool is_per_user_install) override;
   int GetResultCodeRespawnFailed() override;
-  void InitBrowserCrashDumpsRegKey() override;
-  void RecordCrashDumpAttempt(bool is_real_crash) override;
-  void RecordCrashDumpAttemptResult(bool is_real_crash,
-                                    bool succeeded) override;
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
@@ -55,9 +42,6 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:
-  std::unique_ptr<browser_watcher::CrashReportingMetrics>
-      crash_reporting_metrics_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeCrashReporterClient);
 };
 

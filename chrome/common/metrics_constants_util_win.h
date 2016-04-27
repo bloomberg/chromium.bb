@@ -11,10 +11,6 @@
 
 namespace chrome {
 
-// Returns the registry path where crash dump attempts are stored for this
-// product. This is used by metrics and crash reporting.
-base::string16 GetBrowserCrashDumpAttemptsRegistryPath();
-
 // Returns the registry path where exit code are stored for this product. This
 // is used by browser exit code metrics reporting.
 base::string16 GetBrowserExitCodesRegistryPath();

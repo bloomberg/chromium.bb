@@ -28,7 +28,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/browser_watcher/crash_reporting_metrics_win.h"
 #include "content/public/common/content_switches.h"
 #include "policy/policy_constants.h"
 
@@ -159,40 +158,6 @@ bool ChromeCrashReporterClient::GetShouldDumpLargerDumps(
 
 int ChromeCrashReporterClient::GetResultCodeRespawnFailed() {
   return chrome::RESULT_CODE_RESPAWN_FAILED;
-}
-
-void ChromeCrashReporterClient::InitBrowserCrashDumpsRegKey() {
-#if !defined(NACL_WIN64)
-  if (GetCollectStatsConsent()){
-    crash_reporting_metrics_.reset(new browser_watcher::CrashReportingMetrics(
-        chrome::GetBrowserCrashDumpAttemptsRegistryPath()));
-  }
-#endif
-}
-
-void ChromeCrashReporterClient::RecordCrashDumpAttempt(bool is_real_crash) {
-#if !defined(NACL_WIN64)
-  if (!crash_reporting_metrics_)
-    return;
-
-  if (is_real_crash)
-    crash_reporting_metrics_->RecordCrashDumpAttempt();
-  else
-    crash_reporting_metrics_->RecordDumpWithoutCrashAttempt();
-#endif
-}
-
-void ChromeCrashReporterClient::RecordCrashDumpAttemptResult(bool is_real_crash,
-                                                             bool succeeded) {
-#if !defined(NACL_WIN64)
-  if (!crash_reporting_metrics_)
-    return;
-
-  if (is_real_crash)
-    crash_reporting_metrics_->RecordCrashDumpAttemptResult(succeeded);
-  else
-    crash_reporting_metrics_->RecordDumpWithoutCrashAttemptResult(succeeded);
-#endif
 }
 
 bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(

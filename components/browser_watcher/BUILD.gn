@@ -22,8 +22,6 @@ source_set("browser_watcher") {
 
 source_set("browser_watcher_client") {
   sources = [
-    "crash_reporting_metrics_win.cc",
-    "crash_reporting_metrics_win.h",
     "watcher_client_win.cc",
     "watcher_client_win.h",
     "watcher_metrics_provider_win.cc",

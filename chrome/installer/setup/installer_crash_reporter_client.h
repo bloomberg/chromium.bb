@@ -32,10 +32,6 @@ class InstallerCrashReporterClient
   bool GetIsPerUserInstall(const base::FilePath& exe_path) override;
   bool GetShouldDumpLargerDumps(bool is_per_user_install) override;
   int GetResultCodeRespawnFailed() override;
-  void InitBrowserCrashDumpsRegKey() override;
-  void RecordCrashDumpAttempt(bool is_real_crash) override;
-  void RecordCrashDumpAttemptResult(bool is_real_crash,
-                                    bool succeeded) override;
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
   size_t RegisterCrashKeys() override;
   bool IsRunningUnattended() override;

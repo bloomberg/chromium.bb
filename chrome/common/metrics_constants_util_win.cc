@@ -27,10 +27,6 @@ base::string16 GetSuffixedRegistryPath(const wchar_t* suffix) {
 
 namespace chrome {
 
-base::string16 GetBrowserCrashDumpAttemptsRegistryPath() {
-  return GetSuffixedRegistryPath(L"\\BrowserCrashDumpAttempts");
-}
-
 base::string16 GetBrowserExitCodesRegistryPath() {
   return GetSuffixedRegistryPath(L"\\BrowserExitCodes");
 }

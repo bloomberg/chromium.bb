@@ -199,8 +199,6 @@ namespace {
 bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
                                  EXCEPTION_POINTERS* ex_info,
                                  MDRawAssertionInfo*, bool succeeded) {
-  GetCrashReporterClient()->RecordCrashDumpAttemptResult(
-      false /* is_real_crash */, succeeded);
   return true;
 }
 
@@ -213,8 +211,6 @@ bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
 bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
                       EXCEPTION_POINTERS* ex_info,
                       MDRawAssertionInfo*, bool succeeded) {
-  GetCrashReporterClient()->RecordCrashDumpAttemptResult(
-      true /* is_real_crash */, succeeded);
   // Check if the exception is one of the kind which would not be solved
   // by simply restarting chrome. In this case we show a message box with
   // and exit silently. Remember that chrome is in a crashed state so we
@@ -246,7 +242,6 @@ volatile LONG handling_exception = 0;
 // to implement it.
 bool FilterCallbackWhenNoCrash(
     void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
-  GetCrashReporterClient()->RecordCrashDumpAttempt(false);
   return true;
 }
 
@@ -260,7 +255,6 @@ bool FilterCallback(void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
   if (::InterlockedCompareExchange(&handling_exception, 1, 0) == 1) {
     ::Sleep(INFINITE);
   }
-  GetCrashReporterClient()->RecordCrashDumpAttempt(true);
   return true;
 }
 
@@ -580,9 +574,6 @@ void InitCrashReporter(const std::string& process_type_switch) {
 
   if (GetCrashReporterClient()->ShouldCreatePipeName(process_type))
     InitPipeNameEnvVar(is_per_user_install);
-
-  if (process_type == L"browser")
-    GetCrashReporterClient()->InitBrowserCrashDumpsRegKey();
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string pipe_name_ascii;

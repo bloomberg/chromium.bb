@@ -6573,6 +6573,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CrashReport.BreakpadCrashDumpOutcome" enum="DumpOutcome">
+  <obsolete>
+    Deprecated as of 04/2016 as CrashPad does not implement this.
+  </obsolete>
   <owner>siggi@chromium.org</owner>
   <summary>
     Reports the result of an attempt to report a crash dump via Breakpad.
@@ -6585,6 +6588,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="CrashReport.BreakpadDumpWithoutCrashOutcome"
     enum="DumpOutcome">
+  <obsolete>
+    Deprecated as of 04/2016 as CrashPad does not implement this.
+  </obsolete>
   <owner>siggi@chromium.org</owner>
   <summary>
     Reports the result of an attempt to report a dump via Breakpad without
