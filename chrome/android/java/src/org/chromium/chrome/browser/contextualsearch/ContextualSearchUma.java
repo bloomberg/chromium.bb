@@ -806,7 +806,8 @@ public class ContextualSearchUma {
         int result = wasPanelSeen ? (wasTap ? RESULTS_SEEN_FROM_TAP : RESULTS_SEEN_FROM_LONG_PRESS)
                 : (wasTap ? RESULTS_NOT_SEEN_FROM_TAP : RESULTS_NOT_SEEN_FROM_LONG_PRESS);
         RecordHistogram.recordEnumeratedHistogram(
-                "Search.ContextualSearchResultsSeenSelectionWasUrl", result, RESULTS_SEEN_BOUNDARY);
+                "Search.ContextualSearchResultsSeenSelectionWasUrl", result,
+                RESULTS_BY_GESTURE_BOUNDARY);
     }
 
     /**
