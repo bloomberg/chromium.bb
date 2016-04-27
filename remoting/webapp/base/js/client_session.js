@@ -156,7 +156,8 @@ remoting.ClientSession.State = {
   CONNECTED: 4,
   CLOSED: 5,
   FAILED: 6,
-  MAX_STATE_ENUM: 6,
+  VIDEO_STREAM_STARTED: 7,
+  MAX_STATE_ENUM: 7
 };
 
 /**
@@ -381,6 +382,8 @@ remoting.ClientSession.prototype.dropSessionOnSuspend = function(
  */
 remoting.ClientSession.prototype.onFirstFrameReceived = function() {
   this.hasReceivedFrame_ = true;
+  this.logger_.logSessionStateChange(
+    toSessionState(remoting.ClientSession.State.VIDEO_STREAM_STARTED));
 };
 
 /**
@@ -688,6 +691,8 @@ function toSessionState(state) {
       return SessionState.CONNECTION_DROPPED;
     case remoting.ClientSession.State.CONNECTION_CANCELED:
       return SessionState.CONNECTION_CANCELED;
+    case remoting.ClientSession.State.VIDEO_STREAM_STARTED:
+      return SessionState.VIDEO_STREAM_STARTED;
     default:
       throw new Error('Unknown session state : ' + state);
   }

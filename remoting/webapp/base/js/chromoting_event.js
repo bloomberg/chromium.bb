@@ -310,6 +310,7 @@ remoting.ChromotingEvent.SessionState = {
   STARTED: 15,
   SIGNALING: 16,
   CREATING_PLUGIN: 17,
+  VIDEO_STREAM_STARTED: 18,
 };
 
 /** @enum {number} */

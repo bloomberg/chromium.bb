@@ -132,6 +132,9 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   // Location of the scale value to be passed to the |shader_program_|.
   int shader_texcoord_scale_location_ = 0;
 
+  // True if the renderer has received frame from the host.
+  bool frame_received_ = false;
+
   // True if dirty regions are to be sent to |event_handler_| for debugging.
   bool debug_dirty_region_ = false;
 

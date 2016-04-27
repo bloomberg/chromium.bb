@@ -198,6 +198,11 @@ void PepperVideoRenderer3D::ProcessVideoPacket(
   if (!packet->data().size())
     return;
 
+  if (!frame_received_) {
+    event_handler_->OnVideoFirstFrameReceived();
+    frame_received_ = true;
+  }
+
   if (packet->format().has_screen_width() &&
       packet->format().has_screen_height()) {
     frame_size_.set(packet->format().screen_width(),
