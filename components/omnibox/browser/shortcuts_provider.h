@@ -41,25 +41,6 @@ class ShortcutsProvider : public AutocompleteProvider,
 
   ~ShortcutsProvider() override;
 
-  // ShortcutsBackendObserver:
-  void OnShortcutsLoaded() override;
-
-  // Performs the autocomplete matching and scoring.
-  void GetMatches(const AutocompleteInput& input);
-
-  // Returns an AutocompleteMatch corresponding to |shortcut|. Assigns it
-  // |relevance| score in the process, and highlights the description and
-  // contents against |input|, which should be the lower-cased version of
-  // the user's input. |input| and |fixed_up_input_text| are used to decide
-  // what can be inlined.
-  AutocompleteMatch ShortcutToACMatch(
-      const ShortcutsDatabase::Shortcut& shortcut,
-      int relevance,
-      const AutocompleteInput& input,
-      const base::string16& fixed_up_input_text,
-      const base::string16 term_string,
-      const WordMap& terms_map);
-
   // Returns a map mapping characters to groups of words from |text| that start
   // with those characters, ordered lexicographically descending so that longer
   // words appear before their prefixes (if any) within a particular
@@ -91,6 +72,25 @@ class ShortcutsProvider : public AutocompleteProvider,
       const WordMap& find_words,
       const base::string16& text,
       const ACMatchClassifications& original_class);
+
+  // ShortcutsBackendObserver:
+  void OnShortcutsLoaded() override;
+
+  // Performs the autocomplete matching and scoring.
+  void GetMatches(const AutocompleteInput& input);
+
+  // Returns an AutocompleteMatch corresponding to |shortcut|. Assigns it
+  // |relevance| score in the process, and highlights the description and
+  // contents against |input|, which should be the lower-cased version of
+  // the user's input. |input| and |fixed_up_input_text| are used to decide
+  // what can be inlined.
+  AutocompleteMatch ShortcutToACMatch(
+      const ShortcutsDatabase::Shortcut& shortcut,
+      int relevance,
+      const AutocompleteInput& input,
+      const base::string16& fixed_up_input_text,
+      const base::string16 term_string,
+      const WordMap& terms_map);
 
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
