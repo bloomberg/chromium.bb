@@ -590,7 +590,6 @@ test("media_unittests") {
   data_deps = []
 
   if (is_android) {
-    isolate_file = "media_unittests.isolate"
     sources -= [
       "filters/decrypting_audio_decoder_unittest.cc",
       "filters/decrypting_video_decoder_unittest.cc",
@@ -706,7 +705,6 @@ test("media_perftests") {
   ]
   if (is_android) {
     deps += [ "//ui/gl" ]
-    isolate_file = "media_perftests.isolate"
   }
   if (media_use_ffmpeg) {
     deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.

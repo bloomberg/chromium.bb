@@ -537,8 +537,6 @@ test("content_browsertests") {
     deps -= [ "//device/battery" ]
     android_manifest =
         "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
-    isolate_file = "//content/content_browsertests.isolate"
-
     use_default_launcher = false
   }
 

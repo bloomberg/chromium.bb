@@ -208,8 +208,6 @@ test("components_unittests") {
   }
 
   if (is_android) {
-    isolate_file = "components_unittests.isolate"
-
     deps += [
       "//components/gcm_driver/instance_id:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
@@ -428,7 +426,6 @@ if (!is_ios) {
         "//testing/android/native_test:native_test_support",
       ]
       use_default_launcher = false
-      isolate_file = "components_browsertests.isolate"
       android_manifest = "${target_gen_dir}/components_browsertests_manifest/AndroidManifest.xml"
       deps += [
         ":components_browsertests_assets",

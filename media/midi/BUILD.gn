@@ -178,10 +178,7 @@ test("midi_unittests") {
 
   if (is_android) {
     deps += [ ":midi_java" ]
-    isolate_file = "midi_unittests.isolate"
-  }
-
-  if (!is_android) {
+  } else {
     sources += usb_midi_sources
   }
 

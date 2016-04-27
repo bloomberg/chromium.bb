@@ -79,18 +79,11 @@ template("test") {
     }
 
     _test_runner_target = "${_output_name}__test_runner_script"
-    _wrapper_script_vars = [
-      "isolate_file",
-      "shard_timeout",
-    ]
+    _wrapper_script_vars = [ "shard_timeout" ]
     _gen_isolate_vars = [
       "allow_odd_runtime_deps",
       "ignore_all_data_deps",
     ]
-
-    # TODO(agrieve): Delete all manually passed-in .isolate files now that they
-    #     are unused. http://crbug.com/589318
-    assert(!defined(invoker.isolate_file) || invoker.isolate_file != "")  # Mark used.
     _generate_device_isolate =
         !defined(invoker.ignore_all_data_deps) || !invoker.ignore_all_data_deps
 

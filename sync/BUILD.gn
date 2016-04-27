@@ -724,10 +724,6 @@ test("sync_unit_tests") {
     "//third_party/zlib",
   ]
 
-  if (is_android) {
-    isolate_file = "sync_unit_tests.isolate"
-  }
-
   if (is_chromeos) {
     # Required by get_session_name_unittest.cc on Chrome OS.
     deps += [ "//chromeos" ]

@@ -114,28 +114,4 @@ test("sql_unittests") {
     "//testing/gtest",
     "//third_party/sqlite",
   ]
-
-  if (is_android) {
-    isolate_file = "sql_unittests.isolate"
-  }
-
-  # TODO(GYP)
-  #['OS == "android"', {
-  #  'dependencies': [
-  #    '../testing/android/native_test.gyp:native_test_native_code',
-  #  ],
-  #}],
-}
-
-if (is_android) {
-  #TODO(GYP)
-  #'target_name': 'sql_unittests_apk',
-  #'type': 'none',
-  #'dependencies': [
-  #  'sql_unittests',
-  #],
-  #'variables': {
-  #  'test_suite_name': 'sql_unittests',
-  #},
-  #'includes': [ '../build/apk_test.gypi' ],
 }

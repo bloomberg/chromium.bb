@@ -1700,7 +1700,6 @@ test("unit_tests") {
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
     enable_multidex = true
-    isolate_file = "../unit_tests.isolate"
 
     # Some android targets still depend on --gc-sections to link.
     # TODO: remove --gc-sections for Debug builds (crbug.com/159847).

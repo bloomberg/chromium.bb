@@ -1627,7 +1627,6 @@ test("net_unittests") {
     set_sources_assignment_filter([])
     sources += [ "base/address_tracker_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
-    isolate_file = "net_unittests.isolate"
     shard_timeout = 300
   }
 
