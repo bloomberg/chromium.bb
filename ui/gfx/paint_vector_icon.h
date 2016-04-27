@@ -24,7 +24,12 @@ GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
                                 size_t dip_size,
                                 SkColor color);
 
-// Creates an ImageSkia which will render the icon on demand.
+// Creates an ImageSkia which will render the icon on demand. The size will come
+// from the .icon file (the 1x version, if multiple versions exist).
+GFX_EXPORT ImageSkia CreateVectorIcon(VectorIconId id,
+                                      SkColor color);
+
+// As above, but creates the image at the given size.
 GFX_EXPORT ImageSkia CreateVectorIcon(VectorIconId id,
                                       size_t dip_size,
                                       SkColor color);

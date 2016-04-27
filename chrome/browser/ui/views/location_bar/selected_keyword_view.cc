@@ -45,7 +45,7 @@ SelectedKeywordView::~SelectedKeywordView() {
 
 void SelectedKeywordView::ResetImage() {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::KEYWORD_SEARCH, 16,
+    SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::KEYWORD_SEARCH,
                                    GetTextColor()));
   } else {
     SetImage(*GetThemeProvider()->GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));

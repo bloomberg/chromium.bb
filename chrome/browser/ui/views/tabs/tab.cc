@@ -118,7 +118,6 @@ const double kImmersiveTabMinThrobOpacity = 0.66;
 const int kImmersiveLoadingStepCount = 32;
 
 const char kTabCloseButtonName[] = "TabCloseButton";
-const int kTabCloseButtonSize = 16;
 
 // Returns the width of the tab endcap at scale 1.  More precisely, this is the
 // width of the curve making up either the outer or inner edge of the stroke;
@@ -538,10 +537,10 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   // on the current theme and active state.  The hovered and pressed images
   // don't depend on the these, so we can set them here.
   const gfx::ImageSkia& hovered = gfx::CreateVectorIcon(
-      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED, kTabCloseButtonSize,
+      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED,
       SkColorSetRGB(0xDB, 0x44, 0x37));
   const gfx::ImageSkia& pressed = gfx::CreateVectorIcon(
-      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED, kTabCloseButtonSize,
+      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED,
       SkColorSetRGB(0xA8, 0x35, 0x2A));
   close_button_->SetImage(views::CustomButton::STATE_HOVERED, &hovered);
   close_button_->SetImage(views::CustomButton::STATE_PRESSED, &pressed);
@@ -1638,8 +1637,7 @@ void Tab::OnButtonColorMaybeChanged() {
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
     const gfx::ImageSkia& close_button_normal_image = gfx::CreateVectorIcon(
-        gfx::VectorIconId::TAB_CLOSE_NORMAL, kTabCloseButtonSize,
-        button_color_);
+        gfx::VectorIconId::TAB_CLOSE_NORMAL, button_color_);
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                             &close_button_normal_image);
   }

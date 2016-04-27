@@ -48,9 +48,9 @@ void BarControlButton::SetIcon(
 void BarControlButton::OnThemeChanged() {
   SkColor icon_color =
       color_utils::DeriveDefaultIconColor(get_text_color_callback_.Run());
-  gfx::ImageSkia image = gfx::CreateVectorIcon(id_, 16, icon_color);
+  gfx::ImageSkia image = gfx::CreateVectorIcon(id_, icon_color);
   SetImage(views::CustomButton::STATE_NORMAL, &image);
-  image = gfx::CreateVectorIcon(id_, 16, SkColorSetA(icon_color, 0xff / 2));
+  image = gfx::CreateVectorIcon(id_, SkColorSetA(icon_color, 0xff / 2));
   SetImage(views::CustomButton::STATE_DISABLED, &image);
   set_ink_drop_base_color(icon_color);
 }

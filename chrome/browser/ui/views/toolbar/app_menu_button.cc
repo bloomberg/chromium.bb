@@ -151,11 +151,8 @@ void AppMenuButton::UpdateIcon() {
       break;
   }
 
-  // TODO(estade): find a home for this constant.
-  const int kButtonSize = 16;
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS, kButtonSize,
-                                 color));
+           gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS, color));
 }
 
 void AppMenuButton::SetTrailingMargin(int margin) {

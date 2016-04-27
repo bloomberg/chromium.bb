@@ -95,7 +95,7 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
 
 #if defined(TOOLKIT_VIEWS)
 gfx::ImageSkia GetFolderIcon(gfx::VectorIconId id, SkColor text_color) {
-  return gfx::CreateVectorIcon(id, 16,
+  return gfx::CreateVectorIcon(id,
                                color_utils::DeriveDefaultIconColor(text_color));
 }
 #endif

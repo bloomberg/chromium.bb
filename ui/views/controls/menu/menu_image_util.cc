@@ -12,8 +12,7 @@
 namespace views {
 
 gfx::ImageSkia GetMenuCheckImage(SkColor icon_color) {
-  return gfx::CreateVectorIcon(gfx::VectorIconId::MENU_CHECK, kMenuCheckSize,
-                               icon_color);
+  return gfx::CreateVectorIcon(gfx::VectorIconId::MENU_CHECK, icon_color);
 }
 
 gfx::ImageSkia GetRadioButtonImage(bool toggled,
@@ -27,8 +26,7 @@ gfx::ImageSkia GetRadioButtonImage(bool toggled,
 }
 
 gfx::ImageSkia GetSubmenuArrowImage(SkColor icon_color) {
-  return gfx::CreateVectorIcon(gfx::VectorIconId::SUBMENU_ARROW,
-                               kSubmenuArrowSize, icon_color);
+  return gfx::CreateVectorIcon(gfx::VectorIconId::SUBMENU_ARROW, icon_color);
 }
 
 }  // namespace views

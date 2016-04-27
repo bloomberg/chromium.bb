@@ -57,7 +57,7 @@ gfx::ImageSkia BrowserNonClientFrameView::GetOTRAvatarIcon() const {
     return *GetThemeProviderForProfile()->GetImageSkiaNamed(IDR_OTR_ICON);
   const SkColor icon_color = color_utils::PickContrastingColor(
       SK_ColorWHITE, gfx::kChromeIconGrey, GetFrameColor());
-  return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, icon_color);
+  return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, icon_color);
 }
 
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {

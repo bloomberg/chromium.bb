@@ -734,7 +734,6 @@ void ToolbarView::LoadImages() {
   const ui::ThemeProvider* tp = GetThemeProvider();
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    const int kButtonSize = 16;
     const SkColor normal_color =
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     const SkColor disabled_color =
@@ -742,21 +741,21 @@ void ToolbarView::LoadImages() {
 
     back_->SetImage(views::Button::STATE_NORMAL,
                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
-                                          kButtonSize, normal_color));
+                                          normal_color));
     back_->SetImage(views::Button::STATE_DISABLED,
                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
-                                          kButtonSize, disabled_color));
+                                          disabled_color));
     forward_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD, kButtonSize,
+        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD,
                               normal_color));
     forward_->SetImage(
         views::Button::STATE_DISABLED,
-        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD, kButtonSize,
+        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD,
                               disabled_color));
     home_->SetImage(views::Button::STATE_NORMAL,
                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME,
-                                          kButtonSize, normal_color));
+                                          normal_color));
     app_menu_button_->UpdateIcon();
 
     back_->set_ink_drop_base_color(normal_color);
