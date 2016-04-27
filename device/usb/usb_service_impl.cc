@@ -321,6 +321,8 @@ UsbServiceImpl::~UsbServiceImpl() {
   for (const auto& map_entry : devices_) {
     map_entry.second->OnDisconnect();
   }
+  for (const auto& platform_device : ignored_devices_)
+    libusb_unref_device(platform_device);
 }
 
 scoped_refptr<UsbDevice> UsbServiceImpl::GetDevice(const std::string& guid) {
@@ -417,14 +419,21 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
                            base::Bind(&UsbServiceImpl::RefreshDevicesComplete,
                                       weak_factory_.GetWeakPtr()));
   std::list<PlatformUsbDevice> new_devices;
+  std::set<PlatformUsbDevice> existing_ignored_devices;
 
   // Look for new and existing devices.
   for (size_t i = 0; i < device_count; ++i) {
     PlatformUsbDevice platform_device = platform_devices[i];
+    // Ignore some devices.
+    if (ContainsValue(ignored_devices_, platform_device)) {
+      existing_ignored_devices.insert(platform_device);
+      refresh_complete.Run();
+      continue;
+    }
+
     auto it = platform_devices_.find(platform_device);
 
     if (it == platform_devices_.end()) {
-      libusb_ref_device(platform_device);
       new_devices.push_back(platform_device);
     } else {
       it->second->set_visited(true);
@@ -442,6 +451,16 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
       device->set_visited(false);
     } else {
       RemoveDevice(device);
+    }
+  }
+
+  // Remove devices not seen in this enumeration from |ignored_devices_|.
+  for (auto it = ignored_devices_.begin(); it != ignored_devices_.end();
+       /* incremented internally */) {
+    auto current = it++;
+    if (!ContainsValue(existing_ignored_devices, *current)) {
+      libusb_unref_device(*current);
+      ignored_devices_.erase(current);
     }
   }
 
@@ -488,6 +507,8 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
   if (rv == LIBUSB_SUCCESS) {
     if (descriptor.bDeviceClass == LIBUSB_CLASS_HUB) {
       // Don't try to enumerate hubs. We never want to connect to a hub.
+      libusb_ref_device(platform_device);
+      ignored_devices_.insert(platform_device);
       refresh_complete.Run();
       return;
     }
@@ -497,13 +518,16 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
     base::Closure add_device =
         base::Bind(&UsbServiceImpl::AddDevice, weak_factory_.GetWeakPtr(),
                    refresh_complete, device);
+    base::Closure enumeration_failed = base::Bind(
+        &UsbServiceImpl::EnumerationFailed, weak_factory_.GetWeakPtr(),
+        platform_device, refresh_complete);
     bool read_bos_descriptors = descriptor.bcdUSB >= kUsbVersion2_1;
 
 #if defined(USE_UDEV)
     blocking_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EnumerateUdevDevice, device, read_bos_descriptors,
-                   task_runner_, add_device, refresh_complete));
+                   task_runner_, add_device, enumeration_failed));
 #else
     if (descriptor.iManufacturer == 0 && descriptor.iProduct == 0 &&
         descriptor.iSerialNumber == 0 && !read_bos_descriptors) {
@@ -513,7 +537,7 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
       device->Open(base::Bind(&OnDeviceOpenedReadDescriptors,
                               descriptor.iManufacturer, descriptor.iProduct,
                               descriptor.iSerialNumber, read_bos_descriptors,
-                              add_device, refresh_complete));
+                              add_device, enumeration_failed));
     }
 #endif
   } else {
@@ -614,6 +638,13 @@ void UsbServiceImpl::OnPlatformDeviceRemoved(
     devices_being_enumerated_.erase(platform_device);
   }
   libusb_unref_device(platform_device);
+}
+
+void UsbServiceImpl::EnumerationFailed(PlatformUsbDevice platform_device,
+                                       const base::Closure& refresh_complete) {
+  libusb_ref_device(platform_device);
+  ignored_devices_.insert(platform_device);
+  refresh_complete.Run();
 }
 
 }  // namespace device

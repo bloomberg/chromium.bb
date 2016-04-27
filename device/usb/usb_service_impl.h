@@ -80,6 +80,11 @@ class UsbServiceImpl :
   void OnPlatformDeviceAdded(PlatformUsbDevice platform_device);
   void OnPlatformDeviceRemoved(PlatformUsbDevice platform_device);
 
+  // Add |platform_device| to the |ignored_devices_| and
+  // run |refresh_complete|.
+  void EnumerationFailed(PlatformUsbDevice platform_device,
+                         const base::Closure& refresh_complete);
+
   scoped_refptr<UsbContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -104,6 +109,10 @@ class UsbServiceImpl :
   typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl>>
       PlatformDeviceMap;
   PlatformDeviceMap platform_devices_;
+
+  // The set of devices that only need to be enumerated once and then can be
+  // ignored (for example, hub devices, devices that failed enumeration, etc.).
+  std::set<PlatformUsbDevice> ignored_devices_;
 
   // Tracks PlatformUsbDevices that might be removed while they are being
   // enumerated.
