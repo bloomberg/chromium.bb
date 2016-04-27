@@ -367,7 +367,6 @@
           'memory/ref_counted_memory.cc',
           'memory/ref_counted_memory.h',
           'memory/scoped_policy.h',
-          'memory/scoped_ptr.h',
           'memory/scoped_vector.h',
           'memory/shared_memory.h',
           'memory/shared_memory_android.cc',
