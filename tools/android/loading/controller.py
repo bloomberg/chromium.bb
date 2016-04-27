@@ -25,6 +25,7 @@ _SRC_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
 
 import chrome_cache
+import common_util
 import device_setup
 import devtools_monitor
 import emulation
@@ -66,7 +67,7 @@ class ChromeControllerBase(object):
         '--enable-test-events',
         '--remote-debugging-port=%d' % OPTIONS.devtools_port,
     ]
-    self._chrome_wpr_specific_args = []
+    self._wpr_attributes = None
     self._metadata = {}
     self._emulated_device = None
     self._emulated_network = None
@@ -185,7 +186,10 @@ class ChromeControllerBase(object):
 
   def _GetChromeArguments(self):
     """Get command-line arguments for the chrome execution."""
-    return self._chrome_args + self._chrome_wpr_specific_args
+    chrome_args = self._chrome_args[:]
+    if self._wpr_attributes:
+      chrome_args.extend(self._wpr_attributes.chrome_args)
+    return chrome_args
 
 
 class RemoteChromeController(ChromeControllerBase):
@@ -212,6 +216,9 @@ class RemoteChromeController(ChromeControllerBase):
   @contextlib.contextmanager
   def Open(self):
     """Overridden connection creation."""
+    if self._wpr_attributes:
+      assert self._wpr_attributes.chrome_env_override == {}, \
+          'Remote controller doesn\'t support chrome environment variables.'
     package_info = OPTIONS.ChromePackage()
     command_line_path = '/data/local/chrome-command-line'
     self._device.ForceStop(package_info.package)
@@ -268,15 +275,15 @@ class RemoteChromeController(ChromeControllerBase):
                   disable_script_injection=False,
                   out_log_path=None):
     """Starts a WPR host, overrides Chrome flags until contextmanager exit."""
-    assert not self._chrome_wpr_specific_args, 'WPR is already running.'
+    assert not self._wpr_attributes, 'WPR is already running.'
     with device_setup.RemoteWprHost(self._device, wpr_archive_path,
         record=record,
         network_condition_name=network_condition_name,
         disable_script_injection=disable_script_injection,
-        out_log_path=out_log_path) as additional_flags:
-      self._chrome_wpr_specific_args = additional_flags
+        out_log_path=out_log_path) as wpr_attributes:
+      self._wpr_attributes = wpr_attributes
       yield
-    self._chrome_wpr_specific_args = []
+    self._wpr_attributes = None
 
 
 class LocalChromeController(ChromeControllerBase):
@@ -316,16 +323,26 @@ class LocalChromeController(ChromeControllerBase):
     #   - To find the correct target descriptor at devtool connection;
     #   - To avoid cache and WPR pollution by the NTP.
     chrome_cmd.append('about:blank')
-    environment = os.environ.copy()
+
+    chrome_env_override = {}
+    if self._wpr_attributes:
+      chrome_env_override.update(self._wpr_attributes.chrome_env_override)
+
     if self._headless:
-      environment['DISPLAY'] = 'localhost:99'
-      xvfb_process = subprocess.Popen(
-          ['Xvfb', ':99', '-screen', '0', '1600x1200x24'], shell=False,
-          stdout=stdout, stderr=stderr)
-    logging.debug(subprocess.list2cmdline(chrome_cmd))
-    chrome_process = subprocess.Popen(chrome_cmd, shell=False,
-                                      stdout=stdout, stderr=stderr,
-                                      env=environment)
+      assert 'DISPLAY' not in chrome_env_override, \
+          'DISPLAY environment variable is reserved for headless.'
+      chrome_env_override['DISPLAY'] = 'localhost:99'
+      xvfb_cmd = ['Xvfb', ':99', '-screen', '0', '1600x1200x24']
+      logging.info(common_util.GetCommandLineForLogging(xvfb_cmd))
+      xvfb_process = subprocess.Popen(xvfb_cmd, stdout=stdout, stderr=stderr)
+
+    # Launch chrome.
+    logging.info(
+        common_util.GetCommandLineForLogging(chrome_cmd, chrome_env_override))
+    chrome_env = os.environ.copy()
+    chrome_env.update(chrome_env_override)
+    chrome_process = subprocess.Popen(chrome_cmd, stdout=stdout, stderr=stderr,
+                                      env=chrome_env)
     connection = None
     try:
       # Attempt to connect to Chrome's devtools
@@ -388,15 +405,15 @@ class LocalChromeController(ChromeControllerBase):
                   disable_script_injection=False,
                   out_log_path=None):
     """Override for WPR context."""
-    assert not self._chrome_wpr_specific_args, 'WPR is already running.'
+    assert not self._wpr_attributes, 'WPR is already running.'
     with device_setup.LocalWprHost(wpr_archive_path,
         record=record,
         network_condition_name=network_condition_name,
         disable_script_injection=disable_script_injection,
-        out_log_path=out_log_path) as additional_flags:
-      self._chrome_wpr_specific_args = additional_flags
+        out_log_path=out_log_path) as wpr_attributes:
+      self._wpr_attributes = wpr_attributes
       yield
-    self._chrome_wpr_specific_args = []
+    self._wpr_attributes = None
 
   def _EnsureProfileDirectory(self):
     if (not os.path.isdir(self._profile_dir) or

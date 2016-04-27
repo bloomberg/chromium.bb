@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import contextlib
 import logging
 import os
@@ -14,7 +15,8 @@ import time
 _SRC_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
 
-sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+_CATAPULT_DIR = os.path.join(_SRC_DIR, 'third_party', 'catapult')
+sys.path.append(os.path.join(_CATAPULT_DIR, 'devil'))
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android import forwarder
@@ -31,10 +33,12 @@ sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry.internal.image_processing import video
 from telemetry.internal.util import webpagereplay
 
-sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'webpagereplay'))
+sys.path.append(os.path.join(
+    _CATAPULT_DIR, 'telemetry', 'third_party', 'webpagereplay'))
 import adb_install_cert
 import certutils
 
+import common_util
 import devtools_monitor
 import emulation
 import options
@@ -125,6 +129,17 @@ def ForwardPort(device, local, remote):
     yield
   finally:
     device.adb.ForwardRemove(local)
+
+
+# WPR specific attributes to set up chrome.
+#
+# Members:
+#   chrome_args: Additional flags list that may be used for chromium to load web
+#     page through the running web page replay host.
+#   chrome_env_override: Dictionary of environment variables to override at
+#     Chrome's launch time.
+WprAttribute = collections.namedtuple('WprAttribute',
+                                      ['chrome_args', 'chrome_env_override'])
 
 
 @contextlib.contextmanager
@@ -222,24 +237,33 @@ def LocalWprHost(wpr_archive_path, record=False,
     out_log_path: Path of the WPR host's log.
 
   Returns:
-    Additional flags list that may be used for chromium to load web page through
-    the running web page replay host.
+    WprAttribute
   """
   if wpr_archive_path == None:
     _VerifySilentWprHost(record, network_condition_name)
     yield []
     return
-  with _WprHost(
-      wpr_archive_path,
-      record=record,
-      network_condition_name=network_condition_name,
-      disable_script_injection=disable_script_injection,
-      out_log_path=out_log_path) as (http_port, https_port):
-    chrome_args = _FormatWPRRelatedChromeArgumentFor(http_port, https_port,
-                                                     escape=False)
-    # Certification authority is handled only available on Android.
-    chrome_args.append('--ignore-certificate-errors')
-    yield chrome_args
+
+  with common_util.TemporaryDirectory() as temp_home_dir:
+    # Generate a root certification authority certificate for WPR.
+    private_ca_cert_path = os.path.join(temp_home_dir, 'wpr.pem')
+    ca_cert_path = os.path.join(temp_home_dir, 'wpr-cert.pem')
+    certutils.write_dummy_ca_cert(*certutils.generate_dummy_ca_cert(),
+                                  cert_path=private_ca_cert_path)
+    assert os.path.isfile(ca_cert_path)
+    certutils.install_cert_in_nssdb(temp_home_dir, ca_cert_path)
+
+    with _WprHost(
+        wpr_archive_path,
+        record=record,
+        network_condition_name=network_condition_name,
+        disable_script_injection=disable_script_injection,
+        wpr_ca_cert_path=private_ca_cert_path,
+        out_log_path=out_log_path) as (http_port, https_port):
+      chrome_args = _FormatWPRRelatedChromeArgumentFor(http_port, https_port,
+                                                       escape=False)
+      yield WprAttribute(chrome_args=chrome_args,
+                         chrome_env_override={'HOME': temp_home_dir})
 
 
 @contextlib.contextmanager
@@ -260,8 +284,7 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
     out_log_path: Path of the WPR host's log.
 
   Returns:
-    Additional flags list that may be used for chromium to load web page through
-    the running web page replay host.
+    WprAttribute
   """
   assert device
   if wpr_archive_path == None:
@@ -290,9 +313,10 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
       device_http_port = forwarder.Forwarder.DevicePortForHostPort(http_port)
       device_https_port = forwarder.Forwarder.DevicePortForHostPort(https_port)
       try:
-        yield _FormatWPRRelatedChromeArgumentFor(device_http_port,
-                                                 device_https_port,
-                                                 escape=True)
+        chrome_args = _FormatWPRRelatedChromeArgumentFor(device_http_port,
+                                                         device_https_port,
+                                                         escape=True)
+        yield WprAttribute(chrome_args=chrome_args, chrome_env_override={})
       finally:
         # Tear down the forwarder.
         forwarder.Forwarder.UnmapDevicePort(device_http_port, device)
