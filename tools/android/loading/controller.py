@@ -10,6 +10,8 @@ desktop-specific versions.
 """
 
 import contextlib
+import datetime
+import errno
 import logging
 import os
 import shutil
@@ -39,6 +41,9 @@ class ChromeControllerBase(object):
 
   Defines common operations but should not be created directly.
   """
+  DEVTOOLS_CONNECTION_ATTEMPTS = 10
+  DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS = 1
+
   def __init__(self):
     self._chrome_args = [
         # Disable backgound network requests that may pollute WPR archive,
@@ -174,6 +179,9 @@ class ChromeControllerBase(object):
     if self._emulated_network:
       emulation.SetUpNetworkEmulation(connection, **self._emulated_network)
       self._metadata.update(self._emulated_network)
+    self._metadata.update(date=datetime.datetime.utcnow().isoformat(),
+                          seconds_since_epoch=time.time())
+    logging.info('Devtools connection success')
 
   def _GetChromeArguments(self):
     """Get command-line arguments for the chrome execution."""
@@ -182,12 +190,6 @@ class ChromeControllerBase(object):
 
 class RemoteChromeController(ChromeControllerBase):
   """A controller for an android device, aka remote chrome instance."""
-  # Number of connection attempt to chrome's devtools.
-  DEVTOOLS_CONNECTION_ATTEMPTS = 10
-
-  # Time interval in seconds between chrome's devtools connection attempts.
-  DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS = 1
-
   # An estimate of time to wait for the device to become idle after expensive
   # operations, such as opening the launcher activity.
   TIME_TO_IDLE_SECONDS = 2
@@ -226,10 +228,7 @@ class RemoteChromeController(ChromeControllerBase):
           data='about:blank')
       self._device.StartActivity(start_intent, blocking=True)
       try:
-        for attempt_id in xrange(self.DEVTOOLS_CONNECTION_ATTEMPTS + 1):
-          if attempt_id == self.DEVTOOLS_CONNECTION_ATTEMPTS:
-            raise RuntimeError('Failed to connect to chrome devtools after {} '
-                               'attempts.'.format(attempt_id))
+        for attempt_id in xrange(self.DEVTOOLS_CONNECTION_ATTEMPTS):
           logging.info('Devtools connection attempt %d' % attempt_id)
           with device_setup.ForwardPort(
               self._device, 'tcp:%d' % OPTIONS.devtools_port,
@@ -239,15 +238,18 @@ class RemoteChromeController(ChromeControllerBase):
                   OPTIONS.devtools_hostname, OPTIONS.devtools_port)
               self._StartConnection(connection)
             except socket.error as e:
-              assert str(e).startswith('[Errno 104] Connection reset by peer')
+              if e.errno != errno.ECONNRESET:
+                raise
               time.sleep(self.DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS)
               continue
-            logging.info('Devtools connection success')
             yield connection
             if self._slow_death:
               self._device.adb.Shell('am start com.google.android.launcher')
               time.sleep(self.TIME_TO_IDLE_SECONDS)
             break
+        else:
+          raise RuntimeError('Failed to connect to chrome devtools after {} '
+                             'attempts.'.format(attempt_id))
       finally:
         self._device.ForceStop(package_info.package)
 
@@ -326,21 +328,32 @@ class LocalChromeController(ChromeControllerBase):
                                       env=environment)
     connection = None
     try:
-      time.sleep(10)
-      process_result = chrome_process.poll()
-      if process_result is not None:
-        logging.error('Unexpected process exit: %s', process_result)
+      # Attempt to connect to Chrome's devtools
+      for attempt_id in xrange(self.DEVTOOLS_CONNECTION_ATTEMPTS):
+        logging.info('Devtools connection attempt %d' % attempt_id)
+        process_result = chrome_process.poll()
+        if process_result is not None:
+          raise RuntimeError('Unexpected Chrome exit: %s', process_result)
+        try:
+          connection = devtools_monitor.DevToolsConnection(
+              OPTIONS.devtools_hostname, OPTIONS.devtools_port)
+          break
+        except socket.error as e:
+          if e.errno != errno.ECONNREFUSED:
+            raise
+          time.sleep(self.DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS)
       else:
-        connection = devtools_monitor.DevToolsConnection(
-            OPTIONS.devtools_hostname, OPTIONS.devtools_port)
-        self._StartConnection(connection)
-        yield connection
-        if self._slow_death:
-          connection.Close()
-          connection = None
-          chrome_process.wait()
+        raise RuntimeError('Failed to connect to Chrome devtools after {} '
+                           'attempts.'.format(attempt_id))
+      # Start and yield the devtool connection.
+      self._StartConnection(connection)
+      yield connection
+      if self._slow_death:
+        connection.Close()
+        chrome_process.wait()
+        chrome_process = None
     finally:
-      if connection:
+      if chrome_process:
         chrome_process.kill()
       if self._headless:
         xvfb_process.kill()
