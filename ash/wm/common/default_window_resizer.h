@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_DEFAULT_WINDOW_RESIZER_H_
-#define ASH_WM_DEFAULT_WINDOW_RESIZER_H_
+#ifndef ASH_WM_COMMON_DEFAULT_WINDOW_RESIZER_H_
+#define ASH_WM_COMMON_DEFAULT_WINDOW_RESIZER_H_
 
 #include "ash/wm/common/window_resizer.h"
 #include "base/compiler_specific.h"
@@ -50,4 +50,4 @@ class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
 
 }  // namespace aura
 
-#endif  // ASH_WM_DEFAULT_WINDOW_RESIZER_H_
+#endif  // ASH_WM_COMMON_DEFAULT_WINDOW_RESIZER_H_

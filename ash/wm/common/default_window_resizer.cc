@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/default_window_resizer.h"
+#include "ash/wm/common/default_window_resizer.h"
 
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/common/wm_globals.h"
@@ -15,8 +15,8 @@ DefaultWindowResizer::~DefaultWindowResizer() {
 }
 
 // static
-DefaultWindowResizer*
-DefaultWindowResizer::Create(wm::WindowState* window_state) {
+DefaultWindowResizer* DefaultWindowResizer::Create(
+    wm::WindowState* window_state) {
   return new DefaultWindowResizer(window_state);
 }
 
@@ -30,8 +30,7 @@ void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
 }
 
-void DefaultWindowResizer::CompleteDrag() {
-}
+void DefaultWindowResizer::CompleteDrag() {}
 
 void DefaultWindowResizer::RevertDrag() {
   if (!did_move_or_resize_)
