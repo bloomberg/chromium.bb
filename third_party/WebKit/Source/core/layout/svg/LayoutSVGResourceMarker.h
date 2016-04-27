@@ -43,6 +43,7 @@ public:
 
     const AffineTransform& localToSVGParentTransform() const override;
     AffineTransform markerTransformation(const FloatPoint& origin, float angle, float strokeWidth) const;
+    bool shouldPaint() const;
 
     FloatPoint referencePoint() const;
     float angle() const;
@@ -58,10 +59,6 @@ private:
     void layout() override;
     void calcViewport() override;
     bool calculateLocalTransform() override;
-
-    // Generates a transformation matrix usable to layout marker content. Handles scaling the marker content
-    // acording to SVGs markerUnits="strokeWidth" concept, when a strokeWidth value != -1 is passed in.
-    AffineTransform markerContentTransformation(const AffineTransform& contentTransformation, const FloatPoint& origin, float strokeWidth = -1) const;
 
     AffineTransform viewportTransform() const;
 

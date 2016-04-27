@@ -191,10 +191,9 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo, const FloatRect& 
         return;
 
     float strokeWidth = m_layoutSVGShape.strokeWidth();
-    unsigned size = markerPositions->size();
 
-    for (unsigned i = 0; i < size; ++i) {
-        if (LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd)) {
+    for (const MarkerPosition& markerPosition : *markerPositions) {
+        if (const LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType(markerPosition.type, markerStart, markerMid, markerEnd)) {
             SkPictureBuilder pictureBuilder(boundingBox, nullptr, &paintInfo.context);
             PaintInfo markerPaintInfo(pictureBuilder.context(), paintInfo);
 
@@ -203,18 +202,16 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo, const FloatRect& 
             // be culled if it is outside the paint info cull rect.
             markerPaintInfo.m_cullRect.m_rect = LayoutRect::infiniteIntRect();
 
-            paintMarker(markerPaintInfo, *marker, (*markerPositions)[i], strokeWidth);
+            paintMarker(markerPaintInfo, *marker, markerPosition, strokeWidth);
             pictureBuilder.endRecording()->playback(paintInfo.context.canvas());
         }
     }
 }
 
-void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
+void SVGShapePainter::paintMarker(
+    const PaintInfo& paintInfo, const LayoutSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
 {
-    // An empty viewBox disables rendering.
-    SVGMarkerElement* markerElement = toSVGMarkerElement(marker.element());
-    ASSERT(markerElement);
-    if (markerElement->hasAttribute(SVGNames::viewBoxAttr) && markerElement->viewBox()->currentValue()->isValid() && markerElement->viewBox()->currentValue()->value().isEmpty())
+    if (!marker.shouldPaint())
         return;
 
     TransformRecorder transformRecorder(paintInfo.context, marker, marker.markerTransformation(position.origin, position.angle, strokeWidth));

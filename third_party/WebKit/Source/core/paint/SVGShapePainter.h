@@ -13,11 +13,11 @@ class SkPaint;
 namespace blink {
 
 class FloatRect;
-struct MarkerPosition;
-struct PaintInfo;
 class GraphicsContext;
 class LayoutSVGResourceMarker;
 class LayoutSVGShape;
+struct MarkerPosition;
+struct PaintInfo;
 
 class SVGShapePainter {
     STACK_ALLOCATED();
@@ -31,7 +31,7 @@ private:
     void strokeShape(GraphicsContext&, const SkPaint&);
 
     void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
-    void paintMarker(const PaintInfo&, LayoutSVGResourceMarker&, const MarkerPosition&, float);
+    void paintMarker(const PaintInfo&, const LayoutSVGResourceMarker&, const MarkerPosition&, float);
 
     const LayoutSVGShape& m_layoutSVGShape;
 };

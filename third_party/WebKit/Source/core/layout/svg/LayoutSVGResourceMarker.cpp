@@ -65,7 +65,8 @@ FloatRect LayoutSVGResourceMarker::markerBoundaries(const AffineTransform& marke
 {
     FloatRect coordinates = LayoutSVGContainer::paintInvalidationRectInLocalSVGCoordinates();
 
-    // Map paint invalidation rect into parent coordinate space, in which the marker boundaries have to be evaluated
+    // Map paint invalidation rect into parent coordinate space, in which the
+    // marker boundaries have to be evaluated.
     coordinates = localToSVGParentTransform().mapRect(coordinates);
 
     return markerTransformation.mapRect(coordinates);
@@ -105,26 +106,29 @@ SVGMarkerOrientType LayoutSVGResourceMarker::orientType() const
 
 AffineTransform LayoutSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
 {
-    bool useStrokeWidth = markerUnits() == SVGMarkerUnitsStrokeWidth;
+    // Apply scaling according to markerUnits ('strokeWidth' or 'userSpaceOnUse'.)
+    float markerScale = markerUnits() == SVGMarkerUnitsStrokeWidth ? strokeWidth : 1;
 
     AffineTransform transform;
     transform.translate(origin.x(), origin.y());
     transform.rotate(orientType() == SVGMarkerOrientAngle ? angle() : autoAngle);
-    transform = markerContentTransformation(transform, referencePoint(), useStrokeWidth ? strokeWidth : -1);
+    transform.scale(markerScale);
+
+    // The 'origin' coordinate maps to SVGs refX/refY, given in coordinates
+    // relative to the viewport established by the marker.
+    FloatPoint mappedReferencePoint = viewportTransform().mapPoint(referencePoint());
+    transform.translate(-mappedReferencePoint.x(), -mappedReferencePoint.y());
     return transform;
 }
 
-AffineTransform LayoutSVGResourceMarker::markerContentTransformation(const AffineTransform& contentTransformation, const FloatPoint& origin, float strokeWidth) const
+bool LayoutSVGResourceMarker::shouldPaint() const
 {
-    // The 'origin' coordinate maps to SVGs refX/refY, given in coordinates relative to the viewport established by the marker
-    FloatPoint mappedOrigin = viewportTransform().mapPoint(origin);
-
-    AffineTransform transformation = contentTransformation;
-    if (strokeWidth != -1)
-        transformation.scaleNonUniform(strokeWidth, strokeWidth);
-
-    transformation.translate(-mappedOrigin.x(), -mappedOrigin.y());
-    return transformation;
+    // An empty viewBox disables rendering.
+    SVGMarkerElement* marker = toSVGMarkerElement(element());
+    ASSERT(marker);
+    return !marker->viewBox()->isSpecified()
+        || !marker->viewBox()->currentValue()->isValid()
+        || !marker->viewBox()->currentValue()->value().isEmpty();
 }
 
 AffineTransform LayoutSVGResourceMarker::viewportTransform() const
