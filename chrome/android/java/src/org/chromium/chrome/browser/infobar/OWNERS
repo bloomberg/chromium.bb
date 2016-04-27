@@ -1,6 +1,5 @@
 set noparent
 dfalcantara@chromium.org
 miguelg@chromium.org
-newt@chromium.org
 
 per-file GeneratedPasswordSavedInfoBar*=rouslan@chromium.org
