@@ -575,6 +575,9 @@ public:
     bool canThrottleRendering() const;
     bool isHiddenForThrottling() const { return m_hiddenForThrottling; }
 
+    // For testing, run pending intersection observer notifications for this frame.
+    void notifyRenderThrottlingObserversForTesting();
+
     // Paint properties for SPv2 Only.
     void setPreTranslation(PassRefPtr<TransformPaintPropertyNode> preTranslation) { m_preTranslation = preTranslation; }
     TransformPaintPropertyNode* preTranslation() const { return m_preTranslation.get(); }
@@ -754,6 +757,7 @@ private:
     void updateViewportIntersectionsForSubtree(LifeCycleUpdateOption);
     void updateViewportIntersectionIfNeeded();
     void notifyRenderThrottlingObservers();
+    void updateThrottlingStatus();
 
     // PaintInvalidationCapableScrollableArea
     LayoutBox& boxForScrollControlPaintInvalidation() const override;
@@ -890,6 +894,7 @@ private:
     // notifications, i.e., not in the middle of the lifecycle.
     bool m_hiddenForThrottling;
     bool m_crossOriginForThrottling;
+    bool m_subtreeThrottled;
 
     // Paint properties for SPv2 Only.
     // The hierarchy of transform subtree created by a FrameView.

@@ -160,6 +160,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_viewportIntersectionValid(false)
     , m_hiddenForThrottling(false)
     , m_crossOriginForThrottling(false)
+    , m_subtreeThrottled(false)
     , m_isUpdatingAllLifecyclePhases(false)
     , m_scrollAnchor(this)
     , m_needsScrollbarsUpdate(false)
@@ -4008,13 +4009,8 @@ void FrameView::updateViewportIntersectionsForSubtree(LifeCycleUpdateOption phas
     }
 }
 
-void FrameView::notifyRenderThrottlingObservers()
+void FrameView::updateThrottlingStatus()
 {
-    TRACE_EVENT0("blink", "FrameView::notifyRenderThrottlingObservers");
-    ASSERT(!isInPerformLayout());
-    ASSERT(!m_frame->document()->inStyleRecalc());
-    bool wasThrottled = canThrottleRendering();
-
     // Only offscreen frames can be throttled.
     m_hiddenForThrottling = m_viewportIntersectionValid && m_viewportIntersection.isEmpty();
 
@@ -4027,17 +4023,46 @@ void FrameView::notifyRenderThrottlingObservers()
     //
     // Check if we can access our parent's security origin.
     m_crossOriginForThrottling = false;
+    // If any of our parents are throttled, we must be too.
+    m_subtreeThrottled = false;
     const SecurityOrigin* origin = frame().securityContext()->getSecurityOrigin();
     for (Frame* parentFrame = m_frame->tree().parent(); parentFrame; parentFrame = parentFrame->tree().parent()) {
         const SecurityOrigin* parentOrigin = parentFrame->securityContext()->getSecurityOrigin();
-        if (!origin->canAccess(parentOrigin)) {
+        if (!origin->canAccess(parentOrigin))
             m_crossOriginForThrottling = true;
-            break;
-        }
+        if (parentFrame->isLocalFrame() && toLocalFrame(parentFrame)->view() && toLocalFrame(parentFrame)->view()->canThrottleRendering())
+            m_subtreeThrottled = true;
     }
+}
 
+void FrameView::notifyRenderThrottlingObserversForTesting()
+{
+    DCHECK(m_renderThrottlingObserverNotificationFactory->isPending());
+    notifyRenderThrottlingObservers();
+}
+
+void FrameView::notifyRenderThrottlingObservers()
+{
+    TRACE_EVENT0("blink", "FrameView::notifyRenderThrottlingObservers");
+    DCHECK(!isInPerformLayout());
+    DCHECK(!m_frame->document()->inStyleRecalc());
+    bool wasThrottled = canThrottleRendering();
+
+    updateThrottlingStatus();
+
+    bool becameThrottled = !wasThrottled && canThrottleRendering();
     bool becameUnthrottled = wasThrottled && !canThrottleRendering();
     ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator();
+    if (becameThrottled) {
+        // If this FrameView became throttled, we must make sure all of its
+        // children become throttled at the same time. Otherwise we might
+        // attempt to paint one of the children with an out-of-date layout
+        // before |notifyRenderThrottlingObservers| has made it throttled.
+        forAllNonThrottledFrameViews([](FrameView& frameView) {
+            frameView.m_subtreeThrottled = true;
+            DCHECK(frameView.canThrottleRendering());
+        });
+    }
     if (becameUnthrottled) {
         // ScrollingCoordinator needs to update according to the new throttling status.
         if (scrollingCoordinator)
@@ -4054,6 +4079,15 @@ void FrameView::notifyRenderThrottlingObservers()
     bool hasHandlers = m_frame->document()->frameHost()->eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::TouchStartOrMoveEventBlocking);
     if (wasThrottled != canThrottleRendering() && scrollingCoordinator && hasHandlers)
         scrollingCoordinator->touchEventTargetRectsDidChange();
+
+#if DCHECK_IS_ON()
+    // Make sure we never have an unthrottled frame inside a throttled one.
+    FrameView* parent = parentFrameView();
+    while (parent) {
+        DCHECK(canThrottleRendering() || !parent->canThrottleRendering());
+        parent = parent->parentFrameView();
+    }
+#endif
 }
 
 bool FrameView::shouldThrottleRendering() const
@@ -4065,7 +4099,7 @@ bool FrameView::canThrottleRendering() const
 {
     if (!RuntimeEnabledFeatures::renderingPipelineThrottlingEnabled())
         return false;
-    return m_hiddenForThrottling && m_crossOriginForThrottling;
+    return m_subtreeThrottled || (m_hiddenForThrottling && m_crossOriginForThrottling);
 }
 
 LayoutBox& FrameView::boxForScrollControlPaintInvalidation() const

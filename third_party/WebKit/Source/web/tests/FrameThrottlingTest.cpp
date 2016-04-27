@@ -707,4 +707,38 @@ TEST_F(FrameThrottlingTest, PaintingViaContentLayerDelegateIsThrottled)
     paintRecursively(layer, &displayItems);
 }
 
+TEST_F(FrameThrottlingTest, ThrottleSubtreeAtomically)
+{
+    // Create two nested frames which are throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+    SimRequest childFrameResource("https://example.com/child-iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("<iframe id=child-frame sandbox src=child-iframe.html></iframe>");
+    childFrameResource.complete("");
+
+    // Move both frames offscreen, but don't run the intersection observers yet.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    auto* childFrameElement = toHTMLIFrameElement(frameElement->contentDocument()->getElementById("child-frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    compositor().beginFrame();
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Only run the intersection observer for the parent frame. Both frames
+    // should immediately become throttled. This simulates the case where a task
+    // such as BeginMainFrame runs in the middle of dispatching intersection
+    // observer notifications.
+    frameElement->contentDocument()->view()->notifyRenderThrottlingObserversForTesting();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Both frames should still be throttled after the second notification.
+    childFrameElement->contentDocument()->view()->notifyRenderThrottlingObserversForTesting();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+}
+
 } // namespace blink
