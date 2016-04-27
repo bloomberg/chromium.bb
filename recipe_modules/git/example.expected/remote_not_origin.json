@@ -11,7 +11,6 @@
       "--remote",
       "not_origin"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "git setup"
   },
   {

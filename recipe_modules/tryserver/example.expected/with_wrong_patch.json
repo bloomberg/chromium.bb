@@ -27,7 +27,6 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "fail",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",

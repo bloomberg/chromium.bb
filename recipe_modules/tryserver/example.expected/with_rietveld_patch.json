@@ -14,7 +14,6 @@
       "https://codereview.chromium.org",
       "--no-auth"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "apply_issue",
     "~followup_annotations": [
       "@@@STEP_LINK@Applied issue 12853011@https://codereview.chromium.org/12853011@@@"
@@ -43,7 +42,6 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "fail",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",

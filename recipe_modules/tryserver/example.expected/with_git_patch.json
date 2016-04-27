@@ -9,7 +9,6 @@
       "--url",
       "http://patch.url/"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "patch git setup"
   },
   {
@@ -56,7 +55,6 @@
       "--input",
       "[TMP_BASE]/patch_tmp_1/patch.diff"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "apply patch"
   },
   {
@@ -65,7 +63,6 @@
       "-rf",
       "[TMP_BASE]/patch_tmp_1"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "remove patch"
   },
   {
@@ -91,7 +88,6 @@
       "-u",
       "import sys; sys.exit(1)"
     ],
-    "cwd": "[SLAVE_BUILD]",
     "name": "fail",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",
