@@ -854,8 +854,13 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validatePositionsIfNeeded()
 {
-    if (!isValidPosition(m_base) || !isValidPosition(m_extent) || !isValidPosition(m_start) || !isValidPosition(m_end))
-        validate();
+    if (!m_base.inShadowIncludingDocument() || !m_extent.inShadowIncludingDocument()) {
+        *this = VisibleSelectionTemplate();
+        return;
+    }
+    if (isValidPosition(m_base) && isValidPosition(m_extent) && isValidPosition(m_start) && isValidPosition(m_end))
+        return;
+    validate();
 }
 
 template <typename Strategy>

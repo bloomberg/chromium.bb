@@ -59,10 +59,12 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(const PositionWithAff
 template<typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
 {
+    if (positionWithAffinity.isNull())
+        return VisiblePositionTemplate<Strategy>();
+    DCHECK(positionWithAffinity.position().inShadowIncludingDocument()) << positionWithAffinity;
     const PositionTemplate<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
     if (deepPosition.isNull())
         return VisiblePositionTemplate<Strategy>();
-    DCHECK(positionWithAffinity.position().inShadowIncludingDocument()) << positionWithAffinity;
     const PositionWithAffinityTemplate<Strategy> downstreamPosition(deepPosition);
     if (positionWithAffinity.affinity() == TextAffinity::Downstream)
         return VisiblePositionTemplate<Strategy>(downstreamPosition);
