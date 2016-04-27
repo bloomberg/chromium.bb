@@ -524,8 +524,8 @@
     },
 
     'chromium.webkit': {
-      'Android Builder': 'gyp_release_bot_android',
-      'WebKit Android (Nexus4)': 'gyp_release_bot_android',
+      'Android Builder': 'android_gn_release_bot_minimal_symbols',
+      'WebKit Android (Nexus4)': 'none',
       'WebKit Linux (dbg)': 'swarming_gn_debug_bot_x64',
       'WebKit Linux ASAN': 'swarming_gn_asan_lsan_release_bot_x64',
       'WebKit Linux Leak': 'swarming_gn_release_bot_x64',
@@ -1322,10 +1322,6 @@
 
     'gyp_release_bot': [
       'gyp', 'release_bot',
-    ],
-
-    'gyp_release_bot_android': [
-      'gyp', 'release_bot', 'android',
     ],
 
     'gyp_release_bot_x86': [
