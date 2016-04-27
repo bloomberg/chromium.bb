@@ -8464,7 +8464,7 @@
     {
       'name': 'TaskManagerEndProcessEnabled',
       'caption': '''Enables ending processes in Task Manager''',
-      'desc': '''Enables ending processes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s  Task Manager.
+      'desc': '''Enables ending processes in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Task Manager.
 
       If set to false, the 'End process' button is disabled in the Task Manager.
 
