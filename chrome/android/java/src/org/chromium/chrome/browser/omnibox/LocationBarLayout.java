@@ -582,6 +582,16 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 getSelectedView().setSelected(true);
             }
         }
+
+        private void updateSuggestionsLayoutDirection(int layoutDirection) {
+            if (!isShown()) return;
+
+            for (int i = 0; i < getChildCount(); i++) {
+                View childView = getChildAt(i);
+                if (!(childView instanceof SuggestionView)) continue;
+                ApiCompatibilityUtils.setLayoutDirection(childView, layoutDirection);
+            }
+        }
     }
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
@@ -673,6 +683,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             @Override
             public void onUrlDirectionChanged(int layoutDirection) {
                 ApiCompatibilityUtils.setLayoutDirection(LocationBarLayout.this, layoutDirection);
+
+                if (mSuggestionList != null) {
+                    mSuggestionList.updateSuggestionsLayoutDirection(layoutDirection);
+                }
             }
         });
 
