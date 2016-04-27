@@ -77,3 +77,23 @@ tests:
     - ⠠⠞⠜⠍⠜ ⠬⠬⠕⠝ ⠽⠇⠊ ⠅⠕⠇⠍⠑⠝ ⠎⠁⠝⠁⠝ ⠬⠞⠑⠎⠞⠊⠄
     - typeform:
         underline: '     +++++++++++++++++++++++++ '
+  - # Emphasis only at the beginning of a word
+    - valtionpäämies
+    - ⠨⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠍⠊⠑⠎
+    - typeform:
+        italic: '+++++++       '
+  - # Emphasis only in the middle of a word
+    - valtionpäämies
+    - ⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎
+    - typeform:
+        italic: '       +++    '
+  - # Emphasis only at the end of a word
+    - valtionpäämies
+    - ⠧⠁⠇⠞⠊⠕⠝⠏⠜⠜⠨⠍⠊⠑⠎⠨
+    - typeform:
+        italic: '          ++++'
+  - # Emphasis at the beginning and the end of a word, but not in the middle
+    - valtionpäämies
+    - ⠨⠧⠁⠇⠞⠊⠕⠝⠨⠏⠜⠜⠨⠍⠊⠑⠎⠨
+    - typeform:
+        italic: '+++++++   ++++'
