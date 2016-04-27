@@ -615,6 +615,10 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
                         OnGpuMemoryBufferCreated)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyingVideoSurfaceAck,
+                        OnDestroyingVideoSurfaceAck)
+#endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidCreateOffscreenContext,
                         OnDidCreateOffscreenContext)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidLoseContext, OnDidLoseContext)
@@ -784,6 +788,20 @@ void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
   Send(new GpuMsg_DestroyGpuMemoryBuffer(id, client_id, sync_token));
 }
 
+#if defined(OS_ANDROID)
+void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
+                                                const base::Closure& done_cb) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::SendDestroyingVideoSurface");
+  DCHECK(send_destroying_video_surface_done_cb_.is_null());
+  DCHECK(!done_cb.is_null());
+  if (Send(new GpuMsg_DestroyingVideoSurface(surface_id))) {
+    send_destroying_video_surface_done_cb_ = done_cb;
+  } else {
+    done_cb.Run();
+  }
+}
+#endif
+
 void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
   initialized_ = result;
@@ -836,6 +854,14 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
   create_gpu_memory_buffer_requests_.pop();
   callback.Run(handle);
 }
+
+#if defined(OS_ANDROID)
+void GpuProcessHost::OnDestroyingVideoSurfaceAck(int surface_id) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyingVideoSurfaceAck");
+  if (!send_destroying_video_surface_done_cb_.is_null())
+    base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
+}
+#endif
 
 void GpuProcessHost::OnDidCreateOffscreenContext(const GURL& url) {
   urls_with_live_offscreen_contexts_.insert(url);
@@ -1035,6 +1061,9 @@ void GpuProcessHost::SendOutstandingReplies() {
     create_gpu_memory_buffer_requests_.pop();
     callback.Run(gfx::GpuMemoryBufferHandle());
   }
+
+  if (!send_destroying_video_surface_done_cb_.is_null())
+    base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
 }
 
 void GpuProcessHost::BlockLiveOffscreenContexts() {

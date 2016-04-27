@@ -720,6 +720,8 @@
         'common/gpu/media/avda_shared_state.cc',
         'common/gpu/media/avda_shared_state.h',
         'common/gpu/media/avda_state_provider.h',
+        'common/gpu/media/avda_surface_tracker.h',
+        'common/gpu/media/avda_surface_tracker.cc',
       ],
     }],
     ['OS=="android" and enable_webrtc==1', {

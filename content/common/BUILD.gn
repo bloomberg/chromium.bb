@@ -326,6 +326,8 @@ source_set("common") {
       "gpu/media/avda_shared_state.cc",
       "gpu/media/avda_shared_state.h",
       "gpu/media/avda_state_provider.h",
+      "gpu/media/avda_surface_tracker.cc",
+      "gpu/media/avda_surface_tracker.h",
     ]
 
     if (enable_webrtc) {

@@ -136,6 +136,7 @@ class GpuChildThread : public ChildThreadImpl,
                                 const gpu::SyncToken& sync_token);
 #if defined(OS_ANDROID)
   void OnWakeUpGpu();
+  void OnDestroyingVideoSurface(int surface_id);
 #endif
   void OnLoseAllContexts();
 

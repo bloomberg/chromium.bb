@@ -194,6 +194,9 @@ IPC_MESSAGE_CONTROL1(AcceleratedSurfaceMsg_BufferPresented,
 #if defined(OS_ANDROID)
 // Tells the GPU process to wake up the GPU because we're about to draw.
 IPC_MESSAGE_CONTROL0(GpuMsg_WakeUpGpu)
+
+// Tells the GPU process to release the surface because it's being destroyed.
+IPC_MESSAGE_CONTROL1(GpuMsg_DestroyingVideoSurface, int /* surface_id */)
 #endif
 
 // Tells the GPU process to remove all contexts.
@@ -259,6 +262,13 @@ IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
                      gpu::SurfaceHandle /* parent_window */,
                      gpu::SurfaceHandle /* child_window */)
 #endif
+
+#if defined(OS_ANDROID)
+// Response to a GpuMsg_DestroyingVideoSurface message.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyingVideoSurfaceAck,
+                     int /* surface_id */)
+#endif
+
 
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext, GURL /* url */)
 

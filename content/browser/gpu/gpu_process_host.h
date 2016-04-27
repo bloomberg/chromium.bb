@@ -153,6 +153,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                               int client_id,
                               const gpu::SyncToken& sync_token);
 
+#if defined(OS_ANDROID)
+  // Tells the GPU process that the given surface is being destroyed so that it
+  // can stop using it.
+  void SendDestroyingVideoSurface(int surface_id, const base::Closure& done_cb);
+#endif
+
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
 
@@ -186,6 +192,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
+#if defined(OS_ANDROID)
+  void OnDestroyingVideoSurfaceAck(int surface_id);
+#endif
   void OnDidCreateOffscreenContext(const GURL& url);
   void OnDidLoseContext(bool offscreen,
                         gpu::error::ContextLostReason reason,
@@ -229,6 +238,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // The pending create gpu memory buffer requests we need to reply to.
   std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
+
+  // A callback to signal the completion of a SendDestroyingVideoSurface call.
+  base::Closure send_destroying_video_surface_done_cb_;
 
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;

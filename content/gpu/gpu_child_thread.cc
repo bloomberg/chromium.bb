@@ -45,6 +45,10 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/common/gpu/media/avda_surface_tracker.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -281,6 +285,8 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(GpuMsg_WakeUpGpu, OnWakeUpGpu);
+    IPC_MESSAGE_HANDLER(GpuMsg_DestroyingVideoSurface,
+                        OnDestroyingVideoSurface);
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -558,6 +564,11 @@ void GpuChildThread::OnDestroyGpuMemoryBuffer(
 void GpuChildThread::OnWakeUpGpu() {
   if (gpu_channel_manager_)
     gpu_channel_manager_->WakeUpGpu();
+}
+
+void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
+  AVDASurfaceTracker::GetInstance()->NotifyDestroyingSurface(surface_id);
+  Send(new GpuHostMsg_DestroyingVideoSurfaceAck(surface_id));
 }
 #endif
 

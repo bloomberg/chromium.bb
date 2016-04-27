@@ -4,8 +4,11 @@
 
 #include "content/browser/media/android/browser_surface_view_manager.h"
 
+#include "base/android/build_info.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/surface_view_manager_messages_android.h"
@@ -14,6 +17,18 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
+namespace {
+void SendDestroyingVideoSurfaceOnIO(int surface_id,
+                                    const base::Closure& done_cb) {
+  GpuProcessHost* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                          CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH);
+  if (host)
+    host->SendDestroyingVideoSurface(surface_id, done_cb);
+  else
+    done_cb.Run();
+}
+}  // namespace
 
 BrowserSurfaceViewManager::BrowserSurfaceViewManager(
     RenderFrameHost* render_frame_host)
@@ -24,10 +39,12 @@ BrowserSurfaceViewManager::~BrowserSurfaceViewManager() {}
 
 void BrowserSurfaceViewManager::SetVideoSurface(
     gfx::ScopedJavaSurface surface) {
+  TRACE_EVENT0("media", "BrowserSurfaceViewManager::SetVideoSurface");
   if (surface.IsEmpty()) {
     DCHECK_NE(surface_id_, media::SurfaceManager::kNoSurfaceID);
     GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
     UnregisterViewSurface(surface_id_);
+    SendDestroyingVideoSurfaceIfRequired(surface_id_);
     surface_id_ = media::SurfaceManager::kNoSurfaceID;
   } else {
     // We mainly use the surface tracker to allocate a surface id for us. The
@@ -81,6 +98,25 @@ bool BrowserSurfaceViewManager::SendSurfaceID(int surface_id) {
   return render_frame_host_->Send(
       new SurfaceViewManagerMsg_FullscreenSurfaceCreated(
           render_frame_host_->GetRoutingID(), surface_id));
+}
+
+void BrowserSurfaceViewManager::SendDestroyingVideoSurfaceIfRequired(
+    int surface_id) {
+  // Only send the surface destruction message on JB, where not doing it can
+  // cause a crash.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 18)
+    return;
+
+  base::WaitableEvent waiter(false, false);
+  // Unretained is okay because we're waiting on the callback.
+  if (BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&SendDestroyingVideoSurfaceOnIO, surface_id,
+                     base::Bind(&base::WaitableEvent::Signal,
+                                base::Unretained(&waiter))))) {
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    waiter.Wait();
+  }
 }
 
 }  // namespace content
