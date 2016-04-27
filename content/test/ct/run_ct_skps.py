@@ -24,7 +24,7 @@ def main():
   parser.add_argument('-s', '--slave_num', required=True, type=int,
                       help='The slave num of this CT run.')
   parser.add_argument('-t', '--tool', required=True,
-                      choices=['dm', 'nanobench'],
+                      choices=['dm', 'nanobench', 'get_images_from_skps'],
                       help='The tool to run on the SKPs.')
   parser.add_argument('-g', '--git_hash', required=True,
                       help='The Skia hash the tool was built at.')
@@ -64,6 +64,18 @@ def main():
       '--key', 'arch', 'x86_64', 'compiler', 'GCC', 'cpu_or_gpu', 'CPU',
                'cpu_or_gpu_value', 'AVX2', 'model', 'SWARM', 'os', 'Ubuntu',
       '--verbose',
+    ])
+  elif args.tool == 'get_images_from_skps':
+    # Add get_images_from_skps specific arguments.
+    img_out = os.path.join(args.isolated_outdir, 'img_out')
+    os.makedirs(img_out)
+    failures_json_out = os.path.join(args.isolated_outdir, 'failures.json')
+    cmd.extend([
+      '--out', img_out,
+      '--skps', skps_dir,
+      '--failuresJsonPath', failures_json_out,
+      '--writeImages', 'false',
+      '--testDecode',
     ])
 
   return subprocess.call(cmd)
