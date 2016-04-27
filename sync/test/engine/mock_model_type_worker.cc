@@ -206,6 +206,7 @@ CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
 
   response_data.client_tag_hash = client_tag_hash;
   response_data.sequence_number = request_data.sequence_number;
+  response_data.specifics_hash = request_data.specifics_hash;
 
   // Increment the server version on successful commit.
   int64_t version = GetServerVersion(client_tag_hash);

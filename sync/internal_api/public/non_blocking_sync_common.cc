@@ -14,6 +14,9 @@ CommitRequestData::~CommitRequestData() {}
 
 CommitResponseData::CommitResponseData() {}
 
+CommitResponseData::CommitResponseData(const CommitResponseData& other) =
+    default;
+
 CommitResponseData::~CommitResponseData() {}
 
 UpdateResponseData::UpdateResponseData() {}

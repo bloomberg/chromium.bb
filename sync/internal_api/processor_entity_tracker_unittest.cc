@@ -19,6 +19,29 @@
 
 namespace syncer_v2 {
 
+namespace {
+
+const std::string kTag1 = "tag1";
+const std::string kTag2 = "tag2";
+const std::string kTag3 = "tag3";
+const std::string kValue1 = "value1";
+const std::string kValue2 = "value2";
+const std::string kValue3 = "value3";
+
+std::string GenerateTagHash(const std::string& tag) {
+  return syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES, tag);
+}
+
+sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
+                                           const std::string& value) {
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_preference()->set_name(tag);
+  specifics.mutable_preference()->set_value(value);
+  return specifics;
+}
+
+}  // namespace
+
 // Some simple sanity tests for the ProcessorEntityTracker.
 //
 // A lot of the more complicated sync logic is implemented in the
@@ -33,22 +56,14 @@ class ProcessorEntityTrackerTest : public ::testing::Test {
   ProcessorEntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("sample.pref.name"),
-        kClientTagHash(GetSyncableHash(kClientTag)),
+        kClientTagHash(GenerateTagHash(kClientTag)),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
-        kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)) {
-    sync_pb::PreferenceSpecifics* pref_specifics =
-        specifics.mutable_preference();
-    pref_specifics->set_name(kClientTag);
-    pref_specifics->set_value("pref.value");
-  }
-
-  static std::string GetSyncableHash(const std::string& tag) {
-    return syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES, tag);
-  }
+        kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)),
+        specifics(GenerateSpecifics(kClientTag, kValue1)) {}
 
   std::unique_ptr<ProcessorEntityTracker> NewLocalItem(const std::string& tag) {
     return std::unique_ptr<ProcessorEntityTracker>(
-        ProcessorEntityTracker::CreateNew(tag, GetSyncableHash(tag), "",
+        ProcessorEntityTracker::CreateNew(tag, GenerateTagHash(tag), "",
                                           kCtime));
   }
 
@@ -125,7 +140,7 @@ TEST_F(ProcessorEntityTrackerTest, NewItem) {
   std::unique_ptr<ProcessorEntityTracker> entity(NewLocalItem("asdf"));
 
   EXPECT_EQ(entity->client_tag(), "asdf");
-  EXPECT_EQ(entity->metadata().client_tag_hash(), GetSyncableHash("asdf"));
+  EXPECT_EQ(entity->metadata().client_tag_hash(), GenerateTagHash("asdf"));
 
   EXPECT_FALSE(entity->HasCommitData());
   EXPECT_FALSE(HasSpecificsHash(entity));
@@ -146,13 +161,20 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
   EXPECT_TRUE(entity->IsUnsynced());
   EXPECT_FALSE(entity->UpdateIsReflection(1));
 
-  entity->ReceiveCommitResponse("id", 1, 1);
+  CommitResponseData data;
+  data.id = "id";
+  data.client_tag_hash = entity->metadata().client_tag_hash();
+  data.sequence_number = 1;
+  data.response_version = 1;
+  data.specifics_hash = entity->metadata().specifics_hash();
+  entity->ReceiveCommitResponse(data);
 
   EXPECT_EQ(1, entity->metadata().sequence_number());
   EXPECT_EQ(1, entity->metadata().acked_sequence_number());
   EXPECT_EQ(1, entity->metadata().server_version());
   EXPECT_FALSE(entity->HasCommitData());
   EXPECT_TRUE(HasSpecificsHash(entity));
+  EXPECT_TRUE(entity->metadata().base_specifics_hash().empty());
   EXPECT_FALSE(entity->IsUnsynced());
   EXPECT_TRUE(entity->UpdateIsReflection(1));
 }

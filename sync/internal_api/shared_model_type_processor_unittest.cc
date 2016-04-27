@@ -1333,4 +1333,49 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictWhileLoading) {
   EXPECT_EQ(1U, worker()->GetNumPendingCommits());
 }
 
+// Tests that a real remote change wins over a local encryption-only change.
+TEST_F(SharedModelTypeProcessorTest, IgnoreLocalEncryption) {
+  InitializeToReadyState();
+  WriteItemAndAck(kTag1, kValue1);
+  worker()->UpdateWithEncryptionKey("k1");
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, kValue1);
+
+  worker()->UpdateFromServer(kTag1, kValue2);
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+}
+
+// Tests that a real local change wins over a remote encryption-only change.
+TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryption) {
+  InitializeToReadyState();
+  WriteItemAndAck(kTag1, kValue1);
+
+  WriteItem(kTag1, kValue2);
+  UpdateResponseDataList update;
+  update.push_back(worker()->GenerateUpdateData(kTag1, kValue1, 1, "k1"));
+  worker()->UpdateWithEncryptionKey("k1", update);
+
+  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(1, kTag1, kValue2);
+}
+
+// Same as above but with two commit requests before one ack.
+TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
+  InitializeToReadyState();
+  WriteItem(kTag1, kValue1);
+  WriteItem(kTag1, kValue2);
+  worker()->AckOnePendingCommit();
+  // kValue1 is now the base value.
+  EXPECT_EQ(1U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(0, kTag1, kValue2);
+
+  UpdateResponseDataList update;
+  update.push_back(worker()->GenerateUpdateData(kTag1, kValue1, 1, "k1"));
+  worker()->UpdateWithEncryptionKey("k1", update);
+
+  EXPECT_EQ(2U, worker()->GetNumPendingCommits());
+  worker()->ExpectNthPendingCommit(1, kTag1, kValue2);
+}
+
 }  // namespace syncer_v2

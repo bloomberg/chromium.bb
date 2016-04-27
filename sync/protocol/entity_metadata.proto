@@ -52,4 +52,10 @@ message EntityMetadata {
   // entity's specifics value has changed without having to keep specifics in
   // memory.
   optional string specifics_hash = 9;
+
+  // A hash of the last specifics known by both the client and server. Used to
+  // detect when local commits and remote updates are just for encryption. This
+  // value will be the empty string only in the following cases: the entity is
+  // in sync with the server, has never been synced, or is deleted.
+  optional string base_specifics_hash = 10;
 }

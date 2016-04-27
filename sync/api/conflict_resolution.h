@@ -24,6 +24,8 @@ class SYNC_EXPORT ConflictResolution {
     USE_LOCAL,
     USE_REMOTE,
     USE_NEW,
+    IGNORE_LOCAL_ENCRYPTION,   // Exists for logging purposes.
+    IGNORE_REMOTE_ENCRYPTION,  // Exists for logging purposes.
     TYPE_SIZE,
   };
 

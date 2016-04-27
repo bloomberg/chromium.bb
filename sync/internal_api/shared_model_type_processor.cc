@@ -237,7 +237,7 @@ void SharedModelTypeProcessor::Put(const std::string& tag,
       data->creation_time = data->modification_time;
     }
     entity = CreateEntity(tag, *data);
-  } else if (entity->MatchesSpecificsHash(data->specifics)) {
+  } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     return;
   }
@@ -316,8 +316,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
       continue;
     }
 
-    entity->ReceiveCommitResponse(data.id, data.sequence_number,
-                                  data.response_version);
+    entity->ReceiveCommitResponse(data);
 
     if (entity->CanClearMetadata()) {
       change_list->ClearMetadata(entity->client_tag());
@@ -419,7 +418,7 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
     DCHECK(!entity->metadata().is_deleted());
     entity_changes->push_back(EntityChange::CreateDelete(entity->client_tag()));
     entity->RecordAcceptedUpdate(update);
-  } else if (!entity->MatchesSpecificsHash(data.specifics)) {
+  } else if (!entity->MatchesData(data)) {
     // Specifics have changed, so update the service.
     entity_changes->push_back(
         EntityChange::CreateUpdate(entity->client_tag(), update.entity));
@@ -452,29 +451,48 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
     const UpdateResponseData& update,
     ProcessorEntityTracker* entity,
     EntityChangeList* changes) {
-  const EntityData& data = update.entity.value();
+  const EntityData& remote_data = update.entity.value();
 
-  if (entity->MatchesData(data)) {
-    // Record the update and squash the pending commit.
-    entity->RecordForcedUpdate(update);
-    return ConflictResolution::CHANGES_MATCH;
+  ConflictResolution::Type resolution_type = ConflictResolution::TYPE_SIZE;
+  std::unique_ptr<EntityData> new_data;
+
+  // Determine the type of resolution.
+  if (entity->MatchesData(remote_data)) {
+    // The changes are identical so there isn't a real conflict.
+    resolution_type = ConflictResolution::CHANGES_MATCH;
+  } else if (entity->RequiresCommitData() ||
+             entity->MatchesBaseData(entity->commit_data().value())) {
+    // If commit data needs to be loaded at this point, it can only be due to a
+    // re-encryption request. If the commit data matches the base data, it also
+    // must be a re-encryption request. Either way there's no real local change
+    // and the remote data should win.
+    resolution_type = ConflictResolution::IGNORE_LOCAL_ENCRYPTION;
+  } else if (entity->MatchesBaseData(remote_data)) {
+    // The remote data isn't actually changing from the last remote data that
+    // was seen, so it must have been a re-encryption and can be ignored.
+    resolution_type = ConflictResolution::IGNORE_REMOTE_ENCRYPTION;
+  } else {
+    // There's a real data conflict here; let the service resolve it.
+    ConflictResolution resolution =
+        service_->ResolveConflict(entity->commit_data().value(), remote_data);
+    resolution_type = resolution.type();
+    new_data = resolution.ExtractData();
   }
 
-  // If commit data needs to be loaded at this point, it can only be due to a
-  // re-encryption request, which means there's no actual local change and the
-  // remote version should win. Otherwise there's a real data conflict here; let
-  // the service resolve it.
-  ConflictResolution resolution =
-      entity->RequiresCommitData()
-          ? ConflictResolution::UseRemote()
-          : service_->ResolveConflict(entity->commit_data().value(), data);
-  switch (resolution.type()) {
+  // Apply the resolution.
+  switch (resolution_type) {
+    case ConflictResolution::CHANGES_MATCH:
+      // Record the update and squash the pending commit.
+      entity->RecordForcedUpdate(update);
+      break;
     case ConflictResolution::USE_LOCAL:
+    case ConflictResolution::IGNORE_REMOTE_ENCRYPTION:
       // Record that we received the update from the server but leave the
       // pending commit intact.
       entity->RecordIgnoredUpdate(update);
       break;
     case ConflictResolution::USE_REMOTE:
+    case ConflictResolution::IGNORE_LOCAL_ENCRYPTION:
       // Squash the pending commit.
       entity->RecordForcedUpdate(update);
       // Update client data to match server.
@@ -485,17 +503,18 @@ ConflictResolution::Type SharedModelTypeProcessor::ResolveConflict(
       // Record that we received the update.
       entity->RecordIgnoredUpdate(update);
       // Make a new pending commit to update the server.
-      entity->MakeLocalChange(resolution.ExtractData());
+      entity->MakeLocalChange(std::move(new_data));
       // Update the client with the new entity.
       changes->push_back(EntityChange::CreateUpdate(entity->client_tag(),
                                                     entity->commit_data()));
       break;
-    case ConflictResolution::CHANGES_MATCH:
     case ConflictResolution::TYPE_SIZE:
       NOTREACHED();
       break;
   }
-  return resolution.type();
+  DCHECK(!new_data);
+
+  return resolution_type;
 }
 
 void SharedModelTypeProcessor::RecommitAllForEncryption(

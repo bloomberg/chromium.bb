@@ -31,16 +31,19 @@ struct SYNC_EXPORT CommitRequestData {
   // this struct.
   int64_t sequence_number = 0;
   int64_t base_version = 0;
+  std::string specifics_hash;
 };
 
 struct SYNC_EXPORT CommitResponseData {
   CommitResponseData();
+  CommitResponseData(const CommitResponseData& other);
   ~CommitResponseData();
 
   std::string id;
   std::string client_tag_hash;
   int64_t sequence_number = 0;
   int64_t response_version = 0;
+  std::string specifics_hash;
 };
 
 struct SYNC_EXPORT UpdateResponseData {

@@ -17,6 +17,7 @@
 
 namespace syncer_v2 {
 struct CommitRequestData;
+struct CommitResponseData;
 struct UpdateResponseData;
 
 // This class is used by the SharedModelTypeProcessor to track the state of each
@@ -95,9 +96,7 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // unset IsUnsynced().  If many local changes occur in quick succession, it's
   // possible that the committed item was already out of date by the time it
   // reached the server.
-  void ReceiveCommitResponse(const std::string& id,
-                             int64_t sequence_number,
-                             int64_t response_version);
+  void ReceiveCommitResponse(const CommitResponseData& data);
 
   // Clears any in-memory sync state associated with outstanding commits.
   void ClearTransientSyncState();
@@ -112,13 +111,15 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // Check if the instance has cached commit data.
   bool HasCommitData() const;
 
-  // Check whether |specifics| matches the stored specifics_hash.
-  bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
-
-  // Check whether |data| matches the stored metadata.
+  // Check whether |data| matches the stored specifics hash.
   bool MatchesData(const EntityData& data) const;
 
-  // Increment sequence number in the metadata.
+  // Check whether |data| matches the stored base (shared between client and
+  // server) specifics hash.
+  bool MatchesBaseData(const EntityData& data) const;
+
+  // Increment sequence number in the metadata. This will also update the
+  // base_specifics_hash if the entity was not already unsynced.
   void IncrementSequenceNumber();
 
  private:
@@ -127,6 +128,9 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // The constructor swaps the data from the passed metadata.
   ProcessorEntityTracker(const std::string& client_tag,
                          sync_pb::EntityMetadata* metadata);
+
+  // Check whether |specifics| matches the stored specifics_hash.
+  bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
 
   // Update hash string for EntitySpecifics in the metadata.
   void UpdateSpecificsHash(const sync_pb::EntitySpecifics& specifics);
