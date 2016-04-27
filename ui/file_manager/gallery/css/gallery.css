@@ -538,19 +538,6 @@ files-toggle-ripple::shadow .ripple.activated {
   -webkit-margin-start: 16px;
 }
 
-.edit-mode-toolbar .overwrite-original::shadow #checkboxContainer {
-  transform: scale(0.78, 0.78); /* Make box size to 14px. */
-}
-
-.edit-mode-toolbar .overwrite-original::shadow #ink {
-  left: -10px;
-  top: -10px;
-}
-
-.edit-mode-toolbar .overwrite-original::shadow #checkboxLabel {
-  padding-left: 6px;
-}
-
 .edit-mode-toolbar .overwrite-original[disabled]::shadow #checkbox,
 .edit-mode-toolbar .overwrite-original[disabled]::shadow #checkboxLabel {
   opacity: 0.2;
