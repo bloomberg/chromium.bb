@@ -93,9 +93,10 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       incoming_timestamp - start_timestamp_;
 
   scoped_refptr<media::VideoFrame> video_frame;
-  if (incoming_frame.GetNativeHandle() != NULL) {
+  if (incoming_frame.video_frame_buffer()->native_handle() != NULL) {
     video_frame =
-        static_cast<media::VideoFrame*>(incoming_frame.GetNativeHandle());
+        static_cast<media::VideoFrame*>(
+            incoming_frame.video_frame_buffer()->native_handle());
     video_frame->set_timestamp(elapsed_timestamp);
   } else {
     const cricket::VideoFrame* frame =
@@ -110,10 +111,13 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     // need to const cast here.
     video_frame = media::VideoFrame::WrapExternalYuvData(
         media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
-        frame->GetYPitch(), frame->GetUPitch(), frame->GetVPitch(),
-        const_cast<uint8_t*>(frame->GetYPlane()),
-        const_cast<uint8_t*>(frame->GetUPlane()),
-        const_cast<uint8_t*>(frame->GetVPlane()), elapsed_timestamp);
+        frame->video_frame_buffer()->StrideY(),
+        frame->video_frame_buffer()->StrideU(),
+        frame->video_frame_buffer()->StrideV(),
+        const_cast<uint8_t*>(frame->video_frame_buffer()->DataY()),
+        const_cast<uint8_t*>(frame->video_frame_buffer()->DataU()),
+        const_cast<uint8_t*>(frame->video_frame_buffer()->DataV()),
+        elapsed_timestamp);
     if (!video_frame)
       return;
     video_frame->AddDestructionObserver(
