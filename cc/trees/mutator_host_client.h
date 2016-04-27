@@ -13,39 +13,41 @@ class ScrollOffset;
 namespace cc {
 
 class FilterOperations;
-class Layer;
 
 using ElementId = int;
 
-enum class LayerTreeType { ACTIVE, PENDING };
+enum class ElementListType { ACTIVE, PENDING };
 
 class MutatorHostClient {
  public:
-  virtual bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const = 0;
+  virtual bool IsElementInList(ElementId element_id,
+                               ElementListType list_type) const = 0;
+
   virtual void SetMutatorsNeedCommit() = 0;
   virtual void SetMutatorsNeedRebuildPropertyTrees() = 0;
 
-  virtual void SetLayerFilterMutated(int layer_id,
-                                     LayerTreeType tree_type,
-                                     const FilterOperations& filters) = 0;
-  virtual void SetLayerOpacityMutated(int layer_id,
-                                      LayerTreeType tree_type,
-                                      float opacity) = 0;
-  virtual void SetLayerTransformMutated(int layer_id,
-                                        LayerTreeType tree_type,
-                                        const gfx::Transform& transform) = 0;
-  virtual void SetLayerScrollOffsetMutated(
-      int layer_id,
-      LayerTreeType tree_type,
+  virtual void SetElementFilterMutated(ElementId element_id,
+                                       ElementListType list_type,
+                                       const FilterOperations& filters) = 0;
+  virtual void SetElementOpacityMutated(ElementId element_id,
+                                        ElementListType list_type,
+                                        float opacity) = 0;
+  virtual void SetElementTransformMutated(ElementId element_id,
+                                          ElementListType list_type,
+                                          const gfx::Transform& transform) = 0;
+  virtual void SetElementScrollOffsetMutated(
+      ElementId element_id,
+      ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) = 0;
 
-  virtual void LayerTransformIsPotentiallyAnimatingChanged(
-      int layer_id,
-      LayerTreeType tree_type,
+  virtual void ElementTransformIsPotentiallyAnimatingChanged(
+      ElementId element_id,
+      ElementListType list_type,
       bool is_animating) = 0;
 
   virtual void ScrollOffsetAnimationFinished() = 0;
-  virtual gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const = 0;
+  virtual gfx::ScrollOffset GetScrollOffsetForAnimation(
+      ElementId element_id) const = 0;
 };
 
 }  // namespace cc

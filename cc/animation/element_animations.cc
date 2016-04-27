@@ -54,12 +54,12 @@ void ElementAnimations::InitAffectedElementTypes() {
   UpdateActivation(FORCE_ACTIVATION);
 
   DCHECK(animation_host_->mutator_host_client());
-  if (animation_host_->mutator_host_client()->IsLayerInTree(
-          element_id_, LayerTreeType::ACTIVE)) {
+  if (animation_host_->mutator_host_client()->IsElementInList(
+          element_id_, ElementListType::ACTIVE)) {
     set_has_element_in_active_list(true);
   }
-  if (animation_host_->mutator_host_client()->IsLayerInTree(
-          element_id_, LayerTreeType::PENDING)) {
+  if (animation_host_->mutator_host_client()->IsElementInList(
+          element_id_, ElementListType::PENDING)) {
     set_has_element_in_pending_list(true);
   }
 }
@@ -68,31 +68,31 @@ void ElementAnimations::ClearAffectedElementTypes() {
   DCHECK(animation_host_);
 
   if (has_element_in_active_list())
-    OnTransformIsPotentiallyAnimatingChanged(LayerTreeType::ACTIVE, false);
+    OnTransformIsPotentiallyAnimatingChanged(ElementListType::ACTIVE, false);
   set_has_element_in_active_list(false);
 
   if (has_element_in_pending_list())
-    OnTransformIsPotentiallyAnimatingChanged(LayerTreeType::PENDING, false);
+    OnTransformIsPotentiallyAnimatingChanged(ElementListType::PENDING, false);
   set_has_element_in_pending_list(false);
 
   animation_host_->DidDeactivateElementAnimations(this);
   UpdateActivation(FORCE_ACTIVATION);
 }
 
-void ElementAnimations::LayerRegistered(ElementId element_id,
-                                        LayerTreeType tree_type) {
+void ElementAnimations::ElementRegistered(ElementId element_id,
+                                          ElementListType list_type) {
   DCHECK_EQ(element_id_, element_id);
 
-  if (tree_type == LayerTreeType::ACTIVE)
+  if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(true);
   else
     set_has_element_in_pending_list(true);
 }
 
-void ElementAnimations::LayerUnregistered(ElementId element_id,
-                                          LayerTreeType tree_type) {
+void ElementAnimations::ElementUnregistered(ElementId element_id,
+                                            ElementListType list_type) {
   DCHECK_EQ(this->element_id(), element_id);
-  if (tree_type == LayerTreeType::ACTIVE)
+  if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(false);
   else
     set_has_element_in_pending_list(false);
@@ -376,9 +376,9 @@ bool ElementAnimations::HasFilterAnimationThatInflatesBounds() const {
 
 bool ElementAnimations::HasTransformAnimationThatInflatesBounds() const {
   return IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
-                                      LayerTreeType::ACTIVE) ||
+                                      ElementListType::ACTIVE) ||
          IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
-                                      LayerTreeType::PENDING);
+                                      ElementListType::PENDING);
 }
 
 bool ElementAnimations::FilterAnimationBoundsForBox(const gfx::BoxF& box,
@@ -434,15 +434,15 @@ bool ElementAnimations::HasAnimationThatAffectsScale() const {
 }
 
 bool ElementAnimations::HasOnlyTranslationTransforms(
-    LayerTreeType tree_type) const {
+    ElementListType list_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((tree_type == LayerTreeType::ACTIVE &&
+    if ((list_type == ElementListType::ACTIVE &&
          !animations_[i]->affects_active_elements()) ||
-        (tree_type == LayerTreeType::PENDING &&
+        (list_type == ElementListType::PENDING &&
          !animations_[i]->affects_pending_elements()))
       continue;
 
@@ -470,7 +470,7 @@ bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool ElementAnimations::AnimationStartScale(LayerTreeType tree_type,
+bool ElementAnimations::AnimationStartScale(ElementListType list_type,
                                             float* start_scale) const {
   *start_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -478,9 +478,9 @@ bool ElementAnimations::AnimationStartScale(LayerTreeType tree_type,
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((tree_type == LayerTreeType::ACTIVE &&
+    if ((list_type == ElementListType::ACTIVE &&
          !animations_[i]->affects_active_elements()) ||
-        (tree_type == LayerTreeType::PENDING &&
+        (list_type == ElementListType::PENDING &&
          !animations_[i]->affects_pending_elements()))
       continue;
 
@@ -507,7 +507,7 @@ bool ElementAnimations::AnimationStartScale(LayerTreeType tree_type,
   return true;
 }
 
-bool ElementAnimations::MaximumTargetScale(LayerTreeType tree_type,
+bool ElementAnimations::MaximumTargetScale(ElementListType list_type,
                                            float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
@@ -515,9 +515,9 @@ bool ElementAnimations::MaximumTargetScale(LayerTreeType tree_type,
         animations_[i]->target_property() != TargetProperty::TRANSFORM)
       continue;
 
-    if ((tree_type == LayerTreeType::ACTIVE &&
+    if ((list_type == ElementListType::ACTIVE &&
          !animations_[i]->affects_active_elements()) ||
-        (tree_type == LayerTreeType::PENDING &&
+        (list_type == ElementListType::PENDING &&
          !animations_[i]->affects_pending_elements()))
       continue;
 
@@ -1025,9 +1025,9 @@ void ElementAnimations::NotifyClientOpacityAnimated(
     bool notify_active_elements,
     bool notify_pending_elements) {
   if (notify_active_elements && has_element_in_active_list())
-    OnOpacityAnimated(LayerTreeType::ACTIVE, opacity);
+    OnOpacityAnimated(ElementListType::ACTIVE, opacity);
   if (notify_pending_elements && has_element_in_pending_list())
-    OnOpacityAnimated(LayerTreeType::PENDING, opacity);
+    OnOpacityAnimated(ElementListType::PENDING, opacity);
 }
 
 void ElementAnimations::NotifyClientTransformAnimated(
@@ -1035,9 +1035,9 @@ void ElementAnimations::NotifyClientTransformAnimated(
     bool notify_active_elements,
     bool notify_pending_elements) {
   if (notify_active_elements && has_element_in_active_list())
-    OnTransformAnimated(LayerTreeType::ACTIVE, transform);
+    OnTransformAnimated(ElementListType::ACTIVE, transform);
   if (notify_pending_elements && has_element_in_pending_list())
-    OnTransformAnimated(LayerTreeType::PENDING, transform);
+    OnTransformAnimated(ElementListType::PENDING, transform);
 }
 
 void ElementAnimations::NotifyClientFilterAnimated(
@@ -1045,9 +1045,9 @@ void ElementAnimations::NotifyClientFilterAnimated(
     bool notify_active_elements,
     bool notify_pending_elements) {
   if (notify_active_elements && has_element_in_active_list())
-    OnFilterAnimated(LayerTreeType::ACTIVE, filters);
+    OnFilterAnimated(ElementListType::ACTIVE, filters);
   if (notify_pending_elements && has_element_in_pending_list())
-    OnFilterAnimated(LayerTreeType::PENDING, filters);
+    OnFilterAnimated(ElementListType::PENDING, filters);
 }
 
 void ElementAnimations::NotifyClientScrollOffsetAnimated(
@@ -1055,9 +1055,9 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
     bool notify_active_elements,
     bool notify_pending_elements) {
   if (notify_active_elements && has_element_in_active_list())
-    OnScrollOffsetAnimated(LayerTreeType::ACTIVE, scroll_offset);
+    OnScrollOffsetAnimated(ElementListType::ACTIVE, scroll_offset);
   if (notify_pending_elements && has_element_in_pending_list())
-    OnScrollOffsetAnimated(LayerTreeType::PENDING, scroll_offset);
+    OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
 }
 
 void ElementAnimations::NotifyClientAnimationWaitingForDeletion() {
@@ -1069,11 +1069,11 @@ void ElementAnimations::NotifyClientTransformIsPotentiallyAnimatingChanged(
     bool notify_pending_elements) {
   if (notify_active_elements && has_element_in_active_list())
     OnTransformIsPotentiallyAnimatingChanged(
-        LayerTreeType::ACTIVE,
+        ElementListType::ACTIVE,
         potentially_animating_transform_for_active_elements_);
   if (notify_pending_elements && has_element_in_pending_list())
     OnTransformIsPotentiallyAnimatingChanged(
-        LayerTreeType::PENDING,
+        ElementListType::PENDING,
         potentially_animating_transform_for_pending_elements_);
 }
 
@@ -1120,13 +1120,13 @@ bool ElementAnimations::HasActiveAnimation() const {
 
 bool ElementAnimations::IsPotentiallyAnimatingProperty(
     TargetProperty::Type target_property,
-    LayerTreeType tree_type) const {
+    ElementListType list_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->target_property() == target_property) {
-      if ((tree_type == LayerTreeType::ACTIVE &&
+      if ((list_type == ElementListType::ACTIVE &&
            animations_[i]->affects_active_elements()) ||
-          (tree_type == LayerTreeType::PENDING &&
+          (list_type == ElementListType::PENDING &&
            animations_[i]->affects_pending_elements()))
         return true;
     }
@@ -1136,14 +1136,14 @@ bool ElementAnimations::IsPotentiallyAnimatingProperty(
 
 bool ElementAnimations::IsCurrentlyAnimatingProperty(
     TargetProperty::Type target_property,
-    LayerTreeType tree_type) const {
+    ElementListType list_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->InEffect(last_tick_time_) &&
         animations_[i]->target_property() == target_property) {
-      if ((tree_type == LayerTreeType::ACTIVE &&
+      if ((list_type == ElementListType::ACTIVE &&
            animations_[i]->affects_active_elements()) ||
-          (tree_type == LayerTreeType::PENDING &&
+          (list_type == ElementListType::PENDING &&
            animations_[i]->affects_pending_elements()))
         return true;
     }
@@ -1242,41 +1242,41 @@ Animation* ElementAnimations::GetAnimationById(int animation_id) const {
   return nullptr;
 }
 
-void ElementAnimations::OnFilterAnimated(LayerTreeType tree_type,
+void ElementAnimations::OnFilterAnimated(ElementListType list_type,
                                          const FilterOperations& filters) {
   DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
-  animation_host()->mutator_host_client()->SetLayerFilterMutated(
-      element_id(), tree_type, filters);
+  animation_host()->mutator_host_client()->SetElementFilterMutated(
+      element_id(), list_type, filters);
 }
 
-void ElementAnimations::OnOpacityAnimated(LayerTreeType tree_type,
+void ElementAnimations::OnOpacityAnimated(ElementListType list_type,
                                           float opacity) {
   DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
-  animation_host()->mutator_host_client()->SetLayerOpacityMutated(
-      element_id(), tree_type, opacity);
+  animation_host()->mutator_host_client()->SetElementOpacityMutated(
+      element_id(), list_type, opacity);
 }
 
-void ElementAnimations::OnTransformAnimated(LayerTreeType tree_type,
+void ElementAnimations::OnTransformAnimated(ElementListType list_type,
                                             const gfx::Transform& transform) {
   DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
-  animation_host()->mutator_host_client()->SetLayerTransformMutated(
-      element_id(), tree_type, transform);
+  animation_host()->mutator_host_client()->SetElementTransformMutated(
+      element_id(), list_type, transform);
 }
 
 void ElementAnimations::OnScrollOffsetAnimated(
-    LayerTreeType tree_type,
+    ElementListType list_type,
     const gfx::ScrollOffset& scroll_offset) {
   DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
-  animation_host()->mutator_host_client()->SetLayerScrollOffsetMutated(
-      element_id(), tree_type, scroll_offset);
+  animation_host()->mutator_host_client()->SetElementScrollOffsetMutated(
+      element_id(), list_type, scroll_offset);
 }
 
 void ElementAnimations::OnAnimationWaitingForDeletion() {
@@ -1287,15 +1287,15 @@ void ElementAnimations::OnAnimationWaitingForDeletion() {
 }
 
 void ElementAnimations::OnTransformIsPotentiallyAnimatingChanged(
-    LayerTreeType tree_type,
+    ElementListType list_type,
     bool is_animating) {
   DCHECK(element_id());
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()
       ->mutator_host_client()
-      ->LayerTransformIsPotentiallyAnimatingChanged(element_id(), tree_type,
-                                                    is_animating);
+      ->ElementTransformIsPotentiallyAnimatingChanged(element_id(), list_type,
+                                                      is_animating);
 }
 
 void ElementAnimations::NotifyPlayersAnimationStarted(

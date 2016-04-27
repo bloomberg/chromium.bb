@@ -311,7 +311,7 @@ void AddAnimationToLayerWithExistingPlayer(
     scoped_refptr<AnimationTimeline> timeline,
     std::unique_ptr<Animation> animation) {
   scoped_refptr<ElementAnimations> element_animations =
-      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+      timeline->animation_host()->GetElementAnimationsForElementId(layer_id);
   DCHECK(element_animations);
   element_animations->AddAnimation(std::move(animation));
 }
@@ -321,7 +321,7 @@ void RemoveAnimationFromLayerWithExistingPlayer(
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id) {
   scoped_refptr<ElementAnimations> element_animations =
-      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+      timeline->animation_host()->GetElementAnimationsForElementId(layer_id);
   DCHECK(element_animations);
   element_animations->RemoveAnimation(animation_id);
 }
@@ -331,7 +331,7 @@ Animation* GetAnimationFromLayerWithExistingPlayer(
     scoped_refptr<AnimationTimeline> timeline,
     int animation_id) {
   scoped_refptr<ElementAnimations> element_animations =
-      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+      timeline->animation_host()->GetElementAnimationsForElementId(layer_id);
   DCHECK(element_animations);
   return element_animations->GetAnimationById(animation_id);
 }
@@ -400,7 +400,7 @@ void AbortAnimationsOnLayerWithPlayer(int layer_id,
                                       scoped_refptr<AnimationTimeline> timeline,
                                       TargetProperty::Type target_property) {
   scoped_refptr<ElementAnimations> element_animations =
-      timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+      timeline->animation_host()->GetElementAnimationsForElementId(layer_id);
   DCHECK(element_animations);
   element_animations->AbortAnimations(target_property);
 }

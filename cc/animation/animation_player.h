@@ -22,7 +22,7 @@ class AnimationDelegate;
 class AnimationHost;
 class AnimationTimeline;
 class ElementAnimations;
-enum class LayerTreeType;
+enum class ElementListType;
 
 // An AnimationPlayer owns all animations to be run on particular CC Layer.
 // Multiple AnimationPlayers can be attached to one layer. In this case,

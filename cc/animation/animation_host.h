@@ -42,8 +42,8 @@ enum class ThreadInstance { MAIN, IMPL };
 // LayerTreeMutatorsClient interface.
 class CC_EXPORT AnimationHost {
  public:
-  using LayerToElementAnimationsMap =
-      std::unordered_map<int, scoped_refptr<ElementAnimations>>;
+  using ElementToAnimationsMap =
+      std::unordered_map<ElementId, scoped_refptr<ElementAnimations>>;
 
   static std::unique_ptr<AnimationHost> Create(ThreadInstance thread_instance);
   ~AnimationHost();
@@ -54,13 +54,14 @@ class CC_EXPORT AnimationHost {
 
   void ClearTimelines();
 
-  void RegisterLayer(ElementId element_id, LayerTreeType tree_type);
-  void UnregisterLayer(ElementId element_id, LayerTreeType tree_type);
+  void RegisterElement(ElementId element_id, ElementListType list_type);
+  void UnregisterElement(ElementId element_id, ElementListType list_type);
 
-  void RegisterPlayerForLayer(ElementId element_id, AnimationPlayer* player);
-  void UnregisterPlayerForLayer(ElementId element_id, AnimationPlayer* player);
+  void RegisterPlayerForElement(ElementId element_id, AnimationPlayer* player);
+  void UnregisterPlayerForElement(ElementId element_id,
+                                  AnimationPlayer* player);
 
-  scoped_refptr<ElementAnimations> GetElementAnimationsForLayerId(
+  scoped_refptr<ElementAnimations> GetElementAnimationsForElementId(
       ElementId element_id) const;
 
   // Parent LayerTreeHost or LayerTreeHostImpl.
@@ -90,18 +91,18 @@ class CC_EXPORT AnimationHost {
   bool ScrollOffsetAnimationWasInterrupted(ElementId element_id) const;
 
   bool IsAnimatingFilterProperty(ElementId element_id,
-                                 LayerTreeType tree_type) const;
+                                 ElementListType list_type) const;
   bool IsAnimatingOpacityProperty(ElementId element_id,
-                                  LayerTreeType tree_type) const;
+                                  ElementListType list_type) const;
   bool IsAnimatingTransformProperty(ElementId element_id,
-                                    LayerTreeType tree_type) const;
+                                    ElementListType list_type) const;
 
   bool HasPotentiallyRunningFilterAnimation(ElementId element_id,
-                                            LayerTreeType tree_type) const;
+                                            ElementListType list_type) const;
   bool HasPotentiallyRunningOpacityAnimation(ElementId element_id,
-                                             LayerTreeType tree_type) const;
+                                             ElementListType list_type) const;
   bool HasPotentiallyRunningTransformAnimation(ElementId element_id,
-                                               LayerTreeType tree_type) const;
+                                               ElementListType list_type) const;
 
   bool HasAnyAnimationTargetingProperty(ElementId element_id,
                                         TargetProperty::Type property) const;
@@ -123,14 +124,14 @@ class CC_EXPORT AnimationHost {
                                       gfx::BoxF* bounds) const;
 
   bool HasOnlyTranslationTransforms(ElementId element_id,
-                                    LayerTreeType tree_type) const;
+                                    ElementListType list_type) const;
   bool AnimationsPreserveAxisAlignment(ElementId element_id) const;
 
   bool MaximumTargetScale(ElementId element_id,
-                          LayerTreeType tree_type,
+                          ElementListType list_type,
                           float* max_scale) const;
   bool AnimationStartScale(ElementId element_id,
-                           LayerTreeType tree_type,
+                           ElementListType list_type,
                            float* start_scale) const;
 
   bool HasAnyAnimation(ElementId element_id) const;
@@ -160,9 +161,8 @@ class CC_EXPORT AnimationHost {
   // Unregisters the given ElementAnimations as alive.
   void UnregisterElementAnimations(ElementAnimations* element_animations);
 
-  const LayerToElementAnimationsMap& active_element_animations_for_testing()
-      const;
-  const LayerToElementAnimationsMap& all_element_animations_for_testing() const;
+  const ElementToAnimationsMap& active_element_animations_for_testing() const;
+  const ElementToAnimationsMap& all_element_animations_for_testing() const;
 
   bool animation_waiting_for_deletion() const {
     return animation_waiting_for_deletion_;
@@ -178,8 +178,8 @@ class CC_EXPORT AnimationHost {
 
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
-  LayerToElementAnimationsMap layer_to_element_animations_map_;
-  LayerToElementAnimationsMap active_element_animations_map_;
+  ElementToAnimationsMap element_to_animations_map_;
+  ElementToAnimationsMap active_element_to_animations_map_;
 
   // A list of all timelines which this host owns.
   using IdToTimelineMap =

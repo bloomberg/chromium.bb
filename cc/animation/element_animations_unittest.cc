@@ -43,11 +43,11 @@ class ElementAnimationsTest : public AnimationTimelinesTest {
 TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   // Set up the layer which is in active tree for main thread and not
   // yet passed onto the impl thread.
-  client_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
-  client_impl_.RegisterLayer(element_id_, LayerTreeType::PENDING);
+  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
 
-  EXPECT_TRUE(client_.IsLayerInTree(element_id_, LayerTreeType::ACTIVE));
-  EXPECT_FALSE(client_.IsLayerInTree(element_id_, LayerTreeType::PENDING));
+  EXPECT_TRUE(client_.IsElementInList(element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.IsElementInList(element_id_, ElementListType::PENDING));
 
   host_->AddAnimationTimeline(timeline_);
 
@@ -73,15 +73,17 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_TRUE(element_animations_impl->has_element_in_pending_list());
 
   // Create the layer in the impl active tree.
-  client_impl_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(element_animations_impl->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl->has_element_in_pending_list());
 
-  EXPECT_TRUE(client_impl_.IsLayerInTree(element_id_, LayerTreeType::ACTIVE));
-  EXPECT_TRUE(client_impl_.IsLayerInTree(element_id_, LayerTreeType::PENDING));
+  EXPECT_TRUE(
+      client_impl_.IsElementInList(element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(
+      client_impl_.IsElementInList(element_id_, ElementListType::PENDING));
 
   // kill layer on main thread.
-  client_.UnregisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
   EXPECT_EQ(element_animations, player_->element_animations());
   EXPECT_FALSE(element_animations->has_element_in_active_list());
   EXPECT_FALSE(element_animations->has_element_in_pending_list());
@@ -93,13 +95,13 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_TRUE(element_animations_impl->has_element_in_pending_list());
 
   // Kill layer on impl thread in pending tree.
-  client_impl_.UnregisterLayer(element_id_, LayerTreeType::PENDING);
+  client_impl_.UnregisterElement(element_id_, ElementListType::PENDING);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
   EXPECT_TRUE(element_animations_impl->has_element_in_active_list());
   EXPECT_FALSE(element_animations_impl->has_element_in_pending_list());
 
   // Kill layer on impl thread in active tree.
-  client_impl_.UnregisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_impl_.UnregisterElement(element_id_, ElementListType::ACTIVE);
   EXPECT_EQ(element_animations_impl, player_impl_->element_animations());
   EXPECT_FALSE(element_animations_impl->has_element_in_active_list());
   EXPECT_FALSE(element_animations_impl->has_element_in_pending_list());
@@ -144,15 +146,15 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
   EXPECT_FALSE(element_animations_impl->has_element_in_pending_list());
 
   // Create layer.
-  client_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(element_animations->has_element_in_active_list());
   EXPECT_FALSE(element_animations->has_element_in_pending_list());
 
-  client_impl_.RegisterLayer(element_id_, LayerTreeType::PENDING);
+  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   EXPECT_FALSE(element_animations_impl->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl->has_element_in_pending_list());
 
-  client_impl_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(element_animations_impl->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl->has_element_in_pending_list());
 }
@@ -500,8 +502,9 @@ TEST_F(ElementAnimationsTest, SyncPause) {
   EXPECT_EQ(Animation::RUNNING,
             animations->GetAnimationById(animation_id)->run_state());
 
-  EXPECT_EQ(0.3f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
-  EXPECT_EQ(0.3f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.3f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
+  EXPECT_EQ(0.3f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_EQ(kInitialTickTime,
             animations->GetAnimationById(animation_id)->start_time());
@@ -527,8 +530,9 @@ TEST_F(ElementAnimationsTest, SyncPause) {
             animations_impl->GetAnimationById(animation_id)->run_state());
 
   // Opacity value doesn't depend on time if paused at specified time offset.
-  EXPECT_EQ(0.4f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
-  EXPECT_EQ(0.4f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.4f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
+  EXPECT_EQ(0.4f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
@@ -682,13 +686,13 @@ TEST_F(ElementAnimationsTest, TrivialTransition) {
   EXPECT_FALSE(animations->needs_to_start_animations_for_testing());
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   // A non-impl-only animation should not generate property updates.
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -712,7 +716,7 @@ TEST_F(ElementAnimationsTest, TrivialTransitionOnImpl) {
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
   EXPECT_TRUE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_EQ(1u, events->events_.size());
   const AnimationEvent* start_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
@@ -721,7 +725,7 @@ TEST_F(ElementAnimationsTest, TrivialTransitionOnImpl) {
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   animations_impl->UpdateState(true, events.get());
-  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(2u, events->events_.size());
   const AnimationEvent* end_opacity_event =
@@ -764,7 +768,7 @@ TEST_F(ElementAnimationsTest, TrivialTransformOnImpl) {
   animations_impl->UpdateState(true, events.get());
   EXPECT_TRUE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(gfx::Transform(),
-            client_impl_.GetTransform(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetTransform(element_id_, ElementListType::ACTIVE));
   EXPECT_EQ(1u, events->events_.size());
   const AnimationEvent* start_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
@@ -779,7 +783,7 @@ TEST_F(ElementAnimationsTest, TrivialTransformOnImpl) {
                            TimeDelta::FromMilliseconds(1000));
   animations_impl->UpdateState(true, events.get());
   EXPECT_EQ(expected_transform,
-            client_impl_.GetTransform(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetTransform(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(2u, events->events_.size());
   const AnimationEvent* end_transform_event =
@@ -816,23 +820,24 @@ TEST_F(ElementAnimationsTest, FilterTransition) {
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_EQ(start_filters,
-            client_.GetFilters(element_id_, LayerTreeType::ACTIVE));
+            client_.GetFilters(element_id_, ElementListType::ACTIVE));
   // A non-impl-only animation should not generate property updates.
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(1u, client_.GetFilters(element_id_, LayerTreeType::ACTIVE).size());
+  EXPECT_EQ(1u,
+            client_.GetFilters(element_id_, ElementListType::ACTIVE).size());
   EXPECT_EQ(FilterOperation::CreateBrightnessFilter(1.5f),
-            client_.GetFilters(element_id_, LayerTreeType::ACTIVE).at(0));
+            client_.GetFilters(element_id_, ElementListType::ACTIVE).at(0));
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, events.get());
   EXPECT_EQ(end_filters,
-            client_.GetFilters(element_id_, LayerTreeType::ACTIVE));
+            client_.GetFilters(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -870,7 +875,7 @@ TEST_F(ElementAnimationsTest, FilterTransitionOnImplOnly) {
   animations_impl->UpdateState(true, events.get());
   EXPECT_TRUE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(start_filters,
-            client_impl_.GetFilters(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetFilters(element_id_, ElementListType::ACTIVE));
   EXPECT_EQ(1u, events->events_.size());
   const AnimationEvent* start_filter_event =
       GetMostRecentPropertyUpdateEvent(events.get());
@@ -882,7 +887,7 @@ TEST_F(ElementAnimationsTest, FilterTransitionOnImplOnly) {
                            TimeDelta::FromMilliseconds(1000));
   animations_impl->UpdateState(true, events.get());
   EXPECT_EQ(end_filters,
-            client_impl_.GetFilters(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetFilters(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(2u, events->events_.size());
   const AnimationEvent* end_filter_event =
@@ -929,13 +934,13 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   animations->UpdateState(true, nullptr);
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_EQ(initial_value,
-            client_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+            client_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
   EXPECT_TRUE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(initial_value,
-            client_impl_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
   // Scroll offset animations should not generate property updates.
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -946,20 +951,20 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(200.f, 250.f),
-      client_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+      client_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime + duration / 2);
   animations_impl->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(200.f, 250.f),
-      client_impl_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+      client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
   animations_impl->Animate(kInitialTickTime + duration);
   animations_impl->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(target_value, client_impl_.GetScrollOffset(
-                                        element_id_, LayerTreeType::ACTIVE));
+                                        element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations_impl->HasActiveAnimation());
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -967,7 +972,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   animations->Animate(kInitialTickTime + duration);
   animations->UpdateState(true, nullptr);
   EXPECT_VECTOR2DF_EQ(target_value, client_.GetScrollOffset(
-                                        element_id_, LayerTreeType::ACTIVE));
+                                        element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -997,7 +1002,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   animations_impl->UpdateState(true, events.get());
   EXPECT_TRUE(animations_impl->HasActiveAnimation());
   EXPECT_EQ(initial_value,
-            client_impl_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
   // Scroll offset animations should not generate property updates.
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -1009,14 +1014,14 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   animations_impl->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(200.f, 250.f),
-      client_impl_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+      client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
   animations_impl->Animate(kInitialTickTime + duration);
   animations_impl->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(target_value, client_impl_.GetScrollOffset(
-                                        element_id_, LayerTreeType::ACTIVE));
+                                        element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations_impl->HasActiveAnimation());
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -1027,7 +1032,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
 // scroll offset.
 TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   CreateTestLayer(false, false);
-  CreateTestImplLayer(LayerTreeType::PENDING);
+  CreateTestImplLayer(ElementListType::PENDING);
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
@@ -1067,17 +1072,17 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
 
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_EQ(initial_value,
-            client_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
-  EXPECT_EQ(gfx::ScrollOffset(),
-            client_impl_.GetScrollOffset(element_id_, LayerTreeType::PENDING));
+            client_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
+  EXPECT_EQ(gfx::ScrollOffset(), client_impl_.GetScrollOffset(
+                                     element_id_, ElementListType::PENDING));
 
   animations_impl->Animate(kInitialTickTime);
 
   EXPECT_TRUE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(initial_value,
-            client_impl_.GetScrollOffset(element_id_, LayerTreeType::PENDING));
+  EXPECT_EQ(initial_value, client_impl_.GetScrollOffset(
+                               element_id_, ElementListType::PENDING));
 
-  CreateTestImplLayer(LayerTreeType::ACTIVE);
+  CreateTestImplLayer(ElementListType::ACTIVE);
 
   animations_impl->UpdateState(true, events.get());
   DCHECK_EQ(1UL, events->events_.size());
@@ -1092,20 +1097,20 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(400.f, 150.f),
-      client_.GetScrollOffset(element_id_, LayerTreeType::ACTIVE));
+      client_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime + duration / 2);
   animations_impl->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(400.f, 150.f),
-      client_impl_.GetScrollOffset(element_id_, LayerTreeType::PENDING));
+      client_impl_.GetScrollOffset(element_id_, ElementListType::PENDING));
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
   animations_impl->Animate(kInitialTickTime + duration);
   animations_impl->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(target_value, client_impl_.GetScrollOffset(
-                                        element_id_, LayerTreeType::PENDING));
+                                        element_id_, ElementListType::PENDING));
   EXPECT_FALSE(animations_impl->HasActiveAnimation());
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
@@ -1113,7 +1118,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   animations->Animate(kInitialTickTime + duration);
   animations->UpdateState(true, nullptr);
   EXPECT_VECTOR2DF_EQ(target_value, client_.GetScrollOffset(
-                                        element_id_, LayerTreeType::ACTIVE));
+                                        element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1311,15 +1316,15 @@ TEST_F(ElementAnimationsTest,
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Send the synchronized start time.
   animations->NotifyAnimationStarted(
@@ -1327,7 +1332,7 @@ TEST_F(ElementAnimationsTest,
                      kInitialTickTime + TimeDelta::FromMilliseconds(2000)));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(5000));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1358,7 +1363,7 @@ TEST_F(ElementAnimationsTest, TrivialQueuing) {
 
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(animations->needs_to_start_animations_for_testing());
@@ -1366,10 +1371,10 @@ TEST_F(ElementAnimationsTest, TrivialQueuing) {
   EXPECT_FALSE(animations->needs_to_start_animations_for_testing());
 
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1388,7 +1393,7 @@ TEST_F(ElementAnimationsTest, Interrupt) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.5f)),
@@ -1401,10 +1406,10 @@ TEST_F(ElementAnimationsTest, Interrupt) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1500));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1430,17 +1435,17 @@ TEST_F(ElementAnimationsTest, ScheduleTogetherWhenAPropertyIsBlocked) {
 
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_TRUE(animations->HasActiveAnimation());
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, events.get());
   // Should not have started the float transition yet.
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   // The float animation should have started at time 1 and should be done.
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1469,7 +1474,7 @@ TEST_F(ElementAnimationsTest, ScheduleTogetherWithAnAnimWaiting) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   // The opacity animation should have finished at time 1, but the group
   // of animations with id 1 don't finish until time 2 because of the length
   // of the transform animation.
@@ -1477,13 +1482,13 @@ TEST_F(ElementAnimationsTest, ScheduleTogetherWithAnAnimWaiting) {
   animations->UpdateState(true, events.get());
   // Should not have started the float transition yet.
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // The second opacity animation should start at time 2 and should be done by
   // time 3.
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1505,32 +1510,32 @@ TEST_F(ElementAnimationsTest, TrivialLooping) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1250));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1750));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2250));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2750));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   animations->UpdateState(true, events.get());
   EXPECT_FALSE(animations->HasActiveAnimation());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Just be extra sure.
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
   animations->UpdateState(true, events.get());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 // Test that an infinitely looping animation does indeed go until aborted.
@@ -1551,33 +1556,33 @@ TEST_F(ElementAnimationsTest, InfiniteLooping) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1250));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1750));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations->Animate(kInitialTickTime +
                       TimeDelta::FromMilliseconds(1073741824250));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.25f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime +
                       TimeDelta::FromMilliseconds(1073741824750));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_TRUE(animations->GetAnimation(TargetProperty::OPACITY));
   animations->GetAnimation(TargetProperty::OPACITY)
       ->SetRunState(Animation::ABORTED,
                     kInitialTickTime + TimeDelta::FromMilliseconds(750));
   EXPECT_FALSE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 // Test that pausing and resuming work as expected.
@@ -1596,11 +1601,11 @@ TEST_F(ElementAnimationsTest, PauseResume) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_TRUE(animations->GetAnimation(TargetProperty::OPACITY));
   animations->GetAnimation(TargetProperty::OPACITY)
@@ -1610,7 +1615,7 @@ TEST_F(ElementAnimationsTest, PauseResume) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1024000));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_TRUE(animations->GetAnimation(TargetProperty::OPACITY));
   animations->GetAnimation(TargetProperty::OPACITY)
@@ -1619,12 +1624,12 @@ TEST_F(ElementAnimationsTest, PauseResume) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1024250));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1024500));
   animations->UpdateState(true, events.get());
   EXPECT_FALSE(animations->HasActiveAnimation());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, AbortAGroupedAnimation) {
@@ -1649,11 +1654,11 @@ TEST_F(ElementAnimationsTest, AbortAGroupedAnimation) {
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_TRUE(animations->GetAnimationById(animation_id));
   animations->GetAnimationById(animation_id)
@@ -1662,11 +1667,11 @@ TEST_F(ElementAnimationsTest, AbortAGroupedAnimation) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animations->UpdateState(true, events.get());
   EXPECT_TRUE(!animations->HasActiveAnimation());
-  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.75f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
@@ -1739,13 +1744,13 @@ TEST_F(ElementAnimationsTest, SkipUpdateState) {
 
   // The float transition should still be at its starting point.
   EXPECT_TRUE(animations->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   animations->UpdateState(true, events.get());
 
   // The float tranisition should now be done.
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->HasActiveAnimation());
 }
 
@@ -1772,7 +1777,7 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
 
-  CreateTestImplLayer(LayerTreeType::PENDING);
+  CreateTestImplLayer(ElementListType::PENDING);
 
   // With only a pending observer, the animation should progress to the
   // STARTING state and get ticked at its starting point, but should not
@@ -1782,7 +1787,8 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(0u, events->events_.size());
   EXPECT_EQ(Animation::STARTING,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
 
   // Even when already in the STARTING state, the animation should stay
   // there, and shouldn't be ticked past its starting point.
@@ -1791,9 +1797,10 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(0u, events->events_.size());
   EXPECT_EQ(Animation::STARTING,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
 
-  CreateTestImplLayer(LayerTreeType::ACTIVE);
+  CreateTestImplLayer(ElementListType::ACTIVE);
 
   // Now that an active observer has been added, the animation should still
   // initially tick at its starting point, but should now progress to RUNNING.
@@ -1802,13 +1809,17 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
   EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(Animation::RUNNING,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // The animation should now tick past its starting point.
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3500));
-  EXPECT_NE(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_NE(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_NE(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_NE(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, TransformAnimationBounds) {
@@ -2254,9 +2265,9 @@ TEST_F(ElementAnimationsTest, HasOnlyTranslationTransforms) {
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
 
   animations_impl->AddAnimation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -2264,9 +2275,9 @@ TEST_F(ElementAnimationsTest, HasOnlyTranslationTransforms) {
 
   // Opacity animations aren't non-translation transforms.
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
 
   std::unique_ptr<KeyframedTransformAnimationCurve> curve1(
       KeyframedTransformAnimationCurve::Create());
@@ -2284,9 +2295,9 @@ TEST_F(ElementAnimationsTest, HasOnlyTranslationTransforms) {
 
   // The only transform animation we've added is a translation.
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
 
   std::unique_ptr<KeyframedTransformAnimationCurve> curve2(
       KeyframedTransformAnimationCurve::Create());
@@ -2305,21 +2316,21 @@ TEST_F(ElementAnimationsTest, HasOnlyTranslationTransforms) {
 
   // A scale animation is not a translation.
   EXPECT_FALSE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
   EXPECT_FALSE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
 
   animations_impl->GetAnimationById(3)->set_affects_pending_elements(false);
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
   EXPECT_FALSE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
 
   animations_impl->GetAnimationById(3)->SetRunState(Animation::FINISHED,
                                                     TicksFromSecondsF(0.0));
@@ -2327,9 +2338,9 @@ TEST_F(ElementAnimationsTest, HasOnlyTranslationTransforms) {
   // Only unfinished animations should be considered by
   // HasOnlyTranslationTransforms.
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::PENDING));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::PENDING));
   EXPECT_TRUE(
-      animations_impl->HasOnlyTranslationTransforms(LayerTreeType::ACTIVE));
+      animations_impl->HasOnlyTranslationTransforms(ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, AnimationStartScale) {
@@ -2355,18 +2366,18 @@ TEST_F(ElementAnimationsTest, AnimationStartScale) {
   animations_impl->AddAnimation(std::move(animation));
 
   float start_scale = 0.f;
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::PENDING,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::PENDING,
                                                    &start_scale));
   EXPECT_EQ(4.f, start_scale);
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::ACTIVE,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::ACTIVE,
                                                    &start_scale));
   EXPECT_EQ(0.f, start_scale);
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::PENDING,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::PENDING,
                                                    &start_scale));
   EXPECT_EQ(4.f, start_scale);
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::ACTIVE,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::ACTIVE,
                                                    &start_scale));
   EXPECT_EQ(4.f, start_scale);
 
@@ -2405,18 +2416,18 @@ TEST_F(ElementAnimationsTest, AnimationStartScale) {
   animation->set_affects_active_elements(false);
   animations_impl->AddAnimation(std::move(animation));
 
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::PENDING,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::PENDING,
                                                    &start_scale));
   EXPECT_EQ(6.f, start_scale);
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::ACTIVE,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::ACTIVE,
                                                    &start_scale));
   EXPECT_EQ(0.f, start_scale);
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::PENDING,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::PENDING,
                                                    &start_scale));
   EXPECT_EQ(6.f, start_scale);
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::ACTIVE,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::ACTIVE,
                                                    &start_scale));
   EXPECT_EQ(6.f, start_scale);
 
@@ -2425,10 +2436,10 @@ TEST_F(ElementAnimationsTest, AnimationStartScale) {
 
   // Only unfinished animations should be considered by
   // AnimationStartScale.
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::PENDING,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::PENDING,
                                                    &start_scale));
   EXPECT_EQ(5.f, start_scale);
-  EXPECT_TRUE(animations_impl->AnimationStartScale(LayerTreeType::ACTIVE,
+  EXPECT_TRUE(animations_impl->AnimationStartScale(ElementListType::ACTIVE,
                                                    &start_scale));
   EXPECT_EQ(5.f, start_scale);
 }
@@ -2441,11 +2452,11 @@ TEST_F(ElementAnimationsTest, MaximumTargetScale) {
   scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
 
   float max_scale = 0.f;
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(0.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(0.f, max_scale);
 
   std::unique_ptr<KeyframedTransformAnimationCurve> curve1(
@@ -2463,19 +2474,19 @@ TEST_F(ElementAnimationsTest, MaximumTargetScale) {
   animation->set_affects_active_elements(false);
   animations_impl->AddAnimation(std::move(animation));
 
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(4.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(0.f, max_scale);
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(4.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(4.f, max_scale);
 
   std::unique_ptr<KeyframedTransformAnimationCurve> curve2(
@@ -2493,19 +2504,19 @@ TEST_F(ElementAnimationsTest, MaximumTargetScale) {
   animation->set_affects_active_elements(false);
   animations_impl->AddAnimation(std::move(animation));
 
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(6.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(4.f, max_scale);
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(6.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   std::unique_ptr<KeyframedTransformAnimationCurve> curve3(
@@ -2523,17 +2534,17 @@ TEST_F(ElementAnimationsTest, MaximumTargetScale) {
   animation->set_affects_active_elements(false);
   animations_impl->AddAnimation(std::move(animation));
 
-  EXPECT_FALSE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_FALSE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                   &max_scale));
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   animations_impl->ActivateAnimations();
+  EXPECT_FALSE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                   &max_scale));
   EXPECT_FALSE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
-  EXPECT_FALSE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
 
   animations_impl->GetAnimationById(3)->SetRunState(Animation::FINISHED,
                                                     TicksFromSecondsF(0.0));
@@ -2542,11 +2553,11 @@ TEST_F(ElementAnimationsTest, MaximumTargetScale) {
 
   // Only unfinished animations should be considered by
   // MaximumTargetScale.
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(4.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(4.f, max_scale);
 }
 
@@ -2579,76 +2590,76 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
 
   // NORMAL direction with positive playback rate.
   animation->set_direction(Animation::DIRECTION_NORMAL);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(6.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   // ALTERNATE direction with positive playback rate.
   animation->set_direction(Animation::DIRECTION_ALTERNATE);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(6.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   // REVERSE direction with positive playback rate.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(3.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   // ALTERNATE reverse direction.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(3.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   animation->set_playback_rate(-1.0);
 
   // NORMAL direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_NORMAL);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(3.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   // ALTERNATE direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_ALTERNATE);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(3.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   // REVERSE direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(6.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   // ALTERNATE reverse direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::PENDING, &max_scale));
+  EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
+                                                  &max_scale));
   EXPECT_EQ(6.f, max_scale);
   EXPECT_TRUE(
-      animations_impl->MaximumTargetScale(LayerTreeType::ACTIVE, &max_scale));
+      animations_impl->MaximumTargetScale(ElementListType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 }
 
@@ -2690,8 +2701,9 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
 
   // Since the animation hasn't been activated, only the pending observer
   // should have been ticked.
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id)
@@ -2707,8 +2719,10 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
   // RUNNING state and the active observer should start to get ticked.
   EXPECT_EQ(Animation::RUNNING,
             animations_impl->GetAnimationById(animation_id)->run_state());
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
@@ -2738,8 +2752,9 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
 
   // Since the animation hasn't been activated, only the pending observer
   // should have been ticked.
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id)
@@ -2758,8 +2773,9 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
 
   // Both elements should have been ticked.
   EXPECT_EQ(0.75f,
-            client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.75f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.75f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest,
@@ -2774,28 +2790,28 @@ TEST_F(ElementAnimationsTest,
   auto events = host_impl_->CreateEvents();
 
   EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                    ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   // Case 1: An animation that's allowed to run until its finish point.
   AddAnimatedTransformToElementAnimations(animations.get(), 1.0, 1, 1);
   EXPECT_TRUE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_TRUE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                   ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
@@ -2807,23 +2823,23 @@ TEST_F(ElementAnimationsTest,
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, nullptr);
   EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
 
   // animations_impl hasn't yet ticked at/past the end of the animation.
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_TRUE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                   ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   animations_impl->UpdateState(true, events.get());
   EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                    ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   animations->NotifyAnimationFinished(events->events_[0]);
   events->events_.clear();
@@ -2832,19 +2848,19 @@ TEST_F(ElementAnimationsTest,
   int animation_id =
       AddAnimatedTransformToElementAnimations(animations.get(), 10.0, 2, 2);
   EXPECT_TRUE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_TRUE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                   ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(2000));
@@ -2855,37 +2871,37 @@ TEST_F(ElementAnimationsTest,
 
   animations->RemoveAnimation(animation_id);
   EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
   EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    LayerTreeType::PENDING));
-  EXPECT_TRUE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                    ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                   ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                    ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   // Case 3: An animation that's aborted before it finishes.
   animation_id =
       AddAnimatedTransformToElementAnimations(animations.get(), 10.0, 3, 3);
   EXPECT_TRUE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
   EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   LayerTreeType::PENDING));
-  EXPECT_TRUE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                   ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                   ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(3000));
@@ -2896,9 +2912,9 @@ TEST_F(ElementAnimationsTest,
 
   animations_impl->AbortAnimations(TargetProperty::TRANSFORM);
   EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    LayerTreeType::PENDING));
-  EXPECT_FALSE(
-      client_impl_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+                                                    ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
+                                                    ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(4000));
@@ -2906,7 +2922,7 @@ TEST_F(ElementAnimationsTest,
 
   animations->NotifyAnimationAborted(events->events_[0]);
   EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, LayerTreeType::ACTIVE));
+      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, ClippedOpacityValues) {
@@ -2918,11 +2934,11 @@ TEST_F(ElementAnimationsTest, ClippedOpacityValues) {
   AddOpacityTransitionToElementAnimations(animations.get(), 1, 1.f, 2.f, true);
 
   animations->Animate(kInitialTickTime);
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Opacity values are clipped [0,1]
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, ClippedNegativeOpacityValues) {
@@ -2934,11 +2950,11 @@ TEST_F(ElementAnimationsTest, ClippedNegativeOpacityValues) {
   AddOpacityTransitionToElementAnimations(animations.get(), 1, 0.f, -2.f, true);
 
   animations->Animate(kInitialTickTime);
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Opacity values are clipped [0,1]
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
@@ -2960,8 +2976,10 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   animations_impl->UpdateState(true, events.get());
   EXPECT_EQ(Animation::RUNNING,
             animations_impl->GetAnimationById(animation_id)->run_state());
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   EXPECT_TRUE(animations_impl->GetAnimationById(animation_id)
                   ->affects_pending_elements());
@@ -2983,8 +3001,10 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   animations_impl->UpdateState(true, events.get());
 
   // Only the active observer should have been ticked.
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.75f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.75f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
 
@@ -3044,8 +3064,10 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
 
   // The active observer should have been ticked by the original animation,
   // and the pending observer should have been ticked by the new animation.
-  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(0.5f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(0.5f,
+            client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
 
@@ -3066,8 +3088,9 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   EXPECT_EQ(
       Animation::RUNNING,
       animations_impl->GetAnimationById(second_animation_id)->run_state());
-  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, LayerTreeType::PENDING));
-  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f,
+            client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
+  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, TestIsCurrentlyAnimatingProperty) {
@@ -3084,61 +3107,61 @@ TEST_F(ElementAnimationsTest, TestIsCurrentlyAnimatingProperty) {
 
   animations->AddAnimation(std::move(animation));
   animations->Animate(kInitialTickTime);
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                        LayerTreeType::ACTIVE));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   animations->UpdateState(true, nullptr);
   EXPECT_TRUE(animations->HasActiveAnimation());
 
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                        LayerTreeType::ACTIVE));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::PENDING));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::FILTER,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::FILTER, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::FILTER, ElementListType::ACTIVE));
 
   animations->ActivateAnimations();
 
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::PENDING));
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::ACTIVE));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::FILTER,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::FILTER, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::FILTER, ElementListType::ACTIVE));
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(10));
   animations->UpdateState(true, nullptr);
 
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::PENDING));
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::ACTIVE));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::FILTER,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::FILTER, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::FILTER, ElementListType::ACTIVE));
 
-  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Tick past the end of the animation.
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1100));
   animations->UpdateState(true, nullptr);
 
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::PENDING));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::FILTER,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::FILTER, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::FILTER, ElementListType::ACTIVE));
 
-  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, LayerTreeType::ACTIVE));
+  EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
@@ -3164,34 +3187,34 @@ TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
   // potentially running transform animation but aren't currently animating
   // transform.
   EXPECT_TRUE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
+      TargetProperty::OPACITY, ElementListType::PENDING));
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::PENDING));
+      TargetProperty::FILTER, ElementListType::PENDING));
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::ACTIVE));
+      TargetProperty::FILTER, ElementListType::ACTIVE));
 
   animations->ActivateAnimations();
 
   EXPECT_TRUE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
+      TargetProperty::OPACITY, ElementListType::PENDING));
   EXPECT_TRUE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_TRUE(animations->HasActiveAnimation());
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::PENDING));
+      TargetProperty::FILTER, ElementListType::PENDING));
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::FILTER, LayerTreeType::ACTIVE));
+      TargetProperty::FILTER, ElementListType::ACTIVE));
 
   animations->UpdateState(true, nullptr);
 
@@ -3199,13 +3222,13 @@ TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animations->UpdateState(true, nullptr);
   EXPECT_TRUE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
+      TargetProperty::OPACITY, ElementListType::PENDING));
   EXPECT_TRUE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::ACTIVE));
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::PENDING));
-  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                       LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_TRUE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
 
   // After the animaton finishes, the elements it affects have neither a
   // potentially running transform animation nor a currently running transform
@@ -3213,13 +3236,13 @@ TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
   animations->UpdateState(true, nullptr);
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
+      TargetProperty::OPACITY, ElementListType::PENDING));
   EXPECT_FALSE(animations->IsPotentiallyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
   EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
-      TargetProperty::OPACITY, LayerTreeType::PENDING));
-  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(TargetProperty::OPACITY,
-                                                        LayerTreeType::ACTIVE));
+      TargetProperty::OPACITY, ElementListType::PENDING));
+  EXPECT_FALSE(animations->IsCurrentlyAnimatingProperty(
+      TargetProperty::OPACITY, ElementListType::ACTIVE));
 }
 
 }  // namespace

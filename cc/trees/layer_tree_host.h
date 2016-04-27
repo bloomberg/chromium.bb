@@ -363,28 +363,31 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void RegisterLayer(Layer* layer);
   void UnregisterLayer(Layer* layer);
-  // LayerTreeMutatorsClient implementation.
-  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
+  // MutatorHostClient implementation.
+  bool IsElementInList(ElementId element_id,
+                       ElementListType list_type) const override;
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
-  void SetLayerFilterMutated(int layer_id,
-                             LayerTreeType tree_type,
-                             const FilterOperations& filters) override;
-  void SetLayerOpacityMutated(int layer_id,
-                              LayerTreeType tree_type,
-                              float opacity) override;
-  void SetLayerTransformMutated(int layer_id,
-                                LayerTreeType tree_type,
-                                const gfx::Transform& transform) override;
-  void SetLayerScrollOffsetMutated(
-      int layer_id,
-      LayerTreeType tree_type,
+  void SetElementFilterMutated(ElementId element_id,
+                               ElementListType list_type,
+                               const FilterOperations& filters) override;
+  void SetElementOpacityMutated(ElementId element_id,
+                                ElementListType list_type,
+                                float opacity) override;
+  void SetElementTransformMutated(ElementId element_id,
+                                  ElementListType list_type,
+                                  const gfx::Transform& transform) override;
+  void SetElementScrollOffsetMutated(
+      ElementId element_id,
+      ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
-  void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
-                                                   LayerTreeType tree_type,
-                                                   bool is_animating) override;
+  void ElementTransformIsPotentiallyAnimatingChanged(
+      ElementId element_id,
+      ElementListType list_type,
+      bool is_animating) override;
   void ScrollOffsetAnimationFinished() override {}
-  gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
+  gfx::ScrollOffset GetScrollOffsetForAnimation(
+      ElementId element_id) const override;
 
   bool ScrollOffsetAnimationWasInterrupted(const Layer* layer) const;
   bool IsAnimatingFilterProperty(const Layer* layer) const;

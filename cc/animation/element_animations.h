@@ -33,10 +33,10 @@ class AnimationHost;
 class AnimationPlayer;
 class FilterOperations;
 class KeyframeValueList;
-enum class LayerTreeType;
+enum class ElementListType;
 
 // An ElementAnimations owns a list of all AnimationPlayers, attached to
-// the layer.
+// the element.
 // This is a CC counterpart for blink::ElementAnimations (in 1:1 relationship).
 // No pointer to/from respective blink::ElementAnimations object for now.
 class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
@@ -54,8 +54,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void InitAffectedElementTypes();
   void ClearAffectedElementTypes();
 
-  void LayerRegistered(ElementId element_id, LayerTreeType tree_type);
-  void LayerUnregistered(ElementId element_id, LayerTreeType tree_type);
+  void ElementRegistered(ElementId element_id, ElementListType list_type);
+  void ElementUnregistered(ElementId element_id, ElementListType list_type);
 
   void AddPlayer(AnimationPlayer* player);
   void RemovePlayer(AnimationPlayer* player);
@@ -107,12 +107,12 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   // the given property or scheduled to animate this property in the future, and
   // that affects the given tree type.
   bool IsPotentiallyAnimatingProperty(TargetProperty::Type target_property,
-                                      LayerTreeType tree_type) const;
+                                      ElementListType list_type) const;
 
   // Returns true if there is an animation that is currently animating the given
   // property and that affects the given tree type.
   bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
-                                    LayerTreeType tree_type) const;
+                                    ElementListType list_type) const;
 
   void NotifyAnimationStarted(const AnimationEvent& event);
   void NotifyAnimationFinished(const AnimationEvent& event);
@@ -148,24 +148,24 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool HasAnimationThatAffectsScale() const;
 
-  bool HasOnlyTranslationTransforms(LayerTreeType tree_type) const;
+  bool HasOnlyTranslationTransforms(ElementListType list_type) const;
 
   bool AnimationsPreserveAxisAlignment() const;
 
   // Sets |start_scale| to the maximum of starting animation scale along any
   // dimension at any destination in active animations. Returns false if the
   // starting scale cannot be computed.
-  bool AnimationStartScale(LayerTreeType tree_type, float* start_scale) const;
+  bool AnimationStartScale(ElementListType list_type, float* start_scale) const;
 
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.
-  bool MaximumTargetScale(LayerTreeType tree_type, float* max_scale) const;
+  bool MaximumTargetScale(ElementListType list_type, float* max_scale) const;
 
   // When a scroll animation is removed on the main thread, its compositor
   // thread counterpart continues producing scroll deltas until activation.
   // These scroll deltas need to be cleared at activation, so that the active
-  // layer's scroll offset matches the offset provided by the main thread
+  // element's scroll offset matches the offset provided by the main thread
   // rather than a combination of this offset and scroll deltas produced by
   // the removed animation. This is to provide the illusion of synchronicity to
   // JS that simultaneously removes an animation and sets the scroll offset.
@@ -229,15 +229,15 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   void UpdatePotentiallyAnimatingTransform();
 
-  void OnFilterAnimated(LayerTreeType tree_type,
+  void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters);
-  void OnOpacityAnimated(LayerTreeType tree_type, float opacity);
-  void OnTransformAnimated(LayerTreeType tree_type,
+  void OnOpacityAnimated(ElementListType list_type, float opacity);
+  void OnTransformAnimated(ElementListType list_type,
                            const gfx::Transform& transform);
-  void OnScrollOffsetAnimated(LayerTreeType tree_type,
+  void OnScrollOffsetAnimated(ElementListType list_type,
                               const gfx::ScrollOffset& scroll_offset);
   void OnAnimationWaitingForDeletion();
-  void OnTransformIsPotentiallyAnimatingChanged(LayerTreeType tree_type,
+  void OnTransformIsPotentiallyAnimatingChanged(ElementListType list_type,
                                                 bool is_animating);
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
 

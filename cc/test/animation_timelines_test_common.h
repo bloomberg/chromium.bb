@@ -79,71 +79,78 @@ class TestHostClient : public MutatorHostClient {
 
   void ClearMutatedProperties();
 
-  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
+  bool IsElementInList(ElementId element_id,
+                       ElementListType list_type) const override;
 
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
 
-  void SetLayerFilterMutated(int layer_id,
-                             LayerTreeType tree_type,
-                             const FilterOperations& filters) override;
+  void SetElementFilterMutated(ElementId element_id,
+                               ElementListType list_type,
+                               const FilterOperations& filters) override;
 
-  void SetLayerOpacityMutated(int layer_id,
-                              LayerTreeType tree_type,
-                              float opacity) override;
+  void SetElementOpacityMutated(ElementId element_id,
+                                ElementListType list_type,
+                                float opacity) override;
 
-  void SetLayerTransformMutated(int layer_id,
-                                LayerTreeType tree_type,
-                                const gfx::Transform& transform) override;
+  void SetElementTransformMutated(ElementId element_id,
+                                  ElementListType list_type,
+                                  const gfx::Transform& transform) override;
 
-  void SetLayerScrollOffsetMutated(
-      int layer_id,
-      LayerTreeType tree_type,
+  void SetElementScrollOffsetMutated(
+      ElementId element_id,
+      ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
 
-  void LayerTransformIsPotentiallyAnimatingChanged(int layer_id,
-                                                   LayerTreeType tree_type,
-                                                   bool is_animating) override;
+  void ElementTransformIsPotentiallyAnimatingChanged(
+      ElementId element_id,
+      ElementListType list_type,
+      bool is_animating) override;
 
   void ScrollOffsetAnimationFinished() override {}
 
   void SetScrollOffsetForAnimation(const gfx::ScrollOffset& scroll_offset);
-  gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
+  gfx::ScrollOffset GetScrollOffsetForAnimation(
+      ElementId element_id) const override;
 
   bool mutators_need_commit() const { return mutators_need_commit_; }
   void set_mutators_need_commit(bool need) { mutators_need_commit_ = need; }
 
-  void RegisterLayer(int layer_id, LayerTreeType tree_type);
-  void UnregisterLayer(int layer_id, LayerTreeType tree_type);
+  void RegisterElement(ElementId element_id, ElementListType list_type);
+  void UnregisterElement(ElementId element_id, ElementListType list_type);
 
   AnimationHost* host() {
     DCHECK(host_);
     return host_.get();
   }
 
-  bool IsPropertyMutated(int layer_id,
-                         LayerTreeType tree_type,
+  bool IsPropertyMutated(ElementId element_id,
+                         ElementListType list_type,
                          TargetProperty::Type property) const;
 
-  FilterOperations GetFilters(int layer_id, LayerTreeType tree_type) const;
-  float GetOpacity(int layer_id, LayerTreeType tree_type) const;
-  gfx::Transform GetTransform(int layer_id, LayerTreeType tree_type) const;
-  gfx::ScrollOffset GetScrollOffset(int layer_id,
-                                    LayerTreeType tree_type) const;
-  bool GetTransformIsAnimating(int layer_id, LayerTreeType tree_type) const;
+  FilterOperations GetFilters(ElementId element_id,
+                              ElementListType list_type) const;
+  float GetOpacity(ElementId element_id, ElementListType list_type) const;
+  gfx::Transform GetTransform(ElementId element_id,
+                              ElementListType list_type) const;
+  gfx::ScrollOffset GetScrollOffset(ElementId element_id,
+                                    ElementListType list_type) const;
+  bool GetTransformIsAnimating(ElementId element_id,
+                               ElementListType list_type) const;
 
-  void ExpectFilterPropertyMutated(int layer_id,
-                                   LayerTreeType tree_type,
+  void ExpectFilterPropertyMutated(ElementId element_id,
+                                   ElementListType list_type,
                                    float brightness) const;
-  void ExpectOpacityPropertyMutated(int layer_id,
-                                    LayerTreeType tree_type,
+  void ExpectOpacityPropertyMutated(ElementId element_id,
+                                    ElementListType list_type,
                                     float opacity) const;
-  void ExpectTransformPropertyMutated(int layer_id,
-                                      LayerTreeType tree_type,
+  void ExpectTransformPropertyMutated(ElementId element_id,
+                                      ElementListType list_type,
                                       int transform_x,
                                       int transform_y) const;
 
-  TestLayer* FindTestLayer(int layer_id, LayerTreeType tree_type) const;
+  TestLayer* FindTestLayer(ElementId element_id,
+                           ElementListType list_type) const;
 
  private:
   std::unique_ptr<AnimationHost> host_;
@@ -210,7 +217,7 @@ class AnimationTimelinesTest : public testing::Test {
   void CreateImplTimelineAndPlayer();
 
   void CreateTestMainLayer();
-  void CreateTestImplLayer(LayerTreeType layer_tree_type);
+  void CreateTestImplLayer(ElementListType layer_tree_type);
 
   scoped_refptr<ElementAnimations> element_animations() const;
   scoped_refptr<ElementAnimations> element_animations_impl() const;
@@ -220,8 +227,8 @@ class AnimationTimelinesTest : public testing::Test {
   void AnimateLayersTransferEvents(base::TimeTicks time,
                                    unsigned expect_events);
 
-  AnimationPlayer* GetPlayerForLayerId(int layer_id);
-  AnimationPlayer* GetImplPlayerForLayerId(int layer_id);
+  AnimationPlayer* GetPlayerForLayerId(ElementId element_id);
+  AnimationPlayer* GetImplPlayerForLayerId(ElementId element_id);
 
   int NextTestLayerId();
 

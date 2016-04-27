@@ -1163,7 +1163,7 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     // start times.
     if (host_impl->active_tree()->source_frame_number() < 2)
       return;
-    AnimationHost::LayerToElementAnimationsMap element_animations_copy =
+    AnimationHost::ElementToAnimationsMap element_animations_copy =
         host_impl->animation_host()->active_element_animations_for_testing();
     EXPECT_EQ(2u, element_animations_copy.size());
     for (auto& it : element_animations_copy) {

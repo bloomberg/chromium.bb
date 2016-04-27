@@ -74,11 +74,11 @@ void TestHostClient::ClearMutatedProperties() {
     kv.second->ClearMutatedProperties();
 }
 
-bool TestHostClient::IsLayerInTree(int layer_id,
-                                   LayerTreeType tree_type) const {
-  return tree_type == LayerTreeType::ACTIVE
-             ? layers_in_active_tree_.count(layer_id)
-             : layers_in_pending_tree_.count(layer_id);
+bool TestHostClient::IsElementInList(ElementId element_id,
+                                     ElementListType list_type) const {
+  return list_type == ElementListType::ACTIVE
+             ? layers_in_active_tree_.count(element_id)
+             : layers_in_pending_tree_.count(element_id);
 }
 
 void TestHostClient::SetMutatorsNeedCommit() {
@@ -87,44 +87,45 @@ void TestHostClient::SetMutatorsNeedCommit() {
 
 void TestHostClient::SetMutatorsNeedRebuildPropertyTrees() {}
 
-void TestHostClient::SetLayerFilterMutated(int layer_id,
-                                           LayerTreeType tree_type,
-                                           const FilterOperations& filters) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+void TestHostClient::SetElementFilterMutated(ElementId element_id,
+                                             ElementListType list_type,
+                                             const FilterOperations& filters) {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_filters(filters);
 }
 
-void TestHostClient::SetLayerOpacityMutated(int layer_id,
-                                            LayerTreeType tree_type,
-                                            float opacity) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+void TestHostClient::SetElementOpacityMutated(ElementId element_id,
+                                              ElementListType list_type,
+                                              float opacity) {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_opacity(opacity);
 }
 
-void TestHostClient::SetLayerTransformMutated(int layer_id,
-                                              LayerTreeType tree_type,
-                                              const gfx::Transform& transform) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+void TestHostClient::SetElementTransformMutated(
+    ElementId element_id,
+    ElementListType list_type,
+    const gfx::Transform& transform) {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_transform(transform);
 }
 
-void TestHostClient::SetLayerScrollOffsetMutated(
-    int layer_id,
-    LayerTreeType tree_type,
+void TestHostClient::SetElementScrollOffsetMutated(
+    ElementId element_id,
+    ElementListType list_type,
     const gfx::ScrollOffset& scroll_offset) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_scroll_offset(scroll_offset);
 }
 
-void TestHostClient::LayerTransformIsPotentiallyAnimatingChanged(
-    int layer_id,
-    LayerTreeType tree_type,
+void TestHostClient::ElementTransformIsPotentiallyAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
     bool is_animating) {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_transform_is_animating(is_animating);
 }
@@ -135,111 +136,114 @@ void TestHostClient::SetScrollOffsetForAnimation(
 }
 
 gfx::ScrollOffset TestHostClient::GetScrollOffsetForAnimation(
-    int layer_id) const {
+    ElementId element_id) const {
   return scroll_offset_;
 }
 
-void TestHostClient::RegisterLayer(int layer_id, LayerTreeType tree_type) {
-  LayerIdToTestLayer& layers_in_tree = tree_type == LayerTreeType::ACTIVE
+void TestHostClient::RegisterElement(ElementId element_id,
+                                     ElementListType list_type) {
+  LayerIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
                                            ? layers_in_active_tree_
                                            : layers_in_pending_tree_;
-  DCHECK(layers_in_tree.find(layer_id) == layers_in_tree.end());
-  layers_in_tree[layer_id] = TestLayer::Create();
+  DCHECK(layers_in_tree.find(element_id) == layers_in_tree.end());
+  layers_in_tree[element_id] = TestLayer::Create();
 
   DCHECK(host_);
-  host_->RegisterLayer(layer_id, tree_type);
+  host_->RegisterElement(element_id, list_type);
 }
 
-void TestHostClient::UnregisterLayer(int layer_id, LayerTreeType tree_type) {
+void TestHostClient::UnregisterElement(ElementId element_id,
+                                       ElementListType list_type) {
   DCHECK(host_);
-  host_->UnregisterLayer(layer_id, tree_type);
+  host_->UnregisterElement(element_id, list_type);
 
-  LayerIdToTestLayer& layers_in_tree = tree_type == LayerTreeType::ACTIVE
+  LayerIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
                                            ? layers_in_active_tree_
                                            : layers_in_pending_tree_;
-  auto kv = layers_in_tree.find(layer_id);
+  auto kv = layers_in_tree.find(element_id);
   DCHECK(kv != layers_in_tree.end());
   layers_in_tree.erase(kv);
 }
 
-bool TestHostClient::IsPropertyMutated(int layer_id,
-                                       LayerTreeType tree_type,
+bool TestHostClient::IsPropertyMutated(ElementId element_id,
+                                       ElementListType list_type,
                                        TargetProperty::Type property) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->is_property_mutated(property);
 }
 
-FilterOperations TestHostClient::GetFilters(int layer_id,
-                                            LayerTreeType tree_type) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+FilterOperations TestHostClient::GetFilters(ElementId element_id,
+                                            ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->filters();
 }
 
-float TestHostClient::GetOpacity(int layer_id, LayerTreeType tree_type) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+float TestHostClient::GetOpacity(ElementId element_id,
+                                 ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->opacity();
 }
 
-gfx::Transform TestHostClient::GetTransform(int layer_id,
-                                            LayerTreeType tree_type) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+gfx::Transform TestHostClient::GetTransform(ElementId element_id,
+                                            ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->transform();
 }
 
 gfx::ScrollOffset TestHostClient::GetScrollOffset(
-    int layer_id,
-    LayerTreeType tree_type) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->scroll_offset();
 }
 
-bool TestHostClient::GetTransformIsAnimating(int layer_id,
-                                             LayerTreeType tree_type) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+bool TestHostClient::GetTransformIsAnimating(ElementId element_id,
+                                             ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->transform_is_animating();
 }
 
-void TestHostClient::ExpectFilterPropertyMutated(int layer_id,
-                                                 LayerTreeType tree_type,
+void TestHostClient::ExpectFilterPropertyMutated(ElementId element_id,
+                                                 ElementListType list_type,
                                                  float brightness) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::FILTER));
   EXPECT_EQ(brightness, layer->brightness());
 }
 
-void TestHostClient::ExpectOpacityPropertyMutated(int layer_id,
-                                                  LayerTreeType tree_type,
+void TestHostClient::ExpectOpacityPropertyMutated(ElementId element_id,
+                                                  ElementListType list_type,
                                                   float opacity) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::OPACITY));
   EXPECT_EQ(opacity, layer->opacity());
 }
 
-void TestHostClient::ExpectTransformPropertyMutated(int layer_id,
-                                                    LayerTreeType tree_type,
+void TestHostClient::ExpectTransformPropertyMutated(ElementId element_id,
+                                                    ElementListType list_type,
                                                     int transform_x,
                                                     int transform_y) const {
-  TestLayer* layer = FindTestLayer(layer_id, tree_type);
+  TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::TRANSFORM));
   EXPECT_EQ(transform_x, layer->transform_x());
   EXPECT_EQ(transform_y, layer->transform_y());
 }
 
-TestLayer* TestHostClient::FindTestLayer(int layer_id,
-                                         LayerTreeType tree_type) const {
-  const LayerIdToTestLayer& layers_in_tree = tree_type == LayerTreeType::ACTIVE
-                                                 ? layers_in_active_tree_
-                                                 : layers_in_pending_tree_;
-  auto kv = layers_in_tree.find(layer_id);
+TestLayer* TestHostClient::FindTestLayer(ElementId element_id,
+                                         ElementListType list_type) const {
+  const LayerIdToTestLayer& layers_in_tree =
+      list_type == ElementListType::ACTIVE ? layers_in_active_tree_
+                                           : layers_in_pending_tree_;
+  auto kv = layers_in_tree.find(element_id);
   if (kv == layers_in_tree.end())
     return nullptr;
 
@@ -317,18 +321,18 @@ void AnimationTimelinesTest::CreateTestLayer(
   CreateTestMainLayer();
 
   if (needs_pending_value_observations)
-    CreateTestImplLayer(LayerTreeType::PENDING);
+    CreateTestImplLayer(ElementListType::PENDING);
   if (needs_active_value_observations)
-    CreateTestImplLayer(LayerTreeType::ACTIVE);
+    CreateTestImplLayer(ElementListType::ACTIVE);
 }
 
 void AnimationTimelinesTest::CreateTestMainLayer() {
-  client_.RegisterLayer(element_id_, LayerTreeType::ACTIVE);
+  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
 }
 
 void AnimationTimelinesTest::CreateTestImplLayer(
-    LayerTreeType layer_tree_type) {
-  client_impl_.RegisterLayer(element_id_, layer_tree_type);
+    ElementListType layer_tree_type) {
+  client_impl_.RegisterElement(element_id_, layer_tree_type);
 }
 
 void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
@@ -384,16 +388,18 @@ void AnimationTimelinesTest::AnimateLayersTransferEvents(
   host_->SetAnimationEvents(std::move(events));
 }
 
-AnimationPlayer* AnimationTimelinesTest::GetPlayerForLayerId(int layer_id) {
+AnimationPlayer* AnimationTimelinesTest::GetPlayerForLayerId(
+    ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
-      host_->GetElementAnimationsForLayerId(layer_id);
+      host_->GetElementAnimationsForElementId(element_id);
   return element_animations ? element_animations->players_list().head()->value()
                             : nullptr;
 }
 
-AnimationPlayer* AnimationTimelinesTest::GetImplPlayerForLayerId(int layer_id) {
+AnimationPlayer* AnimationTimelinesTest::GetImplPlayerForLayerId(
+    ElementId element_id) {
   const scoped_refptr<ElementAnimations> element_animations =
-      host_impl_->GetElementAnimationsForLayerId(layer_id);
+      host_impl_->GetElementAnimationsForElementId(element_id);
   return element_animations ? element_animations->players_list().head()->value()
                             : nullptr;
 }

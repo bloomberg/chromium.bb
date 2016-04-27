@@ -81,7 +81,7 @@ void AnimationPlayer::RegisterPlayer() {
   DCHECK(!element_animations_);
 
   // Create ElementAnimations or re-use existing.
-  animation_host_->RegisterPlayerForLayer(element_id_, this);
+  animation_host_->RegisterPlayerForElement(element_id_, this);
   // Get local reference to shared ElementAnimations.
   BindElementAnimations();
 }
@@ -93,13 +93,13 @@ void AnimationPlayer::UnregisterPlayer() {
 
   UnbindElementAnimations();
   // Destroy ElementAnimations or release it if it's still needed.
-  animation_host_->UnregisterPlayerForLayer(element_id_, this);
+  animation_host_->UnregisterPlayerForElement(element_id_, this);
 }
 
 void AnimationPlayer::BindElementAnimations() {
   DCHECK(!element_animations_);
   element_animations_ =
-      animation_host_->GetElementAnimationsForLayerId(element_id_);
+      animation_host_->GetElementAnimationsForElementId(element_id_);
   DCHECK(element_animations_);
 
   // Pass all accumulated animations to ElementAnimations.

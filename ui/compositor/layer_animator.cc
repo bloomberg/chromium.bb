@@ -182,7 +182,7 @@ void LayerAnimator::ResetCompositor(Compositor* compositor) {
   // so it may be picked up in LayerAnimator::SetCompositor.
   if (layer_id) {
     element_animations_state_ =
-        timeline->animation_host()->GetElementAnimationsForLayerId(layer_id);
+        timeline->animation_host()->GetElementAnimationsForElementId(layer_id);
   }
 
   DetachLayerFromAnimationPlayer();
