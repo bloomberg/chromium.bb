@@ -1,83 +1,53 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that directionality is set correctly on cues.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/captions-rtl.vtt" kind="captions" default>
+</video>
+<script>
+async_test(function(t) {
+    var testTrack = document.querySelector("track");
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "../content/test");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+    var seekedCount = 0;
+    var info = ["تجربة",
+                "\t1234",
+                "تجربة\nLTR new line, but cue should be RTL",
+                "LTR cue تجربة",
+                ";1234تجربة",
+                "\t०१२३४५६७८९  \t",
+                "𐡘 (Imperial Aramaic number one, U+10858) strong RTL, non-BMP",
+                "𝅘𝅥 (Musical symbol quarter note, U+1D15F) strong LTR, non-BMP",
+                "<ruby><rt>𝅘𝅥</rt>تجربة</ruby>",
+                "<ruby>1234<rt>تجربة</rt></ruby>"];
 
-        <script>
+    // RTL cues alternate with LTR cues.
+    video.onseeked = t.step_func(function() {
+        var testCueDisplayBox = textTrackDisplayElement(video, "display");
 
-        var testTrack;
-        var testCueDisplayBox;
-        var seekedCount = 0;
-        var direction;
+        // Jump to next cue.
+        assert_equals(video.currentTime, (seekedCount / 2) + 0.25);
+        assert_equals(testTrack.track.activeCues.length, 1);
+        assert_equals(testTrack.track.activeCues[0].text, info[seekedCount]);
+        assert_equals(testCueDisplayBox.innerText, info[seekedCount].replace(/<[^>]+>/g, ""));
 
-        var info = ["تجربة",
-                    "\t1234",
-                    "تجربة\nLTR new line, but cue should be RTL",
-                    "LTR cue تجربة",
-                    ";1234تجربة",
-                    "\t०१२३४५६७८९  \t",
-                    "𐡘 (Imperial Aramaic number one, U+10858) strong RTL, non-BMP",
-                    "𝅘𝅥 (Musical symbol quarter note, U+1D15F) strong LTR, non-BMP",
-                    "<ruby><rt>𝅘𝅥</rt>تجربة</ruby>",
-                    "<ruby>1234<rt>تجربة</rt></ruby>"];
+        var direction = seekedCount % 2 ? "ltr" : "rtl";
 
-        function testCueStyle()
-        {
-            endTest();
-        }
+        assert_equals(2 * testCueDisplayBox.offsetLeft, video.videoWidth - testCueDisplayBox.offsetWidth);
 
-        function seeked()
-        {
-            testCueDisplayBox = textTrackDisplayElement(video, 'display');
+        assert_equals(getComputedStyle(testCueDisplayBox).direction, direction);
 
-            consoleWrite("");
-            consoleWrite("** Jump to next cue **");
-            testExpected("video.currentTime", (seekedCount / 2) + .25);
-            testExpected("testTrack.track.activeCues.length", 1);
-            testExpected("testTrack.track.activeCues[0].text", info[seekedCount]);
-            testExpected("testCueDisplayBox.innerText", info[seekedCount].replace(/<[^>]+>/g, ""));
+        if (++seekedCount == info.length)
+            t.done();
+        else
+            video.currentTime += 0.5;
+    });
 
-            direction = seekedCount % 2 ? "ltr" : "rtl";
-
-            consoleWrite("");
-            consoleWrite("** The position should be default and CSS direction set to " + direction + " **");
-            testExpected("2 * testCueDisplayBox.offsetLeft == video.videoWidth - testCueDisplayBox.offsetWidth", true);
-
-            testExpected("getComputedStyle(testCueDisplayBox).direction", direction);
-
-            if (++seekedCount == info.length)
-                endTest();
-            else {
-                consoleWrite("");
-                run("video.currentTime = " + (video.currentTime + .5));
-                return;
-            }
-        }
-
-        function loaded()
-        {
-            consoleWrite("Test that directionality is set correctly on cues.");
-            testTrack = document.querySelector('track');
-
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-
-            consoleWrite("");
-            consoleWrite("** RTL cues alternate with LTR cues **");
-            waitForEvent('seeked', seeked);
-            waitForEventOnce('canplaythrough', function() { video.currentTime = .25; });
-        }
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/captions-rtl.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+    video.currentTime = 0.25;
+});
+</script>

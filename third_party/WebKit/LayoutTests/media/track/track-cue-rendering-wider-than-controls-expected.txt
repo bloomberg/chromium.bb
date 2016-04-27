@@ -1,7 +1,0 @@
-Test that the cue root is not constrained by the controls/overlay.
-EVENT(canplaythrough)
-EVENT(seeked)
-EXPECTED (parseFloat(getComputedStyle(controlsContainer).width) <= '800') OK
-EXPECTED (parseFloat(getComputedStyle(cueRoot).width) > '800') OK
-END OF TEST
-

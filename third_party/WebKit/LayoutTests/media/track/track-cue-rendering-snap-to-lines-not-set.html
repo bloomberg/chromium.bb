@@ -1,103 +1,82 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that TextTrack's cues are rendered correctly when the snap to lines flag is not set.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/captions-snap-to-lines-not-set.vtt" kind="captions" default>
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    var testTrack = document.querySelector("track");
+    video.src = findMediaFile("video", "../content/test");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+    // In Chromium it is the enclosure element, which provides the controls height, otherwise the panel;
+    // both are the second child in the shadow DOM.
+    var controlsPanelElement = internals.shadowRoot(video).firstChild.firstChild;
 
-        <script>
+    var cueDisplayContainer;
+    video.oncanplaythrough = t.step_func(function() {
+        cueDisplayContainer = textTrackDisplayElement(video);
+        runNextTestCase();
+    });
 
-        var testTrack;
-        var cueDisplayElement;
-        var cueDisplayContainer;
-        var controlsPanelElement;
-        var seekedCount = 0;
-
-        var testCaseDescription = [
-                "Default",
-                "Center",
-                "Top left",
-                "Top right",
-                "Bottom right",
-                "Bottom left",
-                "Bottom center",
-                "Multiple cues"
-        ];
-
-        var testCaseSeekTime = [
-                0.10,
-                0.60,
-                1.10,
-                1.60,
-                2.10,
-                2.60,
-                3.10,
-                4.10
-        ];
-
-        var currentTestCase = 0;
-
-        function seeked()
-        {
-            consoleWrite("Active cues: " + testTrack.track.activeCues.length);
-            for (var i = 0; i < testTrack.track.activeCues.length; ++i) {
-                cueDisplayElement = textTrackDisplayElement(video, 'display', i);
-
-                consoleWrite("");
-                consoleWrite("* Cue " + i + " *");
-                testExpected("cueDisplayElement.innerText", testTrack.track.activeCues[i].text);
-                consoleWrite("Cue alignment (default or as specified): " + testTrack.track.activeCues[i].align);
-
-                consoleWrite("Cue left position (percentage): " + Math.round(cueDisplayElement.offsetLeft / cueDisplayContainer.offsetWidth * 100));
-                consoleWrite("Cue top position (percentage): " + Math.round(cueDisplayElement.offsetTop / cueDisplayContainer.offsetHeight * 100));
-            }
-
-            runNextTestCase();
-        };
-
-        function runNextTestCase()
-        {
-            if (currentTestCase == testCaseDescription.length) {
-                endTest();
-                return;
-            }
-
-            consoleWrite("");
-            consoleWrite("** " +  testCaseDescription[currentTestCase] + " **");
-
-            video.currentTime = testCaseSeekTime[currentTestCase];
-            waitForEvent('seeked', seeked, false, true);
-
-            currentTestCase++;
+    var seekTimeIndex = 0;
+    var testCaseSeekTime = [
+            0.10,
+            0.60,
+            1.10,
+            1.60,
+            2.10,
+            2.60,
+            3.10,
+            4.10
+    ];
+    var cueRenderingPosition = [
+            // Number of active cues 1.
+            [[0 ,100, "middle"]],
+            [[0, 50, "middle"]],
+            [[0, 0, "start"]],
+            [[0, 0, "end"]],
+            [[0, 100, "right"]],
+            [[0, 100, "left"]],
+            [[0, 50, "middle"]],
+            [ //Number of active cues 7.
+                [0, 50, "middle"],
+                [0, 0, "start"],
+                [0, 0, "end"],
+                [0, 100, "middle"],
+                [0, 25, "end"],
+                [44, 33, "start"],
+                [23, 55, "start"]
+            ]
+    ];
+    function runNextTestCase() {
+        if (seekTimeIndex == testCaseSeekTime.length) {
+            t.done();
+            return;
         }
 
-        function loaded()
-        {
-            consoleWrite("Test that TextTrack's cues are rendered correctly when the snap to lines flag is not set.");
+        video.currentTime = testCaseSeekTime[seekTimeIndex];
+        video.onseeked = t.step_func(seeked);
+    }
 
-            findMediaElement();
-            testTrack = document.querySelector('track');
-            video.src = findMediaFile('video', '../content/test');
+    function seeked() {
+        var cuePosition = cueRenderingPosition[seekTimeIndex];
+        for (var i = 0; i < testTrack.track.activeCues.length; ++i) {
+            cueDisplayElement = textTrackDisplayElement(video, "display", i);
 
-            // In Chromium it is the enclosure element, which provides the controls height, otherwise the panel;
-            // both are the second child in the shadow DOM.
-            controlsPanelElement = internals.shadowRoot(video).firstChild.firstChild;
+            assert_equals(cueDisplayElement.innerText, testTrack.track.activeCues[i].text);
+            assert_equals(testTrack.track.activeCues[i].align, cuePosition[i][2]);
 
-            waitForEventOnce('canplaythrough', function() {
-                cueDisplayContainer = textTrackDisplayElement(video);
-                runNextTestCase();
-            });
+            assert_equals(Math.round(cueDisplayElement.offsetLeft / cueDisplayContainer.offsetWidth * 100), cuePosition[i][0]);
+            assert_equals(Math.round(cueDisplayElement.offsetTop / cueDisplayContainer.offsetHeight * 100), cuePosition[i][1]);
         }
 
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls>
-            <track src="captions-webvtt/captions-snap-to-lines-not-set.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+        seekTimeIndex++;
+        runNextTestCase();
+    }
+});
+</script>
