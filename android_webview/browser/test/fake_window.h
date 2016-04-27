@@ -24,7 +24,6 @@ class WaitableEvent;
 namespace android_webview {
 
 class BrowserViewRenderer;
-class RenderThreadManager;
 
 class WindowHooks {
  public:
@@ -33,19 +32,20 @@ class WindowHooks {
   virtual void WillOnDraw() = 0;
   virtual void DidOnDraw(bool success) = 0;
 
-  virtual void WillSyncOnRT(RenderThreadManager* functor) = 0;
-  virtual void DidSyncOnRT(RenderThreadManager* functor) = 0;
-  virtual void WillProcessOnRT(RenderThreadManager* functor) = 0;
-  virtual void DidProcessOnRT(RenderThreadManager* functor) = 0;
-  virtual bool WillDrawOnRT(RenderThreadManager* functor,
-                            AwDrawGLInfo* draw_info) = 0;
-  virtual void DidDrawOnRT(RenderThreadManager* functor) = 0;
+  virtual void WillSyncOnRT() = 0;
+  virtual void DidSyncOnRT() = 0;
+  virtual void WillProcessOnRT() = 0;
+  virtual void DidProcessOnRT() = 0;
+  virtual bool WillDrawOnRT(AwDrawGLInfo* draw_info) = 0;
+  virtual void DidDrawOnRT() = 0;
 };
 
 class FakeWindow {
  public:
+  using DrawGLCallback = base::Callback<void(AwDrawGLInfo*)>;
+
   FakeWindow(BrowserViewRenderer* view,
-             RenderThreadManager* functor,
+             const DrawGLCallback& draw_gl,
              WindowHooks* hooks,
              gfx::Rect location);
   ~FakeWindow();
@@ -83,7 +83,7 @@ class FakeWindow {
   // Render thread members.
   std::unique_ptr<base::Thread> render_thread_;
   base::SequenceChecker rt_checker_;
-  RenderThreadManager* functor_;
+  DrawGLCallback draw_gl_;
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_loop_;
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_refptr<gfx::GLContext> context_;

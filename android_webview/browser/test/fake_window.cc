@@ -41,7 +41,7 @@ class FakeWindow::ScopedMakeCurrent {
 };
 
 FakeWindow::FakeWindow(BrowserViewRenderer* view,
-                       RenderThreadManager* functor,
+                       const DrawGLCallback& draw_gl,
                        WindowHooks* hooks,
                        gfx::Rect location)
     : view_(view),
@@ -49,7 +49,7 @@ FakeWindow::FakeWindow(BrowserViewRenderer* view,
       surface_size_(100, 100),
       location_(location),
       on_draw_hardware_pending_(false),
-      functor_(functor),
+      draw_gl_(draw_gl),
       context_current_(false),
       weak_ptr_factory_(this) {
   CheckCurrentlyOnUIThread();
@@ -61,13 +61,6 @@ FakeWindow::FakeWindow(BrowserViewRenderer* view,
 
 FakeWindow::~FakeWindow() {
   CheckCurrentlyOnUIThread();
-}
-
-void FakeWindow::Detach() {
-  CheckCurrentlyOnUIThread();
-  functor_->DeleteHardwareRendererOnUI();
-  view_->OnDetachedFromWindow();
-
   if (render_thread_loop_) {
     base::WaitableEvent completion(true, false);
     render_thread_loop_->PostTask(
@@ -77,6 +70,11 @@ void FakeWindow::Detach() {
   }
 
   render_thread_.reset();
+}
+
+void FakeWindow::Detach() {
+  CheckCurrentlyOnUIThread();
+  view_->OnDetachedFromWindow();
 }
 
 void FakeWindow::RequestInvokeGL(bool wait_for_completion) {
@@ -96,12 +94,12 @@ void FakeWindow::ProcessFunctorOnRT(base::WaitableEvent* sync) {
   process_info.version = kAwDrawGLInfoVersion;
   process_info.mode = AwDrawGLInfo::kModeProcess;
 
-  hooks_->WillProcessOnRT(functor_);
+  hooks_->WillProcessOnRT();
   {
     ScopedMakeCurrent make_current(this);
-    functor_->DrawGL(&process_info);
+    draw_gl_.Run(&process_info);
   }
-  hooks_->DidProcessOnRT(functor_);
+  hooks_->DidProcessOnRT();
 
   if (sync)
     sync->Signal();
@@ -146,9 +144,9 @@ void FakeWindow::DrawFunctorOnRT(base::WaitableEvent* sync) {
     process_info.version = kAwDrawGLInfoVersion;
     process_info.mode = AwDrawGLInfo::kModeSync;
 
-    hooks_->WillSyncOnRT(functor_);
-    functor_->DrawGL(&process_info);
-    hooks_->DidSyncOnRT(functor_);
+    hooks_->WillSyncOnRT();
+    draw_gl_.Run(&process_info);
+    hooks_->DidSyncOnRT();
   }
   sync->Signal();
 
@@ -160,14 +158,14 @@ void FakeWindow::DrawFunctorOnRT(base::WaitableEvent* sync) {
   draw_info.clip_right = location.x() + location.width();
   draw_info.clip_bottom = location.y() + location.height();
 
-  if (!hooks_->WillDrawOnRT(functor_, &draw_info))
+  if (!hooks_->WillDrawOnRT(&draw_info))
     return;
 
   {
     ScopedMakeCurrent make_current(this);
-    functor_->DrawGL(&draw_info);
+    draw_gl_.Run(&draw_info);
   }
-  hooks_->DidDrawOnRT(functor_);
+  hooks_->DidDrawOnRT();
 }
 
 void FakeWindow::CheckCurrentlyOnUIThread() {

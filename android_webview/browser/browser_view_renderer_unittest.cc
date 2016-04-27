@@ -9,6 +9,7 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/compositor_frame_consumer.h"
+#include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/test/rendering_test.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -20,9 +21,7 @@ namespace android_webview {
 class SmokeTest : public RenderingTest {
   void StartTest() override { browser_view_renderer_->PostInvalidate(); }
 
-  void DidDrawOnRT(RenderThreadManager* functor) override {
-    EndTest();
-  }
+  void DidDrawOnRT() override { EndTest(); }
 };
 
 RENDERING_TEST_F(SmokeTest);
@@ -49,9 +48,8 @@ class ClearViewTest : public RenderingTest {
     }
   }
 
-  void DidDrawOnRT(RenderThreadManager* functor) override {
-    EndTest();
-  }
+  void DidDrawOnRT() override { EndTest(); }
+
  private:
   int on_draw_count_;
 };
@@ -87,8 +85,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     on_draw_count_++;
   }
 
-  bool WillDrawOnRT(RenderThreadManager* functor,
-                    AwDrawGLInfo* draw_info) override {
+  bool WillDrawOnRT(AwDrawGLInfo* draw_info) override {
     if (draw_gl_count_on_rt_ == 1) {
       draw_gl_count_on_rt_++;
       ui_task_runner_->PostTask(
@@ -109,9 +106,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     return true;
   }
 
-  void DidDrawOnRT(RenderThreadManager* functor) override {
-    draw_gl_count_on_rt_++;
-  }
+  void DidDrawOnRT() override { draw_gl_count_on_rt_++; }
 
   bool DrawConstraintsEquals(
       const ParentCompositorDrawConstraints& constraints1,
@@ -194,95 +189,161 @@ class CompositorNoFrameTest : public RenderingTest {
 
 RENDERING_TEST_F(CompositorNoFrameTest);
 
-class SwitchOutputSurfaceIdTest : public RenderingTest {
+class ResourceRenderingTest : public RenderingTest {
  public:
+  using ResourceCountMap = std::map<cc::ResourceId, int>;
+  using OutputSurfaceResourceCountMap = std::map<uint32_t, ResourceCountMap>;
+
+  virtual std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
+      int frame_number) = 0;
+
+  void StartTest() override {
+    frame_number_ = 0;
+    AdvanceFrame();
+  }
+
+  void WillOnDraw() override {
+    if (next_frame_) {
+      compositor_->SetHardwareFrame(next_frame_->output_surface_id,
+                                    std::move(next_frame_->frame));
+    }
+  }
+
+  void DidOnDraw(bool success) override {
+    EXPECT_EQ(next_frame_ != nullptr, success);
+    if (!AdvanceFrame()) {
+      ui_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(&ResourceRenderingTest::CheckResults,
+                                           base::Unretained(this)));
+    }
+  }
+
+  OutputSurfaceResourceCountMap GetReturnedResourceCounts() {
+    OutputSurfaceResourceCountMap counts;
+    content::TestSynchronousCompositor::FrameAckArray returned_resources_array;
+    compositor_->SwapReturnedResources(&returned_resources_array);
+    for (const auto& resources : returned_resources_array) {
+      for (const auto& returned_resource : resources.resources) {
+        counts[resources.output_surface_id][returned_resource.id] +=
+            returned_resource.count;
+      }
+    }
+    return counts;
+  }
+
+  virtual void CheckResults() = 0;
+
+ private:
+  bool AdvanceFrame() {
+    next_frame_ = GetFrame(frame_number_++);
+    if (next_frame_) {
+      browser_view_renderer_->PostInvalidate();
+      return true;
+    }
+    return false;
+  }
+
+  std::unique_ptr<content::SynchronousCompositor::Frame> next_frame_;
+  int frame_number_;
+};
+
+class SwitchOutputSurfaceIdTest : public ResourceRenderingTest {
   struct FrameInfo {
     uint32_t output_surface_id;
     cc::ResourceId resource_id;  // Each frame contains a single resource.
   };
 
-  void StartTest() override {
-    last_output_surface_id_ = 0;
-    FrameInfo infos[] = {
+  std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
+      int frame_number) override {
+    static const FrameInfo infos[] = {
         // First output surface.
-        {0u, 1u}, {0u, 1u}, {0u, 2u}, {0u, 2u}, {0u, 3u}, {0u, 3u}, {0u, 4u},
+        {0u, 1u},
+        {0u, 1u},
+        {0u, 2u},
+        {0u, 2u},
+        {0u, 3u},
+        {0u, 3u},
+        {0u, 4u},
         // Second output surface.
-        {1u, 1u}, {1u, 1u}, {1u, 2u}, {1u, 2u}, {1u, 3u}, {1u, 3u}, {1u, 4u},
+        {1u, 1u},
+        {1u, 1u},
+        {1u, 2u},
+        {1u, 2u},
+        {1u, 3u},
+        {1u, 3u},
+        {1u, 4u},
     };
-    for (const auto& info : infos) {
-      content::SynchronousCompositor::Frame frame;
-      frame.output_surface_id = info.output_surface_id;
-      frame.frame = ConstructEmptyFrame();
-      cc::TransferableResource resource;
-      resource.id = info.resource_id;
-      frame.frame->delegated_frame_data->resource_list.push_back(resource);
-      frames_.push(std::move(frame));
-
-      // Keep a id -> count map for the last ouptut_surface_id.
-      if (last_output_surface_id_ != info.output_surface_id) {
-        expected_return_count_.clear();
-        last_output_surface_id_ = info.output_surface_id;
-      }
-      if (expected_return_count_.count(info.resource_id)) {
-        expected_return_count_[info.resource_id]++;
-      } else {
-        expected_return_count_[info.resource_id] = 1;
-      }
+    if (frame_number >= static_cast<int>(arraysize(infos))) {
+      return nullptr;
     }
 
-    browser_view_renderer_->PostInvalidate();
-  }
+    std::unique_ptr<content::SynchronousCompositor::Frame> frame(
+        new content::SynchronousCompositor::Frame);
+    frame->output_surface_id = infos[frame_number].output_surface_id;
+    frame->frame = ConstructFrame(infos[frame_number].resource_id);
 
-  void WillOnDraw() override {
-    if (!frames_.empty()) {
-      compositor_->SetHardwareFrame(frames_.front().output_surface_id,
-                                    std::move(frames_.front().frame));
+    if (last_output_surface_id_ != infos[frame_number].output_surface_id) {
+      expected_return_count_.clear();
+      last_output_surface_id_ = infos[frame_number].output_surface_id;
     }
+    ++expected_return_count_[infos[frame_number].resource_id];
+    return frame;
   }
 
-  void DidOnDraw(bool success) override {
-    EXPECT_TRUE(success);
-    if (frames_.empty()) {
-      ui_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&SwitchOutputSurfaceIdTest::CheckResults,
-                                base::Unretained(this)));
-    } else {
-      frames_.pop();
-      browser_view_renderer_->PostInvalidate();
-    }
+  void StartTest() override {
+    last_output_surface_id_ = -1U;
+    ResourceRenderingTest::StartTest();
   }
 
-  void CheckResults() {
+  void CheckResults() override {
+    GetCompositorFrameConsumer()->DeleteHardwareRendererOnUI();
     window_->Detach();
     window_.reset();
 
     // Make sure resources for the last output surface are returned.
-    content::TestSynchronousCompositor::FrameAckArray returned_resources_array;
-    compositor_->SwapReturnedResources(&returned_resources_array);
-    for (const auto& resources : returned_resources_array) {
-      if (resources.output_surface_id != last_output_surface_id_)
-        continue;
-      for (const auto& returned_resource : resources.resources) {
-        EXPECT_TRUE(!!expected_return_count_.count(returned_resource.id));
-        EXPECT_GE(expected_return_count_[returned_resource.id],
-                  returned_resource.count);
-        expected_return_count_[returned_resource.id] -=
-            returned_resource.count;
-        if (!expected_return_count_[returned_resource.id])
-          expected_return_count_.erase(returned_resource.id);
-      }
-    }
-    EXPECT_TRUE(expected_return_count_.empty());
-
+    EXPECT_EQ(expected_return_count_,
+              GetReturnedResourceCounts()[last_output_surface_id_]);
     EndTest();
   }
 
  private:
-  std::queue<content::SynchronousCompositor::Frame> frames_;
   uint32_t last_output_surface_id_;
-  std::map<cc::ResourceId, int> expected_return_count_;
+  ResourceCountMap expected_return_count_;
 };
 
 RENDERING_TEST_F(SwitchOutputSurfaceIdTest);
+
+class RenderThreadManagerDeletionTest : public ResourceRenderingTest {
+  std::unique_ptr<content::SynchronousCompositor::Frame> GetFrame(
+      int frame_number) override {
+    if (frame_number > 0) {
+      return nullptr;
+    }
+
+    const uint32_t output_surface_id = 0u;
+    const cc::ResourceId resource_id =
+        static_cast<cc::ResourceId>(frame_number);
+
+    std::unique_ptr<content::SynchronousCompositor::Frame> frame(
+        new content::SynchronousCompositor::Frame);
+    frame->output_surface_id = output_surface_id;
+    frame->frame = ConstructFrame(resource_id);
+    ++expected_return_count_[output_surface_id][resource_id];
+    return frame;
+  }
+
+  void CheckResults() override {
+    OutputSurfaceResourceCountMap resource_counts;
+    render_thread_manager_.reset();
+    // Make sure resources for the last frame are returned.
+    EXPECT_EQ(expected_return_count_, GetReturnedResourceCounts());
+    EndTest();
+  }
+
+ private:
+  OutputSurfaceResourceCountMap expected_return_count_;
+};
+
+RENDERING_TEST_F(RenderThreadManagerDeletionTest);
 
 }  // namespace android_webview

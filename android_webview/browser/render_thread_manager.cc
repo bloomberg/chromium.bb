@@ -105,10 +105,10 @@ RenderThreadManager::RenderThreadManager(
 
 RenderThreadManager::~RenderThreadManager() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  DCHECK(!hardware_renderer_.get());
   if (compositor_frame_producer_) {
     compositor_frame_producer_->OnCompositorFrameConsumerWillDestroy();
   }
+  DCHECK(!hardware_renderer_.get());
 }
 
 void RenderThreadManager::ClientRequestInvokeGL(bool for_idle) {

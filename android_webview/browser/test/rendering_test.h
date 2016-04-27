@@ -12,6 +12,7 @@
 #include "android_webview/browser/test/fake_window.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/resources/resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -32,6 +33,7 @@ class BrowserViewRenderer;
 class CompositorFrameConsumer;
 class CompositorFrameProducer;
 class FakeWindow;
+class RenderThreadManager;
 struct ParentCompositorDrawConstraints;
 
 class RenderingTest : public testing::Test,
@@ -59,13 +61,12 @@ class RenderingTest : public testing::Test,
   // WindowHooks overrides.
   void WillOnDraw() override;
   void DidOnDraw(bool success) override {}
-  void WillSyncOnRT(RenderThreadManager* functor) override {}
-  void DidSyncOnRT(RenderThreadManager* functor) override {}
-  void WillProcessOnRT(RenderThreadManager* functor) override {}
-  void DidProcessOnRT(RenderThreadManager* functor) override {}
-  bool WillDrawOnRT(RenderThreadManager* functor,
-                    AwDrawGLInfo* draw_info) override;
-  void DidDrawOnRT(RenderThreadManager* functor) override {}
+  void WillSyncOnRT() override {}
+  void DidSyncOnRT() override {}
+  void WillProcessOnRT() override {}
+  void DidProcessOnRT() override {}
+  bool WillDrawOnRT(AwDrawGLInfo* draw_info) override;
+  void DidDrawOnRT() override {}
 
   virtual void OnParentDrawConstraintsUpdated() {}
 
@@ -85,15 +86,18 @@ class RenderingTest : public testing::Test,
   void Attach();
   void EndTest();
   std::unique_ptr<cc::CompositorFrame> ConstructEmptyFrame();
-
+  std::unique_ptr<cc::CompositorFrame> ConstructFrame(
+      cc::ResourceId resource_id);
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  std::unique_ptr<FakeWindow> window_;
   std::unique_ptr<RenderThreadManager> render_thread_manager_;
   std::unique_ptr<BrowserViewRenderer> browser_view_renderer_;
   std::unique_ptr<content::TestSynchronousCompositor> compositor_;
-  std::unique_ptr<FakeWindow> window_;
 
  private:
   void QuitMessageLoop();
+
+  void DrawGL(AwDrawGLInfo* aw_draw_gl_info);
 
   const std::unique_ptr<base::MessageLoop> message_loop_;
 

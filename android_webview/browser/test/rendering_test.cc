@@ -27,6 +27,8 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
       : BrowserViewRenderer(rendering_test, ui_task_runner),
         rendering_test_(rendering_test) {}
 
+  ~TestBrowserViewRenderer() override {}
+
   void OnParentDrawConstraintsUpdated() override {
     BrowserViewRenderer::OnParentDrawConstraintsUpdated();
     rendering_test_->OnParentDrawConstraintsUpdated();
@@ -42,6 +44,7 @@ RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
 }
 
 RenderingTest::~RenderingTest() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (window_.get())
     window_->Detach();
 }
@@ -75,9 +78,11 @@ void RenderingTest::InitializeCompositor() {
 }
 
 void RenderingTest::Attach() {
-  window_.reset(new FakeWindow(browser_view_renderer_.get(),
-                               render_thread_manager_.get(), this,
-                               gfx::Rect(100, 100)));
+  window_.reset(
+      new FakeWindow(browser_view_renderer_.get(),
+                     base::Bind(&RenderThreadManager::DrawGL,
+                                base::Unretained(render_thread_manager_.get())),
+                     this, gfx::Rect(100, 100)));
 }
 
 void RenderingTest::RunTest() {
@@ -116,6 +121,15 @@ std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
   return compositor_frame;
 }
 
+std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructFrame(
+    cc::ResourceId resource_id) {
+  std::unique_ptr<cc::CompositorFrame> compositor_frame(ConstructEmptyFrame());
+  cc::TransferableResource resource;
+  resource.id = resource_id;
+  compositor_frame->delegated_frame_data->resource_list.push_back(resource);
+  return compositor_frame;
+}
+
 void RenderingTest::WillOnDraw() {
   DCHECK(compositor_);
   compositor_->SetHardwareFrame(0u, ConstructEmptyFrame());
@@ -126,8 +140,7 @@ bool RenderingTest::RequestInvokeGL(bool wait_for_completion) {
   return true;
 }
 
-bool RenderingTest::WillDrawOnRT(RenderThreadManager* functor,
-                                 AwDrawGLInfo* draw_info) {
+bool RenderingTest::WillDrawOnRT(AwDrawGLInfo* draw_info) {
   draw_info->width = window_->surface_size().width();
   draw_info->height = window_->surface_size().height();
   draw_info->is_layer = false;
@@ -136,16 +149,14 @@ bool RenderingTest::WillDrawOnRT(RenderThreadManager* functor,
   return true;
 }
 
-void RenderingTest::OnNewPicture() {
-}
+void RenderingTest::OnNewPicture() {}
 
 void RenderingTest::PostInvalidate() {
   if (window_)
     window_->PostInvalidate();
 }
 
-void RenderingTest::DetachFunctorFromView() {
-}
+void RenderingTest::DetachFunctorFromView() {}
 
 gfx::Point RenderingTest::GetLocationOnScreen() {
   return gfx::Point();
