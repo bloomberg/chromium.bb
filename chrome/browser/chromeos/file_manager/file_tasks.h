@@ -84,6 +84,7 @@
 //            "file_browser_handlers" in manifest.
 // - "app" - File handler - app declaring "file_handlers" in manifest.json.
 // - "drive" - Drive App
+// - "arc" - ARC App
 //
 // <task-action-id> is an ID string used for identifying actions provided
 // from a single Chrome Extension/App. In other words, a single
@@ -142,6 +143,7 @@ enum TaskType {
   TASK_TYPE_FILE_BROWSER_HANDLER,
   TASK_TYPE_FILE_HANDLER,
   TASK_TYPE_DRIVE_APP,
+  TASK_TYPE_ARC_APP,
   TASK_TYPE_UNKNOWN,  // Used only for handling errors.
 };
 

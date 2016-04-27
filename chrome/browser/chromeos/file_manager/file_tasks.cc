@@ -57,6 +57,7 @@ namespace {
 const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
 const char kDriveAppTaskType[] = "drive";
+const char kArcAppTaskType[] = "arc";
 
 // Drive apps always use the action ID.
 const char kDriveAppActionID[] = "open-with";
@@ -70,6 +71,8 @@ std::string TaskTypeToString(TaskType task_type) {
       return kFileHandlerTaskType;
     case TASK_TYPE_DRIVE_APP:
       return kDriveAppTaskType;
+    case TASK_TYPE_ARC_APP:
+      return kArcAppTaskType;
     case TASK_TYPE_UNKNOWN:
       break;
   }
@@ -85,6 +88,8 @@ TaskType StringToTaskType(const std::string& str) {
     return TASK_TYPE_FILE_HANDLER;
   if (str == kDriveAppTaskType)
     return TASK_TYPE_DRIVE_APP;
+  if (str == kArcAppTaskType)
+    return TASK_TYPE_ARC_APP;
   return TASK_TYPE_UNKNOWN;
 }
 
@@ -270,6 +275,11 @@ bool ExecuteFileTask(Profile* profile,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done) {
+  if (task.task_type == TASK_TYPE_ARC_APP) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   // drive::FileTaskExecutor is responsible to handle drive tasks.
   if (task.task_type == TASK_TYPE_DRIVE_APP) {
     DCHECK_EQ(kDriveAppActionID, task.action_id);
