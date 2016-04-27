@@ -57,6 +57,9 @@
   <message name="IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT" desc="The text of the connection section when the connection uses weak encryption.">
     Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted using an obsolete cipher suite.
   </message>
+  <message name="IDS_PAGE_INFO_EXTENSION_PAGE" desc="Message to display in the page info bubble when the page you are on is a chrome-extension:// page. This refers to Chrome extensions.">
+    You are viewing an extension page.
+  </message>
 
   <if expr="not use_titlecase">
     <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="Text of button in the page info that shows the SSL certificate.">

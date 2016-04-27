@@ -131,7 +131,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     [controller_ initWithParentWindow:test_window()
               websiteSettingsUIBridge:bridge_
                           webContents:nil
-                       isInternalPage:NO
+                           bubbleType:WEB_PAGE
                    isDevToolsDisabled:NO];
     window_ = [controller_ window];
     [controller_ showWindow:nil];

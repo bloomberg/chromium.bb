@@ -7,7 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/website_settings/website_settings_utils_cocoa.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
-#include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #import "ui/base/cocoa/menu_controller.h"
 
 @implementation PermissionSelectorButton

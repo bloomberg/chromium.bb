@@ -26,7 +26,6 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_selector_button.h"
 #import "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
-#include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -38,6 +37,8 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 #include "grit/components_chromium_strings.h"
 #include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
@@ -182,7 +183,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 - (id)initWithParentWindow:(NSWindow*)parentWindow
     websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
                 webContents:(content::WebContents*)webContents
-             isInternalPage:(BOOL)isInternalPage
+                 bubbleType:(BubbleType)bubbleType
          isDevToolsDisabled:(BOOL)isDevToolsDisabled {
   DCHECK(parentWindow);
 
@@ -213,8 +214,10 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
     [[[self window] contentView] setSubviews:
         [NSArray arrayWithObject:contentView_.get()]];
 
-    if (isInternalPage)
-      [self initializeContentsForInternalPage];
+    if (bubbleType == INTERNAL_PAGE)
+      [self initializeContentsForInternalPage:false];
+    else if (bubbleType == EXTENSION_PAGE)
+      [self initializeContentsForInternalPage:true];
     else
       [self initializeContents];
 
@@ -236,14 +239,16 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 }
 
 // Create the subviews for the bubble for internal Chrome pages.
-- (void)initializeContentsForInternalPage {
+- (void)initializeContentsForInternalPage:(BOOL)isExtensionPage {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   NSPoint controlOrigin = NSMakePoint(
       kInternalPageFramePadding,
       kInternalPageFramePadding + info_bubble::kBubbleArrowHeight);
   NSImage* productLogoImage =
-      rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToNSImage();
+      rb.GetNativeImageNamed(isExtensionPage ? IDR_PLUGINS_FAVICON
+                                             : IDR_PRODUCT_LOGO_16)
+          .ToNSImage();
   NSImageView* imageView = [self addImageWithSize:[productLogoImage size]
                                            toView:contentView_
                                           atPoint:controlOrigin];
@@ -251,7 +256,9 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
   NSRect imageFrame = [imageView frame];
   controlOrigin.x += NSWidth(imageFrame) + kInternalPageImageSpacing;
-  base::string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
+  base::string16 text =
+      l10n_util::GetStringUTF16(isExtensionPage ? IDS_PAGE_INFO_EXTENSION_PAGE
+                                                : IDS_PAGE_INFO_INTERNAL_PAGE);
   NSTextField* textField = [self addText:text
                                 withSize:[NSFont smallSystemFontSize]
                                     bold:NO
@@ -1115,7 +1122,11 @@ void WebsiteSettingsUIBridge::Show(
     return;
   }
 
-  bool is_internal_page = InternalChromePage(url);
+  BubbleType bubble_type = WEB_PAGE;
+  if (url.SchemeIs(content::kChromeUIScheme))
+    bubble_type = INTERNAL_PAGE;
+  else if (url.SchemeIs(extensions::kExtensionScheme))
+    bubble_type = EXTENSION_PAGE;
 
   // Create the bridge. This will be owned by the bubble controller.
   WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge(web_contents);
@@ -1129,10 +1140,10 @@ void WebsiteSettingsUIBridge::Show(
              initWithParentWindow:parent
           websiteSettingsUIBridge:bridge
                       webContents:web_contents
-                   isInternalPage:is_internal_page
+                       bubbleType:bubble_type
                isDevToolsDisabled:is_devtools_disabled];
 
-  if (!is_internal_page) {
+  if (bubble_type == WEB_PAGE) {
     // Initialize the presenter, which holds the model and controls the UI.
     // This is also owned by the bubble controller.
     WebsiteSettings* presenter = new WebsiteSettings(

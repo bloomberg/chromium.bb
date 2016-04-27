@@ -81,13 +81,19 @@ class WebContents;
   std::unique_ptr<WebsiteSettingsUIBridge> bridge_;
 }
 
+enum BubbleType {
+  WEB_PAGE,        // Bubble for web URLs
+  INTERNAL_PAGE,   // For chrome: URLs
+  EXTENSION_PAGE,  // For chrome-extension: URLs
+};
+
 // Designated initializer. The controller will release itself when the bubble
 // is closed. |parentWindow| cannot be nil. |webContents| may be nil for
 // testing purposes.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
     websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
                 webContents:(content::WebContents*)webContents
-             isInternalPage:(BOOL)isInternalPage
+                 bubbleType:(BubbleType)bubbleType
          isDevToolsDisabled:(BOOL)isDevToolsDisabled;
 
 // Return the default width of the window. It may be wider to fit the content.

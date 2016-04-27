@@ -1840,8 +1840,6 @@
       'browser/ui/website_settings/permission_menu_model.h',
       'browser/ui/website_settings/website_settings_infobar_delegate.cc',
       'browser/ui/website_settings/website_settings_infobar_delegate.h',
-      'browser/ui/website_settings/website_settings_utils.cc',
-      'browser/ui/website_settings/website_settings_utils.h',
       'browser/ui/webui/app_launcher_login_handler.cc',
       'browser/ui/webui/app_launcher_login_handler.h',
       'browser/ui/webui/bookmarks_ui.cc',
