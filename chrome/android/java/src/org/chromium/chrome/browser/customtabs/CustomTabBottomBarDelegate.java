@@ -22,9 +22,11 @@ import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
 import org.chromium.base.Log;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -35,6 +37,8 @@ import java.util.List;
  */
 class CustomTabBottomBarDelegate {
     private static final String TAG = "CustomTab";
+    private static final String REMOTE_VIEWS_SHOWN = "CustomTabsRemoteViewsShown";
+    private static final String REMOTE_VIEWS_UPDATED = "CustomTabsRemoteViewsUpdated";
     private static final int SLIDE_ANIMATION_DURATION_MS = 400;
     private ChromeActivity mActivity;
     private ViewGroup mBottomBarView;
@@ -66,7 +70,7 @@ class CustomTabBottomBarDelegate {
 
         RemoteViews remoteViews = mDataProvider.getBottomBarRemoteViews();
         if (remoteViews != null) {
-            RecordUserAction.record("CustomTabsRemoteViewsShown");
+            new LaunchMetrics.ActionEvent(REMOTE_VIEWS_SHOWN);
             mClickableIDs = mDataProvider.getClickableViewIDs();
             mClickPendingIntent = mDataProvider.getRemoteViewsPendingIntent();
             showRemoteViews(remoteViews);
@@ -117,8 +121,13 @@ class CustomTabBottomBarDelegate {
             PendingIntent pendingIntent) {
         // Update only makes sense if we are already showing a RemoteViews.
         if (mDataProvider.getBottomBarRemoteViews() == null) return false;
-
-        RecordUserAction.record("CustomTabsRemoteViewsUpdated");
+        // UMA requires native library to be loaded. Since we do not know when the client might call
+        // updateVisuals(), guard the UMA with checking to avoid crashes.
+        if (LibraryLoader.isInitialized()) {
+            RecordUserAction.record(REMOTE_VIEWS_UPDATED);
+        } else {
+            new LaunchMetrics.ActionEvent(REMOTE_VIEWS_UPDATED);
+        }
         if (remoteViews == null) {
             if (mBottomBarView == null) return false;
             hideBottomBar();

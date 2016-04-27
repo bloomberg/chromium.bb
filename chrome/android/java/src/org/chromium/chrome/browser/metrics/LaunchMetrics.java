@@ -8,6 +8,7 @@ import android.util.Pair;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -41,6 +42,23 @@ public class LaunchMetrics {
 
         /** Commits the histogram. Expects the native library to be loaded. */
         protected abstract void commitAndClear();
+    }
+
+    /**
+     * Caches an action that will be recorded after native side is loaded.
+     */
+    public static class ActionEvent extends CachedHistogram {
+        private boolean mNeedsToBeRecorded = true;
+
+        public ActionEvent(String actionName) {
+            super(actionName);
+        }
+
+        @Override
+        protected void commitAndClear() {
+            if (mNeedsToBeRecorded) RecordUserAction.record(mHistogramName);
+            mNeedsToBeRecorded = false;
+        }
     }
 
     /** Caches whether an event happened. */
