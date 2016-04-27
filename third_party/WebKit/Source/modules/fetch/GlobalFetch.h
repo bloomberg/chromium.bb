@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/Request.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

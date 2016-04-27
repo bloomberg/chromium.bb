@@ -45,7 +45,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 #include "wtf/text/CString.h"
 #include <algorithm>
 

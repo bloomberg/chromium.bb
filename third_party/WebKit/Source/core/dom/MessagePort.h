@@ -40,7 +40,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -126,8 +125,6 @@ private:
 
     bool m_started;
     bool m_closed;
-
-    WeakPtrFactory<MessagePort> m_weakFactory;
 
     RefPtr<ScriptState> m_scriptStateForConversion;
 };

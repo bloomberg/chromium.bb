@@ -47,7 +47,6 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 #include <limits.h>
 

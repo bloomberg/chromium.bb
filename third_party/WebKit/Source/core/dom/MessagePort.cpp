@@ -55,7 +55,6 @@ MessagePort::MessagePort(ExecutionContext& executionContext)
     , ActiveDOMObject(&executionContext)
     , m_started(false)
     , m_closed(false)
-    , m_weakFactory(this)
 {
 }
 
@@ -73,7 +72,6 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
     DCHECK(getExecutionContext());
     DCHECK(m_entangledChannel);
 
-    OwnPtr<MessagePortChannelArray> channels;
     // Make sure we aren't connected to any of the passed-in ports.
     for (unsigned i = 0; i < ports.size(); ++i) {
         if (ports[i] == this) {
@@ -81,7 +79,7 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
             return;
         }
     }
-    channels = MessagePort::disentanglePorts(context, ports, exceptionState);
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -126,7 +124,7 @@ PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 void MessagePort::messageAvailable()
 {
     DCHECK(getExecutionContext());
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, CrossThreadWeakPersistentThisPointer<MessagePort>(this)));
 }
 
 void MessagePort::start()

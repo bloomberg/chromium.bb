@@ -26,7 +26,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

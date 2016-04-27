@@ -33,7 +33,6 @@
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/network/ResourceResponse.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

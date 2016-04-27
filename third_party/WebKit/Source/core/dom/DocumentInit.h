@@ -34,7 +34,6 @@
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
