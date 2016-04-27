@@ -134,6 +134,7 @@ class MediaRouterMojoTest : public ::testing::Test {
 
  protected:
   void SetUp() override;
+  void TearDown() override;
 
   void ProcessEventLoop();
 

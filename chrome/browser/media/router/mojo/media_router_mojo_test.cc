@@ -32,6 +32,7 @@ MockEventPageTracker::~MockEventPageTracker() {}
 
 MediaRouterMojoTest::MediaRouterMojoTest()
     : mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)) {
+  mock_media_router_->Initialize();
   mock_media_router_->set_instance_id_for_test(kInstanceId);
   extension_ = extensions::test_util::CreateEmptyExtension();
 }
@@ -59,6 +60,10 @@ void MediaRouterMojoTest::SetUp() {
       .WillByDefault(testing::Return(false));
   ConnectProviderManagerService();
   base::RunLoop().RunUntilIdle();
+}
+
+void MediaRouterMojoTest::TearDown() {
+  mock_media_router_->Shutdown();
 }
 
 void MediaRouterMojoTest::ProcessEventLoop() {

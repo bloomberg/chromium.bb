@@ -125,6 +125,12 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   friend class MediaRouterFactory;
   friend class MediaRouterMojoExtensionTest;
   friend class MediaRouterMojoTest;
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, JoinRoute);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, JoinRouteTimedOutFails);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           JoinRouteOffTheRecordMismatchFails);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           OffTheRecordRoutesTerminatedOnProfileShutdown);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaSinksObserver);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,

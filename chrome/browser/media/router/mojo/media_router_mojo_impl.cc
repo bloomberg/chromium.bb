@@ -305,8 +305,6 @@ void MediaRouterMojoImpl::RouteResponseReceived(
   } else {
     result = RouteRequestResult::FromSuccess(
         media_route.To<std::unique_ptr<MediaRoute>>(), presentation_id);
-    if (result->route()->off_the_record())
-      OnOffTheRecordRouteCreated(result->route()->media_route_id());
   }
 
   // TODO(imcheng): Add UMA histogram based on result code (crbug.com/583044).
@@ -326,10 +324,11 @@ void MediaRouterMojoImpl::CreateRoute(
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
-    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
-        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+    std::unique_ptr<RouteRequestResult> error_result(
+        RouteRequestResult::FromError("Invalid origin",
+                                      RouteRequestResult::INVALID_ORIGIN));
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(*result);
+      callback.Run(*error_result);
     return;
   }
 
@@ -351,12 +350,20 @@ void MediaRouterMojoImpl::JoinRoute(
     bool off_the_record) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  std::unique_ptr<RouteRequestResult> error_result;
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
-    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+    error_result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+  } else if (!HasLocalRoute()) {
+    DVLOG_WITH_INSTANCE(1) << "No local routes";
+    error_result = RouteRequestResult::FromError(
+        "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
+  }
+
+  if (error_result) {
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(*result);
+      callback.Run(*error_result);
     return;
   }
 
@@ -696,7 +703,6 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
 void MediaRouterMojoImpl::DoTerminateRoute(const MediaRoute::Id& route_id) {
   DVLOG_WITH_INSTANCE(1) << "DoTerminateRoute " << route_id;
   media_route_provider_->TerminateRoute(route_id);
-  OnRouteTerminated(route_id);
 }
 
 void MediaRouterMojoImpl::DoDetachRoute(const MediaRoute::Id& route_id) {

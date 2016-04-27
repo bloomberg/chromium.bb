@@ -310,6 +310,15 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteOffTheRecordMismatchFails) {
 }
 
 TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
+  interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+  route->media_source = kSource;
+  route->media_sink_id = kSinkId;
+  route->media_route_id = kRouteId;
+  route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
+  route->off_the_record = true;
+
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
                           mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis,
@@ -335,6 +344,10 @@ TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
                         std::vector<MediaRouteResponseCallback>(),
                         base::TimeDelta::FromMilliseconds(kTimeoutMillis),
                         true);
+  mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
+  mojo_routes[0] = route->Clone();
+  router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
+                            mojo::Array<mojo::String>());
 
   // TODO(mfoltz): Where possible, convert other tests to use RunUntilIdle
   // instead of manually calling Run/Quit on the run loop.
@@ -349,6 +362,7 @@ TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
 
 TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   MediaSource media_source(kSource);
+
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
                             false);
   interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
@@ -359,6 +373,13 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   route->is_local = true;
   route->for_display = true;
   route->off_the_record = false;
+
+  // Make sure the MR has received an update with the route, so it knows there
+  // is a local route to join.
+  mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
+  mojo_routes[0] = route->Clone();
+  router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
+                            mojo::Array<mojo::String>());
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -390,7 +411,38 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   run_loop.Run();
 }
 
-TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
+TEST_F(MediaRouterMojoImplTest, JoinRouteNotFoundFails) {
+  RouteResponseCallbackHandler handler;
+  base::RunLoop run_loop;
+  EXPECT_CALL(handler, DoInvoke(nullptr, "", "Route not found",
+                                RouteRequestResult::ROUTE_NOT_FOUND))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
+  router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
+                      route_response_callbacks,
+                      base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
+  run_loop.Run();
+}
+
+TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
+  interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+  route->media_source = kSource;
+  route->media_sink_id = kSinkId;
+  route->media_route_id = kRouteId;
+  route->description = kDescription;
+  route->is_local = true;
+  route->for_display = true;
+  route->off_the_record = false;
+
+  // Make sure the MR has received an update with the route, so it knows there
+  // is a local route to join.
+  mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
+  mojo_routes[0] = route->Clone();
+  router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
+                            mojo::Array<mojo::String>());
+
   EXPECT_CALL(
       mock_media_route_provider_,
       JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
@@ -427,6 +479,13 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteOffTheRecordMismatchFails) {
   route->is_local = true;
   route->for_display = true;
   route->off_the_record = false;
+
+  // Make sure the MR has received an update with the route, so it knows there
+  // is a local route to join.
+  mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
+  mojo_routes[0] = route->Clone();
+  router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
+                            mojo::Array<mojo::String>());
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -1185,7 +1244,7 @@ TEST_F(MediaRouterMojoImplTest, QueuedWhileAsleep) {
   router()->DetachRoute(kRouteId2);
   run_loop.Run();
   EXPECT_CALL(mock_event_page_tracker_, IsEventPageSuspended(extension_id()))
-      .Times(1)
+      .Times(2)
       .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId2)));

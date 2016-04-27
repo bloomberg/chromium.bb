@@ -34,6 +34,7 @@ class RouteRequestResult {
     UNKNOWN_ERROR,
     OK,
     TIMED_OUT,
+    ROUTE_NOT_FOUND,
     INVALID_ORIGIN,
     OFF_THE_RECORD_MISMATCH
   };

@@ -194,7 +194,6 @@ void MediaRouterAndroid::TerminateRoute(const MediaRoute::Id& route_id) {
           base::android::ConvertUTF8ToJavaString(env, route_id);
   Java_ChromeMediaRouter_closeRoute(
       env, java_media_router_.obj(), jroute_id.obj());
-  OnRouteTerminated(route_id);
 }
 
 void MediaRouterAndroid::SendRouteMessage(
@@ -402,8 +401,6 @@ void MediaRouterAndroid::OnRouteCreated(
                    jis_local, std::string(),
                    true);  // TODO(avayvod): Populate for_display.
 
-  // TODO(crbug.com/588239): Call OnOffTheRecordRouteCreated() if |route|
-  // is OTR
   std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
       base::WrapUnique(new MediaRoute(route)), request->presentation_id);
   for (const MediaRouteResponseCallback& callback : request->callbacks)

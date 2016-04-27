@@ -127,7 +127,8 @@ struct SinkSearchCriteria {
 enum RouteRequestResultCode {
   UNKNOWN_ERROR,
   OK,
-  TIMED_OUT
+  TIMED_OUT,
+  ROUTE_NOT_FOUND
 };
 
 // Modeled after the MediaRouter interface defined in
