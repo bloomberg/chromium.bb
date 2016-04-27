@@ -8,7 +8,7 @@
 # they are for files that will be moving as well). The second section, separated
 # by a comment, lists files that we will have to decouple.
 specific_include_rules = {
-  "resource_buffer*\.(cc|h)": [
+  "resource_buffer.*\.(cc|h)": [
     "-content",
     "+content/browser/loader/resource_buffer.h",
     "+content/common/content_export.h",
@@ -36,8 +36,30 @@ specific_include_rules = {
     "+content/browser/web_contents/web_contents_impl.h",
     "+content/common/net/url_request_service_worker_data.h",
     "+content/common/net/url_request_user_data.h",
-    "+content/public/browser/browser_thread.h",    
+    "+content/public/browser/browser_thread.h",
     "+content/public/common/browser_side_navigation_policy.h",
     "+content/public/common/process_type.h",
+  ],
+  "resource_scheduler\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/resource_scheduler.h",
+    "+content/common/content_export.h",
+    "+content/public/browser/resource_controller.h",
+    "+content/public/browser/resource_request_info.h",
+    "+content/public/browser/resource_throttle.h",
+
+    # TODO: To be replaced by mojo.
+    "+content/common/resource_messages.h",
+  ],
+  "resource_scheduler_filter\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/resource_dispatcher_host_impl.h",
+    "+content/browser/loader/resource_scheduler.h",
+    "+content/browser/loader/resource_scheduler_filter.h",
+
+    # TODO: To be replaced by mojo.
+    "+content/common/frame_messages.h",
+    "+content/common/view_messages.h",
+    "+content/public/browser/browser_message_filter.h",
   ],
 }
