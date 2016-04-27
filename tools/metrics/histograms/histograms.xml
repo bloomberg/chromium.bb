@@ -47651,7 +47651,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>falken@chromium.org</owner>
   <summary>
     The result of trying to start a Service Worker that is already installed.
-    See also ServiceWorker.StartNewWorker.Status for new workers.
+    See also ServiceWorker.StartNewWorker.Status for new workers. See also
+    ServiceWorker.StartWorker.StatusByPurpose_* for the breakdown by event type.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.StartWorker.StatusByPurpose"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The result of trying to start a service worker for a particular event type
+    (see ServiceWorker.StartWorker.Status for the total). Only recorded for
+    installed workers. For event type:
   </summary>
 </histogram>
 
@@ -83558,12 +83569,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ServiceWorkerMetrics.EventType" type="int">
   <int value="0" label="ACTIVATE"/>
   <int value="1" label="INSTALL"/>
-  <int value="2" label="FETCH (deprecated)"/>
+  <int value="2" label="FETCH (unused)"/>
   <int value="3" label="SYNC"/>
   <int value="4" label="NOTIFICATION_CLICK"/>
   <int value="5" label="PUSH"/>
   <int value="6" label="GEOFENCING"/>
-  <int value="7" label="SERVICE_PORT_CONNECT"/>
+  <int value="7" label="SERVICE_PORT_CONNECT (unused)"/>
   <int value="8" label="MESSAGE"/>
   <int value="9" label="NOTIFICATION_CLOSE"/>
   <int value="10" label="FETCH_MAIN_FRAME"/>
@@ -93125,6 +93136,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="interstitial.decision"/>
   <affected-histogram name="interstitial.decision.repeat_visit"/>
   <affected-histogram name="interstitial.interaction"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorker.EventType">
+  <suffix name="ACTIVATE" label="ACTIVATE"/>
+  <suffix name="INSTALL" label="INSTALL"/>
+  <suffix name="SYNC" label="SYNC"/>
+  <suffix name="NOTIFICATION_CLICK" label="NOTIFICATION_CLICK"/>
+  <suffix name="PUSH" label="PUSH"/>
+  <suffix name="GEOFENCING" label="GEOFENCING"/>
+  <suffix name="MESSAGE" label="MESSAGE"/>
+  <suffix name="NOTIFICATION_CLOSE" label="NOTIFICATION_CLOSE"/>
+  <suffix name="FETCH_MAIN_FRAME" label="FETCH_MAIN_FRAME"/>
+  <suffix name="FETCH_SUB_FRAME" label="FETCH_SUB_FRAME"/>
+  <suffix name="FETCH_SHARED_WORKER" label="FETCH_SHARED_WORKER"/>
+  <suffix name="FETCH_SUB_RESOURCE" label="FETCH_SUB_RESOURCE"/>
+  <suffix name="UNKNOWN" label="UNKNOWN"/>
+  <suffix name="FOREIGN_FETCH" label="FOREIGN_FETCH"/>
+  <affected-histogram name="ServiceWorker.StartWorker.StatusByPurpose"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker.FailureStreak">

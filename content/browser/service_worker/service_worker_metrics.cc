@@ -108,7 +108,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Unknown";
     case EventType::FOREIGN_FETCH:
       return "Foreign Fetch";
-    case EventType::DEPRECATED_FETCH:
     case EventType::NUM_TYPES:
       break;
   }
@@ -190,20 +189,97 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
     ServiceWorkerStatusCode status,
     EventType purpose,
     bool is_installed) {
-  if (is_installed) {
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
-                              SERVICE_WORKER_ERROR_MAX_VALUE);
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose",
-                              static_cast<int>(purpose),
-                              static_cast<int>(EventType::NUM_TYPES));
-    if (status == SERVICE_WORKER_ERROR_TIMEOUT) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.Timeout.StartPurpose",
-          static_cast<int>(purpose), static_cast<int>(EventType::NUM_TYPES));
-    }
-  } else {
+  if (!is_installed) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartNewWorker.Status", status,
                               SERVICE_WORKER_ERROR_MAX_VALUE);
+    return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
+  switch (purpose) {
+    case EventType::ACTIVATE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_ACTIVATE", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::INSTALL:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_INSTALL", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::SYNC:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_SYNC", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::NOTIFICATION_CLICK:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_NOTIFICATION_CLICK",
+          status, SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::PUSH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_PUSH", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::GEOFENCING:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_GEOFENCING", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::MESSAGE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_MESSAGE", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::NOTIFICATION_CLOSE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_NOTIFICATION_CLOSE",
+          status, SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::FETCH_MAIN_FRAME:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_MAIN_FRAME", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::FETCH_SUB_FRAME:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_SUB_FRAME", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::FETCH_SHARED_WORKER:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_SHARED_WORKER",
+          status, SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::FETCH_SUB_RESOURCE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_FETCH_SUB_RESOURCE",
+          status, SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::UNKNOWN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_UNKNOWN", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::FOREIGN_FETCH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.StartWorker.StatusByPurpose_FOREIGN_FETCH", status,
+          SERVICE_WORKER_ERROR_MAX_VALUE);
+      break;
+    case EventType::NUM_TYPES:
+      NOTREACHED();
+      break;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose",
+                            static_cast<int>(purpose),
+                            static_cast<int>(EventType::NUM_TYPES));
+  if (status == SERVICE_WORKER_ERROR_TIMEOUT) {
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Timeout.StartPurpose",
+                              static_cast<int>(purpose),
+                              static_cast<int>(EventType::NUM_TYPES));
   }
 }
 
@@ -335,7 +411,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::GEOFENCING:
       break;
 
-    case EventType::DEPRECATED_FETCH:
     case EventType::UNKNOWN:
     case EventType::NUM_TYPES:
       NOTREACHED() << "Invalid event type";

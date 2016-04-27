@@ -80,12 +80,12 @@ class ServiceWorkerMetrics {
   enum class EventType {
     ACTIVATE = 0,
     INSTALL = 1,
-    DEPRECATED_FETCH = 2,  // Deprecated, use a more specific FETCH_ type.
+    // FETCH = 2,  // Obsolete
     SYNC = 3,
     NOTIFICATION_CLICK = 4,
     PUSH = 5,
     GEOFENCING = 6,
-    // SERVICE_PORT_CONNECT = 7,
+    // SERVICE_PORT_CONNECT = 7,  // Obsolete
     MESSAGE = 8,
     NOTIFICATION_CLOSE = 9,
     FETCH_MAIN_FRAME = 10,
