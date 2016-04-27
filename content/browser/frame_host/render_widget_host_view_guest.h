@@ -64,7 +64,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void Show() override;
   void Hide() override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::Rect GetViewBounds() const override;
   gfx::Rect GetBoundsInRootWindow() override;

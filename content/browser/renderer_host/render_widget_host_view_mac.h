@@ -260,7 +260,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetBounds(const gfx::Rect& rect) override;
   gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   bool HasFocus() const override;
   bool IsSurfaceAvailableForCopy() const override;

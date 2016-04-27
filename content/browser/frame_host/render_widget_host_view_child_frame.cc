@@ -153,11 +153,6 @@ gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
   return NULL;
 }
 
-gfx::NativeViewId RenderWidgetHostViewChildFrame::GetNativeViewId() const {
-  NOTREACHED();
-  return 0;
-}
-
 gfx::NativeViewAccessible
 RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
   NOTREACHED();

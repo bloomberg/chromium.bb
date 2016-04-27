@@ -980,10 +980,6 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
   return cocoa_view_;
 }
 
-gfx::NativeViewId RenderWidgetHostViewMac::GetNativeViewId() const {
-  return reinterpret_cast<gfx::NativeViewId>(GetNativeView());
-}
-
 gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
   return cocoa_view_;
 }

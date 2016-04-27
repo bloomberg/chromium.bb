@@ -54,7 +54,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
   void Hide() override;
   bool IsShowing() override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::Rect GetViewBounds() const override;
   gfx::Vector2dF GetLastScrollOffset() const override;

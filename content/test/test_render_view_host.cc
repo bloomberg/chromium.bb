@@ -76,10 +76,6 @@ gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
   return NULL;
 }
 
-gfx::NativeViewId TestRenderWidgetHostView::GetNativeViewId() const {
-  return 0;
-}
-
 gfx::NativeViewAccessible TestRenderWidgetHostView::GetNativeViewAccessible() {
   return NULL;
 }

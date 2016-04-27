@@ -82,7 +82,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Retrieves the native view used to contain plugins and identify the
   // renderer in IPC messages.
   virtual gfx::NativeView GetNativeView() const = 0;
-  virtual gfx::NativeViewId GetNativeViewId() const = 0;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
   // Returns a ui::TextInputClient to support text input or nullptr if this RWHV

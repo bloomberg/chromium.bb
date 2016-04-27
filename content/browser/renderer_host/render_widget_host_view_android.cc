@@ -474,11 +474,6 @@ gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
   return content_view_core_;
 }
 
-gfx::NativeViewId RenderWidgetHostViewAndroid::GetNativeViewId() const {
-  return reinterpret_cast<gfx::NativeViewId>(
-      const_cast<RenderWidgetHostViewAndroid*>(this));
-}
-
 gfx::NativeViewAccessible
 RenderWidgetHostViewAndroid::GetNativeViewAccessible() {
   NOTIMPLEMENTED();

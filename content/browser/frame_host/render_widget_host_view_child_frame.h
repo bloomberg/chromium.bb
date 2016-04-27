@@ -86,7 +86,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::Size GetVisibleViewportSize() const override;
   gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void SetBackgroundColor(SkColor color) override;
   gfx::Size GetPhysicalBackingSize() const override;

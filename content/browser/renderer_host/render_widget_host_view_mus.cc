@@ -171,10 +171,6 @@ gfx::NativeView RenderWidgetHostViewMus::GetNativeView() const {
   return aura_window_;
 }
 
-gfx::NativeViewId RenderWidgetHostViewMus::GetNativeViewId() const {
-  return gfx::NativeViewId();
-}
-
 gfx::NativeViewAccessible RenderWidgetHostViewMus::GetNativeViewAccessible() {
   return gfx::NativeViewAccessible();
 }

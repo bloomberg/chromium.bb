@@ -69,7 +69,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void SetBounds(const gfx::Rect& rect) override {}
   gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
   bool HasFocus() const override;

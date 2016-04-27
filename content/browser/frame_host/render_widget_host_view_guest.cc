@@ -305,16 +305,6 @@ gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
   return rwhv->GetNativeView();
 }
 
-gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
-  if (!guest_)
-    return static_cast<gfx::NativeViewId>(NULL);
-
-  RenderWidgetHostView* rwhv = guest_->GetOwnerRenderWidgetHostView();
-  if (!rwhv)
-    return static_cast<gfx::NativeViewId>(NULL);
-  return rwhv->GetNativeViewId();
-}
-
 gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
   if (!guest_)
     return gfx::NativeViewAccessible();

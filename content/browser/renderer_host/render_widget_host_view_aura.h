@@ -115,7 +115,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetBounds(const gfx::Rect& rect) override;
   gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
-  gfx::NativeViewId GetNativeViewId() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
   bool HasFocus() const override;
@@ -284,6 +283,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                    const gfx::Point& new_origin) override;
 
 #if defined(OS_WIN)
+  // Gets the HWND of the host window.
+  HWND GetHostWindowHWND() const;
+
   // Updates the cursor clip region. Used for mouse locking.
   void UpdateMouseLockRegion();
 

@@ -514,10 +514,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   }
 
  protected:
-  // Retrieves an id the renderer can use to refer to its view.
-  // This is used for various IPC messages, including plugins.
-  gfx::NativeViewId GetNativeViewId() const;
-
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
   // its delegate.

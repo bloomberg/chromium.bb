@@ -628,14 +628,12 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
   return window_;
 }
 
-gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
 #if defined(OS_WIN)
+HWND RenderWidgetHostViewAura::GetHostWindowHWND() const {
   aura::WindowTreeHost* host = window_->GetHost();
-  if (host)
-    return reinterpret_cast<gfx::NativeViewId>(host->GetAcceleratedWidget());
-#endif
-  return static_cast<gfx::NativeViewId>(NULL);
+  return host ? host->GetAcceleratedWidget() : nullptr;
 }
+#endif
 
 gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 #if defined(OS_WIN)
@@ -2598,10 +2596,10 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   // Create the legacy dummy window which corresponds to the bounds of the
   // webcontents. It is needed for accessibility and for scrolling to work in
   // legacy drivers for trackpoints/trackpads, etc.
-  if (!legacy_window_destroyed_ && GetNativeViewId()) {
+  if (!legacy_window_destroyed_ && GetHostWindowHWND()) {
     if (!legacy_render_widget_host_HWND_) {
-      legacy_render_widget_host_HWND_ = LegacyRenderWidgetHostHWND::Create(
-          reinterpret_cast<HWND>(GetNativeViewId()));
+      legacy_render_widget_host_HWND_ =
+          LegacyRenderWidgetHostHWND::Create(GetHostWindowHWND());
     }
     if (legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_->set_host(this);
@@ -2665,8 +2663,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   // The parent may have changed here. Ensure that the legacy window is
   // reparented accordingly.
   if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->UpdateParent(
-        reinterpret_cast<HWND>(GetNativeViewId()));
+    legacy_render_widget_host_HWND_->UpdateParent(GetHostWindowHWND());
 #endif
 
   delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());

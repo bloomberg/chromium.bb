@@ -336,12 +336,6 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
   return view_.get();
 }
 
-gfx::NativeViewId RenderWidgetHostImpl::GetNativeViewId() const {
-  if (view_)
-    return view_->GetNativeViewId();
-  return 0;
-}
-
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
   resize_ack_pending_ = false;
   if (repaint_ack_pending_) {
