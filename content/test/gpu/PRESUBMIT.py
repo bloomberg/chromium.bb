@@ -27,7 +27,7 @@ def _GetPathsToPrepend(input_api):
         'third_party', 'catapult', 'catapult_base'),
   ]
 
-def _WebGLTextExpectationsTests(input_api, output_api):
+def _GpuUnittestsArePassingCheck(input_api, output_api):
   if not input_api.AffectedFiles():
     return []
 
@@ -58,13 +58,13 @@ def _WebGLTextExpectationsTests(input_api, output_api):
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_PyLintChecks(input_api, output_api))
-  results.extend(_WebGLTextExpectationsTests(input_api, output_api))
+  results.extend(_GpuUnittestsArePassingCheck(input_api, output_api))
   return results
 
 def CheckChangeOnCommit(input_api, output_api):
   results = []
   results.extend(_PyLintChecks(input_api, output_api))
-  results.extend(_WebGLTextExpectationsTests(input_api, output_api))
+  results.extend(_GpuUnittestsArePassingCheck(input_api, output_api))
   return results
 
 def PostUploadHook(cl, change, output_api):
