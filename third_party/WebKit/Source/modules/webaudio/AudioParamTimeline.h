@@ -31,6 +31,7 @@
 
 #include "core/dom/DOMTypedArray.h"
 #include "modules/webaudio/AbstractAudioContext.h"
+#include "modules/webaudio/AudioDestinationNode.h"
 #include "wtf/Forward.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
@@ -53,7 +54,7 @@ public:
 
     // hasValue is set to true if a valid timeline value is returned.
     // otherwise defaultValue is returned.
-    float valueForContextTime(AbstractAudioContext*, float defaultValue, bool& hasValue);
+    float valueForContextTime(AudioDestinationHandler&, float defaultValue, bool& hasValue);
 
     // Given the time range in frames, calculates parameter values into the values buffer and
     // returns the last parameter value calculated for "values" or the defaultValue if none were

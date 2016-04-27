@@ -35,12 +35,9 @@ namespace blink {
 const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
 const double AudioParamHandler::SnapThreshold = 0.001;
 
-AbstractAudioContext* AudioParamHandler::context() const
+AudioDestinationHandler& AudioParamHandler::destinationHandler() const
 {
-    // TODO(tkent): We can remove this dangerous function by removing
-    // AbstractAudioContext dependency from AudioParamTimeline.
-    ASSERT_WITH_SECURITY_IMPLICATION(deferredTaskHandler().isAudioThread());
-    return m_context;
+    return *m_destinationHandler;
 }
 
 float AudioParamHandler::value()
@@ -49,7 +46,7 @@ float AudioParamHandler::value()
     float v = intrinsicValue();
     if (deferredTaskHandler().isAudioThread()) {
         bool hasValue;
-        float timelineValue = m_timeline.valueForContextTime(context(), v, hasValue);
+        float timelineValue = m_timeline.valueForContextTime(destinationHandler(), v, hasValue);
 
         if (hasValue)
             v = timelineValue;
@@ -74,9 +71,7 @@ bool AudioParamHandler::smooth()
     // If values have been explicitly scheduled on the timeline, then use the exact value.
     // Smoothing effectively is performed by the timeline.
     bool useTimelineValue = false;
-    float value = intrinsicValue();
-    if (context())
-        value = m_timeline.valueForContextTime(context(), value, useTimelineValue);
+    float value = m_timeline.valueForContextTime(destinationHandler(), intrinsicValue(), useTimelineValue);
 
     if (m_smoothedValue == value) {
         // Smoothed value has already approached and snapped to value.
@@ -134,7 +129,7 @@ void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfVal
         // Calculate control-rate (k-rate) intrinsic value.
         bool hasValue;
         float value = intrinsicValue();
-        float timelineValue = m_timeline.valueForContextTime(context(), value, hasValue);
+        float timelineValue = m_timeline.valueForContextTime(destinationHandler(), value, hasValue);
 
         if (hasValue)
             value = timelineValue;
@@ -164,8 +159,8 @@ void AudioParamHandler::calculateTimelineValues(float* values, unsigned numberOf
 {
     // Calculate values for this render quantum.  Normally numberOfValues will
     // equal to AudioHandler::ProcessingSizeInFrames (the render quantum size).
-    double sampleRate = context()->sampleRate();
-    size_t startFrame = context()->currentSampleFrame();
+    double sampleRate = destinationHandler().sampleRate();
+    size_t startFrame = destinationHandler().currentSampleFrame();
     size_t endFrame = startFrame + numberOfValues;
 
     // Note we're running control rate at the sample-rate.

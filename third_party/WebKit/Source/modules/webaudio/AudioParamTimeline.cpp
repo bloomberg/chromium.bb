@@ -302,13 +302,11 @@ void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState&
     }
 }
 
-float AudioParamTimeline::valueForContextTime(AbstractAudioContext* context, float defaultValue, bool& hasValue)
+float AudioParamTimeline::valueForContextTime(AudioDestinationHandler& audioDestination, float defaultValue, bool& hasValue)
 {
-    ASSERT(context);
-
     {
         MutexTryLocker tryLocker(m_eventsLock);
-        if (!tryLocker.locked() || !context || !m_events.size() || context->currentTime() < m_events[0].time()) {
+        if (!tryLocker.locked() || !m_events.size() || audioDestination.currentTime() < m_events[0].time()) {
             hasValue = false;
             return defaultValue;
         }
@@ -316,8 +314,8 @@ float AudioParamTimeline::valueForContextTime(AbstractAudioContext* context, flo
 
     // Ask for just a single value.
     float value;
-    double sampleRate = context->sampleRate();
-    size_t startFrame = context->currentSampleFrame();
+    double sampleRate = audioDestination.sampleRate();
+    size_t startFrame = audioDestination.currentSampleFrame();
     double controlRate = sampleRate / AudioHandler::ProcessingSizeInFrames; // one parameter change per render quantum
     value = valuesForFrameRange(startFrame, startFrame + 1, defaultValue, &value, 1, sampleRate, controlRate);
 

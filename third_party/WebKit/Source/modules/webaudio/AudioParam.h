@@ -61,7 +61,7 @@ public:
     }
 
     // This should be used only in audio rendering thread.
-    AbstractAudioContext* context() const;
+    AudioDestinationHandler& destinationHandler() const;
 
     // AudioSummingJunction
     void didUpdate() override { }
@@ -107,7 +107,8 @@ private:
         , m_intrinsicValue(defaultValue)
         , m_defaultValue(defaultValue)
         , m_smoothedValue(defaultValue)
-        , m_context(&context) { }
+        , m_destinationHandler(context.destination()->audioDestinationHandler())
+    { }
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
@@ -124,9 +125,8 @@ private:
 
     AudioParamTimeline m_timeline;
 
-    // We can't make this Persistent because of a reference cycle. It's safe to
-    // access this field only when we're rendering audio.
-    UntracedMember<AbstractAudioContext> m_context;
+    // The destination node used to get necessary information like the smaple rate and context time.
+    RefPtr<AudioDestinationHandler> m_destinationHandler;
 };
 
 // AudioParam class represents web-exposed AudioParam interface.
