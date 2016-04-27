@@ -29,7 +29,6 @@ AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
 BackgroundSync status=stable
 BackspaceDefaultHandler status=test
-Ballista status=experimental
 CacheIgnoreSearchOption status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable

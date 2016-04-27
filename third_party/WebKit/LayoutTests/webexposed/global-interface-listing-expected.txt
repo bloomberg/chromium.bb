@@ -17,10 +17,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 [INTERFACES]
-interface Actions
-    attribute @@toStringTag
-    method constructor
-    method share
 interface AnalyserNode : AudioNode
     attribute @@toStringTag
     getter fftSize
@@ -3823,7 +3819,6 @@ interface NamedNodeMap
     method setNamedItemNS
 interface Navigator
     attribute @@toStringTag
-    getter actions
     getter appCodeName
     getter appName
     getter appVersion

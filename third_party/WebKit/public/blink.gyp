@@ -33,7 +33,6 @@
     ],
     'variables': {
         'blink_mojo_sources': [
-            'platform/modules/ballista/ballista.mojom',
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/notifications/notification.mojom',
