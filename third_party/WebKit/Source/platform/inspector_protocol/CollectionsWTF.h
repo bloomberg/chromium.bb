@@ -73,8 +73,8 @@ public:
     const OwnPtr<T>& at(size_t i) const { return m_impl.at(i); }
     OwnPtr<T>& last() { return m_impl.last(); }
     const OwnPtr<T>& last() const { return m_impl.last(); }
-    void append(PassOwnPtr<T> t) { m_impl.append(t); }
-    void prepend(PassOwnPtr<T> t) { m_impl.prepend(t); }
+    void append(PassOwnPtr<T> t) { m_impl.append(std::move(t)); }
+    void prepend(PassOwnPtr<T> t) { m_impl.prepend(std::move(t)); }
     void remove(size_t i) { m_impl.remove(i); }
     void clear() { m_impl.clear(); }
     void swap(Vector<OwnPtr<T>>& other) { m_impl.swap(other.m_impl); }
@@ -170,7 +170,7 @@ public:
 
     size_t size() const { return m_impl.size(); }
     bool isEmpty() const { return m_impl.isEmpty(); }
-    bool set(const K& k, PassOwnPtr<V> v) { return m_impl.set(k, v).isNewEntry; }
+    bool set(const K& k, PassOwnPtr<V> v) { return m_impl.set(k, std::move(v)).isNewEntry; }
     bool contains(const K& k) const { return m_impl.contains(k); }
     V* get(const K& k) const { return m_impl.get(k); }
     PassOwnPtr<V> take(const K& k) { return m_impl.take(k); }

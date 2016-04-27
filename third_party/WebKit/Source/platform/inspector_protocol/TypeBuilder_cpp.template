@@ -29,7 +29,7 @@ PassOwnPtr<Object> Object::clone() const
     return adoptPtr(new Object(DictionaryValue::cast(m_object->clone())));
 }
 
-Object::Object(PassOwnPtr<protocol::DictionaryValue> object) : m_object(object) { }
+Object::Object(PassOwnPtr<protocol::DictionaryValue> object) : m_object(std::move(object)) { }
 Object::~Object() { }
 
 // ------------- Enum values from types.

@@ -106,7 +106,7 @@ public:
 
     void addItem(PassOwnPtr<T> value)
     {
-        m_vector.append(value);
+        m_vector.append(std::move(value));
     }
 
     size_t length()

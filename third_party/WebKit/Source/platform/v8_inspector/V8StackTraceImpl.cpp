@@ -143,7 +143,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone()
 
 V8StackTraceImpl::V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
     : m_description(description)
-    , m_parent(parent)
+    , m_parent(std::move(parent))
 {
     m_frames.swap(frames);
 }

@@ -408,7 +408,7 @@ void V8DebuggerAgentImpl::setBreakpoint(ErrorString* errorString,
     int lineNumber;
     int columnNumber;
 
-    if (!parseLocation(errorString, location, &scriptId, &lineNumber, &columnNumber))
+    if (!parseLocation(errorString, std::move(location), &scriptId, &lineNumber, &columnNumber))
         return;
 
     String16 condition = optionalCondition.fromMaybe("");
@@ -467,7 +467,7 @@ void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
     int lineNumber;
     int columnNumber;
 
-    if (!parseLocation(errorString, location, &scriptId, &lineNumber, &columnNumber))
+    if (!parseLocation(errorString, std::move(location), &scriptId, &lineNumber, &columnNumber))
         return;
 
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, "");
@@ -774,7 +774,7 @@ void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReas
     if (!enabled() || m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || debugger().isPaused() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
-    m_breakAuxData = data;
+    m_breakAuxData = std::move(data);
     m_pausingOnNativeEvent = true;
     m_skipNextDebuggerStepOut = false;
     debugger().setPauseOnNextStatement(true);
@@ -1403,7 +1403,7 @@ void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<p
     if (!enabled() || m_skipAllPauses || !m_pausedContext.IsEmpty() || isCurrentCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
-    m_breakAuxData = data;
+    m_breakAuxData = std::move(data);
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
@@ -1414,7 +1414,7 @@ void V8DebuggerAgentImpl::breakProgramOnException(const String16& breakReason, P
 {
     if (!enabled() || m_debugger->getPauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;
-    breakProgram(breakReason, data);
+    breakProgram(breakReason, std::move(data));
 }
 
 bool V8DebuggerAgentImpl::assertPaused(ErrorString* errorString)

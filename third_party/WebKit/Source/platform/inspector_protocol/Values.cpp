@@ -194,21 +194,21 @@ void DictionaryValue::setString(const String16& name, const String16& value)
 void DictionaryValue::setValue(const String16& name, PassOwnPtr<Value> value)
 {
     ASSERT(value);
-    if (m_data.set(name, value))
+    if (m_data.set(name, std::move(value)))
         m_order.append(name);
 }
 
 void DictionaryValue::setObject(const String16& name, PassOwnPtr<DictionaryValue> value)
 {
     ASSERT(value);
-    if (m_data.set(name, value))
+    if (m_data.set(name, std::move(value)))
         m_order.append(name);
 }
 
 void DictionaryValue::setArray(const String16& name, PassOwnPtr<ListValue> value)
 {
     ASSERT(value);
-    if (m_data.set(name, value))
+    if (m_data.set(name, std::move(value)))
         m_order.append(name);
 }
 
@@ -340,7 +340,7 @@ ListValue::ListValue()
 void ListValue::pushValue(PassOwnPtr<protocol::Value> value)
 {
     ASSERT(value);
-    m_data.append(value);
+    m_data.append(std::move(value));
 }
 
 protocol::Value* ListValue::at(size_t index)

@@ -340,7 +340,7 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
         .setLineNumber(node->line_number)
         .setColumnNumber(node->column_number)
         .setSelfSize(selfSize)
-        .setChildren(children).build();
+        .setChildren(std::move(children)).build();
     return result.release();
 }
 } // namespace

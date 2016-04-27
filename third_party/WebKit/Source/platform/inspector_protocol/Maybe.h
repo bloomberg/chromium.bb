@@ -16,8 +16,8 @@ template<typename T>
 class Maybe {
 public:
     Maybe() { }
-    Maybe(PassOwnPtr<T> value) : m_value(value) { }
-    void operator=(PassOwnPtr<T> value) { m_value = value; }
+    Maybe(PassOwnPtr<T> value) : m_value(std::move(value)) { }
+    void operator=(PassOwnPtr<T> value) { m_value = std::move(value); }
     T* fromJust() const { ASSERT(m_value); return m_value.get(); }
     T* fromMaybe(T* defaultValue) const { return m_value ? m_value.get() : defaultValue; }
     bool isJust() const { return !!m_value; }

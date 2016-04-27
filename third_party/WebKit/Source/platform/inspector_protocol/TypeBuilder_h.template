@@ -122,7 +122,7 @@ public:
       {% else %}
     {{resolve_type(property).raw_return_type}} get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_type % ("m_" + property.name)}}; }
       {% endif %}
-    void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = value; }
+    void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = {{resolve_type(property).to_rvalue % "value"}}; }
     {% endfor %}
 
     PassOwnPtr<protocol::DictionaryValue> serialize() const;
@@ -150,14 +150,14 @@ public:
       {% if property.optional %}
         {{type.id}}Builder<STATE>& set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
         {
-            m_result->set{{property.name | to_title_case}}(value);
+            m_result->set{{property.name | to_title_case}}({{resolve_type(property).to_rvalue % "value"}});
             return *this;
         }
       {% else %}
         {{type.id}}Builder<STATE | {{property.name | to_title_case}}Set>& set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
         {
             static_assert(!(STATE & {{property.name | to_title_case}}Set), "property {{property.name}} should not be set yet");
-            m_result->set{{property.name | to_title_case}}(value);
+            m_result->set{{property.name | to_title_case}}({{resolve_type(property).to_rvalue % "value"}});
             return castState<{{property.name | to_title_case}}Set>();
         }
       {% endif %}

@@ -427,7 +427,7 @@ v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(ErrorString* errorString, co
 
 void V8RuntimeAgentImpl::addInspectedObject(PassOwnPtr<Inspectable> inspectable)
 {
-    m_session->addInspectedObject(inspectable);
+    m_session->addInspectedObject(std::move(inspectable));
 }
 
 void V8RuntimeAgentImpl::reset()
@@ -467,7 +467,7 @@ void V8RuntimeAgentImpl::reportExecutionContextDestroyed(InspectedContext* conte
 void V8RuntimeAgentImpl::inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints)
 {
     if (m_enabled)
-        m_frontend->inspectRequested(objectToInspect, hints);
+        m_frontend->inspectRequested(std::move(objectToInspect), std::move(hints));
 }
 
 } // namespace blink

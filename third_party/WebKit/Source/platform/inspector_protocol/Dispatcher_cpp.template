@@ -102,7 +102,7 @@ private:
 
     void sendResponse(int sessionId, int callId, ErrorString invocationError, PassOwnPtr<protocol::DictionaryValue> result)
     {
-        sendResponse(sessionId, callId, invocationError, nullptr, result);
+        sendResponse(sessionId, callId, invocationError, nullptr, std::move(result));
     }
 
     void sendResponse(int sessionId, int callId, ErrorString invocationError)
@@ -120,7 +120,7 @@ private:
 class PLATFORM_EXPORT DispatcherCallbackBase : public protocol::Backend::CallbackBase {
 public:
     DispatcherCallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
-        : m_backendImpl(backendImpl), m_sessionId(sessionId), m_id(id) { }
+        : m_backendImpl(std::move(backendImpl)), m_sessionId(sessionId), m_id(id) { }
     virtual ~DispatcherCallbackBase() { }
     void dispose() { m_backendImpl = nullptr; }
 
@@ -129,7 +129,7 @@ protected:
     {
         if (!m_backendImpl->get())
             return;
-        m_backendImpl->get()->sendResponse(m_sessionId, m_id, invocationError, nullptr, partialMessage);
+        m_backendImpl->get()->sendResponse(m_sessionId, m_id, invocationError, nullptr, std::move(partialMessage));
         m_backendImpl = nullptr;
     }
 
@@ -157,7 +157,7 @@ const char DispatcherImpl::kInvalidRequest[] = "Invalid request";
 class PLATFORM_EXPORT {{domain.domain}}{{command.name | to_title_case}}Callback : public Backend::{{domain.domain}}::{{command.name | to_title_case}}Callback, public DispatcherCallbackBase {
 public:
     {{domain.domain}}{{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
-        : DispatcherCallbackBase(backendImpl, sessionId, id) { }
+        : DispatcherCallbackBase(std::move(backendImpl), sessionId, id) { }
 
     void sendSuccess(
     {%- for parameter in command.returns -%}
@@ -316,7 +316,7 @@ void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& 
 
     OwnPtr<protocol::DictionaryValue> responseMessage = DictionaryValue::create();
     responseMessage->setNumber("id", callId);
-    responseMessage->setObject("result", result);
+    responseMessage->setObject("result", std::move(result));
     if (m_frontendChannel)
         m_frontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
 }

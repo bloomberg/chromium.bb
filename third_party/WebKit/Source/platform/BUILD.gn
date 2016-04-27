@@ -183,6 +183,9 @@ protocol_file = "../devtools/protocol.json"
 action("inspector_protocol_sources") {
   script = "inspector_protocol/CodeGenerator.py"
 
+  sources = [
+    "inspector_protocol/CodeGenerator.py",
+  ]
   inputs = [
     protocol_file,
     "inspector_protocol/Backend_h.template",

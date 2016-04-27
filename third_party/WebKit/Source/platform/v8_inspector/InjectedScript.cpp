@@ -115,7 +115,7 @@ PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedCon
 InjectedScript::InjectedScript(InspectedContext* context, v8::Local<v8::Object> object, PassOwnPtr<InjectedScriptNative> injectedScriptNative)
     : m_context(context)
     , m_value(context->isolate(), object)
-    , m_native(injectedScriptNative)
+    , m_native(std::move(injectedScriptNative))
 {
 }
 
