@@ -2,7 +2,7 @@ Name: boringssl
 URL: https://boringssl.googlesource.com/boringssl
 Version: git
 License: BSDish
-License File: NOTICE
+License File: src/LICENSE
 License Android Compatible: yes
 Security Critical: yes
 
