@@ -40,7 +40,7 @@ public:
     V8TestingScope m_scope;
 };
 
-class GarbageCollectedHolder : public GarbageCollectedFinalized<GarbageCollectedHolder> {
+class GarbageCollectedHolder : public GarbageCollected<GarbageCollectedHolder> {
 public:
     GarbageCollectedHolder(GarbageCollectedScriptWrappable* scriptWrappable)
         : m_scriptWrappable(scriptWrappable) { }

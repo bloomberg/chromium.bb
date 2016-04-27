@@ -39,14 +39,13 @@ class Document;
 class ScriptLoader;
 class WebTaskRunner;
 
-class CORE_EXPORT ScriptRunner final : public GarbageCollectedFinalized<ScriptRunner> {
+class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner> {
     WTF_MAKE_NONCOPYABLE(ScriptRunner);
 public:
     static ScriptRunner* create(Document* document)
     {
         return new ScriptRunner(document);
     }
-    ~ScriptRunner();
 
     enum ExecutionType { ASYNC_EXECUTION, IN_ORDER_EXECUTION };
     void queueScriptForExecution(ScriptLoader*, ExecutionType);

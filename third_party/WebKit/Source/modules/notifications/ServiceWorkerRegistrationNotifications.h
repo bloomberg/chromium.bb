@@ -30,11 +30,10 @@ class SecurityOrigin;
 class ServiceWorkerRegistration;
 struct WebNotificationData;
 
-class ServiceWorkerRegistrationNotifications final : public GarbageCollectedFinalized<ServiceWorkerRegistrationNotifications>, public Supplement<ServiceWorkerRegistration>, public ContextLifecycleObserver {
+class ServiceWorkerRegistrationNotifications final : public GarbageCollected<ServiceWorkerRegistrationNotifications>, public Supplement<ServiceWorkerRegistration>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationNotifications);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationNotifications);
 public:
-    ~ServiceWorkerRegistrationNotifications();
     static ScriptPromise showNotification(ScriptState*, ServiceWorkerRegistration&, const String& title, const NotificationOptions&, ExceptionState&);
     static ScriptPromise getNotifications(ScriptState*, ServiceWorkerRegistration&, const GetNotificationOptions&);
 

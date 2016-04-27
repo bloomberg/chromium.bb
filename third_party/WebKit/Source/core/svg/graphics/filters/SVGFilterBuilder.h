@@ -39,7 +39,7 @@ class SVGFilterElement;
 
 // A map from LayoutObject -> FilterEffect and FilterEffect -> dependent (downstream) FilterEffects ("reverse DAG").
 // Used during invalidations from changes to the primitives (graph nodes).
-class SVGFilterGraphNodeMap final : public GarbageCollectedFinalized<SVGFilterGraphNodeMap> {
+class SVGFilterGraphNodeMap final : public GarbageCollected<SVGFilterGraphNodeMap> {
 public:
     static SVGFilterGraphNodeMap* create()
     {

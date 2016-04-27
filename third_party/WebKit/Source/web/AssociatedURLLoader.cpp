@@ -290,7 +290,7 @@ void AssociatedURLLoader::ClientAdapter::notifyError(Timer<ClientAdapter>* timer
     m_client->didFail(m_loader, m_error);
 }
 
-class AssociatedURLLoader::Observer final : public GarbageCollectedFinalized<Observer>, public ContextLifecycleObserver {
+class AssociatedURLLoader::Observer final : public GarbageCollected<Observer>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(Observer);
 public:
     Observer(AssociatedURLLoader* parent, Document* document)

@@ -35,10 +35,6 @@ InspectorOverlayHost::InspectorOverlayHost()
 {
 }
 
-InspectorOverlayHost::~InspectorOverlayHost()
-{
-}
-
 void InspectorOverlayHost::resume()
 {
     if (m_listener)

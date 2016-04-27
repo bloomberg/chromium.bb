@@ -19,10 +19,6 @@ IntersectionObserverEntry::IntersectionObserverEntry(DOMHighResTimeStamp time, d
 {
 }
 
-IntersectionObserverEntry::~IntersectionObserverEntry()
-{
-}
-
 DEFINE_TRACE(IntersectionObserverEntry)
 {
     visitor->trace(m_boundingClientRect);

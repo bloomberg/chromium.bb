@@ -708,10 +708,6 @@ FetchManager::FetchManager(ExecutionContext* executionContext)
 {
 }
 
-FetchManager::~FetchManager()
-{
-}
-
 ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* request)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

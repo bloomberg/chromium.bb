@@ -41,10 +41,9 @@ class SQLStatementCallback;
 class SQLStatementErrorCallback;
 class SQLTransaction;
 
-class SQLStatement final : public GarbageCollectedFinalized<SQLStatement> {
+class SQLStatement final : public GarbageCollected<SQLStatement> {
 public:
     static SQLStatement* create(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
-    ~SQLStatement();
     DECLARE_TRACE();
 
     bool performCallback(SQLTransaction*);

@@ -31,18 +31,16 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
-class CORE_EXPORT InspectorOverlayHost final : public GarbageCollectedFinalized<InspectorOverlayHost>, public ScriptWrappable {
+class CORE_EXPORT InspectorOverlayHost final : public GarbageCollected<InspectorOverlayHost>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static InspectorOverlayHost* create()
     {
         return new InspectorOverlayHost();
     }
-    ~InspectorOverlayHost();
     DECLARE_TRACE();
 
     void resume();

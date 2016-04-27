@@ -57,7 +57,7 @@ class QualifiedName;
 class ComputedStyle;
 class StylePropertySet;
 
-class EditingStyle final : public GarbageCollectedFinalized<EditingStyle> {
+class EditingStyle final : public GarbageCollected<EditingStyle> {
 public:
 
     enum PropertiesToInclude { AllProperties, OnlyEditingInheritableProperties, EditingPropertiesInEffect };
@@ -89,8 +89,6 @@ public:
     {
         return new EditingStyle(propertyID, value);
     }
-
-    ~EditingStyle();
 
     MutableStylePropertySet* style() { return m_mutableStyle.get(); }
     bool textDirection(WritingDirection&) const;

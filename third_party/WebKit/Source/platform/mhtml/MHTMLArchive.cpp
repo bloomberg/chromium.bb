@@ -67,10 +67,6 @@ MHTMLArchive::MHTMLArchive()
 {
 }
 
-MHTMLArchive::~MHTMLArchive()
-{
-}
-
 MHTMLArchive* MHTMLArchive::create(const KURL& url, SharedBuffer* data)
 {
     // For security reasons we only load MHTML pages from local URLs.

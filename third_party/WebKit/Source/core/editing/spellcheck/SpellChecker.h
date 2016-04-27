@@ -43,12 +43,11 @@ class TextCheckerClient;
 class TextCheckingParagraph;
 struct TextCheckingResult;
 
-class CORE_EXPORT SpellChecker final : public GarbageCollectedFinalized<SpellChecker> {
+class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
     WTF_MAKE_NONCOPYABLE(SpellChecker);
 public:
     static SpellChecker* create(LocalFrame&);
 
-    ~SpellChecker();
     DECLARE_TRACE();
 
     SpellCheckerClient& spellCheckerClient() const;

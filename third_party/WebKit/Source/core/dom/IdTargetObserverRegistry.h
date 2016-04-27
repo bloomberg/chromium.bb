@@ -36,7 +36,7 @@ namespace blink {
 
 class IdTargetObserver;
 
-class IdTargetObserverRegistry final : public GarbageCollectedFinalized<IdTargetObserverRegistry> {
+class IdTargetObserverRegistry final : public GarbageCollected<IdTargetObserverRegistry> {
     WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry);
     friend class IdTargetObserver;
 public:

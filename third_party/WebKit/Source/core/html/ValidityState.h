@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class ValidityState final : public GarbageCollectedFinalized<ValidityState>, public ScriptWrappable {
+class ValidityState final : public GarbageCollected<ValidityState>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(ValidityState);
 public:

@@ -58,10 +58,6 @@ SQLStatement::SQLStatement(Database* database, SQLStatementCallback* callback,
         InspectorInstrumentation::asyncTaskScheduled(database->getExecutionContext(), "SQLStatement", this);
 }
 
-SQLStatement::~SQLStatement()
-{
-}
-
 DEFINE_TRACE(SQLStatement)
 {
     visitor->trace(m_backend);
