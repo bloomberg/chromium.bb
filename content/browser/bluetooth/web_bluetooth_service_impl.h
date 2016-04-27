@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/bluetooth/cache_query_result.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -77,8 +78,11 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   // WebBluetoothService methods:
   void SetClient(
       blink::mojom::WebBluetoothServiceClientAssociatedPtrInfo client) override;
-
-  // WebBluetoothService methods:
+  void RemoteServiceGetCharacteristics(
+      const mojo::String& service_instance_id,
+      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      const mojo::String& characteristics_uuid,
+      const RemoteServiceGetCharacteristicsCallback& callback) override;
   void RemoteCharacteristicReadValue(
       const mojo::String& characteristic_instance_id,
       const RemoteCharacteristicReadValueCallback& callback) override;
@@ -120,6 +124,20 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
       const std::string& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback);
 
+  // Functions to query the platform cache for the bluetooth object.
+  // result.outcome == CacheQueryOutcome::SUCCESS if the object was found in the
+  // cache. Otherwise result.outcome that can used to record the outcome and
+  // result.error will contain the error that should be sent to the renderer.
+  // One of the possible outcomes is BAD_RENDERER. In this case we crash the
+  // renderer, record the reason and close the pipe, so it's safe to drop
+  // any callbacks.
+
+  // Queries the platform cache for a characteristic with
+  // |characteristic_instance_id|. Fills in the |outcome| field, and |device|,
+  // |service| and |characteristic| fields if successful.
+  CacheQueryResult QueryCacheForCharacteristic(
+      const std::string& characteristic_instance_id);
+
   RenderProcessHost* GetRenderProcessHost();
   BluetoothDispatcherHost* GetBluetoothDispatcherHost();
   void CrashRendererAndClosePipe(bad_message::BadMessageReason reason);
@@ -127,6 +145,11 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
 
   // Clears all state (maps, sets, etc).
   void ClearState();
+
+  // Maps to get the object's parent based on its instanceID.
+
+  // Map of characteristic_instance_id to service_instance_id.
+  std::unordered_map<std::string, std::string> characteristic_id_to_service_id_;
 
   // Map to keep track of the characteristics' notify sessions.
   std::unordered_map<std::string,

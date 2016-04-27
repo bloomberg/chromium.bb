@@ -9,6 +9,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/bluetooth/WebBluetoothError.h"
+#include "public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
 #include <memory>
 
@@ -30,11 +31,8 @@ using WebBluetoothRemoteGATTServerConnectCallbacks = WebCallbacks<void, const We
 // Success and failure callbacks for getPrimaryService.
 using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothRemoteGATTService>, const WebBluetoothError&>;
 
-// Success and failure callbacks for getCharacteristic.
-using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>, const WebBluetoothError&>;
-
-// Success and failure callbacks for getCharacteristics.
-using WebBluetoothGetCharacteristicsCallbacks = WebCallbacks<std::unique_ptr<WebVector<WebBluetoothRemoteGATTCharacteristicInit*>>, const WebBluetoothError&>;
+// Success and failure callbacks for getCharacteristic(s).
+using WebBluetoothGetCharacteristicsCallbacks = WebCallbacks<const WebVector<WebBluetoothRemoteGATTCharacteristicInit*>&, const WebBluetoothError&>;
 
 // Success and failure callbacks for readValue.
 using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;
@@ -69,10 +67,8 @@ public:
 
     // BluetoothRemoteGATTService methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattservice
-    virtual void getCharacteristic(const WebString& serviceInstanceID,
-        const WebString& characteristicUUID,
-        WebBluetoothGetCharacteristicCallbacks*) { }
     virtual void getCharacteristics(const WebString& serviceInstanceID,
+        mojom::WebBluetoothGATTQueryQuantity,
         const WebString& characteristicsUUID,
         WebBluetoothGetCharacteristicsCallbacks*) = 0;
 

@@ -9,6 +9,7 @@
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
+#include "public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -45,11 +46,11 @@ public:
     String uuid() { return m_webService->uuid; }
     bool isPrimary() { return m_webService->isPrimary; }
     ScriptPromise getCharacteristic(ScriptState*, const StringOrUnsignedLong& characteristic, ExceptionState&);
-    ScriptPromise getCharacteristics(ScriptState*, ExceptionState&);
     ScriptPromise getCharacteristics(ScriptState*, const StringOrUnsignedLong& characteristic, ExceptionState&);
+    ScriptPromise getCharacteristics(ScriptState*, ExceptionState&);
 
 private:
-    ScriptPromise getCharacteristicsImpl(ScriptState*, String characteristicUUID);
+    ScriptPromise getCharacteristicsImpl(ScriptState*, mojom::WebBluetoothGATTQueryQuantity, String characteristicUUID = String());
 
     OwnPtr<WebBluetoothRemoteGATTService> m_webService;
 };

@@ -146,15 +146,28 @@ void RecordGetPrimaryServiceOutcome(CacheQueryOutcome outcome) {
   RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NO_DEVICE);
 }
 
-// getCharacteristic
+// getCharacteristic & getCharacteristics
 
-void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.Web.GetCharacteristic.Outcome", static_cast<int>(outcome),
-      static_cast<int>(UMAGetCharacteristicOutcome::COUNT));
+void RecordGetCharacteristicsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    UMAGetCharacteristicOutcome outcome) {
+  switch (quantity) {
+    case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Bluetooth.Web.GetCharacteristic.Outcome", static_cast<int>(outcome),
+          static_cast<int>(UMAGetCharacteristicOutcome::COUNT));
+      return;
+    case blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Bluetooth.Web.GetCharacteristics.Outcome", static_cast<int>(outcome),
+          static_cast<int>(UMAGetCharacteristicOutcome::COUNT));
+      return;
+  }
 }
 
-void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome) {
+void RecordGetCharacteristicsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    CacheQueryOutcome outcome) {
   switch (outcome) {
     case CacheQueryOutcome::SUCCESS:
     case CacheQueryOutcome::BAD_RENDERER:
@@ -162,10 +175,12 @@ void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome) {
       NOTREACHED();
       return;
     case CacheQueryOutcome::NO_DEVICE:
-      RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_DEVICE);
+      RecordGetCharacteristicsOutcome(quantity,
+                                      UMAGetCharacteristicOutcome::NO_DEVICE);
       return;
     case CacheQueryOutcome::NO_SERVICE:
-      RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_SERVICE);
+      RecordGetCharacteristicsOutcome(quantity,
+                                      UMAGetCharacteristicOutcome::NO_SERVICE);
       return;
     case CacheQueryOutcome::NO_CHARACTERISTIC:
       NOTREACHED();
@@ -173,41 +188,21 @@ void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome) {
   }
 }
 
-void RecordGetCharacteristicCharacteristic(const std::string& characteristic) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetCharacteristic.Characteristic",
-                              HashUUID(characteristic));
-}
-
-// getCharacteristics
-
-void RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.Web.GetCharacteristics.Outcome", static_cast<int>(outcome),
-      static_cast<int>(UMAGetCharacteristicOutcome::COUNT));
-}
-
-void RecordGetCharacteristicsOutcome(CacheQueryOutcome outcome) {
-  switch (outcome) {
-    case CacheQueryOutcome::SUCCESS:
-    case CacheQueryOutcome::BAD_RENDERER:
-      // No need to record a success or renderer crash.
-      NOTREACHED();
+void RecordGetCharacteristicsCharacteristic(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const std::string& characteristic) {
+  switch (quantity) {
+    case blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Bluetooth.Web.GetCharacteristic.Characteristic",
+          HashUUID(characteristic));
       return;
-    case CacheQueryOutcome::NO_DEVICE:
-      RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::NO_DEVICE);
-      return;
-    case CacheQueryOutcome::NO_SERVICE:
-      RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::NO_SERVICE);
-      return;
-    case CacheQueryOutcome::NO_CHARACTERISTIC:
-      NOTREACHED();
+    case blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE:
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Bluetooth.Web.GetCharacteristics.Characteristic",
+          HashUUID(characteristic));
       return;
   }
-}
-
-void RecordGetCharacteristicsCharacteristic(const std::string& characteristic) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetCharacteristics.Characteristic",
-                              HashUUID(characteristic));
 }
 
 // GATT Operations

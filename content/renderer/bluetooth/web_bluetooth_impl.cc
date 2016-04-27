@@ -14,6 +14,7 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
 
 namespace content {
 
@@ -52,20 +53,18 @@ void WebBluetoothImpl::getPrimaryService(
                                      callbacks);
 }
 
-void WebBluetoothImpl::getCharacteristic(
-    const blink::WebString& service_instance_id,
-    const blink::WebString& characteristics_uuid,
-    blink::WebBluetoothGetCharacteristicCallbacks* callbacks) {
-  GetDispatcher()->getCharacteristic(frame_routing_id_, service_instance_id,
-                                     characteristics_uuid, callbacks);
-}
-
 void WebBluetoothImpl::getCharacteristics(
     const blink::WebString& service_instance_id,
-    const blink::WebString& characteristic_uuid,
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const blink::WebString& characteristics_uuid,
     blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) {
-  GetDispatcher()->getCharacteristics(frame_routing_id_, service_instance_id,
-                                      characteristic_uuid, callbacks);
+  GetWebBluetoothService().RemoteServiceGetCharacteristics(
+      mojo::String::From(service_instance_id), quantity,
+      characteristics_uuid.isEmpty() ? nullptr
+                                     : mojo::String::From(characteristics_uuid),
+      base::Bind(&WebBluetoothImpl::OnGetCharacteristicsComplete,
+                 base::Unretained(this), service_instance_id,
+                 base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::readValue(
@@ -135,6 +134,31 @@ void WebBluetoothImpl::RemoteCharacteristicValueChanged(
       base::Bind(&WebBluetoothImpl::DispatchCharacteristicValueChanged,
                  base::Unretained(this), characteristic_instance_id,
                  value.PassStorage()));
+}
+
+void WebBluetoothImpl::OnGetCharacteristicsComplete(
+    const blink::WebString& service_instance_id,
+    std::unique_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks,
+    blink::mojom::WebBluetoothError error,
+    mojo::Array<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>
+        characteristics) {
+  if (error == blink::mojom::WebBluetoothError::SUCCESS) {
+    // TODO(dcheng): This WebVector should use smart pointers.
+    blink::WebVector<blink::WebBluetoothRemoteGATTCharacteristicInit*>
+        promise_characteristics(characteristics.size());
+
+    for (size_t i = 0; i < characteristics.size(); i++) {
+      promise_characteristics[i] =
+          new blink::WebBluetoothRemoteGATTCharacteristicInit(
+              service_instance_id,
+              blink::WebString::fromUTF8(characteristics[i]->instance_id),
+              blink::WebString::fromUTF8(characteristics[i]->uuid),
+              characteristics[i]->properties);
+    }
+    callbacks->onSuccess(promise_characteristics);
+  } else {
+    callbacks->onError(error);
+  }
 }
 
 void WebBluetoothImpl::OnReadValueComplete(

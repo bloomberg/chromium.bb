@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ID Not In Map Note:
+// A service, characteristic, or descriptor ID not in the corresponding
+// BluetoothDispatcherHost map [service_to_device_,
+// characteristic_id_to_service_id_, descriptor_to_characteristic_] implies a
+// hostile renderer because a renderer obtains the corresponding ID from this
+// class and it will be added to the map at that time.
+
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 
 #include "base/thread_task_runner_handle.h"
@@ -13,43 +20,41 @@
 #include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
-using device::BluetoothRemoteGattService;
-
 namespace content {
 
 namespace {
 
 blink::mojom::WebBluetoothError TranslateGATTErrorAndRecord(
-    BluetoothRemoteGattService::GattErrorCode error_code,
+    device::BluetoothRemoteGattService::GattErrorCode error_code,
     UMAGATTOperation operation) {
   switch (error_code) {
-    case BluetoothRemoteGattService::GATT_ERROR_UNKNOWN:
+    case device::BluetoothRemoteGattService::GATT_ERROR_UNKNOWN:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::UNKNOWN);
       return blink::mojom::WebBluetoothError::GATT_UNKNOWN_ERROR;
-    case BluetoothRemoteGattService::GATT_ERROR_FAILED:
+    case device::BluetoothRemoteGattService::GATT_ERROR_FAILED:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::FAILED);
       return blink::mojom::WebBluetoothError::GATT_UNKNOWN_FAILURE;
-    case BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS:
+    case device::BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::IN_PROGRESS);
       return blink::mojom::WebBluetoothError::GATT_OPERATION_IN_PROGRESS;
-    case BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH:
+    case device::BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::INVALID_LENGTH);
       return blink::mojom::WebBluetoothError::GATT_INVALID_ATTRIBUTE_LENGTH;
-    case BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED:
+    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_PERMITTED);
       return blink::mojom::WebBluetoothError::GATT_NOT_PERMITTED;
-    case BluetoothRemoteGattService::GATT_ERROR_NOT_AUTHORIZED:
+    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_AUTHORIZED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_AUTHORIZED);
       return blink::mojom::WebBluetoothError::GATT_NOT_AUTHORIZED;
-    case BluetoothRemoteGattService::GATT_ERROR_NOT_PAIRED:
+    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_PAIRED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_PAIRED);
       return blink::mojom::WebBluetoothError::GATT_NOT_PAIRED;
-    case BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED:
+    case device::BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_SUPPORTED);
       return blink::mojom::WebBluetoothError::GATT_NOT_SUPPORTED;
@@ -58,9 +63,25 @@ blink::mojom::WebBluetoothError TranslateGATTErrorAndRecord(
   return blink::mojom::WebBluetoothError::GATT_UNTRANSLATED_ERROR_CODE;
 }
 
-}  // namespace
+// TODO(ortuno): This should really be a BluetoothDevice method.
+// Replace when implemented. http://crbug.com/552022
+std::vector<device::BluetoothRemoteGattCharacteristic*>
+GetCharacteristicsByUUID(device::BluetoothRemoteGattService* service,
+                         const std::string& characteristic_uuid) {
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
+  VLOG(1) << "Looking for characteristic: " << characteristic_uuid;
+  for (device::BluetoothRemoteGattCharacteristic* characteristic :
+       service->GetCharacteristics()) {
+    VLOG(1) << "Characteristic in cache: "
+            << characteristic->GetUUID().canonical_value();
+    if (characteristic->GetUUID().canonical_value() == characteristic_uuid) {
+      characteristics.push_back(characteristic);
+    }
+  }
+  return characteristics;
+}
 
-using CacheQueryResult = BluetoothDispatcherHost::CacheQueryResult;
+}  // namespace
 
 WebBluetoothServiceImpl::WebBluetoothServiceImpl(
     RenderFrameHost* render_frame_host,
@@ -90,7 +111,6 @@ void WebBluetoothServiceImpl::DidFinishNavigation(
   if (navigation_handle->HasCommitted() &&
       navigation_handle->GetRenderFrameHost() == render_frame_host_ &&
       !navigation_handle->IsSamePage()) {
-    // After navigation we need to clear the frame's state.
     ClearState();
   }
 }
@@ -107,12 +127,9 @@ void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
     device::BluetoothAdapter* adapter,
     device::BluetoothRemoteGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
-  // TODO(ortuno): Only send characteristic value changed events for
-  // characteristics that we've returned in the past. We can't yet do
-  // this because WebBluetoothServiceImpl doesn't have direct access
-  // to the list of returned characteristics.
-  // https://crbug.com/508771
-  if (BluetoothBlacklist::Get().IsExcluded(characteristic->GetUUID())) {
+  // Don't notify of characteristics that we haven't returned.
+  if (!ContainsKey(characteristic_id_to_service_id_,
+                   characteristic->GetIdentifier())) {
     return;
   }
 
@@ -143,6 +160,97 @@ void WebBluetoothServiceImpl::SetClient(
   client_.Bind(std::move(client));
 }
 
+void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
+    const mojo::String& service_instance_id,
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const mojo::String& characteristics_uuid,
+    const RemoteServiceGetCharacteristicsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE
+          ? UMAWebBluetoothFunction::SERVICE_GET_CHARACTERISTIC
+          : UMAWebBluetoothFunction::SERVICE_GET_CHARACTERISTICS);
+  RecordGetCharacteristicsCharacteristic(quantity, characteristics_uuid);
+
+  if (!characteristics_uuid.is_null() &&
+      BluetoothBlacklist::Get().IsExcluded(
+          device::BluetoothUUID(characteristics_uuid))) {
+    RecordGetCharacteristicsOutcome(quantity,
+                                    UMAGetCharacteristicOutcome::BLACKLISTED);
+    callback.Run(
+        blink::mojom::WebBluetoothError::BLACKLISTED_CHARACTERISTIC_UUID,
+        nullptr /* characteristics */);
+    return;
+  }
+
+  const CacheQueryResult query_result =
+      GetBluetoothDispatcherHost()->QueryCacheForService(GetOrigin(),
+                                                         service_instance_id);
+
+  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
+    binding_.Close();
+    return;
+  }
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordGetCharacteristicsOutcome(quantity, query_result.outcome);
+    callback.Run(query_result.GetWebError(), nullptr /* characteristics */);
+    return;
+  }
+
+  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics =
+      characteristics_uuid.is_null()
+          ? query_result.service->GetCharacteristics()
+          : GetCharacteristicsByUUID(query_result.service,
+                                     characteristics_uuid);
+
+  mojo::Array<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>
+      response_characteristics;
+  for (device::BluetoothRemoteGattCharacteristic* characteristic :
+       characteristics) {
+    if (BluetoothBlacklist::Get().IsExcluded(characteristic->GetUUID())) {
+      continue;
+    }
+    std::string characteristic_instance_id = characteristic->GetIdentifier();
+    auto insert_result = characteristic_id_to_service_id_.insert(
+        std::make_pair(characteristic_instance_id, service_instance_id));
+    // If value is already in map, DCHECK it's valid.
+    if (!insert_result.second)
+      DCHECK(insert_result.first->second == service_instance_id);
+
+    blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr characteristic_ptr =
+        blink::mojom::WebBluetoothRemoteGATTCharacteristic::New();
+    characteristic_ptr->instance_id =
+        mojo::String::From(characteristic_instance_id);
+    characteristic_ptr->uuid =
+        mojo::String::From(characteristic->GetUUID().canonical_value());
+    characteristic_ptr->properties =
+        static_cast<uint32_t>(characteristic->GetProperties());
+    response_characteristics.push_back(std::move(characteristic_ptr));
+
+    if (quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
+      break;
+    }
+  }
+
+  if (!response_characteristics.empty()) {
+    RecordGetCharacteristicsOutcome(quantity,
+                                    UMAGetCharacteristicOutcome::SUCCESS);
+    callback.Run(blink::mojom::WebBluetoothError::SUCCESS,
+                 std::move(response_characteristics));
+    return;
+  }
+  RecordGetCharacteristicsOutcome(
+      quantity, characteristics_uuid.is_null()
+                    ? UMAGetCharacteristicOutcome::NO_CHARACTERISTICS
+                    : UMAGetCharacteristicOutcome::NOT_FOUND);
+  callback.Run(characteristics_uuid.is_null()
+                   ? blink::mojom::WebBluetoothError::NO_CHARACTERISTICS_FOUND
+                   : blink::mojom::WebBluetoothError::CHARACTERISTIC_NOT_FOUND,
+               nullptr /* characteristics */);
+  return;
+}
+
 void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
     const mojo::String& characteristic_instance_id,
     const RemoteCharacteristicReadValueCallback& callback) {
@@ -151,8 +259,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
       UMAWebBluetoothFunction::CHARACTERISTIC_READ_VALUE);
 
   const CacheQueryResult query_result =
-      GetBluetoothDispatcherHost()->QueryCacheForCharacteristic(
-          GetOrigin(), characteristic_instance_id);
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
     return;
@@ -196,11 +303,9 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
   }
 
   const CacheQueryResult query_result =
-      GetBluetoothDispatcherHost()->QueryCacheForCharacteristic(
-          GetOrigin(), characteristic_instance_id);
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
-    binding_.Close();
     return;
   }
 
@@ -243,11 +348,9 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(
   }
 
   const CacheQueryResult query_result =
-      GetBluetoothDispatcherHost()->QueryCacheForCharacteristic(
-          GetOrigin(), characteristic_instance_id);
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
-    binding_.Close();
     return;
   }
 
@@ -281,11 +384,9 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStopNotifications(
       UMAWebBluetoothFunction::CHARACTERISTIC_STOP_NOTIFICATIONS);
 
   const CacheQueryResult query_result =
-      GetBluetoothDispatcherHost()->QueryCacheForCharacteristic(
-          GetOrigin(), characteristic_instance_id);
+      QueryCacheForCharacteristic(characteristic_instance_id);
 
   if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
-    binding_.Close();
     return;
   }
 
@@ -364,6 +465,40 @@ void WebBluetoothServiceImpl::OnStopNotifySessionComplete(
   callback.Run();
 }
 
+CacheQueryResult WebBluetoothServiceImpl::QueryCacheForCharacteristic(
+    const std::string& characteristic_instance_id) {
+  auto characteristic_iter =
+      characteristic_id_to_service_id_.find(characteristic_instance_id);
+
+  // Kill the render, see "ID Not in Map Note" above.
+  if (characteristic_iter == characteristic_id_to_service_id_.end()) {
+    CrashRendererAndClosePipe(bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
+  }
+
+  CacheQueryResult result = GetBluetoothDispatcherHost()->QueryCacheForService(
+      GetOrigin(), characteristic_iter->second);
+
+  // TODO(ortuno): Remove once QueryCacheForService closes binding_.
+  // http://crbug.com/508771
+  if (result.outcome == CacheQueryOutcome::BAD_RENDERER) {
+    binding_.Close();
+  }
+
+  if (result.outcome != CacheQueryOutcome::SUCCESS) {
+    return result;
+  }
+
+  result.characteristic =
+      result.service->GetCharacteristic(characteristic_instance_id);
+
+  if (result.characteristic == nullptr) {
+    result.outcome = CacheQueryOutcome::NO_CHARACTERISTIC;
+  }
+
+  return result;
+}
+
 RenderProcessHost* WebBluetoothServiceImpl::GetRenderProcessHost() {
   return render_frame_host_->GetProcess();
 }
@@ -386,6 +521,7 @@ url::Origin WebBluetoothServiceImpl::GetOrigin() {
 
 void WebBluetoothServiceImpl::ClearState() {
   characteristic_id_to_notify_session_.clear();
+  characteristic_id_to_service_id_.clear();
 }
 
 }  // namespace content

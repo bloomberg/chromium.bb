@@ -54,12 +54,9 @@ class CONTENT_EXPORT WebBluetoothImpl
       const blink::WebString& device_id,
       const blink::WebString& service_uuid,
       blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) override;
-  void getCharacteristic(
-      const blink::WebString& service_instance_id,
-      const blink::WebString& characteristic_uuid,
-      blink::WebBluetoothGetCharacteristicCallbacks* callbacks) override;
   void getCharacteristics(
       const blink::WebString& service_instance_id,
+      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const blink::WebString& characteristics_uuid,
       blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) override;
   void readValue(const blink::WebString& characteristic_instance_id,
@@ -81,12 +78,19 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::WebBluetoothRemoteGATTCharacteristic* characteristic) override;
 
  private:
+  struct GetCharacteristicsCallback;
   // WebBluetoothServiceClient methods:
   void RemoteCharacteristicValueChanged(
       const mojo::String& characteristic_instance_id,
       mojo::Array<uint8_t> value) override;
 
   // Callbacks for WebBluetoothService calls:
+  void OnGetCharacteristicsComplete(
+      const blink::WebString& service_instance_id,
+      std::unique_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks,
+      blink::mojom::WebBluetoothError error,
+      mojo::Array<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>
+          characteristics);
   void OnReadValueComplete(
       std::unique_ptr<blink::WebBluetoothReadValueCallbacks> callbacks,
       blink::mojom::WebBluetoothError error,

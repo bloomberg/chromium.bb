@@ -68,6 +68,19 @@ enum WebBluetoothError {
   ENUM_MAX_VALUE = REQUEST_DEVICE_WITHOUT_FRAME,
 };
 
+// Indicates if the function will return a single or multiple
+// GATT objects.
+enum WebBluetoothGATTQueryQuantity {
+  SINGLE,
+  MULTIPLE
+};
+
+struct WebBluetoothRemoteGATTCharacteristic {
+  string instance_id;
+  string uuid;
+  uint32 properties;
+};
+
 // TODO(ortuno): Define Bluetooth Service.
 // https://crbug.com/508771
 
@@ -78,6 +91,16 @@ interface WebBluetoothService {
   // client of device events e.g. when a Characteristic's value changes or when
   // a device disconnects.
   SetClient(associated WebBluetoothServiceClient client);
+
+  // Returns the Characteristics of a GATT Service with |service_instance_id|.
+  // If |quantity| == WebBluetoothGATTQueryQuantity::SINGLE, only one
+  // characteristic will be returned.
+  RemoteServiceGetCharacteristics(
+    string service_instance_id,
+    WebBluetoothGATTQueryQuantity quantity,
+    string? characteristics_uuid) => (
+      WebBluetoothError error,
+      array<WebBluetoothRemoteGATTCharacteristic>? characteristics);
 
   // Reads the value for characteristic with
   // |characteristic_instance_id|. If the value is successfully read the

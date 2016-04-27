@@ -14,8 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
-#include "content/browser/bluetooth/bluetooth_metrics.h"
-#include "content/common/bluetooth/bluetooth_messages.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -29,7 +27,10 @@ class BluetoothUUID;
 
 namespace content {
 
+class WebBluetoothServiceImpl;
+
 struct BluetoothScanFilter;
+struct CacheQueryResult;
 
 // Dispatches and sends bluetooth related messages sent to/from a child
 // process BluetoothDispatcher from/to the main browser process.
@@ -55,29 +56,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void SetBluetoothAdapterForTesting(
       scoped_refptr<device::BluetoothAdapter> mock_adapter);
 
-  // TODO(ortuno): We temporarily make this a public struct so that
-  // both BluetoothDispatcherHost and WebBluetoothServiceImpl can use it,
-  // while we move functions from BluetoothDispatcherHost to
-  // WebBluetoothServiceImpl.
-  // https://crbug.com/508771
-  struct CacheQueryResult {
-    CacheQueryResult();
-    CacheQueryResult(CacheQueryOutcome outcome);
-    ~CacheQueryResult();
-    blink::WebBluetoothError GetWebError() const;
-    device::BluetoothDevice* device = nullptr;
-    device::BluetoothRemoteGattService* service = nullptr;
-    device::BluetoothRemoteGattCharacteristic* characteristic = nullptr;
-    CacheQueryOutcome outcome = CacheQueryOutcome::SUCCESS;
-  };
-
-  // Queries the platform cache for a characteristic with
-  // |characteristic_instance_id|. Fills in the |outcome| field, and |device|,
-  // |service| and |characteristic| fields if successful.
-  CacheQueryResult QueryCacheForCharacteristic(
-      const url::Origin& origin,
-      const std::string& characteristic_instance_id);
-
   // Temporary functions so that WebBluetoothServices can add themselves as
   // observers of the Bluetooth Adapter without having to get an adapter for
   // themselves.
@@ -90,6 +68,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   ~BluetoothDispatcherHost() override;
 
  private:
+  friend class WebBluetoothServiceImpl;
   friend class base::DeleteHelper<BluetoothDispatcherHost>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
@@ -167,16 +146,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                            int frame_routing_id,
                            const std::string& device_id,
                            const std::string& service_uuid);
-  void OnGetCharacteristic(int thread_id,
-                           int request_id,
-                           int frame_routing_id,
-                           const std::string& service_instance_id,
-                           const std::string& characteristic_uuid);
-  void OnGetCharacteristics(int thread_id,
-                            int request_id,
-                            int frame_routing_id,
-                            const std::string& service_instance_id,
-                            const std::string& characteristics_uuid);
 
   // Callbacks for BluetoothDevice::OnRequestDevice.
   // If necessary, the adapter must be obtained before continuing to Impl.
@@ -241,6 +210,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Fills in the |outcome| field and the |device| field if successful.
   CacheQueryResult QueryCacheForDevice(const url::Origin& origin,
                                        const std::string& device_id);
+
   // Queries the platform cache for a Service with |service_instance_id|. Fills
   // in the |outcome| field, and |device| and |service| fields if successful.
   CacheQueryResult QueryCacheForService(const url::Origin& origin,
@@ -269,8 +239,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Maps to get the object's parent based on it's instanceID
   // Map of service_instance_id to device_address.
   std::map<std::string, std::string> service_to_device_;
-  // Map of characteristic_instance_id to service_instance_id.
-  std::map<std::string, std::string> characteristic_to_service_;
 
   // Defines how long to scan for and how long to discover services for.
   int current_delay_time_;

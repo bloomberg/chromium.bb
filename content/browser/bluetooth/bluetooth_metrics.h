@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+
 namespace base {
 class TimeDelta;
 }
@@ -26,7 +28,7 @@ enum class UMAWebBluetoothFunction {
   REQUEST_DEVICE = 0,
   CONNECT_GATT = 1,
   GET_PRIMARY_SERVICE = 2,
-  GET_CHARACTERISTIC = 3,
+  SERVICE_GET_CHARACTERISTIC = 3,
   CHARACTERISTIC_READ_VALUE = 4,
   CHARACTERISTIC_WRITE_VALUE = 5,
   CHARACTERISTIC_START_NOTIFICATIONS = 6,
@@ -147,7 +149,7 @@ void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome);
 // called if QueryCacheForDevice fails.
 void RecordGetPrimaryServiceOutcome(CacheQueryOutcome outcome);
 
-// getCharacteristic() Metrics
+// getCharacteristic() and getCharacteristics() Metrics
 enum class UMAGetCharacteristicOutcome {
   SUCCESS = 0,
   NO_DEVICE = 1,
@@ -160,26 +162,25 @@ enum class UMAGetCharacteristicOutcome {
   // tools/metrisc/histogram/histograms.xml accordingly.
   COUNT
 };
-// There should be a call to this function for every call to
-// Send(BluetoothMsg_GetCharacteristicSuccess) and
-// Send(BluetoothMsg_GetCharacteristicError).
-void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome);
-// Records the outcome of the cache query for getCharacteristic. Should only be
-// called if QueryCacheForService fails.
-void RecordGetCharacteristicOutcome(CacheQueryOutcome outcome);
-// Records the UUID of the characteristic used when calling getCharacteristic.
-void RecordGetCharacteristicCharacteristic(const std::string& characteristic);
 
-// getCharacteristics() Metrics
-// There should be a call to this function for every call to
-// Send(BluetoothMsg_GetCharacteristicsSuccess) and
-// Send(BluetoothMsg_GetCharacteristicsError).
-void RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome outcome);
+// There should be a call to this function whenever
+// RemoteServiceGetCharacteristicsCallback is run.
+// Pass blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE for
+// getCharacteristic.
+// Pass blink::mojom::WebBluetoothGATTQueryQuantity::MULTIPLE for
+// getCharacteristics.
+void RecordGetCharacteristicsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    UMAGetCharacteristicOutcome outcome);
 // Records the outcome of the cache query for getCharacteristics. Should only be
 // called if QueryCacheForService fails.
-void RecordGetCharacteristicsOutcome(CacheQueryOutcome outcome);
+void RecordGetCharacteristicsOutcome(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    CacheQueryOutcome outcome);
 // Records the UUID of the characteristic used when calling getCharacteristic.
-void RecordGetCharacteristicsCharacteristic(const std::string& characteristic);
+void RecordGetCharacteristicsCharacteristic(
+    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    const std::string& characteristic);
 
 // GATT Operations Metrics
 

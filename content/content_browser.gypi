@@ -484,6 +484,7 @@
       'browser/bluetooth/bluetooth_dispatcher_host.h',
       'browser/bluetooth/bluetooth_metrics.cc',
       'browser/bluetooth/bluetooth_metrics.h',
+      'browser/bluetooth/cache_query_result.h',
       'browser/bluetooth/first_device_bluetooth_chooser.cc',
       'browser/bluetooth/first_device_bluetooth_chooser.h',
       'browser/bluetooth/web_bluetooth_service_impl.cc',
