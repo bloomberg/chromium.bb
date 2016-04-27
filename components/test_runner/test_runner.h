@@ -135,7 +135,19 @@ class TestRunner : public WebTestRunner {
   bool shouldDumpSpellCheckCallbacks() const;
   bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;
-  void setTopLoadingFrame(blink::WebFrame*, bool);
+
+  // To be called when |frame| starts loading - TestRunner will check if
+  // there is currently no top-loading-frame being tracked and if so, then it
+  // will return true and start tracking |frame| as the top-loading-frame.
+  bool tryToSetTopLoadingFrame(blink::WebFrame* frame);
+
+  // To be called when |frame| finishes loading - TestRunner will check if
+  // |frame| is currently tracked as the top-loading-frame, and if yes, then it
+  // will return true, stop top-loading-frame tracking, and potentially finish
+  // the test (unless testRunner.waitUntilDone() was called and/or there are
+  // pending load requests in WorkQueue).
+  bool tryToClearTopLoadingFrame(blink::WebFrame*);
+
   blink::WebFrame* topLoadingFrame() const;
   void policyDelegateDone();
   bool policyDelegateEnabled() const;
@@ -529,6 +541,8 @@ class TestRunner : public WebTestRunner {
 
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
+
+  bool IsFramePartOfMainTestWindow(blink::WebFrame*) const;
 
   void CheckResponseMimeType();
   void CompleteNotifyDone();

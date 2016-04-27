@@ -1936,17 +1936,31 @@ const std::set<std::string>* TestRunner::httpHeadersToClear() const {
   return &http_headers_to_clear_;
 }
 
-void TestRunner::setTopLoadingFrame(WebFrame* frame, bool clear) {
-  if (frame->top()->view() != main_view_)
-    return;
-  if (!test_is_running_)
-    return;
-  if (clear) {
-    top_loading_frame_ = nullptr;
-    LocationChangeDone();
-  } else if (!top_loading_frame_) {
-    top_loading_frame_ = frame;
-  }
+bool TestRunner::IsFramePartOfMainTestWindow(blink::WebFrame* frame) const {
+  return test_is_running_ && frame->top()->view() == main_view_;
+}
+
+bool TestRunner::tryToSetTopLoadingFrame(WebFrame* frame) {
+  if (!IsFramePartOfMainTestWindow(frame))
+    return false;
+
+  if (top_loading_frame_)
+    return false;
+
+  top_loading_frame_ = frame;
+  return true;
+}
+
+bool TestRunner::tryToClearTopLoadingFrame(WebFrame* frame) {
+  if (!IsFramePartOfMainTestWindow(frame))
+    return false;
+
+  if (frame != top_loading_frame_)
+    return false;
+
+  top_loading_frame_ = nullptr;
+  LocationChangeDone();
+  return true;
 }
 
 WebFrame* TestRunner::topLoadingFrame() const {

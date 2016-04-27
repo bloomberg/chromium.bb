@@ -188,12 +188,10 @@ enum CheckDoneReason {
 void CheckDone(blink::WebLocalFrame* frame,
                CheckDoneReason reason,
                TestRunner* test_runner) {
-  if (frame != test_runner->topLoadingFrame())
-    return;
   if (reason != MainResourceLoadFailed &&
       (frame->isResourceLoadInProgress() || frame->isLoading()))
     return;
-  test_runner->setTopLoadingFrame(frame, true);
+  test_runner->tryToClearTopLoadingFrame(frame);
 }
 
 }  // namespace
@@ -430,8 +428,7 @@ void WebFrameTestClient::loadURLExternally(
 
 void WebFrameTestClient::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                                                  double trigering_event_time) {
-  if (!test_runner_->topLoadingFrame())
-    test_runner_->setTopLoadingFrame(frame, false);
+  test_runner_->tryToSetTopLoadingFrame(frame);
 
   if (test_runner_->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
