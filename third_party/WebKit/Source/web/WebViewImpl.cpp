@@ -428,11 +428,11 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeView(nullptr)
     , m_rootLayer(nullptr)
     , m_rootGraphicsLayer(nullptr)
+    , m_visualViewportContainerLayer(nullptr)
     , m_matchesHeuristicsForGpuRasterization(false)
     , m_flingModifier(0)
     , m_flingSourceDevice(WebGestureDeviceUninitialized)
     , m_fullscreenController(FullscreenController::create(this))
-    , m_showFPSCounter(false)
     , m_baseBackgroundColor(Color::white)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
@@ -1016,9 +1016,8 @@ void WebViewImpl::setShowFPSCounter(bool show)
 {
     if (m_layerTreeView) {
         TRACE_EVENT0("blink", "WebViewImpl::setShowFPSCounter");
-        m_layerTreeView->setShowFPSCounter(show && !m_devToolsEmulator->deviceEmulationEnabled());
+        m_layerTreeView->setShowFPSCounter(show);
     }
-    m_showFPSCounter = show;
 }
 
 void WebViewImpl::setShowPaintRects(bool show)
@@ -1034,12 +1033,6 @@ void WebViewImpl::setShowDebugBorders(bool show)
 {
     if (m_layerTreeView)
         m_layerTreeView->setShowDebugBorders(show);
-}
-
-void WebViewImpl::updateShowFPSCounter()
-{
-    if (m_layerTreeView)
-        m_layerTreeView->setShowFPSCounter(m_showFPSCounter && !m_devToolsEmulator->deviceEmulationEnabled());
 }
 
 void WebViewImpl::setShowScrollBottleneckRects(bool show)
@@ -4169,6 +4162,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     visualViewport.attachToLayerTree(layer);
     if (layer) {
         m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
+        m_visualViewportContainerLayer = visualViewport.containerLayer();
         m_rootLayer = m_rootGraphicsLayer->platformLayer();
         updateRootLayerTransform();
         m_layerTreeView->setRootLayer(*m_rootLayer);
@@ -4183,6 +4177,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->setVisible(page()->isPageVisible());
     } else {
         m_rootGraphicsLayer = nullptr;
+        m_visualViewportContainerLayer = nullptr;
         m_rootLayer = nullptr;
         // This means that we're transitioning to a new page. Suppress
         // commits until Blink generates invalidations so we don't
@@ -4334,11 +4329,11 @@ void WebViewImpl::updateLayerTreeDeviceScaleFactor()
 
 void WebViewImpl::updateRootLayerTransform()
 {
-    if (m_rootGraphicsLayer) {
+    if (m_visualViewportContainerLayer) {
         TransformationMatrix transform;
         transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
-        m_rootGraphicsLayer->setTransform(transform);
+        m_visualViewportContainerLayer->setTransform(transform);
     }
 }
 

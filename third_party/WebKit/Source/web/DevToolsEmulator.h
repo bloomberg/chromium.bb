@@ -44,7 +44,6 @@ public:
     // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
     void disableDeviceEmulation();
-    bool deviceEmulationEnabled() { return m_deviceMetricsEnabled; }
     bool resizeIsDeviceSizeChange();
     void setTouchEventEmulationEnabled(bool);
     bool handleInputEvent(const WebInputEvent&);

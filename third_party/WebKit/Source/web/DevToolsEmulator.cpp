@@ -207,7 +207,6 @@ void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& par
         m_deviceMetricsEnabled = true;
         if (params.viewSize.width || params.viewSize.height)
             m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
-        m_webViewImpl->updateShowFPSCounter();
     }
 
     m_webViewImpl->page()->settings().setDeviceScaleAdjustment(calculateDeviceScaleAdjustment(params.viewSize.width, params.viewSize.height, params.deviceScaleFactor));
@@ -234,7 +233,6 @@ void DevToolsEmulator::disableDeviceEmulation()
 
     m_deviceMetricsEnabled = false;
     m_webViewImpl->setBackgroundColorOverride(Color::transparent);
-    m_webViewImpl->updateShowFPSCounter();
     m_webViewImpl->page()->settings().setDeviceScaleAdjustment(m_embedderDeviceScaleAdjustment);
     disableMobileEmulation();
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(0.f);

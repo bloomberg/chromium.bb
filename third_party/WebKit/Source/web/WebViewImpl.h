@@ -288,7 +288,6 @@ public:
     void setBaseBackgroundColor(WebColor);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
-    void updateShowFPSCounter();
     void setCompositorDeviceScaleFactorOverride(float);
     void setRootLayerTransform(const WebSize& offset, float scale);
 
@@ -714,6 +713,7 @@ private:
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
     GraphicsLayer* m_rootGraphicsLayer;
+    GraphicsLayer* m_visualViewportContainerLayer;
     bool m_matchesHeuristicsForGpuRasterization;
     static const WebInputEvent* m_currentInputEvent;
 
@@ -727,7 +727,6 @@ private:
     OwnPtr<CompositorAnimationTimeline> m_linkHighlightsTimeline;
     Persistent<FullscreenController> m_fullscreenController;
 
-    bool m_showFPSCounter;
     WebColor m_baseBackgroundColor;
     WebColor m_backgroundColorOverride;
     float m_zoomFactorOverride;
