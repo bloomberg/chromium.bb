@@ -10,7 +10,7 @@
 
 namespace system_logs {
 
-// This classs gathers logs data from various command line tools which we can
+// This class gathers logs data from various command line tools which we can
 // not access using Debug Daemon.
 class CommandLineLogSource : public SystemLogsSource {
  public:

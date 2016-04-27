@@ -23,11 +23,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #endif
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
+
+namespace system_logs {
 
 namespace {
 
@@ -37,6 +40,7 @@ const char kDataReductionProxyKey[] = "data_reduction_proxy";
 const char kChromeVersionTag[] = "CHROME VERSION";
 #if defined(OS_CHROMEOS)
 const char kChromeEnrollmentTag[] = "ENTERPRISE_ENROLLED";
+const char kHWIDKey[] = "HWID";
 #else
 const char kOsVersionTag[] = "OS VERSION";
 #endif
@@ -60,11 +64,25 @@ std::string GetEnrollmentStatusString() {
   NOTREACHED();
   return std::string();
 }
+
+void GetHWID(SystemLogsResponse* response) {
+  DCHECK(response);
+
+  chromeos::system::StatisticsProvider* stats =
+      chromeos::system::StatisticsProvider::GetInstance();
+  DCHECK(stats);
+
+  std::string hwid;
+  if (!stats->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid)) {
+    VLOG(1) << "Couldn't get machine statistic 'hardware_class'.";
+    return;
+  }
+
+  (*response)[kHWIDKey] = hwid;
+}
 #endif
 
 }  // namespace
-
-namespace system_logs {
 
 ChromeInternalLogSource::ChromeInternalLogSource()
     : SystemLogsSource("ChromeInternal") {
@@ -77,30 +95,39 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  SystemLogsResponse response;
+  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse());
 
-  response[kChromeVersionTag] = chrome::GetVersionString();
+  (*response)[kChromeVersionTag] = chrome::GetVersionString();
 
 #if defined(OS_CHROMEOS)
-  response[kChromeEnrollmentTag] = GetEnrollmentStatusString();
+  (*response)[kChromeEnrollmentTag] = GetEnrollmentStatusString();
 #else
   // On ChromeOS, this will be pulled in from the LSB_RELEASE.
   std::string os_version = base::SysInfo::OperatingSystemName() + ": " +
                            base::SysInfo::OperatingSystemVersion();
-  response[kOsVersionTag] =  os_version;
+  (*response)[kOsVersionTag] =  os_version;
 #endif
 
-  PopulateSyncLogs(&response);
-  PopulateExtensionInfoLogs(&response);
-  PopulateDataReductionProxyLogs(&response);
+  PopulateSyncLogs(response.get());
+  PopulateExtensionInfoLogs(response.get());
+  PopulateDataReductionProxyLogs(response.get());
 #if defined(OS_WIN)
-  PopulateUsbKeyboardDetected(&response);
+  PopulateUsbKeyboardDetected(response.get());
 #endif
 
   if (ProfileManager::GetLastUsedProfile()->IsChild())
-    response["account_type"] = "child";
+    (*response)["account_type"] = "child";
 
-  callback.Run(&response);
+#if defined(OS_CHROMEOS)
+  // Get the HWID on the blocking pool and invoke the callback later when done.
+  SystemLogsResponse* response_ptr = response.release();
+  content::BrowserThread::PostBlockingPoolTaskAndReply(
+      FROM_HERE, base::Bind(&GetHWID, response_ptr),
+      base::Bind(callback, base::Owned(response_ptr)));
+#else
+  // On other platforms, we're done. Invoke the callback.
+  callback.Run(response.get());
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
