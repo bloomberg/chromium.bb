@@ -310,7 +310,7 @@ int GetPlaceholderAvatarIconResourceID() {
 }
 
 const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
-  DCHECK(index < kDefaultAvatarIconsCount);
+  CHECK_LT(index, kDefaultAvatarIconsCount);
   static const IconResourceInfo resource_info[kDefaultAvatarIconsCount] = {
       {IDR_PROFILE_AVATAR_0, "avatar_generic.png"},
       {IDR_PROFILE_AVATAR_1, "avatar_generic_aqua.png"},
@@ -344,13 +344,11 @@ const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
 }
 
 int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
-  DCHECK(IsDefaultAvatarIconIndex(index));
   return GetDefaultAvatarIconResourceInfo(index)->resource_id;
 }
 
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index) {
-  DCHECK(index < kDefaultAvatarIconsCount);
-  DCHECK(index != kPlaceholderAvatarIcon);
+  CHECK_NE(index, kPlaceholderAvatarIcon);
   return GetDefaultAvatarIconResourceInfo(index)->filename;
 }
 
@@ -363,7 +361,7 @@ base::FilePath GetPathOfHighResAvatarAtIndex(size_t index) {
 }
 
 std::string GetDefaultAvatarIconUrl(size_t index) {
-  DCHECK(IsDefaultAvatarIconIndex(index));
+  CHECK(IsDefaultAvatarIconIndex(index));
   return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
 }
 
