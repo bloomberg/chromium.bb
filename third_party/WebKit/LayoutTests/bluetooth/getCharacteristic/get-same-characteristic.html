@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(services => Promise.all([
+      services.getCharacteristic('gap.device_name'),
+      services.getCharacteristic('gap.device_name')]))
+    .then(characteristics => {
+      // TODO(ortuno): getCharacteristic should return the same object
+      // if it was created earlier.
+      // https://crbug.com/495270
+      for (var i = 1; i < characteristics.length; i++) {
+        assert_not_equals(
+          characteristics[0], characteristics[i],
+          'Should return the same characteristic as the first call.');
+      }
+    });
+}, 'Calls to get the same characteristic should return the same object.');
+</script>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => {
+      return assert_promise_rejects_with_message(
+        service.getCharacteristic('wrong_name'), new DOMException(
+          'Failed to execute \'getCharacteristic\' on ' +
+          '\'BluetoothRemoteGATTService\': Invalid Characteristic name: ' +
+          '\'wrong_name\'. ' +
+          'It must be a valid UUID alias (e.g. 0x1234), ' +
+          'UUID (lowercase hex characters e.g. ' +
+          '\'00001234-0000-1000-8000-00805f9b34fb\'), ' +
+          'or recognized standard name from ' +
+          'https://developer.bluetooth.org/gatt/characteristics/' +
+          'Pages/CharacteristicsHome.aspx' +
+          ' e.g. \'aerobic_heart_rate_lower_limit\'.',
+          'SyntaxError'),
+        'Wrong Characteristic name passed.');
+    });
+}, 'Wrong Characteristic name. Reject with SyntaxError.');
+</script>

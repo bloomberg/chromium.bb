@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-
-test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
-     'window.testRunner is required for the following tests.');
-
 promise_test(() => {
   return setBluetoothFakeAdapter('BlacklistTestAdapter')
     .then(() => requestDeviceWithKeyDown({
