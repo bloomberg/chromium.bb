@@ -205,8 +205,8 @@ public class CardUnmaskPrompt
         } else {
             mVerificationProgressBar.setVisibility(View.GONE);
             mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
-            mVerificationView.setText(
-                    R.string.autofill_card_unmask_verification_success);
+            mVerificationView.setText(R.string.autofill_card_unmask_verification_success);
+            mVerificationView.announceForAccessibility(mVerificationView.getText());
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
                 @Override
