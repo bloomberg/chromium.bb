@@ -107,7 +107,7 @@ TEST(ByteReaderTest, CantReadToWrongMark) {
   Input out;
   Input in1(kInput);
 
-  const uint8_t in2_bytes[] = {'t', 'e', 's', 't'};
+  const uint8_t in2_bytes[] = {'T', 'E', 'S', 'T'};
   Input in2(in2_bytes);
   ByteReader reader1(in1);
   ByteReader reader2(in2);
