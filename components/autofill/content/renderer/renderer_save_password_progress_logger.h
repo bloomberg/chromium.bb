@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_RENDERER_BROWSER_SAVE_PASSWORD_PROGRESS_LOGGER_H_
-#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_RENDERER_BROWSER_SAVE_PASSWORD_PROGRESS_LOGGER_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_RENDERER_SAVE_PASSWORD_PROGRESS_LOGGER_H_
+#define COMPONENTS_AUTOFILL_CONTENT_RENDERER_RENDERER_SAVE_PASSWORD_PROGRESS_LOGGER_H_
 
 #include <string>
 
@@ -11,6 +11,10 @@
 #include "components/autofill/core/common/save_password_progress_logger.h"
 
 class PasswordManagerClient;
+
+namespace blink {
+class WebFormControlElement;
+}
 
 namespace IPC {
 class Sender;
@@ -28,6 +32,9 @@ class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
   RendererSavePasswordProgressLogger(IPC::Sender* sender, int routing_id);
   ~RendererSavePasswordProgressLogger() override;
 
+  void LogElementName(StringID label,
+                      const blink::WebFormControlElement& element);
+
  protected:
   // SavePasswordProgressLogger:
   void SendLog(const std::string& log) override;
@@ -43,4 +50,4 @@ class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_RENDERER_BROWSER_SAVE_PASSWORD_PROGRESS_LOGGER_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_RENDERER_SAVE_PASSWORD_PROGRESS_LOGGER_H_

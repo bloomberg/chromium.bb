@@ -378,9 +378,9 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_MATCH_IN_ADDITIONAL:
       return "Match found in additional logins";
     case SavePasswordProgressLogger::STRING_USERNAME_FILLED:
-      return "Username was filled";
+      return "Filled username element named";
     case SavePasswordProgressLogger::STRING_PASSWORD_FILLED:
-      return "Password was filled";
+      return "Filled password element named";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

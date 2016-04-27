@@ -503,7 +503,7 @@ bool FillUserNameAndPassword(
     (*nonscript_modified_values)[*username_element] = username;
     username_element->setAutofilled(true);
     if (logger)
-      logger->LogMessage(Logger::STRING_USERNAME_FILLED);
+      logger->LogElementName(Logger::STRING_USERNAME_FILLED, *username_element);
     if (set_selection) {
       form_util::PreviewSuggestion(username, current_username,
                                    username_element);
@@ -523,7 +523,7 @@ bool FillUserNameAndPassword(
 
   password_element->setAutofilled(true);
   if (logger)
-    logger->LogMessage(Logger::STRING_PASSWORD_FILLED);
+    logger->LogElementName(Logger::STRING_PASSWORD_FILLED, *password_element);
   return true;
 }
 
