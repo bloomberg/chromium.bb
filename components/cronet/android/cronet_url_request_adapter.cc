@@ -16,6 +16,7 @@
 #include "components/cronet/android/url_request_error.h"
 #include "jni/CronetUrlRequest_jni.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_status_flags.h"
@@ -299,9 +300,15 @@ void CronetURLRequestAdapter::GetStatusOnNetworkThread(
     const {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
+  int status = net::LOAD_STATE_IDLE;
+  // |url_request_| is initialized in StartOnNetworkThread, and it is
+  // never nulled. If it is null, it must be that StartOnNetworkThread
+  // has not been called, pretend that we are in LOAD_STATE_IDLE.
+  // See crbug.com/606872.
+  if (url_request_)
+    status = url_request_->GetLoadState().state;
   cronet::Java_CronetUrlRequest_onStatus(env, owner_.obj(),
-                                         status_listener_ref.obj(),
-                                         url_request_->GetLoadState().state);
+                                         status_listener_ref.obj(), status);
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray>

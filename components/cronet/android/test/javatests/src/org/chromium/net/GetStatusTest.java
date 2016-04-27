@@ -12,6 +12,10 @@ import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.UrlRequest.Status;
 import org.chromium.net.UrlRequest.StatusListener;
 
+import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 /**
  * Tests that {@link CronetUrlRequest#getStatus} works as expected.
  */
@@ -136,5 +140,59 @@ public class GetStatusTest extends CronetTestBase {
             // If assertions are disabled, an IllegalArgumentException should be thrown.
             assertEquals("No request status found.", e.getMessage());
         }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    // Regression test for crbug.com/606872.
+    @OnlyRunNativeCronet
+    public void testGetStatusForUpload() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoBodyURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+
+        final ConditionVariable block = new ConditionVariable();
+        // Use a separate executor for UploadDataProvider so the upload can be
+        // stalled while getStatus gets processed.
+        Executor uploadProviderExecutor = Executors.newSingleThreadExecutor();
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, uploadProviderExecutor) {
+            @Override
+            public long getLength() throws IOException {
+                // Pause the data provider.
+                block.block();
+                block.close();
+                return super.getLength();
+            }
+        };
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, uploadProviderExecutor);
+        builder.addHeader("Content-Type", "useless/string");
+        UrlRequest urlRequest = builder.build();
+        TestStatusListener statusListener = new TestStatusListener();
+        urlRequest.start();
+        // Call getStatus() immediately after start(), which will post
+        // startInternal() to the upload provider's executor because there is an
+        // upload. When CronetUrlRequestAdapter::GetStatusOnNetworkThread is
+        // executed, the |url_request_| is null.
+        urlRequest.getStatus(statusListener);
+        statusListener.waitUntilOnStatusCalled();
+        assertTrue(statusListener.mOnStatusCalled);
+        // The request should be in IDLE state because GetStatusOnNetworkThread
+        // is called before |url_request_| is initialized and started.
+        assertEquals(Status.IDLE, statusListener.mStatus);
+        // Resume the UploadDataProvider.
+        block.open();
+
+        // Make sure the request is successful and there is no crash.
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(4, dataProvider.getUploadedLength());
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", callback.mResponseAsString);
     }
 }
