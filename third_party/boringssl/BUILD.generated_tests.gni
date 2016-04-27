@@ -263,6 +263,24 @@ template("create_tests") {
     deps = invoker.deps
   }
 
+  executable("boringssl_newhope_test") {
+    sources = [
+      "src/crypto/newhope/newhope_test.c",
+    ]
+    sources += _test_support_sources
+    configs += invoker.configs
+    deps = invoker.deps
+  }
+
+  executable("boringssl_obj_test") {
+    sources = [
+      "src/crypto/obj/obj_test.cc",
+    ]
+    sources += _test_support_sources
+    configs += invoker.configs
+    deps = invoker.deps
+  }
+
   executable("boringssl_pkcs12_test") {
     sources = [
       "src/crypto/pkcs8/pkcs12_test.cc",
@@ -398,6 +416,8 @@ template("create_tests") {
       ":boringssl_hkdf_test",
       ":boringssl_hmac_test",
       ":boringssl_lhash_test",
+      ":boringssl_newhope_test",
+      ":boringssl_obj_test",
       ":boringssl_pbkdf_test",
       ":boringssl_pkcs12_test",
       ":boringssl_pkcs7_test",

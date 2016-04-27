@@ -26,6 +26,8 @@ sys.path.append(os.path.join(BORINGSSL_SRC_PATH, 'util'))
 import generate_build_files
 
 GENERATED_FILES = [
+    'BUILD.generated.gni',
+    'BUILD.generated_tests.gni',
     'boringssl.gypi',
     'boringssl_tests.gypi',
     'err_data.c',
