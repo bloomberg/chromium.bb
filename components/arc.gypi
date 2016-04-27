@@ -58,6 +58,8 @@
         'arc/intent_helper/arc_intent_helper_bridge.h',
         'arc/intent_helper/font_size_util.cc',
         'arc/intent_helper/font_size_util.h',
+        'arc/intent_helper/link_handler_model_impl.cc',
+        'arc/intent_helper/link_handler_model_impl.h',
         'arc/metrics/arc_low_memory_killer_monitor.cc',
         'arc/metrics/arc_low_memory_killer_monitor.h',
         'arc/metrics/arc_metrics_service.cc',

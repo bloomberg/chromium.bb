@@ -694,6 +694,7 @@
     ],
     'chrome_unit_tests_ash_sources': [
       'browser/media/desktop_media_list_ash_unittest.cc',
+      'browser/renderer_context_menu/open_with_menu_factory_ash_unittest.cc',
       'browser/signin/signin_error_notifier_ash_unittest.cc',
       'browser/sync/sync_error_notifier_ash_unittest.cc',
       # Ash implies the app list is enabled (only disabled on mobile).

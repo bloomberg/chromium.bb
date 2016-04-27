@@ -1031,6 +1031,8 @@
     'chrome_browser_ash_sources': [
       'browser/media/desktop_media_list_ash.cc',
       'browser/media/desktop_media_list_ash.h',
+      'browser/renderer_context_menu/open_with_menu_factory_ash.cc',
+      'browser/renderer_context_menu/open_with_menu_factory_ash.h',
       'browser/signin/signin_error_notifier_ash.cc',
       'browser/signin/signin_error_notifier_ash.h',
       'browser/signin/signin_error_notifier_factory_ash.cc',
@@ -1402,6 +1404,8 @@
       'browser/profiles/profile_shortcut_manager.h',
       'browser/profiles/profile_window.cc',
       'browser/profiles/profile_window.h',
+      'browser/renderer_context_menu/open_with_menu_factory.cc',
+      'browser/renderer_context_menu/open_with_menu_factory.h',
       'browser/renderer_context_menu/render_view_context_menu.cc',
       'browser/renderer_context_menu/render_view_context_menu.h',
       'browser/renderer_context_menu/spelling_bubble_model.cc',

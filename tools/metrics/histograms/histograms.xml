@@ -82420,6 +82420,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="71" label="IDC_OPEN_LINK_IN_PROFILE_FIRST"/>
   <int value="72" label="IDC_CONTENT_CONTEXT_GENERATEPASSWORD"/>
   <int value="73" label="IDC_SPELLCHECK_MULTI_LINGUAL"/>
+  <int value="74" label="IDC_CONTENT_CONTEXT_OPEN_WITH1"/>
+  <int value="75" label="IDC_CONTENT_CONTEXT_OPEN_WITH2"/>
+  <int value="76" label="IDC_CONTENT_CONTEXT_OPEN_WITH3"/>
+  <int value="77" label="IDC_CONTENT_CONTEXT_OPEN_WITH4"/>
+  <int value="78" label="IDC_CONTENT_CONTEXT_OPEN_WITH5"/>
+  <int value="79" label="IDC_CONTENT_CONTEXT_OPEN_WITH6"/>
+  <int value="80" label="IDC_CONTENT_CONTEXT_OPEN_WITH7"/>
+  <int value="81" label="IDC_CONTENT_CONTEXT_OPEN_WITH8"/>
+  <int value="82" label="IDC_CONTENT_CONTEXT_OPEN_WITH9"/>
+  <int value="83" label="IDC_CONTENT_CONTEXT_OPEN_WITH10"/>
+  <int value="84" label="IDC_CONTENT_CONTEXT_OPEN_WITH11"/>
+  <int value="85" label="IDC_CONTENT_CONTEXT_OPEN_WITH12"/>
+  <int value="86" label="IDC_CONTENT_CONTEXT_OPEN_WITH13"/>
+  <int value="87" label="IDC_CONTENT_CONTEXT_OPEN_WITH14"/>
 </enum>
 
 <enum name="ReportProcessingResult" type="int">

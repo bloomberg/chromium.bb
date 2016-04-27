@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #endif
 
+class OpenWithMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;
@@ -122,6 +123,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendDeveloperItems();
   void AppendDevtoolsForUnpackedExtensions();
   void AppendLinkItems();
+  void AppendOpenWithLinkItems();
   void AppendImageItems();
   void AppendAudioItems();
   void AppendCanvasItems();
@@ -192,6 +194,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   std::unique_ptr<SpellingOptionsSubMenuObserver>
       spelling_options_submenu_observer_;
 #endif
+
+  // An observer that handles "Open with <app>" items.
+  std::unique_ptr<RenderViewContextMenuObserver> open_with_menu_observer_;
 
 #if defined(ENABLE_PRINT_PREVIEW)
   // An observer that disables menu items when print preview is active.

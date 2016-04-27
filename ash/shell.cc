@@ -642,6 +642,7 @@ Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
       scoped_target_root_window_(nullptr),
       delegate_(delegate),
       shelf_model_(new ShelfModel),
+      link_handler_model_factory_(nullptr),
       activation_client_(nullptr),
 #if defined(OS_CHROMEOS)
       display_configurator_(new ui::DisplayConfigurator()),

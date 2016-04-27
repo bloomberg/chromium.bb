@@ -4,6 +4,13 @@
 
 module arc.mojom;
 
+// Describes a package that can handle a URL.
+struct UrlHandlerInfo {
+  string name;
+  string package_name;
+  string activity_name;  // A hint for retrieving the package's icon.
+};
+
 // Handles intents from ARC in Chrome.
 interface IntentHelperHost {
   // Opens the url with Chrome for Chrome OS.
@@ -12,8 +19,16 @@ interface IntentHelperHost {
 
 // Sends intents to ARC on behalf of Chrome.
 interface IntentHelperInstance {
+  // Handles the URL by sending an ACTION_VIEW intent to the package. The
+  // most suitable activity for the URL within the package will be started.
+  [MinVersion=2] HandleUrl@2(string url, string package_name);
+
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
+
+  // Requests a list of packages that can handle the URL.
+  [MinVersion=2] RequestUrlHandlerList@3(string url)
+      => (array<UrlHandlerInfo> handlers);
 
   // Send an Android broadcast message to the Android package and class
   // specified.  Data can be sent as extras by including a JSON map string which

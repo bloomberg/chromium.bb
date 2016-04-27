@@ -105,6 +105,7 @@ class HighContrastController;
 class KeyboardUI;
 class KeyboardUMAEventFilter;
 class LastWindowClosedLogoutReminder;
+class LinkHandlerModelFactory;
 class LocaleNotificationController;
 class LockStateController;
 class LogoutConfirmationController;
@@ -361,6 +362,13 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   DesktopBackgroundController* desktop_background_controller() {
     return desktop_background_controller_.get();
+  }
+  LinkHandlerModelFactory* link_handler_model_factory() {
+    return link_handler_model_factory_;
+  }
+  void set_link_handler_model_factory(
+      LinkHandlerModelFactory* link_handler_model_factory) {
+    link_handler_model_factory_ = link_handler_model_factory;
   }
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
@@ -685,6 +693,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   std::unique_ptr<DesktopBackgroundController> desktop_background_controller_;
+  LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;

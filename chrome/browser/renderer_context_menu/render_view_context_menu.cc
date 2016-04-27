@@ -47,6 +47,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
+#include "chrome/browser/renderer_context_menu/open_with_menu_factory.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -292,9 +293,23 @@ const struct UmaEnumCommandIdPair {
     {71, -1, IDC_OPEN_LINK_IN_PROFILE_FIRST},
     {72, -1, IDC_CONTENT_CONTEXT_GENERATEPASSWORD},
     {73, -1, IDC_SPELLCHECK_MULTI_LINGUAL},
+    {74, -1, IDC_CONTENT_CONTEXT_OPEN_WITH1},
+    {75, -1, IDC_CONTENT_CONTEXT_OPEN_WITH2},
+    {76, -1, IDC_CONTENT_CONTEXT_OPEN_WITH3},
+    {77, -1, IDC_CONTENT_CONTEXT_OPEN_WITH4},
+    {78, -1, IDC_CONTENT_CONTEXT_OPEN_WITH5},
+    {79, -1, IDC_CONTENT_CONTEXT_OPEN_WITH6},
+    {80, -1, IDC_CONTENT_CONTEXT_OPEN_WITH7},
+    {81, -1, IDC_CONTENT_CONTEXT_OPEN_WITH8},
+    {82, -1, IDC_CONTENT_CONTEXT_OPEN_WITH9},
+    {83, -1, IDC_CONTENT_CONTEXT_OPEN_WITH10},
+    {84, -1, IDC_CONTENT_CONTEXT_OPEN_WITH11},
+    {85, -1, IDC_CONTENT_CONTEXT_OPEN_WITH12},
+    {86, -1, IDC_CONTENT_CONTEXT_OPEN_WITH13},
+    {87, -1, IDC_CONTENT_CONTEXT_OPEN_WITH14},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {74, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {88, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -950,6 +965,8 @@ void RenderViewContextMenu::AppendLinkItems() {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
                                     IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
 
+    AppendOpenWithLinkItems();
+
     // While ChromeOS supports multiple profiles, only one can be open at a
     // time.
     // TODO(jochen): Consider adding support for ChromeOS with similar
@@ -1042,6 +1059,14 @@ void RenderViewContextMenu::AppendLinkItems() {
       !params_.link_text.empty()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYLINKTEXT,
                                     IDS_CONTENT_CONTEXT_COPYLINKTEXT);
+  }
+}
+
+void RenderViewContextMenu::AppendOpenWithLinkItems() {
+  open_with_menu_observer_.reset(OpenWithMenuFactory::CreateMenu(this));
+  if (open_with_menu_observer_) {
+    observers_.AddObserver(open_with_menu_observer_.get());
+    open_with_menu_observer_->InitMenu(params_);
   }
 }
 
