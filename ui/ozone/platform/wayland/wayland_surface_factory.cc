@@ -35,7 +35,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   ~WaylandCanvasSurface() override;
 
   // SurfaceOzoneCanvas
-  skia::RefPtr<SkSurface> GetSurface() override;
+  sk_sp<SkSurface> GetSurface() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
@@ -45,7 +45,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   WaylandWindow* window_;
 
   gfx::Size size_;
-  skia::RefPtr<SkSurface> sk_surface_;
+  sk_sp<SkSurface> sk_surface_;
   wl::Object<wl_shm_pool> pool_;
   wl::Object<wl_buffer> buffer_;
 
@@ -58,7 +58,7 @@ WaylandCanvasSurface::WaylandCanvasSurface(WaylandDisplay* display,
 
 WaylandCanvasSurface::~WaylandCanvasSurface() {}
 
-skia::RefPtr<SkSurface> WaylandCanvasSurface::GetSurface() {
+sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
   if (sk_surface_)
     return sk_surface_;
 
@@ -77,10 +77,10 @@ skia::RefPtr<SkSurface> WaylandCanvasSurface::GetSurface() {
   if (!buffer)
     return nullptr;
 
-  sk_surface_ = skia::AdoptRef(SkSurface::NewRasterDirectReleaseProc(
+  sk_surface_ = SkSurface::MakeRasterDirectReleaseProc(
       SkImageInfo::MakeN32Premul(size_.width(), size_.height()),
       shared_memory->memory(), size_.width() * 4, &DeleteSharedMemory,
-      shared_memory.get(), nullptr));
+      shared_memory.get(), nullptr);
   if (!sk_surface_)
     return nullptr;
   pool_ = std::move(pool);
@@ -97,7 +97,7 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   // still fits (but still reallocate if the new size is much smaller than the
   // old size).
   if (sk_surface_) {
-    sk_surface_.clear();
+    sk_surface_.reset();
     buffer_.reset();
     pool_.reset();
   }
