@@ -265,6 +265,7 @@
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
       'tests/LayoutGeometryMapTest.cpp',
+      'tests/RootScrollerTest.cpp',
       'tests/ScreenWakeLockTest.cpp',
       'tests/ScrollingCoordinatorTest.cpp',
       'tests/SpinLockTest.cpp',

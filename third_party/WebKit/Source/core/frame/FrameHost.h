@@ -49,6 +49,7 @@ class OverscrollController;
 class Page;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
+class RootScroller;
 class Settings;
 class TopControls;
 class UseCounter;
@@ -91,6 +92,9 @@ public:
     // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
     float deviceScaleFactor() const;
 
+    RootScroller* rootScroller();
+    const RootScroller* rootScroller() const;
+
     TopControls& topControls();
     const TopControls& topControls() const;
 
@@ -130,6 +134,7 @@ private:
     explicit FrameHost(Page&);
 
     const Member<Page> m_page;
+    const Member<RootScroller> m_rootScroller;
     const Member<TopControls> m_topControls;
     const OwnPtr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
     const Member<VisualViewport> m_visualViewport;

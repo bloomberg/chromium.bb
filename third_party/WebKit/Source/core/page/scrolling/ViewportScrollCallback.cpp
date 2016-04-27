@@ -4,14 +4,10 @@
 
 #include "core/page/scrolling/ViewportScrollCallback.h"
 
-#include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/TopControls.h"
-#include "core/frame/VisualViewport.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "platform/geometry/FloatSize.h"
@@ -19,11 +15,11 @@
 
 namespace blink {
 
-ViewportScrollCallback::ViewportScrollCallback(Document& document)
-    : m_document(&document)
+ViewportScrollCallback::ViewportScrollCallback(
+    TopControls& topControls, OverscrollController& overscrollController)
+    : m_topControls(&topControls)
+    , m_overscrollController(&overscrollController)
 {
-    // Only the root document can have a viewport scroll callback for now.
-    ASSERT(!document.ownerElement());
 }
 
 ViewportScrollCallback::~ViewportScrollCallback()
@@ -32,7 +28,9 @@ ViewportScrollCallback::~ViewportScrollCallback()
 
 DEFINE_TRACE(ViewportScrollCallback)
 {
-    visitor->trace(m_document);
+    visitor->trace(m_topControls);
+    visitor->trace(m_overscrollController);
+    visitor->trace(m_scroller);
     ScrollStateCallback::trace(visitor);
 }
 
@@ -42,12 +40,11 @@ bool ViewportScrollCallback::shouldScrollTopControls(const FloatSize& delta,
     if (granularity != ScrollByPixel && granularity != ScrollByPrecisePixel)
         return false;
 
-    ScrollableArea* rootFrameViewport = getRootFrameViewport();
-    if (!rootFrameViewport)
+    if (!m_scroller)
         return false;
 
-    DoublePoint maxScroll = rootFrameViewport->maximumScrollPositionDouble();
-    DoublePoint scrollPosition = rootFrameViewport->scrollPositionDouble();
+    DoublePoint maxScroll = m_scroller->maximumScrollPositionDouble();
+    DoublePoint scrollPosition = m_scroller->scrollPositionDouble();
 
     // Always give the delta to the top controls if the scroll is in
     // the direction to show the top controls. If it's in the
@@ -58,62 +55,50 @@ bool ViewportScrollCallback::shouldScrollTopControls(const FloatSize& delta,
 
 void ViewportScrollCallback::handleEvent(ScrollState* state)
 {
-    if (!m_document || !m_document->frameHost())
-        return;
-
-    TopControls& topControls = m_document->frameHost()->topControls();
-    OverscrollController& overscrollController =
-        m_document->frameHost()->overscrollController();
-
-    // Scroll top controls.
-    if (state->isBeginning())
-        topControls.scrollBegin();
-
     FloatSize delta(state->deltaX(), state->deltaY());
     ScrollGranularity granularity =
         ScrollGranularity(static_cast<int>(state->deltaGranularity()));
     FloatSize remainingDelta = delta;
 
-    if (shouldScrollTopControls(delta, granularity))
-        remainingDelta = topControls.scrollBy(delta);
+    // Scroll top controls.
+    if (m_topControls) {
+        if (state->isBeginning())
+            m_topControls->scrollBegin();
+
+        if (shouldScrollTopControls(delta, granularity))
+            remainingDelta = m_topControls->scrollBy(delta);
+    }
 
     bool topControlsConsumedScroll = remainingDelta.height() != delta.height();
 
-    // Do the native scroll.
-    ScrollableArea* rootFrameViewport = getRootFrameViewport();
-    if (!rootFrameViewport)
+    // Scroll the element's scrollable area.
+    if (!m_scroller)
         return;
 
-    ScrollResult result =
-        rootFrameViewport->userScroll(granularity, remainingDelta);
+    ScrollResult result = m_scroller->userScroll(granularity, remainingDelta);
 
     // We consider top controls movement to be scrolling.
     result.didScrollY |= topControlsConsumedScroll;
 
     // Handle Overscroll.
-    FloatPoint position(state->positionX(), state->positionY());
-    FloatSize velocity(state->velocityX(), state->velocityY());
-    overscrollController.handleOverscroll(result, position, velocity);
+    if (m_overscrollController) {
+        FloatPoint position(state->positionX(), state->positionY());
+        FloatSize velocity(state->velocityX(), state->velocityY());
+        m_overscrollController->handleOverscroll(result, position, velocity);
+    }
 
     // The viewport consumes everything.
+    // TODO(bokan): This isn't actually consuming everything but doing so breaks
+    // the main thread pull-to-refresh action. I need to figure out where that
+    // gets activated. crbug.com/607210.
     state->consumeDeltaNative(
         state->deltaX() - result.unusedScrollDeltaX,
         state->deltaY() - result.unusedScrollDeltaY);
 }
 
-ScrollableArea* ViewportScrollCallback::getRootFrameViewport() const
+void ViewportScrollCallback::setScroller(ScrollableArea& scroller)
 {
-    if (m_document->layoutViewItem().isNull())
-        return nullptr;
-
-    FrameView* frameView = m_document->layoutViewItem().frameView();
-    if (!frameView)
-        return nullptr;
-
-    ScrollableArea* rootFrameViewport = frameView->getScrollableArea();
-    ASSERT(rootFrameViewport);
-
-    return rootFrameViewport;
+    m_scroller = &scroller;
 }
 
 } // namespace blink

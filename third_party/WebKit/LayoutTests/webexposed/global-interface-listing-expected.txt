@@ -1189,6 +1189,7 @@ interface Document : Node
     getter readyState
     getter referrer
     getter rootElement
+    getter rootScroller
     getter scripts
     getter scrollingElement
     getter selectedStylesheetSet
@@ -1251,6 +1252,7 @@ interface Document : Node
     method querySelector
     method querySelectorAll
     method registerElement
+    method setRootScroller
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write

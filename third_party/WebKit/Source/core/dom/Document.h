@@ -1065,6 +1065,9 @@ public:
     ShadowCascadeOrder shadowCascadeOrder() const { return m_shadowCascadeOrder; }
     void setShadowCascadeOrder(ShadowCascadeOrder);
 
+    void setRootScroller(Element*, ExceptionState&);
+    Element* rootScroller();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 

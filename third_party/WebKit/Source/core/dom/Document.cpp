@@ -193,8 +193,8 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
+#include "core/page/scrolling/RootScroller.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
@@ -247,31 +247,6 @@ static const unsigned cMaxWriteRecursionDepth = 21;
 // FIXME: For faster machines this value can really be lowered to 200.  250 is adequate, but a little high
 // for dual G5s. :)
 static const int cLayoutScheduleThreshold = 250;
-
-namespace {
-
-void updateViewportApplyScroll(Element* documentElement)
-{
-    if (!documentElement
-        || !documentElement->isHTMLElement()
-        || documentElement->document().ownerElement())
-        return;
-
-    if (documentElement->getApplyScroll())
-        return;
-
-    ScrollStateCallback* applyScroll =
-        new ViewportScrollCallback(documentElement->document());
-
-    // Use disable-native-scroll since the ViewportScrollCallback needs to
-    // apply scroll actions before (TopControls) and after (overscroll)
-    // scrolling the element so it applies scroll to the element itself.
-    documentElement->setApplyScroll(
-        applyScroll,
-        "disable-native-scroll");
-}
-
-} // namespace
 
 // DOM Level 2 says (letters added):
 //
@@ -617,13 +592,55 @@ void Document::childrenChanged(const ChildrenChange& change)
     // frames when there's only a <head>, but such documents are pretty rare.
     if (m_documentElement && !isHTMLDocument())
         beginLifecycleUpdatesIfRenderingReady();
+}
 
-    // Installs the viewport scrolling callback (the "applyScroll" in Scroll
-    // Customization lingo) on the documentElement. This callback is
-    // responsible for viewport related scroll actions like top controls
-    // movement and overscroll glow as well as actually scrolling the root
-    // viewport.
-    updateViewportApplyScroll(m_documentElement);
+void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionState)
+{
+    DCHECK(newScroller);
+
+    if (ownerElement()) {
+        exceptionState.throwDOMException(
+            WrongDocumentError,
+            "Root scroller cannot be set on a document within a frame.");
+        return;
+    }
+
+    if (newScroller->document() != this) {
+        exceptionState.throwDOMException(
+            WrongDocumentError,
+            "Element isn't in this document.");
+        return;
+    }
+
+    FrameHost* host = frameHost();
+    if (!host)
+        return;
+
+    RootScroller* rootScroller = host->rootScroller();
+    DCHECK(rootScroller);
+
+    if (!rootScroller->set(*newScroller)) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "Element cannot be set as root scroller. Must be block or iframe.");
+    }
+}
+
+Element* Document::rootScroller()
+{
+    if (ownerElement())
+        return documentElement();
+
+    FrameHost* host = frameHost();
+    if (!host)
+        return nullptr;
+
+    RootScroller* rootScroller = host->rootScroller();
+    DCHECK(rootScroller);
+
+    updateLayoutIgnorePendingStylesheets();
+
+    return rootScroller->get();
 }
 
 AtomicString Document::convertLocalName(const AtomicString& name)
@@ -1921,6 +1938,11 @@ void Document::layoutUpdated()
     if (isRenderingReady() && body() && !styleEngine().hasPendingSheets()) {
         if (!m_documentTiming.firstLayout())
             m_documentTiming.markFirstLayout();
+    }
+
+    if (!ownerElement() && frameHost()) {
+        if (RootScroller* rootScroller = frameHost()->rootScroller())
+            rootScroller->didUpdateTopDocumentLayout();
     }
 }
 

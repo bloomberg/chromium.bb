@@ -11,27 +11,31 @@
 
 namespace blink {
 
-class Document;
 class FloatSize;
 class FrameHost;
 class Element;
 class ScrollableArea;
 class ScrollState;
+class TopControls;
+class OverscrollController;
 
 class ViewportScrollCallback : public ScrollStateCallback {
 public:
-    ViewportScrollCallback(Document&);
+    ViewportScrollCallback(TopControls&, OverscrollController&);
     ~ViewportScrollCallback();
 
     void handleEvent(ScrollState*) override;
+
+    void setScroller(ScrollableArea&);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     bool shouldScrollTopControls(const FloatSize&, ScrollGranularity) const;
-    ScrollableArea* getRootFrameViewport() const;
 
-    WeakMember<Document> m_document;
+    WeakMember<TopControls> m_topControls;
+    WeakMember<OverscrollController> m_overscrollController;
+    WeakMember<ScrollableArea> m_scroller;
 };
 
 } // namespace blink

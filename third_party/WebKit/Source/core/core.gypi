@@ -2007,6 +2007,8 @@
             'page/WindowFeatures.cpp',
             'page/scrolling/OverscrollController.cpp',
             'page/scrolling/OverscrollController.h',
+            'page/scrolling/RootScroller.cpp',
+            'page/scrolling/RootScroller.h',
             'page/scrolling/ScrollingCoordinator.cpp',
             'page/scrolling/ScrollingCoordinator.h',
             'page/scrolling/ScrollCustomizationCallbacks.cpp',

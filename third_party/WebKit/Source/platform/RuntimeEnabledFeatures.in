@@ -181,6 +181,7 @@ ScrollTopLeftInterop status=experimental
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerClientsGetID status=stable
 ServiceWorkerWindowClientNavigate status=stable
+SetRootScroller status=experimental
 ShadowDOMV1 status=experimental
 SharedArrayBuffer
 SharedWorker status=stable

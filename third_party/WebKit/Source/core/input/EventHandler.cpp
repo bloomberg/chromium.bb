@@ -2516,10 +2516,7 @@ bool EventHandler::isRootScroller(const Node& node) const
     if (!node.isElementNode() || node.document().ownerElement())
         return false;
 
-    Element* scrollingElement = node.document().scrollingElement();
-    return scrollingElement
-        ? toElement(&node) == node.document().scrollingElement()
-        : toElement(&node) == node.document().documentElement();
+    return node.document().rootScroller() == toElement(&node);
 }
 
 WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
