@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCELERATED_WIDGET_MAC_CA_LAYER_TREE_MAC_H_
-#define UI_ACCELERATED_WIDGET_MAC_CA_LAYER_TREE_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_CA_RENDERER_LAYER_TREE_H_
+#define UI_ACCELERATED_WIDGET_MAC_CA_RENDERER_LAYER_TREE_H_
 
 #include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
@@ -24,15 +24,16 @@
 
 namespace ui {
 
-// The CALayerTree will construct a hierarchy of CALayers from a linear list,
-// using the algorithm and structure referenced described in
+// The CARendererLayerTree will construct a hierarchy of CALayers from a linear
+// list provided by the CoreAnimation renderer using the algorithm and structure
+// referenced described in
 // https://docs.google.com/document/d/1DtSN9zzvCF44_FQPM7ie01UxGHagQ66zfF5L9HnigQY/edit?usp=sharing
-class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
+class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
  public:
-  CALayerTree();
+  CARendererLayerTree();
 
   // This will remove all CALayers from this tree from their superlayer.
-  ~CALayerTree();
+  ~CARendererLayerTree();
 
   // Append the description of a new CALayer to the tree. This will not
   // create any new CALayers until CommitScheduledCALayers is called. This
@@ -55,7 +56,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
   // be destroyed at the end of the function, and any CALayers in it which were
   // not re-used by |this| will be removed from the CALayer hierarchy.
   void CommitScheduledCALayers(CALayer* superlayer,
-                               std::unique_ptr<CALayerTree> old_tree,
+                               std::unique_ptr<CARendererLayerTree> old_tree,
                                float scale_factor);
 
  private:
@@ -204,7 +205,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTree {
   bool has_committed_ = false;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CALayerTree);
+  DISALLOW_COPY_AND_ASSIGN(CARendererLayerTree);
 };
 
 }  // namespace ui

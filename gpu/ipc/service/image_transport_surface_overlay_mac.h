@@ -22,8 +22,7 @@
 @class CALayer;
 
 namespace ui {
-class CALayerTree;
-class CALayerPartialDamageTree;
+class CALayerTreeCoordinator;
 }
 
 namespace gpu {
@@ -92,7 +91,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   bool use_remote_layer_api_;
   base::scoped_nsobject<CAContext> ca_context_;
-  base::scoped_nsobject<CALayer> ca_root_layer_;
+  std::unique_ptr<ui::CALayerTreeCoordinator> ca_layer_tree_coordinator_;
 
   gfx::Size pixel_size_;
   float scale_factor_;
@@ -100,15 +99,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // The renderer ID that all contexts made current to this surface should be
   // targeting.
   GLint gl_renderer_id_;
-
-  // Planes that have been scheduled, but have not had a subsequent SwapBuffers
-  // call made yet.
-  std::unique_ptr<ui::CALayerPartialDamageTree> pending_partial_damage_tree_;
-  std::unique_ptr<ui::CALayerTree> pending_ca_layer_tree_;
-
-  // The planes that are currently being displayed on the screen.
-  std::unique_ptr<ui::CALayerPartialDamageTree> current_partial_damage_tree_;
-  std::unique_ptr<ui::CALayerTree> current_ca_layer_tree_;
 
   // The vsync information provided by the browser.
   bool vsync_parameters_valid_;

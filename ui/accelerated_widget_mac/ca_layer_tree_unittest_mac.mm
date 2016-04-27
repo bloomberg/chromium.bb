@@ -8,7 +8,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accelerated_widget_mac/ca_layer_tree_mac.h"
+#include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/io_surface.h"
 
@@ -40,7 +40,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   float scale_factor = 1.0f;
   bool result = false;
 
-  std::unique_ptr<ui::CALayerTree> ca_layer_tree;
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
   CALayer* clip_and_sorting_layer = nil;
   CALayer* transform_layer = nil;
@@ -48,7 +48,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Validate the initial values.
   {
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -107,7 +108,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Update just the clip rect and re-commit.
   {
     clip_rect = gfx::Rect(4, 8, 16, 32);
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -149,7 +151,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Disable clipping and re-commit.
   {
     is_clipped = false;
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -188,7 +191,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Change the transform and re-commit.
   {
     transform.Translate(5, 5);
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -225,7 +229,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Change the edge antialiasing mask and commit.
   {
     edge_aa_mask = GL_CA_LAYER_EDGE_TOP_CHROMIUM;
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -260,7 +265,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
 
   // Change the contents and commit.
   {
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -297,7 +303,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Change the rect size.
   {
     rect = gfx::Rect(rect.origin(), gfx::Size(32, 16));
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -334,7 +341,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Change the rect position.
   {
     rect = gfx::Rect(gfx::Point(16, 4), rect.size());
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -371,7 +379,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Change the opacity.
   {
     opacity = 1.0f;
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -407,7 +416,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Add the clipping and IOSurface contents back.
   {
     is_clipped = true;
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -444,7 +454,8 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Change the scale factor. This should result in a new tree being created.
   {
     scale_factor = 2.0f;
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -539,7 +550,8 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
   transforms[4].Translate(10, 10);
 
   // Schedule and commit the layers.
-  std::unique_ptr<ui::CALayerTree> ca_layer_tree(new ui::CALayerTree);
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
+      new ui::CARendererLayerTree);
   for (size_t i = 0; i < 5; ++i) {
     bool result = ca_layer_tree->ScheduleCALayer(
         is_clipped,
@@ -625,7 +637,8 @@ TEST_F(CALayerTreeTest, SortingContexts) {
   }
 
   // Schedule and commit the layers.
-  std::unique_ptr<ui::CALayerTree> ca_layer_tree(new ui::CALayerTree);
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
+      new ui::CARendererLayerTree);
   for (size_t i = 0; i < 3; ++i) {
     bool result = ca_layer_tree->ScheduleCALayer(
         is_clipped,
@@ -696,7 +709,8 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
       gfx::Rect(0, 0, 16, 16)
   };
 
-  std::unique_ptr<ui::CALayerTree> ca_layer_tree(new ui::CALayerTree);
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
+      new ui::CARendererLayerTree);
   // First send the various clip parameters to sorting context zero. This is
   // legitimate.
   for (size_t i = 0; i < 3; ++i) {
@@ -772,7 +786,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
   float scale_factor = 1.0f;
   bool result = false;
 
-  std::unique_ptr<ui::CALayerTree> ca_layer_tree;
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
   CALayer* root_layer = nil;
   CALayer* clip_and_sorting_layer = nil;
   CALayer* transform_layer = nil;
@@ -782,7 +796,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
 
   // Validate the initial values.
   {
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -819,7 +834,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
 
   // Pass another frame.
   {
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -861,7 +877,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
 
   // Pass a frame with a CVPixelBuffer
   {
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,
@@ -902,7 +919,8 @@ TEST_F(CALayerTreeTest, AVLayer) {
   // Pass a frame that is clipped.
   contents_rect = gfx::RectF(0, 0, 1, 0.9);
   {
-    std::unique_ptr<ui::CALayerTree> new_ca_layer_tree(new ui::CALayerTree);
+    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+        new ui::CARendererLayerTree);
     result = new_ca_layer_tree->ScheduleCALayer(
         is_clipped,
         clip_rect,

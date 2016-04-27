@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accelerated_widget_mac/ca_layer_tree_mac.h"
+#include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
 
 #include <AVFoundation/AVFoundation.h>
 #include <CoreMedia/CoreMedia.h>
@@ -127,10 +127,10 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
 
 }  // namespace
 
-CALayerTree::CALayerTree() {}
-CALayerTree::~CALayerTree() {}
+CARendererLayerTree::CARendererLayerTree() {}
+CARendererLayerTree::~CARendererLayerTree() {}
 
-bool CALayerTree::ScheduleCALayer(
+bool CARendererLayerTree::ScheduleCALayer(
     bool is_clipped,
     const gfx::Rect& clip_rect,
     unsigned sorting_context_id,
@@ -154,10 +154,11 @@ bool CALayerTree::ScheduleCALayer(
                                      edge_aa_mask, opacity);
 }
 
-void CALayerTree::CommitScheduledCALayers(CALayer* superlayer,
-                                          std::unique_ptr<CALayerTree> old_tree,
-                                          float scale_factor) {
-  TRACE_EVENT0("gpu", "CALayerTree::CommitScheduledCALayers");
+void CARendererLayerTree::CommitScheduledCALayers(
+    CALayer* superlayer,
+    std::unique_ptr<CARendererLayerTree> old_tree,
+    float scale_factor) {
+  TRACE_EVENT0("gpu", "CARendererLayerTree::CommitScheduledCALayers");
   RootLayer* old_root_layer = nullptr;
   if (old_tree) {
     DCHECK(old_tree->has_committed_);
@@ -173,15 +174,15 @@ void CALayerTree::CommitScheduledCALayers(CALayer* superlayer,
   scale_factor_ = scale_factor;
 }
 
-CALayerTree::RootLayer::RootLayer() {}
+CARendererLayerTree::RootLayer::RootLayer() {}
 
 // Note that for all destructors, the the CALayer will have been reset to nil if
 // another layer has taken it.
-CALayerTree::RootLayer::~RootLayer() {
+CARendererLayerTree::RootLayer::~RootLayer() {
   [ca_layer removeFromSuperlayer];
 }
 
-CALayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
+CARendererLayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
     bool is_clipped,
     gfx::Rect clip_rect,
     unsigned sorting_context_id,
@@ -191,14 +192,13 @@ CALayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
       sorting_context_id(sorting_context_id),
       is_singleton_sorting_context(is_singleton_sorting_context) {}
 
-CALayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
+CARendererLayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
     ClipAndSortingLayer&& layer)
     : transform_layers(std::move(layer.transform_layers)),
       is_clipped(layer.is_clipped),
       clip_rect(layer.clip_rect),
       sorting_context_id(layer.sorting_context_id),
-      is_singleton_sorting_context(
-          layer.is_singleton_sorting_context),
+      is_singleton_sorting_context(layer.is_singleton_sorting_context),
       ca_layer(layer.ca_layer) {
   // Ensure that the ca_layer be reset, so that when the destructor is called,
   // the layer hierarchy is unaffected.
@@ -207,25 +207,26 @@ CALayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
   layer.ca_layer.reset();
 }
 
-CALayerTree::ClipAndSortingLayer::~ClipAndSortingLayer() {
+CARendererLayerTree::ClipAndSortingLayer::~ClipAndSortingLayer() {
   [ca_layer removeFromSuperlayer];
 }
 
-CALayerTree::TransformLayer::TransformLayer(const gfx::Transform& transform)
+CARendererLayerTree::TransformLayer::TransformLayer(
+    const gfx::Transform& transform)
     : transform(transform) {}
 
-CALayerTree::TransformLayer::TransformLayer(TransformLayer&& layer)
+CARendererLayerTree::TransformLayer::TransformLayer(TransformLayer&& layer)
     : transform(layer.transform),
       content_layers(std::move(layer.content_layers)),
       ca_layer(layer.ca_layer) {
   layer.ca_layer.reset();
 }
 
-CALayerTree::TransformLayer::~TransformLayer() {
+CARendererLayerTree::TransformLayer::~TransformLayer() {
   [ca_layer removeFromSuperlayer];
 }
 
-CALayerTree::ContentLayer::ContentLayer(
+CARendererLayerTree::ContentLayer::ContentLayer(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
@@ -277,7 +278,7 @@ CALayerTree::ContentLayer::ContentLayer(
   }
 }
 
-CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
+CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
     : io_surface(layer.io_surface),
       cv_pixel_buffer(layer.cv_pixel_buffer),
       contents_rect(layer.contents_rect),
@@ -292,11 +293,11 @@ CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
   DCHECK(!layer.av_layer);
 }
 
-CALayerTree::ContentLayer::~ContentLayer() {
+CARendererLayerTree::ContentLayer::~ContentLayer() {
   [ca_layer removeFromSuperlayer];
 }
 
-bool CALayerTree::RootLayer::AddContentLayer(
+bool CARendererLayerTree::RootLayer::AddContentLayer(
     bool is_clipped,
     const gfx::Rect& clip_rect,
     unsigned sorting_context_id,
@@ -349,7 +350,7 @@ bool CALayerTree::RootLayer::AddContentLayer(
   return true;
 }
 
-void CALayerTree::ClipAndSortingLayer::AddContentLayer(
+void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
     const gfx::Transform& transform,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
@@ -371,7 +372,7 @@ void CALayerTree::ClipAndSortingLayer::AddContentLayer(
                                           edge_aa_mask, opacity);
 }
 
-void CALayerTree::TransformLayer::AddContentLayer(
+void CARendererLayerTree::TransformLayer::AddContentLayer(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
@@ -384,9 +385,9 @@ void CALayerTree::TransformLayer::AddContentLayer(
                                         edge_aa_mask, opacity));
 }
 
-void CALayerTree::RootLayer::CommitToCA(CALayer* superlayer,
-                                        RootLayer* old_layer,
-                                        float scale_factor) {
+void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
+                                                RootLayer* old_layer,
+                                                float scale_factor) {
   if (old_layer) {
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
@@ -400,7 +401,7 @@ void CALayerTree::RootLayer::CommitToCA(CALayer* superlayer,
   // Excessive logging to debug white screens (crbug.com/583805).
   // TODO(ccameron): change this back to a DCHECK.
   if ([ca_layer superlayer] != superlayer) {
-    LOG(ERROR) << "CALayerTree root layer not attached to tree.";
+    LOG(ERROR) << "CARendererLayerTree root layer not attached to tree.";
   }
 
   for (size_t i = 0; i < clip_and_sorting_layers.size(); ++i) {
@@ -413,7 +414,7 @@ void CALayerTree::RootLayer::CommitToCA(CALayer* superlayer,
   }
 }
 
-void CALayerTree::ClipAndSortingLayer::CommitToCA(
+void CARendererLayerTree::ClipAndSortingLayer::CommitToCA(
     CALayer* superlayer,
     ClipAndSortingLayer* old_layer,
     float scale_factor) {
@@ -432,7 +433,7 @@ void CALayerTree::ClipAndSortingLayer::CommitToCA(
   // Excessive logging to debug white screens (crbug.com/583805).
   // TODO(ccameron): change this back to a DCHECK.
   if ([ca_layer superlayer] != superlayer) {
-    LOG(ERROR) << "CALayerTree root layer not attached to tree.";
+    LOG(ERROR) << "CARendererLayerTree root layer not attached to tree.";
   }
 
   if (update_is_clipped)
@@ -464,9 +465,9 @@ void CALayerTree::ClipAndSortingLayer::CommitToCA(
   }
 }
 
-void CALayerTree::TransformLayer::CommitToCA(CALayer* superlayer,
-                                             TransformLayer* old_layer,
-                                             float scale_factor) {
+void CARendererLayerTree::TransformLayer::CommitToCA(CALayer* superlayer,
+                                                     TransformLayer* old_layer,
+                                                     float scale_factor) {
   bool update_transform = true;
   if (old_layer) {
     DCHECK(old_layer->ca_layer);
@@ -499,9 +500,9 @@ void CALayerTree::TransformLayer::CommitToCA(CALayer* superlayer,
   }
 }
 
-void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
-                                           ContentLayer* old_layer,
-                                           float scale_factor) {
+void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
+                                                   ContentLayer* old_layer,
+                                                   float scale_factor) {
   bool update_contents = true;
   bool update_contents_rect = true;
   bool update_rect = true;

@@ -18,16 +18,16 @@
 
 namespace ui {
 
-class ACCELERATED_WIDGET_MAC_EXPORT CALayerPartialDamageTree {
+class ACCELERATED_WIDGET_MAC_EXPORT GLRendererLayerTree {
  public:
-  CALayerPartialDamageTree(bool allow_partial_swap,
-                           base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                           const gfx::Rect& pixel_frame_rect);
-  ~CALayerPartialDamageTree();
+  GLRendererLayerTree(bool allow_partial_swap,
+                      base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+                      const gfx::Rect& pixel_frame_rect);
+  ~GLRendererLayerTree();
 
   base::ScopedCFTypeRef<IOSurfaceRef> RootLayerIOSurface();
   void CommitCALayers(CALayer* superlayer,
-                      std::unique_ptr<CALayerPartialDamageTree> old_tree,
+                      std::unique_ptr<GLRendererLayerTree> old_tree,
                       float scale_factor,
                       const gfx::Rect& pixel_damage_rect);
 
@@ -39,11 +39,11 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerPartialDamageTree {
   // completes, the back() of |partial_damage_planes_| is the plane that will
   // be updated this frame (and if it is empty, then the root plane will be
   // updated).
-  void UpdatePartialDamagePlanes(CALayerPartialDamageTree* old_tree,
+  void UpdatePartialDamagePlanes(GLRendererLayerTree* old_tree,
                                  const gfx::Rect& pixel_damage_rect);
 
   void UpdateRootAndPartialDamagePlanes(
-      std::unique_ptr<CALayerPartialDamageTree> old_tree,
+      std::unique_ptr<GLRendererLayerTree> old_tree,
       const gfx::Rect& pixel_damage_rect);
 
   void UpdateCALayers(CALayer* superlayer, float scale_factor);

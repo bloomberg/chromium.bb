@@ -26,8 +26,7 @@ typedef void* GLeglImageOES;
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "ui/accelerated_widget_mac/ca_layer_partial_damage_tree_mac.h"
-#include "ui/accelerated_widget_mac/ca_layer_tree_mac.h"
+#include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
@@ -78,6 +77,8 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
       handle_, base::Bind(&ImageTransportSurfaceOverlayMac::BufferPresented,
                           base::Unretained(this)));
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
+  ca_layer_tree_coordinator_.reset(
+      new ui::CALayerTreeCoordinator(use_remote_layer_api_));
 }
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
@@ -105,17 +106,13 @@ bool ImageTransportSurfaceOverlayMac::Initialize(
     CGSConnectionID connection_id = CGSMainConnectionID();
     ca_context_.reset([
         [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
-    ca_root_layer_.reset([[CALayer alloc] init]);
-    [ca_root_layer_ setGeometryFlipped:YES];
-    [ca_root_layer_ setOpaque:YES];
-    [ca_context_ setLayer:ca_root_layer_];
+    [ca_context_ setLayer:ca_layer_tree_coordinator_->GetCALayerForDisplay()];
   }
   return true;
 }
 
 void ImageTransportSurfaceOverlayMac::Destroy() {
-  current_partial_damage_tree_.reset();
-  current_ca_layer_tree_.reset();
+  ca_layer_tree_coordinator_.reset();
 }
 
 bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
@@ -179,28 +176,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 
   base::TimeTicks finish_time = base::TimeTicks::Now();
 
-  // Update the CALayer hierarchy.
-  {
-    ScopedCAActionDisabler disabler;
-    if (pending_ca_layer_tree_) {
-      pending_ca_layer_tree_->CommitScheduledCALayers(
-          ca_root_layer_.get(), std::move(current_ca_layer_tree_),
-          scale_factor_);
-      current_ca_layer_tree_.swap(pending_ca_layer_tree_);
-      current_partial_damage_tree_.reset();
-    } else if (pending_partial_damage_tree_) {
-      pending_partial_damage_tree_->CommitCALayers(
-          ca_root_layer_.get(), std::move(current_partial_damage_tree_),
-          scale_factor_, pixel_damage_rect);
-      current_partial_damage_tree_.swap(pending_partial_damage_tree_);
-      current_ca_layer_tree_.reset();
-    } else {
-      TRACE_EVENT0("gpu", "Blank frame: No overlays or CALayers");
-      [ca_root_layer_ setSublayers:nil];
-      current_partial_damage_tree_.reset();
-      current_ca_layer_tree_.reset();
-    }
-  }
+  ca_layer_tree_coordinator_->CommitPendingTreesToCA(pixel_damage_rect);
 
   // Update the latency info to reflect the swap time.
   for (auto latency_info : latency_info_) {
@@ -213,21 +189,21 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 
   // Send acknowledgement to the browser.
   CAContextID ca_context_id = 0;
-  gfx::ScopedRefCountedIOSurfaceMachPort io_surface;
+  gfx::ScopedRefCountedIOSurfaceMachPort io_surface_mach_port;
   if (use_remote_layer_api_) {
     ca_context_id = [ca_context_ contextId];
-  } else if (current_partial_damage_tree_) {
-    io_surface.reset(IOSurfaceCreateMachPort(
-        current_partial_damage_tree_->RootLayerIOSurface()));
+  } else {
+    IOSurfaceRef io_surface =
+        ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();
+    if (io_surface)
+      io_surface_mach_port.reset(IOSurfaceCreateMachPort(io_surface));
   }
-  SendAcceleratedSurfaceBuffersSwapped(handle_, ca_context_id, io_surface,
-                                       pixel_size_, scale_factor_,
-                                       std::move(latency_info_));
+  SendAcceleratedSurfaceBuffersSwapped(handle_, ca_context_id,
+                                       io_surface_mach_port, pixel_size_,
+                                       scale_factor_, std::move(latency_info_));
 
   // Reset all state for the next frame.
   latency_info_.clear();
-  pending_ca_layer_tree_.reset();
-  pending_partial_damage_tree_.reset();
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -277,15 +253,8 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     DLOG(ERROR) << "Invalid non-zero Z order.";
     return false;
   }
-  if (pending_partial_damage_tree_) {
-    DLOG(ERROR) << "Only one overlay per swap is allowed.";
-    return false;
-  }
-  pending_partial_damage_tree_.reset(new ui::CALayerPartialDamageTree(
-      use_remote_layer_api_,
-      static_cast<gl::GLImageIOSurface*>(image)->io_surface(),
-      pixel_frame_rect));
-  return true;
+  return ca_layer_tree_coordinator_->SetPendingGLRendererBackbuffer(
+      static_cast<gl::GLImageIOSurface*>(image)->io_surface());
 }
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
@@ -308,12 +277,11 @@ bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
     io_surface = io_surface_image->io_surface();
     cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
   }
-  if (!pending_ca_layer_tree_)
-    pending_ca_layer_tree_.reset(new ui::CALayerTree);
-  return pending_ca_layer_tree_->ScheduleCALayer(
-      is_clipped, gfx::ToEnclosingRect(clip_rect), sorting_context_id,
-      transform, io_surface, cv_pixel_buffer, contents_rect,
-      gfx::ToEnclosingRect(rect), background_color, edge_aa_mask, opacity);
+  return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
+      ->ScheduleCALayer(
+          is_clipped, gfx::ToEnclosingRect(clip_rect), sorting_context_id,
+          transform, io_surface, cv_pixel_buffer, contents_rect,
+          gfx::ToEnclosingRect(rect), background_color, edge_aa_mask, opacity);
 }
 
 bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
@@ -323,9 +291,9 @@ bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
 bool ImageTransportSurfaceOverlayMac::Resize(const gfx::Size& pixel_size,
                                              float scale_factor,
                                              bool has_alpha) {
-  // Flush through any pending frames.
   pixel_size_ = pixel_size;
   scale_factor_ = scale_factor;
+  ca_layer_tree_coordinator_->Resize(pixel_size, scale_factor);
   return true;
 }
 

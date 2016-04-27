@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accelerated_widget_mac/ca_layer_partial_damage_tree_mac.h"
+#include "ui/accelerated_widget_mac/gl_renderer_layer_tree.h"
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
@@ -30,7 +30,7 @@ const size_t kMaximumPartialDamageLayers = 8;
 
 }  // namespace
 
-class CALayerPartialDamageTree::OverlayPlane {
+class GLRendererLayerTree::OverlayPlane {
  public:
   OverlayPlane(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                const gfx::Rect& pixel_frame_rect,
@@ -99,8 +99,8 @@ class CALayerPartialDamageTree::OverlayPlane {
  private:
 };
 
-void CALayerPartialDamageTree::UpdatePartialDamagePlanes(
-    CALayerPartialDamageTree* old_tree,
+void GLRendererLayerTree::UpdatePartialDamagePlanes(
+    GLRendererLayerTree* old_tree,
     const gfx::Rect& pixel_damage_rect) {
   // Don't create partial damage layers if partial swap is disabled.
   if (!allow_partial_swap_)
@@ -206,8 +206,8 @@ void CALayerPartialDamageTree::UpdatePartialDamagePlanes(
   partial_damage_planes_.push_back(std::move(plane_for_swap));
 }
 
-void CALayerPartialDamageTree::UpdateRootAndPartialDamagePlanes(
-    std::unique_ptr<CALayerPartialDamageTree> old_tree,
+void GLRendererLayerTree::UpdateRootAndPartialDamagePlanes(
+    std::unique_ptr<GLRendererLayerTree> old_tree,
     const gfx::Rect& pixel_damage_rect) {
   // First update the partial damage tree.
   UpdatePartialDamagePlanes(old_tree.get(), pixel_damage_rect);
@@ -224,8 +224,8 @@ void CALayerPartialDamageTree::UpdateRootAndPartialDamagePlanes(
   }
 }
 
-void CALayerPartialDamageTree::UpdateCALayers(CALayer* superlayer,
-                                              float scale_factor) {
+void GLRendererLayerTree::UpdateCALayers(CALayer* superlayer,
+                                         float scale_factor) {
   if (!allow_partial_swap_) {
     DCHECK(partial_damage_planes_.empty());
     return;
@@ -241,7 +241,7 @@ void CALayerPartialDamageTree::UpdateCALayers(CALayer* superlayer,
   // Excessive logging to debug white screens (crbug.com/583805).
   // TODO(ccameron): change this back to a DLOG.
   if ([root_plane_->ca_layer superlayer] != superlayer) {
-    LOG(ERROR) << "CALayerPartialDamageTree root layer not attached to tree.";
+    LOG(ERROR) << "GLRendererLayerTree root layer not attached to tree.";
   }
   for (auto& plane : partial_damage_planes_) {
     if (!plane->ca_layer) {
@@ -258,7 +258,7 @@ void CALayerPartialDamageTree::UpdateCALayers(CALayer* superlayer,
     plane->UpdateProperties(scale_factor);
 }
 
-CALayerPartialDamageTree::CALayerPartialDamageTree(
+GLRendererLayerTree::GLRendererLayerTree(
     bool allow_partial_swap,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Rect& pixel_frame_rect)
@@ -267,19 +267,19 @@ CALayerPartialDamageTree::CALayerPartialDamageTree(
       new OverlayPlane(io_surface, pixel_frame_rect, gfx::RectF(0, 0, 1, 1)));
 }
 
-CALayerPartialDamageTree::~CALayerPartialDamageTree() {}
+GLRendererLayerTree::~GLRendererLayerTree() {}
 
 base::ScopedCFTypeRef<IOSurfaceRef>
-CALayerPartialDamageTree::RootLayerIOSurface() {
+GLRendererLayerTree::RootLayerIOSurface() {
   return root_plane_->io_surface;
 }
 
-void CALayerPartialDamageTree::CommitCALayers(
+void GLRendererLayerTree::CommitCALayers(
     CALayer* superlayer,
-    std::unique_ptr<CALayerPartialDamageTree> old_tree,
+    std::unique_ptr<GLRendererLayerTree> old_tree,
     float scale_factor,
     const gfx::Rect& pixel_damage_rect) {
-  TRACE_EVENT0("gpu", "CALayerPartialDamageTree::CommitCALayers");
+  TRACE_EVENT0("gpu", "GLRendererLayerTree::CommitCALayers");
   UpdateRootAndPartialDamagePlanes(std::move(old_tree), pixel_damage_rect);
   UpdateCALayers(superlayer, scale_factor);
 }
