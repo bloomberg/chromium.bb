@@ -20,6 +20,7 @@
 #include "net/spdy/hpack/hpack_encoder.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_header_block.h"
+#include "net/spdy/spdy_headers_handler_interface.h"
 #include "net/spdy/spdy_protocol.h"
 
 typedef struct z_stream_s z_stream;  // Forward declaration for zlib.
@@ -37,6 +38,7 @@ class SpdyStreamTest;
 
 class SpdyFramer;
 class SpdyFrameBuilder;
+class SpdyFramerDecoderAdapter;
 
 namespace test {
 
@@ -366,31 +368,30 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Create a new Framer, provided a SPDY version.
   explicit SpdyFramer(SpdyMajorVersion version);
+
+  // Used recursively from the above constructor in order to support
+  // instantiating a SpdyFramerDecoderAdapter selected via flags.
+  SpdyFramer(SpdyMajorVersion version, bool choose_decoder);
+
   virtual ~SpdyFramer();
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
   // else the framer will likely crash.  It is acceptable for the visitor
   // to do nothing.  If this is called multiple times, only the last visitor
   // will be used.
-  void set_visitor(SpdyFramerVisitorInterface* visitor) {
-    visitor_ = visitor;
-  }
+  void set_visitor(SpdyFramerVisitorInterface* visitor);
 
   // Set debug callbacks to be called from the framer. The debug visitor is
   // completely optional and need not be set in order for normal operation.
   // If this is called multiple times, only the last visitor will be used.
-  void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor) {
-    debug_visitor_ = debug_visitor;
-  }
+  void set_debug_visitor(SpdyFramerDebugVisitorInterface* debug_visitor);
 
   // Sets whether or not ProcessInput returns after finishing a frame, or
   // continues processing additional frames. Normally ProcessInput processes
   // all input, but this method enables the caller (and visitor) to work with
   // a single frame at a time (or that portion of the frame which is provided
   // as input). Reset() does not change the value of this flag.
-  void set_process_single_input_frame(bool v) {
-    process_single_input_frame_ = v;
-  }
+  void set_process_single_input_frame(bool v);
 
   // Pass data into the framer for parsing.
   // Returns the number of bytes consumed. It is safe to pass more bytes in
@@ -402,9 +403,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void Reset();
 
   // Check the state of the framer.
-  SpdyError error_code() const { return error_code_; }
-  SpdyState state() const { return state_; }
-  bool HasError() const { return state_ == SPDY_ERROR; }
+  SpdyError error_code() const;
+  SpdyState state() const;
+  bool HasError() const { return state() == SPDY_ERROR; }
 
   // Given a buffer containing a decompressed header block in SPDY
   // serialized format, parse out a SpdyHeaderBlock, putting the results
@@ -543,7 +544,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   SpdyMajorVersion protocol_version() const { return protocol_version_; }
 
-  bool probable_http_response() const { return probable_http_response_; }
+  // Did the most recent frame header appear to be an HTTP/1.x (or earlier)
+  // response (i.e. start with "HTTP/")?
+  bool probable_http_response() const;
 
   SpdyPriority GetLowestPriority() const { return 7; }
 
@@ -769,6 +772,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyFramerDebugVisitorInterface* debug_visitor_;
 
   std::string display_protocol_;
+
+  // Optional decoder to use instead of this instance.
+  std::unique_ptr<SpdyFramerDecoderAdapter> decoder_adapter_;
 
   // The protocol version to be spoken/understood by this framer.
   const SpdyMajorVersion protocol_version_;
