@@ -17,6 +17,7 @@ struct usbdevfs_urb;
 
 namespace base {
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace device {
@@ -62,13 +63,14 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
       const IsochronousTransferCallback& callback) override;
-
   void IsochronousTransferOut(
       uint8_t endpoint_number,
       scoped_refptr<net::IOBuffer> buffer,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
       const IsochronousTransferCallback& callback) override;
+  // To support DevTools this function may be called from any thread and on
+  // completion |callback| will be run on that thread.
   void GenericTransfer(UsbEndpointDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<net::IOBuffer> buffer,
@@ -112,6 +114,14 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                    const std::vector<uint32_t>& packet_lengths,
                                    unsigned int timeout,
                                    const IsochronousTransferCallback& callback);
+  void GenericTransferInternal(
+      UsbEndpointDirection direction,
+      uint8_t endpoint_number,
+      scoped_refptr<net::IOBuffer> buffer,
+      size_t length,
+      unsigned int timeout,
+      const TransferCallback& callback,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   void ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs);
   void TransferComplete(std::unique_ptr<Transfer> transfer);
   void RefreshEndpointInfo();
@@ -125,7 +135,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   scoped_refptr<UsbDevice> device_;
   base::ScopedFD fd_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::ThreadChecker thread_checker_;
 
