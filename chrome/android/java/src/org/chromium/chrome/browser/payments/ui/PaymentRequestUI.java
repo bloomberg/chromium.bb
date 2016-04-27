@@ -103,6 +103,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Dialog mDialog;
     private final ViewGroup mContainer;
     private final View mPaymentContainer;
+    private final View mButtonBar;
     private final View mWaitingOverlay;
     private final View mWaitingProgressBar;
     private final View mWaitingSuccess;
@@ -165,6 +166,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         ((TextView) mContainer.findViewById(R.id.hostname)).setText(origin);
 
         mPaymentContainer = mContainer.findViewById(R.id.paymentContainer);
+        mButtonBar = mContainer.findViewById(R.id.buttonBar);
         mWaitingOverlay = mContainer.findViewById(R.id.waitingOverlay);
         mWaitingProgressBar = mContainer.findViewById(R.id.waitingProgressBar);
         mWaitingSuccess = mContainer.findViewById(R.id.waitingSuccess);
@@ -472,6 +474,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             expand(mPaymentMethodsLabel, mPaymentMethods);
         } else if (v == mPayButton) {
             mPaymentContainer.setVisibility(View.GONE);
+            mButtonBar.setVisibility(View.GONE);
             mWaitingOverlay.setVisibility(View.VISIBLE);
             Window dialogWindow = mDialog.getWindow();
             dialogWindow.setGravity(Gravity.CENTER);

@@ -576,6 +576,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/PaymentInstrument.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentRequestFactory.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentRequestImpl.java",
+  "java/src/org/chromium/chrome/browser/payments/ui/FadingEdgeScrollView.java",
   "java/src/org/chromium/chrome/browser/payments/ui/LineItem.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentInformation.java",
   "java/src/org/chromium/chrome/browser/payments/ui/PaymentOption.java",
