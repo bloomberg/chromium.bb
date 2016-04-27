@@ -10,6 +10,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   - typeform is included in output.
 
 ** Braille table improvements
+- Improved Finish 6-dot braille thanks to Jukka Eerikäinen
 
 * Noteworthy changes in release 2.6.5 (2015-12-1)
 This minor release introduces new tables (Mongolian and Norwegian 8
