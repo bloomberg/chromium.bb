@@ -187,6 +187,7 @@ executable("chromedriver") {
   deps = [
     ":lib",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 

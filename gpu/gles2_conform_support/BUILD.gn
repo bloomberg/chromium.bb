@@ -57,6 +57,7 @@ executable("gles2_conform_support") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//gpu/command_buffer/client:gles2_c_lib_nocheck",
     "//gpu/gles2_conform_support/egl",
     "//ui/gl",

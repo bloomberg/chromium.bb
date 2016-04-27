@@ -427,6 +427,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":net",
       ":receiver",
       ":test_support",
+      "//build/win:default_exe_manifest",
     ]
 
     if (is_linux && !is_chromeos && use_x11) {
@@ -452,6 +453,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":net",
       ":sender",
       ":test_support",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -473,6 +475,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":network_simulation_model_proto",
       ":sender",
       ":test_support",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -485,6 +488,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//media",
     ]
   }
@@ -498,6 +502,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//media",
     ]
   }
@@ -511,6 +516,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 } else {  # !(is_win || is_mac || (is_linux && !is_chromeos))

@@ -84,6 +84,7 @@ executable("courgette") {
     ":courgette_lib",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 
@@ -96,6 +97,7 @@ executable("courgette_minimal_tool") {
     ":courgette_lib",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 

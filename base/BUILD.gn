@@ -1569,6 +1569,7 @@ if (is_ios || is_android || is_win || (is_linux && !is_chromeos)) {
       deps = [
         ":base",
         "//build/config/sanitizers:deps",
+        "//build/win:default_exe_manifest",
         "//third_party/icu:icuuc",
       ]
     }
@@ -1580,6 +1581,7 @@ if (is_ios || is_android || is_win || (is_linux && !is_chromeos)) {
       deps = [
         ":base",
         "//build/config/sanitizers:deps",
+        "//build/win:default_exe_manifest",
       ]
     }
   }

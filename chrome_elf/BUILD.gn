@@ -99,6 +99,7 @@ executable("dll_hash_main") {
   deps = [
     ":dll_hash",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 

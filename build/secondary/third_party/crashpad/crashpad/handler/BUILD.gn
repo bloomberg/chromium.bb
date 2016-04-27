@@ -44,5 +44,6 @@ executable("crashpad_handler") {
     ":handler_lib",
     "../compat",
     "//base",
+    "//build/win:default_exe_manifest",
   ]
 }

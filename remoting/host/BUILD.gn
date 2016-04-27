@@ -648,6 +648,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       deps = [
         ":remoting_core",
         ":remoting_windows_resources",
+        "//build/win:default_exe_manifest",
       ]
 
       sources = [
@@ -664,6 +665,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       deps = [
         ":remoting_core",
         ":remoting_windows_resources",
+        "//build/win:default_exe_manifest",
       ]
 
       sources = [
@@ -713,6 +715,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
       deps = [
         "//build/config/sanitizers:deps",
+        "//build/win:default_exe_manifest",
         "//remoting/host/setup",
       ]
 

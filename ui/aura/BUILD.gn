@@ -233,6 +233,7 @@ executable("demo") {
     "//base",
     "//base:i18n",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//skia",
     "//third_party/icu",
     "//ui/base",

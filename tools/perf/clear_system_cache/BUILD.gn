@@ -13,5 +13,6 @@ executable("clear_system_cache") {
     "//base",
     "//base/test:test_support",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }

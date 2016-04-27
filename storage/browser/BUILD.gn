@@ -219,6 +219,7 @@ executable("dump_file_system") {
     ":browser",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//storage/common",
   ]
 }

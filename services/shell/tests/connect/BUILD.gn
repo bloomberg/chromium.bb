@@ -152,6 +152,7 @@ executable("connect_test_driver") {
   deps = [
     ":interfaces",
     "//base",
+    "//build/win:default_exe_manifest",
     "//services/shell/public/cpp",
     "//services/shell/runner/child:test_native_main",
     "//services/shell/tests:util",
@@ -178,6 +179,7 @@ executable("connect_test_exe") {
   deps = [
     ":interfaces",
     "//base",
+    "//build/win:default_exe_manifest",
     "//services/shell/public/cpp",
     "//services/shell/runner/child:test_native_main",
   ]

@@ -463,6 +463,7 @@ executable("ash_shell_with_content") {
     ":ash_shell_lib_with_content",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//components/user_manager",
     "//content",
     "//content/public/app:both",

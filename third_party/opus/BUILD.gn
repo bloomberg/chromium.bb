@@ -195,6 +195,7 @@ executable("opus_compare") {
   deps = [
     ":opus",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 
@@ -212,6 +213,7 @@ executable("opus_demo") {
   deps = [
     ":opus",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 

@@ -43,6 +43,7 @@ executable("test_registrar") {
     ":test_registrar_constants",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
 
     # Chrome is the default viewer process currently used by the tests.
     # TODO(robertshield): Investigate building a standalone metro viewer

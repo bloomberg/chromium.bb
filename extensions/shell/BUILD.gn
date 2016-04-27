@@ -122,6 +122,7 @@ if (!(is_chromeos && !use_ozone)) {
     deps = [
       ":app_shell_lib",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//extensions:shell_and_test_pak",
     ]
 

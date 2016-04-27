@@ -18,6 +18,7 @@ if (current_toolchain == host_toolchain) {
     deps = [
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//third_party/libpng",
       "//third_party/zlib",
     ]

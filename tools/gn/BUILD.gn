@@ -252,6 +252,7 @@ executable("gn") {
     ":last_commit_position",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 

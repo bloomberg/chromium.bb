@@ -96,6 +96,7 @@ executable("chromoting_test_driver") {
     ":test_support",
     "//base/test:test_support",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//testing/gtest",
   ]
 }
@@ -134,6 +135,7 @@ executable("ar_sample_test_driver") {
     ":ar_test_driver_common",
     "//base/test:test_support",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//testing/gtest",
   ]
 }

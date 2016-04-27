@@ -15,6 +15,7 @@ executable("standalone") {
     ":lib",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
   ]
 }
 

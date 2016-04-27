@@ -23,6 +23,7 @@ executable("window_type_launcher") {
     "//base",
     "//base:base_static",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//components/mus/public/interfaces",
     "//mash/public/interfaces",
     "//mash/session/public/interfaces",

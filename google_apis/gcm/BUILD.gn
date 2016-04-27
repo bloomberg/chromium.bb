@@ -118,6 +118,7 @@ if (!is_ios) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//net",
       "//net:test_support",
       "//third_party/protobuf:protobuf_lite",

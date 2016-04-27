@@ -493,6 +493,7 @@ if (!is_ios) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 }
@@ -814,6 +815,7 @@ if (!is_ios && !is_android) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -829,6 +831,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -844,6 +847,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -857,6 +861,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -873,6 +878,7 @@ if (!is_ios && !is_android) {
       "//base",
       "//base:i18n",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//url",
     ]
   }
@@ -889,6 +895,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -904,6 +911,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -919,6 +927,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -933,6 +942,7 @@ if (!is_ios && !is_android) {
         ":net_with_v8",
         "//base",
         "//build/config/sanitizers:deps",
+        "//build/win:default_exe_manifest",
       ]
 
       if (is_desktop_linux && use_gconf && use_glib) {
@@ -955,6 +965,7 @@ if (!is_ios && !is_android) {
       "//base",
       "//base/test:test_support",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//testing/gtest",
     ]
   }
@@ -972,6 +983,7 @@ if (!is_ios && !is_android) {
       ":test_support",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 
@@ -986,6 +998,7 @@ if (!is_ios && !is_android) {
       "//base",
       "//base:i18n",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//net/tools/tld_cleanup",
     ]
   }
@@ -1299,6 +1312,7 @@ if (!is_ios) {
       ":simple_quic_tools",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//url",
     ]
   }
@@ -1311,6 +1325,7 @@ if (!is_ios) {
       ":simple_quic_tools",
       "//base",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//third_party/boringssl",
       "//third_party/protobuf:protobuf_lite",
     ]
@@ -1652,6 +1667,7 @@ if (!is_ios) {
       "//base:i18n",
       "//base/test:test_support_perf",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//testing/gtest",
       "//url",
     ]

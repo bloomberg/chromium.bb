@@ -66,6 +66,7 @@ if (!disable_qcms) {
 
     deps = [
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
       "//third_party/qcms",
     ]
 

@@ -51,6 +51,7 @@ executable("shell_unittest_driver") {
   deps = [
     ":interfaces",
     "//base",
+    "//build/win:default_exe_manifest",
     "//mojo/edk/system",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
@@ -80,6 +81,7 @@ executable("shell_unittest_target") {
   deps = [
     ":interfaces",
     "//base",
+    "//build/win:default_exe_manifest",
     "//services/shell/public/cpp",
     "//services/shell/runner/child:test_native_main",
   ]

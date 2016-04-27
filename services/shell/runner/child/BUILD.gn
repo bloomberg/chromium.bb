@@ -85,6 +85,7 @@ executable("native_target") {
     ":test_native_main",
     "//base",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//services/shell/public/cpp",
   ]
 }

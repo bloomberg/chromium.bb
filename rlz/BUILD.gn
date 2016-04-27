@@ -128,6 +128,7 @@ if (!is_ios) {
     deps = [
       ":rlz_lib",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
   }
 }

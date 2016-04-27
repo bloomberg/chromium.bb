@@ -34,6 +34,7 @@ executable("convert_dict") {
     "//base",
     "//base:i18n",
     "//build/config/sanitizers:deps",
+    "//build/win:default_exe_manifest",
     "//third_party/hunspell",
   ]
 }
