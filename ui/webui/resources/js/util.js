@@ -325,8 +325,17 @@ function appendParam(url, key, value) {
 }
 
 /**
+ * A regular expression for identifying favicon URLs.
+ * @const {!RegExp}
+ * TODO(dpapad): Move all favicon related methods to a new favicon_util.js file
+ * and make this RegExp private.
+ */
+var FAVICON_URL_REGEX = /\.ico$/i;
+
+/**
  * Creates a CSS -webkit-image-set for a favicon request.
- * @param {string} url The url for the favicon.
+ * @param {string} url Either the URL of the original page or of the favicon
+ *     itself.
  * @param {number=} opt_size Optional preferred size of the favicon.
  * @param {string=} opt_type Optional type of favicon to request. Valid values
  *     are 'favicon' and 'touch-icon'. Default is 'favicon'.
@@ -335,8 +344,14 @@ function appendParam(url, key, value) {
 function getFaviconImageSet(url, opt_size, opt_type) {
   var size = opt_size || 16;
   var type = opt_type || 'favicon';
+
+  // Note: Literals 'iconurl' and 'origin' must match |kIconURLParameter| and
+  // |kOriginParameter| in components/favicon_base/favicon_url_parser.cc.
+  var urlType = FAVICON_URL_REGEX.test(url) ? 'iconurl' : 'origin';
+
   return imageset(
-      'chrome://' + type + '/size/' + size + '@scalefactorx/' + url);
+      'chrome://' + type + '/size/' + size + '@scalefactorx/' +
+      urlType + '/' + url);
 }
 
 /**

@@ -122,10 +122,9 @@ cr.define('options.search_engines', function() {
       // Add the favicon.
       var faviconDivEl = this.ownerDocument.createElement('div');
       faviconDivEl.className = 'favicon';
-      if (!this.isPlaceholder) {
-        faviconDivEl.style.backgroundImage = imageset(
-            'chrome://favicon/size/16@scalefactorx/iconurl/' + engine.iconURL);
-      }
+      if (!this.isPlaceholder)
+        faviconDivEl.style.backgroundImage = getFaviconImageSet(engine.iconURL);
+
       nameColEl.appendChild(faviconDivEl);
 
       var nameEl = this.createEditableTextCell(engine.displayName);
