@@ -10,6 +10,7 @@
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
+#include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_metrics_observer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
@@ -39,6 +40,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
       base::WrapUnique(new chrome::StaleWhileRevalidateMetricsObserver()));
   tracker->AddObserver(
       base::WrapUnique(new DocumentWritePageLoadMetricsObserver()));
+  tracker->AddObserver(
+      base::WrapUnique(new ServiceWorkerPageLoadMetricsObserver()));
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering(

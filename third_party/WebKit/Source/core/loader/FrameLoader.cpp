@@ -430,6 +430,10 @@ void FrameLoader::receivedFirstData()
 
     client()->dispatchDidCommitLoad(m_currentItem.get(), historyCommitType);
 
+    // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is called for the metrics tracking logic to handle it properly.
+    if (client()->isControlledByServiceWorker(*m_documentLoader))
+        client()->didObserveLoadingBehavior(WebLoadingBehaviorServiceWorkerControlled);
+
     TRACE_EVENT1("devtools.timeline", "CommitLoad", "data", InspectorCommitLoadEvent::data(m_frame));
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);

@@ -91817,6 +91817,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint"/>
   <suffix name="Background"
       label="The page was backgrounded at least once from navigation start to
              this event."/>
@@ -91891,6 +91893,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Clients.DocWrite.Evaluator"
       label="PageLoadMetrics from a page that could have been evaluated by
              the DocumentWriteEvaluator"/>
+  <suffix name="Clients.ServiceWorker"
+      label="PageLoadMetrics from a page that is controlled by a Service
+             Worker"/>
   <affected-histogram
       name="PageLoad.Timing2.DOMLoadingToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.DOMLoadingToFirstContentfulPaint"/>

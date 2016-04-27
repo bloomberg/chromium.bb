@@ -14,7 +14,10 @@ namespace blink {
 // browser process for histogram splitting.
 enum WebLoadingBehaviorFlag {
     WebLoadingBehaviorNone = 0,
+    // Indicates that the page used the document.write evaluator to preload scan for resources inserted via document.write.
     WebLoadingBehaviorDocumentWriteEvaluator = 1 << 0,
+    // Indicates that the page is controlled by a Service Worker.
+    WebLoadingBehaviorServiceWorkerControlled = 1 << 1,
 };
 
 } // namespace blink
