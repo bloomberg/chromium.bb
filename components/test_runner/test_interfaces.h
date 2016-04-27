@@ -33,7 +33,7 @@ class TestInterfaces {
   TestInterfaces();
   ~TestInterfaces();
 
-  void SetWebView(blink::WebView* web_view, WebTestProxyBase* proxy);
+  void SetMainView(blink::WebView* web_view);
   void SetDelegate(WebTestDelegate* delegate);
   void BindTo(blink::WebFrame* frame);
   void ResetTestHelperControllers();
@@ -59,6 +59,8 @@ class TestInterfaces {
   AppBannerClient* app_banner_client_;
 
   std::vector<WebTestProxyBase*> window_list_;
+  blink::WebView* main_view_;
+
   std::unique_ptr<MockWebThemeEngine> theme_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);

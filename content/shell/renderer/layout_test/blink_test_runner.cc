@@ -892,11 +892,14 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
 
 void BlinkTestRunner::OnReplicateTestConfiguration(
     const ShellTestConfiguration& params) {
-  test_config_ = params;
-  is_main_window_ = true;
-
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+
+  test_config_ = params;
+
+  is_main_window_ = true;
+  interfaces->SetMainView(render_view()->GetWebView());
+
   interfaces->SetTestIsRunning(true);
   interfaces->ConfigureForTestWithURL(params.test_url,
                                       params.enable_pixel_dumping);

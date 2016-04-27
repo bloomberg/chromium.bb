@@ -29,7 +29,8 @@ namespace test_runner {
 TestInterfaces::TestInterfaces()
     : test_runner_(new TestRunner(this)),
       delegate_(nullptr),
-      app_banner_client_(nullptr) {
+      app_banner_client_(nullptr),
+      main_view_(nullptr) {
   blink::setLayoutTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to RuntimeEnabledFeatures.in
@@ -39,16 +40,16 @@ TestInterfaces::TestInterfaces()
 
 TestInterfaces::~TestInterfaces() {
   // gamepad_controller_ doesn't depend on WebView.
-  test_runner_->SetWebView(nullptr);
+  test_runner_->SetMainView(nullptr);
 
   // gamepad_controller_ ignores SetDelegate(nullptr)
   test_runner_->SetDelegate(nullptr);
 }
 
-void TestInterfaces::SetWebView(blink::WebView* web_view,
-                                WebTestProxyBase* proxy) {
+void TestInterfaces::SetMainView(blink::WebView* web_view) {
   // gamepad_controller_ doesn't depend on WebView.
-  test_runner_->SetWebView(web_view);
+  main_view_ = web_view;
+  test_runner_->SetMainView(web_view);
 }
 
 void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
@@ -129,6 +130,9 @@ void TestInterfaces::WindowClosed(WebTestProxyBase* proxy) {
     return;
   }
   window_list_.erase(pos);
+
+  if (proxy->web_view() == main_view_)
+    SetMainView(nullptr);
 }
 
 TestRunner* TestInterfaces::GetTestRunner() {

@@ -42,7 +42,7 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   WebTestInterfaces();
   ~WebTestInterfaces();
 
-  void SetWebView(blink::WebView* web_view, WebTestProxyBase* proxy);
+  void SetMainView(blink::WebView* web_view);
   void SetDelegate(WebTestDelegate* delegate);
   void ResetAll();
   void SetTestIsRunning(bool running);

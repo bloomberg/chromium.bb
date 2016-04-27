@@ -22,7 +22,6 @@ class WebFrame;
 }
 
 namespace test_runner {
-class WebTestDelegate;
 class WebTestInterfaces;
 }
 
@@ -35,15 +34,10 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
   LayoutTestRenderThreadObserver();
   ~LayoutTestRenderThreadObserver() override;
 
-  void SetTestDelegate(test_runner::WebTestDelegate* delegate);
-
   // RenderThreadObserver implementation.
   void OnRenderProcessShutdown() override;
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
-  test_runner::WebTestDelegate* test_delegate() const {
-    return test_delegate_;
-  }
   test_runner::WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
@@ -55,7 +49,6 @@ class LayoutTestRenderThreadObserver : public RenderThreadObserver {
   void OnReplicateLayoutTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_layout_test_runtime_flags);
 
-  test_runner::WebTestDelegate* test_delegate_;
   std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;
 
   base::FilePath webkit_source_dir_;

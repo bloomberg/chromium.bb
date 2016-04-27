@@ -1559,13 +1559,15 @@ void TestRunner::WorkQueue::AddWork(WorkItem* work) {
 
 void TestRunner::WorkQueue::ProcessWork() {
   // Quit doing work once a load is in progress.
-  while (!queue_.empty()) {
-    bool startedLoad = queue_.front()->Run(controller_->delegate_,
-                                           controller_->web_view_);
-    delete queue_.front();
-    queue_.pop_front();
-    if (startedLoad)
-      return;
+  if (controller_->main_view_) {
+    while (!queue_.empty()) {
+      bool startedLoad =
+          queue_.front()->Run(controller_->delegate_, controller_->main_view_);
+      delete queue_.front();
+      queue_.pop_front();
+      if (startedLoad)
+        return;
+    }
   }
 
   if (!controller_->layout_test_runtime_flags_.wait_until_done() &&
@@ -1580,7 +1582,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       web_history_item_count_(0),
       test_interfaces_(interfaces),
       delegate_(nullptr),
-      web_view_(nullptr),
+      main_view_(nullptr),
       mock_content_settings_client_(
           new MockContentSettingsClient(&layout_test_runtime_flags_)),
       credential_manager_client_(new MockCredentialManagerClient),
@@ -1607,8 +1609,8 @@ void TestRunner::SetDelegate(WebTestDelegate* delegate) {
     speech_recognizer_->SetDelegate(delegate);
 }
 
-void TestRunner::SetWebView(WebView* webView) {
-  web_view_ = webView;
+void TestRunner::SetMainView(WebView* web_view) {
+  main_view_ = web_view;
 }
 
 void TestRunner::Reset() {
@@ -1862,7 +1864,12 @@ bool TestRunner::shouldDumpPingLoaderCallbacks() const {
 void TestRunner::setShouldEnableViewSource(bool value) {
   // TODO(lukasza): This flag should be 1) replicated across OOPIFs and
   // 2) applied to all views, not just the main window view.
-  web_view_->mainFrame()->enableViewSourceMode(value);
+
+  // Path-based test config is trigerred by BlinkTestRunner, when |main_view_|
+  // is guaranteed to exist at this point.
+  DCHECK(main_view_);
+
+  main_view_->mainFrame()->enableViewSourceMode(value);
 }
 
 bool TestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const {
@@ -1930,7 +1937,7 @@ const std::set<std::string>* TestRunner::httpHeadersToClear() const {
 }
 
 void TestRunner::setTopLoadingFrame(WebFrame* frame, bool clear) {
-  if (frame->top()->view() != web_view_)
+  if (frame->top()->view() != main_view_)
     return;
   if (!test_is_running_)
     return;
@@ -2131,8 +2138,11 @@ class WorkItemLoad : public TestRunner::WorkItem {
 };
 
 void TestRunner::QueueLoad(const std::string& url, const std::string& target) {
+  if (!main_view_)
+    return;
+
   // FIXME: Implement WebURL::resolve() and avoid GURL.
-  GURL current_url = web_view_->mainFrame()->document().url();
+  GURL current_url = main_view_->mainFrame()->document().url();
   GURL full_url = current_url.Resolve(url);
   work_queue_.AddWork(new WorkItemLoad(full_url, target));
 }
@@ -3238,7 +3248,10 @@ void TestRunner::CheckResponseMimeType() {
   if (layout_test_runtime_flags_.dump_as_text())
     return;
 
-  WebDataSource* data_source = web_view_->mainFrame()->dataSource();
+  if (!main_view_)
+    return;
+
+  WebDataSource* data_source = main_view_->mainFrame()->dataSource();
   if (!data_source)
     return;
 

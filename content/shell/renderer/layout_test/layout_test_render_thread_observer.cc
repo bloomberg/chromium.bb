@@ -14,7 +14,6 @@
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "v8/include/v8.h"
@@ -34,8 +33,7 @@ LayoutTestRenderThreadObserver::GetInstance() {
   return g_instance;
 }
 
-LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver()
-    : test_delegate_(nullptr) {
+LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver() {
   CHECK(!g_instance);
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
@@ -65,12 +63,6 @@ LayoutTestRenderThreadObserver::LayoutTestRenderThreadObserver()
 LayoutTestRenderThreadObserver::~LayoutTestRenderThreadObserver() {
   CHECK(g_instance == this);
   g_instance = NULL;
-}
-
-void LayoutTestRenderThreadObserver::SetTestDelegate(
-    test_runner::WebTestDelegate* delegate) {
-  test_interfaces_->SetDelegate(delegate);
-  test_delegate_ = delegate;
 }
 
 void LayoutTestRenderThreadObserver::OnRenderProcessShutdown() {

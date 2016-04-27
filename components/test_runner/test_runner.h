@@ -75,7 +75,7 @@ class TestRunner : public WebTestRunner {
                base::WeakPtr<TestRunnerForSpecificView> view_test_runner);
 
   void SetDelegate(WebTestDelegate*);
-  void SetWebView(blink::WebView*);
+  void SetMainView(blink::WebView*);
 
   void Reset();
 
@@ -603,7 +603,7 @@ class TestRunner : public WebTestRunner {
 
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;
-  blink::WebView* web_view_;
+  blink::WebView* main_view_;
 
   // This is non-0 IFF a load is in progress.
   blink::WebFrame* top_loading_frame_;

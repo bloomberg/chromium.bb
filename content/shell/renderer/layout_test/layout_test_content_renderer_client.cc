@@ -53,18 +53,25 @@ namespace {
 
 void WebTestProxyCreated(RenderView* render_view,
                          test_runner::WebTestProxyBase* proxy) {
-  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
-  proxy->set_delegate(test_runner);
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
 
-  if (!LayoutTestRenderThreadObserver::GetInstance()->test_delegate()) {
-    LayoutTestRenderThreadObserver::GetInstance()->SetTestDelegate(
-        test_runner);
+  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
+  // TODO(lukasza): Using the 1st BlinkTestRunner as the main delegate is wrong,
+  // but it is difficult to change because this behavior has been baked for a
+  // long time into test assumptions (i.e. which PrintMessage gets delivered to
+  // the browser depends on this).
+  static bool first_test_runner = true;
+  if (first_test_runner) {
+    first_test_runner = false;
+    interfaces->SetDelegate(test_runner);
   }
+
+  proxy->set_delegate(test_runner);
   proxy->set_view_test_client(LayoutTestRenderThreadObserver::GetInstance()
                                   ->test_interfaces()
                                   ->CreateWebViewTestClient(proxy));
-  proxy->SetInterfaces(
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces());
+  proxy->SetInterfaces(interfaces);
 }
 
 void WebFrameTestProxyCreated(RenderFrame* render_frame,
@@ -113,18 +120,6 @@ void LayoutTestContentRendererClient::RenderViewCreated(
       ->test_interfaces()
       ->TestRunner()
       ->InitializeWebViewWithMocks(render_view->GetWebView());
-
-  test_runner::WebTestDelegate* delegate =
-      LayoutTestRenderThreadObserver::GetInstance()->test_delegate();
-  if (delegate == static_cast<test_runner::WebTestDelegate*>(test_runner)) {
-    // TODO(lukasza): Should this instead by done by BlinkTestRunner,
-    // when it gets notified by the browser that it is the main window?
-
-    // Let test_runner layer know what is the main test window.
-    LayoutTestRenderThreadObserver::GetInstance()
-        ->test_interfaces()
-        ->SetWebView(render_view->GetWebView(), proxy);
-  }
 }
 
 WebMediaStreamCenter*
