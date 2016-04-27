@@ -66,9 +66,9 @@
     },
 
     'chromium.chromiumos': {
-      'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk_gn',
-      'ChromiumOS daisy Compile': 'cros_chrome_sdk_gn',
-      'ChromiumOS x86-generic Compile': 'cros_chrome_sdk_gn',
+      'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk_gyp',
+      'ChromiumOS daisy Compile': 'cros_chrome_sdk_gyp',
+      'ChromiumOS x86-generic Compile': 'cros_chrome_sdk_gyp',
       'Linux ChromiumOS Builder': 'swarming_chromeos_gyp_release_bot',
       'Linux ChromiumOS Builder (dbg)': 'swarming_chromeos_gyp_debug_bot',
       'Linux ChromiumOS Full': 'swarming_chromeos_gyp_release_bot',
@@ -1071,9 +1071,6 @@
     # wrapper and need to be looked at specially.
     'cros_chrome_sdk_gyp': [
       'gyp', 'cros_chrome_sdk',
-    ],
-    'cros_chrome_sdk_gn': [
-      'gn', 'cros_chrome_sdk',
     ],
 
     # The 'findit' config is used by the *_variable_* bots, which run
