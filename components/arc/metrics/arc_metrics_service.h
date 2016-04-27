@@ -13,19 +13,27 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/common/arc_bridge.mojom.h"
 #include "components/arc/metrics/arc_low_memory_killer_monitor.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
 
 // Collects information from other ArcServices and send UMA metrics.
 class ArcMetricsService : public ArcService,
-                          public ArcBridgeService::Observer {
+                          public ArcBridgeService::Observer,
+                          public mojom::MetricsHost {
  public:
   explicit ArcMetricsService(ArcBridgeService* bridge_service);
   ~ArcMetricsService() override;
 
   // ArcBridgeService::Observer overrides.
+  void OnMetricsInstanceReady() override;
+  void OnMetricsInstanceClosed() override;
   void OnProcessInstanceReady() override;
   void OnProcessInstanceClosed() override;
+
+  // MetricsHost overrides.
+  void ReportBootProgress(
+      mojo::Array<arc::mojom::BootProgressEventPtr> events) override;
 
  private:
   bool CalledOnValidThread();
@@ -33,10 +41,18 @@ class ArcMetricsService : public ArcService,
   void ParseProcessList(
       mojo::Array<arc::mojom::RunningAppProcessInfoPtr> processes);
 
+  // DBus callbacks.
+  void OnArcStartTimeRetrieved(bool success, base::TimeTicks arc_start_time);
+
+ private:
+  mojo::Binding<mojom::MetricsHost> binding_;
+
   base::ThreadChecker thread_checker_;
   base::RepeatingTimer timer_;
 
   ArcLowMemoryKillerMonitor low_memory_killer_minotor_;
+
+  base::TimeTicks arc_start_time_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

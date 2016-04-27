@@ -123,6 +123,7 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   void StartArcInstance(const std::string& socket_path,
                         const ArcCallback& callback) override;
   void StopArcInstance(const ArcCallback& callback) override;
+  void GetArcStartTime(const GetArcStartTimeCallback& callback) override;
 
  private:
   struct PolicyState {

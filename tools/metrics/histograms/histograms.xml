@@ -899,7 +899,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Arc.AppCount" units="App Count">
+<histogram name="Arc.AndroidBootTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>The time elapsed for booting up the ARC instance.</summary>
+</histogram>
+
+<histogram name="Arc.AppCount">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
   <summary>
@@ -914,6 +920,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>mitsuji@google.com</owner>
   <summary>
     Total number of ARC apps installed on a device measured at startup.
+  </summary>
+</histogram>
+
+<histogram name="Arc.boot_progress" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>
+    The relative time of a boot progress event since the ARC starts.
   </summary>
 </histogram>
 
@@ -88070,6 +88084,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.StartToCommit_NormalLoad"/>
   <affected-histogram name="PLT.StartToFinish_LinkLoadNormal"/>
   <affected-histogram name="PLT.StartToFinish_NormalLoad"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AndroidBootProgressEvents" separator="_">
+  <suffix name="ams_ready" label="For the boot_progress_ams_ready event."/>
+  <suffix name="enable_screen"
+      label="For the boot_progress_enable_screen event."/>
+  <suffix name="pms_data_scan_start"
+      label="For the boot_progress_pms_data_scan_start event."/>
+  <suffix name="pms_ready" label="For the boot_progress_pms_ready event."/>
+  <suffix name="pms_scan_end"
+      label="For the boot_progress_pms_scan_end event."/>
+  <suffix name="pms_start" label="For the boot_progress_pms_start event."/>
+  <suffix name="pms_system_scan_start"
+      label="For the boot_progress_pms_system_scan_start event."/>
+  <suffix name="preload_end" label="For the boot_progress_preload_end event."/>
+  <suffix name="preload_start"
+      label="For the boot_progress_preload_start event."/>
+  <suffix name="start" label="For the boot_progress_start event."/>
+  <suffix name="system_run" label="For the boot_progress_system_run event."/>
+  <affected-histogram name="Arc.boot_progress"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidCrashUploadTypes">

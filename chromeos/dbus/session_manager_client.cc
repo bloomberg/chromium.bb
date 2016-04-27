@@ -369,6 +369,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    login_manager::kSessionManagerStopArcInstance, callback));
   }
 
+  void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerGetArcStartTimeTicks);
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnGetArcStartTime,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     session_manager_proxy_ = bus->GetObjectProxy(
@@ -686,6 +697,26 @@ class SessionManagerClientImpl : public SessionManagerClient {
       callback.Run(available);
   }
 
+  void OnGetArcStartTime(const GetArcStartTimeCallback& callback,
+                         dbus::Response* response) {
+    bool success = false;
+    base::TimeTicks arc_start_time;
+    if (!response) {
+      LOG(ERROR) << "Failed to call "
+                 << login_manager::kSessionManagerGetArcStartTimeTicks;
+    } else {
+      dbus::MessageReader reader(response);
+      int64_t ticks = 0;
+      if (reader.PopInt64(&ticks)) {
+        success = true;
+        arc_start_time = base::TimeTicks::FromInternalValue(ticks);
+      } else {
+        LOG(ERROR) << "Invalid response: " << response->ToString();
+      }
+    }
+    callback.Run(success, arc_start_time);
+  }
+
   // Called when kSessionManagerStartArcInstance or
   // kSessionManagerStopArcInstance methods complete.
   void OnArcMethod(const std::string& method_name,
@@ -881,6 +912,10 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
   void StopArcInstance(const ArcCallback& callback) override {
     callback.Run(false);
+  }
+
+  void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
+    callback.Run(false, base::TimeTicks::Now());
   }
 
  private:

@@ -110,6 +110,7 @@
         'arc/common/crash_collector.mojom',
         'arc/common/ime.mojom',
         'arc/common/intent_helper.mojom',
+        'arc/common/metrics.mojom',
         'arc/common/net.mojom',
         'arc/common/notifications.mojom',
         'arc/common/policy.mojom',

@@ -62,6 +62,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD1(CheckArcAvailability, void(const ArcCallback&));
   MOCK_METHOD2(StartArcInstance, void(const std::string&, const ArcCallback&));
   MOCK_METHOD1(StopArcInstance, void(const ArcCallback&));
+  MOCK_METHOD1(GetArcStartTime, void(const GetArcStartTimeCallback&));
 };
 
 }  // namespace chromeos

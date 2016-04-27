@@ -188,6 +188,9 @@ void DeviceSettingsTestHelper::StartArcInstance(const std::string& socket_path,
 
 void DeviceSettingsTestHelper::StopArcInstance(const ArcCallback& callback) {}
 
+void DeviceSettingsTestHelper::GetArcStartTime(
+    const GetArcStartTimeCallback& callback) {}
+
 DeviceSettingsTestHelper::PolicyState::PolicyState()
     : store_result_(true) {}
 

@@ -104,6 +104,10 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual void OnIntentHelperInstanceReady() {}
     virtual void OnIntentHelperInstanceClosed() {}
 
+    // Called whenever the ARC metrics interface state changes.
+    virtual void OnMetricsInstanceReady() {}
+    virtual void OnMetricsInstanceClosed() {}
+
     // Called whenever the ARC notification interface state changes.
     virtual void OnNotificationsInstanceReady() {}
     virtual void OnNotificationsInstanceClosed() {}
@@ -181,6 +185,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::IntentHelperInstance* intent_helper_instance() {
     return intent_helper_ptr_.get();
   }
+  mojom::MetricsInstance* metrics_instance() { return metrics_ptr_.get(); }
   mojom::NetInstance* net_instance() { return net_ptr_.get(); }
   mojom::NotificationsInstance* notifications_instance() {
     return notifications_ptr_.get();
@@ -200,6 +205,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   }
   int32_t ime_version() const { return ime_ptr_.version(); }
   int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
+  int32_t metrics_version() const { return metrics_ptr_.version(); }
   int32_t net_version() const { return net_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
   int32_t policy_version() const { return policy_ptr_.version(); }
@@ -220,6 +226,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
   void OnIntentHelperInstanceReady(
       mojom::IntentHelperInstancePtr intent_helper_ptr) override;
+  void OnMetricsInstanceReady(mojom::MetricsInstancePtr metrics_ptr) override;
   void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
   void OnNotificationsInstanceReady(
       mojom::NotificationsInstancePtr notifications_ptr) override;
@@ -266,6 +273,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void CloseCrashCollectorChannel();
   void CloseImeChannel();
   void CloseIntentHelperChannel();
+  void CloseMetricsChannel();
   void CloseNetChannel();
   void CloseNotificationsChannel();
   void ClosePolicyChannel();
@@ -282,6 +290,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnCrashCollectorVersionReady(int32_t version);
   void OnImeVersionReady(int32_t version);
   void OnIntentHelperVersionReady(int32_t version);
+  void OnMetricsVersionReady(int32_t version);
   void OnNetVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
   void OnPolicyVersionReady(int32_t version);
@@ -298,6 +307,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::CrashCollectorInstancePtr crash_collector_ptr_;
   mojom::ImeInstancePtr ime_ptr_;
   mojom::IntentHelperInstancePtr intent_helper_ptr_;
+  mojom::MetricsInstancePtr metrics_ptr_;
   mojom::NetInstancePtr net_ptr_;
   mojom::NotificationsInstancePtr notifications_ptr_;
   mojom::PolicyInstancePtr policy_ptr_;
@@ -319,6 +329,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::CrashCollectorInstancePtr temporary_crash_collector_ptr_;
   mojom::ImeInstancePtr temporary_ime_ptr_;
   mojom::IntentHelperInstancePtr temporary_intent_helper_ptr_;
+  mojom::MetricsInstancePtr temporary_metrics_ptr_;
   mojom::NetInstancePtr temporary_net_ptr_;
   mojom::NotificationsInstancePtr temporary_notifications_ptr_;
   mojom::PolicyInstancePtr temporary_policy_ptr_;

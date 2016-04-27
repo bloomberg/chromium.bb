@@ -203,6 +203,12 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // operation was successful or not.
   typedef base::Callback<void(bool)> ArcCallback;
 
+  // Used for GetArcStartTime. Takes a boolean indicating whether the
+  // operation was successful or not and the ticks of ARC start time if it
+  // is successful.
+  typedef base::Callback<void(bool success, base::TimeTicks ticks)>
+      GetArcStartTimeCallback;
+
   // Asynchronously checks if starting the ARC instance is available.
   // The result of the operation is reported through |callback|.
   virtual void CheckArcAvailability(const ArcCallback& callback) = 0;
@@ -216,6 +222,10 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Asynchronously stops the ARC instance.  Upon completion, invokes
   // |callback| with the result.
   virtual void StopArcInstance(const ArcCallback& callback) = 0;
+
+  // Asynchronously retrieves the timestamp which ARC instance is invoked or
+  // returns false if there is no ARC instance or ARC is not available.
+  virtual void GetArcStartTime(const GetArcStartTimeCallback& callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);

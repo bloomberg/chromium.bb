@@ -87,6 +87,7 @@ mojom("arc_bindings") {
     "common/crash_collector.mojom",
     "common/ime.mojom",
     "common/intent_helper.mojom",
+    "common/metrics.mojom",
     "common/net.mojom",
     "common/notifications.mojom",
     "common/policy.mojom",

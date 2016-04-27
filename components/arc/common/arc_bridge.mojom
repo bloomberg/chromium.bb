@@ -12,6 +12,7 @@ import "clipboard.mojom";
 import "crash_collector.mojom";
 import "ime.mojom";
 import "intent_helper.mojom";
+import "metrics.mojom";
 import "net.mojom";
 import "notifications.mojom";
 import "policy.mojom";
@@ -49,6 +50,9 @@ interface ArcBridgeHost {
   // Notifies Chrome that the IntentHelperInstance interface is ready.
   [MinVersion=4] OnIntentHelperInstanceReady@111(
       IntentHelperInstance instance_ptr);
+
+  // Notifies Chrome that the MetricsInstance interface is ready.
+  [MinVersion=10] OnMetricsInstanceReady@116(MetricsInstance instance_ptr);
 
   // Notifies Chrome that the NetInstance interface is ready.
   [MinVersion=5] OnNetInstanceReady@108(NetInstance instance_ptr);

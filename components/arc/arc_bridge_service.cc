@@ -72,6 +72,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnCrashCollectorInstanceReady();
   if (ime_instance())
     observer->OnImeInstanceReady();
+  if (metrics_instance())
+    observer->OnMetricsInstanceReady();
   if (net_instance())
     observer->OnNetInstanceReady();
   if (notifications_instance())
@@ -290,6 +292,31 @@ void ArcBridgeService::CloseIntentHelperChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnIntentHelperInstanceClosed());
 }
 
+void ArcBridgeService::OnMetricsInstanceReady(
+    mojom::MetricsInstancePtr metrics_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_metrics_ptr_ = std::move(metrics_ptr);
+  temporary_metrics_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnMetricsVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnMetricsVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  metrics_ptr_ = std::move(temporary_metrics_ptr_);
+  metrics_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseMetricsChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnMetricsInstanceReady());
+}
+
+void ArcBridgeService::CloseMetricsChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!metrics_ptr_)
+    return;
+
+  metrics_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnMetricsInstanceClosed());
+}
+
 void ArcBridgeService::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_net_ptr_ = std::move(net_ptr);
@@ -469,6 +496,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseCrashCollectorChannel();
   CloseImeChannel();
   CloseIntentHelperChannel();
+  CloseMetricsChannel();
   CloseNetChannel();
   CloseNotificationsChannel();
   ClosePolicyChannel();
