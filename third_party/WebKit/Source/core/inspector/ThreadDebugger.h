@@ -6,9 +6,11 @@
 #define ThreadDebugger_h
 
 #include "core/CoreExport.h"
+#include "platform/Timer.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 
 #include <v8.h>
 
@@ -32,18 +34,25 @@ public:
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
+    bool isInspectableHeapObject(v8::Local<v8::Object>) override;
     void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount, int maxStackSize) final;
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
+    int startRepeatingTimer(double, PassOwnPtr<V8DebuggerClient::TimerCallback>) override;
+    void cancelTimer(int) override;
 
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
 protected:
     virtual void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*) = 0;
+    void onTimer(Timer<ThreadDebugger>*);
 
     v8::Isolate* m_isolate;
     OwnPtr<V8Debugger> m_debugger;
+    HashMap<int, OwnPtr<Timer<ThreadDebugger>>> m_timers;
+    HashMap<Timer<ThreadDebugger>*, OwnPtr<V8DebuggerClient::TimerCallback>> m_timerCallbacks;
+    int m_lastTimerId;
 };
 
 } // namespace blink

@@ -38,10 +38,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace v8 {
-class Isolate;
-}
-
 namespace blink {
 
 class V8HeapProfilerAgent;
@@ -49,7 +45,7 @@ class V8HeapProfilerAgent;
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Backend::HeapProfiler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
 public:
-    static InspectorHeapProfilerAgent* create(v8::Isolate*, V8HeapProfilerAgent*);
+    static InspectorHeapProfilerAgent* create(V8HeapProfilerAgent*);
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.
@@ -70,17 +66,9 @@ public:
     void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 
 private:
-    class HeapStatsUpdateTask;
-
-    InspectorHeapProfilerAgent(v8::Isolate*, V8HeapProfilerAgent*);
-
-    void startUpdateStatsTimer();
-    void stopUpdateStatsTimer();
-    bool isInspectableHeapObject(int id);
+    explicit InspectorHeapProfilerAgent(V8HeapProfilerAgent*);
 
     V8HeapProfilerAgent* m_v8HeapProfilerAgent;
-    OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
-    v8::Isolate* m_isolate;
 };
 
 } // namespace blink

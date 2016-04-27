@@ -152,6 +152,7 @@ private:
 V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session)
     : m_session(session)
     , m_isolate(session->debugger()->isolate())
+    , m_timerId(0)
 {
 }
 
@@ -259,6 +260,12 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         *error = "Object is not available";
         return;
     }
+
+    if (!m_session->debugger()->client()->isInspectableHeapObject(heapObject)) {
+        *error = "Object is not available";
+        return;
+    }
+
     *result = m_session->runtimeAgent()->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
     if (!result)
         *error = "Object is not available";
@@ -272,6 +279,19 @@ void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, c
         *errorString = "Invalid heap snapshot object id";
         return;
     }
+
+    v8::HandleScope handles(m_isolate);
+    v8::Local<v8::Object> heapObject = objectByHeapObjectId(m_isolate, id);
+    if (heapObject.IsEmpty()) {
+        *errorString = "Object is not available";
+        return;
+    }
+
+    if (!m_session->debugger()->client()->isInspectableHeapObject(heapObject)) {
+        *errorString = "Object is not available";
+        return;
+    }
+
     m_session->runtimeAgent()->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
 }
 
@@ -298,10 +318,16 @@ void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
 void V8HeapProfilerAgentImpl::startTrackingHeapObjectsInternal(bool trackAllocations)
 {
     m_isolate->GetHeapProfiler()->StartTrackingHeapObjects(trackAllocations);
+    if (!m_timerId)
+        m_timerId = m_session->debugger()->client()->startRepeatingTimer(0.05, bind<>(&V8HeapProfilerAgentImpl::requestHeapStatsUpdate, this));
 }
 
 void V8HeapProfilerAgentImpl::stopTrackingHeapObjectsInternal()
 {
+    if (m_timerId) {
+        m_session->debugger()->client()->cancelTimer(m_timerId);
+        m_timerId = 0;
+    }
     m_isolate->GetHeapProfiler()->StopTrackingHeapObjects();
     m_state->setBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled, false);
     m_state->setBoolean(HeapProfilerAgentState::allocationTrackingEnabled, false);

@@ -42,16 +42,16 @@ public:
     void startSampling(ErrorString*, const Maybe<double>& samplingInterval) override;
     void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 
-    void requestHeapStatsUpdate() override;
-
 private:
     void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
+    void requestHeapStatsUpdate();
 
     V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
     protocol::Frontend::HeapProfiler* m_frontend;
     protocol::DictionaryValue* m_state;
+    int m_timerId;
 };
 
 } // namespace blink

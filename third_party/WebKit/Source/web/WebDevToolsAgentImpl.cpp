@@ -430,7 +430,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), m_overlay.get()));
 
-    m_session->append(InspectorHeapProfilerAgent::create(isolate, m_v8Session->heapProfilerAgent()));
+    m_session->append(InspectorHeapProfilerAgent::create(m_v8Session->heapProfilerAgent()));
 
     InspectorPageAgent* pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgent);
     m_pageAgent = pageAgent;

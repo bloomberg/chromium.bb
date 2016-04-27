@@ -16,8 +16,6 @@ class V8RuntimeAgent;
 class PLATFORM_EXPORT V8HeapProfilerAgent : public protocol::Backend::HeapProfiler, public V8Debugger::Agent<protocol::Frontend::HeapProfiler> {
 public:
     virtual ~V8HeapProfilerAgent() { }
-
-    virtual void requestHeapStatsUpdate() = 0;
 };
 
 } // namespace blink
