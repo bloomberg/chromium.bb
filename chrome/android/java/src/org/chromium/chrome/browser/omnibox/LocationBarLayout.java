@@ -147,7 +147,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
-    protected UrlContainer mUrlContainer;
     private ActionModeController mActionModeController = null;
 
     private AutocompleteController mAutocomplete;
@@ -301,7 +300,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                                 mSuggestionList.getSelectedItemPosition());
                 // Set the UrlBar text to empty, so that it will trigger a text change when we
                 // set the text to the suggestion again.
-                setUrlBarText(null, null, "");
+                setUrlBarText("", null);
                 mUrlBar.setText(selectedItem.getSuggestion().getFillIntoEdit());
                 mSuggestionList.setSelection(0);
                 mUrlBar.setSelection(mUrlBar.getText().length());
@@ -616,8 +615,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
         mUrlBar.setDelegate(this);
 
-        mUrlContainer = (UrlContainer) findViewById(R.id.url_container);
-
         mSuggestionItems = new ArrayList<OmniboxResultItem>();
         mSuggestionListAdapter = new OmniboxResultsAdapter(getContext(), this, mSuggestionItems);
 
@@ -880,7 +877,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
-        mUrlContainer.onUrlFocusChanged(hasFocus);
         updateButtonVisibility();
         updateNavigationButton();
         Tab currentTab = getCurrentTab();
@@ -1327,7 +1323,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                     ApiCompatibilityUtils.setMarginStart(childLayoutParams, startMargin);
                     childView.setLayoutParams(childLayoutParams);
                 }
-                if (childView == mUrlContainer) {
+                if (childView == mUrlBar) {
                     urlContainerChildIndex = i;
                     break;
                 }
@@ -1370,10 +1366,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                                 + ApiCompatibilityUtils.getMarginEnd(childLayoutParams));
             }
         }
-        LayoutParams urlLayoutParams = (LayoutParams) mUrlContainer.getLayoutParams();
+        LayoutParams urlLayoutParams = (LayoutParams) mUrlBar.getLayoutParams();
         if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
             ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
-            mUrlContainer.setLayoutParams(urlLayoutParams);
+            mUrlBar.setLayoutParams(urlLayoutParams);
         }
     }
 
@@ -1461,7 +1457,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             @Override
             public void onSetUrlToSuggestion(OmniboxSuggestion suggestion) {
                 if (mIgnoreOmniboxItemSelection) return;
-                setUrlBarText(null, null, suggestion.getFillIntoEdit());
+                setUrlBarText(suggestion.getFillIntoEdit(), null);
                 mUrlBar.setSelection(mUrlBar.getText().length());
                 mIgnoreOmniboxItemSelection = true;
             }
@@ -1720,7 +1716,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             return;
         }
 
-        setUrlBarText(null, null, query);
+        setUrlBarText(query, null);
         mUrlBar.setSelection(0, mUrlBar.getText().length());
         mUrlBar.requestFocus();
         stopAutocomplete(false);
@@ -1748,7 +1744,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void onClick(View v) {
         if (v == mDeleteButton) {
             if (!TextUtils.isEmpty(mUrlBar.getQueryText())) {
-                setUrlBarText(null, null, "");
+                setUrlBarText("", null);
                 hideSuggestions();
                 updateButtonVisibility();
             }
@@ -1940,7 +1936,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mQueryInTheOmnibox = false;
 
         if (getCurrentTab() == null) {
-            setUrlBarText(null, null, "");
+            setUrlBarText("", null);
             return;
         }
 
@@ -1953,7 +1949,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())) {
             // Don't show anything for Chrome URLs.
-            setUrlBarText("", null, null);
+            setUrlBarText(null, "");
             return;
         }
 
@@ -1970,7 +1966,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             }
         }
 
-        if (setUrlBarText(displayText, null, url)) {
+        if (setUrlBarText(url, displayText)) {
             mUrlBar.deEmphasizeUrl();
             emphasizeUrl();
         }
@@ -1995,14 +1991,13 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     /**
      * Changes the text on the url bar
+     * @param originalText The original text (URL or search terms) for copy/cut.
      * @param displayText The text (URL or search terms) for user display.
-     * @param trailingText The trailing text (path portion of the URL) to be displayed separately.
-     * @param text The original text (URL or search terms) for copy/cut.
      * @return Whether the URL was changed as a result of this call.
      */
-    private boolean setUrlBarText(String displayText, String trailingText, String text) {
+    private boolean setUrlBarText(String originalText, String displayText) {
         mUrlBar.setIgnoreTextChangesForAutocomplete(true);
-        boolean urlChanged = mUrlContainer.setUrlText(displayText, trailingText, text);
+        boolean urlChanged = mUrlBar.setUrl(originalText, displayText);
         mUrlBar.setIgnoreTextChangesForAutocomplete(false);
         return urlChanged;
     }
@@ -2276,7 +2271,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mDeleteButton.setTint(colorStateList);
 
         setNavigationButtonType(mNavigationButtonType);
-        mUrlContainer.setUseDarkTextColors(mUseDarkColors);
+        mUrlBar.setUseDarkTextColors(mUseDarkColors);
 
         if (mSuggestionList != null) {
             mSuggestionList.setBackground(getSuggestionPopupBackground());

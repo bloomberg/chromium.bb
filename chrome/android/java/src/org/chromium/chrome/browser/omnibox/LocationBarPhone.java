@@ -70,7 +70,7 @@ public class LocationBarPhone extends LocationBarLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mFirstVisibleFocusedView = findViewById(R.id.url_container);
+        mFirstVisibleFocusedView = findViewById(R.id.url_bar);
         mIncognitoBadge = findViewById(R.id.incognito_badge);
         mIncognitoBadgePadding =
                 getResources().getDimensionPixelSize(R.dimen.location_bar_incognito_badge_padding);
@@ -198,13 +198,13 @@ public class LocationBarPhone extends LocationBarLayout {
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
         boolean needsCanvasRestore = false;
-        if (child == mUrlContainer && mUrlActionsContainer.getVisibility() == VISIBLE) {
+        if (child == mUrlBar && mUrlActionsContainer.getVisibility() == VISIBLE) {
             canvas.save();
 
             // Clip the URL bar contents to ensure they do not draw under the URL actions during
             // focus animations.  Based on the RTL state of the location bar, the url actions
             // container can be on the left or right side, so clip accordingly.
-            if (mUrlContainer.getLeft() < mUrlActionsContainer.getLeft()) {
+            if (mUrlBar.getLeft() < mUrlActionsContainer.getLeft()) {
                 canvas.clipRect(0, 0, (int) mUrlActionsContainer.getX(), getBottom());
             } else {
                 canvas.clipRect(mUrlActionsContainer.getX() + mUrlActionsContainer.getWidth(),

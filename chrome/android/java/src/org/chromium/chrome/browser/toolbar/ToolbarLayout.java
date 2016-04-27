@@ -10,6 +10,7 @@ import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -32,7 +33,6 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -60,8 +60,6 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected TintedImageButton mMenuButton;
     protected ImageView mMenuBadge;
     protected View mMenuButtonWrapper;
-    @Nullable
-    private UrlContainer mUrlContainer;
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
@@ -113,8 +111,6 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
-
-        mUrlContainer = (UrlContainer) findViewById(R.id.url_container);
 
         // Initialize the provider to an empty version to avoid null checking everywhere.
         mToolbarDataProvider = new ToolbarDataProvider() {

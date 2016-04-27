@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
-import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -104,7 +103,6 @@ public class ToolbarPhone extends ToolbarLayout
     private TintedImageButton mReturnButton;
     private TintedImageButton mHomeButton;
     private TextView mUrlBar;
-    private UrlContainer mUrlContainer;
     private View mUrlActionsContainer;
     private ImageView mToolbarShadow;
 
@@ -296,7 +294,6 @@ public class ToolbarPhone extends ToolbarLayout
         mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
 
         mUrlBar = (TextView) findViewById(R.id.url_bar);
-        mUrlContainer = (UrlContainer) findViewById(R.id.url_container);
 
         mUrlActionsContainer = findViewById(R.id.url_action_container);
 
@@ -521,7 +518,7 @@ public class ToolbarPhone extends ToolbarLayout
         boolean hasVisibleViewPriorToUrlBar = false;
         for (int i = 0; i < mPhoneLocationBar.getChildCount(); i++) {
             View child = mPhoneLocationBar.getChildAt(i);
-            if (child == mUrlContainer) break;
+            if (child == mUrlBar) break;
             if (child.getVisibility() != GONE) {
                 hasVisibleViewPriorToUrlBar = true;
                 break;

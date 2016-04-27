@@ -84,8 +84,8 @@ public class LocationBarTablet extends LocationBarLayout {
     // Whether the microphone and bookmark buttons should be shown in the location bar. These
     // buttons are hidden if the window size is < 600dp.
     private boolean mShouldShowButtonsWhenUnfocused;
-    private final int mUrlContainerEndPaddingWithButtons;
-    private final int mUrlContainerEndPaddingWithoutButtons;
+    private final int mUrlBarEndPaddingWithButtons;
+    private final int mUrlBarEndPaddingWithoutButtons;
 
     // Variables needed for animating the location bar and toolbar buttons hiding/showing.
     private final int mToolbarButtonsWidth;
@@ -103,10 +103,10 @@ public class LocationBarTablet extends LocationBarLayout {
         super(context, attrs);
         mShouldShowButtonsWhenUnfocused = true;
 
-        // mUrlContainer currently does not have any end padding when buttons are visible in the
+        // mUrlBar currently does not have any end padding when buttons are visible in the
         // unfocused location bar.
-        mUrlContainerEndPaddingWithButtons = 0;
-        mUrlContainerEndPaddingWithoutButtons = getResources().getDimensionPixelOffset(
+        mUrlBarEndPaddingWithButtons = 0;
+        mUrlBarEndPaddingWithoutButtons = getResources().getDimensionPixelOffset(
                 R.dimen.toolbar_edge_padding);
 
         mToolbarButtonsWidth = getResources().getDimensionPixelOffset(R.dimen.toolbar_button_width)
@@ -245,12 +245,12 @@ public class LocationBarTablet extends LocationBarLayout {
     public void setShouldShowButtonsWhenUnfocused(boolean shouldShowButtons) {
         mShouldShowButtonsWhenUnfocused = shouldShowButtons;
         updateButtonVisibility();
-        ApiCompatibilityUtils.setPaddingRelative(mUrlContainer,
-                ApiCompatibilityUtils.getPaddingStart(mUrlContainer),
-                mUrlContainer.getPaddingTop(),
-                mShouldShowButtonsWhenUnfocused ? mUrlContainerEndPaddingWithButtons :
-                        mUrlContainerEndPaddingWithoutButtons,
-                mUrlContainer.getPaddingBottom());
+        ApiCompatibilityUtils.setPaddingRelative(mUrlBar,
+                ApiCompatibilityUtils.getPaddingStart(mUrlBar),
+                mUrlBar.getPaddingTop(),
+                mShouldShowButtonsWhenUnfocused ? mUrlBarEndPaddingWithButtons :
+                        mUrlBarEndPaddingWithoutButtons,
+                mUrlBar.getPaddingBottom());
     }
 
     /**
@@ -457,7 +457,7 @@ public class LocationBarTablet extends LocationBarLayout {
         mDeleteButton.setTranslationX(0);
         mBookmarkButton.setTranslationX(0);
         mLocationBarIcon.setTranslationX(0);
-        mUrlContainer.setTranslationX(0);
+        mUrlBar.setTranslationX(0);
 
         mMicButton.setAlpha(1.f);
         mDeleteButton.setAlpha(1.f);
@@ -522,7 +522,7 @@ public class LocationBarTablet extends LocationBarLayout {
             // container at the start (right side) of the location bar need to stick to the right
             // edge.
             mLocationBarIcon.setTranslationX(offset);
-            mUrlContainer.setTranslationX(offset);
+            mUrlBar.setTranslationX(offset);
 
             if (mDeleteButton.getVisibility() == View.VISIBLE) {
                 mDeleteButton.setTranslationX(-deleteOffset);
