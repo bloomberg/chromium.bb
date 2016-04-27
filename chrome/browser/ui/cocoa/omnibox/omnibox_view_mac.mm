@@ -159,13 +159,18 @@ NSColor* OmniboxViewMac::SuggestTextColor() {
   return [NSColor colorWithCalibratedWhite:0.0 alpha:0.5];
 }
 
+//static
+SkColor OmniboxViewMac::BaseTextColorSkia(bool in_dark_mode) {
+  return in_dark_mode ? SkColorSetA(SK_ColorWHITE, 0x7F)
+                      : SkColorSetA(SK_ColorBLACK, 0x7F);
+}
+
 // static
-NSColor* OmniboxViewMac::BaseTextColor(bool inDarkMode) {
+NSColor* OmniboxViewMac::BaseTextColor(bool in_dark_mode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return [NSColor darkGrayColor];
   }
-  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5]
-                    : [NSColor colorWithCalibratedWhite:0 alpha:0.5];
+  return skia::SkColorToCalibratedNSColor(BaseTextColorSkia(in_dark_mode));
 }
 
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,

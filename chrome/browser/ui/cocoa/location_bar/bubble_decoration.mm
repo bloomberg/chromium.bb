@@ -31,9 +31,10 @@ const CGFloat kBackgroundYInset = 4.0;
 
 }  // namespace
 
-BubbleDecoration::BubbleDecoration() {
+BubbleDecoration::BubbleDecoration() : baseline_offset_(0) {
   attributes_.reset([[NSMutableDictionary alloc] init]);
-  [attributes_ setObject:GetFont() forKey:NSFontAttributeName];
+  [attributes_ setObject:LocationBarDecoration::GetFont()
+                  forKey:NSFontAttributeName];
 }
 
 BubbleDecoration::~BubbleDecoration() {
@@ -102,6 +103,7 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   if (label_) {
     NSRect textRect = frame;
     textRect.origin.x = textOffset;
+    textRect.origin.y += baseline_offset_;
     textRect.size.width = NSMaxX(decoration_frame) - NSMinX(textRect);
     DrawLabel(label_, attributes_, textRect);
   }
@@ -135,6 +137,10 @@ void BubbleDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
   DrawInFrame(frame, control_view);
 }
 
+NSFont* BubbleDecoration::GetFont() const {
+  return [attributes_ objectForKey:NSFontAttributeName];
+}
+
 NSImage* BubbleDecoration::GetImage() {
   return image_;
 }
@@ -153,4 +159,12 @@ void BubbleDecoration::SetLabel(NSString* label) {
 
 void BubbleDecoration::SetTextColor(NSColor* text_color) {
   [attributes_ setObject:text_color forKey:NSForegroundColorAttributeName];
+}
+
+void BubbleDecoration::SetFont(NSFont* font) {
+  [attributes_ setObject:font forKey:NSFontAttributeName];
+}
+
+void BubbleDecoration::SetBaselineOffset(CGFloat offset) {
+  baseline_offset_ = offset;
 }

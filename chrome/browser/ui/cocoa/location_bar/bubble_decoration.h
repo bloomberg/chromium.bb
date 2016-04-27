@@ -27,14 +27,17 @@ class BubbleDecoration : public LocationBarDecoration {
   void SetImage(NSImage* image);
   void SetLabel(NSString* label);
   void SetTextColor(NSColor* text_color);
+  void SetFont(NSFont* font);
+  void SetBaselineOffset(CGFloat offset);
   virtual ui::NinePartImageIds GetBubbleImageIds() = 0;
 
   // Implement |LocationBarDecoration|.
+  CGFloat GetWidthForSpace(CGFloat width) override;
   void DrawInFrame(NSRect frame, NSView* control_view) override;
   void DrawWithBackgroundInFrame(NSRect background_frame,
                                  NSRect frame,
                                  NSView* control_view) override;
-  CGFloat GetWidthForSpace(CGFloat width) override;
+  NSFont* GetFont() const override;
 
  protected:
   // Helper returning bubble width for the given |image| and |label|
@@ -58,6 +61,9 @@ class BubbleDecoration : public LocationBarDecoration {
 
   // Contains attribute for drawing |label_|.
   base::scoped_nsobject<NSMutableDictionary> attributes_;
+
+  // Contains any baseline adjustment for the text.
+  CGFloat baseline_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDecoration);
 };

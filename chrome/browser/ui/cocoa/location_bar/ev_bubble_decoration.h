@@ -33,9 +33,14 @@ class EVBubbleDecoration : public BubbleDecoration {
   // fits, else it will set an elided version.
   void SetFullLabel(NSString* full_label);
 
-
   // Implement |LocationBarDecoration|.
   CGFloat GetWidthForSpace(CGFloat width) override;
+
+  // Perform custom drawing for Material Design.
+  void DrawWithBackgroundInFrame(NSRect background_frame,
+                                 NSRect frame,
+                                 NSView* control_view) override;
+
   bool IsDraggable() override;
   NSPasteboard* GetDragPasteboard() override;
   NSImage* GetDragImage() override;

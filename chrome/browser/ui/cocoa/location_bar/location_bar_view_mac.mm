@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#import "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -82,6 +83,9 @@ namespace {
 // Vertical space between the bottom edge of the location_bar and the first run
 // bubble arrow point.
 const static int kFirstRunBubbleYOffset = 1;
+
+const int kDefaultIconSize = 16;
+const int kMaterialSmallIconSize = 12;
 
 }  // namespace
 
@@ -203,8 +207,8 @@ void LocationBarViewMac::UpdateSaveCreditCardIcon() {
   bool enabled = controller && controller->IsIconVisible();
   command_updater()->UpdateCommandEnabled(IDC_SAVE_CREDIT_CARD_FOR_PAGE,
                                           enabled);
-  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
-  save_credit_card_decoration_->SetIcon(inDarkMode);
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
+  save_credit_card_decoration_->SetIcon(in_dark_mode);
   save_credit_card_decoration_->SetVisible(enabled);
   OnDecorationsChanged();
 }
@@ -347,8 +351,8 @@ void LocationBarViewMac::SetStarred(bool starred) {
 }
 
 void LocationBarViewMac::SetTranslateIconLit(bool on) {
-  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
-  translate_decoration_->SetLit(on, inDarkMode);
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
+  translate_decoration_->SetLit(on, in_dark_mode);
   OnDecorationsChanged();
 }
 
@@ -555,33 +559,31 @@ void LocationBarViewMac::UpdateWithoutTabRestore() {
 }
 
 void LocationBarViewMac::UpdateLocationIcon() {
-  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
 
-  SkColor vectorIconColor = gfx::kPlaceholderColor;
-  gfx::VectorIconId vectorIconId = gfx::VectorIconId::VECTOR_ICON_NONE;
-  const int kIconSize = 16;
+  SkColor vector_icon_color = gfx::kPlaceholderColor;
+  gfx::VectorIconId vector_icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  int icon_size = kDefaultIconSize;
   if (ShouldShowEVBubble()) {
-    vectorIconId = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP;
-    vectorIconColor = gfx::kGoogleGreen700;
+    vector_icon_id = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP;
+    vector_icon_color = gfx::kGoogleGreen700;
+    icon_size = kMaterialSmallIconSize;
   } else {
-    vectorIconId = omnibox_view_->GetVectorIcon(inDarkMode);
-    if (inDarkMode) {
-      vectorIconColor = SK_ColorWHITE;
+    vector_icon_id = omnibox_view_->GetVectorIcon(in_dark_mode);
+    if (in_dark_mode) {
+      vector_icon_color = SK_ColorWHITE;
     } else {
-      NSColor* textColor = OmniboxViewMac::BaseTextColor(inDarkMode);
-      // Convert to the device color space before getting the SkColor.
-      textColor = [textColor colorUsingColorSpaceName:NSDeviceRGBColorSpace];
-      vectorIconColor = skia::NSDeviceColorToSkColor(textColor);
+      vector_icon_color = OmniboxViewMac::BaseTextColorSkia(in_dark_mode);
     }
   }
 
-  DCHECK(vectorIconId != gfx::VectorIconId::VECTOR_ICON_NONE);
-  NSImage* image = NSImageFromImageSkia(gfx::CreateVectorIcon(
-      vectorIconId, kIconSize, vectorIconColor));
+  DCHECK(vector_icon_id != gfx::VectorIconId::VECTOR_ICON_NONE);
+  NSImage* image = NSImageFromImageSkiaWithColorSpace(
+      gfx::CreateVectorIcon(vector_icon_id, icon_size, vector_icon_color),
+      base::mac::GetSRGBColorSpace());
 
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
-
   Layout();
 }
 
@@ -597,8 +599,8 @@ void LocationBarViewMac::UpdateColorsToMatchTheme() {
   // Make sure we're displaying the correct star color for Incognito mode. If
   // the window is in Incognito mode, switching between a theme and no theme
   // can move the window in and out of dark mode.
-  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
-  star_decoration_->SetStarred(star_decoration_->starred(), inDarkMode);
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
+  star_decoration_->SetStarred(star_decoration_->starred(), in_dark_mode);
 
   // Update the appearance of the text in the Omnibox.
   omnibox_view_->Update();
@@ -661,8 +663,12 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   }
 
   return ui::MaterialDesignController::IsModeMaterial()
-      ? NSImageFromImageSkia(gfx::CreateVectorIcon(
-          gfx::VectorIconId::OMNIBOX_SEARCH, 16, gfx::kGoogleBlue700))
+      ? NSImageFromImageSkiaWithColorSpace(
+            gfx::CreateVectorIcon(
+                gfx::VectorIconId::OMNIBOX_SEARCH,
+                kDefaultIconSize,
+                gfx::kGoogleBlue700),
+            base::mac::GetSRGBColorSpace())
       : OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
 }
 
@@ -786,8 +792,9 @@ void LocationBarViewMac::UpdateTranslateDecoration() {
   bool enabled = language_state.translate_enabled();
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_decoration_->SetVisible(enabled);
-  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
-  translate_decoration_->SetLit(language_state.IsPageTranslated(), inDarkMode);
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
+  translate_decoration_->SetLit(language_state.IsPageTranslated(),
+                                in_dark_mode);
 }
 
 bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
@@ -795,11 +802,11 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
   if (!web_contents)
     return false;
 
-  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
+  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
   return zoom_decoration_->UpdateIfNecessary(
       ui_zoom::ZoomController::FromWebContents(web_contents),
       default_zoom_changed,
-      inDarkMode);
+      in_dark_mode);
 }
 
 void LocationBarViewMac::OnDefaultZoomLevelChanged() {
