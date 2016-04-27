@@ -18,5 +18,6 @@ component("ipc") {
     "//ipc",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/range",
   ]
 }

@@ -8,7 +8,7 @@
 #include <ostream>
 #include <string>
 
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/range/gfx_range_export.h"
 #include "ui/gfx/range/range.h"
 
 namespace gfx {
@@ -16,7 +16,7 @@ namespace gfx {
 // A float version of Range. RangeF is made of a start and end position; when
 // they are the same, the range is empty. Note that |start_| can be greater
 // than |end_| to respect the directionality of the range.
-class GFX_EXPORT RangeF {
+class GFX_RANGE_EXPORT RangeF {
  public:
   // Creates an empty range {0,0}.
   RangeF();
@@ -81,7 +81,8 @@ class GFX_EXPORT RangeF {
   float end_;
 };
 
-GFX_EXPORT std::ostream& operator<<(std::ostream& os, const RangeF& range);
+GFX_RANGE_EXPORT std::ostream& operator<<(std::ostream& os,
+                                          const RangeF& range);
 
 }  // namespace gfx
 

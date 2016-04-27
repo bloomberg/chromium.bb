@@ -87,6 +87,7 @@
         '../resources/ui_resources.gyp:ui_test_pak',
         'gfx.gyp:gfx',
         'gfx.gyp:gfx_geometry',
+        'gfx.gyp:gfx_range',
         'gfx.gyp:gfx_test_support',
       ],
       'conditions': [

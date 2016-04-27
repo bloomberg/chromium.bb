@@ -12,7 +12,7 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/range/gfx_range_export.h"
 
 #if defined(OS_MACOSX)
 #if __OBJC__
@@ -34,7 +34,7 @@ namespace gfx {
 // position; when they are the same, the Range is akin to a caret. Note that
 // |start_| can be greater than |end_| to respect the directionality of the
 // range.
-class GFX_EXPORT Range {
+class GFX_RANGE_EXPORT Range {
  public:
   // Creates an empty range {0,0}.
   Range();
@@ -115,7 +115,7 @@ class GFX_EXPORT Range {
   uint32_t end_;
 };
 
-GFX_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);
+GFX_RANGE_EXPORT std::ostream& operator<<(std::ostream& os, const Range& range);
 
 }  // namespace gfx
 

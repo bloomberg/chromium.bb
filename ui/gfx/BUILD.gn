@@ -156,12 +156,6 @@ component("gfx") {
     "platform_font_mac.mm",
     "platform_font_win.cc",
     "platform_font_win.h",
-    "range/range.cc",
-    "range/range.h",
-    "range/range_f.cc",
-    "range/range_f.h",
-    "range/range_mac.mm",
-    "range/range_win.cc",
     "scoped_canvas.h",
     "scoped_cg_context_save_gstate_mac.h",
     "scoped_ns_graphics_context_save_gstate_mac.h",
@@ -260,6 +254,7 @@ component("gfx") {
     "//skia",
     "//third_party/icu",
     "//ui/gfx/geometry",
+    "//ui/gfx/range",
   ]
   deps = [
     ":gfx_export",
@@ -781,6 +776,7 @@ test("gfx_unittests") {
     "//third_party/zlib",
     "//ui/base",
     "//ui/gfx/geometry",
+    "//ui/gfx/range",
     "//ui/resources:ui_test_pak",
   ]
 

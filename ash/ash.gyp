@@ -1025,6 +1025,7 @@
         '../ui/events/platform/events_platform.gyp:events_platform',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gfx/gfx.gyp:gfx_range',
         '../ui/gfx/gfx.gyp:gfx_vector_icons',
         '../ui/keyboard/keyboard.gyp:keyboard',
         '../ui/message_center/message_center.gyp:message_center',

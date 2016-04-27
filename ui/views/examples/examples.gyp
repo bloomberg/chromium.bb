@@ -19,6 +19,7 @@
         '../../events/events.gyp:events',
         '../../gfx/gfx.gyp:gfx',
         '../../gfx/gfx.gyp:gfx_geometry',
+        '../../gfx/gfx.gyp:gfx_range',
         '../../gfx/gfx.gyp:gfx_vector_icons',
         '../../resources/ui_resources.gyp:ui_resources',
         '../../resources/ui_resources.gyp:ui_test_pak',

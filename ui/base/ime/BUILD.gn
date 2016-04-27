@@ -114,6 +114,7 @@ component("ime") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/range",
     "//url",
   ]
 

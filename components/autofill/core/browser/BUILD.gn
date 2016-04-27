@@ -197,6 +197,7 @@ source_set("browser") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/range",
     "//url",
   ]
 

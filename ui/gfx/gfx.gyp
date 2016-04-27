@@ -68,6 +68,33 @@
       ],
     },
     {
+      'target_name': 'gfx_range',
+      'type': '<(component)',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+      ],
+      'defines': [
+        'GFX_RANGE_IMPLEMENTATION',
+      ],
+      'sources': [
+        'range/gfx_range_export.h',
+        'range/range.cc',
+        'range/range.h',
+        'range/range_f.cc',
+        'range/range_f.h',
+        'range/range_mac.mm',
+        'range/range_win.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int
+          # C4324 is structure was padded due to __declspec(align()), which is
+          # uninteresting.
+          'msvs_disabled_warnings': [ 4267, 4324 ],
+        }],
+      ]
+    },
+    {
       'target_name': 'gfx',
       'type': '<(component)',
       'dependencies': [
@@ -82,6 +109,7 @@
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         'gfx_geometry',
+        'gfx_range',
       ],
       # text_elider.h includes ICU headers.
       'export_dependent_settings': [
@@ -251,12 +279,6 @@
         'platform_font_mac.mm',
         'platform_font_win.cc',
         'platform_font_win.h',
-        'range/range.cc',
-        'range/range.h',
-        'range/range_f.cc',
-        'range/range_f.h',
-        'range/range_mac.mm',
-        'range/range_win.cc',
         'render_text.cc',
         'render_text.h',
         'render_text_harfbuzz.cc',

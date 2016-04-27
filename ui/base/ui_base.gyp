@@ -73,6 +73,7 @@
         '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        '../gfx/gfx.gyp:gfx_range',
         '../resources/ui_resources.gyp:ui_resources',
         '../strings/ui_strings.gyp:ui_strings',
       ],
@@ -704,6 +705,7 @@
         '../../testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        '../gfx/gfx.gyp:gfx_range',
       ],
       'sources': [
         # Note: file list duplicated in GN build.

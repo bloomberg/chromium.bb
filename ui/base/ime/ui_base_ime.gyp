@@ -35,6 +35,7 @@
         '../../events/events.gyp:events_base',
         '../../gfx/gfx.gyp:gfx',
         '../../gfx/gfx.gyp:gfx_geometry',
+        '../../gfx/gfx.gyp:gfx_range',
         '../ui_base.gyp:ui_base',
         ':text_input_types',
       ],

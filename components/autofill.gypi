@@ -79,6 +79,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gfx/gfx.gyp:gfx_range',
         '../ui/gfx/gfx.gyp:gfx_vector_icons',
         '../url/url.gyp:url_lib',
         'autofill_core_common',

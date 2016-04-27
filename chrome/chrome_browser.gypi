@@ -3266,6 +3266,7 @@
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gfx/gfx.gyp:gfx_range',
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',

@@ -42,6 +42,7 @@
     '../ui/events/events.gyp:dom_keycode_converter',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
+    '../ui/gfx/gfx.gyp:gfx_range',
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
     '../url/ipc/url_ipc.gyp:url_ipc',

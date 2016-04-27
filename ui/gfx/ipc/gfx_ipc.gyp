@@ -16,6 +16,7 @@
         '../../../ipc/ipc.gyp:ipc',
         '../gfx.gyp:gfx',
         '../gfx.gyp:gfx_geometry',
+        '../gfx.gyp:gfx_range',
       ],
       'defines': [
         'GFX_IPC_IMPLEMENTATION',
