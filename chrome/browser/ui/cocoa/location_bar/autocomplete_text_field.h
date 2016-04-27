@@ -141,9 +141,15 @@ class AutocompleteTextFieldObserver {
 
   base::scoped_nsobject<NSString> suggestText_;
   base::scoped_nsobject<NSColor> suggestColor_;
+
+  base::scoped_nsobject<NSView> shadowView_;
 }
 
 @property(nonatomic) AutocompleteTextFieldObserver* observer;
+
+// Returns the color of the shadow that's drawn under the AutocompleteTextField
+// in Incognito mode in Material Design.
++ (NSColor*)shadowColor;
 
 // Convenience method to return the cell, casted appropriately.
 - (AutocompleteTextFieldCell*)cell;

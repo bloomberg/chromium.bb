@@ -22,7 +22,78 @@
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
+const CGFloat kShadowInset = 3;
+const CGFloat kShadowColor = 69 / 255.;
+
 }
+
+// A view that draws a 1px shadow line beneath the autocomplete textfield.
+@interface AutocompleteTextFieldShadowView : NSView {
+ @private
+  AutocompleteTextField* textField_;  // Weak. Owns this.
+}
+// This is the designated initializer for AutocompleteTextFieldShadowView.
+- (instancetype)initWithTextField:(AutocompleteTextField*)aTextField;
+@end
+
+@interface AutocompleteTextFieldShadowView(Private)
+// Adjusts the shadow view's position whenever its AutocompleteTextField changes
+// its frame.
+- (void)adjustFrame;
+@end
+
+@implementation AutocompleteTextFieldShadowView
+
+- (instancetype)initWithTextField:(AutocompleteTextField*)aTextField {
+  if ((self = [self initWithFrame:NSZeroRect])) {
+    textField_ = aTextField;
+    [[NSNotificationCenter defaultCenter]
+         addObserver:self
+            selector:@selector(adjustFrame)
+                name:NSViewFrameDidChangeNotification
+              object:textField_];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)adjustFrame {
+  if (![self window]) {
+    return;
+  }
+  // Make the shadow view 1pt tall and slightly inset from the edges of the
+  // autocomplete textfield.
+  NSRect frame = [textField_ frame];
+  frame.origin.x += kShadowInset;
+  frame.size.width -= kShadowInset * 2;
+  frame.origin.y -= 1;
+  frame.size.height = 1;
+  [self setFrame:frame];
+}
+
+- (void)viewDidMoveToWindow {
+  [self adjustFrame];
+}
+
+- (void)drawRect:(NSRect)rect {
+  // Don't draw anything on a Retina display because on Retina there's room
+  // for the shadow just beneath the autocomplete textfield path stroke. Why
+  // even add this view? If the user drags the Incognito window between Retina
+  // and non-Retina screens there would have to be logic to add and remove the
+  // view. It's easier just to always add it for Incognito mode and draw
+  // nothing into it.
+  if ([self cr_lineWidth] < 1) {
+    return;
+  }
+  [[AutocompleteTextField shadowColor] set];
+  NSRectFill(rect);
+}
+
+@end
 
 @implementation AutocompleteTextField
 
@@ -32,8 +103,13 @@ const CGFloat kAnimationDuration = 0.2;
   return [AutocompleteTextFieldCell class];
 }
 
++ (NSColor*)shadowColor {
+  return [NSColor colorWithGenericGamma22White:kShadowColor alpha:1];
+}
+
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [shadowView_ removeFromSuperview];
   [super dealloc];
 }
 
@@ -379,14 +455,22 @@ const CGFloat kAnimationDuration = 0.2;
 
 - (void)updateColorsToMatchTheme {
   if (![[self window] inIncognitoMode]) {
+    [shadowView_ removeFromSuperview];
     return;
   }
+
+  // Add 1px shadow below the autocomplete textfield.
+  if (!shadowView_.get()) {
+    shadowView_.reset(
+        [[AutocompleteTextFieldShadowView alloc] initWithTextField:self]);
+  }
+  [[self superview] addSubview:shadowView_];
 
   // Invert the textfield's colors when Material Design and Incognito and not
   // a custom theme.
   bool inDarkMode = [[self window] inIncognitoModeWithSystemTheme];
   [self setBackgroundColor:
-      inDarkMode ? [NSColor colorWithCalibratedWhite:115 / 255. alpha:1]
+      inDarkMode ? [NSColor colorWithGenericGamma22White:115 / 255. alpha:1]
                  : [NSColor whiteColor]];
   [self setTextColor:OmniboxViewMac::BaseTextColor(inDarkMode)];
 }
